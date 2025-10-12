@@ -1,6 +1,7 @@
 # Stack technologiczny:
 - Angular 20 (PWA, SSR-ready)
-- NestJS (API, SSR, Web Push)
+- NestJS (API, SSR, Web Push),
+- Nest CLI (Command Line Interface),
 - Nx monorepo (zarządzanie kodem, workspace)
 - PostgreSQL (baza danych)
 - Prisma (ORM, migracje)
