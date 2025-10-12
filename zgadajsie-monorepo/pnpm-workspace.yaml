@@ -1,2 +1,9 @@
 autoInstallPeers: true
 strictPeerDependencies: false
+
+packages:
+  - 'backend'
+  - 'frontend'
+  - 'libs'
+  - 'backend-e2e'
+  - 'frontend-e2e'

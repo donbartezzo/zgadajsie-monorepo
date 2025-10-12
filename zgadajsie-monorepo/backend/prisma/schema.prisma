@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -18,5 +17,42 @@ model User {
   id          String   @id @default(uuid())
   email       String   @unique
   displayName String
+  socialId    String?
+  role        String   // np. 'USER', 'ADMIN'
+  events      Event[]  @relation("OrganizerEvents")
+  participations Participation[]
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  address     String
+  latitude    Float
+  longitude   Float
+  discipline  String
+  facility    String
+  cost        Float
+  status      String
+  ageRange    String?
+  gender      String?
+  level       String?
+  organizer   User     @relation("OrganizerEvents", fields: [organizerId], references: [id])
+  organizerId String
+  participations Participation[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Participation {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+  createdAt DateTime @default(now())
 }
