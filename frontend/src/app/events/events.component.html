@@ -1,0 +1,15 @@
+<div class="container mx-auto py-8">
+  <h2 class="text-2xl font-bold mb-4">Nadchodzące wydarzenia</h2>
+  <mat-card *ngFor="let event of events" class="mb-4">
+    <mat-card-title>{{ event.title }}</mat-card-title>
+    <mat-card-content>
+      <div class="flex flex-col md:flex-row md:justify-between">
+        <span>{{ event.date }}</span>
+        <span>{{ event.location }}</span>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-button color="accent">Szczegóły</button>
+    </mat-card-actions>
+  </mat-card>
+</div>
