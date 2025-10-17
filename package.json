@@ -4,8 +4,8 @@
   "license": "MIT",
   "scripts": {
     "start:frontend": "pnpm --filter ./frontend start:dev",
-    "start:backend": "pnpm --filter ./backend start:dev",
-    "start:all": "pnpm run start:frontend & pnpm run start:backend"
+    "start:backend": "pnpm --filter ./backend start:db && pnpm --filter ./backend start:dev",
+    "start": "pnpm run start:frontend & pnpm run start:backend"
   },
   "private": true,
   "devDependencies": {
@@ -29,7 +29,7 @@
     "ts-jest": "^29.1.0",
     "ts-node": "10.9.2",
     "tslib": "^2.3.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3"
-  },
-  "dependencies": {}
+  }
 }
