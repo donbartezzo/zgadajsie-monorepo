@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:dev": "nx serve frontend",
+    "start:dev": "npx -y @angular/cli@20.3.5 serve",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -25,14 +25,15 @@
   },
   "devDependencies": {
     "@angular/cli": "~20.3.5",
+    "@angular/compiler": "^20.3.6",
     "@angular/compiler-cli": "~20.3.4",
     "@angular/language-service": "~20.3.4",
+    "@tailwindcss/postcss": "^4.1.14",
     "@types/jest": "^29.5.12",
     "@types/node": "20.19.9",
+    "autoprefixer": "^10.4.21",
     "jest": "^29.7.0",
     "jest-preset-angular": "~14.6.1",
-    "@tailwindcss/postcss": "^4.1.14",
-    "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18",
     "typescript": "^5.9.3"
