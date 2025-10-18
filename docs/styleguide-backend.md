@@ -1,48 +1,48 @@
-# NestJS (Backend) Style Guide
+# Styleguide Backend — NestJS
 
-## General Guidelines
+## Ogólne wytyczne
 
-- Follow the principles of clean code.
-- Use TypeScript for all backend development.
-- Ensure all code is properly linted and formatted using the project's configuration.
+- Stosuj zasady czystego kodu.
+- Używaj TypeScript do całego developmentu backendu.
+- Dbaj o poprawne lintowanie i formatowanie kodu zgodnie z konfiguracją projektu.
 
-## Project Structure
+## Struktura projektu
 
-- Organize code into modules, each representing a specific domain or feature.
-- Use the `src` directory for all application code.
-- Place shared resources in a `shared` or `common` module.
+- Organizuj kod w moduły, z których każdy odpowiada za konkretną domenę lub funkcjonalność.
+- Cały kod aplikacji umieszczaj w katalogu `src`.
+- Wspólne zasoby umieszczaj w module `shared` lub `common`.
 
-## DTOs (Data Transfer Objects)
+## DTO (Data Transfer Objects)
 
-- Use DTOs for data validation and transformation.
-- Define DTOs in the `dto` directory within the respective module.
-- Use class-validator decorators for validation.
+- Używaj DTO do walidacji i transformacji danych.
+- Definiuj DTO w katalogu `dto` w obrębie odpowiedniego modułu.
+- Stosuj dekoratory z biblioteki `class-validator` do walidacji.
 
-## Validation
+## Walidacja
 
-- Use `class-validator` for validating incoming data.
-- Always validate data at the controller level.
+- Używaj `class-validator` do walidacji danych wejściowych.
+- Zawsze waliduj dane na poziomie kontrolera.
 
-## Error Handling
+## Obsługa błędów
 
-- Use custom exceptions for specific error cases.
-- Return meaningful error messages to the client.
-- Log errors using the project's logging service.
+- Używaj własnych wyjątków do obsługi specyficznych przypadków błędów.
+- Zwracaj czytelne komunikaty błędów do klienta.
+- Loguj błędy za pomocą serwisu logowania projektu.
 
-## Testing
+## Testowanie
 
-- Write unit tests for all services and controllers.
-- Use integration tests to verify module interactions.
-- Follow the Arrange-Act-Assert pattern in tests.
+- Pisz testy jednostkowe dla wszystkich serwisów i kontrolerów.
+- Stosuj testy integracyjne do weryfikacji współpracy modułów.
+- W testach stosuj wzorzec Arrange-Act-Assert.
 
 ## CI/CD
 
-- Ensure all tests pass before merging code.
-- Use linting and formatting checks in the CI pipeline.
-- Automate deployments using the project's CI/CD tools.
+- Upewnij się, że wszystkie testy przechodzą przed scaleniem kodu.
+- Stosuj lintowanie i formatowanie w pipeline CI.
+- Automatyzuj wdrożenia za pomocą narzędzi CI/CD projektu.
 
-## Configuration Files
+## Pliki konfiguracyjne
 
-- Store configuration in environment variables.
-- Use a configuration service to access environment variables.
-- Avoid hardcoding sensitive information in the codebase.
+- Przechowuj konfigurację w zmiennych środowiskowych.
+- Korzystaj z serwisu konfiguracyjnego do pobierania zmiennych środowiskowych.
+- Unikaj umieszczania wrażliwych danych bezpośrednio w kodzie źródłowym.
