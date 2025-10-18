@@ -121,7 +121,7 @@ Problemy, które rozwiązuje aplikacja:
 ---
 
 ## 6. Stack technologiczny
-Pełen stack technologiczny znajduję się w pliku: docs/tech_stack.md
+Pełen stack technologiczny znajduję się w pliku: docs/tech-stack.md
 
 ---
 
@@ -167,7 +167,7 @@ Odp: Nie ma wymagań, możesz proponować jeśli zajdzie tego potrzeba.
 10. Czy masz preferencje co do stylowania (CSS-in-JS, Tailwind, Angular Material, inny framework)?
 Odp: Tak jak wspomniane było w stacku technologicznym: musi to być: Angular Material, Tailwind CSS oraz Elementar UI
 
-11. Czy plik tech_stack.md zawiera już kompletną listę narzędzi i bibliotek, czy mam ją uzupełnić/proponować na podstawie PRD?
+11. Czy plik tech-stack.md zawiera już kompletną listę narzędzi i bibliotek, czy mam ją uzupełnić/proponować na podstawie PRD?
 Odp: Możesz śmiało proponować - z chęcią wysłucham twoich zaleceń.
 
 12. Czy plik styleguide.md zawiera szczegółowe wytyczne dotyczące architektury, nazewnictwa, struktury folderów, testów, CI/CD, czy mam zaproponować standardy?

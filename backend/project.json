@@ -78,6 +78,20 @@
         ],
         "parallel": false
       }
+    },
+    "start-db": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose up -d",
+        "cwd": "."
+      }
+    },
+    "db-seed": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotenv -e .env -- npx tsx prisma/seed.ts",
+        "cwd": "backend"
+      }
     }
   }
 }

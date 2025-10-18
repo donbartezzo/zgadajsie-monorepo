@@ -85,6 +85,12 @@
         "staticFilePath": "dist/frontend/browser",
         "spa": true
       }
+    },
+    "start-db": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose up -d"
+      }
     }
   }
 }
