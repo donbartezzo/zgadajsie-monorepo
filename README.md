@@ -1,96 +1,225 @@
 # ZgadajsieMonorepo
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+## Opis projektu
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+Monorepo z frontendem (Angular) i backendem (NestJS) zarządzanym przez Nx.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+- **Frontend** – aplikacja Angular (katalog `frontend/`)
+- **Backend** – NestJS + Prisma + PostgreSQL (katalog `backend/`)
+- **Monorepo** – Nx + pnpm
 
-## Run tasks
+## Stos technologiczny
 
-To run tasks with Nx use:
+- **Angular 20** – frontend (PWA, SSR-ready)
+- **NestJS 11 + Nest CLI** – API, SSR, Web Push
+- **Nx monorepo** – zarządzanie kodem i workspace
+- **PostgreSQL** – baza danych
+- **Prisma** – ORM, migracje
+- **Angular Material**, **Tailwind CSS**, **Elementar UI** – warstwa UI i stylowanie
+- **Zod** – walidacja modeli/DTO, współdzielone typy
+- **Swagger (OpenAPI)** – dokumentacja endpointów
+- **RxJS** – reaktywność w Angularze
+- **ESLint**, **Prettier** – linting i formatowanie
+- **Husky + lint-staged** – pre-commit hooks
+- **Commitizen + Conventional Commits** – standaryzacja commitów
+- **Docker** – obrazy/dev prod (opcjonalnie)
+- **Jest** – testy jednostkowe backendu i frontendu
+- **Playwright** – testy e2e (web/mobile)
+- **pnpm** – szybki menedżer pakietów z dobrym wsparciem monorepo
+
+Szczegółowy opis stacku i uzasadnienia znajdują się w pliku `docs/tech-stack.md`.
+
+## Wymagania wstępne
+
+- Node.js (zalecana aktualna wersja LTS)
+- pnpm – https://pnpm.io/installation
+- Docker + Docker Compose (do lokalnej bazy PostgreSQL)
+
+## Konfiguracja Dockera (Linux / Manjaro)
+
+1. Zainstaluj Dockera i Docker Compose (Manjaro/Arch):
+
+   ```sh
+   sudo pacman -S docker docker-compose
+   ```
+
+2. Włącz i uruchom usługę Dockera:
+
+   ```sh
+   sudo systemctl enable --now docker.service
+   ```
+
+3. (Zalecane) dodaj użytkownika do grupy `docker`, aby nie używać `sudo`:
+
+   ```sh
+   sudo usermod -aG docker $USER
+   ```
+
+   Następnie wyloguj się i zaloguj ponownie (lub użyj `newgrp docker`), aby grupa została zastosowana.
+
+4. Sprawdź, czy Docker działa:
+
+   ```sh
+   docker ps
+   docker-compose version
+   ```
+
+   Jeśli te komendy działają bez błędu o sockecie, możesz korzystać z `pnpm backend:start:db` / `pnpm start`.
+
+## Instalacja zależności
+
+W katalogu głównym repozytorium:
 
 ```sh
-npx nx <target> <project-name>
+pnpm install
 ```
 
-For example:
+## Konfiguracja backendu (.env, baza danych)
+
+1. Skopiuj plik przykładowy `.env`:
+
+   ```sh
+   cp backend/.env.example backend/.env
+   ```
+
+2. W pliku `backend/.env` sprawdź i w razie potrzeby zmodyfikuj zmienną `DATABASE_URL`, aby była spójna z konfiguracją z `docker-compose.yml` (użytkownik, hasło, port, nazwa bazy). Domyślnie Postgres w kontenerze nasłuchuje na `5432`, a na hoście jest wystawiony na `5433`.
+
+3. (Opcjonalnie, po zmianie schematu) wygeneruj klienta Prisma:
+
+   ```sh
+   pnpm prisma:generate
+   ```
+
+4. Uruchom migracje bazy danych:
+
+   ```sh
+   pnpm prisma:migrate
+   ```
+
+5. (Opcjonalnie) zasil bazę danymi startowymi:
+
+   ```sh
+   pnpm backend:db:seed
+   ```
+
+## Uruchomienie lokalne – całość (frontend + backend)
+
+Najprostsza ścieżka: jedno polecenie z katalogu głównego:
 
 ```sh
-npx nx build myproject
+pnpm start
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+To polecenie:
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- uruchomi bazę danych PostgreSQL przez `pnpm backend:start:db` (wewnętrznie `docker-compose up -d`),
+- uruchomi frontend (Angular) przez `pnpm frontend:serve`,
+- uruchomi backend (NestJS) przez `pnpm backend:serve`.
 
-## Add new projects
+## Uruchomienie lokalne – krok po kroku
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+### 1. Baza danych (PostgreSQL w Dockerze)
 
-To install a new plugin you can use the `nx add` command. Here's an example of adding the React plugin:
-```sh
-npx nx add @nx/react
-```
-
-Use the plugin's generator to create new projects. For example, to create a new React app or library:
+Z katalogu głównego repozytorium:
 
 ```sh
-# Generate an app
-npx nx g @nx/react:app demo
-
-# Generate a library
-npx nx g @nx/react:lib some-lib
+pnpm backend:start:db
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+Polecenie to odpala `docker-compose up -d` korzystając z pliku `docker-compose.yml`. Upewnij się, że Docker działa i jest poprawnie skonfigurowany.
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### 2. Backend (NestJS)
 
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
+W tym samym katalogu (nowy terminal lub w tle):
 
 ```sh
-npx nx connect
+pnpm backend:serve
 ```
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+Domyślne adresy:
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- API: `http://localhost:3000/api`
 
-### Step 2
+### 3. Frontend (Angular)
 
-Use the following command to configure a CI workflow for your workspace:
+W osobnym terminalu, nadal w katalogu głównym:
 
 ```sh
-npx nx g ci-workflow
+pnpm frontend:serve
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Domyślnie frontend będzie dostępny pod adresem:
 
-## Install Nx Console
+- UI: `http://localhost:4200`
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+Po uruchomieniu obu serwerów frontend powinien komunikować się z backendem poprzez endpointy `/api`.
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Przydatne skrypty
 
-## Useful links
+Wszystkie komendy poniżej wykonuj w katalogu głównym repozytorium.
 
-Learn more:
+### Frontend
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- Dev server:
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+  ```sh
+  pnpm frontend:serve
+  ```
+
+- Build produkcyjny:
+
+  ```sh
+  pnpm frontend:build
+  ```
+
+- Testy jednostkowe:
+
+  ```sh
+  pnpm frontend:test
+  ```
+
+### Backend
+
+- Dev server:
+
+  ```sh
+  pnpm backend:serve
+  ```
+
+- Build produkcyjny:
+
+  ```sh
+  pnpm backend:build
+  ```
+
+- Testy jednostkowe:
+
+  ```sh
+  pnpm backend:test
+  ```
+
+- Start bazy (Docker):
+
+  ```sh
+  pnpm backend:start:db
+  ```
+
+- Seed bazy:
+
+  ```sh
+  pnpm backend:db:seed
+  ```
+
+- Prisma Studio (GUI do bazy):
+
+  ```sh
+  pnpm prisma:studio
+  ```
+
+## Struktura repozytorium (skrót)
+
+- `frontend/` – aplikacja Angular
+- `backend/` – aplikacja NestJS, konfiguracja Prisma, migracje
+- `libs/` – współdzielone biblioteki (jeśli zostaną dodane)
+- `docker-compose.yml` – lokalna instancja Postgresa (+ pgAdmin)
+- `pnpm-workspace.yaml` – konfiguracja pnpm dla monorepo

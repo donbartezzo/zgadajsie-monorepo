@@ -73,7 +73,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "docker compose up -d",
+          "docker-compose up -d",
           "pnpm --filter backend run start:backend"
         ],
         "parallel": false
@@ -82,7 +82,7 @@
     "start-db": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker compose up -d",
+        "command": "docker-compose up -d",
         "cwd": "."
       }
     },
