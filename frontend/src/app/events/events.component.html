@@ -1,15 +1,19 @@
-<div class="container mx-auto py-8">
-  <h2 class="text-2xl font-bold mb-4">Nadchodzące wydarzenia</h2>
-  <mat-card *ngFor="let event of events" class="mb-4">
-    <mat-card-title>{{ event.title }}</mat-card-title>
-    <mat-card-content>
-      <div class="flex flex-col md:flex-row md:justify-between">
-        <span>{{ event.date }}</span>
-        <span>{{ event.location }}</span>
+<div class="card card-style">
+  <div class="content">
+    <h2 class="font-20 font-700 mb-3">Nadchodzące wydarzenia</h2>
+
+    <ng-container *ngFor="let event of events; trackBy: trackEventById">
+      <div class="card card-style mb-3">
+        <div class="content">
+          <h3 class="font-16 font-600 mb-1">{{ event.title }}</h3>
+          <p class="opacity-80 mb-2">
+            {{ event.date }} · {{ event.location }}
+          </p>
+          <a href="#" class="btn btn-xs bg-highlight">
+            Szczegóły
+          </a>
+        </div>
       </div>
-    </mat-card-content>
-    <mat-card-actions>
-      <button mat-button color="accent">Szczegóły</button>
-    </mat-card-actions>
-  </mat-card>
+    </ng-container>
+  </div>
 </div>

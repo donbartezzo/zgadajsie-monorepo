@@ -1,8 +1,5 @@
 // events.component.ts
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 interface EventItem {
   id: number;
@@ -14,9 +11,9 @@ interface EventItem {
 @Component({
   selector: 'app-events',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule],
   templateUrl: './events.component.html',
-  styleUrls: ['./events.component.css']
+  styleUrls: ['./events.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventsComponent {
   events: EventItem[] = [
@@ -24,4 +21,8 @@ export class EventsComponent {
     { id: 2, title: 'NestJS Workshop', date: '2025-11-05', location: 'Kraków' },
     { id: 3, title: 'Frontend Fest', date: '2025-12-01', location: 'Online' },
   ];
+
+  trackEventById(index: number, event: EventItem): number {
+    return event.id;
+  }
 }
