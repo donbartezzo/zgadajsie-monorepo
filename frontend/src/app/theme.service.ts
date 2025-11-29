@@ -35,5 +35,10 @@ export class ThemeService {
 
   setHighlight(name: string): void {
     this.body.setAttribute('data-highlight', name);
+
+    const link = this.document.querySelector<HTMLLinkElement>('link.page-highlight');
+    if (link) {
+      link.href = `styles/highlights/highlight_${name}.css`;
+    }
   }
 }

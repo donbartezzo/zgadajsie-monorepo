@@ -1,4 +1,6 @@
-Zacznijmy wdrażanie - bazując na przygotowanym planie `.ai/tasks/sticky-mobile-redesign-checklist.md`  zacznij wykonywać po kolei każde z zadań. Koniecznie uwględnij wytyczne do implementacji: `docs/styleguide-frontend.md` oraz struktrurę projektu: `docs/project-structure.md`, a także bieżący stack technologiczny: `docs/tech-stack.md`.
+Plan wdrożenia znajduje się w pliku: `.ai/tasks/sticky-mobile-redesign-checklist.md`. 
+
+Zacznijmy wdrażanie - bazując na przygotowanym planie wdrożenia zacznij wykonywać po kolei każde z zadań. Koniecznie uwględnij wytyczne do implementacji: `docs/styleguide-frontend.md` oraz struktrurę projektu: `docs/project-structure.md`, a także bieżący stack technologiczny: `docs/tech-stack.md`.
 
 Przed i podczas implementacji notuj wszelkie pytania, uwagi, wątpliwości lub rekomendacje, które pojawią się w trakcie pracy. Możesz je umieścić w sekcjach poniżej:
 
@@ -11,5 +13,7 @@ Przed i podczas implementacji notuj wszelkie pytania, uwagi, wątpliwości lub r
 </rekomendacje>
 
 Kontynuuj ten proces, generując nowe pytania i rekomendacje w oparciu o dotychczasowe odpowiedzi użytkownika, dopóki kwestie te nie zostaną wyczerpane/wyjaśnione lub użytkownik wyraźnie nie poprosi o zakończenie tego procesu i przejście do dalszej implementacji.
+
+Po każdym zadaniu aktualizuj plan wdrożenia oznaczając pozycje, które zostały wykonane.
 
 Po każdym kroku daj krótką aktualizację, co dokładniej zostało w nim wdrożone oraz czy i jak mógłbym te zmiany zobaczyć/przetestować.

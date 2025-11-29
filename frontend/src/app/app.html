@@ -2,6 +2,9 @@
   <div class="header header-fixed header-logo-center">
     <a routerLink="/" class="header-title">ZgadajSię</a>
     <a routerLink="/events" class="header-icon header-icon-1"><i class="fa fa-calendar"></i></a>
+    <a href="#" class="header-icon header-icon-4" (click)="$event.preventDefault(); toggleTheme()">
+      <i class="fa fa-lightbulb"></i>
+    </a>
   </div>
 
   <div class="page-content header-clear-large">

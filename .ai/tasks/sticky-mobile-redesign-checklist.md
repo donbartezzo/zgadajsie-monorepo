@@ -2,31 +2,35 @@
 
 ## Faza 0 – Decyzje architektoniczne
 
-- [ ] 0.1 Zdecydować o docelowym UI stacku (StickyMobile + Bootstrap 5 + SCSS szablonu jako główny design system).
-- [ ] 0.2 Zaplanować wygaszanie Angular Material, Tailwind CSS i Elementar UI (czy całkowicie, czy częściowo pozostają w niszowych miejscach).
-- [ ] 0.3 Potwierdzić, że backend (NestJS + Prisma + Zod + Swagger + Web Push/FCM) pozostaje bez zmian i redesign dotyczy głównie frontendu.
+- [x] 0.1 Zdecydować o docelowym UI stacku (StickyMobile + Bootstrap 5 + SCSS szablonu jako główny design system).
+- [x] 0.2 Zaplanować wygaszanie Angular Material, Tailwind CSS i Elementar UI (decyzja: pełne usunięcie tych technologii z projektu).
+- [x] 0.3 Potwierdzić, że backend (NestJS + Prisma + Zod + Swagger + Web Push/FCM) pozostaje bez zmian i redesign dotyczy głównie frontendu.
 
 ## Faza 1 – Włączenie szablonu do projektu Angular
 
-- [ ] 1.1 Skopiować assety StickyMobile do frontendu:
-  - [ ] 1.1.1 Skopiować katalogi `images`, `fonts`, `fonts5`, `styles/highlights`, `plugins` z `/.ignored/themplates/sticky-mobile-template/code` do `frontend/public` lub `frontend/src/assets` (spójna decyzja, gdzie trzymamy statyki).
-- [ ] 1.2 Zintegrować SCSS szablonu z Angular CLI:
-  - [ ] 1.2.1 Zmienić `src/styles.css` na `src/styles.scss` i zaktualizować referencję w `frontend/angular.json` (`options.styles`).
-  - [ ] 1.2.2 Zaimportować w `styles.scss` pliki `scss/bootstrap.scss` i `scss/style.scss` z szablonu.
-  - [ ] 1.2.3 Tymczasowo pozostawić lub wyłączyć style Tailwind / Elementar / Material w globalnych stylach (świadoma decyzja, by uniknąć konfliktów).
-- [ ] 1.3 Włączyć skrypty globalne (tymczasowo):
-  - [ ] 1.3.1 Dodać `scripts/bootstrap.min.js` i `scripts/custom.js` szablonu do sekcji `scripts` w `frontend/angular.json` (build + test).
-  - [ ] 1.3.2 Zweryfikować, że app się buduje i startuje z nowymi assetami.
+- [x] 1.1 Skopiować assety StickyMobile do frontendu:
+  - [x] 1.1.1 Skopiować katalogi `images`, `fonts`, `fonts5`, `styles/highlights`, `plugins` z `/.ignored/themplates/sticky-mobile-template/code` do `frontend/public` lub `frontend/src/assets` (wybór: `frontend/public`).
+- [x] 1.2 Zintegrować SCSS szablonu z Angular CLI:
+  - [x] 1.2.1 Zmienić `src/styles.css` na `src/styles.scss` i zaktualizować referencję w `frontend/angular.json` (`options.styles`).
+  - [x] 1.2.2 Zaimportować w `styles.scss` pliki `scss/bootstrap.scss` i `scss/style.scss` z szablonu (dodatkowo, na czas MVP, CSS ładowany jest też bezpośrednio z `public/styles/*.css`).
+  - [x] 1.2.3 Tymczasowo pozostawić lub wyłączyć style Tailwind / Elementar / Material w globalnych stylach (Tailwind/Material nie są już używane w komponentach home/events, zostaną całkowicie usunięte w Fazie 9).
+- [x] 1.3 Włączyć skrypty globalne (tymczasowo):
+  - [x] 1.3.1 Dodać `scripts/bootstrap.min.js` i `scripts/custom.js` szablonu do sekcji `scripts` w `frontend/angular.json` (build + test).
+  - [x] 1.3.2 Zweryfikować, że app się buduje i startuje z nowymi assetami (frontend działa z podpiętymi skryptami StickyMobile).
 
 ## Faza 2 – Shell i struktura strony zgodna z dokumentacją StickyMobile
 
-- [ ] 2.1 Zbudować główny shell Angulara według struktury `_starter.html`:
-  - [ ] 2.1.1 Utworzyć komponent `AppShellComponent` odwzorowujący strukturę:
+- [x] 2.1 Zbudować główny shell Angulara według struktury `_starter.html`:
+  - [x] 2.1.1 Utworzyć komponent `AppShellComponent` odwzorowujący strukturę:
     - preloader (poza `#page`),
     - `div#page` z headerem, footerem,
     - `div.page-content.header-clear-*` zawierający `router-outlet`,
     - off-canvas (menu, snackbary, toasty, PWA install) poza `page-content`.
-  - [ ] 2.1.2 Wpiąć `AppShellComponent` jako główny layout w `AppComponent` / routing (np. `AppComponent` tylko z `<app-shell></app-shell>`).
+    
+    _ZREALIZOWANE: struktura shella została zaimplementowana bezpośrednio w komponencie root `App` jako standalone component._
+  - [x] 2.1.2 Wpiąć `AppShellComponent` jako główny layout w `AppComponent` / routing (np. `AppComponent` tylko z `<app-shell></app-shell>`).
+    
+    _ZREALIZOWANE: root `App` pełni rolę shella, w środku posiada `router-outlet` oraz header/footer StickyMobile._
 - [ ] 2.2 Wydzielić layoutowe komponenty wspólne:
   - [ ] 2.2.1 `HeaderComponent` z wariantami z dokumentacji (`header-logo-left/right/center/app`).
   - [ ] 2.2.2 `FooterComponent` z wariantami `footer-bar-*` (flexowy bottom nav).
@@ -35,13 +39,14 @@
 
 ## Faza 3 – Body, motyw, kolory, highlighty
 
-- [ ] 3.1 Utworzyć `ThemeService` do zarządzania `<body>`:
-  - [ ] 3.1.1 Dodawać/usuwać klasy `theme-light`, `theme-dark`, `detect-theme` na `<body>`.
-  - [ ] 3.1.2 Ustawiać atrybuty `data-background` i `data-highlight` zgodnie z dokumentacją (np. `mint`, `red2`, `blue` itd.).
-- [ ] 3.2 Obsłużyć highlight CSS:
-  - [ ] 3.2.1 Wstawić do `index.html` `<link rel="stylesheet" class="page-highlight" href="styles/highlights/highlight_red.css">` (lub inny domyślny kolor).
-  - [ ] 3.2.2 Dodać w `ThemeService` logikę podmiany `href` tego linka (zmiana motywu kolorystycznego).
+- [x] 3.1 Utworzyć `ThemeService` do zarządzania `<body>`:
+  - [x] 3.1.1 Dodawać/usuwać klasy `theme-light`, `theme-dark`, `detect-theme` na `<body>`.
+  - [x] 3.1.2 Ustawiać atrybuty `data-background` i `data-highlight` zgodnie z dokumentacją (np. `mint`, `red2`, `blue` itd.).
+- [x] 3.2 Obsłużyć highlight CSS:
+  - [x] 3.2.1 Wstawić do `index.html` `<link rel="stylesheet" class="page-highlight" href="styles/highlights/highlight_blue.css">` (domyślny kolor).
+  - [x] 3.2.2 Dodać w `ThemeService` logikę podmiany `href` tego linka (zmiana motywu kolorystycznego przez `setHighlight`).
 - [ ] 3.3 Udostępnić w UI (komponent/ustawienia) możliwość zmiany motywu (jasny/ciemny/auto + highlight).
+  - _Częściowo: UI ma przełącznik jasny/ciemny w headerze; wybór highlightów i trybu "detect" będzie dodany później._
 
 ## Faza 4 – Projekt modułów i routingu Angulara pod strony szablonu
 

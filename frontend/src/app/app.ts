@@ -13,4 +13,11 @@ import { ThemeService } from './theme.service';
 export class App {
   protected readonly theme = inject(ThemeService);
   protected title = 'frontend';
+
+  private isDark = false;
+
+  toggleTheme(): void {
+    this.isDark = !this.isDark;
+    this.theme.setTheme(this.isDark ? 'dark' : 'light');
+  }
 }
