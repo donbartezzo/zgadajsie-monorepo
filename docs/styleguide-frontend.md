@@ -4,6 +4,7 @@
 
 - Preferuj sygnały do zarządzania stanem i przepływem danych.
 - Dziel kod na małe, niezależne standalone components.
+- W obecnej wersji Angulara każdy komponent jest domyślnie traktowany jako standalone, a więc nie ma konieczności jawnego ustawiania opcji `standalone: true`.
 - Domyślnie stosuj ChangeDetectionStrategy.OnPush.
 - Zawsze używaj silnego typowania TypeScript (tryb strict).
 
