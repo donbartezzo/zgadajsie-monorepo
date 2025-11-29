@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { ThemeService } from './theme.service';
 
 @Component({
   standalone: true,
@@ -10,5 +11,6 @@ import { RouterModule } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
+  protected readonly theme = inject(ThemeService);
   protected title = 'frontend';
 }
