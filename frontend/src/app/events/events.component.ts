@@ -10,7 +10,6 @@ interface EventItem {
 
 @Component({
   selector: 'app-events',
-  standalone: true,
   templateUrl: './events.component.html',
   styleUrls: ['./events.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
