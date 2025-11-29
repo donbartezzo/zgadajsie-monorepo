@@ -11,3 +11,5 @@ Przed i podczas implementacji notuj wszelkie pytania, uwagi, wątpliwości lub r
 </rekomendacje>
 
 Kontynuuj ten proces, generując nowe pytania i rekomendacje w oparciu o dotychczasowe odpowiedzi użytkownika, dopóki kwestie te nie zostaną wyczerpane/wyjaśnione lub użytkownik wyraźnie nie poprosi o zakończenie tego procesu i przejście do dalszej implementacji.
+
+Po każdym kroku daj krótką aktualizację, co dokładniej zostało w nim wdrożone oraz czy i jak mógłbym te zmiany zobaczyć/przetestować.

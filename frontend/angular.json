@@ -7,7 +7,7 @@
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
-          "style": "css"
+          "style": "scss"
         }
       },
       "root": "",
@@ -22,7 +22,7 @@
             "browser": "src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
-            "inlineStyleLanguage": "css",
+            "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
@@ -30,8 +30,11 @@
                 "output": "/"
               }
             ],
-            "styles": ["src/styles.css"],
-            "scripts": []
+            "styles": ["src/styles.scss"],
+            "scripts": [
+              "src/scripts/bootstrap.min.js",
+              "src/scripts/custom.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -80,10 +83,13 @@
           "options": {
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "tsconfig.spec.json",
-            "inlineStyleLanguage": "css",
+            "inlineStyleLanguage": "scss",
             "assets": ["public/favicon.ico"],
-            "styles": ["src/styles.css"],
-            "scripts": []
+            "styles": ["src/styles.scss"],
+            "scripts": [
+              "src/scripts/bootstrap.min.js",
+              "src/scripts/custom.js"
+            ]
           }
         }
       }
