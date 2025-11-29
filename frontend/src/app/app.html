@@ -1,5 +1,19 @@
 <div id="page">
+  <div class="header header-fixed header-logo-center">
+    <a routerLink="/" class="header-title">ZgadajSię</a>
+    <a routerLink="/events" class="header-icon header-icon-1"><i class="fa fa-calendar"></i></a>
+  </div>
+
   <div class="page-content header-clear-large">
     <router-outlet></router-outlet>
+  </div>
+
+  <div id="footer-bar" class="footer-bar-1">
+    <a routerLink="/" routerLinkActive="active-nav" [routerLinkActiveOptions]="{ exact: true }">
+      <i class="fa fa-home"></i><span>Home</span>
+    </a>
+    <a routerLink="/events" routerLinkActive="active-nav">
+      <i class="fa fa-star"></i><span>Events</span>
+    </a>
   </div>
 </div>
