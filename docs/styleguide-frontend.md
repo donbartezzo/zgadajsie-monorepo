@@ -47,7 +47,7 @@
 
 ## Wytyczne stylów
 
-- Zawsze gdzie to możliwe wykorzystuj w pierwszej kolejności komponenty z Elementar UI, a następnie ewentualnie Angular Material (mat-card, mat-button, itp.).
+- Zawsze gdzie to możliwe wykorzystuj własne komponenty stylowane czystym SCSS i klasami Tailwind CSS; Angular Material (mat-card, mat-button, itp.) traktuj jako uzupełnienie.
 - Styluj za pomocą klas Tailwind CSS.
 - Zachowaj spójność kolorystyki.
 - Zapewnij responsywność z podejściem mobile-first.

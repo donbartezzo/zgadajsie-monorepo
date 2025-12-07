@@ -165,7 +165,7 @@ Odp: Liczę tu na twoje zalecenia.
 Odp: Nie ma wymagań, możesz proponować jeśli zajdzie tego potrzeba.
 
 10. Czy masz preferencje co do stylowania (CSS-in-JS, Tailwind, Angular Material, inny framework)?
-Odp: Tak jak wspomniane było w stacku technologicznym: musi to być: Angular Material, Tailwind CSS oraz Elementar UI
+Odp: Tak jak wspomniane było w stacku technologicznym: musi to być: Angular Material, Tailwind CSS oraz czysty SCSS
 
 11. Czy plik tech-stack.md zawiera już kompletną listę narzędzi i bibliotek, czy mam ją uzupełnić/proponować na podstawie PRD?
 Odp: Możesz śmiało proponować - z chęcią wysłucham twoich zaleceń.

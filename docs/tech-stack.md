@@ -6,8 +6,7 @@
 - PostgreSQL (baza danych)
 - Prisma (ORM, migracje)
 - Angular Material (UI)
-- Tailwind CSS (utility-first CSS)
-- Elementar UI (szablon, komponenty)
+- Tailwind CSS + czysty SCSS (utility-first CSS + własne style)
 - Zod (walidacja modeli/DTO, współdzielone typy)
 - Swagger (OpenAPI, dokumentacja endpointów)
 - RxJS (reaktywność, Angular)
@@ -27,7 +26,7 @@
 - Nx Cloud (opcjonalnie, CI/CD, cache buildów)
 
 # Dalsze wytyczne techniczne:
-- szablon HTML bazujący na "Elementar UI": https://github.com/elementarlabs/elementar-ui
+- szablon HTML oparty na własnych komponentach w czystym SCSS + Tailwind CSS + Angular Material
 - obowiązkowe współdzielenie modeli/DTO między frontendem i backendem (np. przez workspace/libs/shared)
 - RWD (responsywność) + mobile-first
 - dokumentacja endpointów w Swagger

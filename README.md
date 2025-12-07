@@ -15,7 +15,7 @@ Monorepo z frontendem (Angular) i backendem (NestJS) zarządzanym przez Nx.
 - **Nx monorepo** – zarządzanie kodem i workspace
 - **PostgreSQL** – baza danych
 - **Prisma** – ORM, migracje
-- **Angular Material**, **Tailwind CSS**, **Elementar UI** – warstwa UI i stylowanie
+- **Angular Material**, **Tailwind CSS** oraz czysty SCSS – warstwa UI i stylowanie
 - **Zod** – walidacja modeli/DTO, współdzielone typy
 - **Swagger (OpenAPI)** – dokumentacja endpointów
 - **RxJS** – reaktywność w Angularze

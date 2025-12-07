@@ -19,7 +19,7 @@
 4. Przygotować endpointy do powiadomień push (np. Web Push API)
 5. Obsłużyć lokalizację wydarzenia (przechowywanie współrzędnych)
 
-### B. Frontend (Angular + Angular Material + Tailwind)
+### B. Frontend (Angular + Angular Material + Tailwind i czysty SCSS)
 1. Stworzyć routing i widoki:
    - Lista wydarzeń (dla niezalogowanych i zalogowanych)
    - Szczegóły wydarzenia
@@ -29,7 +29,7 @@
 2. Zaimplementować obsługę PWA (manifest, service worker)
 3. Dodać integrację z mapą (np. ngx-leaflet)
 4. Zaimplementować powiadomienia push (rejestracja, obsługa, UI)
-5. Zadbaj o UI zgodne z Angular Material, Tailwind, Elementar UI
+5. Zadbaj o UI oparte na Angular Material, Tailwind i czystym SCSS
 
 ### C. Wspólne
 1. Ustalić i zaimplementować podział danych obowiązkowych/opcjonalnych (zgodnie z PRD)
@@ -68,7 +68,7 @@
 - [ ] Walidacje i obsługa błędów
 - [ ] Testy jednostkowe i e2e
 
-## Frontend (Angular + Angular Material + Tailwind)
+## Frontend (Angular + Angular Material + Tailwind i czysty SCSS)
 - [ ] Routing i widoki:
   - [ ] Lista wydarzeń (niezalogowani/zalogowani)
   - [ ] Szczegóły wydarzenia
@@ -78,7 +78,7 @@
 - [ ] Obsługa PWA (manifest, service worker)
 - [ ] Integracja z mapą (np. ngx-leaflet)
 - [ ] Powiadomienia push (rejestracja, obsługa, UI)
-- [ ] UI zgodne z Angular Material, Tailwind, Elementar UI
+- [ ] UI oparte na Angular Material, Tailwind i czystym SCSS
 - [ ] Walidacje i obsługa błędów
 - [ ] Testy jednostkowe i e2e
 

@@ -3,7 +3,7 @@
 ## Faza 0 – Decyzje architektoniczne
 
 - [x] 0.1 Zdecydować o docelowym UI stacku (StickyMobile + Bootstrap 5 + SCSS szablonu jako główny design system).
-- [x] 0.2 Zaplanować wygaszanie Angular Material, Tailwind CSS i Elementar UI (decyzja: pełne usunięcie tych technologii z projektu).
+- [x] 0.2 Zaplanować wygaszanie poprzedniego zewnętrznego szablonu UI (decyzja: pełne usunięcie go z projektu i przejście na czysty SCSS z użyciem Tailwind CSS).
 - [x] 0.3 Potwierdzić, że backend (NestJS + Prisma + Zod + Swagger + Web Push/FCM) pozostaje bez zmian i redesign dotyczy głównie frontendu.
 
 ## Faza 1 – Włączenie szablonu do projektu Angular
@@ -13,7 +13,7 @@
 - [x] 1.2 Zintegrować SCSS szablonu z Angular CLI:
   - [x] 1.2.1 Zmienić `src/styles.css` na `src/styles.scss` i zaktualizować referencję w `frontend/angular.json` (`options.styles`).
   - [x] 1.2.2 Zaimportować w `styles.scss` pliki `scss/bootstrap.scss` i `scss/style.scss` z szablonu (dodatkowo, na czas MVP, CSS ładowany jest też bezpośrednio z `public/styles/*.css`).
-  - [x] 1.2.3 Tymczasowo pozostawić lub wyłączyć style Tailwind / Elementar / Material w globalnych stylach (Tailwind/Material nie są już używane w komponentach home/events, zostaną całkowicie usunięte w Fazie 9).
+  - [x] 1.2.3 Tymczasowo pozostawić lub wyłączyć style Tailwind / Material w globalnych stylach (Tailwind/Material nie są już używane w komponentach home/events, zostaną całkowicie usunięte w Fazie 9).
 - [x] 1.3 Włączyć skrypty globalne (tymczasowo):
   - [x] 1.3.1 Dodać `scripts/bootstrap.min.js` i `scripts/custom.js` szablonu do sekcji `scripts` w `frontend/angular.json` (build + test).
   - [x] 1.3.2 Zweryfikować, że app się buduje i startuje z nowymi assetami (frontend działa z podpiętymi skryptami StickyMobile).
@@ -101,13 +101,13 @@
   - [ ] 8.2.1 Utworzyć `DeliveryService`, `StoreService`, `TasksService`, `EventsService` itd. korzystające z API Nest (na podstawie Swagger / OpenAPI).
   - [ ] 8.2.2 Zastosować RxJS (observables) do zasilania widoków kart/list w oparciu o layout szablonu.
 
-## Faza 9 – Wygaszanie starego UI (Material, Tailwind, Elementar)
+## Faza 9 – Wygaszanie starego UI (poprzedni zewnętrzny szablon)
 
 - [ ] 9.1 Dla każdej funkcji / modułu:
   - [ ] 9.1.1 Gdy nowy moduł StickyMobile pokrywa funkcjonalność, przekierować stare route’y Angulara do nowego modułu.
   - [ ] 9.1.2 (Opcjonalnie) trzymać starą wersję za feature-flagą / alternatywną ścieżką do czasu pełnego rollout’u.
 - [ ] 9.2 Po zakończeniu migracji modułów:
-  - [ ] 9.2.1 Usunąć nieużywane komponenty Angular Material, Elementar UI i style Tailwind z kodu.
+  - [ ] 9.2.1 Usunąć nieużywane komponenty Angular Material i style powiązane ze starym szablonem UI z kodu.
   - [ ] 9.2.2 Wyczyścić `package.json` z bibliotek UI, które nie są już używane.
   - [ ] 9.2.3 Usunąć konfigurację Tailwind / PostCSS, jeśli nie jest już potrzebna.
 - [ ] 9.3 Zaktualizować dokumentację:
