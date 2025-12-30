@@ -31,10 +31,7 @@
               }
             ],
             "styles": ["src/styles.scss"],
-            "scripts": [
-              "src/scripts/bootstrap.min.js",
-              "src/scripts/custom.js"
-            ]
+            "scripts": []
           },
           "configurations": {
             "production": {
@@ -86,10 +83,7 @@
             "inlineStyleLanguage": "scss",
             "assets": ["public/favicon.ico"],
             "styles": ["src/styles.scss"],
-            "scripts": [
-              "src/scripts/bootstrap.min.js",
-              "src/scripts/custom.js"
-            ]
+            "scripts": []
           }
         }
       }

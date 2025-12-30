@@ -3,20 +3,21 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "pnpm backend:start:db && (pnpm frontend:serve & pnpm backend:serve)",
+    "start": "pnpm backend:start:db && concurrently --kill-others-on-fail -n FRONTEND,BACKEND -c blue,green \"pnpm frontend:serve\" \"pnpm backend:serve\"",
+
     "build": "pnpm frontend:build && pnpm backend:build",
     "test": "pnpm frontend:test && pnpm backend:test",
-    
+
     "frontend:serve": "cd frontend && npx -y @angular/cli@20.3.5 serve",
     "frontend:build": "cd frontend && npx -y @angular/cli@20.3.5 build",
     "frontend:test": "cd frontend && npx -y @angular/cli@20.3.5 test",
-    
+
     "backend:serve": "nx serve backend",
     "backend:build": "nx build backend",
     "backend:test": "nx test backend",
     "backend:start:db": "nx run backend:start-db",
     "backend:db:seed": "nx run backend:db-seed",
-    
+
     "prisma:generate": "cd backend && prisma generate",
     "prisma:migrate": "cd backend && prisma migrate dev",
     "prisma:studio": "cd backend && prisma studio"
@@ -68,6 +69,7 @@
     "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.1",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.2.1",
     "dotenv-cli": "^10.0.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.0.0",
