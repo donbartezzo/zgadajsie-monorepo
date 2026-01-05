@@ -52,6 +52,34 @@
 - Zachowaj spójność kolorystyki.
 - Zapewnij responsywność z podejściem mobile-first.
 
+### Layout, Tailwind, ikony — skrót dla AI
+
+**Layout i stylowanie (Tailwind)**
+
+- Używaj TYLKO Tailwind do layoutu i wyglądu (`flex`, `grid`, spacing, kolory, typografia, breakpointy, dark mode).
+- Nie opieraj wyglądu na klasach `mat-*` ani Material Theme.
+- Responsywność realizuj przez Tailwind (`sm:`, `md:`, `lg:`, `xl:`), mobile-first.
+- Preferuj kompozycję klas Tailwind w HTML zamiast rozbudowanych nestów SCSS.
+
+**Angular Material**
+
+- Traktuj Angular Material jako źródło zachowań i a11y (formularze, overlay, focus, dialogi), NIE wyglądu.
+- Dozwolone: użycie komponentów/material CDK wewnątrz własnych komponentów UI (np. w `shared/ui`), ale zawsze w połączeniu z własnymi klasami Tailwind.
+- Nie generuj globalnych override’ów stylów Material; jeżeli musisz użyć Material, całkowicie kontroluj wygląd Tailwindem.
+
+**Ikony**
+
+- Jedyny format ikon w UI: inline SVG.
+- Nigdy nie używaj `mat-icon`, font icons ani `<img src="*.svg">` dla ikon dekoracyjnych.
+- Zawsze korzystaj z dedykowanego `IconComponent`/wrappera (np. w `core/icons` lub `shared/ui`) z API typu: `[name]`, `[size]`, `[variant]`.
+- SVG muszą używać `currentColor` (`fill`/`stroke`), kolor ustawiaj klasami Tailwind (`text-*`).
+
+**Zasady dla code-asystenta AI**
+
+- Do layoutu i stylów generuj WYŁĄCZNIE klasy Tailwind; unikaj inline styles.
+- Gdy potrzebne są dialogi, overlay, focus lub złożone formularze, możesz użyć Angular Material/CDK, ale nie dodawaj stylów Material ani `mat-icon`.
+- Wszystkie nowe komponenty wielokrotnego użytku twórz w stylu „headless”: logika w Angularze, wygląd przez Tailwind, ikony przez `IconComponent`.
+
 ## Dependency Injection
 
 - Preferuj inject() zamiast konstruktora.
