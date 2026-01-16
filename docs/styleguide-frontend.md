@@ -1,5 +1,7 @@
 # Angular (Frontend) Style Guide
 
+> Szczegółowy opis organizacji katalogów frontendu znajdziesz w sekcji **„Struktura frontendu”** w `docs/project-structure.md`.
+
 ## Kluczowe zasady
 
 - Preferuj sygnały do zarządzania stanem i przepływem danych.

@@ -1,6 +1,6 @@
 import { Route } from '@angular/router';
-import { HomeComponent } from './home/home.component';
-import { EventsComponent } from './events/events.component';
+import { HomeComponent } from './features/home/home.component';
+import { EventsComponent } from './features/events/events.component';
 
 export const appRoutes: Route[] = [
   { path: '', component: HomeComponent },

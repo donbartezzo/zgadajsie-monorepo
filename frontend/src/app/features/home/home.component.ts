@@ -1,7 +1,7 @@
 // home.component.ts
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { IconComponent } from '../core/icons/icon.component';
+import { IconComponent } from '../../core/icons/icon.component';
 
 @Component({
   selector: 'app-home',
