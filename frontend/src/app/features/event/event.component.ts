@@ -1,33 +1,62 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../core/icons/icon.component';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { EventService, EventDetail } from './event.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-event',
-  imports: [IconComponent],
+  imports: [CommonModule, IconComponent],
   templateUrl: './event.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventComponent {
-  constructor(private readonly router: Router) {}
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly eventService = inject(EventService);
 
-  // Static mock data for now, matching the template content
-  readonly title = 'Paintball at the Park';
-  readonly category = 'Outdoor Events';
-  readonly dateShort = 'AUG 28';
-  readonly dateFull = '28 August 2025 - 09:00 AM';
-  readonly subtitle = "Over 150 Participants Have RSVP'ed.";
-  readonly location = 'Area 51, Nevada';
-  readonly organiserName = 'Enabled Studio';
-  readonly organiserRole = 'Event Organiser';
-  readonly attendeesCount = 135;
-  readonly scheduleDateLabel = 'Sun, 28 August';
-  readonly scheduleTimeLabel = '06:00 - 12:00 PM';
-  readonly placeCountry = 'United States';
-  readonly placeAddress = 'California, Palo Alto\n1st Apple Street, 31515';
-  readonly ticketPrice = '$10 USD';
+  private readonly eventId = this.route.snapshot.paramMap.get('id')!;
+
+  private readonly event$ = this.eventService.getEvent(this.eventId);
+  readonly event = toSignal<EventDetail | null>(this.event$, { initialValue: null });
+
+  readonly isLoading = signal(true);
+  readonly error = signal<string | null>(null);
+
+  constructor() {
+    this.event$.subscribe({
+      next: () => this.isLoading.set(false),
+      error: () => {
+        this.error.set('Failed to load event');
+        this.isLoading.set(false);
+      },
+    });
+  }
 
   onBackClick(): void {
     this.router.navigate(['/events']);
+  }
+
+  onJoinClick(): void {
+    this.eventService.joinEvent(this.eventId).subscribe({
+      next: () => {
+        // TODO: show success feedback
+      },
+      error: () => {
+        // TODO: show error feedback
+      },
+    });
+  }
+
+  onFollowClick(): void {
+    this.eventService.followEvent(this.eventId).subscribe({
+      next: () => {
+        // TODO: toggle followed state / feedback
+      },
+      error: () => {
+        // TODO: show error feedback
+      },
+    });
   }
 }

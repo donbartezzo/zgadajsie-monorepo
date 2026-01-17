@@ -16,4 +16,14 @@ export class EventService {
       where: { id },
     });
   }
+
+  async joinEvent(id: string) {
+    // TODO: implement join logic (user-event relation)
+    return { success: true, eventId: id };
+  }
+
+  async followEvent(id: string) {
+    // TODO: implement follow logic (user-event follow relation)
+    return { success: true, eventId: id };
+  }
 }

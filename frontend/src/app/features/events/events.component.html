@@ -9,25 +9,35 @@
       <section class="rounded-2xl bg-white p-4 shadow-sm">
         <div class="flex items-center justify-between text-xs font-medium text-zinc-500">
           <span class="text-rose-500">Recommended</span>
-          <span>{{ events.length }} events</span>
+          <span>{{ events().length }} events</span>
         </div>
 
-        <div class="mt-4 divide-y divide-zinc-100">
-          @for (event of events; track event.id) {
-            <button
-              type="button"
-              class="block w-full text-left py-4 first:pt-0 last:pb-0"
-              (click)="onEventSelected(event)"
-            >
-              <app-event-item
-                [title]="event.title"
-                [date]="event.date"
-                [location]="event.location"
-                [attendeesCount]="event.attendeesCount"
-              />
-            </button>
-          }
+        <div class="mt-4" *ngIf="isLoading(); else eventsList">
+          <p class="text-xs text-zinc-500">Loading events...</p>
         </div>
+
+        <ng-template #eventsList>
+          <div *ngIf="!error(); else errorBlock" class="divide-y divide-zinc-100">
+            @for (event of events(); track event.id) {
+              <button
+                type="button"
+                class="block w-full text-left py-4 first:pt-0 last:pb-0"
+                (click)="onEventSelected(event)"
+              >
+                <app-event-item
+                  [title]="event.title"
+                  [date]="event.date"
+                  [location]="event.location"
+                  [attendeesCount]="event.attendeesCount"
+                />
+              </button>
+            }
+          </div>
+        </ng-template>
+
+        <ng-template #errorBlock>
+          <p class="text-xs text-red-500">{{ error() }}</p>
+        </ng-template>
       </section>
     </section>
   </main>

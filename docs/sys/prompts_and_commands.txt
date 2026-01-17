@@ -1,0 +1,8 @@
+Stwórz stronę z kartą eventu/wydarzenia w oparciu o plik szablonu:
+`.ignored/themplates/sticky-mobile-template/code/page-events-detailed-3.html`.
+
+Komponent takowy jeszcze nie istnieje, więc należy go stworzyć:
+`frontend/src/app/features/event`.
+
+Bezwarunkowo stosuj się do zasad określonych w:
+`docs/ai-bootstrap-to-tailwind-migration.md`.

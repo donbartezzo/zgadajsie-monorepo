@@ -1,51 +1,43 @@
 // events.component.ts
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { EventItemComponent } from './event-item.component';
+import { EventService, EventListItem } from '../event/event.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
-interface EventItem {
-  id: number;
-  title: string;
-  date: string;
-  location: string;
-  attendeesCount: number;
-}
+interface EventItem extends EventListItem {}
 
 @Component({
   selector: 'app-events',
-  imports: [EventItemComponent],
+  imports: [CommonModule, EventItemComponent],
   templateUrl: './events.component.html',
   styleUrls: ['./events.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventsComponent {
-  constructor(private readonly router: Router) {}
+  private readonly router = inject(Router);
+  private readonly eventService = inject(EventService);
 
-  events: EventItem[] = [
-    {
-      id: 1,
-      title: 'Paintball at the Park',
-      date: '28 August 2025 - 09:00 AM',
-      location: 'Area 51, Nevada',
-      attendeesCount: 135,
-    },
-    {
-      id: 2,
-      title: 'Typopgrahy Exposition',
-      date: '28 August 2025 - 09:00 AM',
-      location: 'New York, Manahttan',
-      attendeesCount: 135,
-    },
-    {
-      id: 3,
-      title: 'Apple Watch Event',
-      date: '28 August 2025 - 09:00 AM',
-      location: 'Palo Alto, California',
-      attendeesCount: 135,
-    },
-  ];
+  readonly isLoading = signal(true);
+  readonly error = signal<string | null>(null);
 
-  trackEventById(index: number, event: EventItem): number {
+  private readonly events$ = this.eventService.getAllEvents();
+  readonly events = toSignal(this.events$, {
+    initialValue: [] as EventItem[],
+  });
+
+  constructor() {
+    this.events$.subscribe({
+      next: () => this.isLoading.set(false),
+      error: () => {
+        this.error.set('Failed to load events');
+        this.isLoading.set(false);
+      },
+    });
+  }
+
+  trackEventById(index: number, event: EventItem): string {
     return event.id;
   }
 

@@ -1,7 +1,13 @@
-<div class="min-h-screen bg-gradient-to-b from-rose-600 to-rose-800 text-zinc-50">
+<div
+  class="min-h-screen bg-gradient-to-b from-rose-600 to-rose-800 text-zinc-50"
+>
   <div class="relative h-[450px] w-full overflow-hidden">
-    <div class="absolute inset-0 bg-[url('/assets/images/soccer_placeholder.jpg')] bg-cover bg-center"></div>
-    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10"></div>
+    <div
+      class="absolute inset-0 bg-[url('/assets/images/soccer_placeholder.jpg')] bg-cover bg-center"
+    ></div>
+    <div
+      class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10"
+    ></div>
 
     <header class="relative z-10 flex items-center justify-between px-4 pt-4">
       <button
@@ -11,98 +17,150 @@
       >
         <app-icon name="chevron-left" class="h-5 w-5" />
       </button>
-      <div class="text-xs font-medium uppercase tracking-[0.2em] text-zinc-100/80">
+      <div
+        class="text-xs font-medium uppercase tracking-[0.2em] text-zinc-100/80"
+      >
         Event
       </div>
       <div class="h-9 w-9" aria-hidden="true"></div>
     </header>
 
     <main class="relative z-10 pb-8">
-      <section class="px-4 pt-8">
+      <section class="px-4 pt-8" *ngIf="event() as e; else loadingOrError">
         <div class="flex justify-end">
-          <div class="rounded-xl bg-white/95 px-3 py-2 text-center text-xs font-semibold text-zinc-900 shadow-sm">
-            <div class="text-[10px] uppercase tracking-[0.25em] text-rose-600">
-              {{ dateShort.split(' ')[0] }}
-            </div>
-            <div class="mt-1 text-lg font-extrabold">
-              {{ dateShort.split(' ')[1] }}
-            </div>
+          <div
+            class="rounded-xl bg-white/95 px-3 py-2 text-center text-xs font-semibold text-zinc-900 shadow-sm"
+          >
+            <ng-container *ngIf="e.dateShort as ds">
+              <div
+                class="text-[10px] uppercase tracking-[0.25em] text-rose-600"
+              >
+                {{ ds.split(' ')[0] }}
+              </div>
+              <div class="mt-1 text-lg font-extrabold">
+                {{ ds.split(' ')[1] }}
+              </div>
+            </ng-container>
           </div>
         </div>
 
         <div class="mt-8 space-y-1 px-1">
-          <span class="inline-flex rounded-full bg-rose-500/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em]">
-            {{ category }}
+          <span
+            class="inline-flex rounded-full bg-rose-500/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em]"
+          >
+            {{ e.category }}
           </span>
           <h1 class="text-2xl font-bold leading-tight">
-            {{ title }}
+            {{ e.title }}
           </h1>
           <p class="text-xs text-zinc-100/80">
-            {{ subtitle }}
+            {{ e.subtitle }}
           </p>
         </div>
 
-        <div class="mt-4 flex items-center justify-between text-xs text-zinc-100/80">
+        <div
+          class="mt-4 flex items-center justify-between text-xs text-zinc-100/80"
+        >
           <div class="flex items-center gap-1">
             <app-icon name="calendar" class="h-4 w-4 text-red-400" />
-            <span>{{ dateFull }}</span>
+            <span>{{ e.dateFull }}</span>
           </div>
         </div>
 
         <div class="mt-4 flex justify-end">
-          <button class="inline-flex items-center justify-center rounded-full bg-rose-500 px-5 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-sm">
+          <button
+            class="inline-flex items-center justify-center rounded-full bg-rose-500 px-5 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-sm"
+            (click)="onJoinClick()"
+          >
             Join
           </button>
         </div>
       </section>
+
+      <ng-template #loadingOrError>
+        <div class="px-4 pt-8">
+          <div
+            *ngIf="isLoading(); else errorBlock"
+            class="text-sm text-zinc-100"
+          >
+            Loading event...
+          </div>
+          <ng-template #errorBlock>
+            <div class="text-sm text-red-100">{{ error() }}</div>
+          </ng-template>
+        </div>
+      </ng-template>
     </main>
   </div>
 
-  <main class="pb-8">
+  <main class="pb-8" *ngIf="event() as e">
     <!-- Content card constrained to mobile width -->
-    <section class="mx-auto mt-4 max-w-md rounded-t-3xl bg-zinc-50 px-4 pb-10 pt-6 text-zinc-900">
+    <section
+      class="mx-auto mt-4 max-w-md rounded-t-3xl bg-zinc-50 px-4 pb-10 pt-6 text-zinc-900"
+    >
       <div class="mx-auto h-1 w-12 rounded-full bg-zinc-300/80"></div>
 
       <section class="mt-4 space-y-3 text-sm">
         <div>
-          <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-rose-500">
-            {{ dateFull }}
+          <p
+            class="text-[11px] font-semibold uppercase tracking-[0.2em] text-rose-500"
+          >
+            {{ e.dateFull }}
           </p>
-          <h2 class="text-lg font-semibold">{{ title }}</h2>
+          <h2 class="text-lg font-semibold">{{ e.title }}</h2>
           <p class="mt-1 flex items-center gap-1 text-xs text-zinc-500">
             <app-icon name="calendar" class="h-4 w-4 text-red-500" />
-            <span>{{ location }}</span>
+            <span>{{ e.location }}</span>
           </p>
         </div>
 
         <p class="text-sm text-zinc-700">
-          Get ready for the new and improved paintball event. It's going to be awesome! This year we're including Ketchup balls for added taste and flavor.
+          Get ready for the new and improved paintball event. It's going to be
+          awesome! This year we're including Ketchup balls for added taste and
+          flavor.
         </p>
 
         <div class="mt-4 flex items-center gap-3">
           <div class="h-10 w-10 rounded-full bg-zinc-200"></div>
           <div class="flex-1 text-sm">
-            <h3 class="text-sm font-semibold">{{ organiserName }}</h3>
-            <p class="text-xs text-zinc-500">{{ organiserRole }}</p>
+            <h3 class="text-sm font-semibold">{{ e.organiserName }}</h3>
+            <p class="text-xs text-zinc-500">{{ e.organiserRole }}</p>
           </div>
-          <button class="inline-flex items-center justify-center rounded-full bg-zinc-900 px-3 py-1 text-xs font-semibold text-zinc-50">
+          <button
+            class="inline-flex items-center justify-center rounded-full bg-zinc-900 px-3 py-1 text-xs font-semibold text-zinc-50"
+            (click)="onFollowClick()"
+          >
             Follow
           </button>
         </div>
 
-        <div class="mt-4 flex flex-wrap items-center gap-2 text-[11px] text-zinc-600">
+        <div
+          class="mt-4 flex flex-wrap items-center gap-2 text-[11px] text-zinc-600"
+        >
           <div class="flex -space-x-2">
-            <div class="h-6 w-6 rounded-full border border-white bg-rose-200"></div>
-            <div class="h-6 w-6 rounded-full border border-white bg-emerald-200"></div>
-            <div class="h-6 w-6 rounded-full border border-white bg-amber-200"></div>
-            <div class="h-6 w-6 rounded-full border border-white bg-indigo-200"></div>
+            <div
+              class="h-6 w-6 rounded-full border border-white bg-rose-200"
+            ></div>
+            <div
+              class="h-6 w-6 rounded-full border border-white bg-emerald-200"
+            ></div>
+            <div
+              class="h-6 w-6 rounded-full border border-white bg-amber-200"
+            ></div>
+            <div
+              class="h-6 w-6 rounded-full border border-white bg-indigo-200"
+            ></div>
           </div>
-          <span class="pl-2">+{{ attendeesCount }} others going</span>
+          <span class="pl-2">+{{ e.attendeesCount }} others going</span>
         </div>
       </section>
 
       <section class="mt-6 space-y-3">
-        <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">Event Location</h3>
+        <h3
+          class="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500"
+        >
+          Event Location
+        </h3>
 
         <div class="overflow-hidden rounded-2xl bg-zinc-900/90">
           <div class="relative h-56 w-full bg-zinc-800">
@@ -112,16 +170,18 @@
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
             ></iframe>
-            <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
+            <div
+              class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"
+            ></div>
           </div>
 
           <div class="space-y-1 bg-white px-4 py-3 text-xs text-zinc-900">
             <p class="flex items-center gap-2 text-sm font-semibold">
               <app-icon name="home" class="h-4 w-4 text-red-500" />
-              <span>{{ placeCountry }}</span>
+              <span>{{ e.placeCountry }}</span>
             </p>
             <p class="text-[11px] text-zinc-600 whitespace-pre-line">
-              {{ placeAddress }}
+              {{ e.placeAddress }}
             </p>
           </div>
         </div>
@@ -129,9 +189,13 @@
 
       <section class="mt-6 space-y-4 text-sm text-zinc-700">
         <div>
-          <h3 class="text-base font-semibold text-zinc-900">Full Event Information</h3>
+          <h3 class="text-base font-semibold text-zinc-900">
+            Full Event Information
+          </h3>
           <p class="mt-1">
-            Add any element or component you want from our framework here, it's Bootstrap 4.x and 5.x ready so you know you have an infinite amount of options.
+            Add any element or component you want from our framework here, it's
+            Bootstrap 4.x and 5.x ready so you know you have an infinite amount
+            of options.
           </p>
         </div>
 
@@ -139,39 +203,58 @@
           <div class="flex items-center gap-3">
             <app-icon name="calendar" class="h-5 w-5 text-teal-500" />
             <div>
-              <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500">Date</div>
-              <div class="text-sm font-semibold text-zinc-900">{{ scheduleDateLabel }}</div>
+              <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                Date
+              </div>
+              <div class="text-sm font-semibold text-zinc-900">
+                {{ e.scheduleDateLabel }}
+              </div>
             </div>
           </div>
 
           <div class="flex items-center gap-3">
             <app-icon name="calendar" class="h-5 w-5 text-red-500" />
             <div>
-              <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500">Time</div>
-              <div class="text-sm font-semibold text-zinc-900">{{ scheduleTimeLabel }}</div>
+              <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                Time
+              </div>
+              <div class="text-sm font-semibold text-zinc-900">
+                {{ e.scheduleTimeLabel }}
+              </div>
             </div>
           </div>
 
           <div class="flex items-center gap-3">
             <app-icon name="home" class="h-5 w-5 text-yellow-500" />
             <div>
-              <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500">Place</div>
-              <div class="text-sm font-semibold text-zinc-900">{{ location }}</div>
+              <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                Place
+              </div>
+              <div class="text-sm font-semibold text-zinc-900">
+                {{ e.location }}
+              </div>
             </div>
           </div>
 
           <div class="flex items-center gap-3">
             <app-icon name="user" class="h-5 w-5 text-green-500" />
             <div>
-              <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500">Ticket</div>
-              <div class="text-sm font-semibold text-zinc-900">{{ ticketPrice }}</div>
+              <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                Ticket
+              </div>
+              <div class="text-sm font-semibold text-zinc-900">
+                {{ e.ticketPrice }}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       <div class="mt-8">
-        <button class="inline-flex w-full items-center justify-center rounded-full bg-rose-600 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow">
+        <button
+          class="inline-flex w-full items-center justify-center rounded-full bg-rose-600 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow"
+          (click)="onJoinClick()"
+        >
           Join Event
         </button>
       </div>
