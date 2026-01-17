@@ -1,19 +1,36 @@
-<div class="card card-style">
-  <div class="content">
-    <h1 class="font-24 font-700 mb-2">Witamy w ZgadajSię!</h1>
-    <p class="opacity-80 mb-3">
-      To strona główna aplikacji ZgadajSię oparta na szablonie StickyMobile.
-    </p>
-    <div class="flex items-center gap-2 mb-3">
-      <app-icon name="menu" size="lg" variant="primary" />
-      <app-icon name="sun" size="md" variant="muted" />
-      <app-icon name="calendar" size="sm" />
-    </div>
-    <a
-      routerLink="/events"
-      class="btn btn-full bg-highlight text-uppercase font-600"
-    >
-      Przejdź do wydarzeń
-    </a>
-  </div>
+<div class="min-h-screen bg-white text-zinc-900">
+  <main class="mx-auto flex min-h-screen max-w-md items-stretch px-0">
+    <section class="relative flex w-full items-stretch">
+      <div class="relative flex min-h-screen w-full items-center justify-center bg-white">
+        <!-- Centered card-like content, similar to card-center text-center -->
+        <div class="w-full px-10 pb-16 text-center">
+          <div class="mx-auto flex w-full max-w-xs justify-center">
+            <img
+              src="/assets/images/soccer_placeholder.jpg"
+              alt="Ilustracja startowa"
+              class="h-40 w-auto select-none"
+              loading="lazy"
+            />
+          </div>
+
+          <h1 class="mt-10 text-[30px] font-bold tracking-tight text-zinc-900">StickyMobile 5.0</h1>
+          <p class="mt-1 text-[12px] font-semibold uppercase tracking-[0.25em] text-rose-500">
+            Simply the Best Mobile Webkit on Envato
+          </p>
+
+          <p class="mt-5 text-sm leading-relaxed text-zinc-600">
+            Powered by Bootstrap 5.x with AJAX Transitions providing full PWA, RTL and Dark Mode
+            integrations!
+          </p>
+
+          <a
+            routerLink="/events"
+            class="mt-8 inline-flex w-full items-center justify-center rounded-full bg-rose-500 px-5 py-3 text-xs font-extrabold uppercase tracking-wide text-white shadow-xl transition active:translate-y-px active:shadow-lg"
+          >
+            Get Started
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
 </div>

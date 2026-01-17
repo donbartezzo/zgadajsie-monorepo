@@ -1,0 +1,26 @@
+<article class="space-y-2">
+  <div class="overflow-hidden rounded-xl bg-zinc-100">
+    <div class="aspect-[16/9] w-full bg-cover bg-center" style="background-image: url('/assets/images/soccer_placeholder.jpg')"></div>
+  </div>
+
+  <div class="space-y-1 text-sm">
+    <p class="text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500">
+      {{ date }}
+    </p>
+
+    <h2 class="text-base font-semibold text-zinc-900">
+      {{ title }}
+    </h2>
+
+    <p class="flex items-center gap-1 text-xs text-zinc-500">
+      <span class="inline-flex h-4 w-4 items-center justify-center rounded-full bg-rose-50 text-[10px] font-bold text-rose-500">
+        •
+      </span>
+      <span>{{ location }}</span>
+    </p>
+
+    <p class="text-[11px] text-zinc-500">
+      +{{ attendeesCount }} others going
+    </p>
+  </div>
+</article>
