@@ -109,3 +109,8 @@
 - Używaj private zamiast #.
 - Komentarze tylko tam, gdzie kod nie jest oczywisty.
 - Stosuj DRY, KISS, YAGNI.
+
+## Pozostałe wytyczne:
+
+- Jeśli w szablonie stosowana jest zmienna sygnał wielokrtonie to zastosuj napierw przypisanie sygnału do zmiennej lokalnej (np. `@let _event = event();`) dalej stosuj już tylką tą zmienną lokalną.
+- W szablonach (pliki .html) koniecznie używaj nowego control flow, tj. zamiast np. `*ngIf/*ngFor/*ngSwitch` stosuj `@if/@for/@switch` itp.
