@@ -28,6 +28,7 @@ Ten dokument opisuje **konkretne zasady i procedurę** dla Asystenta AI, który 
 ## 2. Lokacja kodu w projekcie
 
 Przy zadaniach typu:
+
 - „Stwórz stronę główną w oparciu o plik szablonu: `.ignored/themplates/sticky-mobile-template/code/home.html`”
 - „Stwórz komponent z listą wydarzeń opierający się na liniach 20–100 z pliku: `.ignored/themplates/sticky-mobile-template/code/events.html`”
 
@@ -49,23 +50,28 @@ Jeśli fragment szablonu wygląda na **uniwersalny** (np. przycisk, karta wydarz
 Dla zadania „oprzyj się na pliku X.html” stosuj **zawsze tę samą sekwencję kroków**:
 
 1. **Analiza struktury**
+
    - Zidentyfikuj sekcje: nagłówek, lista, formularz, bottom nav, itd.
    - Zmapuj sekcje na komponenty Angulara (feature + ewentualne `shared/ui`).
 
 2. **Usunięcie zależności od Bootstrapa**
+
    - Zignoruj `<link ... bootstrap.css>` i `<script ... bootstrap.js>`.
    - W HTML usuń wszystkie klasy Bootstrap (`container`, `row`, `col-*`, `btn`, `btn-*`, `d-flex`, `text-*`, `mt-*`, `mb-*`, itd.).
 
 3. **Przepisanie layoutu na Tailwind**
+
    - Mapuj typowe wzorce Bootstrapa na Tailwind (szczegóły w sekcji 4).
    - Dodaj klasy Tailwind **bezpośrednio** do elementów HTML.
 
 4. **Ikony**
+
    - Zamień `<i class="bi bi-..."></i>` lub inne font icons na użycie `IconComponent`:
      - Ustal semantyczną nazwę ikony (`"home"`, `"calendar"`, `"user"` itp.).
      - Użyj: `<app-icon name="home" class="w-6 h-6 text-zinc-700" />` lub odpowiedniego aliasu `IconComponent`.
 
 5. **Interakcje i logika**
+
    - Uprość czysty HTML do struktury komponentów Angulara.
    - Przenieś logikę (toggle, modale, dropdowny) na Angular + ewentualnie Angular Material/CDK.
 
@@ -88,7 +94,7 @@ Przy tłumaczeniu HTML z Bootstrapa NALEŻY:
 - `col-4` → `w-1/3`
 - `col-3` → `w-1/4`
 
-Dobierz **max-w-*** zgodnie z mobile-first (np. `max-w-md`, `max-w-lg`).
+Dobierz **max-w-\*** zgodnie z mobile-first (np. `max-w-md`, `max-w-lg`).
 
 ### 4.2. Flex / alignment
 
@@ -203,7 +209,7 @@ W szablonie Bootstrap 5 ikony często pochodzą z `Bootstrap Icons` i są dodawa
 <i class="bi bi-house"></i>
 ```
 
-W projekcie docelowym:**
+W projekcie docelowym:\*\*
 
 - nie używaj font icons ani `i.bi`;
 - **każda ikona** musi być zrealizowana przez `IconComponent` z `core/icons`.
@@ -303,12 +309,8 @@ Załóżmy, że w pliku `.ignored/themplates/sticky-mobile-template/code/events.
   <div class="card-body d-flex justify-content-between align-items-center">
     <div>
       <h5 class="card-title mb-1">Koncert jazzowy</h5>
-      <p class="card-text mb-1 text-muted">
-        <i class="bi bi-calendar-event me-1"></i> 24.01.2026, 19:00
-      </p>
-      <p class="card-text mb-0 text-muted">
-        <i class="bi bi-geo-alt me-1"></i> Klub Muzyczny XYZ
-      </p>
+      <p class="card-text mb-1 text-muted"><i class="bi bi-calendar-event me-1"></i> 24.01.2026, 19:00</p>
+      <p class="card-text mb-0 text-muted"><i class="bi bi-geo-alt me-1"></i> Klub Muzyczny XYZ</p>
     </div>
     <button class="btn btn-primary btn-sm">Szczegóły</button>
   </div>
@@ -340,9 +342,7 @@ Asystent AI powinien podjąć następujące decyzje:
 ```html
 <article class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm p-4 flex items-start justify-between gap-4">
   <div class="space-y-1 text-sm">
-    <h2 class="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-      {{ event().title }}
-    </h2>
+    <h2 class="text-base font-semibold text-zinc-900 dark:text-zinc-50">{{ event().title }}</h2>
 
     <p class="flex items-center gap-1 text-xs text-zinc-500">
       <app-icon name="calendar" class="w-4 h-4 text-zinc-400" />
@@ -355,14 +355,7 @@ Asystent AI powinien podjąć następujące decyzje:
     </p>
   </div>
 
-  <app-ui-button
-    variant="primary"
-    size="sm"
-    class="shrink-0"
-    (clicked)="detailsClicked.emit()"
-  >
-    Szczegóły
-  </app-ui-button>
+  <app-ui-button variant="primary" size="sm" class="shrink-0" (clicked)="detailsClicked.emit()"> Szczegóły </app-ui-button>
 </article>
 ```
 
@@ -414,16 +407,12 @@ AI powinien utworzyć komponent layoutu, np. `BottomNavComponent` w `frontend/sr
   <div class="mx-auto max-w-md px-4">
     <ul class="flex items-stretch justify-between py-2">
       @for (item of items(); track item.path) {
-        <li class="flex-1">
-          <a
-            [routerLink]="item.path"
-            routerLinkActive="text-blue-600"
-            class="flex flex-col items-center justify-center gap-0.5 py-1 text-xs text-zinc-500"
-          >
-            <app-icon [name]="item.icon" class="w-5 h-5" />
-            <span>{{ item.label }}</span>
-          </a>
-        </li>
+      <li class="flex-1">
+        <a [routerLink]="item.path" routerLinkActive="text-blue-600" class="flex flex-col items-center justify-center gap-0.5 py-1 text-xs text-zinc-500">
+          <app-icon [name]="item.icon" class="w-5 h-5" />
+          <span>{{ item.label }}</span>
+        </a>
+      </li>
       }
     </ul>
   </div>
@@ -446,3 +435,54 @@ Jeśli podczas migracji natrafisz na powtarzający się wzorzec Bootstrapa (np. 
 2. Zaprojektuj minimalne, ale rozsądne API (`[variant]`, `[size]`, `[intent]`, itp.).
 3. Udokumentuj w kodzie (komentarz krótki + nazwa pliku/komponentu), że komponent jest odpowiednikiem konkretnego wzorca z szablonu.
 4. **Nie próbuj** odwzorowywać 1:1 dokładnego wyglądu Bootstrapa – ważniejsza jest spójność z resztą designu Tailwind w projekcie niż wierność szablonowi.
+
+---
+
+## 14. Klasy CSS: zakaz przenoszenia "martwych" i bootstrapowych klas
+
+Podczas migracji **NIE WOLNO** bezrefleksyjnie kopiować klas z pliku szablonu HTML (`.ignored/themplates/...`), jeśli:
+
+- są to klasy Bootstrapa (`container`, `row`, `col-*`, `btn`, `btn-*`, `navbar`, `card`, `text-*`, `mt-*`, `mb-*`, itp.);
+- są to klasy specyficzne dla szablonu (np. `header`, `header-logo-center`, `header-clear-small`, `footer-bar-1`, `spinner-border`, `color-highlight`, itp.), które **nie mają** odpowiednika / definicji w docelowym projekcie (`styles.scss`, lokalne `.scss`).
+
+Zamiast tego **zawsze**:
+
+1. **Używaj Tailwinda jako pierwszego wyboru**
+
+   - layout, spacing, kolory, typografia, animacje – realizuj klasami Tailwind (`flex`, `grid`, `rounded-*`, `shadow-*`, `text-*`, `bg-*`, `animate-*`, itp.);
+   - jeśli w szablonie występuje np. `class="header header-fixed header-logo-center"`, w Angularze zastąp to np. `class="fixed inset-x-0 top-0 z-50 bg-white/95 shadow-sm"`.
+
+2. **Customowe klasy tylko wtedy, gdy są uzasadnione**
+
+   - dopuszczalne jest wprowadzenie customowej klasy (np. `.app-shell`, `.page-content-shell`) **tylko wtedy**, gdy:
+     - ma ona konkretną definicję w powiązanym pliku `.scss` danego komponentu **lub** w świadomie zarządzanym globalnym arkuszu (`styles.scss`), **i**
+     - jest faktycznie używana w więcej niż jednym miejscu albo istotnie upraszcza kod;
+   - nie wolno tworzyć klas, które nie mają żadnej definicji w CSS/SCSS – to są "martwe" klasy i należy je usunąć zamiast przenosić.
+
+3. **Przy refaktorach istniejących komponentów**
+
+   - jeżeli komponent posiada klasy pochodzące ze starego szablonu (np. `header-clear-small`, `footer-bar-1`, `spinner-border`), należy:
+     - sprawdzić, czy mają definicję w CSS/SCSS;
+     - jeżeli są powiązane tylko z oryginalnym szablonem i nie są potrzebne – przepisać zachowanie na Tailwind i klasę usunąć;
+     - **nie dodawać nowych zależności** do tych starych klas.
+
+4. **Priorytet: Tailwind → dopiero potem SCSS**
+   - domyślnie całość wyglądu i layoutu budujemy Tailwindem w szablonie;
+   - lokalny `.scss` używamy tylko dla:
+     - złożonych przypadków nieosiągalnych wygodnie w Tailwind (np. specyficzne keyframes, niestandardowe maski, złożone transformacje),
+     - globalnych helperów, które zostały zaakceptowane w projekcie;
+   - jeśli jakaś klasa istnieje tylko po to, by trzymać prosty layout, powinna zostać zastąpiona Tailwindem i usunięta.
+
+**Dla asystenta AI:** przy każdej migracji:
+
+- nie kopiuj nazw klas ze szablonu "dla pewności";
+- jeśli widzisz klasę, która nie jest Tailwindem, zadaj sobie pytanie:
+  - _Czy ma definicję w naszym projekcie?_ Jeśli nie – **nie przenoś** jej;
+  - _Czy rzeczywiście potrzebuję customowej klasy, czy wystarczy kilka klas Tailwind?_ – preferuj drugie;
+- traktuj szablon jako referencję **wyglądu i struktury**, a nie jako źródło systemu klas.
+
+---
+
+```
+
+```

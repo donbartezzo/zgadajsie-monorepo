@@ -1,8 +1,49 @@
-<div id="footer-bar" class="footer-bar-1">
-  <a routerLink="/" routerLinkActive="active-nav" [routerLinkActiveOptions]="{ exact: true }">
-    <i class="fa fa-home"></i><span>Home</span>
-  </a>
-  <a routerLink="/events" routerLinkActive="active-nav">
-    <i class="fa fa-star"></i><span>Events</span>
-  </a>
-</div>
+<footer
+  class="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white/95 px-2 py-1.5 shadow-[0_-4px_12px_rgba(15,23,42,0.12)] backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95"
+  aria-label="Główna nawigacja dolna"
+>
+  <nav class="mx-auto flex max-w-md items-stretch justify-between gap-1 text-xs font-medium text-slate-500 dark:text-slate-300">
+    <a
+      routerLink="/"
+      routerLinkActive="text-indigo-600 dark:text-indigo-400"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
+    >
+      <app-icon name="home" size="md" variant="primary" class="mb-0.5"></app-icon>
+      <span>Home</span>
+    </a>
+
+    <a
+      routerLink="/events"
+      routerLinkActive="text-indigo-600 dark:text-indigo-400"
+      class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
+    >
+      <app-icon name="calendar" size="md" variant="default" class="mb-0.5"></app-icon>
+      <span>Events</span>
+    </a>
+
+    <button
+      type="button"
+      class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 text-slate-400 transition-colors hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400"
+    >
+      <app-icon name="user" size="md" variant="muted" class="mb-0.5"></app-icon>
+      <span>Pages</span>
+    </button>
+
+    <button
+      type="button"
+      class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 text-slate-400 transition-colors hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400"
+    >
+      <app-icon name="search" size="md" variant="muted" class="mb-0.5"></app-icon>
+      <span>Search</span>
+    </button>
+
+    <button
+      type="button"
+      class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 text-slate-400 transition-colors hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400"
+    >
+      <app-icon name="settings" size="md" variant="muted" class="mb-0.5"></app-icon>
+      <span>Settings</span>
+    </button>
+  </nav>
+</footer>

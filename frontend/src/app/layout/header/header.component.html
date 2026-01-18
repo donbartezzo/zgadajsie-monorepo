@@ -1,9 +1,29 @@
-<div class="header header-fixed header-logo-center">
-  <a routerLink="/" class="header-title">ZgadajSię</a>
-  <a routerLink="/events" class="header-icon header-icon-1">
-    <i class="fa fa-calendar"></i>
-  </a>
-  <a href="#" class="header-icon header-icon-4" (click)="toggleTheme($event)">
-    <i class="fa fa-lightbulb"></i>
-  </a>
-</div>
+<header class="fixed inset-x-0 top-0 z-50 bg-white/95 shadow-sm backdrop-blur-md dark:bg-slate-900/95">
+  <div class="mx-auto flex max-w-md items-center justify-between px-4 py-3">
+    <a
+      routerLink="/"
+      class="text-base font-semibold tracking-tight text-slate-900 dark:text-slate-50"
+    >
+      ZgadajSię
+    </a>
+
+    <nav class="flex items-center gap-3">
+      <a
+        routerLink="/events"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700 shadow-sm ring-1 ring-slate-200 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700"
+      >
+        <app-icon name="calendar" size="sm" variant="default"></app-icon>
+        <span class="sr-only">Events</span>
+      </a>
+
+      <button
+        type="button"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700 shadow-sm ring-1 ring-slate-200 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700"
+        (click)="toggleTheme($event)"
+        aria-label="Przełącz motyw jasny/ciemny"
+      >
+        <app-icon name="sun" size="sm" variant="default"></app-icon>
+      </button>
+    </nav>
+  </div>
+</header>
