@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { EventService, EventDetail } from './event.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 
+// @theme: page-events-detailed-3.html
 @Component({
   selector: 'app-event',
   imports: [CommonModule, IconComponent],

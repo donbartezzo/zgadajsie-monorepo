@@ -1,4 +1,3 @@
-// events.component.ts
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -8,6 +7,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 interface EventItem extends EventListItem {}
 
+// @theme: page-events-category-tabs.html -> Recommended tab
 @Component({
   selector: 'app-events',
   imports: [CommonModule, EventItemComponent],
