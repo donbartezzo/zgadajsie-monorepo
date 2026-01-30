@@ -150,7 +150,7 @@ pnpm frontend:serve
 
 Domyślnie frontend będzie dostępny pod adresem:
 
-- UI: `http://localhost:4200`
+- UI: `http://localhost:4300`
 
 Po uruchomieniu obu serwerów frontend powinien komunikować się z backendem poprzez endpointy `/api`.
 

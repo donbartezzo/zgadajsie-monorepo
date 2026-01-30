@@ -14,7 +14,7 @@ Ten dokument opisuje wszystkie dostępne komendy w projekcie ZgadajSię po migra
 
 | Komenda | Opis |
 |---------|------|
-| `pnpm frontend:serve` | Uruchamia serwer deweloperski Angular dla aplikacji frontendowej. Aplikacja jest dostępna pod adresem http://localhost:4200. |
+| `pnpm frontend:serve` | Uruchamia serwer deweloperski Angular dla aplikacji frontendowej. Aplikacja jest dostępna pod adresem http://localhost:4300. |
 | `pnpm frontend:build` | Buduje aplikację frontendową z użyciem Angular CLI. |
 | `pnpm frontend:test` | Uruchamia testy jednostkowe dla aplikacji frontendowej z użyciem Jest. |
 
