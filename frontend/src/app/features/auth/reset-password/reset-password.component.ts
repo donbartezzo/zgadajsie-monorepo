@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../shared/ui/card/card.component';
@@ -10,7 +10,7 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [FormsModule, RouterLink, IconComponent, ButtonComponent, CardComponent],
+  imports: [FormsModule, IconComponent, ButtonComponent, CardComponent],
   template: `
     <div class="py-8">
       <app-card>

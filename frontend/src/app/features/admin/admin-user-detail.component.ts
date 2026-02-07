@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { IconComponent } from '../../core/icons/icon.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
 import { CardComponent } from '../../shared/ui/card/card.component';
 import { UserAvatarComponent } from '../../shared/ui/user-avatar/user-avatar.component';
@@ -14,7 +13,7 @@ import { User, WalletTransaction } from '../../shared/types';
 @Component({
   selector: 'app-admin-user-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe, DecimalPipe, IconComponent, ButtonComponent, CardComponent, UserAvatarComponent, LoadingSpinnerComponent],
+  imports: [CommonModule, FormsModule, DatePipe, DecimalPipe, ButtonComponent, CardComponent, UserAvatarComponent, LoadingSpinnerComponent],
   template: `
     <div class="py-6">
       @if (loading()) {

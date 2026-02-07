@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../core/icons/icon.component';
-import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { FileUploadComponent } from '../../../shared/ui/file-upload/file-upload.component';
 import { LoadingSpinnerComponent } from '../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state.component';
@@ -11,7 +10,7 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 @Component({
   selector: 'app-media-gallery',
   standalone: true,
-  imports: [CommonModule, IconComponent, ButtonComponent, FileUploadComponent, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [CommonModule, IconComponent, FileUploadComponent, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
     <div class="py-6">
       <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Galeria</h1>

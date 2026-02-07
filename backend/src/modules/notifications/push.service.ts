@@ -17,9 +17,13 @@ export class PushService {
     const vapidPrivate = this.configService.get<string>('VAPID_PRIVATE_KEY', '');
     const vapidSubject = this.configService.get<string>('VAPID_SUBJECT', 'mailto:kontakt@zgadajsie.pl');
 
-    if (vapidPublic && vapidPrivate) {
-      webPush.setVapidDetails(vapidSubject, vapidPublic, vapidPrivate);
-      this.logger.log('VAPID keys configured');
+    if (vapidPublic && vapidPrivate && !vapidPublic.startsWith('your-') && !vapidPrivate.startsWith('your-')) {
+      try {
+        webPush.setVapidDetails(vapidSubject, vapidPublic, vapidPrivate);
+        this.logger.log('VAPID keys configured');
+      } catch (e: any) {
+        this.logger.warn(`Invalid VAPID keys – push notifications disabled: ${e.message}`);
+      }
     } else {
       this.logger.warn('VAPID keys not configured – push notifications disabled');
     }

@@ -2,8 +2,6 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { IconComponent } from '../../core/icons/icon.component';
-import { ButtonComponent } from '../../shared/ui/button/button.component';
 import { CardComponent } from '../../shared/ui/card/card.component';
 import { UserAvatarComponent } from '../../shared/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner/loading-spinner.component';
@@ -14,7 +12,7 @@ import { User } from '../../shared/types';
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, IconComponent, ButtonComponent, CardComponent, UserAvatarComponent, LoadingSpinnerComponent, PaginationComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CardComponent, UserAvatarComponent, LoadingSpinnerComponent, PaginationComponent],
   template: `
     <div class="py-6">
       <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Użytkownicy</h1>
