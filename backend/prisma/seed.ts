@@ -119,8 +119,8 @@ async function main() {
     data: { userId: testUser.id },
   });
 
-  // ─── Przykładowe wydarzenie ──────────────────────────────────────────────
-  console.log('Tworzę przykładowe wydarzenie...');
+  // ─── Przykładowe wydarzenia ─────────────────────────────────────────────
+  console.log('Tworzę przykładowe wydarzenia...');
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(18, 0, 0, 0);
@@ -131,9 +131,9 @@ async function main() {
     data: {
       title: 'Wieczorny mecz na orliku',
       description: 'Zapraszamy na rekreacyjny mecz piłki nożnej w Zielonej Górze!',
-      disciplineId: disciplines[0].id,
-      facilityId: facilities[0].id,
-      levelId: levels[0].id,
+      disciplineId: disciplines[0].id, // Piłka nożna
+      facilityId: facilities[0].id,    // Orlik
+      levelId: levels[0].id,           // Rekreacyjny
       cityId: city.id,
       organizerId: testUser.id,
       startsAt: tomorrow,
@@ -146,6 +146,35 @@ async function main() {
       address: 'ul. Sulechowska 30, Zielona Góra',
       lat: 51.9356,
       lng: 15.5062,
+    },
+  });
+
+  const dayAfter = new Date();
+  dayAfter.setDate(dayAfter.getDate() + 2);
+  dayAfter.setHours(20, 0, 0, 0);
+  const dayAfterEnd = new Date(dayAfter);
+  dayAfterEnd.setHours(21, 30, 0, 0);
+
+  await prisma.event.create({
+    data: {
+      title: 'Siatkówka w hali sportowej',
+      description: 'Szukamy chętnych na amatorski mecz siatkówki. Dobra atmosfera gwarantowana!',
+      disciplineId: disciplines[1].id, // Siatkówka
+      facilityId: facilities[1].id,    // Hala sportowa
+      levelId: levels[1].id,           // Amatorski
+      cityId: city.id,
+      organizerId: admin.id,
+      startsAt: dayAfter,
+      endsAt: dayAfterEnd,
+      costPerPerson: 15,
+      maxParticipants: 12,
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      autoAccept: true,
+      status: 'ACTIVE',
+      address: 'ul. Wyspiańskiego 10, Zielona Góra',
+      lat: 51.9412,
+      lng: 15.5089,
     },
   });
 
