@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../notifications/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
@@ -18,6 +19,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -46,7 +48,7 @@ export class AuthService {
 
     await this.prisma.wallet.create({ data: { userId: user.id } });
 
-    // TODO: send activation email via EmailService
+    await this.emailService.sendActivationEmail(user.email, user.displayName, activationToken);
 
     return { message: 'Konto utworzone. Sprawdź email, aby aktywować konto.' };
   }
@@ -120,7 +122,7 @@ export class AuthService {
       data: { activationToken, activationTokenExpiresAt },
     });
 
-    // TODO: send activation email via EmailService
+    await this.emailService.sendActivationEmail(user.email, user.displayName, activationToken);
 
     return { message: 'Jeśli konto istnieje, link aktywacyjny został wysłany' };
   }
@@ -138,7 +140,7 @@ export class AuthService {
         data: { passwordResetToken, passwordResetTokenExpiresAt },
       });
 
-      // TODO: send password reset email via EmailService
+      await this.emailService.sendPasswordResetEmail(user.email, passwordResetToken);
     }
 
     return { message: 'Jeśli konto istnieje, link do resetu hasła został wysłany' };

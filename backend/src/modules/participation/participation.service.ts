@@ -5,10 +5,16 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../notifications/email.service';
+import { PushService } from '../notifications/push.service';
 
 @Injectable()
 export class ParticipationService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+    private pushService: PushService,
+  ) {}
 
   async join(eventId: string, userId: string) {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
@@ -30,10 +36,19 @@ export class ParticipationService {
 
     const status = event.autoAccept ? 'ACCEPTED' : 'APPLIED';
 
-    return this.prisma.eventParticipation.create({
+    const participation = await this.prisma.eventParticipation.create({
       data: { eventId, userId, status },
-      include: { user: { select: { id: true, displayName: true, avatarUrl: true } } },
+      include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
     });
+
+    // Notify organizer about new application
+    const organizer = await this.prisma.user.findUnique({ where: { id: event.organizerId }, select: { id: true, email: true, displayName: true } });
+    if (organizer) {
+      await this.pushService.notifyNewApplication(organizer.id, participation.user.displayName, event.title, eventId);
+      await this.emailService.sendNewApplicationEmail(organizer.email, organizer.displayName, participation.user.displayName, event.title);
+    }
+
+    return participation;
   }
 
   async joinGuest(eventId: string, addedByUserId: string, displayName: string) {
@@ -74,10 +89,16 @@ export class ParticipationService {
       throw new ForbiddenException('Nie jesteś organizatorem');
     }
 
-    return this.prisma.eventParticipation.update({
+    const updated = await this.prisma.eventParticipation.update({
       where: { id: participationId },
       data: { status: 'ACCEPTED' },
+      include: { user: { select: { id: true, email: true, displayName: true } }, event: { select: { id: true, title: true } } },
     });
+
+    await this.pushService.notifyParticipationStatus(updated.userId, updated.event.title, 'ACCEPTED', updated.eventId);
+    await this.emailService.sendParticipationStatusEmail(updated.user.email, updated.user.displayName, updated.event.title, 'ACCEPTED');
+
+    return updated;
   }
 
   async reject(participationId: string, organizerUserId: string) {
@@ -90,10 +111,16 @@ export class ParticipationService {
       throw new ForbiddenException('Nie jesteś organizatorem');
     }
 
-    return this.prisma.eventParticipation.update({
+    const updated = await this.prisma.eventParticipation.update({
       where: { id: participationId },
       data: { status: 'WITHDRAWN' },
+      include: { user: { select: { id: true, email: true, displayName: true } }, event: { select: { id: true, title: true } } },
     });
+
+    await this.pushService.notifyParticipationStatus(updated.userId, updated.event.title, 'REJECTED', updated.eventId);
+    await this.emailService.sendParticipationStatusEmail(updated.user.email, updated.user.displayName, updated.event.title, 'REJECTED');
+
+    return updated;
   }
 
   async leave(eventId: string, userId: string) {

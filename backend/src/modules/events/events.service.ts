@@ -4,13 +4,19 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../notifications/email.service';
+import { PushService } from '../notifications/push.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
 
 @Injectable()
 export class EventsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+    private pushService: PushService,
+  ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
     return this.prisma.event.create({
@@ -105,11 +111,22 @@ export class EventsService {
       throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
     }
 
-    // TODO: refund participants, send notifications
-    return this.prisma.event.update({
+    const updated = await this.prisma.event.update({
       where: { id },
       data: { status: 'CANCELLED' },
     });
+
+    // Notify all participants about cancellation
+    const participants = await this.prisma.eventParticipation.findMany({
+      where: { eventId: id, status: { in: ['APPLIED', 'ACCEPTED', 'PARTICIPANT'] } },
+      include: { user: { select: { id: true, email: true, displayName: true } } },
+    });
+    for (const p of participants) {
+      await this.pushService.notifyEventCancelled(p.user.id, event.title, id);
+      await this.emailService.sendEventCancelledEmail(p.user.email, p.user.displayName, event.title);
+    }
+
+    return updated;
   }
 
   async archive(id: string, userId: string) {
@@ -170,5 +187,115 @@ export class EventsService {
       },
       orderBy: { createdAt: 'asc' },
     });
+  }
+
+  async createSeries(organizerId: string, dto: CreateEventDto) {
+    if (!dto.isRecurring || !dto.recurringRule) {
+      return this.create(organizerId, dto);
+    }
+
+    const dates = this.generateRecurringDates(
+      new Date(dto.startsAt),
+      new Date(dto.endsAt),
+      dto.recurringRule,
+    );
+
+    // Create parent event
+    const parent = await this.prisma.event.create({
+      data: {
+        ...dto,
+        startsAt: new Date(dto.startsAt),
+        endsAt: new Date(dto.endsAt),
+        organizerId,
+        isRecurring: true,
+        recurringRule: dto.recurringRule,
+      },
+      include: { discipline: true, facility: true, level: true, city: true },
+    });
+
+    // Create child instances
+    for (const { start, end } of dates.slice(1)) {
+      await this.prisma.event.create({
+        data: {
+          title: dto.title,
+          description: dto.description,
+          disciplineId: dto.disciplineId,
+          facilityId: dto.facilityId,
+          levelId: dto.levelId,
+          cityId: dto.cityId,
+          startsAt: start,
+          endsAt: end,
+          costPerPerson: dto.costPerPerson,
+          minParticipants: dto.minParticipants,
+          maxParticipants: dto.maxParticipants,
+          ageMin: dto.ageMin,
+          ageMax: dto.ageMax,
+          gender: dto.gender,
+          visibility: dto.visibility,
+          autoAccept: dto.autoAccept,
+          address: dto.address,
+          lat: dto.lat,
+          lng: dto.lng,
+          coverImageUrl: dto.coverImageUrl,
+          organizerId,
+          isRecurring: true,
+          recurringRule: dto.recurringRule,
+          parentEventId: parent.id,
+        },
+      });
+    }
+
+    return parent;
+  }
+
+  async updateSeries(id: string, userId: string, dto: UpdateEventDto) {
+    const parent = await this.update(id, userId, dto);
+
+    // Update all child events in the series
+    const data: Record<string, unknown> = {};
+    if (dto.title !== undefined) data.title = dto.title;
+    if (dto.description !== undefined) data.description = dto.description;
+    if (dto.disciplineId !== undefined) data.disciplineId = dto.disciplineId;
+    if (dto.facilityId !== undefined) data.facilityId = dto.facilityId;
+    if (dto.levelId !== undefined) data.levelId = dto.levelId;
+    if (dto.cityId !== undefined) data.cityId = dto.cityId;
+    if (dto.costPerPerson !== undefined) data.costPerPerson = dto.costPerPerson;
+    if (dto.maxParticipants !== undefined) data.maxParticipants = dto.maxParticipants;
+    if (dto.autoAccept !== undefined) data.autoAccept = dto.autoAccept;
+    if (dto.address !== undefined) data.address = dto.address;
+    if (dto.lat !== undefined) data.lat = dto.lat;
+    if (dto.lng !== undefined) data.lng = dto.lng;
+
+    if (Object.keys(data).length > 0) {
+      await this.prisma.event.updateMany({
+        where: { parentEventId: id, status: 'ACTIVE' },
+        data,
+      });
+    }
+
+    return parent;
+  }
+
+  private generateRecurringDates(
+    startsAt: Date,
+    endsAt: Date,
+    rule: string,
+  ): { start: Date; end: Date }[] {
+    const duration = endsAt.getTime() - startsAt.getTime();
+    const dates: { start: Date; end: Date }[] = [];
+    const maxInstances = 52; // max 1 year of weekly events
+
+    let intervalDays = 7; // default weekly
+    if (rule === 'DAILY') intervalDays = 1;
+    else if (rule === 'BIWEEKLY') intervalDays = 14;
+    else if (rule === 'MONTHLY') intervalDays = 30;
+
+    for (let i = 0; i < maxInstances; i++) {
+      const start = new Date(startsAt.getTime() + i * intervalDays * 24 * 60 * 60 * 1000);
+      const end = new Date(start.getTime() + duration);
+      dates.push({ start, end });
+    }
+
+    return dates;
   }
 }

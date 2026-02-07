@@ -119,6 +119,15 @@ export class AuthService {
     );
   }
 
+  async handleSocialCallback(accessToken: string, refreshToken: string): Promise<void> {
+    this.setTokens({ accessToken, refreshToken });
+    await this.fetchUser();
+  }
+
+  getSocialLoginUrl(provider: 'google' | 'facebook'): string {
+    return `${environment.apiUrl}/auth/${provider}`;
+  }
+
   async initOnAppStart(): Promise<void> {
     const token = this.getAccessToken();
     if (token) {

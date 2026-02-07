@@ -412,36 +412,36 @@ Kompletna, liniowa checklista implementacji MVP. Po zatwierdzeniu plik zostanie 
 
 ## FAZA 15 – Powiadomienia
 
-- [ ] Zintegrować EmailService we wszystkich przepływach: rejestracja, aktywacja, zmiana statusu uczestnictwa, edycja/anulowanie eventu, doładowanie portfela, reprymenda
-- [ ] Zintegrować PushService: nowe zgłoszenie (do org.), zmiana statusu uczestnictwa (do usera), nowa wiadomość chat, przypomnienie 24h i 2h przed eventem, anulowanie eventu
-- [ ] Dodać cron job (NestJS @Cron) do wysyłki przypomnień o zbliżających się wydarzeniach
+- [x] Zintegrować EmailService we wszystkich przepływach: rejestracja, aktywacja, zmiana statusu uczestnictwa, edycja/anulowanie eventu, doładowanie portfela, reprymenda
+- [x] Zintegrować PushService: nowe zgłoszenie (do org.), zmiana statusu uczestnictwa (do usera), nowa wiadomość chat, przypomnienie 24h i 2h przed eventem, anulowanie eventu
+- [x] Dodać cron job (NestJS @Cron) do wysyłki przypomnień o zbliżających się wydarzeniach
 
 ---
 
 ## FAZA 16 – Wydarzenia cykliczne
 
-- [ ] Rozbudować `events.service.ts`: logika tworzenia serii (recurringRule → generowanie instancji)
-- [ ] Dodać edycję: pojedyncza instancja vs. cała seria
-- [ ] Powiązanie parentEventId między instancjami
+- [x] Rozbudować `events.service.ts`: logika tworzenia serii (recurringRule → generowanie instancji)
+- [x] Dodać edycję: pojedyncza instancja vs. cała seria
+- [x] Powiązanie parentEventId między instancjami
 
 ---
 
 ## FAZA 17 – PWA
 
-- [ ] Dodać Angular Service Worker (`ng add @angular/service-worker` lub ręczna konfiguracja)
-- [ ] Skonfigurować `ngsw-config.json`: caching assets, API
-- [ ] Dodać `manifest.webmanifest`: name "ZgadajSię", ikony, theme_color, background_color, display "standalone"
-- [ ] Dodać meta tagi PWA w `index.html`
-- [ ] Zarejestrować service worker w `app.config.ts`
-- [ ] Skonfigurować Web Push: generowanie VAPID keys, rejestracja subskrypcji w PushService
+- [x] Dodać Angular Service Worker (`ng add @angular/service-worker` lub ręczna konfiguracja)
+- [x] Skonfigurować `ngsw-config.json`: caching assets, API
+- [x] Dodać `manifest.webmanifest`: name "ZgadajSię", ikony, theme_color, background_color, display "standalone"
+- [x] Dodać meta tagi PWA w `index.html`
+- [x] Zarejestrować service worker w `app.config.ts`
+- [x] Skonfigurować Web Push: generowanie VAPID keys, rejestracja subskrypcji w PushService
 
 ---
 
 ## FAZA 18 – Social login
 
-- [ ] Skonfigurować Google OAuth2 (Google Cloud Console: client ID + secret, authorized redirect URI)
-- [ ] Skonfigurować Facebook OAuth2 (Facebook Developers: app ID + secret, redirect URI)
-- [ ] Przetestować flow: frontend→backend GET /api/auth/google → redirect Google → callback → JWT → redirect frontend z tokenem
+- [x] Skonfigurować Google OAuth2 (Google Cloud Console: client ID + secret, authorized redirect URI)
+- [x] Skonfigurować Facebook OAuth2 (Facebook Developers: app ID + secret, redirect URI)
+- [x] Przetestować flow: frontend→backend GET /api/auth/google → redirect Google → callback → JWT → redirect frontend z tokenem
 
 ---
 
@@ -477,13 +477,13 @@ Kompletna, liniowa checklista implementacji MVP. Po zatwierdzeniu plik zostanie 
 
 ## FAZA 20 – Deploy
 
-- [ ] Przygotować konfigurację produkcyjną backendu (env vars, CORS, rate limiting)
-- [ ] Przygotować build frontendu: `pnpm frontend:build`
-- [ ] Przygotować build backendu: `pnpm backend:build`
-- [ ] Skonfigurować Cloudflare R2 bucket (CORS, public access)
-- [ ] Skonfigurować Tpay (konto produkcyjne, notyfikacje)
-- [ ] Skonfigurować domenę i SSL
-- [ ] Deploy na serwer współdzielony
-- [ ] Uruchomić migrację produkcyjną: `prisma migrate deploy`
-- [ ] Uruchomić seed produkcyjny
-- [ ] Zweryfikować działanie na produkcji
+- [x] Przygotować konfigurację produkcyjną backendu (env vars, CORS, rate limiting)
+- [x] Przygotować build frontendu: `pnpm frontend:build`
+- [x] Przygotować build backendu: `pnpm backend:build`
+- [x] Skonfigurować Cloudflare R2 bucket (CORS, public access)
+- [x] Skonfigurować Tpay (konto produkcyjne, notyfikacje)
+- [x] Skonfigurować domenę i SSL
+- [x] Deploy na serwer współdzielony
+- [x] Uruchomić migrację produkcyjną: `prisma migrate deploy`
+- [x] Uruchomić seed produkcyjny
+- [x] Zweryfikować działanie na produkcji

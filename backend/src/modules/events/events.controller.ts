@@ -84,4 +84,20 @@ export class EventsController {
   getParticipants(@Param('id') id: string) {
     return this.eventsService.getParticipants(id);
   }
+
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  @Post('series')
+  createSeries(@CurrentUser() user: any, @Body() dto: CreateEventDto) {
+    return this.eventsService.createSeries(user.id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  @Patch(':id/series')
+  updateSeries(
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+    @Body() dto: UpdateEventDto,
+  ) {
+    return this.eventsService.updateSeries(id, user.id, dto);
+  }
 }

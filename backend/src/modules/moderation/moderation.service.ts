@@ -1,14 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../notifications/email.service';
+import { PushService } from '../notifications/push.service';
 import { CreateReprimandDto } from './dto/create-reprimand.dto';
 import { CreateBanDto } from './dto/create-ban.dto';
 
 @Injectable()
 export class ModerationService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+    private pushService: PushService,
+  ) {}
 
   async createReprimand(fromUserId: string, dto: CreateReprimandDto) {
-    return this.prisma.reprimand.create({
+    const reprimand = await this.prisma.reprimand.create({
       data: {
         fromUserId,
         toUserId: dto.toUserId,
@@ -17,6 +23,18 @@ export class ModerationService {
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
     });
+
+    // Notify reprimanded user
+    const [user, event] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: dto.toUserId }, select: { email: true, displayName: true } }),
+      this.prisma.event.findUnique({ where: { id: dto.eventId }, select: { title: true } }),
+    ]);
+    if (user && event) {
+      await this.pushService.notifyReprimand(dto.toUserId, event.title, dto.reason, dto.eventId);
+      await this.emailService.sendReprimandEmail(user.email, user.displayName, event.title, dto.reason);
+    }
+
+    return reprimand;
   }
 
   async getReprimandsByEvent(eventId: string) {
