@@ -25,28 +25,28 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
             <div>
               <label for="displayName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nazwa wyświetlana</label>
               <input id="displayName" type="text" [(ngModel)]="displayName" name="displayName" required
-                class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight"
                 placeholder="Jan Kowalski" />
             </div>
 
             <div>
               <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
               <input id="email" type="email" [(ngModel)]="email" name="email" required
-                class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight"
                 placeholder="twoj@email.pl" />
             </div>
 
             <div>
               <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hasło</label>
               <input id="password" type="password" [(ngModel)]="password" name="password" required minlength="8"
-                class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight"
                 placeholder="Min. 8 znaków" />
             </div>
 
             <div>
               <label for="confirmPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Potwierdź hasło</label>
               <input id="confirmPassword" type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required
-                class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight"
                 placeholder="Powtórz hasło" />
             </div>
 
@@ -58,7 +58,7 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 
           <div class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
             Masz już konto?
-            <a routerLink="/auth/login" class="text-blue-600 dark:text-blue-400 font-medium hover:underline">Zaloguj się</a>
+            <a routerLink="/auth/login" class="text-highlight dark:text-highlight-light font-medium hover:underline">Zaloguj się</a>
           </div>
         </div>
       </app-card>

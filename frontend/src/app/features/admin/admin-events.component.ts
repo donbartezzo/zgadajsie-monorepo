@@ -25,7 +25,7 @@ import { EventListItem } from '../../shared/types';
             <app-card>
               <div class="p-3 flex items-center justify-between">
                 <div>
-                  <a [routerLink]="['/events', e.id]" class="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600">{{ e.title }}</a>
+                  <a [routerLink]="['/events', e.id]" class="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-highlight">{{ e.title }}</a>
                   <p class="text-xs text-gray-500 dark:text-gray-400">{{ e.startsAt | date:'d MMM yyyy, HH:mm' }} · {{ e.status }}</p>
                 </div>
                 <div class="flex gap-1">

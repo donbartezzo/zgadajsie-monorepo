@@ -2,7 +2,7 @@
   <div class="mx-auto flex max-w-md items-center justify-between px-4 py-3">
     <a
       routerLink="/"
-      class="text-base font-semibold tracking-tight text-blue-600 dark:text-blue-400"
+      class="text-base font-semibold tracking-tight text-highlight dark:text-highlight-light"
     >
       ZgadajSię
     </a>
@@ -14,7 +14,7 @@
         (click)="toggleTheme($event)"
         aria-label="Przełącz motyw jasny/ciemny"
       >
-        <app-icon name="sun" size="sm" variant="default"></app-icon>
+        <app-icon [name]="theme.isDark() ? 'moon' : 'sun'" size="sm" variant="default"></app-icon>
       </button>
 
       @if (auth.isLoggedIn()) {
@@ -60,7 +60,7 @@
       } @else {
         <a
           routerLink="/auth/login"
-          class="inline-flex items-center gap-1.5 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
+          class="inline-flex items-center gap-1.5 rounded-full bg-highlight px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-highlight-dark"
         >
           <app-icon name="log-in" size="sm"></app-icon>
           Zaloguj się

@@ -36,7 +36,7 @@ import { Event as EventModel } from '../../../shared/types';
             <app-card>
               <div class="p-4">
                 <div class="flex items-center justify-between mb-2">
-                  <a [routerLink]="['/events', e.id]" class="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600">{{ e.title }}</a>
+                  <a [routerLink]="['/events', e.id]" class="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-highlight">{{ e.title }}</a>
                   <span class="text-xs px-2 py-0.5 rounded-full" [class]="e.status === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'">{{ e.status }}</span>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">{{ e.startsAt | date:'d MMM yyyy, HH:mm' }}</p>

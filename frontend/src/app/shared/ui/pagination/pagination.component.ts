@@ -24,7 +24,7 @@ import { IconComponent } from '../../../core/icons/icon.component';
             <button
               class="w-9 h-9 rounded-lg text-sm font-medium transition-colors"
               [ngClass]="page === currentPage()
-                ? 'bg-blue-600 text-white'
+                ? 'bg-highlight text-white'
                 : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'"
               (click)="pageChange.emit(page)"
             >{{ page }}</button>

@@ -31,11 +31,11 @@ import { DictionaryItem, City } from '../../../shared/types';
           <div class="p-4 space-y-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tytuł</label>
-              <input formControlName="title" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nazwa wydarzenia" />
+              <input formControlName="title" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight" placeholder="Nazwa wydarzenia" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Opis</label>
-              <textarea formControlName="description" rows="4" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Opis wydarzenia..."></textarea>
+              <textarea formControlName="description" rows="4" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight" placeholder="Opis wydarzenia..."></textarea>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Grafika</label>
@@ -119,7 +119,7 @@ import { DictionaryItem, City } from '../../../shared/types';
             <div class="flex items-center gap-3">
               <label class="relative inline-flex cursor-pointer items-center">
                 <input type="checkbox" formControlName="autoAccept" class="peer sr-only" />
-                <div class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-300 dark:bg-slate-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full"></div>
+                <div class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-highlight peer-focus:ring-2 peer-focus:ring-highlight-light dark:bg-slate-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full"></div>
               </label>
               <span class="text-sm text-gray-700 dark:text-gray-300">Automatyczne akceptowanie uczestników</span>
             </div>
@@ -131,7 +131,7 @@ import { DictionaryItem, City } from '../../../shared/types';
             <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Lokalizacja</h3>
             <div>
               <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Adres</label>
-              <input formControlName="address" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ulica, numer, miasto" />
+              <input formControlName="address" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight" placeholder="Ulica, numer, miasto" />
             </div>
             <app-map [lat]="mapLat()" [lng]="mapLng()" [interactive]="true" [height]="250" (markerMoved)="onMarkerMoved($event)"></app-map>
           </div>

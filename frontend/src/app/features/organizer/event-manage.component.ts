@@ -38,7 +38,7 @@ import { Participation } from '../../shared/types';
         <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Autoakceptacja</h2>
         <label class="relative inline-flex cursor-pointer items-center">
           <input type="checkbox" [checked]="autoAccept()" (change)="toggleAutoAccept()" class="peer sr-only" />
-          <div class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-blue-600 dark:bg-slate-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full"></div>
+          <div class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-highlight dark:bg-slate-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full"></div>
         </label>
       </div>
 

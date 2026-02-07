@@ -55,7 +55,7 @@ import { WalletTransaction } from '../../shared/types';
                   <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ t.description || t.type }}</p>
                   <p class="text-xs text-gray-500 dark:text-gray-400">{{ t.createdAt | date:'d MMM yyyy, HH:mm' }}</p>
                   @if (t.relatedEvent) {
-                    <a [routerLink]="['/events', t.relatedEvent.id]" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">{{ t.relatedEvent.title }}</a>
+                    <a [routerLink]="['/events', t.relatedEvent.id]" class="text-xs text-highlight dark:text-highlight-light hover:underline">{{ t.relatedEvent.title }}</a>
                   }
                 </div>
                 <span class="text-sm font-bold" [class]="t.amount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">

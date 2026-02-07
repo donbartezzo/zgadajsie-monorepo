@@ -69,11 +69,11 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
             <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Edytuj profil</h3>
             <div>
               <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Nazwa wyświetlana</label>
-              <input [(ngModel)]="editName" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input [(ngModel)]="editName" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight" />
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Nowe hasło (opcjonalne)</label>
-              <input type="password" [(ngModel)]="newPassword" placeholder="Zostaw puste jeśli bez zmian" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input type="password" [(ngModel)]="newPassword" placeholder="Zostaw puste jeśli bez zmian" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight" />
             </div>
             <app-button variant="primary" [loading]="saving()" (clicked)="saveProfile()">
               <app-icon name="check" size="sm"></app-icon> Zapisz

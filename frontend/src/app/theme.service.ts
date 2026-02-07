@@ -1,44 +1,39 @@
 import { DOCUMENT } from '@angular/common';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 
-export type ThemeMode = 'light' | 'dark' | 'detect';
+export type ThemeMode = 'light' | 'dark';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   private readonly document = inject(DOCUMENT);
+  readonly isDark = signal(false);
 
   constructor() {
-    this.applyDefaultTheme();
-  }
-
-  private get body(): HTMLBodyElement {
-    return this.document.body as HTMLBodyElement;
-  }
-
-  applyDefaultTheme(): void {
-    this.setTheme('light');
-    this.setBackground('default');
-    this.setHighlight('blue');
+    const saved = this.getStorage();
+    if (saved === 'dark') {
+      this.setTheme('dark');
+    } else {
+      this.setTheme('light');
+    }
   }
 
   setTheme(mode: ThemeMode): void {
-    const body = this.body;
-    body.classList.remove('theme-light', 'theme-dark', 'detect-theme');
-
-    const themeClass = mode === 'detect' ? 'detect-theme' : `theme-${mode}`;
-    body.classList.add(themeClass);
-  }
-
-  setBackground(name: string): void {
-    this.body.setAttribute('data-background', name);
-  }
-
-  setHighlight(name: string): void {
-    this.body.setAttribute('data-highlight', name);
-
-    const link = this.document.querySelector<HTMLLinkElement>('link.page-highlight');
-    if (link) {
-      link.href = `styles/highlights/highlight_${name}.css`;
+    const html = this.document.documentElement;
+    if (mode === 'dark') {
+      html.classList.add('dark');
+      this.isDark.set(true);
+    } else {
+      html.classList.remove('dark');
+      this.isDark.set(false);
     }
+    try { localStorage.setItem('theme', mode); } catch {}
+  }
+
+  toggle(): void {
+    this.setTheme(this.isDark() ? 'light' : 'dark');
+  }
+
+  private getStorage(): string | null {
+    try { return localStorage.getItem('theme'); } catch { return null; }
   }
 }

@@ -20,7 +20,7 @@ import { EventListItem } from '../../types';
           class="w-full h-40 object-cover"
         />
       } @else {
-        <div class="w-full h-40 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+        <div class="w-full h-40 bg-gradient-to-br from-highlight-light to-highlight flex items-center justify-center">
           <app-icon name="calendar" size="lg" variant="default" />
         </div>
       }
@@ -28,7 +28,7 @@ import { EventListItem } from '../../types';
         <div class="flex items-start justify-between gap-2">
           <h3 class="font-semibold text-gray-900 dark:text-gray-100 line-clamp-2">{{ event().title }}</h3>
           @if (event().discipline) {
-            <span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full whitespace-nowrap">{{ event().discipline!.name }}</span>
+            <span class="text-xs bg-highlight-50 dark:bg-highlight-200/20 text-highlight dark:text-highlight-light px-2 py-0.5 rounded-full whitespace-nowrap">{{ event().discipline!.name }}</span>
           }
         </div>
         <div class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">

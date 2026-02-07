@@ -283,7 +283,7 @@ export class IconComponent {
       case 'muted':
         return 'text-gray-400 dark:text-gray-500';
       case 'primary':
-        return 'text-blue-600 dark:text-blue-400';
+        return 'text-highlight dark:text-highlight-light';
       case 'danger':
         return 'text-red-600 dark:text-red-400';
       case 'default':

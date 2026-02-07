@@ -46,9 +46,9 @@ export class ButtonComponent {
     };
 
     const variantClasses: Record<ButtonVariant, string> = {
-      primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600',
+      primary: 'bg-highlight text-white hover:bg-highlight-dark focus:ring-highlight dark:bg-highlight-light dark:hover:bg-highlight',
       secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500 dark:bg-slate-700 dark:text-gray-100 dark:hover:bg-slate-600',
-      outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-blue-500 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700',
+      outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-highlight dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700',
       danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 dark:bg-red-500 dark:hover:bg-red-600',
       ghost: 'text-gray-600 hover:bg-gray-100 focus:ring-gray-500 dark:text-gray-300 dark:hover:bg-slate-700',
     };

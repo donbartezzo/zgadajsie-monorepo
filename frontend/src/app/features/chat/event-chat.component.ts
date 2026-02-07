@@ -32,7 +32,7 @@ import { ChatMessage } from '../../shared/types';
           <div class="flex gap-2" [class]="msg.userId === currentUserId ? 'flex-row-reverse' : ''">
             <app-user-avatar [avatarUrl]="msg.user?.avatarUrl" [displayName]="msg.user?.displayName || ''" size="sm"></app-user-avatar>
             <div [class]="msg.userId === currentUserId
-              ? 'bg-blue-500 text-white rounded-2xl rounded-tr-sm px-3 py-2 max-w-[75%]'
+              ? 'bg-highlight text-white rounded-2xl rounded-tr-sm px-3 py-2 max-w-[75%]'
               : 'bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-2xl rounded-tl-sm px-3 py-2 max-w-[75%]'">
               <p class="text-xs font-medium mb-0.5 opacity-70">{{ msg.user?.displayName }}</p>
               <p class="text-sm">{{ msg.content }}</p>
@@ -52,7 +52,7 @@ import { ChatMessage } from '../../shared/types';
           (keyup.enter)="send()"
           (input)="onTyping()"
           placeholder="Napisz wiadomość..."
-          class="flex-1 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="flex-1 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight"
         />
         <app-button variant="primary" (clicked)="send()">
           <app-icon name="send" size="sm"></app-icon>

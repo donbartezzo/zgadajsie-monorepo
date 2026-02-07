@@ -13,16 +13,14 @@ import { NotificationService } from '../../core/services/notification.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderComponent {
-  private readonly theme = inject(ThemeService);
+  readonly theme = inject(ThemeService);
   readonly auth = inject(AuthService);
   readonly notifications = inject(NotificationService);
   readonly dropdownOpen = signal(false);
-  private isDark = false;
 
   toggleTheme(event: Event): void {
     event.preventDefault();
-    this.isDark = !this.isDark;
-    this.theme.setTheme(this.isDark ? 'dark' : 'light');
+    this.theme.toggle();
   }
 
   toggleDropdown(): void {

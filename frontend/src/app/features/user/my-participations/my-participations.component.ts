@@ -29,7 +29,7 @@ import { Participation } from '../../../shared/types';
             <app-card>
               <div class="p-4 flex items-center justify-between">
                 <div>
-                  <a [routerLink]="['/events', p.eventId]" class="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600">
+                  <a [routerLink]="['/events', p.eventId]" class="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-highlight">
                     {{ p.event?.title || 'Wydarzenie' }}
                   </a>
                   <p class="text-xs text-gray-500 dark:text-gray-400">{{ p.event?.startsAt | date:'d MMM yyyy, HH:mm' }}</p>

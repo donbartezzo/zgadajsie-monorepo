@@ -41,7 +41,7 @@ export class SnackbarComponent {
     const classes: Record<SnackbarType, string> = {
       success: 'bg-green-600 text-white',
       error: 'bg-red-600 text-white',
-      info: 'bg-blue-600 text-white',
+      info: 'bg-highlight text-white',
       warning: 'bg-yellow-500 text-yellow-900',
     };
     return classes[type];

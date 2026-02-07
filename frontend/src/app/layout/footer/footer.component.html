@@ -5,9 +5,9 @@
   <nav class="mx-auto flex max-w-md items-stretch justify-between gap-1 text-xs font-medium text-slate-500 dark:text-slate-300">
     <a
       routerLink="/"
-      routerLinkActive="text-blue-600 dark:text-blue-400"
+      routerLinkActive="text-highlight dark:text-highlight-light"
       [routerLinkActiveOptions]="{ exact: true }"
-      class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-blue-600 dark:hover:text-blue-400"
+      class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
     >
       <app-icon name="home" size="md" variant="default" class="mb-0.5"></app-icon>
       <span>Start</span>
@@ -15,8 +15,8 @@
 
     <a
       routerLink="/events"
-      routerLinkActive="text-blue-600 dark:text-blue-400"
-      class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-blue-600 dark:hover:text-blue-400"
+      routerLinkActive="text-highlight dark:text-highlight-light"
+      class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
     >
       <app-icon name="calendar" size="md" variant="default" class="mb-0.5"></app-icon>
       <span>Wydarzenia</span>
@@ -25,8 +25,8 @@
     @if (auth.isLoggedIn()) {
       <a
         routerLink="/events/new"
-        routerLinkActive="text-blue-600 dark:text-blue-400"
-        class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-blue-600 dark:hover:text-blue-400"
+        routerLinkActive="text-highlight dark:text-highlight-light"
+        class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
       >
         <app-icon name="plus" size="md" variant="primary" class="mb-0.5"></app-icon>
         <span>Dodaj</span>
@@ -35,8 +35,8 @@
 
     <a
       routerLink="/profile"
-      routerLinkActive="text-blue-600 dark:text-blue-400"
-      class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-blue-600 dark:hover:text-blue-400"
+      routerLinkActive="text-highlight dark:text-highlight-light"
+      class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
     >
       <app-icon name="user" size="md" variant="default" class="mb-0.5"></app-icon>
       <span>Profil</span>

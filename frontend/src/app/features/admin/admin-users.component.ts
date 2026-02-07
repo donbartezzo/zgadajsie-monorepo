@@ -18,7 +18,7 @@ import { User } from '../../shared/types';
       <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Użytkownicy</h1>
       <div class="mb-4">
         <input [(ngModel)]="search" (keyup.enter)="loadUsers()" placeholder="Szukaj..."
-          class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight" />
       </div>
       @if (loading()) {
         <app-loading-spinner></app-loading-spinner>

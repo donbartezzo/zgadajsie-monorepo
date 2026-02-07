@@ -9,7 +9,7 @@ import { IconComponent } from '../../../core/icons/icon.component';
   template: `
     <div
       class="border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer"
-      [ngClass]="isDragging() ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-slate-600 hover:border-blue-400'"
+      [ngClass]="isDragging() ? 'border-highlight bg-highlight-50 dark:bg-highlight-200/20' : 'border-gray-300 dark:border-slate-600 hover:border-highlight-light'"
       (dragover)="onDragOver($event)"
       (dragleave)="isDragging.set(false)"
       (drop)="onDrop($event)"
@@ -30,7 +30,7 @@ import { IconComponent } from '../../../core/icons/icon.component';
       }
 
       <p class="text-sm text-gray-600 dark:text-gray-400">
-        Przeciągnij plik lub <span class="text-blue-600 dark:text-blue-400 font-medium">kliknij, aby wybrać</span>
+        Przeciągnij plik lub <span class="text-highlight dark:text-highlight-light font-medium">kliknij, aby wybrać</span>
       </p>
       <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Maksymalny rozmiar: {{ maxSizeMb() }} MB</p>
     </div>

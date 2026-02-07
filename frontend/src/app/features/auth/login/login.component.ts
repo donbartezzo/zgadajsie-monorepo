@@ -30,7 +30,7 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
                 [(ngModel)]="email"
                 name="email"
                 required
-                class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight"
                 placeholder="twoj@email.pl"
               />
             </div>
@@ -44,7 +44,7 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
                   [(ngModel)]="password"
                   name="password"
                   required
-                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight pr-10"
                   placeholder="Twoje hasło"
                 />
                 <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2" (click)="togglePassword()">
@@ -54,7 +54,7 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
             </div>
 
             <div class="flex justify-end">
-              <a routerLink="/auth/forgot-password" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Zapomniałeś hasła?</a>
+              <a routerLink="/auth/forgot-password" class="text-sm text-highlight dark:text-highlight-light hover:underline">Zapomniałeś hasła?</a>
             </div>
 
             <app-button type="submit" variant="primary" [fullWidth]="true" [loading]="loading()">
@@ -81,7 +81,7 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 
           <div class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
             Nie masz konta?
-            <a routerLink="/auth/register" class="text-blue-600 dark:text-blue-400 font-medium hover:underline">Zarejestruj się</a>
+            <a routerLink="/auth/register" class="text-highlight dark:text-highlight-light font-medium hover:underline">Zarejestruj się</a>
           </div>
         </div>
       </app-card>
