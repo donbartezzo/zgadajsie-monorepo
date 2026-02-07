@@ -27,7 +27,10 @@ export class EventComponent {
 
   constructor() {
     this.event$.subscribe({
-      next: () => this.isLoading.set(false),
+      next: () => {
+        console.log('Event loaded:', this.event());
+        this.isLoading.set(false);
+      },
       error: () => {
         this.error.set('Failed to load event');
         this.isLoading.set(false);

@@ -1,0 +1,12 @@
+Stwórz stronę z listingiem eventów w oparciu o plik szablonu:
+`.ignored/themplates/sticky-mobile-template/code/page-events-category-tabs.html`.
+
+Listing powinen zawierać tylko zawartośc zakładki "Recommended"
+
+Komponent z listingiem eventów już istnieje, więc należy go tylko przerobić:
+`frontend/src/app/features/events`.
+
+Na listingu tym wyodrębnij osobny komponent z itemem pojeydnczego eventa/wydarzenia.
+
+Bezwarunkowo stosuj się do zasad określonych w:
+`docs/ai-bootstrap-to-tailwind-migration.md`.
