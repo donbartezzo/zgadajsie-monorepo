@@ -2,20 +2,12 @@
   <div class="mx-auto flex max-w-md items-center justify-between px-4 py-3">
     <a
       routerLink="/"
-      class="text-base font-semibold tracking-tight text-slate-900 dark:text-slate-50"
+      class="text-base font-semibold tracking-tight text-blue-600 dark:text-blue-400"
     >
       ZgadajSię
     </a>
 
-    <nav class="flex items-center gap-3">
-      <a
-        routerLink="/events"
-        class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700 shadow-sm ring-1 ring-slate-200 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700"
-      >
-        <app-icon name="calendar" size="sm" variant="default"></app-icon>
-        <span class="sr-only">Events</span>
-      </a>
-
+    <nav class="flex items-center gap-2">
       <button
         type="button"
         class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700 shadow-sm ring-1 ring-slate-200 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700"
@@ -24,6 +16,56 @@
       >
         <app-icon name="sun" size="sm" variant="default"></app-icon>
       </button>
+
+      @if (auth.isLoggedIn()) {
+        <a
+          routerLink="/profile"
+          class="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700 shadow-sm ring-1 ring-slate-200 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700"
+        >
+          <app-icon name="bell" size="sm" variant="default"></app-icon>
+          @if (notifications.unreadCount() > 0) {
+            <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+              {{ notifications.unreadCount() > 9 ? '9+' : notifications.unreadCount() }}
+            </span>
+          }
+        </a>
+
+        <div class="relative">
+          <button type="button" (click)="toggleDropdown()" class="focus:outline-none">
+            <app-user-avatar
+              [avatarUrl]="auth.currentUser()?.avatarUrl"
+              [displayName]="auth.currentUser()?.displayName || ''"
+              size="sm"
+            ></app-user-avatar>
+          </button>
+
+          @if (dropdownOpen()) {
+            <div class="absolute right-0 top-full mt-2 w-48 rounded-xl bg-white shadow-lg ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700 py-1 z-50">
+              <a routerLink="/profile" (click)="dropdownOpen.set(false)" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700">
+                <app-icon name="user" size="sm"></app-icon> Profil
+              </a>
+              <a routerLink="/wallet" (click)="dropdownOpen.set(false)" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700">
+                <app-icon name="wallet" size="sm"></app-icon> Portfel
+              </a>
+              <a routerLink="/profile/events" (click)="dropdownOpen.set(false)" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700">
+                <app-icon name="calendar" size="sm"></app-icon> Moje eventy
+              </a>
+              <hr class="my-1 border-gray-100 dark:border-slate-700" />
+              <button (click)="logout()" class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-slate-700">
+                <app-icon name="log-out" size="sm" variant="danger"></app-icon> Wyloguj się
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <a
+          routerLink="/auth/login"
+          class="inline-flex items-center gap-1.5 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
+        >
+          <app-icon name="log-in" size="sm"></app-icon>
+          Zaloguj się
+        </a>
+      }
     </nav>
   </div>
 </header>

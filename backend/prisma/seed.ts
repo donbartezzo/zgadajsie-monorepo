@@ -1,93 +1,155 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Rozpoczynam seed bazy danych...');
 
-  try {
-    // Usuwamy istniejące dane, aby uniknąć duplikatów
-    console.log('Czyszczę istniejące dane...');
-    await prisma.participation.deleteMany({});
-    await prisma.event.deleteMany({});
-    await prisma.user.deleteMany({});
+  // ─── Czyszczenie (kolejność ważna – relacje) ────────────────────────────
+  console.log('Czyszczę istniejące dane...');
+  await prisma.walletTransaction.deleteMany({});
+  await prisma.wallet.deleteMany({});
+  await prisma.chatMessage.deleteMany({});
+  await prisma.eventParticipation.deleteMany({});
+  await prisma.reprimand.deleteMany({});
+  await prisma.organizerBan.deleteMany({});
+  await prisma.notification.deleteMany({});
+  await prisma.pushSubscription.deleteMany({});
+  await prisma.mediaFile.deleteMany({});
+  await prisma.event.deleteMany({});
+  await prisma.socialAccount.deleteMany({});
+  await prisma.userEventLimit.deleteMany({});
+  await prisma.user.deleteMany({});
+  await prisma.eventDiscipline.deleteMany({});
+  await prisma.eventFacility.deleteMany({});
+  await prisma.eventLevel.deleteMany({});
+  await prisma.city.deleteMany({});
+  await prisma.systemSetting.deleteMany({});
 
-    // Przykładowi użytkownicy
-    console.log('Tworzę użytkowników...');
-    const user1 = await prisma.user.create({
-      data: {
-        email: 'jan.kowalski@example.com',
-        displayName: 'Jan Kowalski',
-        role: 'USER',
-      },
-    });
-    console.log(`Utworzono użytkownika: ${user1.displayName} (${user1.id})`);
+  // ─── Miasta ──────────────────────────────────────────────────────────────
+  console.log('Tworzę miasta...');
+  const city = await prisma.city.create({
+    data: { name: 'Zielona Góra', slug: 'zielona-gora' },
+  });
 
-    const user2 = await prisma.user.create({
-      data: {
-        email: 'anna.nowak@example.com',
-        displayName: 'Anna Nowak',
-        role: 'USER',
-      },
-    });
-    console.log(`Utworzono użytkownika: ${user2.displayName} (${user2.id})`);
+  // ─── Dyscypliny ──────────────────────────────────────────────────────────
+  console.log('Tworzę dyscypliny...');
+  const disciplines = await Promise.all(
+    [
+      { name: 'Piłka nożna', slug: 'pilka-nozna' },
+      { name: 'Siatkówka', slug: 'siatkowka' },
+      { name: 'Koszykówka', slug: 'koszykowka' },
+      { name: 'Tenis', slug: 'tenis' },
+      { name: 'Badminton', slug: 'badminton' },
+      { name: 'Squash', slug: 'squash' },
+      { name: 'Bieganie', slug: 'bieganie' },
+      { name: 'Kolarstwo', slug: 'kolarstwo' },
+      { name: 'Pływanie', slug: 'plywanie' },
+    ].map((d) => prisma.eventDiscipline.create({ data: d }))
+  );
 
-    // Przykładowe wydarzenia
-    console.log('Tworzę wydarzenia...');
-    const event1 = await prisma.event.create({
-      data: {
-        title: 'Wieczorny mecz na orliku',
-        description: 'Zapraszamy na rekreacyjny mecz piłki nożnej!',
-        startTime: new Date('2025-10-15T18:00:00Z'),
-        endTime: new Date('2025-10-15T19:30:00Z'),
-        address: 'ul. Sportowa 1, Warszawa',
-        latitude: 52.2297,
-        longitude: 21.0122,
-        discipline: 'piłka nożna',
-        facility: 'orlik',
-        cost: 10,
-        status: 'publiczne',
-        ageRange: '18-35',
-        gender: 'dowolna',
-        level: 'Rekreacyjny',
-        organizerId: user1.id,
-      },
-    });
-    console.log(`Utworzono wydarzenie: ${event1.title} (${event1.id})`);
+  // ─── Obiekty ─────────────────────────────────────────────────────────────
+  console.log('Tworzę obiekty...');
+  const facilities = await Promise.all(
+    [
+      { name: 'Orlik', slug: 'orlik' },
+      { name: 'Hala sportowa', slug: 'hala-sportowa' },
+      { name: 'Balon', slug: 'balon' },
+      { name: 'Boisko syntetyczne', slug: 'boisko-syntetyczne' },
+      { name: 'Boisko trawiaste', slug: 'boisko-trawiaste' },
+      { name: 'Kort', slug: 'kort' },
+      { name: 'Stadion', slug: 'stadion' },
+    ].map((f) => prisma.eventFacility.create({ data: f }))
+  );
 
-    const event2 = await prisma.event.create({
-      data: {
-        title: 'Turniej halowy',
-        startTime: new Date('2025-10-20T16:00:00Z'),
-        endTime: new Date('2025-10-20T20:00:00Z'),
-        address: 'ul. Hala 2, Warszawa',
-        latitude: 52.23,
-        longitude: 21.01,
-        discipline: 'piłka nożna',
-        facility: 'hala',
-        cost: 20,
-        status: 'prywatne',
-        organizerId: user2.id,
-      },
-    });
-    console.log(`Utworzono wydarzenie: ${event2.title} (${event2.id})`);
+  // ─── Poziomy ─────────────────────────────────────────────────────────────
+  console.log('Tworzę poziomy...');
+  const levels = await Promise.all(
+    [
+      { name: 'Rekreacyjny', slug: 'rekreacyjny' },
+      { name: 'Amatorski', slug: 'amatorski' },
+      { name: 'Półzaawansowany', slug: 'polzaawansowany' },
+      { name: 'Zaawansowany', slug: 'zaawansowany' },
+      { name: 'Półzawodowy', slug: 'polzawodowy' },
+    ].map((l) => prisma.eventLevel.create({ data: l }))
+  );
 
-    // Przykładowe uczestnictwo
-    console.log('Tworzę uczestnictwo...');
-    const participation = await prisma.participation.create({
-      data: {
-        userId: user2.id,
-        eventId: event1.id,
-      },
-    });
-    console.log(
-      `Utworzono uczestnictwo: użytkownik ${user2.displayName} w wydarzeniu ${event1.title}`
-    );
+  // ─── Admin ───────────────────────────────────────────────────────────────
+  console.log('Tworzę konto admina...');
+  const passwordHash = await bcrypt.hash('Admin123!', 10);
+  const admin = await prisma.user.create({
+    data: {
+      email: 'admin@zgadajsie.pl',
+      passwordHash,
+      displayName: 'Administrator',
+      role: 'ADMIN',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+  await prisma.wallet.create({
+    data: { userId: admin.id },
+  });
+  console.log(`Admin: ${admin.email} (${admin.id})`);
 
-    console.log('Seed zakończony sukcesem!');
-  } catch (error) {
-    console.error('Błąd podczas seedowania bazy danych:', error);
-    throw error;
-  }
+  // ─── Ustawienia systemowe ────────────────────────────────────────────────
+  console.log('Tworzę ustawienia systemowe...');
+  await prisma.systemSetting.createMany({
+    data: [
+      { key: 'event_creation_fee', value: '0' },
+      { key: 'default_active_event_limit', value: '1' },
+    ],
+  });
+
+  // ─── Przykładowy użytkownik testowy ──────────────────────────────────────
+  console.log('Tworzę użytkownika testowego...');
+  const testUserHash = await bcrypt.hash('Test1234!', 10);
+  const testUser = await prisma.user.create({
+    data: {
+      email: 'jan.kowalski@example.com',
+      passwordHash: testUserHash,
+      displayName: 'Jan Kowalski',
+      role: 'USER',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+  await prisma.wallet.create({
+    data: { userId: testUser.id },
+  });
+
+  // ─── Przykładowe wydarzenie ──────────────────────────────────────────────
+  console.log('Tworzę przykładowe wydarzenie...');
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(18, 0, 0, 0);
+  const tomorrowEnd = new Date(tomorrow);
+  tomorrowEnd.setHours(19, 30, 0, 0);
+
+  await prisma.event.create({
+    data: {
+      title: 'Wieczorny mecz na orliku',
+      description: 'Zapraszamy na rekreacyjny mecz piłki nożnej w Zielonej Górze!',
+      disciplineId: disciplines[0].id,
+      facilityId: facilities[0].id,
+      levelId: levels[0].id,
+      cityId: city.id,
+      organizerId: testUser.id,
+      startsAt: tomorrow,
+      endsAt: tomorrowEnd,
+      costPerPerson: 10,
+      maxParticipants: 14,
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      address: 'ul. Sulechowska 30, Zielona Góra',
+      lat: 51.9356,
+      lng: 15.5062,
+    },
+  });
+
+  console.log('Seed zakończony sukcesem!');
 }
 
 main()
@@ -96,7 +158,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    console.log('Zamykam połączenie z bazą danych...');
     await prisma.$disconnect();
-    console.log('Połączenie zamknięte.');
   });

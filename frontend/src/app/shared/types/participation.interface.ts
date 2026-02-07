@@ -1,0 +1,24 @@
+export interface Participation {
+  id: string;
+  eventId: string;
+  userId: string;
+  status: string;
+  paidAmount: number;
+  addedByUserId?: string;
+  isGuest: boolean;
+  createdAt: string;
+  updatedAt: string;
+
+  event?: {
+    id: string;
+    title: string;
+    startsAt: string;
+    endsAt: string;
+    status: string;
+  };
+  user?: {
+    id: string;
+    displayName: string;
+    avatarUrl?: string;
+  };
+}

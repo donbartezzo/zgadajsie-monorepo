@@ -1,50 +1,20 @@
-<div class="bg-zinc-50 text-zinc-900 px-4">
-  <main class="mx-auto flex min-h-screen items-stretch pb-8 pt-6">
-    <section class="w-full">
-      <header class="mb-4 text-center">
-        <p
-          class="text-xs font-semibold uppercase tracking-[0.25em] text-rose-500"
-        >
-          Events
-        </p>
-        <h1 class="mt-1 text-xl font-bold tracking-tight">
-          Recommended for you
-        </h1>
-      </header>
+<section class="py-6">
+  <header class="mb-4">
+    <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100">Wydarzenia</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400">Znajdź coś dla siebie</p>
+  </header>
 
-      <section class="rounded-2xl bg-white p-4 shadow-sm">
-        <div
-          class="flex items-center justify-between text-xs font-medium text-zinc-500"
-        >
-          <span class="text-rose-500">Recommended</span>
-          <span>{{ events().length }} events</span>
-        </div>
-
-        <div class="mt-4">
-          @if (isLoading()) {
-          <p class="text-xs text-zinc-500">Loading events...</p>
-          } @else { @let _error = error(); @if (!_error) {
-          <div class="divide-y divide-zinc-100">
-            @for (event of events(); track event.id) {
-            <button
-              type="button"
-              class="block w-full text-left py-4 first:pt-0 last:pb-0"
-              (click)="onEventSelected(event)"
-            >
-              <app-event-item
-                [title]="event.title"
-                [date]="event.date"
-                [location]="event.location"
-                [attendeesCount]="event.attendeesCount"
-              />
-            </button>
-            }
-          </div>
-          } @else {
-          <p class="text-xs text-red-500">{{ _error }}</p>
-          } }
-        </div>
-      </section>
-    </section>
-  </main>
-</div>
+  @if (isLoading() && events().length === 0) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else if (error()) {
+    <app-empty-state icon="x" [title]="'Błąd'" [message]="error()!"></app-empty-state>
+  } @else if (events().length === 0) {
+    <app-empty-state icon="calendar" title="Brak wydarzeń" message="Nie znaleziono żadnych nadchodzących wydarzeń."></app-empty-state>
+  } @else {
+    <div class="grid gap-4">
+      @for (event of events(); track event.id) {
+        <app-event-card [event]="event" (selected)="onEventSelected($event)"></app-event-card>
+      }
+    </div>
+  }
+</section>

@@ -1,42 +1,54 @@
-<div class="text-zinc-900 px-4">
-  <main class="mx-auto flex min-h-screen max-w-md items-stretch px-0">
-    <section class="relative flex w-full items-stretch">
-      <div
-        class="relative flex min-h-screen w-full items-center justify-center bg-white"
-      >
-        <!-- Centered card-like content, similar to card-center text-center -->
-        <div class="w-full px-10 pb-16 text-center">
-          <div class="mx-auto flex w-full max-w-xs justify-center">
-            <img
-              src="/assets/images/soccer_placeholder.jpg"
-              alt="Ilustracja startowa"
-              class="h-40 w-auto select-none"
-              loading="lazy"
-            />
-          </div>
+<section class="py-12 text-center">
+  <div class="mb-8">
+    <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-100 dark:bg-blue-900/30">
+      <app-icon name="users" size="lg" variant="primary"></app-icon>
+    </div>
+    <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+      ZgadajSię
+    </h1>
+    <p class="mt-2 text-base text-gray-600 dark:text-gray-400 max-w-xs mx-auto">
+      Dołącz do lokalnej społeczności sportowej w Zielonej Górze
+    </p>
+  </div>
 
-          <h1 class="mt-10 text-[30px] font-bold tracking-tight text-zinc-900">
-            StickyMobile 5.0
-          </h1>
-          <p
-            class="mt-1 text-[12px] font-semibold uppercase tracking-[0.25em] text-rose-500"
-          >
-            Simply the Best Mobile Webkit on Envato
-          </p>
+  <div class="flex flex-col gap-3 max-w-xs mx-auto">
+    <a routerLink="/events">
+      <app-button variant="primary" [fullWidth]="true">
+        <app-icon name="calendar" size="sm"></app-icon>
+        Przeglądaj wydarzenia
+      </app-button>
+    </a>
+    @if (!auth.isLoggedIn()) {
+      <a routerLink="/auth/login">
+        <app-button variant="outline" [fullWidth]="true">
+          <app-icon name="log-in" size="sm"></app-icon>
+          Zaloguj się
+        </app-button>
+      </a>
+    }
+  </div>
 
-          <p class="mt-5 text-sm leading-relaxed text-zinc-600">
-            Powered by Bootstrap 5.x with AJAX Transitions providing full PWA,
-            RTL and Dark Mode integrations!
-          </p>
-
-          <a
-            routerLink="/events"
-            class="mt-8 inline-flex w-full items-center justify-center rounded-full bg-rose-500 px-5 py-3 text-xs font-extrabold uppercase tracking-wide text-white shadow-xl transition active:translate-y-px active:shadow-lg"
-          >
-            Get Started
-          </a>
-        </div>
+  <div class="mt-16 grid grid-cols-3 gap-6">
+    <div class="flex flex-col items-center text-center">
+      <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/30">
+        <app-icon name="map-pin" size="md" variant="primary"></app-icon>
       </div>
-    </section>
-  </main>
-</div>
+      <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Lokalne</h3>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Wydarzenia w Twojej okolicy</p>
+    </div>
+    <div class="flex flex-col items-center text-center">
+      <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
+        <app-icon name="shield" size="md" variant="primary"></app-icon>
+      </div>
+      <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Bezpieczne</h3>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Zweryfikowani organizatorzy</p>
+    </div>
+    <div class="flex flex-col items-center text-center">
+      <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 dark:bg-orange-900/30">
+        <app-icon name="trophy" size="md" variant="primary"></app-icon>
+      </div>
+      <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Rangi</h3>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Zdobywaj punkty aktywności</p>
+    </div>
+  </div>
+</section>

@@ -1,282 +1,153 @@
-@let _event = event();
+@if (isLoading()) {
+  <app-loading-spinner></app-loading-spinner>
+} @else if (event(); as e) {
+  <section class="py-4">
+    <!-- Hero image -->
+    @if (e.coverImageUrl) {
+      <img [src]="e.coverImageUrl" [alt]="e.title" class="w-full h-48 object-cover rounded-2xl mb-4" />
+    } @else {
+      <div class="w-full h-48 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl mb-4 flex items-center justify-center">
+        <app-icon name="calendar" size="lg" variant="default"></app-icon>
+      </div>
+    }
 
-<div
-  class="relative z-20 flex h-screen flex-col bg-zinc-100 text-zinc-900 overflow-hidden"
->
-  <!-- FIXED HERO BACKGROUND + NON-SCROLLING HERO CONTENT (behaves like background layer) -->
-  <div
-    class="fixed inset-x-0 top-0 z-10 h-[452px] w-full -translate-y-[2px] overflow-hidden bg-[url('/assets/images/soccer_placeholder.jpg')] bg-cover bg-center will-change-transform"
-  >
-    <!-- main dark overlay -->
-    <div
-      class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/35 to-black/5"
-    ></div>
+    <!-- Back + share -->
+    <div class="flex items-center justify-between mb-4">
+      <button (click)="onBack()" class="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
+        <app-icon name="arrow-left" size="sm"></app-icon> Wróć
+      </button>
+      <button (click)="onShare()" class="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
+        <app-icon name="share" size="sm"></app-icon> Udostępnij
+      </button>
+    </div>
 
-    <!-- ultra-soft bottom bleed of bg-zinc-100 through the image -->
-    <div
-      class="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-zinc-100/1 to-zinc-100/100 backdrop-blur-none"
-    ></div>
+    <!-- Title + badges -->
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">{{ e.title }}</h1>
+    <div class="flex flex-wrap gap-2 mb-4">
+      @if (e.discipline) {
+        <span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">{{ e.discipline!.name }}</span>
+      }
+      @if (e.level) {
+        <span class="text-xs bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full">{{ e.level!.name }}</span>
+      }
+      @if (e.facility) {
+        <span class="text-xs bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full">{{ e.facility!.name }}</span>
+      }
+    </div>
 
-    <div class="relative z-10 h-full text-white">
-      <div class="container mx-auto max-w-[640px] h-full px-4">
-        <header class="flex items-center justify-between px-4 pt-4">
-          <button
-            type="button"
-            class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/30 backdrop-blur"
-            (click)="onBackClick()"
-          >
-            <app-icon name="chevron-left" class="h-5 w-5" />
-          </button>
-          <div
-            class="text-xs font-medium uppercase tracking-[0.2em] text-zinc-100/80"
-          >
-            Event
+    <!-- Organizer -->
+    @if (e.organizer) {
+      <app-card>
+        <div class="flex items-center gap-3 p-4">
+          <app-user-avatar [avatarUrl]="e.organizer!.avatarUrl" [displayName]="e.organizer!.displayName" size="md"></app-user-avatar>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ e.organizer!.displayName }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Organizator</p>
           </div>
-          <div class="h-9 w-9" aria-hidden="true"></div>
-        </header>
+        </div>
+      </app-card>
+    }
 
-        @if (_event) {
-        <section class="mt-10 px-4">
-          <div class="flex justify-end">
-            <div
-              class="rounded-xl bg-white/95 px-3 py-2 text-center text-xs font-semibold text-zinc-900 shadow-sm"
-            >
-              @if (_event?.dateShort) {
-              <div class="text-[10px] uppercase tracking-[0.25em] text-rose-600">
-                {{ _event!.dateShort!.split(' ')[0] }}
-              </div>
-              <div class="mt-1 text-lg font-extrabold">
-                {{ _event!.dateShort!.split(' ')[1] }}
-              </div>
-              }
-            </div>
+    <!-- Description -->
+    @if (e.description) {
+      <div class="mt-4">
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Opis</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line">{{ e.description }}</p>
+      </div>
+    }
+
+    <!-- Details grid -->
+    <div class="mt-4 grid grid-cols-2 gap-3">
+      <app-card>
+        <div class="p-3 flex items-center gap-2">
+          <app-icon name="clock" size="sm" variant="primary"></app-icon>
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Data</p>
+            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ e.startsAt | date:'d MMM, HH:mm' }}</p>
           </div>
-
-          <div class="mt-10 space-y-1 px-1">
-            <span
-              class="inline-flex rounded-full bg-rose-500/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em]"
-            >
-              {{ _event!.category }}
-            </span>
-            <h1 class="text-2xl font-bold leading-tight">
-              {{ _event!.title }}
-            </h1>
-            <p class="text-xs text-zinc-100/90">
-              {{ _event!.subtitle }}
+        </div>
+      </app-card>
+      <app-card>
+        <div class="p-3 flex items-center gap-2">
+          <app-icon name="map-pin" size="sm" variant="primary"></app-icon>
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Lokalizacja</p>
+            <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ e.address }}</p>
+          </div>
+        </div>
+      </app-card>
+      <app-card>
+        <div class="p-3 flex items-center gap-2">
+          <app-icon name="dollar-sign" size="sm" variant="primary"></app-icon>
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Koszt</p>
+            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+              @if (e.costPerPerson > 0) { {{ e.costPerPerson | number:'1.0-2' }} zł } @else { Bezpłatne }
             </p>
           </div>
+        </div>
+      </app-card>
+      <app-card>
+        <div class="p-3 flex items-center gap-2">
+          <app-icon name="users" size="sm" variant="primary"></app-icon>
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Uczestnicy</p>
+            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {{ participants().length }}@if (e.maxParticipants) {/{{ e.maxParticipants }}}
+            </p>
+          </div>
+        </div>
+      </app-card>
+    </div>
 
-          <div
-            class="mt-4 flex items-center justify-between text-xs text-zinc-100/90"
-          >
-            <div class="flex items-center gap-1">
-              <app-icon name="calendar" class="h-4 w-4 text-red-300" />
-              <span>{{ _event!.dateFull }}</span>
+    <!-- Map -->
+    @if (e.lat && e.lng) {
+      <div class="mt-4">
+        <app-map [lat]="e.lat" [lng]="e.lng" [interactive]="false" [height]="200"></app-map>
+      </div>
+    }
+
+    <!-- Participants -->
+    @if (participants().length > 0) {
+      <div class="mt-4">
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Uczestnicy</h3>
+        <div class="flex flex-wrap gap-2">
+          @for (p of participants(); track p.id) {
+            <div class="flex items-center gap-2 bg-white dark:bg-slate-800 rounded-full px-3 py-1.5 border border-gray-100 dark:border-slate-700">
+              <app-user-avatar [avatarUrl]="p.user?.avatarUrl" [displayName]="p.user?.displayName || ''" size="sm"></app-user-avatar>
+              <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ p.user?.displayName }}</span>
             </div>
-          </div>
-
-          <div class="mt-6 flex justify-end">
-            <button
-              class="inline-flex items-center justify-center rounded-full bg-rose-500 px-5 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-sm"
-              (click)="onJoinClick()"
-            >
-              Join
-            </button>
-          </div>
-        </section>
-        } @else {
-        <div class="px-4 pt-8">
-          @if (isLoading()) {
-          <div class="text-sm text-white">Loading event...</div>
-          } @else {
-          <div class="text-sm text-red-100">{{ error() }}</div>
           }
         </div>
+      </div>
+    }
+
+    <!-- Sticky bottom bar -->
+    <div class="fixed bottom-16 inset-x-0 z-40 p-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-t border-gray-200 dark:border-slate-700">
+      <div class="mx-auto max-w-[640px] flex gap-3">
+        @if (isParticipant) {
+          <a routerLink="/events/{{ event()!.id }}/chat" class="flex-1">
+            <app-button variant="outline" [fullWidth]="true">
+              <app-icon name="message-circle" size="sm"></app-icon> Chat
+            </app-button>
+          </a>
+          <app-button variant="danger" [loading]="joining()" (clicked)="onLeave()">
+            <app-icon name="user-x" size="sm"></app-icon> Wypisz się
+          </app-button>
+        } @else if (auth.isLoggedIn()) {
+          <app-button variant="primary" [fullWidth]="true" [loading]="joining()" (clicked)="onJoin()">
+            <app-icon name="user-plus" size="sm"></app-icon> Dołącz do wydarzenia
+          </app-button>
+        } @else {
+          <a routerLink="/auth/login" class="flex-1">
+            <app-button variant="primary" [fullWidth]="true">
+              <app-icon name="log-in" size="sm"></app-icon> Zaloguj się, aby dołączyć
+            </app-button>
+          </a>
         }
       </div>
     </div>
-  </div>
-
-  <!-- SCROLLABLE CONTENT ONLY FOR MAIN CARD -->
-  <div class="flex-1 overflow-y-auto">
-    <!-- spacer below hero, allow events to pass through to fixed hero -->
-    <div class="h-[450px]"></div>
-
-    @if (_event) {
-    <main class="pb-6 px-4">
-      <section
-        class="relative z-20 mx-auto max-w-[640px] -mt-[120px] rounded-t-3xl bg-zinc-50 px-4 pb-10 pt-5 text-zinc-900 shadow-xl"
-      >
-        <div class="mx-auto h-1 w-12 rounded-full bg-zinc-300/80"></div>
-
-        <section class="mt-4 space-y-3 text-sm">
-          <div>
-            <p
-              class="text-[11px] font-semibold uppercase tracking-[0.2em] text-rose-500"
-            >
-              {{ _event!.dateFull }}
-            </p>
-            <h2 class="text-lg font-semibold">{{ _event!.title }}</h2>
-            <p class="mt-1 flex items-center gap-1 text-xs text-zinc-500">
-              <app-icon name="calendar" class="h-4 w-4 text-red-500" />
-              <span>{{ _event!.location }}</span>
-            </p>
-          </div>
-
-          <p class="text-sm text-zinc-700">
-            Get ready for the new and improved paintball event. It's going to be
-            awesome! This year we're including Ketchup balls for added taste and
-            flavor.
-          </p>
-
-          <div class="mt-4 flex items-center gap-3">
-            <div class="h-10 w-10 rounded-full bg-zinc-200"></div>
-            <div class="flex-1 text-sm">
-              <h3 class="text-sm font-semibold">{{ _event!.organiserName }}</h3>
-              <p class="text-xs text-zinc-500">{{ _event!.organiserRole }}</p>
-            </div>
-            <button
-              class="inline-flex items-center justify-center rounded-full bg-zinc-900 px-3 py-1 text-xs font-semibold text-zinc-50"
-              (click)="onFollowClick()"
-            >
-              Follow
-            </button>
-          </div>
-
-          <div
-            class="mt-4 flex flex-wrap items-center gap-2 text-[11px] text-zinc-600"
-          >
-            <div class="flex -space-x-2">
-              <div
-                class="h-6 w-6 rounded-full border border-white bg-rose-200"
-              ></div>
-              <div
-                class="h-6 w-6 rounded-full border border-white bg-emerald-200"
-              ></div>
-              <div
-                class="h-6 w-6 rounded-full border border-white bg-amber-200"
-              ></div>
-              <div
-                class="h-6 w-6 rounded-full border border-white bg-indigo-200"
-              ></div>
-            </div>
-            <span class="pl-2">+{{ _event!.attendeesCount }} others going</span>
-          </div>
-        </section>
-
-        <section class="mt-6 space-y-3">
-          <h3
-            class="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500"
-          >
-            Event Location
-          </h3>
-
-          <div class="overflow-hidden rounded-2xl bg-zinc-900/90">
-            <div class="relative h-56 w-full bg-zinc-800">
-              <iframe
-                class="h-full w-full opacity-90"
-                src="https://www.google.com/maps/embed/v1/view?key=AIzaSyAM3nxDVrkjyKwdIZp8QOplmBKLRVI5S_Y&center=-33.8569,151.2152&zoom=16&maptype=satellite"
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-              ></iframe>
-              <div
-                class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"
-              ></div>
-            </div>
-
-            <div class="space-y-1 bg-white px-4 py-3 text-xs text-zinc-900">
-              <p class="flex items-center gap-2 text-sm font-semibold">
-                <app-icon name="home" class="h-4 w-4 text-red-500" />
-                <span>{{ _event!.placeCountry }}</span>
-              </p>
-              <p class="text-[11px] text-zinc-600 whitespace-pre-line">
-                {{ _event!.placeAddress }}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section class="mt-6 space-y-4 text-sm text-zinc-700">
-          <div>
-            <h3 class="text-base font-semibold text-zinc-900">
-              Full Event Information
-            </h3>
-            <p class="mt-1">
-              Add any element or component you want from our framework here,
-              it's Bootstrap 4.x and 5.x ready so you know you have an infinite
-              amount of options.
-            </p>
-          </div>
-
-          <div class="grid grid-cols-2 gap-y-4 text-xs">
-            <div class="flex items-center gap-3">
-              <app-icon name="calendar" class="h-5 w-5 text-teal-500" />
-              <div>
-                <div
-                  class="text-[10px] uppercase tracking-[0.2em] text-zinc-500"
-                >
-                  Date
-                </div>
-                <div class="text-sm font-semibold text-zinc-900">
-                  {{ _event!.scheduleDateLabel }}
-                </div>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-3">
-              <app-icon name="calendar" class="h-5 w-5 text-red-500" />
-              <div>
-                <div
-                  class="text-[10px] uppercase tracking-[0.2em] text-zinc-500"
-                >
-                  Time
-                </div>
-                <div class="text-sm font-semibold text-zinc-900">
-                  {{ _event!.scheduleTimeLabel }}
-                </div>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-3">
-              <app-icon name="home" class="h-5 w-5 text-yellow-500" />
-              <div>
-                <div
-                  class="text-[10px] uppercase tracking-[0.2em] text-zinc-500"
-                >
-                  Place
-                </div>
-                <div class="text-sm font-semibold text-zinc-900">
-                  {{ _event!.location }}
-                </div>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-3">
-              <app-icon name="user" class="h-5 w-5 text-green-500" />
-              <div>
-                <div
-                  class="text-[10px] uppercase tracking-[0.2em] text-zinc-500"
-                >
-                  Ticket
-                </div>
-                <div class="text-sm font-semibold text-zinc-900">
-                  {{ _event!.ticketPrice }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div class="mt-8">
-          <button
-            class="inline-flex w-full items-center justify-center rounded-full bg-rose-600 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow"
-            (click)="onJoinClick()"
-          >
-            Join Event
-          </button>
-        </div>
-      </section>
-    </main>
-    }
-  </div>
-</div>
+  </section>
+} @else {
+  <div class="py-12 text-center text-gray-500 dark:text-gray-400">Nie znaleziono wydarzenia</div>
+}

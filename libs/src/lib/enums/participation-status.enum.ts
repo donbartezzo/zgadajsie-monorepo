@@ -1,0 +1,6 @@
+export enum ParticipationStatus {
+  APPLIED = 'APPLIED',
+  ACCEPTED = 'ACCEPTED',
+  PARTICIPANT = 'PARTICIPANT',
+  WITHDRAWN = 'WITHDRAWN',
+}

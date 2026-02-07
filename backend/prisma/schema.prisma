@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,46 +7,284 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── Users ───────────────────────────────────────────────────────────────────
+
 model User {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  displayName String
-  socialId    String?
-  role        String   // np. 'USER', 'ADMIN'
-  events      Event[]  @relation("OrganizerEvents")
-  participations Participation[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                          String    @id @default(uuid())
+  email                       String    @unique
+  passwordHash                String?
+  displayName                 String
+  avatarUrl                   String?
+  role                        String    @default("USER")
+  isActive                    Boolean   @default(false)
+  isEmailVerified             Boolean   @default(false)
+  activationToken             String?
+  activationTokenExpiresAt    DateTime?
+  passwordResetToken          String?
+  passwordResetTokenExpiresAt DateTime?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
+
+  socialAccounts    SocialAccount[]
+  organizedEvents   Event[]              @relation("OrganizerEvents")
+  participations    EventParticipation[] @relation("UserParticipations")
+  addedParticipants EventParticipation[] @relation("AddedByUser")
+  wallet            Wallet?
+  mediaFiles        MediaFile[]
+  chatMessages      ChatMessage[]
+  reprimandsGiven   Reprimand[]          @relation("ReprimandFrom")
+  reprimandsReceived Reprimand[]         @relation("ReprimandTo")
+  organizerBans     OrganizerBan[]       @relation("OrganizerBanOrganizer")
+  bannedByOrganizers OrganizerBan[]      @relation("OrganizerBanBanned")
+  notifications     Notification[]
+  pushSubscriptions PushSubscription[]
+  eventLimit        UserEventLimit?
+  walletTransactionsAsAdmin WalletTransaction[] @relation("AdminWalletTransaction")
 }
+
+model SocialAccount {
+  id             String   @id @default(uuid())
+  userId         String
+  provider       String
+  providerUserId String
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+}
+
+// ─── Dictionaries ────────────────────────────────────────────────────────────
+
+model City {
+  id       String  @id @default(uuid())
+  name     String
+  slug     String  @unique
+  isActive Boolean @default(true)
+
+  events Event[]
+}
+
+model EventDiscipline {
+  id   String @id @default(uuid())
+  name String
+  slug String @unique
+
+  events Event[]
+}
+
+model EventFacility {
+  id   String @id @default(uuid())
+  name String
+  slug String @unique
+
+  events Event[]
+}
+
+model EventLevel {
+  id   String @id @default(uuid())
+  name String
+  slug String @unique
+
+  events Event[]
+}
+
+// ─── Events ──────────────────────────────────────────────────────────────────
 
 model Event {
-  id          String   @id @default(uuid())
-  title       String
-  description String?
-  startTime   DateTime
-  endTime     DateTime
-  address     String
-  latitude    Float
-  longitude   Float
-  discipline  String
-  facility    String
-  cost        Float
-  status      String
-  ageRange    String?
-  gender      String?
-  level       String?
-  organizer   User     @relation("OrganizerEvents", fields: [organizerId], references: [id])
-  organizerId String
-  participations Participation[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(uuid())
+  title           String
+  description     String?
+  coverImageUrl   String?
+  disciplineId    String
+  facilityId      String
+  levelId         String
+  cityId          String
+  organizerId     String
+  startsAt        DateTime
+  endsAt          DateTime
+  costPerPerson   Decimal  @default(0) @db.Decimal(10, 2)
+  minParticipants Int?
+  maxParticipants Int?
+  ageMin          Int?
+  ageMax          Int?
+  gender          String   @default("ANY")
+  visibility      String   @default("PUBLIC")
+  autoAccept      Boolean  @default(false)
+  status          String   @default("ACTIVE")
+  address         String
+  lat             Float
+  lng             Float
+  isRecurring     Boolean  @default(false)
+  recurringRule   String?
+  parentEventId   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  discipline    EventDiscipline      @relation(fields: [disciplineId], references: [id])
+  facility      EventFacility        @relation(fields: [facilityId], references: [id])
+  level         EventLevel           @relation(fields: [levelId], references: [id])
+  city          City                 @relation(fields: [cityId], references: [id])
+  organizer     User                 @relation("OrganizerEvents", fields: [organizerId], references: [id])
+  parentEvent   Event?               @relation("RecurringEvents", fields: [parentEventId], references: [id])
+  childEvents   Event[]              @relation("RecurringEvents")
+  participations EventParticipation[]
+  chatMessages  ChatMessage[]
+  reprimands    Reprimand[]
+  notifications Notification[]       @relation("NotificationEvent")
+  walletTransactions WalletTransaction[] @relation("EventWalletTransaction")
+
+  @@index([cityId, status, startsAt])
 }
 
-model Participation {
+// ─── Participations ──────────────────────────────────────────────────────────
+
+model EventParticipation {
+  id            String   @id @default(uuid())
+  eventId       String
+  userId        String
+  status        String   @default("APPLIED")
+  paidAmount    Decimal  @default(0) @db.Decimal(10, 2)
+  addedByUserId String?
+  isGuest       Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  event     Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User  @relation("UserParticipations", fields: [userId], references: [id])
+  addedBy   User? @relation("AddedByUser", fields: [addedByUserId], references: [id])
+
+  @@unique([eventId, userId])
+}
+
+// ─── Wallet ──────────────────────────────────────────────────────────────────
+
+model Wallet {
+  id      String  @id @default(uuid())
+  userId  String  @unique
+  balance Decimal @default(0) @db.Decimal(10, 2)
+
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions WalletTransaction[]
+}
+
+model WalletTransaction {
+  id             String   @id @default(uuid())
+  walletId       String
+  type           String
+  amount         Decimal  @db.Decimal(10, 2)
+  description    String?
+  relatedEventId String?
+  adminUserId    String?
+  createdAt      DateTime @default(now())
+
+  wallet       Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  relatedEvent Event? @relation("EventWalletTransaction", fields: [relatedEventId], references: [id])
+  adminUser    User?  @relation("AdminWalletTransaction", fields: [adminUserId], references: [id])
+
+  @@index([walletId, createdAt])
+}
+
+// ─── Media ───────────────────────────────────────────────────────────────────
+
+model MediaFile {
+  id           String   @id @default(uuid())
+  userId       String
+  url          String
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Chat ────────────────────────────────────────────────────────────────────
+
+model ChatMessage {
   id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  event     Event    @relation(fields: [eventId], references: [id])
   eventId   String
+  userId    String
+  content   String
   createdAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([eventId, createdAt])
+}
+
+// ─── Moderation ──────────────────────────────────────────────────────────────
+
+model Reprimand {
+  id         String   @id @default(uuid())
+  fromUserId String
+  toUserId   String
+  eventId    String
+  reason     String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  fromUser User  @relation("ReprimandFrom", fields: [fromUserId], references: [id])
+  toUser   User  @relation("ReprimandTo", fields: [toUserId], references: [id])
+  event    Event @relation(fields: [eventId], references: [id])
+}
+
+model OrganizerBan {
+  id              String   @id @default(uuid())
+  organizerUserId String
+  bannedUserId    String
+  reason          String?
+  createdAt       DateTime @default(now())
+
+  organizer  User @relation("OrganizerBanOrganizer", fields: [organizerUserId], references: [id])
+  bannedUser User @relation("OrganizerBanBanned", fields: [bannedUserId], references: [id])
+
+  @@unique([organizerUserId, bannedUserId])
+}
+
+// ─── Notifications ───────────────────────────────────────────────────────────
+
+model Notification {
+  id             String   @id @default(uuid())
+  userId         String
+  type           String
+  title          String
+  body           String
+  isRead         Boolean  @default(false)
+  relatedEventId String?
+  createdAt      DateTime @default(now())
+
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relatedEvent Event? @relation("NotificationEvent", fields: [relatedEventId], references: [id])
+
+  @@index([userId, isRead, createdAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  endpoint  String
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, endpoint])
+}
+
+// ─── System ──────────────────────────────────────────────────────────────────
+
+model SystemSetting {
+  key   String @id
+  value String
+}
+
+model UserEventLimit {
+  id              String @id @default(uuid())
+  userId          String @unique
+  maxActiveEvents Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

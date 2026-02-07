@@ -1,3 +1,1 @@
-export function libs(): string {
-  return 'libs';
-}
+// Shared library - enums and types are exported from subdirectories

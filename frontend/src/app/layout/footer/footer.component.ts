@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IconComponent } from '../../core/icons/icon.component';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-footer',
@@ -8,4 +9,6 @@ import { IconComponent } from '../../core/icons/icon.component';
   templateUrl: './footer.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FooterComponent {}
+export class FooterComponent {
+  readonly auth = inject(AuthService);
+}

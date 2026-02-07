@@ -1,47 +1,56 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { EventItemComponent } from './event-item.component';
-import { EventService, EventListItem } from '../event/event.service';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { EventCardComponent } from '../../shared/ui/event-card/event-card.component';
+import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner/loading-spinner.component';
+import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
+import { EventService } from '../../core/services/event.service';
+import { EventListItem } from '../../shared/types';
 
-interface EventItem extends EventListItem {}
-
-// @theme: page-events-category-tabs.html -> Recommended tab
 @Component({
   selector: 'app-events',
-  imports: [CommonModule, EventItemComponent],
+  imports: [CommonModule, EventCardComponent, LoadingSpinnerComponent, EmptyStateComponent],
   templateUrl: './events.component.html',
   styleUrls: ['./events.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EventsComponent {
+export class EventsComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
 
+  readonly events = signal<EventListItem[]>([]);
   readonly isLoading = signal(true);
   readonly error = signal<string | null>(null);
+  private page = 1;
+  private hasMore = true;
 
-  private readonly events$ = this.eventService.getAllEvents();
-  readonly events = toSignal(this.events$, {
-    initialValue: [] as EventItem[],
-  });
+  ngOnInit(): void {
+    this.loadEvents();
+  }
 
-  constructor() {
-    this.events$.subscribe({
-      next: () => this.isLoading.set(false),
+  loadEvents(): void {
+    if (!this.hasMore) return;
+    this.eventService.getEvents({ page: this.page, limit: 20, sortBy: 'startsAt' }).subscribe({
+      next: (res) => {
+        this.events.update(prev => [...prev, ...res.data]);
+        this.hasMore = res.data.length === 20;
+        this.page++;
+        this.isLoading.set(false);
+      },
       error: () => {
-        this.error.set('Failed to load events');
+        this.error.set('Nie udało się pobrać wydarzeń');
         this.isLoading.set(false);
       },
     });
   }
 
-  trackEventById(index: number, event: EventItem): string {
-    return event.id;
+  onEventSelected(event: EventListItem): void {
+    this.router.navigate(['/events', event.id]);
   }
 
-  onEventSelected(event: EventItem): void {
-    this.router.navigate(['/event', event.id]);
+  onScroll(): void {
+    if (!this.isLoading() && this.hasMore) {
+      this.loadEvents();
+    }
   }
 }

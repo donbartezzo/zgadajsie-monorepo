@@ -1,0 +1,128 @@
+import { Injectable, signal, computed } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { User } from '../../shared/types';
+
+interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
+interface LoginResponse extends AuthTokens {
+  user: User;
+}
+
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private apiUrl = environment.apiUrl + '/auth';
+
+  currentUser = signal<User | null>(null);
+  isLoggedIn = computed(() => !!this.currentUser());
+  isAdmin = computed(() => this.currentUser()?.role === 'ADMIN');
+  isActive = computed(() => this.currentUser()?.isActive ?? false);
+
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+  ) {}
+
+  getAccessToken(): string | null {
+    return localStorage.getItem('accessToken');
+  }
+
+  private getRefreshToken(): string | null {
+    return localStorage.getItem('refreshToken');
+  }
+
+  private setTokens(tokens: AuthTokens): void {
+    localStorage.setItem('accessToken', tokens.accessToken);
+    localStorage.setItem('refreshToken', tokens.refreshToken);
+  }
+
+  private clearTokens(): void {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+  }
+
+  async register(email: string, password: string, displayName: string): Promise<void> {
+    await firstValueFrom(
+      this.http.post(`${this.apiUrl}/register`, { email, password, displayName }),
+    );
+  }
+
+  async login(email: string, password: string): Promise<void> {
+    const res = await firstValueFrom(
+      this.http.post<LoginResponse>(`${this.apiUrl}/login`, { email, password }),
+    );
+    this.setTokens(res);
+    this.currentUser.set(res.user);
+  }
+
+  async logout(): Promise<void> {
+    this.clearTokens();
+    this.currentUser.set(null);
+    await this.router.navigate(['/auth/login']);
+  }
+
+  async refreshToken(): Promise<string | null> {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) return null;
+
+    try {
+      const res = await firstValueFrom(
+        this.http.post<AuthTokens>(`${this.apiUrl}/refresh`, { refreshToken }),
+      );
+      this.setTokens(res);
+      return res.accessToken;
+    } catch {
+      this.clearTokens();
+      this.currentUser.set(null);
+      return null;
+    }
+  }
+
+  async fetchUser(): Promise<void> {
+    try {
+      const user = await firstValueFrom(
+        this.http.get<User>(`${environment.apiUrl}/users/me`),
+      );
+      this.currentUser.set(user);
+    } catch {
+      this.clearTokens();
+      this.currentUser.set(null);
+    }
+  }
+
+  async activateAccount(token: string): Promise<void> {
+    await firstValueFrom(
+      this.http.get(`${this.apiUrl}/activate?token=${token}`),
+    );
+  }
+
+  async resendActivation(): Promise<void> {
+    await firstValueFrom(
+      this.http.post(`${this.apiUrl}/resend-activation`, {}),
+    );
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    await firstValueFrom(
+      this.http.post(`${this.apiUrl}/forgot-password`, { email }),
+    );
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    await firstValueFrom(
+      this.http.post(`${this.apiUrl}/reset-password`, { token, newPassword }),
+    );
+  }
+
+  async initOnAppStart(): Promise<void> {
+    const token = this.getAccessToken();
+    if (token) {
+      await this.fetchUser();
+    }
+  }
+}
