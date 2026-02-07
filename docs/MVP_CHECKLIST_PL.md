@@ -46,7 +46,7 @@ Kompletna, liniowa checklista implementacji MVP. Po zatwierdzeniu plik zostanie 
 
 - [x] Dodać zmienne: `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `JWT_EXPIRATION=15m`, `JWT_REFRESH_EXPIRATION=7d`
 - [x] Dodać zmienne: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
-- [x] Dodać zmienne: `FRONTEND_URL=http://localhost:4200`
+- [x] Dodać zmienne: `FRONTEND_URL=http://localhost:4300`
 - [x] Dodać zmienne: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`
 - [x] Dodać zmienne: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`
 - [x] Dodać zmienne: `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`, `FACEBOOK_CALLBACK_URL`

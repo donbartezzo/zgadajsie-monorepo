@@ -24,7 +24,7 @@ export class EmailService {
   }
 
   private get frontendUrl(): string {
-    return this.configService.get<string>('FRONTEND_URL', 'http://localhost:4200');
+    return this.configService.get<string>('FRONTEND_URL', 'http://localhost:4300');
   }
 
   async sendActivationEmail(email: string, displayName: string, token: string): Promise<void> {
