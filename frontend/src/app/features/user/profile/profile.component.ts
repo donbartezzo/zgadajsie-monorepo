@@ -12,7 +12,6 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 
 @Component({
   selector: 'app-profile',
-  standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, IconComponent, ButtonComponent, CardComponent, UserAvatarComponent],
   template: `
     <div class="py-6">
@@ -110,7 +109,7 @@ export class ProfileComponent implements OnInit {
 
   saveProfile(): void {
     this.saving.set(true);
-    const data: any = { displayName: this.editName };
+    const data: { displayName: string; newPassword?: string } = { displayName: this.editName };
     if (this.newPassword) data.newPassword = this.newPassword;
     this.userService.updateProfile(data).subscribe({
       next: () => {

@@ -6,7 +6,6 @@ import { EventListItem } from '../../types';
 
 @Component({
   selector: 'app-event-card',
-  standalone: true,
   imports: [CommonModule, DatePipe, DecimalPipe, IconComponent, UserAvatarComponent],
   template: `
     <div

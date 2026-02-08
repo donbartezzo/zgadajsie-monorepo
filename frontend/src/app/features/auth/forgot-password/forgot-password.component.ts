@@ -9,7 +9,6 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 
 @Component({
   selector: 'app-forgot-password',
-  standalone: true,
   imports: [FormsModule, RouterLink, IconComponent, ButtonComponent, CardComponent],
   template: `
     <div class="py-8">
@@ -67,8 +66,9 @@ export class ForgotPasswordComponent {
     try {
       await this.auth.forgotPassword(this.email);
       this.sent.set(true);
-    } catch (err: any) {
-      this.snackbar.error(err?.error?.message || 'Nie udało się wysłać linku');
+    } catch (err: unknown) {
+      const msg = (err as { error?: { message?: string } })?.error?.message;
+      this.snackbar.error(msg || 'Nie udało się wysłać linku');
     } finally {
       this.loading.set(false);
     }

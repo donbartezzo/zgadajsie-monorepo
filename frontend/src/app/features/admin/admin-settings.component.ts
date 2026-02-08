@@ -14,7 +14,6 @@ interface Setting { key: string; value: string; }
 
 @Component({
   selector: 'app-admin-settings',
-  standalone: true,
   imports: [CommonModule, FormsModule, IconComponent, ButtonComponent, CardComponent, LoadingSpinnerComponent],
   template: `
     <div class="py-6">

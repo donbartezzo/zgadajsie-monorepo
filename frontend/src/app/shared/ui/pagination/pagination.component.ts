@@ -4,7 +4,6 @@ import { IconComponent } from '../../../core/icons/icon.component';
 
 @Component({
   selector: 'app-pagination',
-  standalone: true,
   imports: [CommonModule, IconComponent],
   template: `
     @if (totalPages() > 1) {

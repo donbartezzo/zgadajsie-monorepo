@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
@@ -8,14 +8,12 @@ import { AuthService } from '../auth/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+
   private socket: Socket | null = null;
   private messageSubject = new Subject<ChatMessage>();
   private typingSubject = new Subject<{ userId: string; displayName: string }>();
-
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService,
-  ) {}
 
   connect(eventId: string): void {
     if (this.socket) this.disconnect();

@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-terms',
-  standalone: true,
   template: `
     <div class="py-6 prose prose-sm dark:prose-invert max-w-none">
       <h1>Regulamin serwisu ZgadajSię</h1>

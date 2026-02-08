@@ -16,7 +16,6 @@ import { DictionaryItem, City } from '../../../shared/types';
 
 @Component({
   selector: 'app-event-form',
-  standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule,
     IconComponent, ButtonComponent, CardComponent,

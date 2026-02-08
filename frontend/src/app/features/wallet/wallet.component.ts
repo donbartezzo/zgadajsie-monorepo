@@ -13,7 +13,6 @@ import { WalletTransaction } from '../../shared/types';
 
 @Component({
   selector: 'app-wallet',
-  standalone: true,
   imports: [CommonModule, FormsModule, DatePipe, DecimalPipe, RouterLink, IconComponent, ButtonComponent, CardComponent, LoadingSpinnerComponent, PaginationComponent],
   template: `
     <div class="py-6">

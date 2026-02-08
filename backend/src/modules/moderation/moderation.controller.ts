@@ -15,6 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
 @UseGuards(JwtAuthGuard)
 @Controller('moderation')
@@ -22,7 +23,7 @@ export class ModerationController {
   constructor(private moderationService: ModerationService) {}
 
   @Post('reprimands')
-  createReprimand(@CurrentUser() user: any, @Body() dto: CreateReprimandDto) {
+  createReprimand(@CurrentUser() user: AuthUser, @Body() dto: CreateReprimandDto) {
     return this.moderationService.createReprimand(user.id, dto);
   }
 
@@ -34,7 +35,7 @@ export class ModerationController {
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
   @Post('bans')
-  createBan(@CurrentUser() admin: any, @Body() dto: CreateBanDto) {
+  createBan(@CurrentUser() admin: AuthUser, @Body() dto: CreateBanDto) {
     return this.moderationService.createBan(admin.id, dto);
   }
 

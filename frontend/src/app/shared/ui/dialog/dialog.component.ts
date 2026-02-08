@@ -4,7 +4,6 @@ import { IconComponent } from '../../../core/icons/icon.component';
 
 @Component({
   selector: 'app-dialog',
-  standalone: true,
   imports: [CommonModule, IconComponent],
   template: `
     @if (isOpen()) {

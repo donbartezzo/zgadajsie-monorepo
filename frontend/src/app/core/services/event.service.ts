@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -21,9 +21,8 @@ interface EventQueryParams {
 
 @Injectable({ providedIn: 'root' })
 export class EventService {
-  private apiUrl = environment.apiUrl + '/events';
-
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl + '/events';
 
   getEvents(params?: EventQueryParams): Observable<PaginatedEvents> {
     let httpParams = new HttpParams();

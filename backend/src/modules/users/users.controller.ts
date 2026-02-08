@@ -15,6 +15,7 @@ import { IsActiveGuard } from '../auth/guards/is-active.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
 @Controller('users')
 export class UsersController {
@@ -22,31 +23,31 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getMe(@CurrentUser() user: any) {
+  getMe(@CurrentUser() user: AuthUser) {
     return this.usersService.getMe(user.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch('me')
-  updateProfile(@CurrentUser() user: any, @Body() dto: UpdateProfileDto) {
+  updateProfile(@CurrentUser() user: AuthUser, @Body() dto: UpdateProfileDto) {
     return this.usersService.updateProfile(user.id, dto);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Get('me/events')
-  getMyEvents(@CurrentUser() user: any) {
+  getMyEvents(@CurrentUser() user: AuthUser) {
     return this.usersService.getMyEvents(user.id);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Get('me/participations')
-  getMyParticipations(@CurrentUser() user: any) {
+  getMyParticipations(@CurrentUser() user: AuthUser) {
     return this.usersService.getMyParticipations(user.id);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Get('me/reprimands')
-  getMyReprimands(@CurrentUser() user: any) {
+  getMyReprimands(@CurrentUser() user: AuthUser) {
     return this.usersService.getMyReprimands(user.id);
   }
 

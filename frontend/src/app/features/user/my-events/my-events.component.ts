@@ -13,7 +13,6 @@ import { Event as EventModel } from '../../../shared/types';
 
 @Component({
   selector: 'app-my-events',
-  standalone: true,
   imports: [CommonModule, DatePipe, RouterLink, IconComponent, ButtonComponent, CardComponent, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
     <div class="py-6">

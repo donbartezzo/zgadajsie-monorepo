@@ -32,7 +32,7 @@ export class EventsService {
 
   async findAll(query: EventQueryDto) {
     const { page = 1, limit = 20, citySlug, disciplineSlug, sortBy } = query;
-    const where: any = { status: 'ACTIVE', visibility: 'PUBLIC' };
+    const where: Record<string, unknown> = { status: 'ACTIVE', visibility: 'PUBLIC' };
 
     if (citySlug) {
       where.city = { slug: citySlug };
@@ -41,7 +41,7 @@ export class EventsService {
       where.discipline = { slug: disciplineSlug };
     }
 
-    const orderBy: any = sortBy === 'newest'
+    const orderBy: Record<string, string> = sortBy === 'newest'
       ? { createdAt: 'desc' }
       : { startsAt: 'asc' };
 
@@ -93,7 +93,7 @@ export class EventsService {
       throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
     }
 
-    const data: any = { ...dto };
+    const data: Record<string, unknown> = { ...dto };
     if (dto.startsAt) data.startsAt = new Date(dto.startsAt);
     if (dto.endsAt) data.endsAt = new Date(dto.endsAt);
 
@@ -149,7 +149,8 @@ export class EventsService {
       throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
     }
 
-    const { id: _id, createdAt, updatedAt, status, ...rest } = event;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id: _id, createdAt: _ca, updatedAt: _ua, status: _st, ...rest } = event;
     return this.prisma.event.create({
       data: {
         ...rest,

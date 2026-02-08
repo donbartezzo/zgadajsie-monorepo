@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -14,9 +14,8 @@ interface UpdateProfileData {
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  private apiUrl = environment.apiUrl + '/users';
-
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl + '/users';
 
   updateProfile(data: UpdateProfileData): Observable<User> {
     return this.http.patch<User>(`${this.apiUrl}/me`, data);

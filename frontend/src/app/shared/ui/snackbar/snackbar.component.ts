@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { SnackbarService, SnackbarType } from './snackbar.service';
 
 @Component({
   selector: 'app-snackbar',
-  standalone: true,
   imports: [CommonModule, IconComponent],
   template: `
     <div class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-full max-w-sm px-4">
@@ -33,8 +32,7 @@ import { SnackbarService, SnackbarType } from './snackbar.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SnackbarComponent {
-  constructor(public snackbar: SnackbarService) {}
-
+  readonly snackbar = inject(SnackbarService);
   readonly messages = computed(() => this.snackbar.messages());
 
   typeClass(type: SnackbarType): string {

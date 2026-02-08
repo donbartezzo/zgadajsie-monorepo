@@ -1,13 +1,12 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ModerationService {
-  private apiUrl = environment.apiUrl + '/moderation';
-
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl + '/moderation';
 
   createReprimand(toUserId: string, eventId: string, reason: string): Observable<unknown> {
     return this.http.post(`${this.apiUrl}/reprimands`, { toUserId, eventId, reason });

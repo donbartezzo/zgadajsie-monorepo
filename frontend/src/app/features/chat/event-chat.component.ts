@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy, signal, ViewChild, ElementRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, OnInit, OnDestroy, signal, viewChild } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -13,7 +13,6 @@ import { ChatMessage } from '../../shared/types';
 
 @Component({
   selector: 'app-event-chat',
-  standalone: true,
   imports: [CommonModule, FormsModule, DatePipe, RouterLink, IconComponent, ButtonComponent, UserAvatarComponent, LoadingSpinnerComponent],
   template: `
     <div class="flex flex-col h-[calc(100vh-8rem)]">
@@ -67,7 +66,7 @@ export class EventChatComponent implements OnInit, OnDestroy {
   private readonly chatService = inject(ChatService);
   private readonly auth = inject(AuthService);
 
-  @ViewChild('messagesContainer') messagesContainer!: ElementRef;
+  readonly messagesContainer = viewChild<ElementRef>('messagesContainer');
 
   readonly messages = signal<ChatMessage[]>([]);
   readonly loading = signal(true);
@@ -78,7 +77,7 @@ export class EventChatComponent implements OnInit, OnDestroy {
 
   private msgSub!: Subscription;
   private typingSub!: Subscription;
-  private typingTimeout: any;
+  private typingTimeout: ReturnType<typeof setTimeout> | undefined;
 
   ngOnInit(): void {
     this.eventId = this.route.snapshot.paramMap.get('id')!;
@@ -103,7 +102,7 @@ export class EventChatComponent implements OnInit, OnDestroy {
     this.typingSub = this.chatService.onTyping().subscribe(data => {
       if (data.userId !== this.currentUserId) {
         this.typingUser.set(data.displayName);
-        clearTimeout(this.typingTimeout);
+        if (this.typingTimeout) clearTimeout(this.typingTimeout);
         this.typingTimeout = setTimeout(() => this.typingUser.set(null), 2000);
       }
     });
@@ -113,7 +112,7 @@ export class EventChatComponent implements OnInit, OnDestroy {
     this.chatService.disconnect();
     this.msgSub?.unsubscribe();
     this.typingSub?.unsubscribe();
-    clearTimeout(this.typingTimeout);
+    if (this.typingTimeout) clearTimeout(this.typingTimeout);
   }
 
   send(): void {
@@ -127,8 +126,9 @@ export class EventChatComponent implements OnInit, OnDestroy {
   }
 
   private scrollToBottom(): void {
-    if (this.messagesContainer?.nativeElement) {
-      this.messagesContainer.nativeElement.scrollTop = this.messagesContainer.nativeElement.scrollHeight;
+    const el = this.messagesContainer()?.nativeElement;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
     }
   }
 }

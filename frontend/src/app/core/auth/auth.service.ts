@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { inject, Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -16,17 +16,14 @@ interface LoginResponse extends AuthTokens {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = environment.apiUrl + '/auth';
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+  private readonly apiUrl = environment.apiUrl + '/auth';
 
   currentUser = signal<User | null>(null);
   isLoggedIn = computed(() => !!this.currentUser());
   isAdmin = computed(() => this.currentUser()?.role === 'ADMIN');
   isActive = computed(() => this.currentUser()?.isActive ?? false);
-
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-  ) {}
 
   getAccessToken(): string | null {
     return localStorage.getItem('accessToken');

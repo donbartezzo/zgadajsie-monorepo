@@ -12,13 +12,20 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { ConfigService } from '@nestjs/config';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+
+interface SocialUser {
+  providerUserId: string;
+  email: string;
+  displayName: string;
+  avatarUrl?: string;
+  provider: string;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -71,8 +78,8 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleCallback(@Req() req: any, @Res() res: Response) {
-    const tokens = await this.authService.validateSocialUser(req.user);
+  async googleCallback(@Req() req: Request, @Res() res: Response) {
+    const tokens = await this.authService.validateSocialUser(req.user as SocialUser);
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
     res.redirect(
       `${frontendUrl}/auth/login?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
@@ -87,8 +94,8 @@ export class AuthController {
 
   @Get('facebook/callback')
   @UseGuards(AuthGuard('facebook'))
-  async facebookCallback(@Req() req: any, @Res() res: Response) {
-    const tokens = await this.authService.validateSocialUser(req.user);
+  async facebookCallback(@Req() req: Request, @Res() res: Response) {
+    const tokens = await this.authService.validateSocialUser(req.user as SocialUser);
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
     res.redirect(
       `${frontendUrl}/auth/login?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,

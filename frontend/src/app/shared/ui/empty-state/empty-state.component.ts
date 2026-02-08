@@ -3,7 +3,6 @@ import { IconComponent, IconName } from '../../../core/icons/icon.component';
 
 @Component({
   selector: 'app-empty-state',
-  standalone: true,
   imports: [IconComponent],
   template: `
     <div class="flex flex-col items-center justify-center py-12 px-4 text-center">

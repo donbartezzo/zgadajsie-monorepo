@@ -16,6 +16,7 @@ import { MediaService } from './media.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { IsActiveGuard } from '../auth/guards/is-active.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
 @UseGuards(JwtAuthGuard, IsActiveGuard)
 @Controller('media')
@@ -25,7 +26,7 @@ export class MediaController {
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   upload(
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthUser,
     @UploadedFile(
       new ParseFilePipe({
         validators: [new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 })],
@@ -37,12 +38,12 @@ export class MediaController {
   }
 
   @Get('me')
-  getMyMedia(@CurrentUser() user: any) {
+  getMyMedia(@CurrentUser() user: AuthUser) {
     return this.mediaService.getMyMedia(user.id);
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string, @CurrentUser() user: any) {
+  delete(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.mediaService.delete(id, user.id);
   }
 }

@@ -11,7 +11,6 @@ import { User } from '../../shared/types';
 
 @Component({
   selector: 'app-admin-users',
-  standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, CardComponent, UserAvatarComponent, LoadingSpinnerComponent, PaginationComponent],
   template: `
     <div class="py-6">

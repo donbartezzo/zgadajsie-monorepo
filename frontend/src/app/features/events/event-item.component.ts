@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-event-item',
@@ -6,8 +6,8 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventItemComponent {
-  @Input() title!: string;
-  @Input() date!: string;
-  @Input() location!: string;
-  @Input() attendeesCount!: number;
+  readonly title = input.required<string>();
+  readonly date = input.required<string>();
+  readonly location = input.required<string>();
+  readonly attendeesCount = input.required<number>();
 }

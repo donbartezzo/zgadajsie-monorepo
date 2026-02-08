@@ -7,7 +7,6 @@ import { AdminService } from '../../core/services/admin.service';
 
 @Component({
   selector: 'app-admin-dashboard',
-  standalone: true,
   imports: [CommonModule, RouterLink, IconComponent, CardComponent],
   template: `
     <div class="py-6">

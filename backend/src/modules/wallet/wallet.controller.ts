@@ -16,6 +16,7 @@ import { IsActiveGuard } from '../auth/guards/is-active.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
 @Controller('wallets')
 export class WalletController {
@@ -26,14 +27,14 @@ export class WalletController {
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Get('me')
-  getBalance(@CurrentUser() user: any) {
+  getBalance(@CurrentUser() user: AuthUser) {
     return this.walletService.getBalance(user.id);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Get('me/transactions')
   getTransactions(
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthUser,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
@@ -42,7 +43,7 @@ export class WalletController {
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Post('me/topup')
-  async initTopup(@CurrentUser() user: any, @Body() dto: TopupDto) {
+  async initTopup(@CurrentUser() user: AuthUser, @Body() dto: TopupDto) {
     const result = await this.tpayService.createTransaction(
       dto.amount,
       `Doładowanie portfela – ${dto.amount} PLN`,
@@ -52,7 +53,7 @@ export class WalletController {
   }
 
   @Post('tpay-notification')
-  async tpayNotification(@Body() body: any) {
+  async tpayNotification(@Body() body: Record<string, unknown>) {
     const verification = await this.tpayService.verifyNotification(body);
     if (verification.valid && verification.amount) {
       // TODO: find user by transaction and credit wallet
@@ -83,7 +84,7 @@ export class WalletController {
   @Post(':userId/adjust')
   adminAdjust(
     @Param('userId') userId: string,
-    @CurrentUser() admin: any,
+    @CurrentUser() admin: AuthUser,
     @Body() dto: AdminAdjustDto,
   ) {
     return this.walletService.adminAdjust(userId, admin.id, dto.amount, dto.description);

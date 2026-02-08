@@ -5,7 +5,6 @@ export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
 
 @Component({
   selector: 'app-user-avatar',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div class="relative inline-flex items-center justify-center shrink-0" [ngClass]="sizeClass()">

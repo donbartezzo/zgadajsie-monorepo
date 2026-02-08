@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -15,9 +15,8 @@ export interface MediaFile {
 
 @Injectable({ providedIn: 'root' })
 export class MediaService {
-  private apiUrl = environment.apiUrl + '/media';
-
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl + '/media';
 
   upload(file: File): Observable<MediaFile> {
     const formData = new FormData();

@@ -13,7 +13,6 @@ import { Participation } from '../../shared/types';
 
 @Component({
   selector: 'app-event-manage',
-  standalone: true,
   imports: [CommonModule, IconComponent, ButtonComponent, CardComponent, UserAvatarComponent, LoadingSpinnerComponent],
   template: `
     <div class="py-6">

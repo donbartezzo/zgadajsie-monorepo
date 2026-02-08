@@ -70,7 +70,6 @@ export type IconVariant = 'default' | 'muted' | 'primary' | 'danger';
 
 @Component({
   selector: 'app-icon',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <span

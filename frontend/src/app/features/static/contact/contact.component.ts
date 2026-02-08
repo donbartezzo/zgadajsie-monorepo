@@ -8,7 +8,6 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 
 @Component({
   selector: 'app-contact',
-  standalone: true,
   imports: [CommonModule, FormsModule, IconComponent, ButtonComponent, CardComponent],
   template: `
     <div class="py-6">

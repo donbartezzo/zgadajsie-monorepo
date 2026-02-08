@@ -6,7 +6,6 @@ interface FaqItem { question: string; answer: string; }
 
 @Component({
   selector: 'app-faq',
-  standalone: true,
   imports: [CommonModule, IconComponent],
   template: `
     <div class="py-6">

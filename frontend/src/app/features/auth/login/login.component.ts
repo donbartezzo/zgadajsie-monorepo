@@ -10,7 +10,6 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, IconComponent, ButtonComponent, CardComponent],
   template: `
     <div class="py-8">
@@ -124,8 +123,9 @@ export class LoginComponent implements OnInit {
       await this.auth.login(this.email, this.password);
       this.snackbar.success('Zalogowano pomyślnie');
       this.router.navigateByUrl('/');
-    } catch (err: any) {
-      this.snackbar.error(err?.error?.message || 'Błąd logowania');
+    } catch (err: unknown) {
+      const msg = (err as { error?: { message?: string } })?.error?.message;
+      this.snackbar.error(msg || 'Błąd logowania');
     } finally {
       this.loading.set(false);
     }

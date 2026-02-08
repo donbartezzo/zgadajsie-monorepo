@@ -4,7 +4,6 @@ import { IconComponent } from '../../../core/icons/icon.component';
 
 @Component({
   selector: 'app-file-upload',
-  standalone: true,
   imports: [CommonModule, IconComponent],
   template: `
     <div

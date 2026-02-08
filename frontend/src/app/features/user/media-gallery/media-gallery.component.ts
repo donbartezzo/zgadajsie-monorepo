@@ -9,7 +9,6 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 
 @Component({
   selector: 'app-media-gallery',
-  standalone: true,
   imports: [CommonModule, IconComponent, FileUploadComponent, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
     <div class="py-6">

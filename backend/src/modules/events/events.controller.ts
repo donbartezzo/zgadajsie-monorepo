@@ -18,6 +18,7 @@ import { IsActiveGuard } from '../auth/guards/is-active.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
 @Controller('events')
 export class EventsController {
@@ -25,7 +26,7 @@ export class EventsController {
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Post()
-  create(@CurrentUser() user: any, @Body() dto: CreateEventDto) {
+  create(@CurrentUser() user: AuthUser, @Body() dto: CreateEventDto) {
     return this.eventsService.create(user.id, dto);
   }
 
@@ -43,7 +44,7 @@ export class EventsController {
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthUser,
     @Body() dto: UpdateEventDto,
   ) {
     return this.eventsService.update(id, user.id, dto);
@@ -51,19 +52,19 @@ export class EventsController {
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Post(':id/cancel')
-  cancel(@Param('id') id: string, @CurrentUser() user: any) {
+  cancel(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.eventsService.cancel(id, user.id);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Post(':id/archive')
-  archive(@Param('id') id: string, @CurrentUser() user: any) {
+  archive(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.eventsService.archive(id, user.id);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Post(':id/duplicate')
-  duplicate(@Param('id') id: string, @CurrentUser() user: any) {
+  duplicate(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.eventsService.duplicate(id, user.id);
   }
 
@@ -76,7 +77,7 @@ export class EventsController {
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Patch(':id/auto-accept')
-  toggleAutoAccept(@Param('id') id: string, @CurrentUser() user: any) {
+  toggleAutoAccept(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.eventsService.toggleAutoAccept(id, user.id);
   }
 
@@ -87,7 +88,7 @@ export class EventsController {
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Post('series')
-  createSeries(@CurrentUser() user: any, @Body() dto: CreateEventDto) {
+  createSeries(@CurrentUser() user: AuthUser, @Body() dto: CreateEventDto) {
     return this.eventsService.createSeries(user.id, dto);
   }
 
@@ -95,7 +96,7 @@ export class EventsController {
   @Patch(':id/series')
   updateSeries(
     @Param('id') id: string,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthUser,
     @Body() dto: UpdateEventDto,
   ) {
     return this.eventsService.updateSeries(id, user.id, dto);

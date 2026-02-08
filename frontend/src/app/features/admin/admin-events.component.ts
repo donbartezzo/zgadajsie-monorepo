@@ -12,7 +12,6 @@ import { EventListItem } from '../../shared/types';
 
 @Component({
   selector: 'app-admin-events',
-  standalone: true,
   imports: [CommonModule, DatePipe, RouterLink, IconComponent, ButtonComponent, CardComponent, LoadingSpinnerComponent, PaginationComponent],
   template: `
     <div class="py-6">

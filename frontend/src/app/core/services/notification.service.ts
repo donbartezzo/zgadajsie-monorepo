@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -6,11 +6,10 @@ import { PaginatedNotifications } from '../../shared/types';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-  private apiUrl = environment.apiUrl + '/notifications';
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl + '/notifications';
 
   unreadCount = signal(0);
-
-  constructor(private http: HttpClient) {}
 
   getNotifications(page = 1, limit = 20): Observable<PaginatedNotifications> {
     return this.http.get<PaginatedNotifications>(this.apiUrl, {

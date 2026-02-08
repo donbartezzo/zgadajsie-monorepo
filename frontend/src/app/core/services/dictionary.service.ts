@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -6,9 +6,8 @@ import { City, DictionaryItem } from '../../shared/types';
 
 @Injectable({ providedIn: 'root' })
 export class DictionaryService {
-  private apiUrl = environment.apiUrl + '/dictionaries';
-
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl + '/dictionaries';
 
   getCities(): Observable<City[]> {
     return this.http.get<City[]>(`${this.apiUrl}/cities`);

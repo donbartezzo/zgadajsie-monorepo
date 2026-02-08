@@ -9,7 +9,6 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 
 @Component({
   selector: 'app-reset-password',
-  standalone: true,
   imports: [FormsModule, IconComponent, ButtonComponent, CardComponent],
   template: `
     <div class="py-8">
@@ -69,8 +68,9 @@ export class ResetPasswordComponent {
       await this.auth.resetPassword(token, this.password);
       this.snackbar.success('Hasło zostało zmienione');
       this.router.navigateByUrl('/auth/login');
-    } catch (err: any) {
-      this.snackbar.error(err?.error?.message || 'Nie udało się zmienić hasła');
+    } catch (err: unknown) {
+      const msg = (err as { error?: { message?: string } })?.error?.message;
+      this.snackbar.error(msg || 'Nie udało się zmienić hasła');
     } finally {
       this.loading.set(false);
     }

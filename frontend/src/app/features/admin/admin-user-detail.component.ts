@@ -12,7 +12,6 @@ import { User, WalletTransaction } from '../../shared/types';
 
 @Component({
   selector: 'app-admin-user-detail',
-  standalone: true,
   imports: [CommonModule, FormsModule, DatePipe, DecimalPipe, ButtonComponent, CardComponent, UserAvatarComponent, LoadingSpinnerComponent],
   template: `
     <div class="py-6">

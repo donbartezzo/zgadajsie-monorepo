@@ -14,8 +14,8 @@ export class TpayService {
     };
   }
 
-  async verifyNotification(body: any): Promise<{ valid: boolean; transactionId?: string; amount?: number }> {
+  async verifyNotification(body: Record<string, unknown>): Promise<{ valid: boolean; transactionId?: string; amount?: number }> {
     // TODO: implement Tpay notification verification
-    return { valid: true, transactionId: body.tr_id, amount: body.tr_amount };
+    return { valid: true, transactionId: body.tr_id as string, amount: body.tr_amount as number };
   }
 }

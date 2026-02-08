@@ -3,7 +3,6 @@ import { IconComponent } from '../../../core/icons/icon.component';
 
 @Component({
   selector: 'app-loading-spinner',
-  standalone: true,
   imports: [IconComponent],
   template: `
     <div class="flex items-center justify-center py-8">

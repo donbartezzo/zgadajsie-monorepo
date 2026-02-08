@@ -10,7 +10,6 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 
 @Component({
   selector: 'app-register',
-  standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, IconComponent, ButtonComponent, CardComponent],
   template: `
     <div class="py-8">
@@ -87,8 +86,9 @@ export class RegisterComponent {
       await this.auth.register(this.email, this.password, this.displayName);
       this.snackbar.success('Konto utworzone! Sprawdź email, aby aktywować konto.');
       this.router.navigateByUrl('/auth/login');
-    } catch (err: any) {
-      this.snackbar.error(err?.error?.message || 'Błąd rejestracji');
+    } catch (err: unknown) {
+      const msg = (err as { error?: { message?: string } })?.error?.message;
+      this.snackbar.error(msg || 'Błąd rejestracji');
     } finally {
       this.loading.set(false);
     }

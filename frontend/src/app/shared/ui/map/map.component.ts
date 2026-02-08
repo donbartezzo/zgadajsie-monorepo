@@ -8,10 +8,10 @@ import {
   output,
   viewChild,
 } from '@angular/core';
+import type * as L from 'leaflet';
 
 @Component({
   selector: 'app-map',
-  standalone: true,
   template: `
     <div #mapContainer class="w-full rounded-xl overflow-hidden" [style.height.px]="height()"></div>
   `,
@@ -27,33 +27,33 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   readonly mapContainer = viewChild.required<ElementRef<HTMLElement>>('mapContainer');
 
-  private map: any;
-  private marker: any;
-  private L: any;
+  private map: L.Map | null = null;
+  private marker: L.Marker | null = null;
+  private leaflet: typeof L | null = null;
 
   async ngAfterViewInit(): Promise<void> {
     if (typeof window === 'undefined') return;
 
     try {
-      this.L = await import('leaflet');
+      this.leaflet = await import('leaflet');
 
-      this.map = this.L.map(this.mapContainer().nativeElement, {
+      this.map = this.leaflet.map(this.mapContainer().nativeElement, {
         dragging: this.interactive(),
         scrollWheelZoom: this.interactive(),
         zoomControl: this.interactive(),
       }).setView([this.lat(), this.lng()], this.zoom());
 
-      this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      this.leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
       }).addTo(this.map);
 
-      this.marker = this.L.marker([this.lat(), this.lng()], {
+      this.marker = this.leaflet.marker([this.lat(), this.lng()], {
         draggable: this.interactive(),
       }).addTo(this.map);
 
       if (this.interactive()) {
         this.marker.on('dragend', () => {
-          const pos = this.marker.getLatLng();
+          const pos = this.marker!.getLatLng();
           this.markerMoved.emit({ lat: pos.lat, lng: pos.lng });
         });
       }

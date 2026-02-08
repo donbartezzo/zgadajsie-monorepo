@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -6,9 +6,8 @@ import { Wallet, PaginatedTransactions } from '../../shared/types';
 
 @Injectable({ providedIn: 'root' })
 export class WalletService {
-  private apiUrl = environment.apiUrl + '/wallets';
-
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl + '/wallets';
 
   getBalance(): Observable<Wallet> {
     return this.http.get<Wallet>(`${this.apiUrl}/me`);

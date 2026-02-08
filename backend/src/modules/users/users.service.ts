@@ -25,7 +25,7 @@ export class UsersService {
   }
 
   async updateProfile(userId: string, dto: UpdateProfileDto) {
-    const data: any = {};
+    const data: Record<string, unknown> = {};
     if (dto.displayName) data.displayName = dto.displayName;
     if (dto.avatarUrl !== undefined) data.avatarUrl = dto.avatarUrl;
     if (dto.email) data.email = dto.email;
@@ -94,7 +94,7 @@ export class UsersService {
 
   async findAll(params: { page?: number; limit?: number; search?: string; role?: string; isActive?: boolean }) {
     const { page = 1, limit = 20, search, role, isActive } = params;
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (search) {
       where.OR = [
         { email: { contains: search, mode: 'insensitive' } },
@@ -119,7 +119,7 @@ export class UsersService {
   }
 
   async adminUpdate(id: string, dto: AdminUpdateUserDto) {
-    const data: any = {};
+    const data: Record<string, unknown> = {};
     if (dto.displayName) data.displayName = dto.displayName;
     if (dto.role) data.role = dto.role;
     if (dto.isActive !== undefined) data.isActive = dto.isActive;

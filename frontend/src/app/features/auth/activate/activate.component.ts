@@ -8,7 +8,6 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 
 @Component({
   selector: 'app-activate',
-  standalone: true,
   imports: [RouterLink, IconComponent, ButtonComponent, CardComponent],
   template: `
     <div class="py-8">
@@ -58,8 +57,9 @@ export class ActivateComponent implements OnInit {
     try {
       await this.auth.activateAccount(token);
       this.success.set(true);
-    } catch (err: any) {
-      this.errorMsg.set(err?.error?.message || 'Link aktywacyjny jest nieprawidłowy lub wygasł.');
+    } catch (err: unknown) {
+      const msg = (err as { error?: { message?: string } })?.error?.message;
+      this.errorMsg.set(msg || 'Link aktywacyjny jest nieprawidłowy lub wygasł.');
     } finally {
       this.loading.set(false);
     }

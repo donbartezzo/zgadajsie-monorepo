@@ -21,8 +21,8 @@ export class PushService {
       try {
         webPush.setVapidDetails(vapidSubject, vapidPublic, vapidPrivate);
         this.logger.log('VAPID keys configured');
-      } catch (e: any) {
-        this.logger.warn(`Invalid VAPID keys – push notifications disabled: ${e.message}`);
+      } catch (e: unknown) {
+        this.logger.warn(`Invalid VAPID keys – push notifications disabled: ${(e as Error).message}`);
       }
     } else {
       this.logger.warn('VAPID keys not configured – push notifications disabled');
@@ -55,9 +55,10 @@ export class PushService {
           },
           payload,
         );
-      } catch (error: any) {
-        this.logger.error(`Push failed for ${sub.endpoint}: ${error.message}`);
-        if (error.statusCode === 404 || error.statusCode === 410) {
+      } catch (error: unknown) {
+        const err = error as { message?: string; statusCode?: number };
+        this.logger.error(`Push failed for ${sub.endpoint}: ${err.message}`);
+        if (err.statusCode === 404 || err.statusCode === 410) {
           await this.prisma.pushSubscription.delete({ where: { id: sub.id } });
           this.logger.log(`Removed stale subscription ${sub.id}`);
         }
