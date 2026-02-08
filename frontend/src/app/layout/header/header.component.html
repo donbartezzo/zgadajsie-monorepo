@@ -1,71 +1,32 @@
-<header class="fixed inset-x-0 top-0 z-50 bg-white/95 shadow-sm backdrop-blur-md dark:bg-slate-900/95">
-  <div class="mx-auto flex max-w-md items-center justify-between px-4 py-3">
-    <a
-      routerLink="/"
-      class="text-base font-semibold tracking-tight text-highlight dark:text-highlight-light"
-    >
-      ZgadajSię
-    </a>
-
-    <nav class="flex items-center gap-2">
+<header class="fixed inset-x-0 top-0 z-50 bg-white/95 backdrop-blur-md dark:bg-slate-900/95">
+  <div class="relative mx-auto flex h-12 max-w-md items-center justify-between px-4">
+    <!-- Left: back arrow (hidden on home) -->
+    @if (!isHome()) {
       <button
         type="button"
-        class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700 shadow-sm ring-1 ring-slate-200 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700"
-        (click)="toggleTheme($event)"
-        aria-label="Przełącz motyw jasny/ciemny"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-800"
+        (click)="goBack()"
+        aria-label="Wróć"
       >
-        <app-icon [name]="theme.isDark() ? 'moon' : 'sun'" size="sm" variant="default"></app-icon>
+        <app-icon name="arrow-left" size="sm" variant="default"></app-icon>
       </button>
+    } @else {
+      <span class="w-9"></span>
+    }
 
-      @if (auth.isLoggedIn()) {
-        <a
-          routerLink="/profile"
-          class="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700 shadow-sm ring-1 ring-slate-200 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700"
-        >
-          <app-icon name="bell" size="sm" variant="default"></app-icon>
-          @if (notifications.unreadCount() > 0) {
-            <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-              {{ notifications.unreadCount() > 9 ? '9+' : notifications.unreadCount() }}
-            </span>
-          }
-        </a>
+    <!-- Center: page title -->
+    <span class="absolute inset-x-0 text-center text-sm font-semibold text-gray-900 pointer-events-none dark:text-gray-100">
+      {{ pageTitle() }}
+    </span>
 
-        <div class="relative">
-          <button type="button" (click)="toggleDropdown()" class="focus:outline-none">
-            <app-user-avatar
-              [avatarUrl]="auth.currentUser()?.avatarUrl"
-              [displayName]="auth.currentUser()?.displayName || ''"
-              size="sm"
-            ></app-user-avatar>
-          </button>
-
-          @if (dropdownOpen()) {
-            <div class="absolute right-0 top-full mt-2 w-48 rounded-xl bg-white shadow-lg ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700 py-1 z-50">
-              <a routerLink="/profile" (click)="dropdownOpen.set(false)" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700">
-                <app-icon name="user" size="sm"></app-icon> Profil
-              </a>
-              <a routerLink="/wallet" (click)="dropdownOpen.set(false)" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700">
-                <app-icon name="wallet" size="sm"></app-icon> Portfel
-              </a>
-              <a routerLink="/profile/events" (click)="dropdownOpen.set(false)" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700">
-                <app-icon name="calendar" size="sm"></app-icon> Moje eventy
-              </a>
-              <hr class="my-1 border-gray-100 dark:border-slate-700" />
-              <button (click)="logout()" class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-slate-700">
-                <app-icon name="log-out" size="sm" variant="danger"></app-icon> Wyloguj się
-              </button>
-            </div>
-          }
-        </div>
-      } @else {
-        <a
-          routerLink="/auth/login"
-          class="inline-flex items-center gap-1.5 rounded-full bg-highlight px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-highlight-dark"
-        >
-          <app-icon name="log-in" size="sm"></app-icon>
-          Zaloguj się
-        </a>
-      }
-    </nav>
+    <!-- Right: theme toggle -->
+    <button
+      type="button"
+      class="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-800"
+      (click)="toggleTheme($event)"
+      aria-label="Przełącz motyw jasny/ciemny"
+    >
+      <app-icon [name]="theme.isDark() ? 'moon' : 'sun'" size="sm" variant="default"></app-icon>
+    </button>
   </div>
 </header>

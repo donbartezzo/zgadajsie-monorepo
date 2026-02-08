@@ -1,54 +1,28 @@
-<section class="py-12 text-center">
-  <div class="mb-8">
-    <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-highlight-50 dark:bg-highlight-200/20">
-      <app-icon name="users" size="lg" variant="primary"></app-icon>
-    </div>
+<section class="flex h-[calc(100dvh-4rem)] flex-col items-center justify-center px-5 text-center">
+  <div class="w-full max-w-sm">
+    <img
+      src="assets/images/default.svg"
+      alt="Ilustracja — społeczność sportowa"
+      class="mx-auto mb-10 w-3/4"
+    />
+
     <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
       ZgadajSię
     </h1>
-    <p class="mt-2 text-base text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
-      Dołącz do lokalnej społeczności sportowej w Zielonej Górze
-    </p>
-  </div>
 
-  <div class="flex flex-col gap-3 max-w-xs mx-auto">
-    <a routerLink="/events">
-      <app-button variant="primary" [fullWidth]="true">
-        <app-icon name="calendar" size="sm"></app-icon>
-        Przeglądaj wydarzenia
+    <p class="-mt-0.5 text-xs font-medium text-highlight dark:text-highlight-light">
+      Sportowa społeczność Zielonej Góry
+    </p>
+
+    <p class="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+      Znajdź ludzi do wspólnego grania, dołącz do wydarzeń sportowych
+      i&nbsp;bądź aktywny w&nbsp;swojej okolicy!
+    </p>
+
+    <a routerLink="/events" class="mt-8 inline-block">
+      <app-button variant="primary" size="lg">
+        Rozpocznij
       </app-button>
     </a>
-    @if (!auth.isLoggedIn()) {
-      <a routerLink="/auth/login">
-        <app-button variant="outline" [fullWidth]="true">
-          <app-icon name="log-in" size="sm"></app-icon>
-          Zaloguj się
-        </app-button>
-      </a>
-    }
-  </div>
-
-  <div class="mt-16 grid grid-cols-3 gap-6">
-    <div class="flex flex-col items-center text-center">
-      <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-highlight-50 dark:bg-highlight-200/20">
-        <app-icon name="map-pin" size="md" variant="primary"></app-icon>
-      </div>
-      <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Lokalne</h3>
-      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Wydarzenia w Twojej okolicy</p>
-    </div>
-    <div class="flex flex-col items-center text-center">
-      <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 dark:bg-orange-900/20">
-        <app-icon name="shield" size="md" variant="primary"></app-icon>
-      </div>
-      <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Bezpieczne</h3>
-      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Zweryfikowani organizatorzy</p>
-    </div>
-    <div class="flex flex-col items-center text-center">
-      <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-50 dark:bg-yellow-900/20">
-        <app-icon name="trophy" size="md" variant="primary"></app-icon>
-      </div>
-      <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Rangi</h3>
-      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Zdobywaj punkty aktywności</p>
-    </div>
   </div>
 </section>

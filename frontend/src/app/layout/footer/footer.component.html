@@ -2,44 +2,69 @@
   class="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white/95 px-2 py-1.5 shadow-[0_-4px_12px_rgba(15,23,42,0.12)] backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95"
   aria-label="Główna nawigacja dolna"
 >
-  <nav class="mx-auto flex max-w-md items-stretch justify-between gap-1 text-xs font-medium text-slate-500 dark:text-slate-300">
-    <a
-      routerLink="/"
-      routerLinkActive="text-highlight dark:text-highlight-light"
-      [routerLinkActiveOptions]="{ exact: true }"
-      class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
+  <!-- Back button — floating above footer, left side -->
+  @if (!isHome()) {
+    <button
+      type="button"
+      class="absolute -top-4 left-3 z-50 grid h-8 w-8 place-items-center rounded-full border border-slate-200 bg-white shadow-md transition-colors hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+      (click)="goBack()"
+      aria-label="Wróć"
     >
-      <app-icon name="home" size="md" variant="default" class="mb-0.5"></app-icon>
-      <span>Start</span>
-    </a>
+      <app-icon name="arrow-left" size="sm" variant="default"></app-icon>
+    </button>
+  }
 
-    <a
-      routerLink="/events"
-      routerLinkActive="text-highlight dark:text-highlight-light"
-      class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
-    >
-      <app-icon name="calendar" size="md" variant="default" class="mb-0.5"></app-icon>
-      <span>Wydarzenia</span>
-    </a>
-
-    @if (auth.isLoggedIn()) {
+  <div class="mx-auto text-xs font-medium text-slate-500 dark:text-slate-300">
+    <!-- Centered nav -->
+    <nav class="flex items-stretch justify-center gap-1">
       <a
-        routerLink="/events/new"
+        routerLink="/events"
         routerLinkActive="text-highlight dark:text-highlight-light"
-        class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
+        class="flex flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
       >
-        <app-icon name="plus" size="md" variant="primary" class="mb-0.5"></app-icon>
-        <span>Dodaj</span>
+        <app-icon name="calendar" size="md" variant="default" class="mb-0.5"></app-icon>
+        <span>Wydarzenia</span>
       </a>
-    }
 
-    <a
-      routerLink="/profile"
-      routerLinkActive="text-highlight dark:text-highlight-light"
-      class="flex flex-1 flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
-    >
-      <app-icon name="user" size="md" variant="default" class="mb-0.5"></app-icon>
-      <span>Profil</span>
-    </a>
-  </nav>
+      @if (auth.isLoggedIn()) {
+        <a
+          routerLink="/profile"
+          routerLinkActive="text-highlight dark:text-highlight-light"
+          class="flex flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
+        >
+          <app-icon name="user" size="md" variant="default" class="mb-0.5"></app-icon>
+          <span>Profil</span>
+        </a>
+
+        <button
+          type="button"
+          class="flex flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
+          (click)="logout()"
+        >
+          <app-icon name="log-out" size="md" variant="default" class="mb-0.5"></app-icon>
+          <span>Wyloguj</span>
+        </button>
+      } @else {
+        <a
+          routerLink="/auth/login"
+          routerLinkActive="text-highlight dark:text-highlight-light"
+          class="flex flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
+        >
+          <app-icon name="log-in" size="md" variant="default" class="mb-0.5"></app-icon>
+          <span>Zaloguj</span>
+        </a>
+      }
+
+      <!-- Theme toggle -->
+      <button
+        type="button"
+        class="flex flex-col items-center justify-center rounded-xl px-2 py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
+        (click)="toggleTheme($event)"
+        aria-label="Przełącz motyw jasny/ciemny"
+      >
+        <app-icon [name]="theme.isDark() ? 'moon' : 'sun'" size="md" variant="default" class="mb-0.5"></app-icon>
+        <span>Motyw</span>
+      </button>
+    </nav>
+  </div>
 </footer>

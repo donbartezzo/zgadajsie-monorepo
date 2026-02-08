@@ -7,7 +7,7 @@ import { SnackbarService, SnackbarType } from './snackbar.service';
   selector: 'app-snackbar',
   imports: [CommonModule, IconComponent],
   template: `
-    <div class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-full max-w-sm px-4">
+    <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-full max-w-sm px-4">
       @for (msg of messages(); track msg.id) {
         <div
           class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium animate-slide-up"
@@ -23,11 +23,11 @@ import { SnackbarService, SnackbarType } from './snackbar.service';
     </div>
   `,
   styles: [`
-    @keyframes slide-up {
-      from { transform: translateY(20px); opacity: 0; }
+    @keyframes slide-down {
+      from { transform: translateY(-20px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
-    .animate-slide-up { animation: slide-up 0.2s ease-out; }
+    .animate-slide-up { animation: slide-down 0.2s ease-out; }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -6,3 +6,16 @@ Komponent takowy jeszcze nie istnieje, więc należy go stworzyć:
 
 Bezwarunkowo stosuj się do zasad określonych w:
 `docs/ai-bootstrap-to-tailwind-migration.md`.
+
+
+---
+
+
+Zaktualizuj/dostosuj stronę główną w oparciu o plik szablonu:
+`.ignored/themplates/sticky-mobile-template/code/splash-3.html`.
+
+Komponent strony głównej: `frontend/src/app/features/home/home.component.ts`
+
+Bezwarunkowo stosuj się do zasad określonych w: `docs/ai-bootstrap-to-tailwind-migration.md`.
+
+Jeśli masz jakieś wątpliwości/uwagi/propozycje lub coś wymaga doprecyzwania to zadaj ponumerowane pytania przed implementacją.
