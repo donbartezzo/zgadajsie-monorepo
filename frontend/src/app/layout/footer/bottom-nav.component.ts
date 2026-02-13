@@ -12,6 +12,7 @@ import { ThemeService } from '../../theme.service';
   imports: [RouterLink, RouterLinkActive, IconComponent],
   templateUrl: './bottom-nav.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'fixed bottom-0 left-1/2 z-50 block w-full max-w-app -translate-x-1/2' },
 })
 export class BottomNavComponent {
   private readonly router = inject(Router);

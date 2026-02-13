@@ -14,6 +14,9 @@ module.exports = {
       },
     },
     extend: {
+      maxWidth: {
+        app: 'var(--app-max-width)',
+      },
       colors: {
         highlight: {
           DEFAULT: '#DA4453',

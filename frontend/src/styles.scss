@@ -11,3 +11,60 @@ body {
 body {
   margin: 0;
 }
+
+// ── App shell: single source of truth for app max-width ──
+$app-max-width: 600px;
+
+:root {
+  --app-max-width: #{$app-max-width};
+}
+
+// Mobile (default): background pattern hidden, container plain
+.app-bg-pattern {
+  display: none;
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  transform: rotate(15deg);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-container {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: 4rem; // clearance for fixed bottom-nav (h-16 = 4rem)
+}
+
+// Desktop: show pattern, decorate container
+@media (min-width: $app-max-width) {
+  .app-bg-pattern {
+    display: block;
+    background-image: url('/assets/images/sports-transparent-bg-500.png');
+    background-size: 500px 500px;
+    background-repeat: repeat;
+  }
+
+  .app-container {
+    max-width: var(--app-max-width);
+    margin-left: auto;
+    margin-right: auto;
+    overflow: hidden;
+    border-radius: 1rem;
+    border-left: 1px solid #d5d5da;
+    border-right: 1px solid #d5d5da;
+    background-color: #eaeaef;
+    box-shadow:
+      8px 0 24px -4px rgba(0, 0, 0, 0.15),
+      -8px 0 24px -4px rgba(0, 0, 0, 0.15);
+  }
+
+  .dark .app-container {
+    border-color: #334155; // slate-700
+    background-color: #0f172a; // slate-900
+  }
+}

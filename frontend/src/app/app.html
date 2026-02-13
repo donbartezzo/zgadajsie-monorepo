@@ -1,15 +1,20 @@
-<div class="min-h-screen relative overflow-x-hidden bg-gray-50 dark:bg-slate-900">
-  <app-snackbar></app-snackbar>
+<div class="min-h-screen relative overflow-hidden bg-[#eaeaef] dark:bg-slate-900">
+  <!-- Rotated tiled background (hidden on mobile, shown on desktop via styles.scss) -->
+  <div class="app-bg-pattern" aria-hidden="true"></div>
 
-  <main class="pb-16">
-    <div class="container mx-auto max-w-[640px] px-4">
+  <!-- Main app container (styled on desktop via styles.scss) -->
+  <div class="app-container dark:bg-slate-900 dark:border-slate-700 p-3">
+    <app-snackbar></app-snackbar>
+
+    <main class="flex-1">
       <router-outlet></router-outlet>
-    </div>
 
-    @if (!isHome()) {
+      @if (!isHome()) {
       <app-footer></app-footer>
-    }
-  </main>
+      }
+    </main>
+  </div>
 
+  <!-- Bottom nav: fixed outside container so overflow:hidden doesn't affect it -->
   <app-bottom-nav></app-bottom-nav>
 </div>
