@@ -11,11 +11,13 @@ Bezwarunkowo stosuj się do zasad określonych w:
 ---
 
 
-Zaktualizuj/dostosuj stronę główną w oparciu o plik szablonu:
-`.ignored/themplates/sticky-mobile-template/code/splash-3.html`.
+Zaktualizuj/dostosuj kartę użytkownika w oparciu o plik szablonu:
+`.ignored/themplates/sticky-mobile-template/code/page-events-detailed-1.html`.
 
-Komponent strony głównej: `frontend/src/app/features/home/home.component.ts`
+Komponent strony głównej: `frontend/src/app/features/event/event.component.ts`
 
 Bezwarunkowo stosuj się do zasad określonych w: `docs/ai-bootstrap-to-tailwind-migration.md`.
 
 Jeśli masz jakieś wątpliwości/uwagi/propozycje lub coś wymaga doprecyzwania to zadaj ponumerowane pytania przed implementacją.
+
+Jeśli nie wiesz gdzie umieścić jakiś obecnych potrzenych danych eventu (bo np. nie były przewidziane w tym szablonie), to zadaj pytanie o to przed implementacją.

@@ -1,12 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { IconComponent } from '../../core/icons/icon.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
 import { CardComponent } from '../../shared/ui/card/card.component';
 import { UserAvatarComponent } from '../../shared/ui/user-avatar/user-avatar.component';
 import { MapComponent } from '../../shared/ui/map/map.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner/loading-spinner.component';
+import { BottomSheetComponent } from '../../shared/ui/bottom-sheet/bottom-sheet.component';
 import { EventService } from '../../core/services/event.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { SnackbarService } from '../../shared/ui/snackbar/snackbar.service';
@@ -18,12 +19,12 @@ import { Event as EventModel, Participation } from '../../shared/types';
     CommonModule, DatePipe, DecimalPipe, RouterLink,
     IconComponent, ButtonComponent, CardComponent,
     UserAvatarComponent, MapComponent, LoadingSpinnerComponent,
+    BottomSheetComponent,
   ],
   templateUrl: './event.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventComponent implements OnInit {
-  private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly eventService = inject(EventService);
   readonly auth = inject(AuthService);
@@ -33,6 +34,21 @@ export class EventComponent implements OnInit {
   readonly participants = signal<Participation[]>([]);
   readonly isLoading = signal(true);
   readonly joining = signal(false);
+
+  readonly showMapSheet = signal(false);
+  readonly showParticipantsSheet = signal(false);
+
+  readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
+  readonly remainingCount = computed(() => Math.max(0, this.participants().length - 6));
+
+  readonly fullAddress = computed(() => {
+    const e = this.event();
+    if (!e) return '';
+    //const parts = [e.address, e.city?.name].filter(Boolean);
+    // return parts.join(', ');
+
+    return e.address;
+  });
 
   private get eventId(): string {
     return this.route.snapshot.paramMap.get('id')!;
@@ -59,10 +75,6 @@ export class EventComponent implements OnInit {
   get isOrganizer(): boolean {
     const userId = this.auth.currentUser()?.id;
     return !!userId && this.event()?.organizerId === userId;
-  }
-
-  onBack(): void {
-    this.router.navigate(['/events']);
   }
 
   onJoin(): void {
@@ -94,11 +106,5 @@ export class EventComponent implements OnInit {
         this.joining.set(false);
       },
     });
-  }
-
-  onShare(): void {
-    if (navigator.share) {
-      navigator.share({ title: this.event()?.title, url: window.location.href });
-    }
   }
 }
