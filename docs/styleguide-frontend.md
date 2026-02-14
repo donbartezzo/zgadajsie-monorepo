@@ -110,6 +110,32 @@
 - Komentarze tylko tam, gdzie kod nie jest oczywisty.
 - Stosuj DRY, KISS, YAGNI.
 
+## Organizacja podkomponentów w features/
+
+- W `features/<feature>/` stosujemy podział na podkatalogi według roli:
+  - `pages/` - komponenty routowane.
+  - `ui/` - komponenty prezentacyjne (bez bezpośredniego dostępu do API).
+  - `overlays/` - bottom sheet / dialog / modal / inne overlaye.
+  - `state/` - store/facade oparte o signals (jeśli używane).
+  - `services/` - serwisy specyficzne dla feature.
+- Podkatalogi tworzymy już dla pojedynczych plików (jeśli dany element należy do danej roli).
+- Komponenty routowane zawsze trzymamy w `pages/` (nie w katalogu głównym feature'a).
+- Przykład:
+  ```
+  features/event/
+    ├── pages/
+    │   └── event/
+    │       ├── event.component.ts
+    │       └── event.component.html
+    ├── services/
+    │   └── event.service.ts
+    ├── ui/
+    └── overlays/
+        ├── join-confirm-sheet.component.ts
+        └── leave-confirm-sheet.component.ts
+  ```
+- Jeśli komponent UI jest współdzielony między feature'ami, ale jest zależny od domeny (np. auth), umieszczaj go w `shared/<domena>/ui/` (np. `shared/auth/ui/login-form/`).
+
 ## Pozostałe wytyczne:
 
 - Jeśli w szablonie stosowana jest zmienna sygnał wielokrtonie to zastosuj napierw przypisanie sygnału do zmiennej lokalnej (np. `@let _event = event();`) dalej stosuj już tylką tą zmienną lokalną.

@@ -36,7 +36,20 @@ frontend/
   │   │   │   └── preloader/
   │   │   └── features/         # Moduły funkcjonalne aplikacji (domeny)
   │   │       ├── events/       # Funkcjonalność listingu wydarzeń (feature)
+  │   │       │   ├── pages/       # Komponenty routowane feature'a
+  │   │       │   ├── ui/          # Podkomponenty prezentacyjne feature'a
+  │   │       │   ├── overlays/    # Bottom sheet / dialog / modal (overlaye)
+  │   │       │   └── services/    # Serwisy specyficzne dla feature
+  │   │       ├── event/        # Widok szczegółów wydarzenia (feature)
+  │   │       │   ├── pages/       # Komponenty routowane feature'a
+  │   │       │   ├── ui/          # Podkomponenty prezentacyjne feature'a
+  │   │       │   ├── overlays/    # Bottom sheet / dialog / modal (overlaye)
+  │   │       │   └── services/    # Serwisy specyficzne dla feature
   │   │       └── home/         # Funkcjonalność strony głównej / landing page (feature)
+  │   │           ├── pages/       # Komponenty routowane feature'a
+  │   │           ├── ui/          # Podkomponenty prezentacyjne feature'a
+  │   │           ├── overlays/    # Bottom sheet / dialog / modal (overlaye)
+  │   │           └── services/    # Serwisy specyficzne dla feature
   │   ├── index.html            # Główny plik HTML
   │   ├── main.ts               # Punkt wejścia aplikacji (przeglądarka)
   │   ├── main.server.ts        # Punkt wejścia po stronie serwera (SSR)
@@ -90,6 +103,13 @@ libs/
   - `layout/` na wspólne elementy układu (nagłówek, stopka, loader).
 - Routing zdefiniowany w `app.routes.ts`.
 - Style komponentowe i globalne oparte wyłącznie na Tailwind CSS.
+- Podkomponenty wewnątrz feature'a grupujemy według roli w podkatalogach (tworzone już dla pojedynczych plików):
+  - `pages/` - komponenty routowane,
+  - `ui/` - komponenty prezentacyjne,
+  - `overlays/` - bottom sheet / dialog / modal,
+  - `state/` - store/facade (signals),
+  - `services/` - serwisy specyficzne dla feature.
+- UI współdzielone między feature'ami, ale zależne od domeny (np. auth), umieszczamy w `shared/<domena>/ui/` (np. `shared/auth/ui/login-form/`).
 
 ### Backend
 - Zbudowany na NestJS z kontrolerami i serwisami.
