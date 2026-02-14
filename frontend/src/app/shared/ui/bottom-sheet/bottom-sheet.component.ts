@@ -7,7 +7,7 @@ import { IconComponent } from '../../../core/icons/icon.component';
   imports: [CommonModule, IconComponent],
   template: `
     @if (open()) {
-      <div class="fixed inset-0 z-50 flex flex-col justify-end">
+      <div class="fixed inset-x-0 top-0 bottom-16 z-50 flex flex-col justify-end max-w-app mx-auto">
         <!-- Backdrop -->
         <div
           class="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -19,7 +19,7 @@ import { IconComponent } from '../../../core/icons/icon.component';
           class="relative z-10 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl dark:bg-slate-800 animate-slide-up"
         >
           <!-- Handle + header -->
-          <div class="sticky top-0 z-10 bg-white dark:bg-slate-800 px-4 pt-3 pb-2">
+          <div class="sticky top-0 z-10 bg-white dark:bg-slate-800 px-4 pt-3 pb-2 rounded-t-2xl">
             <div class="mx-auto mb-3 h-1 w-10 rounded-full bg-gray-300 dark:bg-slate-600"></div>
             @if (title()) {
               <div class="flex items-center justify-between">
