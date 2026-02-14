@@ -20,7 +20,7 @@
             "input": "frontend/public"
           }
         ],
-        "styles": ["frontend/src/styles.css"]
+        "styles": ["frontend/src/styles.scss"]
       },
       "configurations": {
         "production": {
