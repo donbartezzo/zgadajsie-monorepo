@@ -8,10 +8,15 @@ import { UserAvatarComponent } from '../../shared/ui/user-avatar/user-avatar.com
 import { MapComponent } from '../../shared/ui/map/map.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner/loading-spinner.component';
 import { BottomSheetComponent } from '../../shared/ui/bottom-sheet/bottom-sheet.component';
+import { LoginFormComponent } from '../auth/login/login-form.component';
+import { JoinConfirmSheetComponent } from './join-confirm-sheet.component';
+import { LeaveConfirmSheetComponent } from './leave-confirm-sheet.component';
 import { EventService } from '../../core/services/event.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { SnackbarService } from '../../shared/ui/snackbar/snackbar.service';
 import { Event as EventModel, Participation } from '../../shared/types';
+
+export type EventSheet = 'map' | 'participants' | 'auth' | 'joinConfirm' | 'leaveConfirm' | null;
 
 @Component({
   selector: 'app-event',
@@ -19,7 +24,8 @@ import { Event as EventModel, Participation } from '../../shared/types';
     CommonModule, DatePipe, DecimalPipe, RouterLink,
     IconComponent, ButtonComponent,
     UserAvatarComponent, MapComponent, LoadingSpinnerComponent,
-    BottomSheetComponent,
+    BottomSheetComponent, LoginFormComponent,
+    JoinConfirmSheetComponent, LeaveConfirmSheetComponent,
   ],
   templateUrl: './event.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,8 +43,7 @@ export class EventComponent implements OnInit, OnDestroy {
   readonly isLoading = signal(true);
   readonly joining = signal(false);
 
-  readonly showMapSheet = signal(false);
-  readonly showParticipantsSheet = signal(false);
+  readonly activeSheet = signal<EventSheet>(null);
 
   readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
   readonly remainingCount = computed(() => Math.max(0, this.participants().length - 6));
@@ -46,8 +51,10 @@ export class EventComponent implements OnInit, OnDestroy {
   readonly fullAddress = computed(() => {
     const e = this.event();
     if (!e) return '';
-    const parts = [e.address, e.city?.name].filter(Boolean);
-    return parts.join(', ');
+    // const parts = [e.address, e.city?.name].filter(Boolean);
+    // return parts.join(', ');
+
+    return e.address;
   });
 
   readonly startMonth = computed(() => {
@@ -144,7 +151,12 @@ export class EventComponent implements OnInit, OnDestroy {
     return !!userId && this.event()?.organizerId === userId;
   }
 
-  onJoin(): void {
+  openJoinSheet(): void {
+    this.activeSheet.set(this.auth.isLoggedIn() ? 'joinConfirm' : 'auth');
+  }
+
+  confirmJoin(): void {
+    this.activeSheet.set(null);
     this.joining.set(true);
     this.eventService.joinEvent(this.eventId).subscribe({
       next: (p) => {
@@ -159,11 +171,16 @@ export class EventComponent implements OnInit, OnDestroy {
     });
   }
 
+  onAuthSuccess(): void {
+    this.activeSheet.set('joinConfirm');
+  }
+
   onFollow(): void {
     console.log('@TODO');
   }
 
-  onLeave(): void {
+  confirmLeave(): void {
+    this.activeSheet.set(null);
     this.joining.set(true);
     this.eventService.leaveEvent(this.eventId).subscribe({
       next: () => {
