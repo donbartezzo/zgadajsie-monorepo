@@ -11,12 +11,12 @@ Bezwarunkowo stosuj się do zasad określonych w:
 ---
 
 
-Zaktualizuj/dostosuj kartę użytkownika w oparciu o plik szablonu:
-`.ignored/themplates/sticky-mobile-template/code/page-events-detailed-1.html`.
+Zaktualizuj/dostosuj stronę FAQ w oparciu o plik szablonu:
+`.ignored/themplates/sticky-mobile-template/code/page-faq.html`.
 
-Komponent strony głównej: `frontend/src/app/features/event/event.component.ts`
+Komponent strony głównej: `frontend/src/app/features/static/pages/faq/faq.component.ts`
 
-Bezwarunkowo stosuj się do zasad określonych w: `docs/ai-bootstrap-to-tailwind-migration.md`.
+Bezwarunkowo stosuj się do zasad migracyjnych określonych w: `docs/ai-bootstrap-to-tailwind-migration.md` oraz reguł implementacyjych zawartych w: `docs/styleguide-frontend.md`.
 
 Jeśli masz jakieś wątpliwości/uwagi/propozycje lub coś wymaga doprecyzwania to zadaj ponumerowane pytania przed implementacją.
 

@@ -66,7 +66,18 @@ export class AuthService {
       throw new UnauthorizedException('Nieprawidłowy email lub hasło');
     }
 
-    return this.generateTokens(user.id, user.email);
+    const tokens = await this.generateTokens(user.id, user.email);
+    return {
+      ...tokens,
+      user: {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        avatarUrl: user.avatarUrl,
+        role: user.role,
+        isActive: user.isActive,
+      },
+    };
   }
 
   async refreshToken(userId: string, _email: string) {

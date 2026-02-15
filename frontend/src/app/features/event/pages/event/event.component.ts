@@ -143,7 +143,7 @@ export class EventComponent implements OnInit, OnDestroy {
 
   get isParticipant(): boolean {
     const userId = this.auth.currentUser()?.id;
-    return !!userId && this.participants().some(p => p.userId === userId && p.status === 'ACCEPTED');
+    return !!userId && this.participants().some(p => p.userId === userId && (p.status === 'ACCEPTED' || p.status === 'PARTICIPANT'));
   }
 
   get isOrganizer(): boolean {
