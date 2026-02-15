@@ -1,38 +1,42 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { Location } from '@angular/common';
-import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { filter, map } from 'rxjs';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { IconComponent } from '../../core/icons/icon.component';
+import { UserAvatarComponent } from '../../shared/ui/user-avatar/user-avatar.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../theme.service';
+import { BottomOverlaysService } from '../../shared/ui/bottom-overlays/bottom-overlays.service';
 
 @Component({
   selector: 'app-bottom-nav',
-  imports: [RouterLink, RouterLinkActive, IconComponent],
+  imports: [IconComponent, UserAvatarComponent],
   templateUrl: './bottom-nav.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'fixed bottom-0 left-1/2 z-50 block w-full max-w-app -translate-x-1/2' },
+  host: { class: 'fixed bottom-0 left-1/2 z-[60] block w-full max-w-app -translate-x-1/2' },
 })
 export class BottomNavComponent {
   private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
-  private readonly location = inject(Location);
   readonly auth = inject(AuthService);
   readonly theme = inject(ThemeService);
+  protected readonly overlays = inject(BottomOverlaysService);
 
-  private readonly url = toSignal(
-    this.router.events.pipe(
-      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
-      map(e => e.urlAfterRedirects),
-    ),
-    { initialValue: this.router.url },
-  );
+  toggleShareMenu(): void {
+    this.overlays.toggle('share');
+  }
 
-  readonly isHome = computed(() => this.url() === '/');
+  toggleSettingsMenu(): void {
+    this.overlays.toggle('settings');
+  }
 
-  goBack(): void {
-    this.location.back();
+  navigateToEvents(): void {
+    this.router.navigate(['/events']);
+  }
+
+  navigateToProfile(): void {
+    this.router.navigate(['/profile']);
+  }
+
+  navigateToLogin(): void {
+    this.router.navigate(['/auth/login']);
   }
 
   toggleTheme(event: Event): void {

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../core/icons/icon.component';
 
 @Component({
-  selector: 'app-bottom-sheet',
+  selector: 'app-bottom-overlay',
   imports: [CommonModule, IconComponent],
   template: `
     @if (open()) {
@@ -58,7 +58,7 @@ import { IconComponent } from '../../../core/icons/icon.component';
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BottomSheetComponent {
+export class BottomOverlayComponent {
   readonly open = input(false);
   readonly title = input('');
   readonly closed = output<void>();

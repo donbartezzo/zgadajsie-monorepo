@@ -3,14 +3,14 @@ import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
-import { BottomSheetComponent } from '../../../shared/ui/bottom-sheet/bottom-sheet.component';
+import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
 import { Event as EventModel, Participation } from '../../../shared/types';
 
 @Component({
-  selector: 'app-leave-confirm-sheet',
-  imports: [CommonModule, IconComponent, ButtonComponent, UserAvatarComponent, BottomSheetComponent],
+  selector: 'app-leave-confirm-overlay',
+  imports: [CommonModule, IconComponent, ButtonComponent, UserAvatarComponent, BottomOverlayComponent],
   template: `
-    <app-bottom-sheet
+    <app-bottom-overlay
       [open]="open()"
       (closed)="closed.emit()"
     >
@@ -66,11 +66,11 @@ import { Event as EventModel, Participation } from '../../../shared/types';
           </app-button>
         </div>
       </div>
-    </app-bottom-sheet>
+    </app-bottom-overlay>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LeaveConfirmSheetComponent {
+export class LeaveConfirmOverlayComponent {
   readonly open = input(false);
   readonly event = input<EventModel | null>(null);
   readonly participants = input<Participation[]>([]);

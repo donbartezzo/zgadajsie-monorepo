@@ -1,31 +1,23 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { IconName } from '../../../../core/icons/icon.component';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
-import { MapComponent } from '../../../../shared/ui/map/map.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
-import { BottomSheetComponent } from '../../../../shared/ui/bottom-sheet/bottom-sheet.component';
-import { LoginFormComponent } from '../../../../shared/auth/ui/login-form/login-form.component';
-import { JoinConfirmSheetComponent } from '../../overlays/join-confirm-sheet.component';
-import { LeaveConfirmSheetComponent } from '../../overlays/leave-confirm-sheet.component';
 import { EventService } from '../../../../core/services/event.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bottom-overlays.service';
 import { Event as EventModel, Participation } from '../../../../shared/types';
-
-export type EventSheet = 'map' | 'participants' | 'auth' | 'joinConfirm' | 'leaveConfirm' | null;
 
 @Component({
   selector: 'app-event',
   imports: [
     CommonModule, DatePipe, DecimalPipe, RouterLink,
     IconComponent, ButtonComponent,
-    UserAvatarComponent, MapComponent, LoadingSpinnerComponent,
-    BottomSheetComponent, LoginFormComponent,
-    JoinConfirmSheetComponent, LeaveConfirmSheetComponent,
+    UserAvatarComponent, LoadingSpinnerComponent,
   ],
   templateUrl: './event.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,13 +29,12 @@ export class EventComponent implements OnInit, OnDestroy {
   private readonly eventService = inject(EventService);
   readonly auth = inject(AuthService);
   private readonly snackbar = inject(SnackbarService);
+  readonly overlays = inject(BottomOverlaysService);
 
   readonly event = signal<EventModel | null>(null);
   readonly participants = signal<Participation[]>([]);
   readonly isLoading = signal(true);
   readonly joining = signal(false);
-
-  readonly activeSheet = signal<EventSheet>(null);
 
   readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
   readonly remainingCount = computed(() => Math.max(0, this.participants().length - 6));
@@ -102,6 +93,21 @@ export class EventComponent implements OnInit, OnDestroy {
     return this.route.snapshot.paramMap.get('id')!;
   }
 
+  constructor() {
+    // Sync local event/participants signals to the overlay service
+    effect(() => {
+      this.overlays.setEventContext(this.event(), this.participants());
+    });
+    effect(() => {
+      this.overlays.setLoading(this.joining());
+    });
+
+    // Register overlay callbacks
+    this.overlays.onJoinConfirmed(() => this.confirmJoin());
+    this.overlays.onLeaveConfirmed(() => this.confirmLeave());
+    this.overlays.onAuthSuccess(() => this.onAuthSuccess());
+  }
+
   ngOnInit(): void {
     this.eventService.getEvent(this.eventId).subscribe({
       next: (e) => {
@@ -118,6 +124,8 @@ export class EventComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.countdownInterval) clearInterval(this.countdownInterval);
+    this.overlays.clearCallbacks();
+    this.overlays.setEventContext(null, []);
   }
 
   private startCountdown(startsAt: string): void {
@@ -152,11 +160,11 @@ export class EventComponent implements OnInit, OnDestroy {
   }
 
   openJoinSheet(): void {
-    this.activeSheet.set(this.auth.isLoggedIn() ? 'joinConfirm' : 'auth');
+    this.overlays.open(this.auth.isLoggedIn() ? 'joinConfirm' : 'auth');
   }
 
   confirmJoin(): void {
-    this.activeSheet.set(null);
+    this.overlays.close();
     this.joining.set(true);
     this.eventService.joinEvent(this.eventId).subscribe({
       next: (p) => {
@@ -172,7 +180,7 @@ export class EventComponent implements OnInit, OnDestroy {
   }
 
   onAuthSuccess(): void {
-    this.activeSheet.set('joinConfirm');
+    this.overlays.open('joinConfirm');
   }
 
   onFollow(): void {
@@ -180,7 +188,7 @@ export class EventComponent implements OnInit, OnDestroy {
   }
 
   confirmLeave(): void {
-    this.activeSheet.set(null);
+    this.overlays.close();
     this.joining.set(true);
     this.eventService.leaveEvent(this.eventId).subscribe({
       next: () => {

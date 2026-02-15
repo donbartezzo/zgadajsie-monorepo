@@ -1,0 +1,46 @@
+@switch (overlays.active()) {
+  @case ('share') {
+    <app-share-overlay (closed)="overlays.close()" />
+  }
+  @case ('settings') {
+    <app-settings-overlay (closed)="overlays.close()" />
+  }
+  @case ('map') {
+    <app-map-overlay
+      [event]="overlays.event()"
+      (closed)="overlays.close()"
+    />
+  }
+  @case ('participants') {
+    <app-participants-overlay
+      [participants]="overlays.participants()"
+      (closed)="overlays.close()"
+    />
+  }
+  @case ('auth') {
+    <app-auth-overlay
+      (closed)="overlays.close()"
+      (authenticated)="overlays.handleAuthSuccess()"
+    />
+  }
+  @case ('joinConfirm') {
+    <app-join-confirm-overlay
+      [open]="true"
+      [event]="overlays.event()"
+      [participants]="overlays.participants()"
+      [loading]="overlays.loading()"
+      (closed)="overlays.close()"
+      (confirmed)="overlays.confirmJoin()"
+    />
+  }
+  @case ('leaveConfirm') {
+    <app-leave-confirm-overlay
+      [open]="true"
+      [event]="overlays.event()"
+      [participants]="overlays.participants()"
+      [loading]="overlays.loading()"
+      (closed)="overlays.close()"
+      (confirmed)="overlays.confirmLeave()"
+    />
+  }
+}

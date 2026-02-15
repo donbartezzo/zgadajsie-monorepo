@@ -5,9 +5,10 @@ import { filter, map } from 'rxjs';
 import { BottomNavComponent } from './layout/footer/bottom-nav.component';
 import { FooterComponent } from './layout/footer/footer.component';
 import { SnackbarComponent } from './shared/ui/snackbar/snackbar.component';
+import { BottomOverlaysComponent } from './shared/ui/bottom-overlays/bottom-overlays.component';
 
 @Component({
-  imports: [RouterModule, BottomNavComponent, FooterComponent, SnackbarComponent],
+  imports: [RouterModule, BottomNavComponent, FooterComponent, SnackbarComponent, BottomOverlaysComponent],
   selector: 'app-root',
   templateUrl: './app.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
