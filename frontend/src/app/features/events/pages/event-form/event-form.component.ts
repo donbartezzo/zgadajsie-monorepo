@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,62 +23,124 @@ import { DictionaryItem, City } from '../../../../shared/types';
 @Component({
   selector: 'app-event-form',
   imports: [
-    CommonModule, ReactiveFormsModule,
-    IconComponent, ButtonComponent, CardComponent,
-    FileUploadComponent, MapComponent,
+    CommonModule,
+    ReactiveFormsModule,
+    IconComponent,
+    ButtonComponent,
+    CardComponent,
+    FileUploadComponent,
+    MapComponent,
   ],
   template: `
-    <div class="py-6">
-      <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">{{ isEdit() ? 'Edytuj wydarzenie' : 'Nowe wydarzenie' }}</h1>
+    <div class="p-4">
+      <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+        {{ isEdit() ? 'Edytuj wydarzenie' : 'Nowe wydarzenie' }}
+      </h1>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
         <app-card>
           <div class="p-4 space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tytuł</label>
-              <input formControlName="title" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight" placeholder="Nazwa wydarzenia" />
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >Tytuł</label
+              >
+              <input
+                formControlName="title"
+                class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight"
+                placeholder="Nazwa wydarzenia"
+              />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Opis</label>
-              <textarea formControlName="description" rows="4" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight" placeholder="Opis wydarzenia..."></textarea>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >Opis</label
+              >
+              <textarea
+                formControlName="description"
+                rows="4"
+                class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight"
+                placeholder="Opis wydarzenia..."
+              ></textarea>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Grafika</label>
-              <app-file-upload accept="image/*" [maxSizeMb]="5" (fileSelected)="onCoverSelected($event)"></app-file-upload>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >Grafika</label
+              >
+              <app-file-upload
+                accept="image/*"
+                [maxSizeMb]="5"
+                (fileSelected)="onCoverSelected($event)"
+              ></app-file-upload>
             </div>
           </div>
         </app-card>
 
         <app-card>
           <div class="p-4 space-y-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Szczegóły</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Szczegóły
+            </h3>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Dyscyplina</label>
-                <select formControlName="disciplineId" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100">
+                <label
+                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  >Dyscyplina</label
+                >
+                <select
+                  formControlName="disciplineId"
+                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                >
                   <option value="">Wybierz...</option>
-                  @for (d of disciplines(); track d.id) { <option [value]="d.id">{{ d.name }}</option> }
+                  @for (d of disciplines(); track d.id) {
+                  <option [value]="d.id">{{ d.name }}</option>
+                  }
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Obiekt</label>
-                <select formControlName="facilityId" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100">
+                <label
+                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  >Obiekt</label
+                >
+                <select
+                  formControlName="facilityId"
+                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                >
                   <option value="">Wybierz...</option>
-                  @for (f of facilities(); track f.id) { <option [value]="f.id">{{ f.name }}</option> }
+                  @for (f of facilities(); track f.id) {
+                  <option [value]="f.id">{{ f.name }}</option>
+                  }
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Poziom</label>
-                <select formControlName="levelId" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100">
+                <label
+                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  >Poziom</label
+                >
+                <select
+                  formControlName="levelId"
+                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                >
                   <option value="">Wybierz...</option>
-                  @for (l of levels(); track l.id) { <option [value]="l.id">{{ l.name }}</option> }
+                  @for (l of levels(); track l.id) {
+                  <option [value]="l.id">{{ l.name }}</option>
+                  }
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Miasto</label>
-                <select formControlName="cityId" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100">
+                <label
+                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  >Miasto</label
+                >
+                <select
+                  formControlName="cityId"
+                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                >
                   <option value="">Wybierz...</option>
-                  @for (c of cities(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+                  @for (c of cities(); track c.id) {
+                  <option [value]="c.id">{{ c.name }}</option>
+                  }
                 </select>
               </div>
             </div>
@@ -81,35 +149,80 @@ import { DictionaryItem, City } from '../../../../shared/types';
 
         <app-card>
           <div class="p-4 space-y-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Termin i uczestnicy</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Termin i uczestnicy
+            </h3>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Początek</label>
-                <input type="datetime-local" formControlName="startsAt" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100" />
+                <label
+                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  >Początek</label
+                >
+                <input
+                  type="datetime-local"
+                  formControlName="startsAt"
+                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Koniec</label>
-                <input type="datetime-local" formControlName="endsAt" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100" />
+                <label
+                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  >Koniec</label
+                >
+                <input
+                  type="datetime-local"
+                  formControlName="endsAt"
+                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Koszt/os. (zł)</label>
-                <input type="number" formControlName="costPerPerson" min="0" step="0.01" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100" />
+                <label
+                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  >Koszt/os. (zł)</label
+                >
+                <input
+                  type="number"
+                  formControlName="costPerPerson"
+                  min="0"
+                  step="0.01"
+                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Maks. uczestników</label>
-                <input type="number" formControlName="maxParticipants" min="2" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100" />
+                <label
+                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  >Maks. uczestników</label
+                >
+                <input
+                  type="number"
+                  formControlName="maxParticipants"
+                  min="2"
+                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Płeć</label>
-                <select formControlName="gender" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100">
+                <label
+                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  >Płeć</label
+                >
+                <select
+                  formControlName="gender"
+                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                >
                   <option value="ANY">Dowolna</option>
                   <option value="MALE">Mężczyźni</option>
                   <option value="FEMALE">Kobiety</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Widoczność</label>
-                <select formControlName="visibility" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100">
+                <label
+                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  >Widoczność</label
+                >
+                <select
+                  formControlName="visibility"
+                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                >
                   <option value="PUBLIC">Publiczne</option>
                   <option value="PRIVATE">Prywatne</option>
                 </select>
@@ -117,29 +230,60 @@ import { DictionaryItem, City } from '../../../../shared/types';
             </div>
             <div class="flex items-center gap-3">
               <label class="relative inline-flex cursor-pointer items-center">
-                <input type="checkbox" formControlName="autoAccept" class="peer sr-only" />
-                <div class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-highlight peer-focus:ring-2 peer-focus:ring-highlight-light dark:bg-slate-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full"></div>
+                <input
+                  type="checkbox"
+                  formControlName="autoAccept"
+                  class="peer sr-only"
+                />
+                <div
+                  class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-highlight peer-focus:ring-2 peer-focus:ring-highlight-light dark:bg-slate-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full"
+                ></div>
               </label>
-              <span class="text-sm text-gray-700 dark:text-gray-300">Automatyczne akceptowanie uczestników</span>
+              <span class="text-sm text-gray-700 dark:text-gray-300"
+                >Automatyczne akceptowanie uczestników</span
+              >
             </div>
           </div>
         </app-card>
 
         <app-card>
           <div class="p-4 space-y-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Lokalizacja</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Lokalizacja
+            </h3>
             <div>
-              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Adres</label>
-              <input formControlName="address" class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight" placeholder="Ulica, numer, miasto" />
+              <label
+                class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                >Adres</label
+              >
+              <input
+                formControlName="address"
+                class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight"
+                placeholder="Ulica, numer, miasto"
+              />
             </div>
-            <app-map [lat]="mapLat()" [lng]="mapLng()" [interactive]="true" [height]="250" (markerMoved)="onMarkerMoved($event)"></app-map>
+            <app-map
+              [lat]="mapLat()"
+              [lng]="mapLng()"
+              [interactive]="true"
+              [height]="250"
+              (markerMoved)="onMarkerMoved($event)"
+            ></app-map>
           </div>
         </app-card>
 
-        <app-button type="submit" variant="primary" [fullWidth]="true" [loading]="submitting()" [disabled]="form.invalid">
-          <app-icon name="check" size="sm"></app-icon>
-          {{ isEdit() ? 'Zapisz zmiany' : 'Utwórz wydarzenie' }}
-        </app-button>
+        <div>
+          <app-button
+            type="submit"
+            variant="primary"
+            [fullWidth]="true"
+            [loading]="submitting()"
+            [disabled]="form.invalid"
+          >
+            <app-icon name="check" size="sm"></app-icon>
+            {{ isEdit() ? 'Zapisz zmiany' : 'Utwórz wydarzenie' }}
+          </app-button>
+        </div>
       </form>
     </div>
   `,
@@ -202,7 +346,7 @@ export class EventFormComponent implements OnInit {
     this.eventId = this.route.snapshot.paramMap.get('id');
     if (this.eventId) {
       this.isEdit.set(true);
-      this.eventService.getEvent(this.eventId).subscribe(e => {
+      this.eventService.getEvent(this.eventId).subscribe((e) => {
         this.form.patchValue({
           title: e.title,
           description: e.description || '',
@@ -257,7 +401,9 @@ export class EventFormComponent implements OnInit {
         if (this.coverFile) {
           this.mediaService.upload(this.coverFile).subscribe();
         }
-        this.snackbar.success(this.isEdit() ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone');
+        this.snackbar.success(
+          this.isEdit() ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone'
+        );
         this.router.navigate(['/events', created.id]);
         this.submitting.set(false);
       },

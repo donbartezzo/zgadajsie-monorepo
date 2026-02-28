@@ -11,7 +11,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
   selector: 'app-media-gallery',
   imports: [CommonModule, IconComponent, FileUploadComponent, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
-    <div class="py-6">
+    <div class="p-4">
       <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Galeria</h1>
 
       <div class="mb-4">

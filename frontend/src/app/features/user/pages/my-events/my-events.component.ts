@@ -15,7 +15,7 @@ import { Event as EventModel } from '../../../../shared/types';
   selector: 'app-my-events',
   imports: [CommonModule, DatePipe, RouterLink, IconComponent, ButtonComponent, CardComponent, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
-    <div class="py-6">
+    <div class="p-4">
       <div class="flex items-center justify-between mb-4">
         <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100">Moje wydarzenia</h1>
         <a routerLink="/events/new">

@@ -15,7 +15,7 @@ import { WalletTransaction } from '../../../../shared/types';
   selector: 'app-wallet',
   imports: [CommonModule, FormsModule, DatePipe, DecimalPipe, RouterLink, IconComponent, ButtonComponent, CardComponent, LoadingSpinnerComponent, PaginationComponent],
   template: `
-    <div class="py-6">
+    <div class="p-4">
       <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Portfel</h1>
 
       <app-card>

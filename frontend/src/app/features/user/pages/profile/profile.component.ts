@@ -14,7 +14,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
   selector: 'app-profile',
   imports: [CommonModule, FormsModule, RouterLink, IconComponent, ButtonComponent, CardComponent, UserAvatarComponent],
   template: `
-    <div class="py-6">
+    <div class="p-4">
       @if (auth.currentUser(); as user) {
         <div class="text-center mb-6">
           <app-user-avatar [avatarUrl]="user.avatarUrl" [displayName]="user.displayName" size="lg"></app-user-avatar>
