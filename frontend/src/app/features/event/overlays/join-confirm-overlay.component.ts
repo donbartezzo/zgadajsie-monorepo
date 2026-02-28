@@ -78,6 +78,15 @@ import { Event as EventModel, Participation } from '../../../shared/types';
 
         <div class="mt-5 space-y-2">
           <app-button
+            variant="outline"
+            size="sm"
+            [fullWidth]="true"
+            (clicked)="openChat.emit()"
+          >
+            <app-icon name="message-circle" size="sm"></app-icon>
+            Chat
+          </app-button>
+          <app-button
             variant="danger"
             size="sm"
             [fullWidth]="true"
@@ -175,6 +184,7 @@ export class JoinConfirmOverlayComponent {
   readonly closed = output<void>();
   readonly confirmed = output<void>();
   readonly leaveRequested = output<void>();
+  readonly openChat = output<void>();
 
   readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
   readonly remainingCount = computed(() => Math.max(0, this.participants().length - 6));
