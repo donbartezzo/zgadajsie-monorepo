@@ -61,9 +61,11 @@ export type IconName =
   | 'loader'
   | 'facebook'
   | 'x-twitter'
-  | 'whatsapp';
+  | 'whatsapp'
+  | 'alert-triangle'
+  | 'help-circle';
 
-export type IconSize = 'sm' | 'md' | 'lg';
+export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
 export type IconVariant = 'default' | 'muted' | 'primary' | 'danger';
 
 @Component({
@@ -312,6 +314,14 @@ export type IconVariant = 'default' | 'muted' | 'primary' | 'danger';
           stroke="none"
           d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"
         />
+        } @case ('alert-triangle') {
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+        } @case ('help-circle') {
+        <circle cx="12" cy="12" r="10" />
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
         } @case ('whatsapp') {
         <path
           fill="currentColor"
@@ -333,6 +343,8 @@ export class IconComponent {
 
   readonly sizePx = computed(() => {
     switch (this.size()) {
+      case 'xs':
+        return 12;
       case 'sm':
         return 16;
       case 'lg':

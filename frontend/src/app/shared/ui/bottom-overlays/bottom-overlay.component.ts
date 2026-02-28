@@ -16,21 +16,20 @@ import { IconComponent } from '../../../core/icons/icon.component';
         class="relative z-10 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl dark:bg-slate-800 animate-slide-up"
       >
         <!-- Handle + header -->
-        <div class="sticky top-0 z-10 bg-white dark:bg-slate-800 px-4 pt-3 pb-2 rounded-t-2xl">
+        <div class="sticky top-0 z-10 bg-white dark:bg-slate-800 px-4 pt-3 pb-2 rounded-t-2xl relative">
           <div class="mx-auto mb-3 h-1 w-10 rounded-full bg-gray-300 dark:bg-slate-600"></div>
           @if (title()) {
-          <div class="flex items-center justify-between">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ title() }}</h2>
-            <button
-              type="button"
-              class="grid h-8 w-8 place-items-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700"
-              (click)="closed.emit()"
-              aria-label="Zamknij"
-            >
-              <app-icon name="x" size="sm" />
-            </button>
-          </div>
+            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 pr-8">{{ title() }}</h2>
           }
+          <!-- Close button - absolutely positioned -->
+          <button
+            type="button"
+            class="absolute top-3 right-4 grid h-8 w-8 place-items-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700"
+            (click)="closed.emit()"
+            aria-label="Zamknij"
+          >
+            <app-icon name="x" size="sm" />
+          </button>
         </div>
 
         <!-- Content -->

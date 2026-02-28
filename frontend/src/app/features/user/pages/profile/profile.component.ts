@@ -22,9 +22,9 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
     UserAvatarComponent,
   ],
   template: `
-    <div class="p-4">
+    <div class="p-4 space-y-4">
       @if (auth.currentUser(); as user) {
-      <div class="text-center mb-6">
+      <div class="text-center">
         <app-user-avatar
           [avatarUrl]="user.avatarUrl"
           [displayName]="user.displayName"
@@ -46,7 +46,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         }
       </div>
 
-      <div class="grid grid-cols-2 gap-3 mb-6">
+      <div class="grid grid-cols-2 gap-3">
         <a routerLink="/profile/events">
           <app-card>
             <div class="p-3 flex items-center gap-2">
@@ -106,11 +106,19 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
               class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight"
             />
           </div>
-          <app-button variant="primary" [loading]="saving()" (clicked)="saveProfile()">
-            <app-icon name="check" size="sm"></app-icon> Zapisz
-          </app-button>
+          <div class="flex justify-end gap-3">
+            <app-button variant="primary" [loading]="saving()" (clicked)="saveProfile()">
+              <app-icon name="check" size="sm"></app-icon> Zapisz
+            </app-button>
+          </div>
         </div>
       </app-card>
+
+      <div class="w-full">
+        <app-button variant="secondary" (clicked)="logout()">
+          <app-icon name="log-out" size="sm"></app-icon> Wyloguj się
+        </app-button>
+      </div>
       }
     </div>
   `,
@@ -154,5 +162,10 @@ export class ProfileComponent implements OnInit {
         this.saving.set(false);
       },
     });
+  }
+
+  logout(): void {
+    this.auth.logout();
+    this.snackbar.success('Wylogowano pomyślnie');
   }
 }

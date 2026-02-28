@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
 import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
+import { ConfirmModalService } from '../../../shared/ui/confirm-modal/confirm-modal.service';
 import { Event as EventModel, Participation } from '../../../shared/types';
 
 @Component({
@@ -17,6 +18,79 @@ import { Event as EventModel, Participation } from '../../../shared/types';
   ],
   template: `
     <app-bottom-overlay [open]="open()" (closed)="closed.emit()">
+      @if (isParticipant()) {
+      <!-- ── Already joined view ── -->
+      <div class="text-center">
+        <div
+          class="mx-auto my-3 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30"
+        >
+          <app-icon name="check" size="lg" class="text-green-500 dark:text-green-400"></app-icon>
+        </div>
+        <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Jesteś uczestnikiem!</h2>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+          Dołączyłeś do tego wydarzenia. Poniżej znajdziesz szczegóły.
+        </p>
+
+        <!-- Event info row -->
+        <div class="mt-4 border-t border-b border-gray-100 dark:border-slate-700 py-3">
+          <div class="flex justify-center gap-6 text-center">
+            <div>
+              <app-icon name="calendar" size="sm" variant="primary"></app-icon>
+              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {{ startDateFormatted() }}
+              </p>
+            </div>
+            <div>
+              <app-icon name="clock" size="sm" variant="muted"></app-icon>
+              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {{ startTimeFormatted() }}–{{ endTimeFormatted() }}
+              </p>
+            </div>
+            <div>
+              <app-icon name="map-pin" size="sm" variant="danger"></app-icon>
+              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {{ address() || 'Brak' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Participants preview -->
+        @if (participants().length > 0) {
+        <div class="mt-3 flex items-center justify-center gap-1">
+          <div class="flex -space-x-2">
+            @for (p of visibleAvatars(); track p.id) {
+            <app-user-avatar
+              [avatarUrl]="p.user?.avatarUrl"
+              [displayName]="p.user?.displayName || ''"
+              size="sm"
+              class="ring-2 ring-white dark:ring-slate-800 rounded-full"
+            ></app-user-avatar>
+            }
+          </div>
+          @if (remainingCount() > 0) {
+          <span class="text-xs text-gray-400 dark:text-gray-500 ml-2"
+            >+{{ remainingCount() }} innych</span
+          >
+          }
+        </div>
+        }
+
+        <div class="mt-5 space-y-2">
+          <app-button
+            variant="danger"
+            size="sm"
+            [fullWidth]="true"
+            [loading]="loading()"
+            (clicked)="onRequestLeave()"
+          >
+            <app-icon name="user-x" size="sm"></app-icon>
+            Wypisz się z wydarzenia
+          </app-button>
+        </div>
+      </div>
+      } @else {
+      <!-- ── Join confirmation view ── -->
       <div class="text-center">
         <div
           class="mx-auto my-3 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30"
@@ -84,18 +158,23 @@ import { Event as EventModel, Participation } from '../../../shared/types';
           Potwierdzam uczestnictwo
         </app-button>
       </div>
+      }
     </app-bottom-overlay>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JoinConfirmOverlayComponent {
+  private readonly confirmModal = inject(ConfirmModalService);
+
   readonly open = input(false);
   readonly event = input<EventModel | null>(null);
   readonly participants = input<Participation[]>([]);
   readonly loading = input(false);
+  readonly isParticipant = input(false);
 
   readonly closed = output<void>();
   readonly confirmed = output<void>();
+  readonly leaveRequested = output<void>();
 
   readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
   readonly remainingCount = computed(() => Math.max(0, this.participants().length - 6));
@@ -119,4 +198,17 @@ export class JoinConfirmOverlayComponent {
     if (!e) return '';
     return new Date(e.endsAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
   });
+
+  async onRequestLeave(): Promise<void> {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Wypisanie z wydarzenia',
+      message: 'Czy na pewno chcesz wypisać się z tego wydarzenia? Stracisz swoje miejsce.',
+      confirmLabel: 'Tak, wypisz mnie',
+      cancelLabel: 'Anuluj',
+      variant: 'danger',
+    });
+    if (confirmed) {
+      this.leaveRequested.emit();
+    }
+  }
 }

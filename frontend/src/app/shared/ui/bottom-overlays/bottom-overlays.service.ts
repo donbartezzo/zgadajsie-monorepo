@@ -21,6 +21,7 @@ export class BottomOverlaysService {
   private readonly eventSignal = signal<EventModel | null>(null);
   private readonly participantsSignal = signal<Participation[]>([]);
   private readonly loadingSignal = signal(false);
+  private readonly isParticipantSignal = signal(false);
 
   // Callbacks for event-specific actions
   private joinCallback: (() => void) | null = null;
@@ -31,6 +32,7 @@ export class BottomOverlaysService {
   readonly event = this.eventSignal.asReadonly();
   readonly participants = this.participantsSignal.asReadonly();
   readonly loading = this.loadingSignal.asReadonly();
+  readonly isParticipant = this.isParticipantSignal.asReadonly();
 
   open(type: OverlayType): void {
     this.activeSignal.set(type);
@@ -46,9 +48,18 @@ export class BottomOverlaysService {
 
   // ── Event context management ──
 
-  setEventContext(event: EventModel | null, participants: Participation[]): void {
+  setEventContext(
+    event: EventModel | null,
+    participants: Participation[],
+    isParticipant = false,
+  ): void {
     this.eventSignal.set(event);
     this.participantsSignal.set(participants);
+    this.isParticipantSignal.set(isParticipant);
+  }
+
+  setIsParticipant(value: boolean): void {
+    this.isParticipantSignal.set(value);
   }
 
   updateParticipants(participants: Participation[]): void {

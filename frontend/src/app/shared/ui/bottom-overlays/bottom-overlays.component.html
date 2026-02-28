@@ -14,8 +14,10 @@
   [event]="overlays.event()"
   [participants]="overlays.participants()"
   [loading]="overlays.loading()"
+  [isParticipant]="overlays.isParticipant()"
   (closed)="overlays.close()"
   (confirmed)="overlays.confirmJoin()"
+  (leaveRequested)="overlays.confirmLeave()"
 />
 } @case ('leaveConfirm') {
 <app-leave-confirm-overlay

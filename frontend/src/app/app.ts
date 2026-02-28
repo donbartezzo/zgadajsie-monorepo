@@ -6,6 +6,7 @@ import { BottomNavComponent } from './layout/footer/bottom-nav.component';
 import { FooterComponent } from './layout/footer/footer.component';
 import { SnackbarComponent } from './shared/ui/snackbar/snackbar.component';
 import { BottomOverlaysComponent } from './shared/ui/bottom-overlays/bottom-overlays.component';
+import { ConfirmModalComponent } from './shared/ui/confirm-modal/confirm-modal.component';
 
 @Component({
   imports: [
@@ -14,6 +15,7 @@ import { BottomOverlaysComponent } from './shared/ui/bottom-overlays/bottom-over
     FooterComponent,
     SnackbarComponent,
     BottomOverlaysComponent,
+    ConfirmModalComponent,
   ],
   selector: 'app-root',
   templateUrl: './app.html',

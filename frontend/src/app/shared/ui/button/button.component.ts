@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../core/icons/icon.component';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger' | 'success' | 'ghost';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
 
 @Component({
   selector: 'app-button',
@@ -33,13 +33,26 @@ export class ButtonComponent {
 
   readonly clicked = output<MouseEvent>();
 
-  readonly iconSize = computed(() => (this.size() === 'sm' ? ('sm' as const) : ('md' as const)));
+  readonly iconSize = computed(() => {
+    switch (this.size()) {
+      case 'xs':
+        return 'xs' as const;
+      case 'sm':
+        return 'sm' as const;
+      case 'lg':
+        return 'lg' as const;
+      case 'md':
+      default:
+        return 'md' as const;
+    }
+  });
 
   readonly classes = computed(() => {
     const base =
       'inline-flex items-center justify-center gap-2 font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
     const sizeClasses: Record<ButtonSize, string> = {
+      xs: 'px-2 py-1 text-xs',
       sm: 'px-3 py-1.5 text-sm',
       md: 'px-5 py-2.5 text-sm',
       lg: 'px-6 py-3 text-base',

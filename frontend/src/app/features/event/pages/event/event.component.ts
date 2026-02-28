@@ -3,10 +3,12 @@ import {
   Component,
   computed,
   effect,
+  ElementRef,
   inject,
   OnDestroy,
   OnInit,
   signal,
+  viewChild,
 } from '@angular/core';
 import { IconName, IconComponent } from '../../../../core/icons/icon.component';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
@@ -14,10 +16,12 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
+import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { EventService } from '../../../../core/services/event.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bottom-overlays.service';
+import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { Event as EventModel, Participation } from '../../../../shared/types';
 
 @Component({
@@ -31,18 +35,41 @@ import { Event as EventModel, Participation } from '../../../../shared/types';
     ButtonComponent,
     UserAvatarComponent,
     LoadingSpinnerComponent,
+    CardComponent,
   ],
   templateUrl: './event.component.html',
+  styles: [
+    `
+      @keyframes slideUpBar {
+        from {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      :host ::ng-deep .animate-slide-up-bar {
+        animation: slideUpBar 0.35s ease-out;
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: '--hero-h: 300px' },
 })
 export class EventComponent implements OnInit, OnDestroy {
   private countdownInterval: ReturnType<typeof setInterval> | null = null;
+  private sentinelObserver: IntersectionObserver | null = null;
+
+  readonly participationSentinel = viewChild<ElementRef<HTMLElement>>('participationSentinel');
+  readonly sentinelVisible = signal(true);
   private readonly route = inject(ActivatedRoute);
   private readonly eventService = inject(EventService);
   readonly auth = inject(AuthService);
   private readonly snackbar = inject(SnackbarService);
   readonly overlays = inject(BottomOverlaysService);
+  private readonly confirmModal = inject(ConfirmModalService);
 
   readonly event = signal<EventModel | null>(null);
   readonly participants = signal<Participation[]>([]);
@@ -114,7 +141,7 @@ export class EventComponent implements OnInit, OnDestroy {
   constructor() {
     // Sync local event/participants signals to the overlay service
     effect(() => {
-      this.overlays.setEventContext(this.event(), this.participants());
+      this.overlays.setEventContext(this.event(), this.participants(), this.isParticipant());
     });
     effect(() => {
       this.overlays.setLoading(this.joining());
@@ -124,6 +151,21 @@ export class EventComponent implements OnInit, OnDestroy {
     this.overlays.onJoinConfirmed(() => this.confirmJoin());
     this.overlays.onLeaveConfirmed(() => this.confirmLeave());
     this.overlays.onAuthSuccess(() => this.onAuthSuccess());
+
+    // Re-observe sentinel whenever the element appears/disappears (it's inside @if)
+    effect(() => {
+      const el = this.participationSentinel()?.nativeElement;
+      this.sentinelObserver?.disconnect();
+      if (el) {
+        this.sentinelObserver = new IntersectionObserver(
+          ([entry]) => this.sentinelVisible.set(entry.isIntersecting),
+          { threshold: 0, rootMargin: '0px 0px -120px 0px' },
+        );
+        this.sentinelObserver.observe(el);
+      } else {
+        this.sentinelVisible.set(true);
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -142,6 +184,7 @@ export class EventComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.countdownInterval) clearInterval(this.countdownInterval);
+    this.sentinelObserver?.disconnect();
     this.overlays.clearCallbacks();
     this.overlays.setEventContext(null, []);
   }
@@ -167,20 +210,29 @@ export class EventComponent implements OnInit, OnDestroy {
     this.countdownInterval = setInterval(update, 1000);
   }
 
-  get isParticipant(): boolean {
+  readonly isParticipant = computed(() => {
     const userId = this.auth.currentUser()?.id;
     return (
       !!userId &&
       this.participants().some(
-        (p) => p.userId === userId && (p.status === 'ACCEPTED' || p.status === 'PARTICIPANT'),
+        (p) =>
+          p.userId === userId &&
+          (p.status === 'APPLIED' || p.status === 'ACCEPTED'),
       )
     );
-  }
+  });
 
-  get isOrganizer(): boolean {
+  readonly isOrganizer = computed(() => {
     const userId = this.auth.currentUser()?.id;
     return !!userId && this.event()?.organizerId === userId;
-  }
+  });
+
+  readonly participantStatus = computed(() => {
+    const userId = this.auth.currentUser()?.id;
+    if (!userId) return null;
+    const p = this.participants().find((pp) => pp.userId === userId);
+    return p?.status ?? null;
+  });
 
   openJoinSheet(): void {
     this.overlays.open(this.auth.isLoggedIn() ? 'joinConfirm' : 'auth');
@@ -191,7 +243,15 @@ export class EventComponent implements OnInit, OnDestroy {
     this.joining.set(true);
     this.eventService.joinEvent(this.eventId).subscribe({
       next: (p) => {
-        this.participants.update((prev) => [...prev, p]);
+        this.participants.update((prev) => {
+          const idx = prev.findIndex((x) => x.userId === p.userId);
+          if (idx >= 0) {
+            const updated = [...prev];
+            updated[idx] = p;
+            return updated;
+          }
+          return [...prev, p];
+        });
         this.snackbar.success('Dołączono do wydarzenia!');
         this.joining.set(false);
       },
@@ -210,13 +270,28 @@ export class EventComponent implements OnInit, OnDestroy {
     console.log('@TODO');
   }
 
+  async requestLeave(): Promise<void> {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Wypisanie z wydarzenia',
+      message: 'Czy na pewno chcesz wypisać się z tego wydarzenia? Stracisz swoje miejsce.',
+      confirmLabel: 'Tak, wypisz mnie',
+      cancelLabel: 'Anuluj',
+      variant: 'danger',
+    });
+    if (confirmed) {
+      this.confirmLeave();
+    }
+  }
+
   confirmLeave(): void {
     this.overlays.close();
     this.joining.set(true);
     this.eventService.leaveEvent(this.eventId).subscribe({
       next: () => {
         const userId = this.auth.currentUser()?.id;
-        this.participants.update((prev) => prev.filter((p) => p.userId !== userId));
+        this.participants.update((prev) =>
+          prev.map((p) => (p.userId === userId ? { ...p, status: 'WITHDRAWN' } : p)),
+        );
         this.snackbar.info('Wypisano z wydarzenia');
         this.joining.set(false);
       },

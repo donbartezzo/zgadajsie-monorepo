@@ -26,6 +26,14 @@ export class ParticipationService {
     const existing = await this.prisma.eventParticipation.findUnique({
       where: { eventId_userId: { eventId, userId } },
     });
+    if (existing && existing.status === 'WITHDRAWN') {
+      const newStatus = event.autoAccept ? 'ACCEPTED' : 'APPLIED';
+      return this.prisma.eventParticipation.update({
+        where: { id: existing.id },
+        data: { status: newStatus },
+        include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
+      });
+    }
     if (existing) throw new BadRequestException('Już uczestniczysz w tym wydarzeniu');
 
     if (event.maxParticipants) {
