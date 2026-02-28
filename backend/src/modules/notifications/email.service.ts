@@ -29,67 +29,123 @@ export class EmailService {
 
   async sendActivationEmail(email: string, displayName: string, token: string): Promise<void> {
     const link = `${this.frontendUrl}/auth/activate?token=${token}`;
-    await this.send(email, 'Aktywacja konta – ZgadajSię', `
+    await this.send(
+      email,
+      'Aktywacja konta – ZgadajSię',
+      `
       <h2>Witaj ${displayName}!</h2>
       <p>Dziękujemy za rejestrację w ZgadajSię.</p>
       <p><a href="${link}" style="display:inline-block;padding:12px 24px;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;">Aktywuj konto</a></p>
       <p>Link wygasa po 24 godzinach.</p>
-    `);
+    `,
+    );
   }
 
   async sendPasswordResetEmail(email: string, token: string): Promise<void> {
     const link = `${this.frontendUrl}/auth/reset-password?token=${token}`;
-    await this.send(email, 'Reset hasła – ZgadajSię', `
+    await this.send(
+      email,
+      'Reset hasła – ZgadajSię',
+      `
       <h2>Reset hasła</h2>
       <p>Kliknij poniższy link, aby ustawić nowe hasło:</p>
       <p><a href="${link}" style="display:inline-block;padding:12px 24px;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;">Ustaw nowe hasło</a></p>
       <p>Link wygasa po 1 godzinie.</p>
-    `);
+    `,
+    );
   }
 
-  async sendParticipationStatusEmail(email: string, displayName: string, eventTitle: string, status: string): Promise<void> {
+  async sendParticipationStatusEmail(
+    email: string,
+    displayName: string,
+    eventTitle: string,
+    status: string,
+  ): Promise<void> {
     const statusText = status === 'ACCEPTED' ? 'zaakceptowane' : 'odrzucone';
-    await this.send(email, `Zmiana statusu uczestnictwa – ${eventTitle}`, `
+    await this.send(
+      email,
+      `Zmiana statusu uczestnictwa – ${eventTitle}`,
+      `
       <h2>Hej ${displayName}!</h2>
       <p>Twoje zgłoszenie do wydarzenia <strong>${eventTitle}</strong> zostało <strong>${statusText}</strong>.</p>
-    `);
+    `,
+    );
   }
 
-  async sendEventCancelledEmail(email: string, displayName: string, eventTitle: string): Promise<void> {
-    await this.send(email, `Wydarzenie anulowane – ${eventTitle}`, `
+  async sendEventCancelledEmail(
+    email: string,
+    displayName: string,
+    eventTitle: string,
+  ): Promise<void> {
+    await this.send(
+      email,
+      `Wydarzenie anulowane – ${eventTitle}`,
+      `
       <h2>Hej ${displayName}!</h2>
       <p>Wydarzenie <strong>${eventTitle}</strong>, w którym uczestniczysz, zostało anulowane przez organizatora.</p>
-    `);
+    `,
+    );
   }
 
-  async sendNewApplicationEmail(email: string, organizerName: string, applicantName: string, eventTitle: string): Promise<void> {
-    await this.send(email, `Nowe zgłoszenie – ${eventTitle}`, `
+  async sendNewApplicationEmail(
+    email: string,
+    organizerName: string,
+    applicantName: string,
+    eventTitle: string,
+  ): Promise<void> {
+    await this.send(
+      email,
+      `Nowe zgłoszenie – ${eventTitle}`,
+      `
       <h2>Hej ${organizerName}!</h2>
       <p>Użytkownik <strong>${applicantName}</strong> zgłosił się do Twojego wydarzenia <strong>${eventTitle}</strong>.</p>
-    `);
+    `,
+    );
   }
 
   async sendWalletTopUpEmail(email: string, displayName: string, amount: number): Promise<void> {
-    await this.send(email, 'Doładowanie portfela – ZgadajSię', `
+    await this.send(
+      email,
+      'Doładowanie portfela – ZgadajSię',
+      `
       <h2>Hej ${displayName}!</h2>
       <p>Twój portfel został doładowany o <strong>${amount.toFixed(2)} zł</strong>.</p>
-    `);
+    `,
+    );
   }
 
-  async sendReprimandEmail(email: string, displayName: string, eventTitle: string, reason: string): Promise<void> {
-    await this.send(email, 'Reprymenda – ZgadajSię', `
+  async sendReprimandEmail(
+    email: string,
+    displayName: string,
+    eventTitle: string,
+    reason: string,
+  ): Promise<void> {
+    await this.send(
+      email,
+      'Reprymenda – ZgadajSię',
+      `
       <h2>Hej ${displayName}!</h2>
       <p>Otrzymałeś reprymendę za zachowanie na wydarzeniu <strong>${eventTitle}</strong>.</p>
       <p>Powód: ${reason}</p>
-    `);
+    `,
+    );
   }
 
-  async sendEventReminderEmail(email: string, displayName: string, eventTitle: string, startsAt: Date): Promise<void> {
+  async sendEventReminderEmail(
+    email: string,
+    displayName: string,
+    eventTitle: string,
+    startsAt: Date,
+  ): Promise<void> {
     const timeStr = startsAt.toLocaleString('pl-PL', { dateStyle: 'medium', timeStyle: 'short' });
-    await this.send(email, `Przypomnienie – ${eventTitle}`, `
+    await this.send(
+      email,
+      `Przypomnienie – ${eventTitle}`,
+      `
       <h2>Hej ${displayName}!</h2>
       <p>Przypominamy, że wydarzenie <strong>${eventTitle}</strong> rozpoczyna się <strong>${timeStr}</strong>.</p>
-    `);
+    `,
+    );
   }
 
   private async send(to: string, subject: string, html: string): Promise<void> {

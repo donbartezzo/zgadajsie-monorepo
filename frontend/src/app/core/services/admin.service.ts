@@ -56,7 +56,11 @@ export class AdminService {
     return this.http.post<DictionaryItem>(`${this.apiUrl}/admin/${type}`, data);
   }
 
-  updateDictionary(type: string, id: string, data: Partial<DictionaryItem>): Observable<DictionaryItem> {
+  updateDictionary(
+    type: string,
+    id: string,
+    data: Partial<DictionaryItem>,
+  ): Observable<DictionaryItem> {
     return this.http.patch<DictionaryItem>(`${this.apiUrl}/admin/${type}/${id}`, data);
   }
 

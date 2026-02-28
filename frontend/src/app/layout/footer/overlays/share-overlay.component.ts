@@ -15,31 +15,33 @@ interface ShareOption {
   selector: 'app-share-overlay',
   imports: [CommonModule, IconComponent, BottomOverlayComponent],
   template: `
-    <app-bottom-overlay
-      [open]="true"
-      title="Udostępnij"
-      (closed)="closed.emit()"
-    >
+    <app-bottom-overlay [open]="true" title="Udostępnij" (closed)="closed.emit()">
       <div class="space-y-3">
         <p class="text-sm text-gray-500 dark:text-gray-400">
           Przekaż informację o wydarzeniu znajomym jednym kliknięciem.
         </p>
 
-        <div class="overflow-hidden rounded-2xl border border-slate-100 divide-y divide-slate-100 dark:border-slate-700/70 dark:divide-slate-700/70">
+        <div
+          class="overflow-hidden rounded-2xl border border-slate-100 divide-y divide-slate-100 dark:border-slate-700/70 dark:divide-slate-700/70"
+        >
           @for (option of shareOptions; track option.name) {
-            <button
-              type="button"
-              (click)="option.action()"
-              class="group flex w-full items-center justify-between px-3 py-2.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
-            >
-              <div class="flex items-center gap-3">
-                <app-icon [name]="option.icon" size="md" [ngClass]="option.iconColor" />
-                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {{ option.name }}
-                </span>
-              </div>
-              <app-icon name="chevron-right" size="sm" class="text-gray-400 transition-transform group-hover:translate-x-1" />
-            </button>
+          <button
+            type="button"
+            (click)="option.action()"
+            class="group flex w-full items-center justify-between px-3 py-2.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
+          >
+            <div class="flex items-center gap-3">
+              <app-icon [name]="option.icon" size="md" [ngClass]="option.iconColor" />
+              <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {{ option.name }}
+              </span>
+            </div>
+            <app-icon
+              name="chevron-right"
+              size="sm"
+              class="text-gray-400 transition-transform group-hover:translate-x-1"
+            />
+          </button>
           }
         </div>
       </div>
@@ -54,11 +56,31 @@ export class ShareOverlayComponent {
   readonly closed = output<void>();
 
   readonly shareOptions: ShareOption[] = [
-    { name: 'Facebook', icon: 'facebook', iconColor: 'text-blue-600', action: () => this.shareToFacebook() },
-    { name: 'X (Twitter)', icon: 'x-twitter', iconColor: 'text-gray-900 dark:text-gray-100', action: () => this.shareToTwitter() },
-    { name: 'WhatsApp', icon: 'whatsapp', iconColor: 'text-green-500', action: () => this.shareToWhatsApp() },
+    {
+      name: 'Facebook',
+      icon: 'facebook',
+      iconColor: 'text-blue-600',
+      action: () => this.shareToFacebook(),
+    },
+    {
+      name: 'X (Twitter)',
+      icon: 'x-twitter',
+      iconColor: 'text-gray-900 dark:text-gray-100',
+      action: () => this.shareToTwitter(),
+    },
+    {
+      name: 'WhatsApp',
+      icon: 'whatsapp',
+      iconColor: 'text-green-500',
+      action: () => this.shareToWhatsApp(),
+    },
     { name: 'Email', icon: 'mail', iconColor: 'text-red-500', action: () => this.shareToEmail() },
-    { name: 'Kopiuj link', icon: 'copy', iconColor: 'text-gray-500', action: () => this.copyLink() },
+    {
+      name: 'Kopiuj link',
+      icon: 'copy',
+      iconColor: 'text-gray-500',
+      action: () => this.copyLink(),
+    },
   ];
 
   private getCurrentUrl(): string {
@@ -86,7 +108,9 @@ export class ShareOverlayComponent {
 
   private shareToEmail(): void {
     const subject = encodeURIComponent('Sprawdź to na ZgadajSię!');
-    const body = encodeURIComponent(`Pomyślałem, że może Cię to zainteresować:\n\n${this.getCurrentUrl()}`);
+    const body = encodeURIComponent(
+      `Pomyślałem, że może Cię to zainteresować:\n\n${this.getCurrentUrl()}`,
+    );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
     this.closed.emit();
   }

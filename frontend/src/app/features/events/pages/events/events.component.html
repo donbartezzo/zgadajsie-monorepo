@@ -5,16 +5,20 @@
   </header>
 
   @if (isLoading() && events().length === 0) {
-    <app-loading-spinner></app-loading-spinner>
+  <app-loading-spinner></app-loading-spinner>
   } @else if (error()) {
-    <app-empty-state icon="x" [title]="'Błąd'" [message]="error()!"></app-empty-state>
+  <app-empty-state icon="x" [title]="'Błąd'" [message]="error()!"></app-empty-state>
   } @else if (events().length === 0) {
-    <app-empty-state icon="calendar" title="Brak wydarzeń" message="Nie znaleziono żadnych nadchodzących wydarzeń."></app-empty-state>
+  <app-empty-state
+    icon="calendar"
+    title="Brak wydarzeń"
+    message="Nie znaleziono żadnych nadchodzących wydarzeń."
+  ></app-empty-state>
   } @else {
-    <div class="grid gap-4">
-      @for (event of events(); track event.id) {
-        <app-event-card [event]="event" (selected)="onEventSelected($event)"></app-event-card>
-      }
-    </div>
+  <div class="grid gap-4">
+    @for (event of events(); track event.id) {
+    <app-event-card [event]="event" (selected)="onEventSelected($event)"></app-event-card>
+    }
+  </div>
   }
 </section>

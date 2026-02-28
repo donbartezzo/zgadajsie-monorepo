@@ -6,11 +6,7 @@ import { LoginFormComponent } from '../../../shared/auth/ui/login-form/login-for
   selector: 'app-auth-overlay',
   imports: [BottomOverlayComponent, LoginFormComponent],
   template: `
-    <app-bottom-overlay
-      [open]="true"
-      title="Dołącz do wydarzenia"
-      (closed)="closed.emit()"
-    >
+    <app-bottom-overlay [open]="true" title="Dołącz do wydarzenia" (closed)="closed.emit()">
       <app-login-form (authenticated)="authenticated.emit()"></app-login-form>
     </app-bottom-overlay>
   `,

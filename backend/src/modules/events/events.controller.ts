@@ -42,11 +42,7 @@ export class EventsController {
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @CurrentUser() user: AuthUser,
-    @Body() dto: UpdateEventDto,
-  ) {
+  update(@Param('id') id: string, @CurrentUser() user: AuthUser, @Body() dto: UpdateEventDto) {
     return this.eventsService.update(id, user.id, dto);
   }
 

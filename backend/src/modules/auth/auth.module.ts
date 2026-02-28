@@ -12,13 +12,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 @Module({
   imports: [PassportModule, JwtModule.register({}), NotificationsModule],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    JwtStrategy,
-    JwtRefreshStrategy,
-    GoogleStrategy,
-    FacebookStrategy,
-  ],
+  providers: [AuthService, JwtStrategy, JwtRefreshStrategy, GoogleStrategy, FacebookStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

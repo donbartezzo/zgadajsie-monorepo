@@ -5,10 +5,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class WalletService {
-  constructor(
-    private prisma: PrismaService,
-    private emailService: EmailService,
-  ) {}
+  constructor(private prisma: PrismaService, private emailService: EmailService) {}
 
   async getBalance(userId: string) {
     const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
@@ -34,7 +31,13 @@ export class WalletService {
     return { data: transactions, total, page, limit };
   }
 
-  async credit(userId: string, amount: number, type: string, description?: string, relatedEventId?: string) {
+  async credit(
+    userId: string,
+    amount: number,
+    type: string,
+    description?: string,
+    relatedEventId?: string,
+  ) {
     const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
     if (!wallet) throw new NotFoundException('Portfel nie znaleziony');
 
@@ -56,7 +59,10 @@ export class WalletService {
 
     // Send top-up email notification
     if (type === 'TOPUP') {
-      const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { email: true, displayName: true } });
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, displayName: true },
+      });
       if (user) {
         await this.emailService.sendWalletTopUpEmail(user.email, user.displayName, amount);
       }
@@ -65,7 +71,13 @@ export class WalletService {
     return result;
   }
 
-  async debit(userId: string, amount: number, type: string, description?: string, relatedEventId?: string) {
+  async debit(
+    userId: string,
+    amount: number,
+    type: string,
+    description?: string,
+    relatedEventId?: string,
+  ) {
     const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
     if (!wallet) throw new NotFoundException('Portfel nie znaleziony');
     if (wallet.balance.toNumber() < amount) {
@@ -89,7 +101,12 @@ export class WalletService {
     ]);
   }
 
-  async adminAdjust(targetUserId: string, adminUserId: string, amount: number, description?: string) {
+  async adminAdjust(
+    targetUserId: string,
+    adminUserId: string,
+    amount: number,
+    description?: string,
+  ) {
     const wallet = await this.prisma.wallet.findUnique({ where: { userId: targetUserId } });
     if (!wallet) throw new NotFoundException('Portfel nie znaleziony');
 

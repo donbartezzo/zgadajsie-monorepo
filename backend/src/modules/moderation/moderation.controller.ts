@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Delete,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ModerationService } from './moderation.service';
 import { CreateReprimandDto } from './dto/create-reprimand.dto';
 import { CreateBanDto } from './dto/create-ban.dto';

@@ -1,4 +1,5 @@
 # Stack technologiczny:
+
 - Angular 20 (PWA, SSR-ready)
 - NestJS (API, SSR, Web Push),
 - Nest CLI (Command Line Interface),
@@ -19,6 +20,7 @@
 - pnpm (szybki menedżer pakietów, wsparcie monorepo)
 
 # Integracje i funkcje dodatkowe:
+
 - Web Push API (powiadomienia push, MVP)
 - Firebase Cloud Messaging (alternatywa, skalowalność)
 - Leaflet lub MapLibre (open-source mapy, do ustalenia)
@@ -26,6 +28,7 @@
 - Nx Cloud (opcjonalnie, CI/CD, cache buildów)
 
 # Dalsze wytyczne techniczne:
+
 - szablon HTML oparty na własnych komponentach w czystym SCSS + Tailwind CSS + Angular Material
 - obowiązkowe współdzielenie modeli/DTO między frontendem i backendem (np. przez workspace/libs/shared)
 - RWD (responsywność) + mobile-first
@@ -34,6 +37,7 @@
 - ewentualna integracja z Ionic w dalszej przyszłości (w celu deployu na store)
 
 # Uzasadnienia i zalecenia:
+
 - Nx zapewnia wydajny workflow, współdzielenie kodu i łatwą integrację Angular + NestJS + shared libs.
 - pnpm jest szybszy i lepiej wspiera monorepo niż npm/yarn.
 - Zod pozwala na typowanie i walidację modeli/DTO po obu stronach (TS-first, lepsza spójność).

@@ -82,9 +82,7 @@ export class AuthService {
 
   async fetchUser(): Promise<void> {
     try {
-      const user = await firstValueFrom(
-        this.http.get<User>(`${environment.apiUrl}/users/me`),
-      );
+      const user = await firstValueFrom(this.http.get<User>(`${environment.apiUrl}/users/me`));
       this.currentUser.set(user);
     } catch {
       this.clearTokens();
@@ -93,27 +91,19 @@ export class AuthService {
   }
 
   async activateAccount(token: string): Promise<void> {
-    await firstValueFrom(
-      this.http.get(`${this.apiUrl}/activate?token=${token}`),
-    );
+    await firstValueFrom(this.http.get(`${this.apiUrl}/activate?token=${token}`));
   }
 
   async resendActivation(): Promise<void> {
-    await firstValueFrom(
-      this.http.post(`${this.apiUrl}/resend-activation`, {}),
-    );
+    await firstValueFrom(this.http.post(`${this.apiUrl}/resend-activation`, {}));
   }
 
   async forgotPassword(email: string): Promise<void> {
-    await firstValueFrom(
-      this.http.post(`${this.apiUrl}/forgot-password`, { email }),
-    );
+    await firstValueFrom(this.http.post(`${this.apiUrl}/forgot-password`, { email }));
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    await firstValueFrom(
-      this.http.post(`${this.apiUrl}/reset-password`, { token, newPassword }),
-    );
+    await firstValueFrom(this.http.post(`${this.apiUrl}/reset-password`, { token, newPassword }));
   }
 
   async handleSocialCallback(accessToken: string, refreshToken: string): Promise<void> {

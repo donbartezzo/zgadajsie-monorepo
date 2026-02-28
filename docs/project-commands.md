@@ -4,37 +4,37 @@ Ten dokument opisuje wszystkie dostępne komendy w projekcie ZgadajSię po migra
 
 ## Komendy ogólne
 
-| Komenda | Opis |
-|---------|------|
+| Komenda      | Opis                                                                              |
+| ------------ | --------------------------------------------------------------------------------- |
 | `pnpm start` | Uruchamia bazę danych, a następnie równolegle aplikację frontendową i backendową. |
-| `pnpm build` | Buduje zarówno frontend jak i backend. |
-| `pnpm test` | Uruchamia testy dla frontendu i backendu. |
+| `pnpm build` | Buduje zarówno frontend jak i backend.                                            |
+| `pnpm test`  | Uruchamia testy dla frontendu i backendu.                                         |
 
 ## Komendy dla frontendu
 
-| Komenda | Opis |
-|---------|------|
+| Komenda               | Opis                                                                                                                         |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `pnpm frontend:serve` | Uruchamia serwer deweloperski Angular dla aplikacji frontendowej. Aplikacja jest dostępna pod adresem http://localhost:4300. |
-| `pnpm frontend:build` | Buduje aplikację frontendową z użyciem Angular CLI. |
-| `pnpm frontend:test` | Uruchamia testy jednostkowe dla aplikacji frontendowej z użyciem Jest. |
+| `pnpm frontend:build` | Buduje aplikację frontendową z użyciem Angular CLI.                                                                          |
+| `pnpm frontend:test`  | Uruchamia testy jednostkowe dla aplikacji frontendowej z użyciem Jest.                                                       |
 
 ## Komendy dla backendu
 
-| Komenda | Opis |
-|---------|------|
-| `pnpm backend:serve` | Uruchamia serwer backendowy NestJS w trybie deweloperskim z automatycznym przeładowaniem po zmianach. API jest dostępne pod adresem http://localhost:3000/api. |
-| `pnpm backend:build` | Kompiluje kod backendowy przy użyciu webpack. |
-| `pnpm backend:test` | Uruchamia testy jednostkowe dla backendu. |
-| `pnpm backend:start:db` | Uruchamia bazę danych PostgreSQL i PGAdmin jako kontenery Docker. |
-| `pnpm backend:db:seed` | Wypełnia bazę danych przykładowymi danymi określonymi w skrypcie seed.ts. |
+| Komenda                 | Opis                                                                                                                                                           |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm backend:serve`    | Uruchamia serwer backendowy NestJS w trybie deweloperskim z automatycznym przeładowaniem po zmianach. API jest dostępne pod adresem http://localhost:3000/api. |
+| `pnpm backend:build`    | Kompiluje kod backendowy przy użyciu webpack.                                                                                                                  |
+| `pnpm backend:test`     | Uruchamia testy jednostkowe dla backendu.                                                                                                                      |
+| `pnpm backend:start:db` | Uruchamia bazę danych PostgreSQL i PGAdmin jako kontenery Docker.                                                                                              |
+| `pnpm backend:db:seed`  | Wypełnia bazę danych przykładowymi danymi określonymi w skrypcie seed.ts.                                                                                      |
 
 ## Komendy dla Prisma ORM
 
-| Komenda | Opis |
-|---------|------|
+| Komenda                | Opis                                                                                                                                          |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `pnpm prisma:generate` | Generuje klienta Prisma na podstawie schematu w `backend/prisma/schema.prisma`. Ta komenda jest wymagana po zmianach w schemacie bazy danych. |
-| `pnpm prisma:migrate` | Uruchamia migrację bazy danych, tworząc nowy plik migracji na podstawie zmian w schemacie Prisma. |
-| `pnpm prisma:studio` | Uruchamia graficzny interfejs Prisma Studio do zarządzania danymi w bazie danych pod adresem http://localhost:5555. |
+| `pnpm prisma:migrate`  | Uruchamia migrację bazy danych, tworząc nowy plik migracji na podstawie zmian w schemacie Prisma.                                             |
+| `pnpm prisma:studio`   | Uruchamia graficzny interfejs Prisma Studio do zarządzania danymi w bazie danych pod adresem http://localhost:5555.                           |
 
 ## Uwagi
 

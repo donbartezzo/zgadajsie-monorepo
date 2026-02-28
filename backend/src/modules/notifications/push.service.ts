@@ -15,14 +15,24 @@ export class PushService {
   ) {
     const vapidPublic = this.configService.get<string>('VAPID_PUBLIC_KEY', '');
     const vapidPrivate = this.configService.get<string>('VAPID_PRIVATE_KEY', '');
-    const vapidSubject = this.configService.get<string>('VAPID_SUBJECT', 'mailto:kontakt@zgadajsie.pl');
+    const vapidSubject = this.configService.get<string>(
+      'VAPID_SUBJECT',
+      'mailto:kontakt@zgadajsie.pl',
+    );
 
-    if (vapidPublic && vapidPrivate && !vapidPublic.startsWith('your-') && !vapidPrivate.startsWith('your-')) {
+    if (
+      vapidPublic &&
+      vapidPrivate &&
+      !vapidPublic.startsWith('your-') &&
+      !vapidPrivate.startsWith('your-')
+    ) {
       try {
         webPush.setVapidDetails(vapidSubject, vapidPublic, vapidPrivate);
         this.logger.log('VAPID keys configured');
       } catch (e: unknown) {
-        this.logger.warn(`Invalid VAPID keys – push notifications disabled: ${(e as Error).message}`);
+        this.logger.warn(
+          `Invalid VAPID keys – push notifications disabled: ${(e as Error).message}`,
+        );
       }
     } else {
       this.logger.warn('VAPID keys not configured – push notifications disabled');
@@ -66,7 +76,12 @@ export class PushService {
     }
   }
 
-  async notifyNewApplication(organizerId: string, applicantName: string, eventTitle: string, eventId: string): Promise<void> {
+  async notifyNewApplication(
+    organizerId: string,
+    applicantName: string,
+    eventTitle: string,
+    eventId: string,
+  ): Promise<void> {
     await this.notifyUser(
       organizerId,
       'NEW_APPLICATION',
@@ -76,7 +91,12 @@ export class PushService {
     );
   }
 
-  async notifyParticipationStatus(userId: string, eventTitle: string, status: string, eventId: string): Promise<void> {
+  async notifyParticipationStatus(
+    userId: string,
+    eventTitle: string,
+    status: string,
+    eventId: string,
+  ): Promise<void> {
     const statusText = status === 'ACCEPTED' ? 'zaakceptowane' : 'odrzucone';
     await this.notifyUser(
       userId,
@@ -97,7 +117,12 @@ export class PushService {
     );
   }
 
-  async notifyNewChatMessage(userId: string, senderName: string, eventTitle: string, eventId: string): Promise<void> {
+  async notifyNewChatMessage(
+    userId: string,
+    senderName: string,
+    eventTitle: string,
+    eventId: string,
+  ): Promise<void> {
     await this.notifyUser(
       userId,
       'NEW_CHAT_MESSAGE',
@@ -107,7 +132,12 @@ export class PushService {
     );
   }
 
-  async notifyEventReminder(userId: string, eventTitle: string, eventId: string, hoursLeft: number): Promise<void> {
+  async notifyEventReminder(
+    userId: string,
+    eventTitle: string,
+    eventId: string,
+    hoursLeft: number,
+  ): Promise<void> {
     await this.notifyUser(
       userId,
       'EVENT_REMINDER',
@@ -117,7 +147,12 @@ export class PushService {
     );
   }
 
-  async notifyReprimand(userId: string, eventTitle: string, reason: string, eventId: string): Promise<void> {
+  async notifyReprimand(
+    userId: string,
+    eventTitle: string,
+    reason: string,
+    eventId: string,
+  ): Promise<void> {
     await this.notifyUser(
       userId,
       'REPRIMAND',

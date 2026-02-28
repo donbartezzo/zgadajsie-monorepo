@@ -20,12 +20,14 @@ GET /api/events
 Pobiera listę wszystkich wydarzeń z opcjonalną filtracją.
 
 **Parametry zapytania:**
+
 - `city` (opcjonalny) - filtrowanie po mieście
 - `date` (opcjonalny) - filtrowanie po dacie (format: YYYY-MM-DD)
 - `sportType` (opcjonalny) - filtrowanie po typie sportu
 - `status` (opcjonalny) - filtrowanie po statusie wydarzenia (public/private)
 
 **Odpowiedź:**
+
 ```json
 {
   "events": [
@@ -61,9 +63,11 @@ GET /api/events/{id}
 Pobiera szczegóły konkretnego wydarzenia.
 
 **Parametry:**
+
 - `id` - identyfikator wydarzenia
 
 **Odpowiedź:**
+
 ```json
 {
   "id": "uuid",
@@ -104,6 +108,7 @@ Tworzy nowe wydarzenie.
 **Wymagana autoryzacja:** Tak
 
 **Dane wejściowe:**
+
 ```json
 {
   "startTime": "2025-10-20T18:00:00Z",
@@ -122,6 +127,7 @@ Tworzy nowe wydarzenie.
 ```
 
 **Odpowiedź:**
+
 ```json
 {
   "id": "uuid",
@@ -152,12 +158,14 @@ Aktualizuje istniejące wydarzenie.
 **Wymagana autoryzacja:** Tak (tylko organizator wydarzenia)
 
 **Parametry:**
+
 - `id` - identyfikator wydarzenia
 
-**Dane wejściowe:** 
+**Dane wejściowe:**
 Takie same jak przy tworzeniu wydarzenia.
 
 **Odpowiedź:**
+
 ```json
 {
   "id": "uuid",
@@ -188,9 +196,11 @@ Usuwa wydarzenie.
 **Wymagana autoryzacja:** Tak (tylko organizator wydarzenia)
 
 **Parametry:**
+
 - `id` - identyfikator wydarzenia
 
 **Odpowiedź:**
+
 ```json
 {
   "message": "Wydarzenie zostało usunięte"
@@ -208,9 +218,11 @@ Rejestruje użytkownika jako uczestnika wydarzenia.
 **Wymagana autoryzacja:** Tak
 
 **Parametry:**
+
 - `id` - identyfikator wydarzenia
 
 **Odpowiedź:**
+
 ```json
 {
   "message": "Zgłoszenie przyjęte",
@@ -233,9 +245,11 @@ Usuwa użytkownika z listy uczestników wydarzenia.
 **Wymagana autoryzacja:** Tak
 
 **Parametry:**
+
 - `id` - identyfikator wydarzenia
 
 **Odpowiedź:**
+
 ```json
 {
   "message": "Zrezygnowano z udziału w wydarzeniu"
@@ -253,6 +267,7 @@ POST /api/auth/register
 Rejestruje nowego użytkownika.
 
 **Dane wejściowe:**
+
 ```json
 {
   "email": "jan.kowalski@example.com",
@@ -262,6 +277,7 @@ Rejestruje nowego użytkownika.
 ```
 
 **Odpowiedź:**
+
 ```json
 {
   "id": "uuid",
@@ -281,6 +297,7 @@ POST /api/auth/login
 Loguje użytkownika.
 
 **Dane wejściowe:**
+
 ```json
 {
   "email": "jan.kowalski@example.com",
@@ -289,6 +306,7 @@ Loguje użytkownika.
 ```
 
 **Odpowiedź:**
+
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -311,6 +329,7 @@ Pobiera profil zalogowanego użytkownika.
 **Wymagana autoryzacja:** Tak
 
 **Odpowiedź:**
+
 ```json
 {
   "id": "uuid",

@@ -136,6 +136,19 @@
   ```
 - Jeśli komponent UI jest współdzielony między feature'ami, ale jest zależny od domeny (np. auth), umieszczaj go w `shared/<domena>/ui/` (np. `shared/auth/ui/login-form/`).
 
+## Formatowanie kodu (Prettier)
+
+- **Najważniejszym źródłem prawdy dotyczącym formatowania kodu** jest plik `.prettierrc` w rootcie monorepo — zawsze go uwzględniaj.
+
+## Linting kodu (ESLint)
+
+Projekt używa ESLint (flat config). Pełna konfiguracja: `eslint.config.mjs` (root), `frontend/eslint.config.mjs`, `backend/eslint.config.mjs`. Poniżej tylko reguły **nieoczywiste**, które AI musi znać — reszta jest wymuszona automatycznie przez ESLint.
+
+- **`no-console`** — `console.log` jest zakazany (warn); dozwolone tylko `console.warn` i `console.error`.
+- **`no-unused-vars`** — nieużywane parametry wymagane przez interfejs prefiksuj `_` (np. `_client: Socket`).
+- **`no-duplicate-attributes`** — w szablonach Angular nie łącz `class="..."` z `[class]="..."`. Zamiast tego: `[class]="'static-classes ' + dynamicExpr"`.
+- **`no-negated-async`** — nie neguj pipe async w szablonach (`!` przed `| async`).
+
 ## Pozostałe wytyczne:
 
 - Jeśli w szablonie stosowana jest zmienna sygnał wielokrtonie to zastosuj napierw przypisanie sygnału do zmiennej lokalnej (np. `@let _event = event();`) dalej stosuj już tylką tą zmienną lokalną.

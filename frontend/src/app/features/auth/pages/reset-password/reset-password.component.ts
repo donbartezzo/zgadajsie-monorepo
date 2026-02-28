@@ -21,16 +21,37 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 
           <form (ngSubmit)="onSubmit()" class="space-y-4">
             <div>
-              <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nowe hasło</label>
-              <input id="password" type="password" [(ngModel)]="password" name="password" required minlength="8"
+              <label
+                for="password"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >Nowe hasło</label
+              >
+              <input
+                id="password"
+                type="password"
+                [(ngModel)]="password"
+                name="password"
+                required
+                minlength="8"
                 class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight"
-                placeholder="Min. 8 znaków" />
+                placeholder="Min. 8 znaków"
+              />
             </div>
             <div>
-              <label for="confirmPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Potwierdź hasło</label>
-              <input id="confirmPassword" type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required
+              <label
+                for="confirmPassword"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >Potwierdź hasło</label
+              >
+              <input
+                id="confirmPassword"
+                type="password"
+                [(ngModel)]="confirmPassword"
+                name="confirmPassword"
+                required
                 class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight"
-                placeholder="Powtórz hasło" />
+                placeholder="Powtórz hasło"
+              />
             </div>
             <app-button type="submit" variant="primary" [fullWidth]="true" [loading]="loading()">
               <app-icon name="lock" size="sm"></app-icon>

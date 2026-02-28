@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, ElementRef, inject, OnInit, OnDestroy, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  inject,
+  OnInit,
+  OnDestroy,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -13,36 +22,54 @@ import { ChatMessage } from '../../../../shared/types';
 
 @Component({
   selector: 'app-event-chat',
-  imports: [CommonModule, FormsModule, DatePipe, RouterLink, IconComponent, ButtonComponent, UserAvatarComponent, LoadingSpinnerComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DatePipe,
+    RouterLink,
+    IconComponent,
+    ButtonComponent,
+    UserAvatarComponent,
+    LoadingSpinnerComponent,
+  ],
   template: `
     <div class="flex flex-col h-[calc(100vh-8rem)]">
       <header class="flex items-center gap-3 py-3 border-b border-gray-200 dark:border-slate-700">
         <a [routerLink]="['/events', eventId]" class="text-gray-500 dark:text-gray-400">
           <app-icon name="arrow-left" size="sm"></app-icon>
         </a>
-        <h1 class="text-sm font-semibold text-gray-900 dark:text-gray-100 flex-1">Chat wydarzenia</h1>
+        <h1 class="text-sm font-semibold text-gray-900 dark:text-gray-100 flex-1">
+          Chat wydarzenia
+        </h1>
       </header>
 
       <div class="flex-1 overflow-y-auto py-4 space-y-3" #messagesContainer>
         @if (loading()) {
-          <app-loading-spinner></app-loading-spinner>
-        }
-        @for (msg of messages(); track msg.id) {
-          <div class="flex gap-2" [class]="msg.userId === currentUserId ? 'flex-row-reverse' : ''">
-            <app-user-avatar [avatarUrl]="msg.user?.avatarUrl" [displayName]="msg.user?.displayName || ''" size="sm"></app-user-avatar>
-            <div [class]="msg.userId === currentUserId
-              ? 'bg-highlight text-white rounded-2xl rounded-tr-sm px-3 py-2 max-w-[75%]'
-              : 'bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-2xl rounded-tl-sm px-3 py-2 max-w-[75%]'">
-              <p class="text-xs font-medium mb-0.5 opacity-70">{{ msg.user?.displayName }}</p>
-              <p class="text-sm">{{ msg.content }}</p>
-              <p class="text-[10px] mt-1 opacity-50">{{ msg.createdAt | date:'HH:mm' }}</p>
-            </div>
+        <app-loading-spinner></app-loading-spinner>
+        } @for (msg of messages(); track msg.id) {
+        <div [class]="'flex gap-2 ' + (msg.userId === currentUserId ? 'flex-row-reverse' : '')">
+          <app-user-avatar
+            [avatarUrl]="msg.user?.avatarUrl"
+            [displayName]="msg.user?.displayName || ''"
+            size="sm"
+          ></app-user-avatar>
+          <div
+            [class]="
+              msg.userId === currentUserId
+                ? 'bg-highlight text-white rounded-2xl rounded-tr-sm px-3 py-2 max-w-[75%]'
+                : 'bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-2xl rounded-tl-sm px-3 py-2 max-w-[75%]'
+            "
+          >
+            <p class="text-xs font-medium mb-0.5 opacity-70">{{ msg.user?.displayName }}</p>
+            <p class="text-sm">{{ msg.content }}</p>
+            <p class="text-[10px] mt-1 opacity-50">{{ msg.createdAt | date : 'HH:mm' }}</p>
           </div>
+        </div>
         }
       </div>
 
       @if (typingUser()) {
-        <p class="text-xs text-gray-400 dark:text-gray-500 py-1">{{ typingUser() }} pisze...</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 py-1">{{ typingUser() }} pisze...</p>
       }
 
       <div class="flex gap-2 py-3 border-t border-gray-200 dark:border-slate-700">
@@ -94,12 +121,12 @@ export class EventChatComponent implements OnInit, OnDestroy {
 
     this.chatService.connect(this.eventId);
 
-    this.msgSub = this.chatService.onMessage().subscribe(msg => {
-      this.messages.update(prev => [...prev, msg]);
+    this.msgSub = this.chatService.onMessage().subscribe((msg) => {
+      this.messages.update((prev) => [...prev, msg]);
       setTimeout(() => this.scrollToBottom(), 50);
     });
 
-    this.typingSub = this.chatService.onTyping().subscribe(data => {
+    this.typingSub = this.chatService.onTyping().subscribe((data) => {
       if (data.userId !== this.currentUserId) {
         this.typingUser.set(data.displayName);
         if (this.typingTimeout) clearTimeout(this.typingTimeout);

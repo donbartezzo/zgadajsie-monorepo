@@ -13,7 +13,9 @@ export class R2StorageService {
     this.publicUrl = this.configService.get<string>('R2_PUBLIC_URL', '');
     this.s3 = new S3Client({
       region: 'auto',
-      endpoint: `https://${this.configService.get<string>('R2_ACCOUNT_ID')}.r2.cloudflarestorage.com`,
+      endpoint: `https://${this.configService.get<string>(
+        'R2_ACCOUNT_ID',
+      )}.r2.cloudflarestorage.com`,
       credentials: {
         accessKeyId: this.configService.get<string>('R2_ACCESS_KEY_ID', ''),
         secretAccessKey: this.configService.get<string>('R2_SECRET_ACCESS_KEY', ''),

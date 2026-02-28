@@ -7,37 +7,39 @@ import { IconComponent } from '../../../core/icons/icon.component';
   imports: [CommonModule, IconComponent],
   template: `
     @if (totalPages() > 1) {
-      <div class="flex items-center justify-center gap-1">
-        <button
-          class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
-          [disabled]="currentPage() <= 1"
-          (click)="pageChange.emit(currentPage() - 1)"
-        >
-          <app-icon name="chevron-left" size="sm" />
-        </button>
+    <div class="flex items-center justify-center gap-1">
+      <button
+        class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+        [disabled]="currentPage() <= 1"
+        (click)="pageChange.emit(currentPage() - 1)"
+      >
+        <app-icon name="chevron-left" size="sm" />
+      </button>
 
-        @for (page of visiblePages(); track page) {
-          @if (page === -1) {
-            <span class="px-2 text-gray-400">…</span>
-          } @else {
-            <button
-              class="w-9 h-9 rounded-lg text-sm font-medium transition-colors"
-              [ngClass]="page === currentPage()
-                ? 'bg-highlight text-white'
-                : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'"
-              (click)="pageChange.emit(page)"
-            >{{ page }}</button>
-          }
-        }
+      @for (page of visiblePages(); track page) { @if (page === -1) {
+      <span class="px-2 text-gray-400">…</span>
+      } @else {
+      <button
+        class="w-9 h-9 rounded-lg text-sm font-medium transition-colors"
+        [ngClass]="
+          page === currentPage()
+            ? 'bg-highlight text-white'
+            : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'
+        "
+        (click)="pageChange.emit(page)"
+      >
+        {{ page }}
+      </button>
+      } }
 
-        <button
-          class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
-          [disabled]="currentPage() >= totalPages()"
-          (click)="pageChange.emit(currentPage() + 1)"
-        >
-          <app-icon name="chevron-right" size="sm" />
-        </button>
-      </div>
+      <button
+        class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+        [disabled]="currentPage() >= totalPages()"
+        (click)="pageChange.emit(currentPage() + 1)"
+      >
+        <app-icon name="chevron-right" size="sm" />
+      </button>
+    </div>
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

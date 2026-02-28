@@ -17,28 +17,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(private chatService: ChatService) {}
 
-  handleConnection(client: Socket) {
+  handleConnection(_client: Socket) {
     // TODO: verify JWT from handshake
   }
 
-  handleDisconnect(client: Socket) {
+  handleDisconnect(_client: Socket) {
     // cleanup
   }
 
   @SubscribeMessage('joinRoom')
-  handleJoinRoom(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: { eventId: string },
-  ) {
+  handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() data: { eventId: string }) {
     client.join(`event-${data.eventId}`);
     return { event: 'joinedRoom', data: { eventId: data.eventId } };
   }
 
   @SubscribeMessage('leaveRoom')
-  handleLeaveRoom(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: { eventId: string },
-  ) {
+  handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() data: { eventId: string }) {
     client.leave(`event-${data.eventId}`);
   }
 
@@ -47,11 +41,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { eventId: string; userId: string; content: string },
   ) {
-    const message = await this.chatService.createMessage(
-      data.eventId,
-      data.userId,
-      data.content,
-    );
+    const message = await this.chatService.createMessage(data.eventId, data.userId, data.content);
     this.server.to(`event-${data.eventId}`).emit('newMessage', message);
     return message;
   }

@@ -8,33 +8,46 @@ import { Event as EventModel, Participation } from '../../../shared/types';
 
 @Component({
   selector: 'app-join-confirm-overlay',
-  imports: [CommonModule, IconComponent, ButtonComponent, UserAvatarComponent, BottomOverlayComponent],
+  imports: [
+    CommonModule,
+    IconComponent,
+    ButtonComponent,
+    UserAvatarComponent,
+    BottomOverlayComponent,
+  ],
   template: `
-    <app-bottom-overlay
-      [open]="open()"
-      (closed)="closed.emit()"
-    >
+    <app-bottom-overlay [open]="open()" (closed)="closed.emit()">
       <div class="text-center">
-        <div class="mx-auto my-3 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+        <div
+          class="mx-auto my-3 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30"
+        >
           <app-icon name="check" size="lg" class="text-green-500 dark:text-green-400"></app-icon>
         </div>
         <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Dołącz do wydarzenia</h2>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">Potwierdź swoje uczestnictwo w tym wydarzeniu</p>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+          Potwierdź swoje uczestnictwo w tym wydarzeniu
+        </p>
 
         <!-- Event info row -->
         <div class="mt-4 border-t border-b border-gray-100 dark:border-slate-700 py-3">
           <div class="flex justify-center gap-6 text-center">
             <div>
               <app-icon name="calendar" size="sm" variant="primary"></app-icon>
-              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">{{ startDateFormatted() }}</p>
+              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {{ startDateFormatted() }}
+              </p>
             </div>
             <div>
               <app-icon name="clock" size="sm" variant="muted"></app-icon>
-              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">{{ startTimeFormatted() }}–{{ endTimeFormatted() }}</p>
+              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {{ startTimeFormatted() }}–{{ endTimeFormatted() }}
+              </p>
             </div>
             <div>
               <app-icon name="map-pin" size="sm" variant="danger"></app-icon>
-              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">{{ address() || 'Brak' }}</p>
+              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {{ address() || 'Brak' }}
+              </p>
             </div>
           </div>
         </div>
@@ -53,7 +66,9 @@ import { Event as EventModel, Participation } from '../../../shared/types';
             }
           </div>
           @if (remainingCount() > 0) {
-          <span class="text-xs text-gray-400 dark:text-gray-500 ml-2">+{{ remainingCount() }} innych</span>
+          <span class="text-xs text-gray-400 dark:text-gray-500 ml-2"
+            >+{{ remainingCount() }} innych</span
+          >
           }
         </div>
         }

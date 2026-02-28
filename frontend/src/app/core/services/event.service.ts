@@ -29,7 +29,8 @@ export class EventService {
     if (params?.page) httpParams = httpParams.set('page', params.page);
     if (params?.limit) httpParams = httpParams.set('limit', params.limit);
     if (params?.citySlug) httpParams = httpParams.set('citySlug', params.citySlug);
-    if (params?.disciplineSlug) httpParams = httpParams.set('disciplineSlug', params.disciplineSlug);
+    if (params?.disciplineSlug)
+      httpParams = httpParams.set('disciplineSlug', params.disciplineSlug);
     if (params?.sortBy) httpParams = httpParams.set('sortBy', params.sortBy);
     return this.http.get<PaginatedEvents>(this.apiUrl, { params: httpParams });
   }
@@ -79,10 +80,16 @@ export class EventService {
   }
 
   acceptParticipation(participationId: string): Observable<Participation> {
-    return this.http.post<Participation>(`${environment.apiUrl}/participations/${participationId}/accept`, {});
+    return this.http.post<Participation>(
+      `${environment.apiUrl}/participations/${participationId}/accept`,
+      {},
+    );
   }
 
   rejectParticipation(participationId: string): Observable<Participation> {
-    return this.http.post<Participation>(`${environment.apiUrl}/participations/${participationId}/reject`, {});
+    return this.http.post<Participation>(
+      `${environment.apiUrl}/participations/${participationId}/reject`,
+      {},
+    );
   }
 }

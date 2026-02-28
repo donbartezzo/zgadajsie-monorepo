@@ -20,7 +20,8 @@ export class ParticipationService {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
     if (event.status !== 'ACTIVE') throw new BadRequestException('Wydarzenie nie jest aktywne');
-    if (event.organizerId === userId) throw new BadRequestException('Organizator nie może dołączyć do własnego wydarzenia');
+    if (event.organizerId === userId)
+      throw new BadRequestException('Organizator nie może dołączyć do własnego wydarzenia');
 
     const existing = await this.prisma.eventParticipation.findUnique({
       where: { eventId_userId: { eventId, userId } },
@@ -42,10 +43,23 @@ export class ParticipationService {
     });
 
     // Notify organizer about new application
-    const organizer = await this.prisma.user.findUnique({ where: { id: event.organizerId }, select: { id: true, email: true, displayName: true } });
+    const organizer = await this.prisma.user.findUnique({
+      where: { id: event.organizerId },
+      select: { id: true, email: true, displayName: true },
+    });
     if (organizer) {
-      await this.pushService.notifyNewApplication(organizer.id, participation.user.displayName, event.title, eventId);
-      await this.emailService.sendNewApplicationEmail(organizer.email, organizer.displayName, participation.user.displayName, event.title);
+      await this.pushService.notifyNewApplication(
+        organizer.id,
+        participation.user.displayName,
+        event.title,
+        eventId,
+      );
+      await this.emailService.sendNewApplicationEmail(
+        organizer.email,
+        organizer.displayName,
+        participation.user.displayName,
+        event.title,
+      );
     }
 
     return participation;
@@ -92,11 +106,24 @@ export class ParticipationService {
     const updated = await this.prisma.eventParticipation.update({
       where: { id: participationId },
       data: { status: 'ACCEPTED' },
-      include: { user: { select: { id: true, email: true, displayName: true } }, event: { select: { id: true, title: true } } },
+      include: {
+        user: { select: { id: true, email: true, displayName: true } },
+        event: { select: { id: true, title: true } },
+      },
     });
 
-    await this.pushService.notifyParticipationStatus(updated.userId, updated.event.title, 'ACCEPTED', updated.eventId);
-    await this.emailService.sendParticipationStatusEmail(updated.user.email, updated.user.displayName, updated.event.title, 'ACCEPTED');
+    await this.pushService.notifyParticipationStatus(
+      updated.userId,
+      updated.event.title,
+      'ACCEPTED',
+      updated.eventId,
+    );
+    await this.emailService.sendParticipationStatusEmail(
+      updated.user.email,
+      updated.user.displayName,
+      updated.event.title,
+      'ACCEPTED',
+    );
 
     return updated;
   }
@@ -114,11 +141,24 @@ export class ParticipationService {
     const updated = await this.prisma.eventParticipation.update({
       where: { id: participationId },
       data: { status: 'WITHDRAWN' },
-      include: { user: { select: { id: true, email: true, displayName: true } }, event: { select: { id: true, title: true } } },
+      include: {
+        user: { select: { id: true, email: true, displayName: true } },
+        event: { select: { id: true, title: true } },
+      },
     });
 
-    await this.pushService.notifyParticipationStatus(updated.userId, updated.event.title, 'REJECTED', updated.eventId);
-    await this.emailService.sendParticipationStatusEmail(updated.user.email, updated.user.displayName, updated.event.title, 'REJECTED');
+    await this.pushService.notifyParticipationStatus(
+      updated.userId,
+      updated.event.title,
+      'REJECTED',
+      updated.eventId,
+    );
+    await this.emailService.sendParticipationStatusEmail(
+      updated.user.email,
+      updated.user.displayName,
+      updated.event.title,
+      'REJECTED',
+    );
 
     return updated;
   }

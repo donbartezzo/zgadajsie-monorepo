@@ -46,7 +46,7 @@ async function main() {
       { name: 'Bieganie', slug: 'bieganie' },
       { name: 'Kolarstwo', slug: 'kolarstwo' },
       { name: 'Pływanie', slug: 'plywanie' },
-    ].map((d) => prisma.eventDiscipline.create({ data: d }))
+    ].map((d) => prisma.eventDiscipline.create({ data: d })),
   );
 
   // ─── Obiekty ─────────────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ async function main() {
       { name: 'Boisko trawiaste', slug: 'boisko-trawiaste' },
       { name: 'Kort', slug: 'kort' },
       { name: 'Stadion', slug: 'stadion' },
-    ].map((f) => prisma.eventFacility.create({ data: f }))
+    ].map((f) => prisma.eventFacility.create({ data: f })),
   );
 
   // ─── Poziomy ─────────────────────────────────────────────────────────────
@@ -72,7 +72,7 @@ async function main() {
       { name: 'Półzaawansowany', slug: 'polzaawansowany' },
       { name: 'Zaawansowany', slug: 'zaawansowany' },
       { name: 'Półzawodowy', slug: 'polzawodowy' },
-    ].map((l) => prisma.eventLevel.create({ data: l }))
+    ].map((l) => prisma.eventLevel.create({ data: l })),
   );
 
   // ─── Admin ───────────────────────────────────────────────────────────────
@@ -132,8 +132,8 @@ async function main() {
       title: 'Wieczorny mecz na orliku',
       description: 'Zapraszamy na rekreacyjny mecz piłki nożnej w Zielonej Górze!',
       disciplineId: disciplines[0].id, // Piłka nożna
-      facilityId: facilities[0].id,    // Orlik
-      levelId: levels[0].id,           // Rekreacyjny
+      facilityId: facilities[0].id, // Orlik
+      levelId: levels[0].id, // Rekreacyjny
       cityId: city.id,
       organizerId: testUser.id,
       startsAt: tomorrow,
@@ -160,8 +160,8 @@ async function main() {
       title: 'Siatkówka w hali sportowej',
       description: 'Szukamy chętnych na amatorski mecz siatkówki. Dobra atmosfera gwarantowana!',
       disciplineId: disciplines[1].id, // Siatkówka
-      facilityId: facilities[1].id,    // Hala sportowa
-      levelId: levels[1].id,           // Amatorski
+      facilityId: facilities[1].id, // Hala sportowa
+      levelId: levels[1].id, // Amatorski
       cityId: city.id,
       organizerId: admin.id,
       startsAt: dayAfter,

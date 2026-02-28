@@ -162,7 +162,7 @@ Kompletna, liniowa checklista implementacji MVP. Po zatwierdzeniu plik zostanie 
 - [x] Utworzyć `dto/create-event.dto.ts`: title, description?, disciplineId, facilityId, levelId, cityId, startsAt, endsAt, costPerPerson?, min/maxParticipants?, ageMin/Max?, gender?, visibility?, autoAccept?, address, lat, lng, coverImageUrl?, isRecurring?, recurringRule?
 - [x] Utworzyć `dto/update-event.dto.ts`: PartialType(CreateEventDto)
 - [x] Utworzyć `dto/event-query.dto.ts`: page?, limit?, citySlug?, disciplineSlug?, sortBy?
-- [ ] Utworzyć `guards/is-owner-or-admin.guard.ts` *(pominięty – logika w serwisie)*
+- [ ] Utworzyć `guards/is-owner-or-admin.guard.ts` _(pominięty – logika w serwisie)_
 
 ### 2.5 Moduł Participation
 
@@ -223,7 +223,7 @@ Kompletna, liniowa checklista implementacji MVP. Po zatwierdzeniu plik zostanie 
 
 ### 2.13 Moduł Admin
 
-- [ ] Utworzyć `backend/src/modules/admin/admin.module.ts` *(odłożone do FAZY 13)*
+- [ ] Utworzyć `backend/src/modules/admin/admin.module.ts` _(odłożone do FAZY 13)_
 - [ ] Utworzyć `admin.controller.ts`: GET dashboard, GET/PATCH settings/:key, CRUD disciplines, CRUD facilities, CRUD levels
 - [ ] Utworzyć `admin.service.ts`
 - [ ] Utworzyć `dto/update-setting.dto.ts`: value
@@ -276,7 +276,7 @@ Kompletna, liniowa checklista implementacji MVP. Po zatwierdzeniu plik zostanie 
 - [x] Utworzyć `frontend/src/app/core/services/user.service.ts`: updateProfile, getMyEvents, getMyParticipations, getMyReprimands
 - [x] Utworzyć `frontend/src/app/core/services/admin.service.ts`: getDashboard, getUsers, getUser, updateUser, getUserWallet, getUserTransactions, adjustWallet, getSettings, updateSetting, CRUD dictionaries
 - [x] Utworzyć `frontend/src/app/core/services/moderation.service.ts`: createReprimand, createBan, removeBan, getMyBans
-- [ ] Usunąć stary `frontend/src/app/features/event/event.service.ts` *(do usunięcia)*
+- [ ] Usunąć stary `frontend/src/app/features/event/event.service.ts` _(do usunięcia)_
 
 ### 3.4 Routing
 
@@ -353,7 +353,7 @@ Kompletna, liniowa checklista implementacji MVP. Po zatwierdzeniu plik zostanie 
 ## FAZA 7 – Frontend: listing + karta wydarzenia
 
 - [x] Zastąpić `features/events/events.component.ts` + `.html`: fetch z EventService, sortowanie po dacie, infinite scroll, loading/error/empty states
-- [x] Usunąć `event-item.component.ts` + `.html` (zastąpiony EventCardComponent) *(do usunięcia ręcznie)*
+- [x] Usunąć `event-item.component.ts` + `.html` (zastąpiony EventCardComponent) _(do usunięcia ręcznie)_
 - [x] Zastąpić `features/event/event.component.ts` + `.html`: fetch event+participants, hero grafika, info org, opis, szczegóły (data, lokalizacja+mapa, obiekt, poziom, płeć, wiek, koszt), lista uczestników (avatary+rangi+NOWY), sticky bottom bar (Dołącz/Wypisz się), przycisk Chat (jeśli PARTICIPANT), Udostępnij
 
 ---

@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  Query,
-  UseGuards,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -29,10 +20,7 @@ interface SocialUser {
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private authService: AuthService,
-    private configService: ConfigService,
-  ) {}
+  constructor(private authService: AuthService, private configService: ConfigService) {}
 
   @Post('register')
   register(@Body() dto: RegisterDto) {

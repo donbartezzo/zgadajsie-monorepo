@@ -50,12 +50,7 @@ export class EventReminderCron {
     for (const event of events) {
       for (const p of event.participations) {
         try {
-          await this.pushService.notifyEventReminder(
-            p.user.id,
-            event.title,
-            event.id,
-            hoursLeft,
-          );
+          await this.pushService.notifyEventReminder(p.user.id, event.title, event.id, hoursLeft);
           await this.emailService.sendEventReminderEmail(
             p.user.email,
             p.user.displayName,
@@ -66,7 +61,9 @@ export class EventReminderCron {
           this.logger.error(`Reminder failed for user ${p.user.id}, event ${event.id}: ${err}`);
         }
       }
-      this.logger.log(`Sent ${hoursLeft}h reminders for event "${event.title}" to ${event.participations.length} participants`);
+      this.logger.log(
+        `Sent ${hoursLeft}h reminders for event "${event.title}" to ${event.participations.length} participants`,
+      );
     }
   }
 }

@@ -11,9 +11,13 @@ import { BottomOverlaysService } from './bottom-overlays.service';
 @Component({
   selector: 'app-bottom-overlays',
   imports: [
-    ShareOverlayComponent, SettingsOverlayComponent,
-    MapOverlayComponent, ParticipantsOverlayComponent, AuthOverlayComponent,
-    JoinConfirmOverlayComponent, LeaveConfirmOverlayComponent,
+    ShareOverlayComponent,
+    SettingsOverlayComponent,
+    MapOverlayComponent,
+    ParticipantsOverlayComponent,
+    AuthOverlayComponent,
+    JoinConfirmOverlayComponent,
+    LeaveConfirmOverlayComponent,
   ],
   templateUrl: './bottom-overlays.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

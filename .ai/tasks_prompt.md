@@ -1,4 +1,4 @@
-Plan wdrożenia znajduje się w pliku: `.ai/tasks/sticky-mobile-redesign-checklist.md`. 
+Plan wdrożenia znajduje się w pliku: `.ai/tasks/sticky-mobile-redesign-checklist.md`.
 
 Zacznijmy wdrażanie - bazując na przygotowanym planie wdrożenia zacznij wykonywać po kolei każde z zadań. Koniecznie uwględnij wytyczne do implementacji: `docs/styleguide-frontend.md` oraz struktrurę projektu: `docs/project-structure.md`, a także bieżący stack technologiczny: `docs/tech-stack.md`.
 

@@ -32,9 +32,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const activationToken = uuidv4();
-    const activationTokenExpiresAt = new Date(
-      Date.now() + 24 * 60 * 60 * 1000,
-    );
+    const activationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     const user = await this.prisma.user.create({
       data: {
@@ -124,9 +122,7 @@ export class AuthService {
     }
 
     const activationToken = uuidv4();
-    const activationTokenExpiresAt = new Date(
-      Date.now() + 24 * 60 * 60 * 1000,
-    );
+    const activationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     await this.prisma.user.update({
       where: { id: user.id },
@@ -142,9 +138,7 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (user) {
       const passwordResetToken = uuidv4();
-      const passwordResetTokenExpiresAt = new Date(
-        Date.now() + 60 * 60 * 1000,
-      );
+      const passwordResetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
       await this.prisma.user.update({
         where: { id: user.id },
@@ -199,10 +193,7 @@ export class AuthService {
     });
 
     if (socialAccount) {
-      return this.generateTokens(
-        socialAccount.user.id,
-        socialAccount.user.email,
-      );
+      return this.generateTokens(socialAccount.user.id, socialAccount.user.email);
     }
 
     let user = await this.prisma.user.findUnique({
@@ -243,10 +234,7 @@ export class AuthService {
       }),
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: this.configService.get<string>(
-          'JWT_REFRESH_EXPIRATION',
-          '7d',
-        ) as any,
+        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION', '7d') as any,
       }),
     ]);
 

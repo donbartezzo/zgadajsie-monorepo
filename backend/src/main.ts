@@ -17,7 +17,9 @@ async function bootstrap() {
   app.use(helmet());
 
   app.enableCors({
-    origin: (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || 'http://localhost:4300').split(','),
+    origin: (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || 'http://localhost:4300').split(
+      ',',
+    ),
     credentials: true,
   });
 
@@ -33,9 +35,7 @@ async function bootstrap() {
   app.setGlobalPrefix(globalPrefix);
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
-  );
+  Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
 }
 
 bootstrap();

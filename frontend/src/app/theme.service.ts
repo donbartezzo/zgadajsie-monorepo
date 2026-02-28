@@ -26,7 +26,11 @@ export class ThemeService {
       html.classList.remove('dark');
       this.isDark.set(false);
     }
-    try { localStorage.setItem('theme', mode); } catch {}
+    try {
+      localStorage.setItem('theme', mode);
+    } catch {
+      /* SSR / storage unavailable */
+    }
   }
 
   toggle(): void {
@@ -34,6 +38,10 @@ export class ThemeService {
   }
 
   private getStorage(): string | null {
-    try { return localStorage.getItem('theme'); } catch { return null; }
+    try {
+      return localStorage.getItem('theme');
+    } catch {
+      return null;
+    }
   }
 }

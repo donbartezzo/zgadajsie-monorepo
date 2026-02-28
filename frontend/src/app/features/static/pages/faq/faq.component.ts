@@ -4,7 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../../core/icons/icon.component';
 import { StaticPageLayoutComponent } from '../../../../shared/layouts/static-page-layout/static-page-layout.component';
 
-interface FaqItem { question: string; answer: string; }
+interface FaqItem {
+  question: string;
+  answer: string;
+}
 
 @Component({
   selector: 'app-faq',
@@ -17,70 +20,81 @@ interface FaqItem { question: string; answer: string; }
       subtitle="Wyszukaj wszystko czego potrzebujesz na jednej stronie."
     >
       @let _searchQuery = searchQuery();
-      
+
       <!-- Search Box in Hero -->
       <div heroContent class="max-w-md mx-auto">
         <div class="relative bg-white rounded-lg shadow-lg">
-          <app-icon name="search" size="sm" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input 
-            type="text" 
-            [(ngModel)]="searchQuery" 
+          <app-icon
+            name="search"
+            size="sm"
+            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
             (input)="filterItems()"
             placeholder="Szukaj tutaj..."
             class="w-full pl-10 pr-10 py-3 border-0 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           @if (_searchQuery) {
-            <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-700">
-              <app-icon name="x" size="sm" />
-            </button>
+          <button
+            (click)="clearSearch()"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-700"
+          >
+            <app-icon name="x" size="sm" />
+          </button>
           }
         </div>
       </div>
 
       <!-- Search Results -->
       @if (filteredItems().length === 0 && _searchQuery) {
-        <div class="max-w-2xl mx-auto py-8">
-          <div class="text-center text-gray-500">
-            <app-icon name="search" size="lg" class="mb-2 mx-auto text-gray-400" />
-            <p>Brak wyników dla zapytania "{{ _searchQuery }}"</p>
-          </div>
+      <div class="max-w-2xl mx-auto py-8">
+        <div class="text-center text-gray-500">
+          <app-icon name="search" size="lg" class="mb-2 mx-auto text-gray-400" />
+          <p>Brak wyników dla zapytania "{{ _searchQuery }}"</p>
         </div>
+      </div>
       }
 
       <!-- FAQ Section -->
       <div class="max-w-2xl mx-auto py-8">
         <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm p-6">
-          <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Często zadawane pytania</h2>
+          <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            Często zadawane pytania
+          </h2>
           <p class="text-xs text-blue-600 dark:text-blue-400 mb-6">Naprawdę, często pytamy o to.</p>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-            Otrzymujemy te pytania często, więc stworzyliśmy tę małą sekcję, aby pomóc Ci szybciej zidentyfikować to, czego potrzebujesz.
+            Otrzymujemy te pytania często, więc stworzyliśmy tę małą sekcję, aby pomóc Ci szybciej
+            zidentyfikować to, czego potrzebujesz.
           </p>
 
           <div class="space-y-4">
             @for (item of filteredItems(); track item.question; let i = $index) {
-              <div class="border-t border-gray-200 dark:border-zinc-700 pt-4 first:border-0 first:pt-0">
-                <button 
-                  (click)="toggle(i)" 
-                  class="w-full flex items-center justify-between text-left font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                >
-                  <span class="pr-2">{{ item.question }}</span>
-                  <app-icon 
-                    [name]="openIndex() === i ? 'chevron-up' : 'chevron-down'" 
-                    size="sm" 
-                    class="opacity-50 flex-shrink-0"
-                  />
-                </button>
-                @if (openIndex() === i) {
-                  <div class="mt-3 pb-3 text-sm text-gray-600 dark:text-gray-400">
-                    {{ item.answer }}
-                  </div>
-                }
+            <div
+              class="border-t border-gray-200 dark:border-zinc-700 pt-4 first:border-0 first:pt-0"
+            >
+              <button
+                (click)="toggle(i)"
+                class="w-full flex items-center justify-between text-left font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              >
+                <span class="pr-2">{{ item.question }}</span>
+                <app-icon
+                  [name]="openIndex() === i ? 'chevron-up' : 'chevron-down'"
+                  size="sm"
+                  class="opacity-50 flex-shrink-0"
+                />
+              </button>
+              @if (openIndex() === i) {
+              <div class="mt-3 pb-3 text-sm text-gray-600 dark:text-gray-400">
+                {{ item.answer }}
               </div>
+              }
+            </div>
             }
           </div>
         </div>
       </div>
-
     </app-static-page-layout>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -91,12 +105,36 @@ export class FaqComponent {
   readonly filteredItems = signal<FaqItem[]>([]);
 
   readonly items: FaqItem[] = [
-    { question: 'Jak dołączyć do wydarzenia?', answer: 'Otwórz kartę wydarzenia i kliknij przycisk "Dołącz". Jeśli organizator wymaga akceptacji, Twoje zgłoszenie będzie oczekiwać na zatwierdzenie.' },
-    { question: 'Czy mogę anulować uczestnictwo?', answer: 'Tak — wejdź w szczegóły wydarzenia i kliknij "Wypisz się". Jeśli wydarzenie jest płatne, zwrot zależy od czasu pozostałego do rozpoczęcia.' },
-    { question: 'Jak działa portfel?', answer: 'Portfel to wewnętrzny system płatności. Doładuj go przez Tpay, a środki zostaną automatycznie pobrane przy dołączaniu do płatnych wydarzeń.' },
-    { question: 'Jak utworzyć wydarzenie?', answer: 'Po zalogowaniu kliknij "Dodaj" w nawigacji dolnej. Wypełnij formularz z datą, lokalizacją, dyscypliną i innymi szczegółami.' },
-    { question: 'Co oznacza badge "NOWY"?', answer: 'Badge "NOWY" oznacza użytkownika, który jeszcze nie uczestniczył w żadnym wydarzeniu. Organizator widzi tę informację przy akceptowaniu zgłoszeń.' },
-    { question: 'Jak działają reprymenda i ban?', answer: 'Organizator może wystawić reprymendę uczestnikowi za nieodpowiednie zachowanie. Po zebraniu określonej liczby reprymendy, użytkownik może zostać zbanowany z wydarzeń danego organizatora.' },
+    {
+      question: 'Jak dołączyć do wydarzenia?',
+      answer:
+        'Otwórz kartę wydarzenia i kliknij przycisk "Dołącz". Jeśli organizator wymaga akceptacji, Twoje zgłoszenie będzie oczekiwać na zatwierdzenie.',
+    },
+    {
+      question: 'Czy mogę anulować uczestnictwo?',
+      answer:
+        'Tak — wejdź w szczegóły wydarzenia i kliknij "Wypisz się". Jeśli wydarzenie jest płatne, zwrot zależy od czasu pozostałego do rozpoczęcia.',
+    },
+    {
+      question: 'Jak działa portfel?',
+      answer:
+        'Portfel to wewnętrzny system płatności. Doładuj go przez Tpay, a środki zostaną automatycznie pobrane przy dołączaniu do płatnych wydarzeń.',
+    },
+    {
+      question: 'Jak utworzyć wydarzenie?',
+      answer:
+        'Po zalogowaniu kliknij "Dodaj" w nawigacji dolnej. Wypełnij formularz z datą, lokalizacją, dyscypliną i innymi szczegółami.',
+    },
+    {
+      question: 'Co oznacza badge "NOWY"?',
+      answer:
+        'Badge "NOWY" oznacza użytkownika, który jeszcze nie uczestniczył w żadnym wydarzeniu. Organizator widzi tę informację przy akceptowaniu zgłoszeń.',
+    },
+    {
+      question: 'Jak działają reprymenda i ban?',
+      answer:
+        'Organizator może wystawić reprymendę uczestnikowi za nieodpowiednie zachowanie. Po zebraniu określonej liczby reprymendy, użytkownik może zostać zbanowany z wydarzeń danego organizatora.',
+    },
   ];
 
   constructor() {
@@ -113,9 +151,8 @@ export class FaqComponent {
       this.filteredItems.set(this.items);
     } else {
       const filtered = this.items.filter(
-        item => 
-          item.question.toLowerCase().includes(query) || 
-          item.answer.toLowerCase().includes(query)
+        (item) =>
+          item.question.toLowerCase().includes(query) || item.answer.toLowerCase().includes(query),
       );
       this.filteredItems.set(filtered);
     }

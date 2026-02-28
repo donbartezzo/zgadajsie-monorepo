@@ -3,7 +3,9 @@
   class="border-t border-slate-200 bg-white/95 px-2 py-2 shadow-[0_-4px_12px_rgba(15,23,42,0.12)] backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95"
   aria-label="Główna nawigacja dolna"
 >
-  <nav class="flex items-center justify-center text-xs font-medium text-slate-500 dark:text-slate-300">
+  <nav
+    class="flex items-center justify-center text-xs font-medium text-slate-500 dark:text-slate-300"
+  >
     <!-- Centered Actions -->
     <div class="grid grid-cols-4 gap-x-3">
       <button
@@ -36,28 +38,28 @@
       </button>
 
       @if (auth.isLoggedIn()) {
-        <button
-          type="button"
-          (click)="navigateToProfile()"
-          class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
-        >
-          <app-user-avatar
-            [avatarUrl]="auth.currentUser()?.avatarUrl"
-            [displayName]="auth.currentUser()?.displayName || ''"
-            size="md"
-            class="mb-1"
-          ></app-user-avatar>
-          <!-- <span>Profil</span> -->
-        </button>
+      <button
+        type="button"
+        (click)="navigateToProfile()"
+        class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
+      >
+        <app-user-avatar
+          [avatarUrl]="auth.currentUser()?.avatarUrl"
+          [displayName]="auth.currentUser()?.displayName || ''"
+          size="md"
+          class="mb-1"
+        ></app-user-avatar>
+        <!-- <span>Profil</span> -->
+      </button>
       } @else {
-        <button
-          type="button"
-          (click)="navigateToLogin()"
-          class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
-        >
-          <app-icon name="log-in" size="lg" variant="default" class="mb-1"></app-icon>
-          <span>Zaloguj</span>
-        </button>
+      <button
+        type="button"
+        (click)="navigateToLogin()"
+        class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-highlight dark:hover:text-highlight-light"
+      >
+        <app-icon name="log-in" size="lg" variant="default" class="mb-1"></app-icon>
+        <span>Zaloguj</span>
+      </button>
       }
     </div>
   </nav>

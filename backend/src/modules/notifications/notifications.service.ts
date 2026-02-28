@@ -45,7 +45,10 @@ export class NotificationsService {
     });
   }
 
-  async subscribePush(userId: string, subscription: { endpoint: string; keys: { p256dh: string; auth: string } }) {
+  async subscribePush(
+    userId: string,
+    subscription: { endpoint: string; keys: { p256dh: string; auth: string } },
+  ) {
     return this.prisma.pushSubscription.upsert({
       where: {
         userId_endpoint: {

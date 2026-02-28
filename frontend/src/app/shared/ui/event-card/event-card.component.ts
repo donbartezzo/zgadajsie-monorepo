@@ -13,53 +13,63 @@ import { EventListItem } from '../../types';
       (click)="selected.emit(event())"
     >
       @if (event().coverImageUrl) {
-        <img
-          [src]="event().coverImageUrl"
-          [alt]="event().title"
-          class="w-full h-40 object-cover"
-        />
+      <img [src]="event().coverImageUrl" [alt]="event().title" class="w-full h-40 object-cover" />
       } @else {
-        <div class="w-full h-40 bg-gradient-to-br from-highlight-light to-highlight flex items-center justify-center">
-          <app-icon name="calendar" size="lg" variant="default" />
-        </div>
+      <div
+        class="w-full h-40 bg-gradient-to-br from-highlight-light to-highlight flex items-center justify-center"
+      >
+        <app-icon name="calendar" size="lg" variant="default" />
+      </div>
       }
       <div class="p-4 space-y-2">
         <div class="flex items-start justify-between gap-2">
-          <h3 class="font-semibold text-gray-900 dark:text-gray-100 line-clamp-2">{{ event().title }}</h3>
+          <h3 class="font-semibold text-gray-900 dark:text-gray-100 line-clamp-2">
+            {{ event().title }}
+          </h3>
           @if (event().discipline) {
-            <span class="text-xs bg-highlight-50 dark:bg-highlight-200/20 text-highlight dark:text-highlight-light px-2 py-0.5 rounded-full whitespace-nowrap">{{ event().discipline!.name }}</span>
+          <span
+            class="text-xs bg-highlight-50 dark:bg-highlight-200/20 text-highlight dark:text-highlight-light px-2 py-0.5 rounded-full whitespace-nowrap"
+            >{{ event().discipline!.name }}</span
+          >
           }
         </div>
         <div class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
           <app-icon name="clock" size="sm" variant="muted" />
-          <span>{{ event().startsAt | date:'d MMM, HH:mm' }}</span>
+          <span>{{ event().startsAt | date : 'd MMM, HH:mm' }}</span>
         </div>
         <div class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
           <app-icon name="map-pin" size="sm" variant="muted" />
           <span class="truncate">{{ event().address }}</span>
         </div>
-        <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-slate-700">
+        <div
+          class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-slate-700"
+        >
           <div class="flex items-center gap-2">
             @if (event().organizer) {
-              <app-user-avatar
-                [avatarUrl]="event().organizer!.avatarUrl"
-                [displayName]="event().organizer!.displayName"
-                size="sm"
-              />
-              <span class="text-sm text-gray-600 dark:text-gray-300">{{ event().organizer!.displayName }}</span>
+            <app-user-avatar
+              [avatarUrl]="event().organizer!.avatarUrl"
+              [displayName]="event().organizer!.displayName"
+              size="sm"
+            />
+            <span class="text-sm text-gray-600 dark:text-gray-300">{{
+              event().organizer!.displayName
+            }}</span>
             }
           </div>
           <div class="flex items-center gap-3 text-sm">
             @if (event()._count) {
-              <span class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-                <app-icon name="users" size="sm" variant="muted" />
-                {{ event()._count!.participations }}@if (event().maxParticipants) {/{{ event().maxParticipants }}}
-              </span>
-            }
-            @if (event().costPerPerson > 0) {
-              <span class="font-semibold text-green-600 dark:text-green-400">{{ event().costPerPerson | number:'1.0-2' }} zł</span>
+            <span class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+              <app-icon name="users" size="sm" variant="muted" />
+              {{ event()._count!.participations }}@if (event().maxParticipants) {/{{
+                event().maxParticipants
+              }}}
+            </span>
+            } @if (event().costPerPerson > 0) {
+            <span class="font-semibold text-green-600 dark:text-green-400"
+              >{{ event().costPerPerson | number : '1.0-2' }} zł</span
+            >
             } @else {
-              <span class="font-semibold text-green-600 dark:text-green-400">Bezpłatne</span>
+            <span class="font-semibold text-green-600 dark:text-green-400">Bezpłatne</span>
             }
           </div>
         </div>

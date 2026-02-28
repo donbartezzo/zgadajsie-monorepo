@@ -309,7 +309,9 @@ Załóżmy, że w pliku `.ignored/themplates/sticky-mobile-template/code/events.
   <div class="card-body d-flex justify-content-between align-items-center">
     <div>
       <h5 class="card-title mb-1">Koncert jazzowy</h5>
-      <p class="card-text mb-1 text-muted"><i class="bi bi-calendar-event me-1"></i> 24.01.2026, 19:00</p>
+      <p class="card-text mb-1 text-muted">
+        <i class="bi bi-calendar-event me-1"></i> 24.01.2026, 19:00
+      </p>
       <p class="card-text mb-0 text-muted"><i class="bi bi-geo-alt me-1"></i> Klub Muzyczny XYZ</p>
     </div>
     <button class="btn btn-primary btn-sm">Szczegóły</button>
@@ -340,7 +342,9 @@ Asystent AI powinien podjąć następujące decyzje:
 `event-card.component.html` (Tailwind zamiast Bootstrapa, schematycznie):
 
 ```html
-<article class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm p-4 flex items-start justify-between gap-4">
+<article
+  class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm p-4 flex items-start justify-between gap-4"
+>
   <div class="space-y-1 text-sm">
     <h2 class="text-base font-semibold text-zinc-900 dark:text-zinc-50">{{ event().title }}</h2>
 
@@ -355,7 +359,9 @@ Asystent AI powinien podjąć następujące decyzje:
     </p>
   </div>
 
-  <app-ui-button variant="primary" size="sm" class="shrink-0" (clicked)="detailsClicked.emit()"> Szczegóły </app-ui-button>
+  <app-ui-button variant="primary" size="sm" class="shrink-0" (clicked)="detailsClicked.emit()">
+    Szczegóły
+  </app-ui-button>
 </article>
 ```
 
@@ -403,12 +409,18 @@ AI powinien utworzyć komponent layoutu, np. `BottomNavComponent` w `frontend/sr
 ### 12.3. Struktura Tailwind (koncepcja)
 
 ```html
-<nav class="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 dark:bg-zinc-900/95 backdrop-blur">
+<nav
+  class="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 dark:bg-zinc-900/95 backdrop-blur"
+>
   <div class="mx-auto max-w-md px-4">
     <ul class="flex items-stretch justify-between py-2">
       @for (item of items(); track item.path) {
       <li class="flex-1">
-        <a [routerLink]="item.path" routerLinkActive="text-blue-600" class="flex flex-col items-center justify-center gap-0.5 py-1 text-xs text-zinc-500">
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="text-blue-600"
+          class="flex flex-col items-center justify-center gap-0.5 py-1 text-xs text-zinc-500"
+        >
           <app-icon [name]="item.icon" class="w-5 h-5" />
           <span>{{ item.label }}</span>
         </a>

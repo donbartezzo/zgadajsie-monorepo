@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { TpayService } from './tpay.service';
 import { TopupDto } from './dto/topup.dto';
@@ -20,10 +12,7 @@ import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
 @Controller('wallets')
 export class WalletController {
-  constructor(
-    private walletService: WalletService,
-    private tpayService: TpayService,
-  ) {}
+  constructor(private walletService: WalletService, private tpayService: TpayService) {}
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Get('me')

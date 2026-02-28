@@ -1,6 +1,21 @@
-# Add files here to ignore them from prettier formatting
+# AI task files
+.ai/
+
+# Build outputs
 /dist
+**/dist
 /coverage
+
+# Nx
 /.nx/cache
 /.nx/workspace-data
+
+# Angular
 .angular
+
+# Dependencies
+node_modules
+
+# Generated
+pnpm-lock.yaml
+backend/prisma/migrations

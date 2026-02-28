@@ -8,7 +8,13 @@ import { SnackbarComponent } from './shared/ui/snackbar/snackbar.component';
 import { BottomOverlaysComponent } from './shared/ui/bottom-overlays/bottom-overlays.component';
 
 @Component({
-  imports: [RouterModule, BottomNavComponent, FooterComponent, SnackbarComponent, BottomOverlaysComponent],
+  imports: [
+    RouterModule,
+    BottomNavComponent,
+    FooterComponent,
+    SnackbarComponent,
+    BottomOverlaysComponent,
+  ],
   selector: 'app-root',
   templateUrl: './app.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,7 +26,7 @@ export class App {
   private readonly url = toSignal(
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
-      map(e => e.urlAfterRedirects),
+      map((e) => e.urlAfterRedirects),
     ),
     { initialValue: this.router.url },
   );

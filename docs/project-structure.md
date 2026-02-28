@@ -60,6 +60,7 @@ frontend/
 ```
 
 **Założenia dla frontendu:**
+
 - Angular 20+ z podejściem standalone components.
 - Struktura katalogów oparta o podział: `core/` (singletony i integracje), `shared/` (wspólne UI), `features/` (domeny biznesowe) oraz `layout/` (ramy UI).
 - Layout i wygląd UI wyłącznie przez Tailwind CSS.
@@ -95,6 +96,7 @@ libs/
 ## Organizacja kodu
 
 ### Frontend
+
 - Wykorzystuje Angular 20+ w podejściu standalone components.
 - Struktura `core/shared/features`:
   - `core/` na singletony, konfigurację globalną, integrację z Material/CDK i obsługę ikon,
@@ -112,12 +114,14 @@ libs/
 - UI współdzielone między feature'ami, ale zależne od domeny (np. auth), umieszczamy w `shared/<domena>/ui/` (np. `shared/auth/ui/login-form/`).
 
 ### Backend
+
 - Zbudowany na NestJS z kontrolerami i serwisami.
 - Kontroler wydarzeń obsługuje endpointy związane z wydarzeniami.
 - Serwis wydarzeń zawiera logikę biznesową.
 - Wykorzystuje Prisma jako ORM do komunikacji z bazą PostgreSQL.
 
 ### Shared libs
+
 - Zawiera pliki DTO i interfejsy współdzielone między frontendem i backendem.
 - Umożliwia zachowanie spójności typów po obu stronach aplikacji.
 

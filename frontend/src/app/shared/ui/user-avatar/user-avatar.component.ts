@@ -9,26 +9,27 @@ export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
   template: `
     <div class="relative inline-flex items-center justify-center shrink-0" [ngClass]="sizeClass()">
       @if (avatarUrl()) {
-        <img
-          [src]="avatarUrl()"
-          [alt]="displayName()"
-          class="rounded-full object-cover w-full h-full"
-        />
+      <img
+        [src]="avatarUrl()"
+        [alt]="displayName()"
+        class="rounded-full object-cover w-full h-full"
+      />
       } @else {
-        <div
-          class="rounded-full flex items-center justify-center font-semibold text-white w-full h-full"
-          [ngClass]="bgClass()"
-        >
-          {{ initials() }}
-        </div>
-      }
-      @if (isNew()) {
-        <span class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-slate-800"></span>
-      }
-      @if (rank()) {
-        <span
-          class="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-bold px-1 rounded-full bg-yellow-400 text-yellow-900 whitespace-nowrap"
-        >{{ rank() }}</span>
+      <div
+        class="rounded-full flex items-center justify-center font-semibold text-white w-full h-full"
+        [ngClass]="bgClass()"
+      >
+        {{ initials() }}
+      </div>
+      } @if (isNew()) {
+      <span
+        class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-slate-800"
+      ></span>
+      } @if (rank()) {
+      <span
+        class="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-bold px-1 rounded-full bg-yellow-400 text-yellow-900 whitespace-nowrap"
+        >{{ rank() }}</span
+      >
       }
     </div>
   `,
@@ -62,8 +63,14 @@ export class UserAvatarComponent {
 
   readonly bgClass = computed(() => {
     const colors = [
-      'bg-highlight', 'bg-green-500', 'bg-purple-500', 'bg-orange-500',
-      'bg-pink-500', 'bg-teal-500', 'bg-indigo-500', 'bg-rose-500',
+      'bg-highlight',
+      'bg-green-500',
+      'bg-purple-500',
+      'bg-orange-500',
+      'bg-pink-500',
+      'bg-teal-500',
+      'bg-indigo-500',
+      'bg-rose-500',
     ];
     const name = this.displayName();
     const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);

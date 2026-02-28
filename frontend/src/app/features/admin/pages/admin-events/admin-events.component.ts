@@ -12,35 +12,58 @@ import { EventListItem } from '../../../../shared/types';
 
 @Component({
   selector: 'app-admin-events',
-  imports: [CommonModule, DatePipe, RouterLink, IconComponent, ButtonComponent, CardComponent, LoadingSpinnerComponent, PaginationComponent],
+  imports: [
+    CommonModule,
+    DatePipe,
+    RouterLink,
+    IconComponent,
+    ButtonComponent,
+    CardComponent,
+    LoadingSpinnerComponent,
+    PaginationComponent,
+  ],
   template: `
     <div class="py-6">
       <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Wydarzenia (admin)</h1>
       @if (loading()) {
-        <app-loading-spinner></app-loading-spinner>
+      <app-loading-spinner></app-loading-spinner>
       } @else {
-        <div class="space-y-2">
-          @for (e of events(); track e.id) {
-            <app-card>
-              <div class="p-3 flex items-center justify-between">
-                <div>
-                  <a [routerLink]="['/events', e.id]" class="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-highlight">{{ e.title }}</a>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ e.startsAt | date:'d MMM yyyy, HH:mm' }} · {{ e.status }}</p>
-                </div>
-                <div class="flex gap-1">
-                  <a [routerLink]="['/events', e.id, 'edit']"><app-button variant="outline" size="sm"><app-icon name="edit" size="sm"></app-icon></app-button></a>
-                  <app-button variant="danger" size="sm" (clicked)="onCancel(e.id)"><app-icon name="x" size="sm"></app-icon></app-button>
-                </div>
-              </div>
-            </app-card>
-          }
-        </div>
-        @if (totalPages() > 1) {
-          <div class="mt-4">
-            <app-pagination [currentPage]="page()" [totalPages]="totalPages()" (pageChange)="onPageChange($event)"></app-pagination>
+      <div class="space-y-2">
+        @for (e of events(); track e.id) {
+        <app-card>
+          <div class="p-3 flex items-center justify-between">
+            <div>
+              <a
+                [routerLink]="['/events', e.id]"
+                class="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-highlight"
+                >{{ e.title }}</a
+              >
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ e.startsAt | date : 'd MMM yyyy, HH:mm' }} · {{ e.status }}
+              </p>
+            </div>
+            <div class="flex gap-1">
+              <a [routerLink]="['/events', e.id, 'edit']"
+                ><app-button variant="outline" size="sm"
+                  ><app-icon name="edit" size="sm"></app-icon></app-button
+              ></a>
+              <app-button variant="danger" size="sm" (clicked)="onCancel(e.id)"
+                ><app-icon name="x" size="sm"></app-icon
+              ></app-button>
+            </div>
           </div>
+        </app-card>
         }
-      }
+      </div>
+      @if (totalPages() > 1) {
+      <div class="mt-4">
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          (pageChange)="onPageChange($event)"
+        ></app-pagination>
+      </div>
+      } }
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,20 +76,34 @@ export class AdminEventsComponent implements OnInit {
   readonly page = signal(1);
   readonly totalPages = signal(1);
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.load();
+  }
 
   load(): void {
     this.eventService.getEvents({ page: this.page(), limit: 20 }).subscribe({
-      next: (r) => { this.events.set(r.data); this.totalPages.set(Math.ceil(r.total / r.limit) || 1); this.loading.set(false); },
+      next: (r) => {
+        this.events.set(r.data);
+        this.totalPages.set(Math.ceil(r.total / r.limit) || 1);
+        this.loading.set(false);
+      },
       error: () => this.loading.set(false),
     });
   }
 
-  onPageChange(p: number): void { this.page.set(p); this.load(); }
+  onPageChange(p: number): void {
+    this.page.set(p);
+    this.load();
+  }
 
   onCancel(id: string): void {
     this.eventService.cancelEvent(id).subscribe({
-      next: () => { this.events.update(prev => prev.map(e => e.id === id ? { ...e, status: 'CANCELLED' } : e)); this.snackbar.info('Anulowano'); },
+      next: () => {
+        this.events.update((prev) =>
+          prev.map((e) => (e.id === id ? { ...e, status: 'CANCELLED' } : e)),
+        );
+        this.snackbar.info('Anulowano');
+      },
       error: () => this.snackbar.error('Błąd'),
     });
   }

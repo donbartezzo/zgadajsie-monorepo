@@ -92,7 +92,13 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
-  async findAll(params: { page?: number; limit?: number; search?: string; role?: string; isActive?: boolean }) {
+  async findAll(params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    role?: string;
+    isActive?: boolean;
+  }) {
     const { page = 1, limit = 20, search, role, isActive } = params;
     const where: Record<string, unknown> = {};
     if (search) {
@@ -110,7 +116,14 @@ export class UsersService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        select: { id: true, email: true, displayName: true, role: true, isActive: true, createdAt: true },
+        select: {
+          id: true,
+          email: true,
+          displayName: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+        },
       }),
       this.prisma.user.count({ where }),
     ]);

@@ -20,18 +20,28 @@ export class ModerationService {
         toUserId: dto.toUserId,
         eventId: dto.eventId,
         reason: dto.reason,
-        expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        expiresAt: dto.expiresAt
+          ? new Date(dto.expiresAt)
+          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
     });
 
     // Notify reprimanded user
     const [user, event] = await Promise.all([
-      this.prisma.user.findUnique({ where: { id: dto.toUserId }, select: { email: true, displayName: true } }),
+      this.prisma.user.findUnique({
+        where: { id: dto.toUserId },
+        select: { email: true, displayName: true },
+      }),
       this.prisma.event.findUnique({ where: { id: dto.eventId }, select: { title: true } }),
     ]);
     if (user && event) {
       await this.pushService.notifyReprimand(dto.toUserId, event.title, dto.reason, dto.eventId);
-      await this.emailService.sendReprimandEmail(user.email, user.displayName, event.title, dto.reason);
+      await this.emailService.sendReprimandEmail(
+        user.email,
+        user.displayName,
+        event.title,
+        dto.reason,
+      );
     }
 
     return reprimand;

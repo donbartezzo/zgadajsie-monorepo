@@ -20,6 +20,9 @@ export class WalletService {
   }
 
   initTopup(amount: number): Observable<{ transactionId: string; paymentUrl: string }> {
-    return this.http.post<{ transactionId: string; paymentUrl: string }>(`${this.apiUrl}/me/topup`, { amount });
+    return this.http.post<{ transactionId: string; paymentUrl: string }>(
+      `${this.apiUrl}/me/topup`,
+      { amount },
+    );
   }
 }

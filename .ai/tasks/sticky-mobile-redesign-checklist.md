@@ -22,14 +22,16 @@
 
 - [x] 2.1 Zbudować główny shell Angulara według struktury `_starter.html`:
   - [x] 2.1.1 Utworzyć komponent `AppShellComponent` odwzorowujący strukturę:
+
     - preloader (poza `#page`),
     - `div#page` z headerem, footerem,
     - `div.page-content.header-clear-*` zawierający `router-outlet`,
     - off-canvas (menu, snackbary, toasty, PWA install) poza `page-content`.
-    
+
     _ZREALIZOWANE: struktura shella została zaimplementowana bezpośrednio w komponencie root `App` jako standalone component._
+
   - [x] 2.1.2 Wpiąć `AppShellComponent` jako główny layout w `AppComponent` / routing (np. `AppComponent` tylko z `<app-shell></app-shell>`).
-    
+
     _ZREALIZOWANE: root `App` pełni rolę shella, w środku posiada `router-outlet` oraz header/footer StickyMobile._
 - [ ] 2.2 Wydzielić layoutowe komponenty wspólne:
   - [ ] 2.2.1 `HeaderComponent` z wariantami z dokumentacji (`header-logo-left/right/center/app`).

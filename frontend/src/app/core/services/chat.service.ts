@@ -63,8 +63,11 @@ export class ChatService {
   }
 
   getHistory(eventId: string, page = 1, limit = 50): Observable<PaginatedMessages> {
-    return this.http.get<PaginatedMessages>(`${environment.apiUrl}/events/${eventId}/chat/messages`, {
-      params: { page, limit },
-    });
+    return this.http.get<PaginatedMessages>(
+      `${environment.apiUrl}/events/${eventId}/chat/messages`,
+      {
+        params: { page, limit },
+      },
+    );
   }
 }

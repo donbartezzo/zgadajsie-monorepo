@@ -8,18 +8,25 @@ import { Event as EventModel, Participation } from '../../../shared/types';
 
 @Component({
   selector: 'app-leave-confirm-overlay',
-  imports: [CommonModule, IconComponent, ButtonComponent, UserAvatarComponent, BottomOverlayComponent],
+  imports: [
+    CommonModule,
+    IconComponent,
+    ButtonComponent,
+    UserAvatarComponent,
+    BottomOverlayComponent,
+  ],
   template: `
-    <app-bottom-overlay
-      [open]="open()"
-      (closed)="closed.emit()"
-    >
+    <app-bottom-overlay [open]="open()" (closed)="closed.emit()">
       <div class="text-center">
-        <div class="mx-auto my-3 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+        <div
+          class="mx-auto my-3 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30"
+        >
           <app-icon name="user-x" size="lg" variant="danger"></app-icon>
         </div>
         <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Wypisz się z wydarzenia</h2>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">Czy na pewno chcesz zrezygnować z uczestnictwa?</p>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+          Czy na pewno chcesz zrezygnować z uczestnictwa?
+        </p>
 
         <!-- Organizer + participants -->
         @if (event(); as e) {
@@ -31,10 +38,11 @@ import { Event as EventModel, Participation } from '../../../shared/types';
               [displayName]="e.organizer!.displayName"
               size="sm"
             ></app-user-avatar>
-            <span class="text-xs text-gray-400 dark:text-gray-500">{{ e.organizer!.displayName }}</span>
+            <span class="text-xs text-gray-400 dark:text-gray-500">{{
+              e.organizer!.displayName
+            }}</span>
           </div>
-          }
-          @if (participants().length > 0) {
+          } @if (participants().length > 0) {
           <div class="flex items-center gap-1">
             <div class="flex -space-x-2">
               @for (p of visibleAvatars(); track p.id) {

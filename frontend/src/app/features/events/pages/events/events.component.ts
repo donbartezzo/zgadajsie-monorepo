@@ -32,7 +32,7 @@ export class EventsComponent implements OnInit {
     if (!this.hasMore) return;
     this.eventService.getEvents({ page: this.page, limit: 20, sortBy: 'startsAt' }).subscribe({
       next: (res) => {
-        this.events.update(prev => [...prev, ...res.data]);
+        this.events.update((prev) => [...prev, ...res.data]);
         this.hasMore = res.data.length === 20;
         this.page++;
         this.isLoading.set(false);

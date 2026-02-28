@@ -16,7 +16,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
       (click)="clicked.emit($event)"
     >
       @if (loading()) {
-        <app-icon name="loader" [size]="iconSize()" class="animate-spin" />
+      <app-icon name="loader" [size]="iconSize()" class="animate-spin" />
       }
       <ng-content />
     </button>
@@ -33,10 +33,11 @@ export class ButtonComponent {
 
   readonly clicked = output<MouseEvent>();
 
-  readonly iconSize = computed(() => this.size() === 'sm' ? 'sm' as const : 'md' as const);
+  readonly iconSize = computed(() => (this.size() === 'sm' ? ('sm' as const) : ('md' as const)));
 
   readonly classes = computed(() => {
-    const base = 'inline-flex items-center justify-center gap-2 font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+    const base =
+      'inline-flex items-center justify-center gap-2 font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
     const sizeClasses: Record<ButtonSize, string> = {
       sm: 'px-3 py-1.5 text-sm',
@@ -45,12 +46,18 @@ export class ButtonComponent {
     };
 
     const variantClasses: Record<ButtonVariant, string> = {
-      primary: 'bg-highlight text-white hover:bg-highlight-dark focus:ring-highlight dark:bg-highlight-light dark:hover:bg-highlight',
-      secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500 dark:bg-slate-700 dark:text-gray-100 dark:hover:bg-slate-600',
-      outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-highlight dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700',
-      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 dark:bg-red-500 dark:hover:bg-red-600',
-      success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 dark:bg-green-500 dark:hover:bg-green-600',
-      ghost: 'text-gray-600 hover:bg-gray-100 focus:ring-gray-500 dark:text-gray-300 dark:hover:bg-slate-700',
+      primary:
+        'bg-highlight text-white hover:bg-highlight-dark focus:ring-highlight dark:bg-highlight-light dark:hover:bg-highlight',
+      secondary:
+        'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500 dark:bg-slate-700 dark:text-gray-100 dark:hover:bg-slate-600',
+      outline:
+        'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-highlight dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700',
+      danger:
+        'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 dark:bg-red-500 dark:hover:bg-red-600',
+      success:
+        'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 dark:bg-green-500 dark:hover:bg-green-600',
+      ghost:
+        'text-gray-600 hover:bg-gray-100 focus:ring-gray-500 dark:text-gray-300 dark:hover:bg-slate-700',
     };
 
     const widthClass = this.fullWidth() ? 'w-full' : '';

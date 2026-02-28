@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
@@ -41,9 +37,8 @@ export class EventsService {
       where.discipline = { slug: disciplineSlug };
     }
 
-    const orderBy: Record<string, string> = sortBy === 'newest'
-      ? { createdAt: 'desc' }
-      : { startsAt: 'asc' };
+    const orderBy: Record<string, string> =
+      sortBy === 'newest' ? { createdAt: 'desc' } : { startsAt: 'asc' };
 
     const [events, total] = await Promise.all([
       this.prisma.event.findMany({
@@ -123,7 +118,11 @@ export class EventsService {
     });
     for (const p of participants) {
       await this.pushService.notifyEventCancelled(p.user.id, event.title, id);
-      await this.emailService.sendEventCancelledEmail(p.user.email, p.user.displayName, event.title);
+      await this.emailService.sendEventCancelledEmail(
+        p.user.email,
+        p.user.displayName,
+        event.title,
+      );
     }
 
     return updated;

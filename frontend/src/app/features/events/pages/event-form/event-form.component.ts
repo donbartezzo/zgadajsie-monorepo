@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnInit,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -41,8 +35,7 @@ import { DictionaryItem, City } from '../../../../shared/types';
         <app-card>
           <div class="p-4 space-y-4">
             <div>
-              <label
-                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                 >Tytuł</label
               >
               <input
@@ -52,8 +45,7 @@ import { DictionaryItem, City } from '../../../../shared/types';
               />
             </div>
             <div>
-              <label
-                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                 >Opis</label
               >
               <textarea
@@ -64,8 +56,7 @@ import { DictionaryItem, City } from '../../../../shared/types';
               ></textarea>
             </div>
             <div>
-              <label
-                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                 >Grafika</label
               >
               <app-file-upload
@@ -79,13 +70,10 @@ import { DictionaryItem, City } from '../../../../shared/types';
 
         <app-card>
           <div class="p-4 space-y-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
-              Szczegóły
-            </h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Szczegóły</h3>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label
-                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
                   >Dyscyplina</label
                 >
                 <select
@@ -99,8 +87,7 @@ import { DictionaryItem, City } from '../../../../shared/types';
                 </select>
               </div>
               <div>
-                <label
-                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
                   >Obiekt</label
                 >
                 <select
@@ -114,8 +101,7 @@ import { DictionaryItem, City } from '../../../../shared/types';
                 </select>
               </div>
               <div>
-                <label
-                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
                   >Poziom</label
                 >
                 <select
@@ -129,8 +115,7 @@ import { DictionaryItem, City } from '../../../../shared/types';
                 </select>
               </div>
               <div>
-                <label
-                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
                   >Miasto</label
                 >
                 <select
@@ -154,8 +139,7 @@ import { DictionaryItem, City } from '../../../../shared/types';
             </h3>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label
-                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
                   >Początek</label
                 >
                 <input
@@ -165,8 +149,7 @@ import { DictionaryItem, City } from '../../../../shared/types';
                 />
               </div>
               <div>
-                <label
-                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
                   >Koniec</label
                 >
                 <input
@@ -176,8 +159,7 @@ import { DictionaryItem, City } from '../../../../shared/types';
                 />
               </div>
               <div>
-                <label
-                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
                   >Koszt/os. (zł)</label
                 >
                 <input
@@ -189,8 +171,7 @@ import { DictionaryItem, City } from '../../../../shared/types';
                 />
               </div>
               <div>
-                <label
-                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
                   >Maks. uczestników</label
                 >
                 <input
@@ -201,8 +182,7 @@ import { DictionaryItem, City } from '../../../../shared/types';
                 />
               </div>
               <div>
-                <label
-                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
                   >Płeć</label
                 >
                 <select
@@ -215,8 +195,7 @@ import { DictionaryItem, City } from '../../../../shared/types';
                 </select>
               </div>
               <div>
-                <label
-                  class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
                   >Widoczność</label
                 >
                 <select
@@ -230,11 +209,7 @@ import { DictionaryItem, City } from '../../../../shared/types';
             </div>
             <div class="flex items-center gap-3">
               <label class="relative inline-flex cursor-pointer items-center">
-                <input
-                  type="checkbox"
-                  formControlName="autoAccept"
-                  class="peer sr-only"
-                />
+                <input type="checkbox" formControlName="autoAccept" class="peer sr-only" />
                 <div
                   class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-highlight peer-focus:ring-2 peer-focus:ring-highlight-light dark:bg-slate-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full"
                 ></div>
@@ -248,12 +223,9 @@ import { DictionaryItem, City } from '../../../../shared/types';
 
         <app-card>
           <div class="p-4 space-y-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
-              Lokalizacja
-            </h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Lokalizacja</h3>
             <div>
-              <label
-                class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
                 >Adres</label
               >
               <input
@@ -401,9 +373,7 @@ export class EventFormComponent implements OnInit {
         if (this.coverFile) {
           this.mediaService.upload(this.coverFile).subscribe();
         }
-        this.snackbar.success(
-          this.isEdit() ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone'
-        );
+        this.snackbar.success(this.isEdit() ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone');
         this.router.navigate(['/events', created.id]);
         this.submitting.set(false);
       },

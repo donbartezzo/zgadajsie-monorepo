@@ -1,8 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { IconName } from '../../../../core/icons/icon.component';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { IconName, IconComponent } from '../../../../core/icons/icon.component';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { IconComponent } from '../../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
@@ -15,9 +23,14 @@ import { Event as EventModel, Participation } from '../../../../shared/types';
 @Component({
   selector: 'app-event',
   imports: [
-    CommonModule, DatePipe, DecimalPipe, RouterLink,
-    IconComponent, ButtonComponent,
-    UserAvatarComponent, LoadingSpinnerComponent,
+    CommonModule,
+    DatePipe,
+    DecimalPipe,
+    RouterLink,
+    IconComponent,
+    ButtonComponent,
+    UserAvatarComponent,
+    LoadingSpinnerComponent,
   ],
   templateUrl: './event.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -77,7 +90,12 @@ export class EventComponent implements OnInit, OnDestroy {
     return null;
   });
 
-  readonly countdown = signal<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+  readonly countdown = signal<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } | null>(null);
 
   // @TODO: Replace hardcoded amenities with data from backend (event edit form)
   readonly amenities: { icon: IconName; label: string }[] = [
@@ -151,7 +169,12 @@ export class EventComponent implements OnInit, OnDestroy {
 
   get isParticipant(): boolean {
     const userId = this.auth.currentUser()?.id;
-    return !!userId && this.participants().some(p => p.userId === userId && (p.status === 'ACCEPTED' || p.status === 'PARTICIPANT'));
+    return (
+      !!userId &&
+      this.participants().some(
+        (p) => p.userId === userId && (p.status === 'ACCEPTED' || p.status === 'PARTICIPANT'),
+      )
+    );
   }
 
   get isOrganizer(): boolean {
@@ -168,7 +191,7 @@ export class EventComponent implements OnInit, OnDestroy {
     this.joining.set(true);
     this.eventService.joinEvent(this.eventId).subscribe({
       next: (p) => {
-        this.participants.update(prev => [...prev, p]);
+        this.participants.update((prev) => [...prev, p]);
         this.snackbar.success('Dołączono do wydarzenia!');
         this.joining.set(false);
       },
@@ -193,7 +216,7 @@ export class EventComponent implements OnInit, OnDestroy {
     this.eventService.leaveEvent(this.eventId).subscribe({
       next: () => {
         const userId = this.auth.currentUser()?.id;
-        this.participants.update(prev => prev.filter(p => p.userId !== userId));
+        this.participants.update((prev) => prev.filter((p) => p.userId !== userId));
         this.snackbar.info('Wypisano z wydarzenia');
         this.joining.set(false);
       },

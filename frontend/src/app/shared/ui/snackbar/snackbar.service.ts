@@ -15,7 +15,7 @@ export class SnackbarService {
 
   show(message: string, type: SnackbarType = 'info', duration = 4000): void {
     const id = this.nextId++;
-    this.messages.update(msgs => [...msgs, { id, message, type }]);
+    this.messages.update((msgs) => [...msgs, { id, message, type }]);
 
     if (duration > 0) {
       setTimeout(() => this.dismiss(id), duration);
@@ -23,11 +23,19 @@ export class SnackbarService {
   }
 
   dismiss(id: number): void {
-    this.messages.update(msgs => msgs.filter(m => m.id !== id));
+    this.messages.update((msgs) => msgs.filter((m) => m.id !== id));
   }
 
-  success(message: string): void { this.show(message, 'success'); }
-  error(message: string): void { this.show(message, 'error', 6000); }
-  info(message: string): void { this.show(message, 'info'); }
-  warning(message: string): void { this.show(message, 'warning', 5000); }
+  success(message: string): void {
+    this.show(message, 'success');
+  }
+  error(message: string): void {
+    this.show(message, 'error', 6000);
+  }
+  info(message: string): void {
+    this.show(message, 'info');
+  }
+  warning(message: string): void {
+    this.show(message, 'warning', 5000);
+  }
 }

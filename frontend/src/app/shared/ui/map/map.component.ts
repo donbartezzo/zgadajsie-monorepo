@@ -37,19 +37,25 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     try {
       this.leaflet = await import('leaflet');
 
-      this.map = this.leaflet.map(this.mapContainer().nativeElement, {
-        dragging: this.interactive(),
-        scrollWheelZoom: this.interactive(),
-        zoomControl: this.interactive(),
-      }).setView([this.lat(), this.lng()], this.zoom());
+      this.map = this.leaflet
+        .map(this.mapContainer().nativeElement, {
+          dragging: this.interactive(),
+          scrollWheelZoom: this.interactive(),
+          zoomControl: this.interactive(),
+        })
+        .setView([this.lat(), this.lng()], this.zoom());
 
-      this.leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
-      }).addTo(this.map);
+      this.leaflet
+        .tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors',
+        })
+        .addTo(this.map);
 
-      this.marker = this.leaflet.marker([this.lat(), this.lng()], {
-        draggable: this.interactive(),
-      }).addTo(this.map);
+      this.marker = this.leaflet
+        .marker([this.lat(), this.lng()], {
+          draggable: this.interactive(),
+        })
+        .addTo(this.map);
 
       if (this.interactive()) {
         this.marker.on('dragend', () => {
