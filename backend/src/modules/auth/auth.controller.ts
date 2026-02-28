@@ -9,6 +9,7 @@ import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
+import { MemoryStateStore } from './strategies/memory-state-store';
 
 interface SocialUser {
   providerUserId: string;
@@ -68,10 +69,8 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleCallback(@Req() req: Request, @Res() res: Response) {
     const tokens = await this.authService.validateSocialUser(req.user as SocialUser);
-    const frontendUrl = this.configService.get<string>('FRONTEND_URL');
-    res.redirect(
-      `${frontendUrl}/auth/login?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
-    );
+    const returnUrl = MemoryStateStore.getInstance().getReturnUrl(req.query['state'] as string);
+    res.redirect(this.buildSocialRedirectUrl(tokens, returnUrl));
   }
 
   @Get('facebook')
@@ -84,9 +83,19 @@ export class AuthController {
   @UseGuards(AuthGuard('facebook'))
   async facebookCallback(@Req() req: Request, @Res() res: Response) {
     const tokens = await this.authService.validateSocialUser(req.user as SocialUser);
+    const returnUrl = MemoryStateStore.getInstance().getReturnUrl(req.query['state'] as string);
+    res.redirect(this.buildSocialRedirectUrl(tokens, returnUrl));
+  }
+
+  private buildSocialRedirectUrl(
+    tokens: { accessToken: string; refreshToken: string },
+    returnUrl: string | null,
+  ): string {
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
-    res.redirect(
-      `${frontendUrl}/auth/login?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
-    );
+    let url = `${frontendUrl}/auth/login?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`;
+    if (returnUrl) {
+      url += `&returnUrl=${encodeURIComponent(returnUrl)}`;
+    }
+    return url;
   }
 }

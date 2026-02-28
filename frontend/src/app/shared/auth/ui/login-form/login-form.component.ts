@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -84,7 +84,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 
     <div class="space-y-2">
       <a
-        [href]="googleLoginUrl"
+        [href]="googleLoginUrl()"
         class="flex items-center justify-center gap-2 w-full rounded-xl border border-gray-300 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
       >
         <svg class="w-5 h-5" viewBox="0 0 24 24">
@@ -108,7 +108,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         Zaloguj przez Google
       </a>
       <a
-        [href]="facebookLoginUrl"
+        [href]="facebookLoginUrl()"
         class="flex items-center justify-center gap-2 w-full rounded-xl border border-gray-300 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
       >
         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="#1877F2">
@@ -135,10 +135,19 @@ export class LoginFormComponent {
   private readonly auth = inject(AuthService);
   private readonly snackbar = inject(SnackbarService);
 
+  readonly returnUrl = input<string | null>(null);
   readonly authenticated = output<void>();
 
-  readonly googleLoginUrl = this.auth.getSocialLoginUrl('google');
-  readonly facebookLoginUrl = this.auth.getSocialLoginUrl('facebook');
+  readonly googleLoginUrl = computed(() => {
+    const base = this.auth.getSocialLoginUrl('google');
+    const url = this.returnUrl();
+    return url ? `${base}?returnUrl=${encodeURIComponent(url)}` : base;
+  });
+  readonly facebookLoginUrl = computed(() => {
+    const base = this.auth.getSocialLoginUrl('facebook');
+    const url = this.returnUrl();
+    return url ? `${base}?returnUrl=${encodeURIComponent(url)}` : base;
+  });
 
   email = '';
   password = '';

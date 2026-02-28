@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
+import { Router } from '@angular/router';
 import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
 import { LoginFormComponent } from '../../../shared/auth/ui/login-form/login-form.component';
 
@@ -7,12 +8,25 @@ import { LoginFormComponent } from '../../../shared/auth/ui/login-form/login-for
   imports: [BottomOverlayComponent, LoginFormComponent],
   template: `
     <app-bottom-overlay [open]="true" title="Dołącz do wydarzenia" (closed)="closed.emit()">
-      <app-login-form (authenticated)="authenticated.emit()"></app-login-form>
+      <app-login-form
+        [returnUrl]="returnUrl"
+        (authenticated)="authenticated.emit()"
+      ></app-login-form>
     </app-bottom-overlay>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AuthOverlayComponent {
+  private readonly router = inject(Router);
+
   readonly closed = output<void>();
   readonly authenticated = output<void>();
+
+  readonly returnUrl = this.buildReturnUrl();
+
+  private buildReturnUrl(): string {
+    const url = this.router.url;
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}openJoin=true`;
+  }
 }

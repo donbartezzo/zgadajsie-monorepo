@@ -35,12 +35,17 @@ export class LoginComponent implements OnInit {
     if (params['accessToken'] && params['refreshToken']) {
       this.auth.handleSocialCallback(params['accessToken'], params['refreshToken']).then(() => {
         this.snackbar.success('Zalogowano pomyślnie');
-        this.router.navigateByUrl('/');
+        this.redirectBack();
       });
     }
   }
 
   onAuthenticated(): void {
-    this.router.navigateByUrl('/');
+    this.redirectBack();
+  }
+
+  private redirectBack(): void {
+    const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+    this.router.navigateByUrl(returnUrl);
   }
 }

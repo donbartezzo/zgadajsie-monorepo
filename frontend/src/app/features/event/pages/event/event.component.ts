@@ -174,6 +174,7 @@ export class EventComponent implements OnInit, OnDestroy {
         this.event.set(e);
         this.isLoading.set(false);
         this.startCountdown(e.startsAt);
+        this.checkOpenJoinParam();
       },
       error: () => this.isLoading.set(false),
     });
@@ -300,5 +301,18 @@ export class EventComponent implements OnInit, OnDestroy {
         this.joining.set(false);
       },
     });
+  }
+
+  private checkOpenJoinParam(): void {
+    if (this.route.snapshot.queryParams['openJoin'] && this.auth.isLoggedIn()) {
+      this.overlays.open('joinConfirm');
+      this.removeOpenJoinFromUrl();
+    }
+  }
+
+  private removeOpenJoinFromUrl(): void {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('openJoin');
+    history.replaceState({}, '', url.toString());
   }
 }

@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
+import { Request } from 'express';
 import { Profile, Strategy } from 'passport-facebook';
+import { MemoryStateStore } from './memory-state-store';
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
@@ -12,10 +14,14 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       callbackURL: configService.get<string>('FACEBOOK_CALLBACK_URL'),
       scope: 'email',
       profileFields: ['emails', 'name', 'displayName', 'photos'],
+      passReqToCallback: true,
+      enableProof: true,
+      store: MemoryStateStore.getInstance(),
     });
   }
 
   async validate(
+    _req: Request,
     accessToken: string,
     refreshToken: string,
     profile: Profile,
