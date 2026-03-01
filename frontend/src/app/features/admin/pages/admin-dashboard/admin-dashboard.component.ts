@@ -9,7 +9,7 @@ import { AdminService } from '../../../../core/services/admin.service';
   selector: 'app-admin-dashboard',
   imports: [CommonModule, RouterLink, IconComponent, CardComponent],
   template: `
-    <div class="py-6">
+    <div class="p-4">
       <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">Panel administratora</h1>
       <div class="grid grid-cols-2 gap-4 mb-6">
         <app-card
@@ -75,5 +75,8 @@ export class AdminDashboardComponent implements OnInit {
     this.adminService
       .getUsers(1, 1)
       .subscribe((r) => this.stats.update((s) => ({ ...s, users: r.total })));
+    this.adminService
+      .getEvents(1, 1)
+      .subscribe((r) => this.stats.update((s) => ({ ...s, events: r.total })));
   }
 }

@@ -23,7 +23,7 @@ import { User, WalletTransaction } from '../../../../shared/types';
     LoadingSpinnerComponent,
   ],
   template: `
-    <div class="py-6">
+    <div class="p-4">
       @if (loading()) {
       <app-loading-spinner></app-loading-spinner>
       } @else if (user(); as u) {

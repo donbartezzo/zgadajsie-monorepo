@@ -22,6 +22,12 @@ export class AdminService {
     return this.http.get<PaginatedUsers>(`${this.apiUrl}/users`, { params });
   }
 
+  getEvents(page = 1, limit = 20): Observable<PaginatedUsers> {
+    return this.http.get<PaginatedUsers>(`${this.apiUrl}/events`, {
+      params: { page, limit },
+    });
+  }
+
   getUser(id: string): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/users/${id}`);
   }
