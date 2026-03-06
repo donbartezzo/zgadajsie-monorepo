@@ -379,22 +379,41 @@
                 variant === 'sentinel' ? 'text-md' : 'text-xs'
               }}"
             >
-              Jesteś już zapisany!
+              @if (participantStatus() === 'PENDING_PAYMENT') {
+                Oczekuje na płatność!
+              } @else {
+                Jesteś już zapisany!
+              }
             </p>
             <p class="text-[11px] text-gray-400 dark:text-gray-500">
-              Dołączyłeś do tego wydarzenia.
+              @if (participantStatus() === 'PENDING_PAYMENT') {
+                Rozpocząłeś proces płatności za to wydarzenie.
+              } @else {
+                Dołączyłeś do tego wydarzenia.
+              }
             </p>
           </div>
 
           <!-- Action button -->
+          @if (participantStatus() === 'PENDING_PAYMENT') {
           <app-button
             variant="outline"
             [size]="variant === 'sentinel' ? 'sm' : 'xs'"
-            (clicked)="openJoinSheet()"
+            (clicked)="requestLeave()"
             class="shrink-0"
           >
-            Zobacz
+            Anuluj płatność
           </app-button>
+          } @else {
+          <app-button
+            variant="outline"
+            [size]="variant === 'sentinel' ? 'sm' : 'xs'"
+            (clicked)="requestLeave()"
+            class="shrink-0"
+          >
+            Wypisz się
+          </app-button>
+          }
         </div>
       </ng-template>
 

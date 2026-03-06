@@ -3,17 +3,24 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
+import { PaymentsService } from '../payments/payments.service';
 
 @Injectable()
 export class ParticipationService {
+  private readonly logger = new Logger(ParticipationService.name);
+
   constructor(
     private prisma: PrismaService,
+    private configService: ConfigService,
     private emailService: EmailService,
     private pushService: PushService,
+    private paymentsService: PaymentsService,
   ) {}
 
   async join(eventId: string, userId: string) {
@@ -23,10 +30,58 @@ export class ParticipationService {
     if (event.organizerId === userId)
       throw new BadRequestException('Organizator nie może dołączyć do własnego wydarzenia');
 
+    const isPaid = event.costPerPerson.toNumber() > 0;
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, displayName: true, avatarUrl: true, email: true },
+    });
+    if (!user) throw new NotFoundException('Użytkownik nie znaleziony');
+
     const existing = await this.prisma.eventParticipation.findUnique({
       where: { eventId_userId: { eventId, userId } },
+      include: {
+        payments: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
     });
+
+    const activeCompletedPayment = existing?.payments.find(
+      (payment) => payment.status === 'COMPLETED',
+    );
+
+    // User is in PENDING_PAYMENT — restart payment flow
+    if (existing && existing.status === 'PENDING_PAYMENT' && isPaid) {
+      const paymentResult = await this.tryInitiatePayment(existing.id, event, user);
+      const updated = await this.prisma.eventParticipation.findUnique({
+        where: { id: existing.id },
+        include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
+      });
+      return { ...updated, ...paymentResult };
+    }
+
+    // User previously withdrew — rejoin
     if (existing && existing.status === 'WITHDRAWN') {
+      if (isPaid) {
+        // Reuse existing completed payment — no need to pay again
+        if (activeCompletedPayment) {
+          const restoredStatus = event.autoAccept ? 'ACCEPTED' : 'APPLIED';
+          return this.prisma.eventParticipation.update({
+            where: { id: existing.id },
+            data: { status: restoredStatus },
+            include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
+          });
+        }
+
+        // No completed payment — start payment flow
+        const updated = await this.prisma.eventParticipation.update({
+          where: { id: existing.id },
+          data: { status: 'PENDING_PAYMENT' },
+          include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
+        });
+        const paymentResult = await this.tryInitiatePayment(updated.id, event, user);
+        return { ...updated, ...paymentResult };
+      }
       const newStatus = event.autoAccept ? 'ACCEPTED' : 'APPLIED';
       return this.prisma.eventParticipation.update({
         where: { id: existing.id },
@@ -38,9 +93,18 @@ export class ParticipationService {
 
     if (event.maxParticipants) {
       const count = await this.prisma.eventParticipation.count({
-        where: { eventId, status: { in: ['APPLIED', 'ACCEPTED', 'PARTICIPANT'] } },
+        where: { eventId, status: { in: ['APPLIED', 'ACCEPTED', 'PARTICIPANT', 'PENDING_PAYMENT'] } },
       });
       if (count >= event.maxParticipants) throw new BadRequestException('Wydarzenie jest pełne');
+    }
+
+    if (isPaid) {
+      const participation = await this.prisma.eventParticipation.create({
+        data: { eventId, userId, status: 'PENDING_PAYMENT' },
+        include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
+      });
+      const paymentResult = await this.tryInitiatePayment(participation.id, event, user);
+      return { ...participation, ...paymentResult };
     }
 
     const status = event.autoAccept ? 'ACCEPTED' : 'APPLIED';
@@ -71,6 +135,26 @@ export class ParticipationService {
     }
 
     return participation;
+  }
+
+  private async tryInitiatePayment(
+    participationId: string,
+    event: { id: string; costPerPerson: { toNumber(): number }; organizerId: string; title: string },
+    user: { id: string; email: string; displayName: string },
+  ): Promise<{ paymentUrl?: string; paymentId?: string }> {
+    const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
+    const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
+    const result = await this.paymentsService.initiatePayment(
+      participationId,
+      event.id,
+      user.id,
+      event.costPerPerson.toNumber(),
+      user.email,
+      user.displayName,
+      frontendUrl,
+      backendUrl,
+    );
+    return { paymentUrl: result.paymentUrl, paymentId: result.paymentId };
   }
 
   async joinGuest(eventId: string, addedByUserId: string, displayName: string) {
@@ -178,7 +262,11 @@ export class ParticipationService {
     });
     if (!participation) throw new NotFoundException('Nie uczestniczysz w tym wydarzeniu');
 
-    // TODO: refund logic if >3h before event
+    // Clean up any pending payment intents (restore reserved vouchers)
+    await this.paymentsService.cleanupIntents(
+      participation.id,
+      participation.event.organizerId,
+    );
 
     return this.prisma.eventParticipation.update({
       where: { id: participation.id },

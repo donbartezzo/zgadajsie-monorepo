@@ -2,12 +2,14 @@ import { Route } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { activeGuard } from './core/auth/active.guard';
 import { adminGuard } from './core/auth/admin.guard';
+import { paymentRedirectGuard } from './features/payments/guards/payment-redirect.guard';
 
 export const appRoutes: Route[] = [
   {
     path: '',
     loadComponent: () =>
       import('./features/home/pages/home/home.component').then((m) => m.HomeComponent),
+    canActivate: [paymentRedirectGuard],
     data: { title: '' },
   },
   {
@@ -127,13 +129,32 @@ export const appRoutes: Route[] = [
     data: { title: 'Galeria' },
   },
   {
-    path: 'wallet',
+    path: 'payments',
     loadComponent: () =>
-      import('./features/wallet/pages/wallet/wallet.component').then((m) => m.WalletComponent),
+      import('./features/payments/pages/my-payments/my-payments.component').then(
+        (m) => m.MyPaymentsComponent,
+      ),
     canActivate: [authGuard, activeGuard],
-    data: { title: 'Portfel' },
+    data: { title: 'Moje płatności' },
   },
   {
+    path: 'vouchers',
+    loadComponent: () =>
+      import('./features/vouchers/pages/my-vouchers/my-vouchers.component').then(
+        (m) => m.MyVouchersComponent,
+      ),
+    canActivate: [authGuard, activeGuard],
+    data: { title: 'Moje vouchery' },
+  },
+  {
+    path: 'payment/status',
+    loadComponent: () =>
+      import('./features/payments/pages/payment-status/payment-status.component').then(
+        (m) => m.PaymentStatusComponent,
+      ),
+    data: { title: 'Status płatności' },
+  },
+    {
     path: 'admin',
     loadComponent: () =>
       import('./features/admin/pages/admin-dashboard/admin-dashboard.component').then(

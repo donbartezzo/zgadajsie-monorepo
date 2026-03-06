@@ -218,7 +218,7 @@ export class EventComponent implements OnInit, OnDestroy {
       this.participants().some(
         (p) =>
           p.userId === userId &&
-          (p.status === 'APPLIED' || p.status === 'ACCEPTED'),
+          (p.status === 'APPLIED' || p.status === 'ACCEPTED' || p.status === 'PENDING_PAYMENT'),
       )
     );
   });
@@ -253,11 +253,22 @@ export class EventComponent implements OnInit, OnDestroy {
           }
           return [...prev, p];
         });
-        this.snackbar.success('Dołączono do wydarzenia!');
+
+        if (p.paymentUrl) {
+          window.location.href = p.paymentUrl;
+          return;
+        }
+
+        if (p.status === 'PENDING_PAYMENT') {
+          this.snackbar.info('Dołączono ale oczekuje na płatność');
+        } else {
+          this.snackbar.success('Dołączono do wydarzenia!');
+        }
         this.joining.set(false);
       },
       error: (err) => {
-        this.snackbar.error(err?.error?.message || 'Nie udało się dołączyć');
+        console.error('Failed to join event:', err.error?.message);
+        this.snackbar.error(err.error?.message || 'Nie udało się dołączyć do wydarzenia');
         this.joining.set(false);
       },
     });
@@ -268,7 +279,7 @@ export class EventComponent implements OnInit, OnDestroy {
   }
 
   onFollow(): void {
-    console.log('@TODO');
+    this.snackbar.info('Funkcja obserwowania będzie dostępna wkrótce');
   }
 
   async requestLeave(): Promise<void> {

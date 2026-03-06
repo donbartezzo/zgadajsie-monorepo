@@ -10,16 +10,27 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { AppModule } from './app/app.module';
+import { DecimalSerializationInterceptor } from './app/interceptors/decimal-serialization.interceptor';
 
 async function bootstrap() {
+  const backendUrl = process.env.BACKEND_URL;
+  const frontendUrl = process.env.FRONTEND_URL;
+
+  if (!backendUrl) {
+    throw new Error('BACKEND_URL is not defined in environment variables');
+  }
+  if (!frontendUrl) {
+    throw new Error('FRONTEND_URL is not defined in environment variables');
+  }
+
+  const port = new URL(backendUrl).port || '3000';
+
   const app = await NestFactory.create(AppModule);
 
   app.use(helmet());
 
   app.enableCors({
-    origin: (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || 'http://localhost:4300').split(
-      ',',
-    ),
+    origin: frontendUrl.split(','),
     credentials: true,
   });
 
@@ -31,11 +42,12 @@ async function bootstrap() {
     }),
   );
 
+  app.useGlobalInterceptors(new DecimalSerializationInterceptor());
+
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
-  const port = process.env.PORT || 3000;
   await app.listen(port);
-  Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
+  Logger.log(`🚀 Application is running on: ${backendUrl}/${globalPrefix}`);
 }
 
 bootstrap();

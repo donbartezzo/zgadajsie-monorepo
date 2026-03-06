@@ -1,4 +1,5 @@
 export enum ParticipationStatus {
+  PENDING_PAYMENT = 'PENDING_PAYMENT',
   APPLIED = 'APPLIED',
   ACCEPTED = 'ACCEPTED',
   PARTICIPANT = 'PARTICIPANT',

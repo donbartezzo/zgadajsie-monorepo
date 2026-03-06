@@ -91,7 +91,7 @@ export class AuthController {
     tokens: { accessToken: string; refreshToken: string },
     returnUrl: string | null,
   ): string {
-    const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+    const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
     let url = `${frontendUrl}/auth/login?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`;
     if (returnUrl) {
       url += `&returnUrl=${encodeURIComponent(returnUrl)}`;

@@ -67,8 +67,11 @@ export class EventService {
     return this.http.get<Participation[]>(`${this.apiUrl}/${eventId}/participants`);
   }
 
-  joinEvent(eventId: string): Observable<Participation> {
-    return this.http.post<Participation>(`${this.apiUrl}/${eventId}/join`, {});
+  joinEvent(eventId: string): Observable<Participation & { paymentUrl?: string; paymentId?: string }> {
+    return this.http.post<Participation & { paymentUrl?: string; paymentId?: string }>(
+      `${this.apiUrl}/${eventId}/join`,
+      {},
+    );
   }
 
   joinGuest(eventId: string, displayName: string): Observable<Participation> {

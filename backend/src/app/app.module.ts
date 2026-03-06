@@ -8,13 +8,14 @@ import { AuthModule } from '../modules/auth/auth.module';
 import { UsersModule } from '../modules/users/users.module';
 import { EventsModule } from '../modules/events/events.module';
 import { ParticipationModule } from '../modules/participation/participation.module';
-import { WalletModule } from '../modules/wallet/wallet.module';
+import { PaymentsModule } from '../modules/payments/payments.module';
 import { ChatModule } from '../modules/chat/chat.module';
 import { MediaModule } from '../modules/media/media.module';
 import { ModerationModule } from '../modules/moderation/moderation.module';
 import { NotificationsModule } from '../modules/notifications/notifications.module';
 import { ActivityRankModule } from '../modules/activity-rank/activity-rank.module';
 import { DictionariesModule } from '../modules/dictionaries/dictionaries.module';
+import { VouchersModule } from '../modules/vouchers/vouchers.module';
 
 @Module({
   imports: [
@@ -25,13 +26,14 @@ import { DictionariesModule } from '../modules/dictionaries/dictionaries.module'
     UsersModule,
     EventsModule,
     ParticipationModule,
-    WalletModule,
+    PaymentsModule,
     ChatModule,
     MediaModule,
     ModerationModule,
     NotificationsModule,
     ActivityRankModule,
     DictionariesModule,
+    VouchersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

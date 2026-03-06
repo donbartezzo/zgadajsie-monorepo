@@ -73,11 +73,23 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
             </div>
           </app-card>
         </a>
-        <a routerLink="/wallet">
+        <a routerLink="/payments">
+          <app-card>
+            <div class="p-3 flex items-center gap-2">
+              <app-icon name="credit-card" size="sm" variant="primary"></app-icon>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Moje płatności</span
+              >
+            </div>
+          </app-card>
+        </a>
+        <a routerLink="/vouchers">
           <app-card>
             <div class="p-3 flex items-center gap-2">
               <app-icon name="wallet" size="sm" variant="primary"></app-icon>
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Portfel</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Moje vouchery</span
+              >
             </div>
           </app-card>
         </a>

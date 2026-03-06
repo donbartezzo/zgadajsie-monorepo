@@ -24,7 +24,7 @@ export class EmailService {
   }
 
   private get frontendUrl(): string {
-    return this.configService.get<string>('FRONTEND_URL', 'http://localhost:4300');
+    return this.configService.getOrThrow<string>('FRONTEND_URL');
   }
 
   async sendActivationEmail(email: string, displayName: string, token: string): Promise<void> {
@@ -103,13 +103,34 @@ export class EmailService {
     );
   }
 
-  async sendWalletTopUpEmail(email: string, displayName: string, amount: number): Promise<void> {
+  async sendPaymentConfirmationEmail(
+    email: string,
+    displayName: string,
+    eventTitle: string,
+    amount: number,
+  ): Promise<void> {
     await this.send(
       email,
-      'Doładowanie portfela – ZgadajSię',
+      `Potwierdzenie płatności – ${eventTitle}`,
       `
       <h2>Hej ${displayName}!</h2>
-      <p>Twój portfel został doładowany o <strong>${amount.toFixed(2)} zł</strong>.</p>
+      <p>Twoja płatność <strong>${amount.toFixed(2)} zł</strong> za wydarzenie <strong>${eventTitle}</strong> została zaksięgowana.</p>
+    `,
+    );
+  }
+
+  async sendRefundConfirmationEmail(
+    email: string,
+    displayName: string,
+    eventTitle: string,
+    amount: number,
+  ): Promise<void> {
+    await this.send(
+      email,
+      `Zwrot płatności – ${eventTitle}`,
+      `
+      <h2>Hej ${displayName}!</h2>
+      <p>Zwrot <strong>${amount.toFixed(2)} zł</strong> za wydarzenie <strong>${eventTitle}</strong> został zlecony.</p>
     `,
     );
   }

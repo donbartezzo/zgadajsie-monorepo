@@ -44,8 +44,6 @@ export class AuthService {
       },
     });
 
-    await this.prisma.wallet.create({ data: { userId: user.id } });
-
     await this.emailService.sendActivationEmail(user.email, user.displayName, activationToken);
 
     return { message: 'Konto utworzone. Sprawdź email, aby aktywować konto.' };
@@ -210,7 +208,6 @@ export class AuthService {
           isEmailVerified: true,
         },
       });
-      await this.prisma.wallet.create({ data: { userId: user.id } });
     }
 
     await this.prisma.socialAccount.create({

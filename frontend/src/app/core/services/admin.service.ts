@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { User, Wallet, PaginatedTransactions, DictionaryItem } from '../../shared/types';
+import { User, PaginatedPayments, DictionaryItem } from '../../shared/types';
 
 interface PaginatedUsers {
   data: User[];
@@ -36,18 +36,10 @@ export class AdminService {
     return this.http.patch<User>(`${this.apiUrl}/users/${id}`, data);
   }
 
-  getUserWallet(userId: string): Observable<Wallet> {
-    return this.http.get<Wallet>(`${this.apiUrl}/wallets/${userId}`);
-  }
-
-  getUserTransactions(userId: string, page = 1, limit = 20): Observable<PaginatedTransactions> {
-    return this.http.get<PaginatedTransactions>(`${this.apiUrl}/wallets/${userId}/transactions`, {
-      params: { page, limit },
+  getUserPayments(userId: string, page = 1, limit = 20): Observable<PaginatedPayments> {
+    return this.http.get<PaginatedPayments>(`${this.apiUrl}/payments/admin/all`, {
+      params: { page, limit, userId },
     });
-  }
-
-  adjustWallet(userId: string, amount: number, description?: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/wallets/${userId}/adjust`, { amount, description });
   }
 
   getSettings(): Observable<{ key: string; value: string }[]> {

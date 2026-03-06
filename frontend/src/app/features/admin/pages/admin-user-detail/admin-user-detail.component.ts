@@ -8,7 +8,16 @@ import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avat
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { AdminService } from '../../../../core/services/admin.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { User, WalletTransaction } from '../../../../shared/types';
+import { User } from '../../../../shared/types';
+
+interface PaymentListItem {
+  id: string;
+  amount: number;
+  status: string;
+  paidAt?: string;
+  createdAt: string;
+  event?: { id: string; title: string };
+}
 
 @Component({
   selector: 'app-admin-user-detail',
@@ -60,35 +69,29 @@ import { User, WalletTransaction } from '../../../../shared/types';
 
       <app-card>
         <div class="p-4 space-y-3 mt-4">
-          <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
-            Portfel: {{ walletBalance() | number : '1.2-2' }} zł
-          </h3>
-          <div class="flex gap-2">
-            <input
-              type="number"
-              [(ngModel)]="adjustAmount"
-              placeholder="Kwota"
-              class="w-24 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-            />
-            <input
-              [(ngModel)]="adjustDesc"
-              placeholder="Opis"
-              class="flex-1 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-            />
-            <app-button variant="primary" (clicked)="onAdjust()">Adjust</app-button>
-          </div>
-          @for (t of transactions(); track t.id) {
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Płatności</h3>
+          @for (p of payments(); track p.id) {
           <div
             class="flex justify-between text-xs py-1 border-b border-gray-100 dark:border-slate-700"
           >
             <span
-              >{{ t.description || t.type }}
-              <span class="text-gray-400">{{ t.createdAt | date : 'd MMM' }}</span></span
+              >{{ p.event?.title || 'Wydarzenie' }}
+              <span class="text-gray-400">{{ p.createdAt | date : 'd MMM' }}</span></span
             >
-            <span [class]="t.amount >= 0 ? 'text-green-600' : 'text-red-600'"
-              >{{ t.amount >= 0 ? '+' : '' }}{{ t.amount | number : '1.2-2' }} zł</span
+            <span
+              [class]="
+                p.status === 'COMPLETED'
+                  ? 'text-green-600'
+                  : p.status === 'REFUNDED'
+                    ? 'text-orange-500'
+                    : 'text-gray-500'
+              "
+              >{{ p.amount | number : '1.2-2' }} zł
+              <span class="text-[10px]">{{ p.status }}</span></span
             >
           </div>
+          } @empty {
+          <p class="text-xs text-gray-400">Brak płatności</p>
           }
         </div>
       </app-card>
@@ -105,11 +108,8 @@ export class AdminUserDetailComponent implements OnInit {
   readonly user = signal<User | null>(null);
   readonly loading = signal(true);
   readonly saving = signal(false);
-  readonly walletBalance = signal(0);
-  readonly transactions = signal<WalletTransaction[]>([]);
+  readonly payments = signal<PaymentListItem[]>([]);
   editName = '';
-  adjustAmount = 0;
-  adjustDesc = '';
 
   private get userId(): string {
     return this.route.snapshot.paramMap.get('id')!;
@@ -125,11 +125,8 @@ export class AdminUserDetailComponent implements OnInit {
       error: () => this.loading.set(false),
     });
     this.adminService
-      .getUserWallet(this.userId)
-      .subscribe({ next: (w) => this.walletBalance.set(w.balance) });
-    this.adminService
-      .getUserTransactions(this.userId)
-      .subscribe({ next: (r) => this.transactions.set(r.data) });
+      .getUserPayments(this.userId)
+      .subscribe({ next: (r) => this.payments.set(r.data) });
   }
 
   saveUser(): void {
@@ -146,15 +143,4 @@ export class AdminUserDetailComponent implements OnInit {
     });
   }
 
-  onAdjust(): void {
-    this.adminService.adjustWallet(this.userId, this.adjustAmount, this.adjustDesc).subscribe({
-      next: () => {
-        this.walletBalance.update((b) => b + this.adjustAmount);
-        this.snackbar.success('Portfel zaktualizowany');
-        this.adjustAmount = 0;
-        this.adjustDesc = '';
-      },
-      error: () => this.snackbar.error('Błąd'),
-    });
-  }
 }

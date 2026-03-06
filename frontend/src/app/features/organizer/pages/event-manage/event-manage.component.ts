@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { IconComponent } from '../../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
@@ -8,13 +8,23 @@ import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avat
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EventService } from '../../../../core/services/event.service';
 import { ModerationService } from '../../../../core/services/moderation.service';
+import { PaymentService } from '../../../../core/services/payment.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { Participation } from '../../../../shared/types';
+
+interface EarningItem {
+  id: string;
+  amount: number;
+  organizerAmount: number;
+  paidAt?: string;
+  user?: { id: string; displayName: string; avatarUrl?: string };
+}
 
 @Component({
   selector: 'app-event-manage',
   imports: [
     CommonModule,
+    DecimalPipe,
     IconComponent,
     ButtonComponent,
     CardComponent,
@@ -129,6 +139,37 @@ import { Participation } from '../../../../shared/types';
         </app-card>
         }
       </div>
+      } @if (earnings().length > 0) {
+      <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-6 mb-3">
+        Przychody ({{ totalEarnings() | number : '1.2-2' }} zł)
+      </h2>
+      <div class="space-y-2">
+        @for (e of earnings(); track e.id) {
+        <app-card>
+          <div class="p-3 flex items-center gap-3">
+            <app-user-avatar
+              [avatarUrl]="e.user?.avatarUrl"
+              [displayName]="e.user?.displayName || ''"
+              size="sm"
+            ></app-user-avatar>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {{ e.user?.displayName }}
+              </p>
+              <p class="text-xs text-gray-400">
+                {{ e.organizerAmount | number : '1.2-2' }} zł netto
+              </p>
+            </div>
+            <app-button variant="outline" size="sm" (clicked)="onRefundVoucher(e.id)">
+              Voucher
+            </app-button>
+            <app-button variant="danger" size="sm" (clicked)="onRefundMoney(e.id)">
+              Zwrot
+            </app-button>
+          </div>
+        </app-card>
+        }
+      </div>
       } }
     </div>
   `,
@@ -138,9 +179,12 @@ export class EventManageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly eventService = inject(EventService);
   private readonly moderationService = inject(ModerationService);
+  private readonly paymentService = inject(PaymentService);
   private readonly snackbar = inject(SnackbarService);
 
   readonly participants = signal<Participation[]>([]);
+  readonly earnings = signal<EarningItem[]>([]);
+  readonly totalEarnings = signal(0);
   readonly loading = signal(true);
   readonly autoAccept = signal(false);
   private eventId = '';
@@ -162,6 +206,16 @@ export class EventManageComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
+    });
+    this.loadEarnings();
+  }
+
+  private loadEarnings(): void {
+    this.paymentService.getEventEarnings(this.eventId).subscribe({
+      next: (r) => {
+        this.earnings.set(r.payments);
+        this.totalEarnings.set(r.totalAmount);
+      },
     });
   }
 
@@ -206,6 +260,28 @@ export class EventManageComponent implements OnInit {
     this.moderationService.createBan(userId, 'Ban od organizatora').subscribe({
       next: () => this.snackbar.info('Użytkownik zbanowany'),
       error: () => this.snackbar.error('Nie udało się zbanować'),
+    });
+  }
+
+  onRefundVoucher(paymentId: string): void {
+    this.paymentService.refundAsVoucher(paymentId).subscribe({
+      next: () => {
+        this.snackbar.success('Voucher przyznany uczestnikowi');
+        this.loadEarnings();
+      },
+      error: (err) =>
+        this.snackbar.error(err?.error?.message || 'Nie udało się przyznać vouchera'),
+    });
+  }
+
+  onRefundMoney(paymentId: string): void {
+    this.paymentService.refundAsMoney(paymentId).subscribe({
+      next: () => {
+        this.snackbar.success('Zwrot pieniężny zlecony');
+        this.loadEarnings();
+      },
+      error: (err) =>
+        this.snackbar.error(err?.error?.message || 'Nie udało się zlecić zwrotu pieniężnego'),
     });
   }
 }

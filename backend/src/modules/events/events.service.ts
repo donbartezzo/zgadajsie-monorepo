@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
+import { VouchersService } from '../vouchers/vouchers.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
@@ -12,6 +13,7 @@ export class EventsService {
     private prisma: PrismaService,
     private emailService: EmailService,
     private pushService: PushService,
+    private vouchersService: VouchersService,
   ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
@@ -111,9 +113,12 @@ export class EventsService {
       data: { status: 'CANCELLED' },
     });
 
-    // Notify all participants about cancellation
+    // Auto voucher refund for paid participants
+    const refundedCount = await this.vouchersService.bulkCreateForCancelledEvent(id);
+
+    // Notify all active participants about cancellation
     const participants = await this.prisma.eventParticipation.findMany({
-      where: { eventId: id, status: { in: ['APPLIED', 'ACCEPTED', 'PARTICIPANT'] } },
+      where: { eventId: id, status: { in: ['APPLIED', 'ACCEPTED', 'PARTICIPANT', 'WITHDRAWN'] } },
       include: { user: { select: { id: true, email: true, displayName: true } } },
     });
     for (const p of participants) {
@@ -125,7 +130,7 @@ export class EventsService {
       );
     }
 
-    return updated;
+    return { ...updated, refundedParticipants: refundedCount };
   }
 
   async archive(id: string, userId: string) {

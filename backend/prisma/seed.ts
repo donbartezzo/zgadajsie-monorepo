@@ -8,8 +8,7 @@ async function main() {
 
   // ─── Czyszczenie (kolejność ważna – relacje) ────────────────────────────
   console.log('Czyszczę istniejące dane...');
-  await prisma.walletTransaction.deleteMany({});
-  await prisma.wallet.deleteMany({});
+  await prisma.payment.deleteMany({});
   await prisma.chatMessage.deleteMany({});
   await prisma.eventParticipation.deleteMany({});
   await prisma.reprimand.deleteMany({});
@@ -88,9 +87,6 @@ async function main() {
       isEmailVerified: true,
     },
   });
-  await prisma.wallet.create({
-    data: { userId: admin.id },
-  });
   console.log(`Admin: ${admin.email} (${admin.id})`);
 
   // ─── Ustawienia systemowe ────────────────────────────────────────────────
@@ -99,6 +95,7 @@ async function main() {
     data: [
       { key: 'event_creation_fee', value: '0' },
       { key: 'default_active_event_limit', value: '1' },
+      { key: 'PLATFORM_FEE_PERCENT', value: '1' },
     ],
   });
 
@@ -115,10 +112,6 @@ async function main() {
       isEmailVerified: true,
     },
   });
-  await prisma.wallet.create({
-    data: { userId: testUser.id },
-  });
-
   // ─── Przykładowe wydarzenia ─────────────────────────────────────────────
   console.log('Tworzę przykładowe wydarzenia...');
   const tomorrow = new Date();

@@ -1,0 +1,5 @@
+export enum PaymentStatus {
+  COMPLETED = 'COMPLETED',
+  REFUNDED = 'REFUNDED',
+  VOUCHER_REFUNDED = 'VOUCHER_REFUNDED',
+}
