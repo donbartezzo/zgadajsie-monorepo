@@ -7,6 +7,7 @@ export type OverlayType =
   | 'map'
   | 'participants'
   | 'auth'
+  | 'joinRules'
   | 'joinConfirm'
   | 'leaveConfirm'
   | null;
@@ -23,12 +24,15 @@ export class BottomOverlaysService {
   private readonly loadingSignal = signal(false);
   private readonly isParticipantSignal = signal(false);
   private readonly participantStatusSignal = signal<string | null>(null);
+  private readonly isOrganizerSignal = signal(false);
 
   // Callbacks for event-specific actions
   private joinCallback: (() => void) | null = null;
   private leaveCallback: (() => void) | null = null;
   private authSuccessCallback: (() => void) | null = null;
   private openChatCallback: (() => void) | null = null;
+  private payCallback: (() => void) | null = null;
+  private contactOrganizerCallback: (() => void) | null = null;
 
   readonly active = this.activeSignal.asReadonly();
   readonly event = this.eventSignal.asReadonly();
@@ -36,6 +40,7 @@ export class BottomOverlaysService {
   readonly loading = this.loadingSignal.asReadonly();
   readonly isParticipant = this.isParticipantSignal.asReadonly();
   readonly participantStatus = this.participantStatusSignal.asReadonly();
+  readonly isOrganizer = this.isOrganizerSignal.asReadonly();
 
   open(type: OverlayType): void {
     this.activeSignal.set(type);
@@ -69,6 +74,10 @@ export class BottomOverlaysService {
     this.participantStatusSignal.set(status);
   }
 
+  setIsOrganizer(value: boolean): void {
+    this.isOrganizerSignal.set(value);
+  }
+
   updateParticipants(participants: Participation[]): void {
     this.participantsSignal.set(participants);
   }
@@ -95,6 +104,14 @@ export class BottomOverlaysService {
     this.openChatCallback = callback;
   }
 
+  onPay(callback: () => void): void {
+    this.payCallback = callback;
+  }
+
+  onContactOrganizer(callback: () => void): void {
+    this.contactOrganizerCallback = callback;
+  }
+
   confirmJoin(): void {
     this.joinCallback?.();
   }
@@ -111,10 +128,20 @@ export class BottomOverlaysService {
     this.openChatCallback?.();
   }
 
+  handlePay(): void {
+    this.payCallback?.();
+  }
+
+  handleContactOrganizer(): void {
+    this.contactOrganizerCallback?.();
+  }
+
   clearCallbacks(): void {
     this.joinCallback = null;
     this.leaveCallback = null;
     this.authSuccessCallback = null;
     this.openChatCallback = null;
+    this.payCallback = null;
+    this.contactOrganizerCallback = null;
   }
 }

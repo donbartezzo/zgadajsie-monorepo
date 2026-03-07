@@ -67,9 +67,20 @@ export class EventService {
     return this.http.get<Participation[]>(`${this.apiUrl}/${eventId}/participants`);
   }
 
-  joinEvent(eventId: string): Observable<Participation & { paymentUrl?: string; paymentId?: string }> {
-    return this.http.post<Participation & { paymentUrl?: string; paymentId?: string }>(
+  joinEvent(
+    eventId: string,
+  ): Observable<Participation & { isPaid?: boolean; costPerPerson?: number }> {
+    return this.http.post<Participation & { isPaid?: boolean; costPerPerson?: number }>(
       `${this.apiUrl}/${eventId}/join`,
+      {},
+    );
+  }
+
+  payEvent(
+    eventId: string,
+  ): Observable<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
+    return this.http.post<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }>(
+      `${this.apiUrl}/${eventId}/pay`,
       {},
     );
   }

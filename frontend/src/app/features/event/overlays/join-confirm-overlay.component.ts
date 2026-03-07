@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
@@ -9,189 +8,226 @@ import { Event as EventModel, Participation } from '../../../shared/types';
 
 @Component({
   selector: 'app-join-confirm-overlay',
-  imports: [
-    CommonModule,
-    IconComponent,
-    ButtonComponent,
-    UserAvatarComponent,
-    BottomOverlayComponent,
-  ],
+  imports: [IconComponent, ButtonComponent, UserAvatarComponent, BottomOverlayComponent],
   template: `
     <app-bottom-overlay [open]="open()" (closed)="closed.emit()">
-      @if (isParticipant()) {
-      <!-- ── Already joined view ── -->
-      <div class="text-center">
-        <div
-          class="mx-auto my-3 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30"
-        >
-          <app-icon name="check" size="lg" class="text-green-500 dark:text-green-400"></app-icon>
-        </div>
-        <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Jesteś uczestnikiem!</h2>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
-          Dołączyłeś do tego wydarzenia. Poniżej znajdziesz szczegóły.
-        </p>
-
-        <!-- Event info row -->
-        <div class="mt-4 border-t border-b border-gray-100 dark:border-slate-700 py-3">
-          <div class="flex justify-center gap-6 text-center">
-            <div>
-              <app-icon name="calendar" size="sm" variant="primary"></app-icon>
-              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {{ startDateFormatted() }}
-              </p>
-            </div>
-            <div>
-              <app-icon name="clock" size="sm" variant="muted"></app-icon>
-              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {{ startTimeFormatted() }}–{{ endTimeFormatted() }}
-              </p>
-            </div>
-            <div>
-              <app-icon name="map-pin" size="sm" variant="danger"></app-icon>
-              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {{ address() || 'Brak' }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Participants preview -->
-        @if (participants().length > 0) {
-        <div class="mt-3 flex items-center justify-center gap-1">
-          <div class="flex -space-x-2">
-            @for (p of visibleAvatars(); track p.id) {
-            <app-user-avatar
-              [avatarUrl]="p.user?.avatarUrl"
-              [displayName]="p.user?.displayName || ''"
-              size="sm"
-              class="ring-2 ring-white dark:ring-slate-800 rounded-full"
-            ></app-user-avatar>
-            }
-          </div>
-          @if (remainingCount() > 0) {
-          <span class="text-xs text-gray-400 dark:text-gray-500 ml-2"
-            >+{{ remainingCount() }} innych</span
-          >
-          }
-        </div>
-        }
-
-        <div class="mt-5 space-y-2">
-          <app-button
-            variant="outline"
-            size="sm"
-            [fullWidth]="true"
-            (clicked)="openChat.emit()"
-          >
-            <app-icon name="message-circle" size="sm"></app-icon>
-            Chat
-          </app-button>
-          <app-button
-            variant="danger"
-            size="sm"
-            [fullWidth]="true"
-            [loading]="loading()"
-            (clicked)="onRequestLeave()"
-          >
-            <app-icon name="user-x" size="sm"></app-icon>
-            Wypisz się z wydarzenia
-          </app-button>
-        </div>
-      </div>
-      } @else {
-      <!-- ── Join confirmation view ── -->
-      <div class="text-center">
-        <div
-          class="mx-auto my-3 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30"
-        >
-          <app-icon name="check" size="lg" class="text-green-500 dark:text-green-400"></app-icon>
-        </div>
-        <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Dołącz do wydarzenia</h2>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
-          Potwierdź swoje uczestnictwo w tym wydarzeniu
-        </p>
-
-        <!-- Event info row -->
-        <div class="mt-4 border-t border-b border-gray-100 dark:border-slate-700 py-3">
-          <div class="flex justify-center gap-6 text-center">
-            <div>
-              <app-icon name="calendar" size="sm" variant="primary"></app-icon>
-              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {{ startDateFormatted() }}
-              </p>
-            </div>
-            <div>
-              <app-icon name="clock" size="sm" variant="muted"></app-icon>
-              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {{ startTimeFormatted() }}–{{ endTimeFormatted() }}
-              </p>
-            </div>
-            <div>
-              <app-icon name="map-pin" size="sm" variant="danger"></app-icon>
-              <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {{ address() || 'Brak' }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Participants preview -->
-        @if (participants().length > 0) {
-        <div class="mt-3 flex items-center justify-center gap-1">
-          <div class="flex -space-x-2">
-            @for (p of visibleAvatars(); track p.id) {
-            <app-user-avatar
-              [avatarUrl]="p.user?.avatarUrl"
-              [displayName]="p.user?.displayName || ''"
-              size="sm"
-              class="ring-2 ring-white dark:ring-slate-800 rounded-full"
-            ></app-user-avatar>
-            }
-          </div>
-          @if (remainingCount() > 0) {
-          <span class="text-xs text-gray-400 dark:text-gray-500 ml-2"
-            >+{{ remainingCount() }} innych</span
-          >
-          }
-        </div>
-        }
-
-        <!-- Action buttons -->
-        <div class="mt-5 space-y-3">
+      @let _event = event();
+      <div class="space-y-4">
+        <!-- Status header -->
+        <div class="text-center">
           @if (participantStatus() === 'PENDING_PAYMENT') {
-          <app-button
-            variant="outline"
-            [fullWidth]="true"
-            (clicked)="leaveRequested.emit()"
-            class="block"
-          >
-            <app-icon name="x" size="sm"></app-icon>
-            Anuluj płatność
-          </app-button>
+            <div
+              class="mx-auto my-2 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30"
+            >
+              <app-icon
+                name="clock"
+                size="lg"
+                class="text-amber-500 dark:text-amber-400"
+              ></app-icon>
+            </div>
+            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">
+              Zgłoszenie przyjęte!
+            </h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+              Twoje zgłoszenie zostało zarejestrowane. Opłać udział, aby potwierdzić uczestnictwo.
+            </p>
           } @else {
-          <app-button
-            variant="outline"
-            [fullWidth]="true"
-            (clicked)="leaveRequested.emit()"
-            class="block"
-          >
-            <app-icon name="log-out" size="sm"></app-icon>
-            Wypisz się z wydarzenia
-          </app-button>
+            <div
+              class="mx-auto my-2 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30"
+            >
+              <app-icon
+                name="check"
+                size="lg"
+                class="text-green-500 dark:text-green-400"
+              ></app-icon>
+            </div>
+            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">
+              @if (participantStatus() === 'ACCEPTED') {
+                Jesteś uczestnikiem!
+              } @else {
+                Zgłoszenie wysłane!
+              }
+            </h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+              @if (participantStatus() === 'ACCEPTED') {
+                Dołączyłeś do tego wydarzenia.
+              } @else {
+                Organizator rozpatrzy Twoje zgłoszenie.
+              }
+            </p>
           }
+        </div>
 
-          <app-button
-            variant="primary"
-            [fullWidth]="true"
-            (clicked)="openChat.emit()"
-            class="block"
+        <!-- Event info row -->
+        <div
+          class="rounded-xl border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/40 p-3"
+        >
+          <div class="flex justify-center gap-5 text-center">
+            <div>
+              <app-icon name="calendar" size="sm" variant="primary"></app-icon>
+              <p class="mt-1 text-xs font-semibold text-gray-900 dark:text-gray-100">
+                {{ startDateFormatted() }}
+              </p>
+            </div>
+            <div>
+              <app-icon name="clock" size="sm" variant="muted"></app-icon>
+              <p class="mt-1 text-xs font-semibold text-gray-900 dark:text-gray-100">
+                {{ startTimeFormatted() }}–{{ endTimeFormatted() }}
+              </p>
+            </div>
+            <div>
+              <app-icon name="map-pin" size="sm" variant="danger"></app-icon>
+              <p class="mt-1 text-xs font-semibold text-gray-900 dark:text-gray-100 max-w-[100px] truncate">
+                {{ address() || 'Brak' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Participants preview -->
+        @if (participants().length > 0) {
+          <div class="flex items-center justify-center gap-1">
+            <div class="flex -space-x-2">
+              @for (p of visibleAvatars(); track p.id) {
+                <app-user-avatar
+                  [avatarUrl]="p.user?.avatarUrl"
+                  [displayName]="p.user?.displayName || ''"
+                  size="sm"
+                  class="ring-2 ring-white dark:ring-slate-800 rounded-full"
+                ></app-user-avatar>
+              }
+            </div>
+            @if (remainingCount() > 0) {
+              <span class="text-xs text-gray-400 dark:text-gray-500 ml-2">
+                +{{ remainingCount() }} innych
+              </span>
+            }
+          </div>
+        }
+
+        <!-- Payment CTA (highlighted) -->
+        @if (needsPayment()) {
+          <div
+            class="rounded-xl border-2 border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20 p-4"
           >
-            <app-icon name="message-circle" size="sm"></app-icon>
-            Otwórz czat wydarzenia
-          </app-button>
+            <div class="flex items-start gap-3">
+              <div
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-200 dark:bg-amber-800"
+              >
+                <app-icon
+                  name="dollar-sign"
+                  size="md"
+                  class="text-amber-700 dark:text-amber-300"
+                ></app-icon>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-amber-800 dark:text-amber-200">
+                  Wymagana płatność
+                </p>
+                <p class="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                  Opłać {{ _event?.costPerPerson }} zł, aby potwierdzić swój udział.
+                </p>
+              </div>
+            </div>
+            <app-button
+              variant="primary"
+              [fullWidth]="true"
+              [loading]="loading()"
+              (clicked)="payRequested.emit()"
+              class="block mt-3"
+            >
+              <app-icon name="dollar-sign" size="sm"></app-icon>
+              Opłać udział
+            </app-button>
+          </div>
+        }
+
+        <!-- Participant options -->
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">
+            Opcje uczestnika
+          </p>
+          <div class="space-y-2">
+            <!-- Event chat -->
+            <button
+              type="button"
+              class="flex w-full items-center gap-3 rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-slate-700"
+              (click)="openChat.emit()"
+            >
+              <div
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30"
+              >
+                <app-icon
+                  name="message-circle"
+                  size="sm"
+                  class="text-blue-500 dark:text-blue-400"
+                ></app-icon>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  Czat wydarzenia
+                </p>
+                <p class="text-xs text-gray-400 dark:text-gray-500">
+                  Porozmawiaj z uczestnikami
+                </p>
+              </div>
+              <app-icon name="chevron-right" size="sm" class="text-gray-300 dark:text-gray-600"></app-icon>
+            </button>
+
+            <!-- Contact organizer -->
+            <button
+              type="button"
+              class="flex w-full items-center gap-3 rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-slate-700"
+              (click)="contactOrganizer.emit()"
+            >
+              <div
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30"
+              >
+                <app-icon
+                  name="user"
+                  size="sm"
+                  class="text-purple-500 dark:text-purple-400"
+                ></app-icon>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  Napisz do organizatora
+                </p>
+                <p class="text-xs text-gray-400 dark:text-gray-500">
+                  {{ _event?.organizer?.displayName || 'Organizator' }}
+                </p>
+              </div>
+              <app-icon name="chevron-right" size="sm" class="text-gray-300 dark:text-gray-600"></app-icon>
+            </button>
+
+            <!-- Leave -->
+            <button
+              type="button"
+              class="flex w-full items-center gap-3 rounded-xl border border-red-100 dark:border-red-900/40 bg-white dark:bg-slate-800 p-3 text-left transition-colors hover:bg-red-50 dark:hover:bg-red-900/10"
+              (click)="onRequestLeave()"
+            >
+              <div
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30"
+              >
+                <app-icon
+                  name="user-x"
+                  size="sm"
+                  class="text-red-500 dark:text-red-400"
+                ></app-icon>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-red-600 dark:text-red-400">
+                  Wypisz się z wydarzenia
+                </p>
+                <p class="text-xs text-gray-400 dark:text-gray-500">
+                  Stracisz swoje miejsce
+                </p>
+              </div>
+              <app-icon name="chevron-right" size="sm" class="text-gray-300 dark:text-gray-600"></app-icon>
+            </button>
+          </div>
         </div>
       </div>
-      }
     </app-bottom-overlay>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -203,18 +239,24 @@ export class JoinConfirmOverlayComponent {
   readonly event = input<EventModel | null>(null);
   readonly participants = input<Participation[]>([]);
   readonly loading = input(false);
-  readonly isParticipant = input(false);
   readonly participantStatus = input<string | null>(null);
 
   readonly closed = output<void>();
-  readonly confirmed = output<void>();
   readonly leaveRequested = output<void>();
   readonly openChat = output<void>();
+  readonly payRequested = output<void>();
+  readonly contactOrganizer = output<void>();
 
   readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
   readonly remainingCount = computed(() => Math.max(0, this.participants().length - 6));
 
   readonly address = computed(() => this.event()?.address || '');
+
+  readonly needsPayment = computed(() => {
+    const status = this.participantStatus();
+    const cost = this.event()?.costPerPerson ?? 0;
+    return status === 'PENDING_PAYMENT' && cost > 0;
+  });
 
   readonly startDateFormatted = computed(() => {
     const e = this.event();

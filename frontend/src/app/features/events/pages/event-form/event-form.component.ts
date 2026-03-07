@@ -13,7 +13,7 @@ import { EventService } from '../../../../core/services/event.service';
 import { MediaService } from '../../../../core/services/media.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { DictionaryItem, City } from '../../../../shared/types';
+import { DictionaryItem, City, Event } from '../../../../shared/types';
 
 @Component({
   selector: 'app-event-form',
@@ -139,6 +139,8 @@ import { DictionaryItem, City } from '../../../../shared/types';
             <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
               Termin i uczestnicy
             </h3>
+            
+            <!-- Daty -->
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
@@ -160,15 +162,18 @@ import { DictionaryItem, City } from '../../../../shared/types';
                   class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                 />
               </div>
+            </div>
+
+            <!-- Liczba uczestników -->
+            <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
-                  >Koszt/os. (zł)</label
+                  >Min. uczestników</label
                 >
                 <input
                   type="number"
-                  formControlName="costPerPerson"
-                  min="0"
-                  step="0.01"
+                  formControlName="minParticipants"
+                  min="2"
                   class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                 />
               </div>
@@ -183,6 +188,40 @@ import { DictionaryItem, City } from '../../../../shared/types';
                   class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                 />
               </div>
+            </div>
+
+            <!-- Przedział wiekowy -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  >Wiek min (opcjonalnie)</label
+                >
+                <input
+                  type="number"
+                  formControlName="ageMin"
+                  min="1"
+                  max="100"
+                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                  placeholder="np. 18"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  >Wiek max (opcjonalnie)</label
+                >
+                <input
+                  type="number"
+                  formControlName="ageMax"
+                  min="1"
+                  max="100"
+                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                  placeholder="np. 65"
+                />
+              </div>
+            </div>
+
+            <!-- Kryteria -->
+            <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
                   >Płeć</label
@@ -209,16 +248,32 @@ import { DictionaryItem, City } from '../../../../shared/types';
                 </select>
               </div>
             </div>
-            <div class="flex items-center gap-3">
-              <label class="relative inline-flex cursor-pointer items-center">
-                <input type="checkbox" formControlName="autoAccept" class="peer sr-only" />
-                <div
-                  class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-highlight peer-focus:ring-2 peer-focus:ring-highlight-light dark:bg-slate-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full"
-                ></div>
-              </label>
-              <span class="text-sm text-gray-700 dark:text-gray-300"
-                >Automatyczne akceptowanie uczestników</span
-              >
+
+            <!-- Koszt i akceptacja -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  >Koszt/os. (zł)</label
+                >
+                <input
+                  type="number"
+                  formControlName="costPerPerson"
+                  min="0"
+                  step="0.01"
+                  class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                />
+              </div>
+              <div class="flex items-center gap-3">
+                <label class="relative inline-flex cursor-pointer items-center">
+                  <input type="checkbox" formControlName="autoAccept" class="peer sr-only" />
+                  <div
+                    class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-highlight peer-focus:ring-2 peer-focus:ring-highlight-light dark:bg-slate-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full"
+                  ></div>
+                </label>
+                <span class="text-sm text-gray-700 dark:text-gray-300"
+                  >Automatyczne akceptowanie</span
+                >
+              </div>
             </div>
           </div>
         </app-card>
@@ -295,7 +350,7 @@ export class EventFormComponent implements OnInit {
   private coverFile: File | null = null;
   private eventId: string | null = null;
 
-  readonly form = this.fb.nonNullable.group({
+  readonly form = this.fb.group({
     title: ['', Validators.required],
     description: [''],
     disciplineId: ['', Validators.required],
@@ -305,7 +360,10 @@ export class EventFormComponent implements OnInit {
     startsAt: ['', Validators.required],
     endsAt: ['', Validators.required],
     costPerPerson: [0],
+    minParticipants: [2],
     maxParticipants: [10],
+    ageMin: [undefined],
+    ageMax: [undefined],
     gender: ['ANY'],
     visibility: ['PUBLIC'],
     autoAccept: [true],
@@ -341,6 +399,7 @@ export class EventFormComponent implements OnInit {
           startsAt: e.startsAt.substring(0, 16),
           endsAt: e.endsAt.substring(0, 16),
           costPerPerson: e.costPerPerson,
+          minParticipants: e.minParticipants || 2,
           maxParticipants: e.maxParticipants || 10,
           gender: e.gender,
           visibility: e.visibility,
@@ -348,6 +407,12 @@ export class EventFormComponent implements OnInit {
           address: e.address,
           lat: e.lat,
           lng: e.lng,
+        });
+        
+        // Set age fields separately to avoid type issues
+        (this.form.patchValue as any)({
+          ageMin: e.ageMin,
+          ageMax: e.ageMax,
         });
         this.eventRules.set(this.parseRules(e.rules));
         this.mapLat.set(e.lat);
@@ -395,10 +460,26 @@ export class EventFormComponent implements OnInit {
     this.submitting.set(true);
 
     const val = this.form.getRawValue();
-    const payload = {
-      ...val,
-      startsAt: new Date(val.startsAt).toISOString(),
-      endsAt: new Date(val.endsAt).toISOString(),
+    const payload: Partial<Event> = {
+      title: val.title || undefined,
+      description: val.description || undefined,
+      disciplineId: val.disciplineId || undefined,
+      facilityId: val.facilityId || undefined,
+      levelId: val.levelId || undefined,
+      cityId: val.cityId || undefined,
+      startsAt: val.startsAt ? new Date(val.startsAt).toISOString() : undefined,
+      endsAt: val.endsAt ? new Date(val.endsAt).toISOString() : undefined,
+      costPerPerson: val.costPerPerson || undefined,
+      minParticipants: val.minParticipants || undefined,
+      maxParticipants: val.maxParticipants || undefined,
+      ageMin: val.ageMin || undefined,
+      ageMax: val.ageMax || undefined,
+      gender: val.gender || undefined,
+      visibility: val.visibility || undefined,
+      autoAccept: val.autoAccept || undefined,
+      address: val.address || undefined,
+      lat: val.lat || undefined,
+      lng: val.lng || undefined,
       rules: this.formatRules(this.eventRules()),
     };
 

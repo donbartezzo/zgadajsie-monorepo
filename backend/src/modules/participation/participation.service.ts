@@ -27,15 +27,8 @@ export class ParticipationService {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
     if (event.status !== 'ACTIVE') throw new BadRequestException('Wydarzenie nie jest aktywne');
-    if (event.organizerId === userId)
-      throw new BadRequestException('Organizator nie może dołączyć do własnego wydarzenia');
 
     const isPaid = event.costPerPerson.toNumber() > 0;
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, displayName: true, avatarUrl: true, email: true },
-    });
-    if (!user) throw new NotFoundException('Użytkownik nie znaleziony');
 
     const existing = await this.prisma.eventParticipation.findUnique({
       where: { eventId_userId: { eventId, userId } },
@@ -50,14 +43,13 @@ export class ParticipationService {
       (payment) => payment.status === 'COMPLETED',
     );
 
-    // User is in PENDING_PAYMENT — restart payment flow
+    // User is already in PENDING_PAYMENT — return current state
     if (existing && existing.status === 'PENDING_PAYMENT' && isPaid) {
-      const paymentResult = await this.tryInitiatePayment(existing.id, event, user);
-      const updated = await this.prisma.eventParticipation.findUnique({
+      const current = await this.prisma.eventParticipation.findUnique({
         where: { id: existing.id },
         include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
       });
-      return { ...updated, ...paymentResult };
+      return { ...current, isPaid, costPerPerson: event.costPerPerson.toNumber() };
     }
 
     // User previously withdrew — rejoin
@@ -66,28 +58,29 @@ export class ParticipationService {
         // Reuse existing completed payment — no need to pay again
         if (activeCompletedPayment) {
           const restoredStatus = event.autoAccept ? 'ACCEPTED' : 'APPLIED';
-          return this.prisma.eventParticipation.update({
+          const updated = await this.prisma.eventParticipation.update({
             where: { id: existing.id },
             data: { status: restoredStatus },
             include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
           });
+          return { ...updated, isPaid, costPerPerson: event.costPerPerson.toNumber() };
         }
 
-        // No completed payment — start payment flow
+        // No completed payment — set PENDING_PAYMENT (user pays separately)
         const updated = await this.prisma.eventParticipation.update({
           where: { id: existing.id },
           data: { status: 'PENDING_PAYMENT' },
           include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
         });
-        const paymentResult = await this.tryInitiatePayment(updated.id, event, user);
-        return { ...updated, ...paymentResult };
+        return { ...updated, isPaid, costPerPerson: event.costPerPerson.toNumber() };
       }
       const newStatus = event.autoAccept ? 'ACCEPTED' : 'APPLIED';
-      return this.prisma.eventParticipation.update({
+      const updated = await this.prisma.eventParticipation.update({
         where: { id: existing.id },
         data: { status: newStatus },
         include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
       });
+      return { ...updated, isPaid, costPerPerson: 0 };
     }
     if (existing) throw new BadRequestException('Już uczestniczysz w tym wydarzeniu');
 
@@ -99,12 +92,20 @@ export class ParticipationService {
     }
 
     if (isPaid) {
+      // Organizator automatycznie dostaje status ACCEPTED (nie musi płacić)
+      if (event.organizerId === userId) {
+        const participation = await this.prisma.eventParticipation.create({
+          data: { eventId, userId, status: 'ACCEPTED' },
+          include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
+        });
+        return { ...participation, isPaid, costPerPerson: event.costPerPerson.toNumber() };
+      }
+
       const participation = await this.prisma.eventParticipation.create({
         data: { eventId, userId, status: 'PENDING_PAYMENT' },
         include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
       });
-      const paymentResult = await this.tryInitiatePayment(participation.id, event, user);
-      return { ...participation, ...paymentResult };
+      return { ...participation, isPaid, costPerPerson: event.costPerPerson.toNumber() };
     }
 
     const status = event.autoAccept ? 'ACCEPTED' : 'APPLIED';
@@ -134,27 +135,7 @@ export class ParticipationService {
       );
     }
 
-    return participation;
-  }
-
-  private async tryInitiatePayment(
-    participationId: string,
-    event: { id: string; costPerPerson: { toNumber(): number }; organizerId: string; title: string },
-    user: { id: string; email: string; displayName: string },
-  ): Promise<{ paymentUrl?: string; paymentId?: string }> {
-    const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
-    const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
-    const result = await this.paymentsService.initiatePayment(
-      participationId,
-      event.id,
-      user.id,
-      event.costPerPerson.toNumber(),
-      user.email,
-      user.displayName,
-      frontendUrl,
-      backendUrl,
-    );
-    return { paymentUrl: result.paymentUrl, paymentId: result.paymentId };
+    return { ...participation, isPaid, costPerPerson: 0 };
   }
 
   async joinGuest(eventId: string, addedByUserId: string, displayName: string) {
@@ -272,5 +253,44 @@ export class ParticipationService {
       where: { id: participation.id },
       data: { status: 'WITHDRAWN' },
     });
+  }
+
+  async initiateEventPayment(
+    eventId: string,
+    userId: string,
+  ): Promise<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
+    const participation = await this.prisma.eventParticipation.findUnique({
+      where: { eventId_userId: { eventId, userId } },
+      include: { event: true },
+    });
+    if (!participation) throw new NotFoundException('Nie uczestniczysz w tym wydarzeniu');
+    if (participation.status !== 'PENDING_PAYMENT') {
+      throw new BadRequestException('Płatność nie jest wymagana dla tego zgłoszenia');
+    }
+
+    const event = participation.event;
+    if (event.costPerPerson.toNumber() <= 0) {
+      throw new BadRequestException('To wydarzenie jest bezpłatne');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, displayName: true },
+    });
+    if (!user) throw new NotFoundException('Użytkownik nie znaleziony');
+
+    const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
+    const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
+
+    return this.paymentsService.initiatePayment(
+      participation.id,
+      event.id,
+      user.id,
+      event.costPerPerson.toNumber(),
+      user.email,
+      user.displayName,
+      frontendUrl,
+      backendUrl,
+    );
   }
 }

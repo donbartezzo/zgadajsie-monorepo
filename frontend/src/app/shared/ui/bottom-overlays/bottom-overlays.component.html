@@ -8,18 +8,27 @@
 <app-participants-overlay [participants]="overlays.participants()" (closed)="overlays.close()" />
 } @case ('auth') {
 <app-auth-overlay (closed)="overlays.close()" (authenticated)="overlays.handleAuthSuccess()" />
+} @case ('joinRules') {
+<app-join-rules-overlay
+  [open]="true"
+  [event]="overlays.event()"
+  [loading]="overlays.loading()"
+  [isOrganizer]="overlays.isOrganizer()"
+  (closed)="overlays.close()"
+  (confirmed)="overlays.confirmJoin()"
+/>
 } @case ('joinConfirm') {
 <app-join-confirm-overlay
   [open]="true"
   [event]="overlays.event()"
   [participants]="overlays.participants()"
   [loading]="overlays.loading()"
-  [isParticipant]="overlays.isParticipant()"
   [participantStatus]="overlays.participantStatus()"
   (closed)="overlays.close()"
-  (confirmed)="overlays.confirmJoin()"
   (leaveRequested)="overlays.confirmLeave()"
   (openChat)="overlays.handleOpenChat()"
+  (payRequested)="overlays.handlePay()"
+  (contactOrganizer)="overlays.handleContactOrganizer()"
 />
 } @case ('leaveConfirm') {
 <app-leave-confirm-overlay

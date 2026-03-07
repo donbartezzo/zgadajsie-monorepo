@@ -145,6 +145,9 @@ export class EventComponent implements OnInit, OnDestroy {
       this.overlays.setEventContext(this.event(), this.participants(), this.isParticipant());
     });
     effect(() => {
+      this.overlays.setIsOrganizer(this.isOrganizer());
+    });
+    effect(() => {
       this.overlays.setLoading(this.joining());
     });
 
@@ -153,6 +156,8 @@ export class EventComponent implements OnInit, OnDestroy {
     this.overlays.onLeaveConfirmed(() => this.confirmLeave());
     this.overlays.onAuthSuccess(() => this.onAuthSuccess());
     this.overlays.onOpenChat(() => this.openChat());
+    this.overlays.onPay(() => this.payEvent());
+    this.overlays.onContactOrganizer(() => this.contactOrganizer());
 
     // Re-observe sentinel whenever the element appears/disappears (it's inside @if)
     effect(() => {
@@ -239,8 +244,12 @@ export class EventComponent implements OnInit, OnDestroy {
 
   openJoinSheet(): void {
     if (this.auth.isLoggedIn()) {
-      this.overlays.setParticipantStatus(this.participantStatus());
-      this.overlays.open('joinConfirm');
+      if (this.isParticipant()) {
+        this.overlays.setParticipantStatus(this.participantStatus());
+        this.overlays.open('joinConfirm');
+      } else {
+        this.overlays.open('joinRules');
+      }
     } else {
       this.overlays.open('auth');
     }
@@ -261,17 +270,9 @@ export class EventComponent implements OnInit, OnDestroy {
           return [...prev, p];
         });
 
-        if (p.paymentUrl) {
-          window.location.href = p.paymentUrl;
-          return;
-        }
-
-        if (p.status === 'PENDING_PAYMENT') {
-          this.snackbar.info('Dołączono ale oczekuje na płatność');
-        } else {
-          this.snackbar.success('Dołączono do wydarzenia!');
-        }
         this.joining.set(false);
+        this.overlays.setParticipantStatus(p.status);
+        this.overlays.open('joinConfirm');
       },
       error: (err) => {
         console.error('Failed to join event:', err.error?.message);
@@ -281,8 +282,37 @@ export class EventComponent implements OnInit, OnDestroy {
     });
   }
 
+  payEvent(): void {
+    this.joining.set(true);
+    this.eventService.payEvent(this.eventId).subscribe({
+      next: (result) => {
+        this.joining.set(false);
+        if (result.paidByVoucher) {
+          this.snackbar.success('Opłacono voucherem!');
+          this.overlays.setParticipantStatus('ACCEPTED');
+          const userId = this.auth.currentUser()?.id;
+          if (userId) {
+            this.participants.update((prev) =>
+              prev.map((pp) =>
+                pp.userId === userId ? { ...pp, status: 'ACCEPTED' } : pp,
+              ),
+            );
+          }
+          return;
+        }
+        if (result.paymentUrl) {
+          window.location.href = result.paymentUrl;
+        }
+      },
+      error: (err) => {
+        this.joining.set(false);
+        this.snackbar.error(err.error?.message || 'Nie udało się zainicjować płatności');
+      },
+    });
+  }
+
   onAuthSuccess(): void {
-    this.overlays.open('joinConfirm');
+    this.overlays.open('joinRules');
   }
 
   openChat(): void {
@@ -337,7 +367,12 @@ export class EventComponent implements OnInit, OnDestroy {
 
   private checkOpenJoinParam(): void {
     if (this.route.snapshot.queryParams['openJoin'] && this.auth.isLoggedIn()) {
-      this.overlays.open('joinConfirm');
+      if (this.isParticipant()) {
+        this.overlays.setParticipantStatus(this.participantStatus());
+        this.overlays.open('joinConfirm');
+      } else {
+        this.overlays.open('joinRules');
+      }
       this.removeOpenJoinFromUrl();
     }
   }

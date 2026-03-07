@@ -39,4 +39,9 @@ export class ParticipationController {
   leave(@Param('eventId') eventId: string, @CurrentUser() user: AuthUser) {
     return this.participationService.leave(eventId, user.id);
   }
+
+  @Post('events/:eventId/pay')
+  pay(@Param('eventId') eventId: string, @CurrentUser() user: AuthUser) {
+    return this.participationService.initiateEventPayment(eventId, user.id);
+  }
 }
