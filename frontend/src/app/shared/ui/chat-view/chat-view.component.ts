@@ -43,11 +43,13 @@ export interface ChatViewMessage {
       @if (loading()) {
       <app-loading-spinner></app-loading-spinner>
       } @for (msg of messages(); track msg.id) {
+      @let isInactive = inactiveUsers().has(msg.senderId);
       <div [class]="'flex gap-2 ' + (msg.senderId === currentUserId() ? 'flex-row-reverse' : '')">
         <app-user-avatar
           [avatarUrl]="msg.sender?.avatarUrl"
           [displayName]="msg.sender?.displayName || ''"
           size="sm"
+          [class.opacity-40]="isInactive"
         ></app-user-avatar>
         <div
           [class]="
@@ -56,7 +58,24 @@ export interface ChatViewMessage {
               : 'bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-2xl rounded-tl-sm px-3 py-2 max-w-[75%]'
           "
         >
-          <p class="text-xs font-medium mb-0.5 opacity-70">{{ msg.sender?.displayName }}</p>
+          <div class="flex items-center gap-2 mb-0.5">
+            <p class="text-xs font-medium opacity-70" [class.opacity-40]="isInactive">{{ msg.sender?.displayName }}</p>
+            @if (isInactive) {
+            <span
+              [class]="
+                'inline-block text-[10px] px-1.5 py-0.5 rounded-md font-medium opacity-40 ' +
+                (inactiveUsers().get(msg.senderId) === 'banned'
+                  ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                  : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300')
+              "
+            >
+              @switch (inactiveUsers().get(msg.senderId)) {
+                @case ('banned') { Zbanowany na czacie }
+                @case ('withdrawn') { Wypisany z wydarzenia }
+              }
+            </span>
+            }
+          </div>
           <p class="text-sm whitespace-pre-wrap">{{ msg.content }}</p>
           <p class="text-[10px] mt-1 opacity-50">{{ msg.createdAt | date : 'HH:mm' }}</p>
         </div>
@@ -92,6 +111,7 @@ export class ChatViewComponent {
   readonly currentUserId = input.required<string>();
   readonly loading = input(false);
   readonly typingUser = input<string | null>(null);
+  readonly inactiveUsers = input<Map<string, 'banned' | 'withdrawn'>>(new Map());
 
   readonly messageSent = output<string>();
   readonly typing = output<void>();

@@ -19,10 +19,11 @@ export interface PaginatedMessages {
   limit: number;
 }
 
-export interface DirectMessage {
+export interface PrivateChatMessage {
   id: string;
-  conversationId: string;
+  eventId: string;
   senderId: string;
+  recipientId: string;
   content: string;
   createdAt: string;
 
@@ -31,36 +32,53 @@ export interface DirectMessage {
     displayName: string;
     avatarUrl?: string;
   };
+  recipient?: {
+    id: string;
+    displayName: string;
+    avatarUrl?: string;
+  };
 }
 
-export interface PaginatedDirectMessages {
-  data: DirectMessage[];
+export interface PaginatedPrivateMessages {
+  data: PrivateChatMessage[];
   total: number;
   page: number;
   limit: number;
 }
 
-export interface Conversation {
-  id: string;
-  userAId: string;
-  userBId: string;
-  eventId?: string | null;
-  createdAt: string;
-  updatedAt: string;
+export interface ChatMember {
+  user: {
+    id: string;
+    displayName: string;
+    avatarUrl?: string;
+  };
+  status: string;
+  isActive: boolean;
+  isBanned: boolean;
+  isWithdrawn: boolean;
+  inactiveReason: string | null;
+}
 
-  userA?: {
+export interface ChatMembersResponse {
+  organizer: {
+    id: string;
+    displayName: string;
+    avatarUrl?: string;
+    isOrganizer: true;
+  };
+  members: ChatMember[];
+}
+
+export interface OrganizerConversation {
+  participant: {
     id: string;
     displayName: string;
     avatarUrl?: string;
   };
-  userB?: {
-    id: string;
-    displayName: string;
-    avatarUrl?: string;
-  };
-  event?: {
-    id: string;
-    title: string;
+  lastMessage: {
+    content: string;
+    createdAt: string;
+    isFromOrganizer: boolean;
   } | null;
-  messages?: DirectMessage[];
+  messageCount: number;
 }

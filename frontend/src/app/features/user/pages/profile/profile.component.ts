@@ -73,14 +73,6 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
             </div>
           </app-card>
         </a>
-        <a routerLink="/messages">
-          <app-card>
-            <div class="p-3 flex items-center gap-2">
-              <app-icon name="message-circle" size="sm" variant="primary"></app-icon>
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Wiadomości</span>
-            </div>
-          </app-card>
-        </a>
         <a routerLink="/payments">
           <app-card>
             <div class="p-3 flex items-center gap-2">

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { IconComponent } from '../../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
@@ -100,6 +100,9 @@ interface EarningItem {
               </p>
             </div>
             <div class="flex gap-1">
+              <app-button variant="outline" size="sm" (clicked)="openChat(p.userId)">
+                <app-icon name="message-circle" size="sm"></app-icon>
+              </app-button>
               <app-button variant="primary" size="sm" (clicked)="onAccept(p.id)"
                 ><app-icon name="check" size="sm"></app-icon
               ></app-button>
@@ -128,6 +131,9 @@ interface EarningItem {
               </p>
             </div>
             <div class="flex gap-1">
+              <app-button variant="outline" size="sm" (clicked)="openChat(p.userId)">
+                <app-icon name="message-circle" size="sm"></app-icon>
+              </app-button>
               <app-button variant="outline" size="sm" (clicked)="onReprimand(p.userId)">
                 <app-icon name="flag" size="sm"></app-icon>
               </app-button>
@@ -177,6 +183,7 @@ interface EarningItem {
 })
 export class EventManageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
   private readonly moderationService = inject(ModerationService);
   private readonly paymentService = inject(PaymentService);
@@ -272,6 +279,10 @@ export class EventManageComponent implements OnInit {
       error: (err) =>
         this.snackbar.error(err?.error?.message || 'Nie udało się przyznać vouchera'),
     });
+  }
+
+  openChat(userId: string): void {
+    this.router.navigate(['/events', this.eventId, 'chat', userId]);
   }
 
   onRefundMoney(paymentId: string): void {

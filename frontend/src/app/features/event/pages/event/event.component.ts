@@ -22,7 +22,6 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bottom-overlays.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
-import { DirectMessageService } from '../../../../core/services/direct-message.service';
 import { EventHeroComponent } from '../../../../shared/ui/event-hero/event-hero.component';
 import { Event as EventModel, Participation } from '../../../../shared/types';
 
@@ -73,7 +72,6 @@ export class EventComponent implements OnInit, OnDestroy {
   private readonly snackbar = inject(SnackbarService);
   readonly overlays = inject(BottomOverlaysService);
   private readonly confirmModal = inject(ConfirmModalService);
-  private readonly dmService = inject(DirectMessageService);
 
   readonly event = signal<EventModel | null>(null);
   readonly participants = signal<Participation[]>([]);
@@ -324,13 +322,15 @@ export class EventComponent implements OnInit, OnDestroy {
     this.snackbar.info('Funkcja obserwowania będzie dostępna wkrótce');
   }
 
+  openOrganizerChats(): void {
+    this.overlays.open('organizerChats');
+  }
+
   contactOrganizer(): void {
     const organizerId = this.event()?.organizerId;
     if (!organizerId) return;
-    this.dmService.getOrCreateConversation(organizerId, this.eventId).subscribe({
-      next: (conv) => this.router.navigate(['/messages', conv.id]),
-      error: () => this.snackbar.error('Nie udało się otworzyć konwersacji'),
-    });
+    this.overlays.close();
+    this.router.navigate(['/events', this.eventId, 'chat', organizerId]);
   }
 
   async requestLeave(): Promise<void> {

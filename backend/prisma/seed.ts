@@ -8,6 +8,7 @@ async function main() {
 
   // ─── Czyszczenie (kolejność ważna – relacje) ────────────────────────────
   console.log('Czyszczę istniejące dane...');
+  await prisma.paymentIntent.deleteMany({});
   await prisma.payment.deleteMany({});
   await prisma.chatMessage.deleteMany({});
   await prisma.eventParticipation.deleteMany({});

@@ -9,17 +9,13 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { DirectMessagesService } from '../direct-messages/direct-messages.service';
 
 @WebSocketGateway({ namespace: '/chat', cors: { origin: '*' } })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  constructor(
-    private chatService: ChatService,
-    private directMessagesService: DirectMessagesService,
-  ) {}
+  constructor(private chatService: ChatService) {}
 
   handleConnection(_client: Socket) {
     // TODO: verify JWT from handshake
@@ -29,7 +25,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // cleanup
   }
 
-  // ─── Event Chat ──────────────────────────────────────────────────────────────
+  // ─── Group Chat ──────────────────────────────────────────────────────────────
 
   @SubscribeMessage('joinRoom')
   handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() data: { eventId: string }) {
@@ -44,7 +40,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() _client: Socket,
     @MessageBody() data: { eventId: string; userId: string; content: string },
   ) {
     const message = await this.chatService.createMessage(data.eventId, data.userId, data.content);
@@ -63,47 +59,57 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
-  // ─── Direct Messages ─────────────────────────────────────────────────────────
+  // ─── Private Chat (Organizer ↔ Participant) ────────────────────────────────
 
-  @SubscribeMessage('joinDmRoom')
-  handleJoinDmRoom(
+  @SubscribeMessage('joinPrivateRoom')
+  handleJoinPrivateRoom(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { conversationId: string },
+    @MessageBody() data: { eventId: string; otherUserId: string },
   ) {
-    client.join(`dm-${data.conversationId}`);
-    return { event: 'joinedDmRoom', data: { conversationId: data.conversationId } };
+    const room = this.getPrivateRoomName(data.eventId, client.handshake.auth?.userId, data.otherUserId);
+    client.join(room);
+    return { event: 'joinedPrivateRoom', data: { eventId: data.eventId, otherUserId: data.otherUserId } };
   }
 
-  @SubscribeMessage('leaveDmRoom')
-  handleLeaveDmRoom(
+  @SubscribeMessage('leavePrivateRoom')
+  handleLeavePrivateRoom(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { conversationId: string },
+    @MessageBody() data: { eventId: string; otherUserId: string },
   ) {
-    client.leave(`dm-${data.conversationId}`);
+    const room = this.getPrivateRoomName(data.eventId, client.handshake.auth?.userId, data.otherUserId);
+    client.leave(room);
   }
 
-  @SubscribeMessage('sendDirectMessage')
-  async handleSendDirectMessage(
+  @SubscribeMessage('sendPrivateMessage')
+  async handleSendPrivateMessage(
     @ConnectedSocket() _client: Socket,
-    @MessageBody() data: { conversationId: string; senderId: string; content: string },
+    @MessageBody() data: { eventId: string; senderId: string; recipientId: string; content: string },
   ) {
-    const message = await this.directMessagesService.createMessage(
-      data.conversationId,
+    const message = await this.chatService.createPrivateMessage(
+      data.eventId,
       data.senderId,
+      data.recipientId,
       data.content,
     );
-    this.server.to(`dm-${data.conversationId}`).emit('newDirectMessage', message);
+    const room = this.getPrivateRoomName(data.eventId, data.senderId, data.recipientId);
+    this.server.to(room).emit('newPrivateMessage', message);
     return message;
   }
 
-  @SubscribeMessage('dmTyping')
-  handleDmTyping(
+  @SubscribeMessage('privateTyping')
+  handlePrivateTyping(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { conversationId: string; userId: string; displayName: string },
+    @MessageBody() data: { eventId: string; userId: string; otherUserId: string; displayName: string },
   ) {
-    client.to(`dm-${data.conversationId}`).emit('dmUserTyping', {
+    const room = this.getPrivateRoomName(data.eventId, data.userId, data.otherUserId);
+    client.to(room).emit('privateUserTyping', {
       userId: data.userId,
       displayName: data.displayName,
     });
+  }
+
+  private getPrivateRoomName(eventId: string, userA: string, userB: string): string {
+    const [first, second] = [userA, userB].sort();
+    return `private-${eventId}-${first}-${second}`;
   }
 }

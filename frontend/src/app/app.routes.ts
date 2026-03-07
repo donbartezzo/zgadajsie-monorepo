@@ -54,29 +54,20 @@ export const appRoutes: Route[] = [
   {
     path: 'events/:id/chat',
     loadComponent: () =>
-      import('./features/chat/pages/event-chat/event-chat.component').then(
-        (m) => m.EventChatComponent,
+      import('./features/chat/pages/unified-chat/unified-chat.component').then(
+        (m) => m.UnifiedChatComponent,
       ),
     canActivate: [authGuard, activeGuard],
     data: { title: 'Czat' },
   },
   {
-    path: 'messages',
+    path: 'events/:id/chat/:userId',
     loadComponent: () =>
-      import('./features/chat/pages/conversations-list/conversations-list.component').then(
-        (m) => m.ConversationsListComponent,
+      import('./features/chat/pages/unified-chat/unified-chat.component').then(
+        (m) => m.UnifiedChatComponent,
       ),
     canActivate: [authGuard, activeGuard],
-    data: { title: 'Wiadomości' },
-  },
-  {
-    path: 'messages/:conversationId',
-    loadComponent: () =>
-      import('./features/chat/pages/direct-chat/direct-chat.component').then(
-        (m) => m.DirectChatComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: { title: 'Wiadomość' },
+    data: { title: 'Wiadomość prywatna' },
   },
   {
     path: 'auth/login',
