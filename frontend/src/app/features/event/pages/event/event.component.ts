@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { IconName, IconComponent } from '../../../../core/icons/icon.component';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
@@ -22,6 +22,8 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bottom-overlays.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
+import { DirectMessageService } from '../../../../core/services/direct-message.service';
+import { EventHeroComponent } from '../../../../shared/ui/event-hero/event-hero.component';
 import { Event as EventModel, Participation } from '../../../../shared/types';
 
 @Component({
@@ -30,12 +32,12 @@ import { Event as EventModel, Participation } from '../../../../shared/types';
     CommonModule,
     DatePipe,
     DecimalPipe,
-    RouterLink,
     IconComponent,
     ButtonComponent,
     UserAvatarComponent,
     LoadingSpinnerComponent,
     CardComponent,
+    EventHeroComponent,
   ],
   templateUrl: './event.component.html',
   styles: [
@@ -71,6 +73,7 @@ export class EventComponent implements OnInit, OnDestroy {
   private readonly snackbar = inject(SnackbarService);
   readonly overlays = inject(BottomOverlaysService);
   private readonly confirmModal = inject(ConfirmModalService);
+  private readonly dmService = inject(DirectMessageService);
 
   readonly event = signal<EventModel | null>(null);
   readonly participants = signal<Participation[]>([]);
@@ -89,16 +92,9 @@ export class EventComponent implements OnInit, OnDestroy {
     return e.address;
   });
 
-  readonly startMonth = computed(() => {
-    const e = this.event();
-    if (!e) return '';
-    return new Date(e.startsAt).toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase();
-  });
-
-  readonly startDay = computed(() => {
-    const e = this.event();
-    if (!e) return '';
-    return new Date(e.startsAt).getDate().toString();
+  readonly heroSubtitle = computed(() => {
+    const count = this.participants().length;
+    return `${count} ${count === 1 ? 'uczestnik' : 'uczestników'}`;
   });
 
   readonly genderLabel = computed(() => {
@@ -296,6 +292,15 @@ export class EventComponent implements OnInit, OnDestroy {
 
   onFollow(): void {
     this.snackbar.info('Funkcja obserwowania będzie dostępna wkrótce');
+  }
+
+  contactOrganizer(): void {
+    const organizerId = this.event()?.organizerId;
+    if (!organizerId) return;
+    this.dmService.getOrCreateConversation(organizerId, this.eventId).subscribe({
+      next: (conv) => this.router.navigate(['/messages', conv.id]),
+      error: () => this.snackbar.error('Nie udało się otworzyć konwersacji'),
+    });
   }
 
   async requestLeave(): Promise<void> {

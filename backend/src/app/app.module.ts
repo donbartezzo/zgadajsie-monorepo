@@ -16,6 +16,7 @@ import { NotificationsModule } from '../modules/notifications/notifications.modu
 import { ActivityRankModule } from '../modules/activity-rank/activity-rank.module';
 import { DictionariesModule } from '../modules/dictionaries/dictionaries.module';
 import { VouchersModule } from '../modules/vouchers/vouchers.module';
+import { DirectMessagesModule } from '../modules/direct-messages/direct-messages.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { VouchersModule } from '../modules/vouchers/vouchers.module';
     ActivityRankModule,
     DictionariesModule,
     VouchersModule,
+    DirectMessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

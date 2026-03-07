@@ -61,6 +61,24 @@ export const appRoutes: Route[] = [
     data: { title: 'Czat' },
   },
   {
+    path: 'messages',
+    loadComponent: () =>
+      import('./features/chat/pages/conversations-list/conversations-list.component').then(
+        (m) => m.ConversationsListComponent,
+      ),
+    canActivate: [authGuard, activeGuard],
+    data: { title: 'Wiadomości' },
+  },
+  {
+    path: 'messages/:conversationId',
+    loadComponent: () =>
+      import('./features/chat/pages/direct-chat/direct-chat.component').then(
+        (m) => m.DirectChatComponent,
+      ),
+    canActivate: [authGuard, activeGuard],
+    data: { title: 'Wiadomość' },
+  },
+  {
     path: 'auth/login',
     loadComponent: () =>
       import('./features/auth/pages/login/login.component').then((m) => m.LoginComponent),

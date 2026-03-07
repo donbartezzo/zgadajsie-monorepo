@@ -1,81 +1,20 @@
 @if (isLoading()) {
 <app-loading-spinner></app-loading-spinner>
 } @else if (event(); as e) {
-<div class="relative w-full" style="height: var(--hero-h)">
-  <!-- Fixed hero image -->
-  <div class="fixed inset-x-0 top-0 z-0 max-w-app mx-auto" style="height: var(--hero-h)">
-    @if (e.coverImageUrl) {
-    <img [src]="e.coverImageUrl" [alt]="e.title" class="h-full w-full object-cover" />
-    } @else {
-    <div
-      class="h-full w-full bg-gradient-to-br from-highlight-light to-highlight flex items-center justify-center"
+<app-event-hero [event]="e" [subtitle]="heroSubtitle()">
+  @if (!isParticipant() && !isOrganizer()) {
+  <div class="absolute bottom-14 right-4">
+    <button
+      type="button"
+      class="rounded-lg bg-highlight px-5 py-2 text-xs font-bold uppercase text-white shadow-lg transition-colors hover:bg-highlight-dark"
+      [disabled]="joining()"
+      (click)="openJoinSheet()"
     >
-      <app-icon name="calendar" size="lg" variant="default"></app-icon>
-    </div>
-    }
-    <!-- Gradient overlay -->
-    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-
-    <!-- Date badge — top right -->
-    <div class="absolute top-3 right-3">
-      <div class="overflow-hidden rounded-lg bg-white shadow-xl text-center dark:bg-slate-800">
-        <span
-          class="block bg-highlight px-3 py-0.5 text-[10px] font-semibold uppercase leading-tight text-white"
-          >{{ startMonth() }}</span
-        >
-        <span class="block px-3 py-1 text-xl font-extrabold text-gray-900 dark:text-gray-100">{{
-          startDay()
-        }}</span>
-      </div>
-    </div>
-
-    <!-- Bottom overlay content -->
-    <div class="absolute inset-x-0 bottom-9 p-4">
-      <!-- Badges -->
-      <div class="mb-2 flex flex-wrap gap-1.5">
-        @if (e.discipline) {
-        <span
-          class="rounded-sm bg-highlight px-2 py-0.5 text-[10px] font-semibold uppercase text-white"
-          >{{ e.discipline!.name }}</span
-        >
-        } @if (e.level) {
-        <span
-          class="rounded-sm bg-orange-500 px-2 py-0.5 text-[10px] font-semibold uppercase text-white"
-          >{{ e.level!.name }}</span
-        >
-        } @if (e.facility) {
-        <span
-          class="rounded-sm bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase text-white backdrop-blur-sm"
-          >{{ e.facility!.name }}</span
-        >
-        }
-      </div>
-      <!-- Title -->
-      <h1 class="text-2xl font-extrabold text-white leading-tight">
-        {{ e.title }}
-      </h1>
-      <!-- Subtitle -->
-      <p class="mt-0.5 text-sm text-white/60">
-        {{ participants().length }}
-        {{ participants().length === 1 ? 'uczestnik' : 'uczestników' }}
-      </p>
-    </div>
-
-    <!-- Join button on hero — bottom right -->
-    @if (!isParticipant() && !isOrganizer()) {
-    <div class="absolute bottom-14 right-4">
-      <button
-        type="button"
-        class="rounded-lg bg-highlight px-5 py-2 text-xs font-bold uppercase text-white shadow-lg transition-colors hover:bg-highlight-dark"
-        [disabled]="joining()"
-        (click)="openJoinSheet()"
-      >
-        Dołącz
-      </button>
-    </div>
-    }
+      Dołącz
+    </button>
   </div>
-</div>
+  }
+</app-event-hero>
 
 <!-- ═══════════════════════════════════════════════════
        PULL-UP CARD — overlaps the hero from below
@@ -458,13 +397,25 @@
         <span class="text-xs text-gray-400 dark:text-gray-500">Organizator</span>
       </div>
       @if (!isOrganizer()) {
-      <button
-        type="button"
-        class="shrink-0 rounded-lg bg-highlight px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-highlight-dark"
-        (click)="onFollow()"
-      >
-        Obserwuj
-      </button>
+      <div class="flex items-center gap-2 shrink-0">
+        @if (auth.isLoggedIn()) {
+        <button
+          type="button"
+          class="rounded-lg border border-highlight px-3 py-1 text-xs font-semibold text-highlight transition-colors hover:bg-highlight/10"
+          (click)="contactOrganizer()"
+        >
+          <app-icon name="message-circle" size="xs" class="inline-block mr-1"></app-icon>
+          Napisz
+        </button>
+        }
+        <button
+          type="button"
+          class="rounded-lg bg-highlight px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-highlight-dark"
+          (click)="onFollow()"
+        >
+          Obserwuj
+        </button>
+      </div>
       }
     </div>
     }

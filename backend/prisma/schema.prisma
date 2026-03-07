@@ -34,8 +34,11 @@ model User {
   vouchersReceived  OrganizerVoucher[]   @relation("VoucherRecipient")
   vouchersIssued    OrganizerVoucher[]   @relation("VoucherOrganizer")
   mediaFiles        MediaFile[]
-  chatMessages      ChatMessage[]
-  reprimandsGiven   Reprimand[]          @relation("ReprimandFrom")
+  chatMessages           ChatMessage[]
+  conversationsAsUserA   Conversation[]       @relation("ConversationUserA")
+  conversationsAsUserB   Conversation[]       @relation("ConversationUserB")
+  directMessages         DirectMessage[]
+  reprimandsGiven        Reprimand[]          @relation("ReprimandFrom")
   reprimandsReceived Reprimand[]         @relation("ReprimandTo")
   organizerBans     OrganizerBan[]       @relation("OrganizerBanOrganizer")
   bannedByOrganizers OrganizerBan[]      @relation("OrganizerBanBanned")
@@ -134,6 +137,7 @@ model Event {
   childEvents   Event[]              @relation("RecurringEvents")
   participations EventParticipation[]
   chatMessages  ChatMessage[]
+  conversations Conversation[]
   reprimands    Reprimand[]
   notifications Notification[]       @relation("NotificationEvent")
   payments        Payment[]            @relation("EventPayments")
@@ -263,6 +267,39 @@ model ChatMessage {
   user  User  @relation(fields: [userId], references: [id])
 
   @@index([eventId, createdAt])
+}
+
+// ─── Direct Messages ─────────────────────────────────────────────────────────
+
+model Conversation {
+  id        String   @id @default(uuid())
+  userAId   String
+  userBId   String
+  eventId   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userA    User              @relation("ConversationUserA", fields: [userAId], references: [id])
+  userB    User              @relation("ConversationUserB", fields: [userBId], references: [id])
+  event    Event?            @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  messages DirectMessage[]
+
+  @@unique([userAId, userBId, eventId])
+  @@index([userAId])
+  @@index([userBId])
+}
+
+model DirectMessage {
+  id             String   @id @default(uuid())
+  conversationId String
+  senderId       String
+  content        String
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
 }
 
 // ─── Moderation ──────────────────────────────────────────────────────────────

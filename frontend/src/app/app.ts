@@ -34,4 +34,8 @@ export class App {
   );
 
   readonly isHome = computed(() => this.url() === '/');
+  readonly isChat = computed(() => {
+    const url = this.url() ?? '';
+    return url.includes('/chat') || url.startsWith('/messages/');
+  });
 }
