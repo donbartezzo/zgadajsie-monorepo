@@ -63,7 +63,9 @@ export type IconName =
   | 'x-twitter'
   | 'whatsapp'
   | 'alert-triangle'
-  | 'help-circle';
+  | 'help-circle'
+  | 'check-circle'
+  | 'list';
 
 export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
 export type IconVariant = 'default' | 'muted' | 'primary' | 'danger';

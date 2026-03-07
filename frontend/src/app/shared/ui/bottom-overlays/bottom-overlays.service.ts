@@ -22,17 +22,20 @@ export class BottomOverlaysService {
   private readonly participantsSignal = signal<Participation[]>([]);
   private readonly loadingSignal = signal(false);
   private readonly isParticipantSignal = signal(false);
+  private readonly participantStatusSignal = signal<string | null>(null);
 
   // Callbacks for event-specific actions
   private joinCallback: (() => void) | null = null;
   private leaveCallback: (() => void) | null = null;
   private authSuccessCallback: (() => void) | null = null;
+  private openChatCallback: (() => void) | null = null;
 
   readonly active = this.activeSignal.asReadonly();
   readonly event = this.eventSignal.asReadonly();
   readonly participants = this.participantsSignal.asReadonly();
   readonly loading = this.loadingSignal.asReadonly();
   readonly isParticipant = this.isParticipantSignal.asReadonly();
+  readonly participantStatus = this.participantStatusSignal.asReadonly();
 
   open(type: OverlayType): void {
     this.activeSignal.set(type);
@@ -62,6 +65,10 @@ export class BottomOverlaysService {
     this.isParticipantSignal.set(value);
   }
 
+  setParticipantStatus(status: string | null): void {
+    this.participantStatusSignal.set(status);
+  }
+
   updateParticipants(participants: Participation[]): void {
     this.participantsSignal.set(participants);
   }
@@ -84,6 +91,10 @@ export class BottomOverlaysService {
     this.authSuccessCallback = callback;
   }
 
+  onOpenChat(callback: () => void): void {
+    this.openChatCallback = callback;
+  }
+
   confirmJoin(): void {
     this.joinCallback?.();
   }
@@ -96,9 +107,14 @@ export class BottomOverlaysService {
     this.authSuccessCallback?.();
   }
 
+  handleOpenChat(): void {
+    this.openChatCallback?.();
+  }
+
   clearCallbacks(): void {
     this.joinCallback = null;
     this.leaveCallback = null;
     this.authSuccessCallback = null;
+    this.openChatCallback = null;
   }
 }

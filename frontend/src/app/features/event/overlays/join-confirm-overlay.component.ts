@@ -156,16 +156,40 @@ import { Event as EventModel, Participation } from '../../../shared/types';
         </div>
         }
 
-        <app-button
-          variant="success"
-          [fullWidth]="true"
-          [loading]="loading()"
-          (clicked)="confirmed.emit()"
-          class="mt-5 block"
-        >
-          <app-icon name="check" size="sm"></app-icon>
-          Potwierdzam uczestnictwo
-        </app-button>
+        <!-- Action buttons -->
+        <div class="mt-5 space-y-3">
+          @if (participantStatus() === 'PENDING_PAYMENT') {
+          <app-button
+            variant="outline"
+            [fullWidth]="true"
+            (clicked)="leaveRequested.emit()"
+            class="block"
+          >
+            <app-icon name="x" size="sm"></app-icon>
+            Anuluj płatność
+          </app-button>
+          } @else {
+          <app-button
+            variant="outline"
+            [fullWidth]="true"
+            (clicked)="leaveRequested.emit()"
+            class="block"
+          >
+            <app-icon name="log-out" size="sm"></app-icon>
+            Wypisz się z wydarzenia
+          </app-button>
+          }
+
+          <app-button
+            variant="primary"
+            [fullWidth]="true"
+            (clicked)="openChat.emit()"
+            class="block"
+          >
+            <app-icon name="message-circle" size="sm"></app-icon>
+            Otwórz czat wydarzenia
+          </app-button>
+        </div>
       </div>
       }
     </app-bottom-overlay>
@@ -180,6 +204,7 @@ export class JoinConfirmOverlayComponent {
   readonly participants = input<Participation[]>([]);
   readonly loading = input(false);
   readonly isParticipant = input(false);
+  readonly participantStatus = input<string | null>(null);
 
   readonly closed = output<void>();
   readonly confirmed = output<void>();

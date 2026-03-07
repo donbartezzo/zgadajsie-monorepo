@@ -395,25 +395,14 @@
           </div>
 
           <!-- Action button -->
-          @if (participantStatus() === 'PENDING_PAYMENT') {
           <app-button
             variant="outline"
             [size]="variant === 'sentinel' ? 'sm' : 'xs'"
-            (clicked)="requestLeave()"
+            (clicked)="openJoinSheet()"
             class="shrink-0"
           >
-            Anuluj płatność
+            Szczegóły
           </app-button>
-          } @else {
-          <app-button
-            variant="outline"
-            [size]="variant === 'sentinel' ? 'sm' : 'xs'"
-            (clicked)="requestLeave()"
-            class="shrink-0"
-          >
-            Wypisz się
-          </app-button>
-          }
         </div>
       </ng-template>
 

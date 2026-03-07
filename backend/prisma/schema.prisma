@@ -118,6 +118,7 @@ model Event {
   address         String
   lat             Float
   lng             Float
+  rules           String?
   isRecurring     Boolean  @default(false)
   recurringRule   String?
   parentEventId   String?

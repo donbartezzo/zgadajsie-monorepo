@@ -22,6 +22,7 @@ export interface Event {
   address: string;
   lat: number;
   lng: number;
+  rules?: string;
   isRecurring: boolean;
   recurringRule?: string;
   parentEventId?: string;

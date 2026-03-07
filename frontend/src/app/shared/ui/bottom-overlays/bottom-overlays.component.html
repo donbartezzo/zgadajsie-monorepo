@@ -15,9 +15,11 @@
   [participants]="overlays.participants()"
   [loading]="overlays.loading()"
   [isParticipant]="overlays.isParticipant()"
+  [participantStatus]="overlays.participantStatus()"
   (closed)="overlays.close()"
   (confirmed)="overlays.confirmJoin()"
   (leaveRequested)="overlays.confirmLeave()"
+  (openChat)="overlays.handleOpenChat()"
 />
 } @case ('leaveConfirm') {
 <app-leave-confirm-overlay

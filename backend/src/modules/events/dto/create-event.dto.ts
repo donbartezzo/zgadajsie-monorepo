@@ -93,4 +93,8 @@ export class CreateEventDto {
   @IsOptional()
   @IsString()
   recurringRule?: string;
+
+  @IsOptional()
+  @IsString()
+  rules?: string;
 }

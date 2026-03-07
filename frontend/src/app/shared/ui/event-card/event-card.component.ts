@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { UserAvatarComponent } from '../user-avatar/user-avatar.component';
@@ -41,6 +41,24 @@ import { EventListItem } from '../../types';
           <app-icon name="map-pin" size="sm" variant="muted" />
           <span class="truncate">{{ event().address }}</span>
         </div>
+
+        @if (rulesList().length > 0) {
+        <div class="text-sm">
+          <div class="flex items-center gap-1 text-gray-600 dark:text-gray-300 font-medium mb-1">
+            <app-icon name="check-circle" size="sm" variant="muted" />
+            Zasady
+          </div>
+          <div class="text-gray-600 dark:text-gray-400 text-xs space-y-0.5 ml-5">
+            @for (rule of rulesList().slice(0, 3); track $index) {
+              <div class="truncate">{{ rule }}</div>
+            }
+            @if (rulesList().length > 3) {
+            <div class="text-gray-500 dark:text-gray-500">...</div>
+            }
+          </div>
+        </div>
+        }
+
         <div
           class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-slate-700"
         >
@@ -81,4 +99,10 @@ import { EventListItem } from '../../types';
 export class EventCardComponent {
   readonly event = input.required<EventListItem>();
   readonly selected = output<EventListItem>();
+
+  readonly rulesList = computed(() => {
+    const rules = this.event().rules;
+    if (!rules?.trim()) return [];
+    return rules.split('\n').filter(r => r.trim());
+  });
 }

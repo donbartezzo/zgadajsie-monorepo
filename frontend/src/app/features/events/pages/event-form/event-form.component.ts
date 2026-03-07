@@ -8,6 +8,7 @@ import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { FileUploadComponent } from '../../../../shared/ui/file-upload/file-upload.component';
 import { MapComponent } from '../../../../shared/ui/map/map.component';
+import { RulesEditorComponent } from '../../../../shared/ui/rules-editor/rules-editor.component';
 import { EventService } from '../../../../core/services/event.service';
 import { MediaService } from '../../../../core/services/media.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
@@ -24,6 +25,7 @@ import { DictionaryItem, City } from '../../../../shared/types';
     CardComponent,
     FileUploadComponent,
     MapComponent,
+    RulesEditorComponent,
   ],
   template: `
     <div class="p-4">
@@ -244,6 +246,15 @@ import { DictionaryItem, City } from '../../../../shared/types';
           </div>
         </app-card>
 
+        <app-card>
+          <div class="p-4">
+            <app-rules-editor 
+              [rules]="eventRules()" 
+              (rulesChange)="onRulesChange($event)"
+            />
+          </div>
+        </app-card>
+
         <div>
           <app-button
             type="submit"
@@ -279,6 +290,7 @@ export class EventFormComponent implements OnInit {
   readonly facilities = signal<DictionaryItem[]>([]);
   readonly levels = signal<DictionaryItem[]>([]);
   readonly cities = signal<City[]>([]);
+  readonly eventRules = signal<any[]>([]);
 
   private coverFile: File | null = null;
   private eventId: string | null = null;
@@ -337,6 +349,7 @@ export class EventFormComponent implements OnInit {
           lat: e.lat,
           lng: e.lng,
         });
+        this.eventRules.set(this.parseRules(e.rules));
         this.mapLat.set(e.lat);
         this.mapLng.set(e.lng);
       });
@@ -353,6 +366,30 @@ export class EventFormComponent implements OnInit {
     this.mapLng.set(pos.lng);
   }
 
+  onRulesChange(rules: any[]): void {
+    this.eventRules.set(rules);
+  }
+
+  formatRules(rules: any[]): string {
+    return rules
+      .filter(rule => rule.text.trim())
+      .map(rule => `${'  '.repeat(rule.indent)}${rule.text}`)
+      .join('\n');
+  }
+
+  parseRules(rulesString?: string): any[] {
+    if (!rulesString) return [];
+    
+    return rulesString
+      .split('\n')
+      .filter(line => line.trim())
+      .map(line => ({
+        id: crypto.randomUUID(),
+        text: line.trim(),
+        indent: (line.length - line.trimStart().length) / 2,
+      }));
+  }
+
   onSubmit(): void {
     if (this.form.invalid) return;
     this.submitting.set(true);
@@ -362,6 +399,7 @@ export class EventFormComponent implements OnInit {
       ...val,
       startsAt: new Date(val.startsAt).toISOString(),
       endsAt: new Date(val.endsAt).toISOString(),
+      rules: this.formatRules(this.eventRules()),
     };
 
     const req$ = this.eventId

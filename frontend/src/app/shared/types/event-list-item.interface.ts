@@ -8,6 +8,7 @@ export interface EventListItem {
   address: string;
   lat: number;
   lng: number;
+  rules?: string;
   gender: string;
   status: string;
   maxParticipants?: number;

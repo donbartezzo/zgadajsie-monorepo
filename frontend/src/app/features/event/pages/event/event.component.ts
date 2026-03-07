@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { IconName, IconComponent } from '../../../../core/icons/icon.component';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
@@ -65,6 +65,7 @@ export class EventComponent implements OnInit, OnDestroy {
   readonly participationSentinel = viewChild<ElementRef<HTMLElement>>('participationSentinel');
   readonly sentinelVisible = signal(true);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
   readonly auth = inject(AuthService);
   private readonly snackbar = inject(SnackbarService);
@@ -135,7 +136,11 @@ export class EventComponent implements OnInit, OnDestroy {
   ];
 
   private get eventId(): string {
-    return this.route.snapshot.paramMap.get('id')!;
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      throw new Error('Event ID is required');
+    }
+    return id;
   }
 
   constructor() {
@@ -151,6 +156,7 @@ export class EventComponent implements OnInit, OnDestroy {
     this.overlays.onJoinConfirmed(() => this.confirmJoin());
     this.overlays.onLeaveConfirmed(() => this.confirmLeave());
     this.overlays.onAuthSuccess(() => this.onAuthSuccess());
+    this.overlays.onOpenChat(() => this.openChat());
 
     // Re-observe sentinel whenever the element appears/disappears (it's inside @if)
     effect(() => {
@@ -236,7 +242,12 @@ export class EventComponent implements OnInit, OnDestroy {
   });
 
   openJoinSheet(): void {
-    this.overlays.open(this.auth.isLoggedIn() ? 'joinConfirm' : 'auth');
+    if (this.auth.isLoggedIn()) {
+      this.overlays.setParticipantStatus(this.participantStatus());
+      this.overlays.open('joinConfirm');
+    } else {
+      this.overlays.open('auth');
+    }
   }
 
   confirmJoin(): void {
@@ -276,6 +287,11 @@ export class EventComponent implements OnInit, OnDestroy {
 
   onAuthSuccess(): void {
     this.overlays.open('joinConfirm');
+  }
+
+  openChat(): void {
+    this.overlays.close();
+    this.router.navigate(['/events', this.eventId, 'chat']);
   }
 
   onFollow(): void {
