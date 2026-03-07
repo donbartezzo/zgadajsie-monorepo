@@ -55,9 +55,9 @@
     </p>
     }
 
-    <!-- Overlapping participant avatars (clickable → opens participants sheet) -->
+    <!-- Overlapping participant avatars (clickable → opens participants page) -->
     @if (participants().length > 0) {
-    <button type="button" class="flex items-center mb-4" (click)="overlays.open('participants')">
+    <a [routerLink]="['/events', e.id, 'participants']" class="flex items-center mb-4">
       <div class="flex items-center -space-x-3">
         @for (p of visibleAvatars(); track p.id; let i = $index) {
         <div
@@ -78,7 +78,7 @@
         {{ participants().length === 1 ? 'uczestnik' : 'uczestników' }}
         }
       </span>
-    </button>
+    </a>
     }
 
     <!-- Divider -->

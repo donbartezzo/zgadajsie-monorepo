@@ -1,0 +1,73 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { EventSubpageLayoutComponent } from '../../../../shared/ui/event-subpage-layout/event-subpage-layout.component';
+import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
+import { IconComponent } from '../../../../core/icons/icon.component';
+import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
+import { EventService } from '../../../../core/services/event.service';
+import { Event as EventModel, Participation } from '../../../../shared/types';
+
+const ACTIVE_STATUSES = ['APPLIED', 'ACCEPTED', 'PARTICIPANT', 'PENDING_PAYMENT'];
+const PENDING_STATUSES = ['RESERVE'];
+const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED', 'BANNED'];
+
+@Component({
+  selector: 'app-event-participants',
+  imports: [
+    EventSubpageLayoutComponent,
+    UserAvatarComponent,
+    IconComponent,
+    LoadingSpinnerComponent,
+  ],
+  templateUrl: './event-participants.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class EventParticipantsComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly eventService = inject(EventService);
+
+  readonly event = signal<EventModel | null>(null);
+  readonly participants = signal<Participation[]>([]);
+  readonly loading = signal(true);
+
+  readonly activeParticipants = computed(() =>
+    this.participants().filter((p) => ACTIVE_STATUSES.includes(p.status)),
+  );
+
+  readonly pendingParticipants = computed(() =>
+    this.participants().filter((p) => PENDING_STATUSES.includes(p.status)),
+  );
+
+  readonly withdrawnParticipants = computed(() =>
+    this.participants().filter((p) => WITHDRAWN_STATUSES.includes(p.status)),
+  );
+
+  readonly subtitle = computed(() => {
+    const count = this.activeParticipants().length;
+    return `${count} ${count === 1 ? 'uczestnik' : 'uczestników'}`;
+  });
+
+  private get eventId(): string {
+    return this.route.snapshot.paramMap.get('id') ?? '';
+  }
+
+  ngOnInit(): void {
+    this.eventService.getEvent(this.eventId).subscribe({
+      next: (e) => this.event.set(e),
+    });
+    this.eventService.getParticipants(this.eventId).subscribe({
+      next: (p) => {
+        this.participants.set(p);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
+  }
+}

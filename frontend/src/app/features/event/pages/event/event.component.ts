@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { IconName, IconComponent } from '../../../../core/icons/icon.component';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
@@ -31,6 +31,7 @@ import { Event as EventModel, Participation } from '../../../../shared/types';
     CommonModule,
     DatePipe,
     DecimalPipe,
+    RouterLink,
     IconComponent,
     ButtonComponent,
     UserAvatarComponent,

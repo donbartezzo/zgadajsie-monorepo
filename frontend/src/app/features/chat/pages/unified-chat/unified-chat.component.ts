@@ -7,10 +7,10 @@ import {
   OnDestroy,
   signal,
 } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { IconComponent } from '../../../../core/icons/icon.component';
-import { EventHeroComponent } from '../../../../shared/ui/event-hero/event-hero.component';
+import { EventSubpageLayoutComponent } from '../../../../shared/ui/event-subpage-layout/event-subpage-layout.component';
 import { ChatService } from '../../../../core/services/chat.service';
 import { EventService } from '../../../../core/services/event.service';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -24,49 +24,33 @@ import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay
 @Component({
   selector: 'app-unified-chat',
   imports: [
-    RouterLink,
     IconComponent,
-    EventHeroComponent,
+    EventSubpageLayoutComponent,
     ChatViewComponent,
     ChatMembersOverlayComponent,
   ],
-  host: { class: 'flex-1 flex flex-col min-h-0', style: '--hero-h: 180px' },
   template: `
-    <app-event-hero [event]="event()" />
-
-    <div
-      class="relative z-10 -mt-6 flex-1 flex flex-col min-h-0 bg-white dark:bg-slate-800 rounded-t-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden"
+    <app-event-subpage-layout
+      [event]="event()"
+      [title]="chatTitle()"
+      [subtitle]="isPrivate ? 'Wiadomość prywatna' : 'Grupowy'"
     >
-      <header
-        class="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-slate-700"
+      <button
+        headerActions
+        type="button"
+        class="relative grid h-8 w-8 place-items-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+        (click)="showMembers.set(true)"
+        aria-label="Uczestnicy"
       >
-        <a [routerLink]="['/events', eventId]" class="text-gray-500 dark:text-gray-400">
-          <app-icon name="arrow-left" size="sm"></app-icon>
-        </a>
-        <div class="flex-1">
-          <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
-            {{ chatTitle() }}
-          </h2>
-          <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-            {{ isPrivate ? 'Wiadomość prywatna' : 'Grupowy' }}
-          </p>
-        </div>
-        <button
-          type="button"
-          class="relative grid h-8 w-8 place-items-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
-          (click)="showMembers.set(true)"
-          aria-label="Uczestnicy"
+        <app-icon name="users" size="sm"></app-icon>
+        @if (memberCount(); as count) {
+        <span
+          class="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-highlight text-[10px] font-bold text-white px-1"
         >
-          <app-icon name="users" size="sm"></app-icon>
-          @if (memberCount(); as count) {
-          <span
-            class="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-highlight text-[10px] font-bold text-white px-1"
-          >
-            {{ count }}
-          </span>
-          }
-        </button>
-      </header>
+          {{ count }}
+        </span>
+        }
+      </button>
 
       <div class="flex-1 flex flex-col min-h-0">
         <app-chat-view
@@ -79,7 +63,7 @@ import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay
           (typing)="onTyping()"
         ></app-chat-view>
       </div>
-    </div>
+    </app-event-subpage-layout>
 
     @if (showMembers()) {
     <app-chat-members-overlay

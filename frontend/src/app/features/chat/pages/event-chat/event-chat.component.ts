@@ -38,25 +38,21 @@ import {
           <app-icon name="arrow-left" size="sm"></app-icon>
         </a>
         <div class="flex-1">
-          <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
-            Chat wydarzenia
-          </h2>
+          <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Chat wydarzenia</h2>
           <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
             Grupowy
           </p>
         </div>
       </header>
 
-      <div class="flex-1 flex flex-col min-h-0">
-        <app-chat-view
-          [messages]="chatViewMessages()"
-          [currentUserId]="currentUserId"
-          [loading]="loading()"
-          [typingUser]="typingUser()"
-          (messageSent)="send($event)"
-          (typing)="onTyping()"
-        ></app-chat-view>
-      </div>
+      <app-chat-view
+        [messages]="chatViewMessages()"
+        [currentUserId]="currentUserId"
+        [loading]="loading()"
+        [typingUser]="typingUser()"
+        (messageSent)="send($event)"
+        (typing)="onTyping()"
+      ></app-chat-view>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

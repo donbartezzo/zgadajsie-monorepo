@@ -1,0 +1,140 @@
+@if (loading()) {
+<app-loading-spinner></app-loading-spinner>
+} @else {
+<app-event-subpage-layout
+  [event]="event()"
+  [title]="'Uczestnicy'"
+  [subtitle]="subtitle()"
+>
+  <div class="px-4 py-4 space-y-6">
+    <!-- ── Uczestnicy (aktywni) ── -->
+    @if (activeParticipants().length > 0) {
+    <section>
+      <div class="flex items-center gap-2 mb-3">
+        <span
+          class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30 px-1.5 text-[10px] font-bold text-green-700 dark:text-green-400"
+        >
+          {{ activeParticipants().length }}
+        </span>
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Uczestnicy</h3>
+      </div>
+      <div class="grid grid-cols-3 gap-3">
+        @for (p of activeParticipants(); track p.id) {
+        <div class="flex flex-col items-center text-center">
+          <div
+            class="w-20 h-20 rounded-2xl overflow-hidden ring-2 ring-green-200 dark:ring-green-800 shadow-sm"
+          >
+            <app-user-avatar
+              [avatarUrl]="p.user?.avatarUrl"
+              [displayName]="p.user?.displayName || ''"
+              size="xl"
+              class="[&>div]:!w-20 [&>div]:!h-20 [&>div]:!rounded-2xl [&_img]:!rounded-2xl [&_div]:!rounded-2xl"
+            ></app-user-avatar>
+          </div>
+          <p
+            class="mt-2 text-xs font-semibold text-gray-900 dark:text-gray-100 truncate max-w-[5.5rem]"
+          >
+            {{ p.user?.displayName || 'Uczestnik' }}
+          </p>
+          <p class="text-[10px] text-green-600 dark:text-green-400">
+            @switch (p.status) {
+              @case ('ACCEPTED') { Zaakceptowany }
+              @case ('PENDING_PAYMENT') { Oczekuje na płatność }
+              @default { Uczestnik }
+            }
+          </p>
+        </div>
+        }
+      </div>
+    </section>
+    }
+
+    <!-- ── Oczekujący (rezerwa) ── -->
+    @if (pendingParticipants().length > 0) {
+    <section>
+      <div class="flex items-center gap-2 mb-3">
+        <span
+          class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30 px-1.5 text-[10px] font-bold text-amber-700 dark:text-amber-400"
+        >
+          {{ pendingParticipants().length }}
+        </span>
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Oczekujący</h3>
+      </div>
+      <div class="grid grid-cols-3 gap-3">
+        @for (p of pendingParticipants(); track p.id) {
+        <div class="flex flex-col items-center text-center">
+          <div
+            class="w-20 h-20 rounded-2xl overflow-hidden ring-2 ring-amber-200 dark:ring-amber-800 shadow-sm"
+          >
+            <app-user-avatar
+              [avatarUrl]="p.user?.avatarUrl"
+              [displayName]="p.user?.displayName || ''"
+              size="xl"
+              class="[&>div]:!w-20 [&>div]:!h-20 [&>div]:!rounded-2xl [&_img]:!rounded-2xl [&_div]:!rounded-2xl"
+            ></app-user-avatar>
+          </div>
+          <p
+            class="mt-2 text-xs font-semibold text-gray-900 dark:text-gray-100 truncate max-w-[5.5rem]"
+          >
+            {{ p.user?.displayName || 'Uczestnik' }}
+          </p>
+          <p class="text-[10px] text-amber-600 dark:text-amber-400">Rezerwa</p>
+        </div>
+        }
+      </div>
+    </section>
+    }
+
+    <!-- ── Wypisani / odrzuceni ── -->
+    @if (withdrawnParticipants().length > 0) {
+    <section>
+      <div class="flex items-center gap-2 mb-3">
+        <span
+          class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 px-1.5 text-[10px] font-bold text-red-700 dark:text-red-400"
+        >
+          {{ withdrawnParticipants().length }}
+        </span>
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Wypisani</h3>
+      </div>
+      <div class="grid grid-cols-3 gap-3">
+        @for (p of withdrawnParticipants(); track p.id) {
+        <div class="flex flex-col items-center text-center opacity-50">
+          <div
+            class="w-20 h-20 rounded-2xl overflow-hidden ring-2 ring-red-200 dark:ring-red-800 shadow-sm"
+          >
+            <app-user-avatar
+              [avatarUrl]="p.user?.avatarUrl"
+              [displayName]="p.user?.displayName || ''"
+              size="xl"
+              class="[&>div]:!w-20 [&>div]:!h-20 [&>div]:!rounded-2xl [&_img]:!rounded-2xl [&_div]:!rounded-2xl"
+            ></app-user-avatar>
+          </div>
+          <p
+            class="mt-2 text-xs font-semibold text-gray-900 dark:text-gray-100 truncate max-w-[5.5rem]"
+          >
+            {{ p.user?.displayName || 'Uczestnik' }}
+          </p>
+          <p class="text-[10px] text-red-500 dark:text-red-400">
+            @switch (p.status) {
+              @case ('WITHDRAWN') { Wypisany }
+              @case ('REJECTED') { Odrzucony }
+              @case ('BANNED') { Zbanowany }
+              @default { Nieaktywny }
+            }
+          </p>
+        </div>
+        }
+      </div>
+    </section>
+    }
+
+    <!-- ── Puste stany ── -->
+    @if (activeParticipants().length === 0 && pendingParticipants().length === 0 && withdrawnParticipants().length === 0) {
+    <div class="flex flex-col items-center justify-center py-12 text-center">
+      <app-icon name="users" size="lg" class="text-gray-300 dark:text-gray-600 mb-3"></app-icon>
+      <p class="text-sm text-gray-400 dark:text-gray-500">Brak uczestników</p>
+    </div>
+    }
+  </div>
+</app-event-subpage-layout>
+}

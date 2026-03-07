@@ -34,13 +34,13 @@ export interface ChatViewMessage {
     UserAvatarComponent,
     LoadingSpinnerComponent,
   ],
-  host: { class: 'flex-1 min-h-0' },
+  host: { class: 'flex-1 min-h-0 pb-[var(--footer-height)]' },
   template: `
-    <div class="overflow-y-auto px-3 py-4 pb-20 space-y-3" style="height: calc(100vh - 290px)" #messagesContainer>
+    <div class="px-4 py-4 space-y-3" #messagesContainer>
       @if (loading()) {
       <app-loading-spinner></app-loading-spinner>
-      } @for (msg of messages(); track msg.id) {
-      @let isInactive = inactiveUsers().has(msg.senderId);
+      } @for (msg of messages(); track msg.id) { @let isInactive =
+      inactiveUsers().has(msg.senderId);
       <div [class]="'flex gap-2 ' + (msg.senderId === currentUserId() ? 'flex-row-reverse' : '')">
         <app-user-avatar
           [avatarUrl]="msg.sender?.avatarUrl"
@@ -56,7 +56,9 @@ export interface ChatViewMessage {
           "
         >
           <div class="flex items-center gap-2 mb-0.5">
-            <p class="text-xs font-medium opacity-70" [class.opacity-40]="isInactive">{{ msg.sender?.displayName }}</p>
+            <p class="text-xs font-medium opacity-70" [class.opacity-40]="isInactive">
+              {{ msg.sender?.displayName }}
+            </p>
             @if (isInactive) {
             <span
               [class]="
@@ -66,10 +68,8 @@ export interface ChatViewMessage {
                   : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300')
               "
             >
-              @switch (inactiveUsers().get(msg.senderId)) {
-                @case ('banned') { Zbanowany na czacie }
-                @case ('withdrawn') { Wypisany z wydarzenia }
-              }
+              @switch (inactiveUsers().get(msg.senderId)) { @case ('banned') { Zbanowany na czacie }
+              @case ('withdrawn') { Wypisany z wydarzenia } }
             </span>
             }
           </div>
@@ -85,9 +85,9 @@ export interface ChatViewMessage {
     }
 
     <div
-      class="fixed bottom-16 inset-x-0 z-20 mx-auto max-w-app border-t border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+      class="fixed bottom-[var(--footer-height)] inset-x-0 z-20 mx-auto max-w-app border-t border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
     >
-      <div class="flex mb-3 gap-2 px-3 py-3">
+      <div class="flex gap-2 px-3 py-3">
         <input
           [(ngModel)]="newMessage"
           (keyup.enter)="send()"
@@ -130,8 +130,6 @@ export class ChatViewComponent {
     if (!this.newMessage.trim()) return;
     this.messageSent.emit(this.newMessage.trim());
     this.newMessage = '';
-    // Also scroll immediately after sending
-    setTimeout(() => this.scrollToBottom(), 150);
   }
 
   onTyping(): void {
@@ -141,7 +139,7 @@ export class ChatViewComponent {
   scrollToBottom(): void {
     const el = this.messagesContainer()?.nativeElement;
     if (el) {
-      el.scrollTop = el.scrollHeight;
+      el.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 }

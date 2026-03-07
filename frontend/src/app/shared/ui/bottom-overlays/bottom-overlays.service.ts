@@ -5,7 +5,6 @@ export type OverlayType =
   | 'share'
   | 'settings'
   | 'map'
-  | 'participants'
   | 'auth'
   | 'joinRules'
   | 'joinConfirm'

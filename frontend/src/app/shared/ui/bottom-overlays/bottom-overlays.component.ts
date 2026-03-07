@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ShareOverlayComponent } from '../../../layout/footer/overlays/share-overlay.component';
 import { SettingsOverlayComponent } from '../../../layout/footer/overlays/settings-overlay.component';
 import { MapOverlayComponent } from '../../../features/event/overlays/map-overlay.component';
-import { ParticipantsOverlayComponent } from '../../../features/event/overlays/participants-overlay.component';
 import { AuthOverlayComponent } from '../../../features/auth/overlays/auth-overlay.component';
 import { JoinRulesOverlayComponent } from '../../../features/event/overlays/join-rules-overlay.component';
 import { JoinConfirmOverlayComponent } from '../../../features/event/overlays/join-confirm-overlay.component';
@@ -16,7 +15,6 @@ import { BottomOverlaysService } from './bottom-overlays.service';
     ShareOverlayComponent,
     SettingsOverlayComponent,
     MapOverlayComponent,
-    ParticipantsOverlayComponent,
     AuthOverlayComponent,
     JoinRulesOverlayComponent,
     JoinConfirmOverlayComponent,

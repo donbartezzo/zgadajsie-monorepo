@@ -4,8 +4,6 @@
 <app-settings-overlay (closed)="overlays.close()" />
 } @case ('map') {
 <app-map-overlay [event]="overlays.event()" (closed)="overlays.close()" />
-} @case ('participants') {
-<app-participants-overlay [participants]="overlays.participants()" (closed)="overlays.close()" />
 } @case ('auth') {
 <app-auth-overlay (closed)="overlays.close()" (authenticated)="overlays.handleAuthSuccess()" />
 } @case ('joinRules') {

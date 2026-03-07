@@ -34,8 +34,9 @@ export class App {
   );
 
   readonly isHome = computed(() => this.url() === '/');
-  readonly isChat = computed(() => {
+
+  readonly isEventSubpage = computed(() => {
     const url = this.url() ?? '';
-    return url.includes('/chat');
+    return url.includes('/chat') || url.includes('/participants');
   });
 }

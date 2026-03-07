@@ -52,6 +52,14 @@ export const appRoutes: Route[] = [
     data: { title: 'Zarządzanie' },
   },
   {
+    path: 'events/:id/participants',
+    loadComponent: () =>
+      import('./features/event/pages/event-participants/event-participants.component').then(
+        (m) => m.EventParticipantsComponent,
+      ),
+    data: { title: 'Uczestnicy' },
+  },
+  {
     path: 'events/:id/chat',
     loadComponent: () =>
       import('./features/chat/pages/unified-chat/unified-chat.component').then(
