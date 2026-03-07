@@ -1,3 +1,4 @@
+export * from './common.interface';
 export * from './user.interface';
 export * from './event.interface';
 export * from './event-list-item.interface';

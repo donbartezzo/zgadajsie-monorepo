@@ -87,6 +87,7 @@ import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay
       [isOrganizer]="isOrganizer()"
       [organizerId]="organizerId()"
       [otherUserId]="isPrivate ? otherUserId : ''"
+      [currentUserId]="currentUserId"
       (closed)="showMembers.set(false)"
       (memberBanned)="onMemberBanned($event)"
       (memberUnbanned)="onMemberUnbanned($event)"

@@ -1,3 +1,5 @@
+import { UserBrief, EventRef } from './common.interface';
+
 export interface OrganizerVoucher {
   id: string;
   recipientUserId: string;
@@ -9,12 +11,12 @@ export interface OrganizerVoucher {
   status: string;
   expiresAt?: string;
   createdAt: string;
-  organizer?: { id: string; displayName: string; avatarUrl?: string };
-  event?: { id: string; title: string };
+  organizer?: UserBrief;
+  event?: EventRef;
 }
 
 export interface OrganizerVoucherGroup {
-  organizer: { id: string; displayName: string; avatarUrl: string | null };
+  organizer: UserBrief;
   totalBalance: number;
   vouchers: OrganizerVoucher[];
 }

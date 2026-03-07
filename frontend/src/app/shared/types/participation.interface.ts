@@ -1,3 +1,5 @@
+import { UserBrief } from './common.interface';
+
 export interface Participation {
   id: string;
   eventId: string;
@@ -16,9 +18,5 @@ export interface Participation {
     endsAt: string;
     status: string;
   };
-  user?: {
-    id: string;
-    displayName: string;
-    avatarUrl?: string;
-  };
+  user?: UserBrief;
 }

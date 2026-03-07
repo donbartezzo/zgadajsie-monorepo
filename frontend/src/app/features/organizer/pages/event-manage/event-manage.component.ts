@@ -10,14 +10,14 @@ import { EventService } from '../../../../core/services/event.service';
 import { ModerationService } from '../../../../core/services/moderation.service';
 import { PaymentService } from '../../../../core/services/payment.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { Participation } from '../../../../shared/types';
+import { Participation, UserBrief } from '../../../../shared/types';
 
 interface EarningItem {
   id: string;
   amount: number;
   organizerAmount: number;
   paidAt?: string;
-  user?: { id: string; displayName: string; avatarUrl?: string };
+  user?: UserBrief;
 }
 
 @Component({

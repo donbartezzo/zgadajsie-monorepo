@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AvatarUrl } from '../../types';
 
 export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -8,7 +9,7 @@ export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
   imports: [CommonModule],
   template: `
     <div class="relative inline-flex items-center justify-center shrink-0" [ngClass]="sizeClass()">
-      @if (avatarUrl()) {
+      @if (hasAvatar()) {
       <img
         [src]="avatarUrl()"
         [alt]="displayName()"
@@ -36,11 +37,16 @@ export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserAvatarComponent {
-  readonly avatarUrl = input<string | null | undefined>(null);
+  readonly avatarUrl = input<AvatarUrl>(null);
   readonly displayName = input('');
   readonly size = input<AvatarSize>('md');
   readonly rank = input<string | null>(null);
   readonly isNew = input(false);
+
+  readonly hasAvatar = computed(() => {
+    const url = this.avatarUrl();
+    return url !== null && url !== undefined && url.trim() !== '';
+  });
 
   readonly initials = computed(() => {
     const name = this.displayName();

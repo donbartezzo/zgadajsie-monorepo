@@ -13,17 +13,14 @@ import { IconComponent } from '../../../core/icons/icon.component';
 import { ButtonComponent } from '../button/button.component';
 import { UserAvatarComponent } from '../user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.component';
+import { UserBrief } from '../../types';
 
 export interface ChatViewMessage {
   id: string;
   senderId: string;
   content: string;
   createdAt: string;
-  sender?: {
-    id: string;
-    displayName: string;
-    avatarUrl?: string;
-  };
+  sender?: UserBrief;
 }
 
 @Component({

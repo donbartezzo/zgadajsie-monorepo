@@ -1,3 +1,6 @@
+import { DictionaryItem } from './dictionary.interface';
+import { UserBrief } from './common.interface';
+
 export interface Event {
   id: string;
   title: string;
@@ -29,10 +32,10 @@ export interface Event {
   createdAt: string;
   updatedAt: string;
 
-  discipline?: { id: string; name: string; slug: string };
-  facility?: { id: string; name: string; slug: string };
-  level?: { id: string; name: string; slug: string };
-  city?: { id: string; name: string; slug: string };
-  organizer?: { id: string; displayName: string; avatarUrl?: string };
+  discipline?: DictionaryItem;
+  facility?: DictionaryItem;
+  level?: DictionaryItem;
+  city?: DictionaryItem;
+  organizer?: UserBrief;
   _count?: { participations: number };
 }

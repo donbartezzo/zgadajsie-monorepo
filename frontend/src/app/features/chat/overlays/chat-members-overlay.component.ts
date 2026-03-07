@@ -30,7 +30,7 @@ import { ChatMember, ChatMembersResponse } from '../../../shared/types';
       <div class="py-8 flex justify-center">
         <app-loading-spinner></app-loading-spinner>
       </div>
-      } @else { @if (organizer(); as org) {
+      } @else { @if (showOrganizerSection() && organizer(); as org) {
       <div class="flex items-center gap-3 p-3 mb-2 rounded-xl bg-highlight/5">
         <app-user-avatar
           [avatarUrl]="org.avatarUrl"
@@ -101,12 +101,14 @@ export class ChatMembersOverlayComponent implements OnInit {
   readonly isOrganizer = input(false);
   readonly organizerId = input('');
   readonly otherUserId = input('');
+  readonly currentUserId = input.required<string>();
   readonly closed = output<void>();
   readonly memberBanned = output<string>();
   readonly memberUnbanned = output<string>();
 
   readonly members = signal<ChatMember[]>([]);
   readonly organizer = signal<ChatMembersResponse['organizer'] | null>(null);
+  readonly showOrganizerSection = signal(true);
   readonly loading = signal(true);
   readonly activeCount = signal(0);
   readonly totalCount = signal(0);
@@ -121,15 +123,40 @@ export class ChatMembersOverlayComponent implements OnInit {
         this.organizer.set(res.organizer);
 
         const privateUserId = this.otherUserId();
-        const filtered = privateUserId
-          ? res.members.filter((m) => m.user.id === privateUserId)
-          : res.members;
+        const currentUserId = this.currentUserId();
+        let filtered: typeof res.members;
+        let showOrganizer = true;
+
+        if (privateUserId) {
+          // For private chat, show both users: current user and the other user
+          const currentUserInMembers = res.members.find((m) => m.user.id === currentUserId);
+          const otherUserInMembers = res.members.find((m) => m.user.id === privateUserId);
+          
+          filtered = [];
+          
+          // Add current user if found in members
+          if (currentUserInMembers) {
+            filtered.push(currentUserInMembers);
+          }
+          
+          // Add other user if found in members
+          if (otherUserInMembers) {
+            filtered.push(otherUserInMembers);
+          }
+          
+          // Don't show separate organizer section if the other user is the organizer
+          showOrganizer = privateUserId !== res.organizer.id;
+        } else {
+          // For group chat, show all members
+          filtered = res.members;
+        }
 
         this.members.set(filtered);
+        this.showOrganizerSection.set(showOrganizer);
 
         // Check if organizer is already in members (has participation)
         const organizerInMembers = res.members.some((m) => m.user.id === res.organizer.id);
-        const organizerBonus = organizerInMembers ? 0 : 1;
+        const organizerBonus = organizerInMembers || !showOrganizer ? 0 : 1;
 
         this.activeCount.set(filtered.filter((m) => m.isActive).length + organizerBonus);
         this.totalCount.set(filtered.length + organizerBonus);

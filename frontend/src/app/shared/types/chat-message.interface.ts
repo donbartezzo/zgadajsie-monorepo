@@ -1,3 +1,5 @@
+import { UserBrief } from './common.interface';
+
 export interface ChatMessage {
   id: string;
   eventId: string;
@@ -5,11 +7,7 @@ export interface ChatMessage {
   content: string;
   createdAt: string;
 
-  user?: {
-    id: string;
-    displayName: string;
-    avatarUrl?: string;
-  };
+  user?: UserBrief;
 }
 
 export interface PaginatedMessages {
@@ -27,16 +25,8 @@ export interface PrivateChatMessage {
   content: string;
   createdAt: string;
 
-  sender?: {
-    id: string;
-    displayName: string;
-    avatarUrl?: string;
-  };
-  recipient?: {
-    id: string;
-    displayName: string;
-    avatarUrl?: string;
-  };
+  sender?: UserBrief;
+  recipient?: UserBrief;
 }
 
 export interface PaginatedPrivateMessages {
@@ -47,11 +37,7 @@ export interface PaginatedPrivateMessages {
 }
 
 export interface ChatMember {
-  user: {
-    id: string;
-    displayName: string;
-    avatarUrl?: string;
-  };
+  user: UserBrief;
   status: string;
   isActive: boolean;
   isBanned: boolean;
@@ -60,21 +46,12 @@ export interface ChatMember {
 }
 
 export interface ChatMembersResponse {
-  organizer: {
-    id: string;
-    displayName: string;
-    avatarUrl?: string;
-    isOrganizer: true;
-  };
+  organizer: UserBrief & { isOrganizer: true };
   members: ChatMember[];
 }
 
 export interface OrganizerConversation {
-  participant: {
-    id: string;
-    displayName: string;
-    avatarUrl?: string;
-  };
+  participant: UserBrief;
   lastMessage: {
     content: string;
     createdAt: string;

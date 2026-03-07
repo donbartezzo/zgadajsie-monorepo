@@ -1,3 +1,5 @@
+import { UserBriefWithEmail, EventRef } from './common.interface';
+
 export interface Payment {
   id: string;
   participationId: string;
@@ -16,8 +18,8 @@ export interface Payment {
   createdAt: string;
   updatedAt: string;
 
-  event?: { id: string; title: string };
-  user?: { id: string; displayName: string; email: string; avatarUrl?: string };
+  event?: EventRef;
+  user?: UserBriefWithEmail;
 }
 
 export interface PaginatedPayments {
