@@ -1,7 +1,7 @@
 @if (isLoading()) {
 <app-loading-spinner></app-loading-spinner>
 } @else if (event(); as e) {
-<app-event-hero [event]="e" [subtitle]="heroSubtitle()">
+<app-event-hero [event]="e">
   @if (!isParticipant() && !isOrganizer()) {
   <div class="absolute bottom-14 right-4">
     <button
@@ -318,18 +318,12 @@
                 variant === 'sentinel' ? 'text-md' : 'text-xs'
               }}"
             >
-              @if (participantStatus() === 'PENDING_PAYMENT') {
-                Oczekuje na płatność!
-              } @else {
-                Jesteś już zapisany!
-              }
+              @if (participantStatus() === 'PENDING_PAYMENT') { Oczekuje na płatność! } @else {
+              Jesteś już zapisany! }
             </p>
-            <p class="text-[11px] text-gray-400 dark:text-gray-500">
-              @if (participantStatus() === 'PENDING_PAYMENT') {
-                Rozpocząłeś proces płatności za to wydarzenie.
-              } @else {
-                Dołączyłeś do tego wydarzenia.
-              }
+            <p class="text-[10px] text-gray-400 dark:text-gray-500">
+              @if (participantStatus() === 'PENDING_PAYMENT') { Rozpocząłeś proces płatności za to
+              wydarzenie. } @else { Dołączyłeś do tego wydarzenia. }
             </p>
           </div>
 
@@ -359,7 +353,9 @@
 
       <!-- Fixed sticky bar — visible only when inline card scrolls out of viewport -->
       @if (!sentinelVisible()) {
-      <div class="fixed bottom-[72px] inset-x-0 z-30 max-w-app mx-auto animate-slide-up-bar">
+      <div
+        class="fixed bottom-[var(--footer-height)] inset-x-0 z-30 max-w-app mx-auto animate-slide-up-bar"
+      >
         <div
           class="bg-green-100 border border-green-200 px-3 py-1 dark:bg-slate-800 dark:border-slate-600 dark:ring-slate-700"
         >
@@ -393,7 +389,11 @@
           <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">Czat grupowy</p>
           <p class="text-[10px] text-gray-400 dark:text-gray-500">Porozmawiaj z uczestnikami</p>
         </div>
-        <app-icon name="chevron-right" size="sm" class="text-gray-300 dark:text-gray-600"></app-icon>
+        <app-icon
+          name="chevron-right"
+          size="sm"
+          class="text-gray-300 dark:text-gray-600"
+        ></app-icon>
       </button>
     </div>
     }

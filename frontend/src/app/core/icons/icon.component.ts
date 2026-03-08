@@ -352,6 +352,7 @@ export class IconComponent {
   readonly name = input.required<IconName>();
   readonly size = input<IconSize>('md');
   readonly variant = input<IconVariant>('default');
+  readonly class = input<string>('');
 
   readonly sizePx = computed(() => {
     switch (this.size()) {
@@ -368,6 +369,11 @@ export class IconComponent {
   });
 
   readonly colorClass = computed(() => {
+    const customClass = this.class();
+    if (customClass) {
+      return customClass;
+    }
+    
     switch (this.variant()) {
       case 'muted':
         return 'text-gray-400 dark:text-gray-500';

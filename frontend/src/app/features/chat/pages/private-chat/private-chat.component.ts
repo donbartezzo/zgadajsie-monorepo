@@ -23,7 +23,7 @@ import {
 @Component({
   selector: 'app-private-chat',
   imports: [RouterLink, IconComponent, EventHeroComponent, ChatViewComponent],
-  host: { class: 'flex-1 flex flex-col min-h-0', style: '--hero-h: 180px' },
+  host: { class: 'flex-1 flex flex-col min-h-0' },
   template: `
     <app-event-hero [event]="event()" />
 
@@ -82,7 +82,11 @@ export class PrivateChatComponent implements OnInit, OnDestroy {
       content: msg.content,
       createdAt: msg.createdAt,
       sender: msg.sender
-        ? { id: msg.sender.id, displayName: msg.sender.displayName, avatarUrl: msg.sender.avatarUrl }
+        ? {
+            id: msg.sender.id,
+            displayName: msg.sender.displayName,
+            avatarUrl: msg.sender.avatarUrl,
+          }
         : undefined,
     })),
   );

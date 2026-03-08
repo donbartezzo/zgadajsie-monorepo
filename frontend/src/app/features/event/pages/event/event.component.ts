@@ -58,7 +58,6 @@ import { Event as EventModel, Participation } from '../../../../shared/types';
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { style: '--hero-h: 300px' },
 })
 export class EventComponent implements OnInit, OnDestroy {
   private countdownInterval: ReturnType<typeof setInterval> | null = null;
@@ -91,11 +90,7 @@ export class EventComponent implements OnInit, OnDestroy {
     return e.address;
   });
 
-  readonly heroSubtitle = computed(() => {
-    const count = this.participants().length;
-    return `${count} ${count === 1 ? 'uczestnik' : 'uczestników'}`;
-  });
-
+  
   readonly genderLabel = computed(() => {
     const g = this.event()?.gender;
     if (!g || g === 'ANY') return 'Wszyscy';
@@ -292,9 +287,7 @@ export class EventComponent implements OnInit, OnDestroy {
           const userId = this.auth.currentUser()?.id;
           if (userId) {
             this.participants.update((prev) =>
-              prev.map((pp) =>
-                pp.userId === userId ? { ...pp, status: 'ACCEPTED' } : pp,
-              ),
+              prev.map((pp) => (pp.userId === userId ? { ...pp, status: 'ACCEPTED' } : pp)),
             );
           }
           return;

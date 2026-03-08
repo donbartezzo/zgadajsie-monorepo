@@ -23,7 +23,7 @@ import {
 @Component({
   selector: 'app-event-chat',
   imports: [RouterLink, IconComponent, EventHeroComponent, ChatViewComponent],
-  host: { class: 'flex-1 flex flex-col min-h-0', style: '--hero-h: 180px' },
+  host: { class: 'flex-1 flex flex-col min-h-0' },
   template: `
     <app-event-hero [event]="event()" />
 

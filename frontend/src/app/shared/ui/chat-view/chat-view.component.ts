@@ -139,7 +139,7 @@ export class ChatViewComponent {
   scrollToBottom(): void {
     const el = this.messagesContainer()?.nativeElement;
     if (el) {
-      el.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }
 }

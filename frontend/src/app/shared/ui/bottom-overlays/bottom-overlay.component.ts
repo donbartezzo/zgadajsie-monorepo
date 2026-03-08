@@ -7,7 +7,7 @@ import { IconComponent } from '../../../core/icons/icon.component';
   imports: [CommonModule, IconComponent],
   template: `
     @if (open()) {
-    <div class="fixed inset-x-0 top-0 bottom-16 z-50 flex flex-col justify-end max-w-app mx-auto">
+    <div class="fixed inset-x-0 top-0 bottom-16 z-[60] flex flex-col justify-end max-w-app mx-auto">
       <!-- Backdrop -->
       <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="closed.emit()"></div>
 
@@ -24,7 +24,7 @@ import { IconComponent } from '../../../core/icons/icon.component';
           <!-- Close button - absolutely positioned -->
           <button
             type="button"
-            class="absolute top-3 right-4 grid h-8 w-8 place-items-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700"
+            class="absolute top-1 right-3 grid h-8 w-8 place-items-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700"
             (click)="closed.emit()"
             aria-label="Zamknij"
           >

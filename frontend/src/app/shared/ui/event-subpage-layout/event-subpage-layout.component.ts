@@ -7,10 +7,10 @@ import { Event as EventModel } from '../../types';
 @Component({
   selector: 'app-event-subpage-layout',
   imports: [RouterLink, IconComponent, EventHeroComponent],
-  host: {
-    class: 'flex-1 flex flex-col min-h-0',
-    style: '--hero-h: 180px; --content-h: calc(100vh - var(--hero-h))',
-  },
+  // host: {
+  //   class: 'flex-1 flex flex-col min-h-0',
+  //   style: '--hero-h: 180px; --content-h: calc(100vh - var(--hero-h))',
+  // },
   template: `
     <app-event-hero [event]="event()" />
 
