@@ -52,6 +52,16 @@ import { AdminService } from '../../../../core/services/admin.service';
             </div></app-card
           ></a
         >
+        <a routerLink="/admin/cover-images"
+          ><app-card
+            ><div class="p-4 flex items-center gap-3">
+              <app-icon name="image" size="sm"></app-icon>
+              <span class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                >Galeria cover images</span
+              >
+            </div></app-card
+          ></a
+        >
         <a routerLink="/admin/settings"
           ><app-card
             ><div class="p-4 flex items-center gap-3">

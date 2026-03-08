@@ -1,10 +1,11 @@
 import { DictionaryItem } from './dictionary.interface';
 import { UserBrief } from './common.interface';
+import { CoverImage } from './cover-image.interface';
 
 export interface EventListItem {
   id: string;
   title: string;
-  coverImageUrl?: string;
+  coverImageId?: string;
   startsAt: string;
   endsAt: string;
   costPerPerson: number;
@@ -21,5 +22,6 @@ export interface EventListItem {
   level?: DictionaryItem;
   city?: DictionaryItem;
   organizer?: UserBrief;
+  coverImage?: CoverImage;
   _count?: { participations: number };
 }

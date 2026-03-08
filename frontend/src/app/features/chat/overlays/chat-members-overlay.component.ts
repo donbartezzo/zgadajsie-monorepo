@@ -8,7 +8,6 @@ import {
   signal,
 } from '@angular/core';
 import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
-import { IconComponent } from '../../../core/icons/icon.component';
 import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../shared/ui/loading-spinner/loading-spinner.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
@@ -19,7 +18,6 @@ import { ChatMember, ChatMembersResponse } from '../../../shared/types';
   selector: 'app-chat-members-overlay',
   imports: [
     BottomOverlayComponent,
-    IconComponent,
     UserAvatarComponent,
     LoadingSpinnerComponent,
     ButtonComponent,

@@ -14,11 +14,12 @@ body {
 
 // ── App shell: single source of truth for app max-width ──
 $app-max-width: 700px;
+$cover-image-height: 250px;
 
 :root {
   --app-max-width: #{$app-max-width};
   --footer-height: 70px;
-  --hero-h: 250px;
+  --hero-h: #{$cover-image-height};
 }
 
 .app {

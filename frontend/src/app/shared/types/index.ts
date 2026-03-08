@@ -8,3 +8,4 @@ export * from './voucher.interface';
 export * from './chat-message.interface';
 export * from './notification.interface';
 export * from './dictionary.interface';
+export * from './cover-image.interface';

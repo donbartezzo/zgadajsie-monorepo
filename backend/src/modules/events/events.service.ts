@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
 import { VouchersService } from '../vouchers/vouchers.service';
+import { CoverImagesService } from '../cover-images/cover-images.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
@@ -14,17 +15,24 @@ export class EventsService {
     private emailService: EmailService,
     private pushService: PushService,
     private vouchersService: VouchersService,
+    private coverImagesService: CoverImagesService,
   ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
+    const coverImageId = await this.resolveCoverImageId(
+      dto.coverImageId,
+      dto.disciplineId,
+    );
+
     return this.prisma.event.create({
       data: {
         ...dto,
         startsAt: new Date(dto.startsAt),
         endsAt: new Date(dto.endsAt),
         organizerId,
+        coverImageId,
       },
-      include: { discipline: true, facility: true, level: true, city: true },
+      include: { discipline: true, facility: true, level: true, city: true, coverImage: true },
     });
   }
 
@@ -53,6 +61,7 @@ export class EventsService {
           facility: true,
           level: true,
           city: true,
+          coverImage: true,
           organizer: { select: { id: true, displayName: true, avatarUrl: true } },
           _count: { select: { participations: true } },
         },
@@ -71,6 +80,7 @@ export class EventsService {
         facility: true,
         level: true,
         city: true,
+        coverImage: true,
         organizer: { select: { id: true, displayName: true, avatarUrl: true } },
         participations: {
           include: {
@@ -241,7 +251,7 @@ export class EventsService {
           address: dto.address,
           lat: dto.lat,
           lng: dto.lng,
-          coverImageUrl: dto.coverImageUrl,
+          coverImageId: dto.coverImageId,
           organizerId,
           isRecurring: true,
           recurringRule: dto.recurringRule,
@@ -279,6 +289,17 @@ export class EventsService {
     }
 
     return parent;
+  }
+
+  private async resolveCoverImageId(
+    coverImageId: string | undefined,
+    disciplineId: string,
+  ): Promise<string | undefined> {
+    if (coverImageId) {
+      return coverImageId;
+    }
+    const random = await this.coverImagesService.findRandomByDiscipline(disciplineId);
+    return random?.id;
   }
 
   private generateRecurringDates(

@@ -1,11 +1,12 @@
 import { DictionaryItem } from './dictionary.interface';
 import { UserBrief } from './common.interface';
+import { CoverImage } from './cover-image.interface';
 
 export interface Event {
   id: string;
   title: string;
   description?: string;
-  coverImageUrl?: string;
+  coverImageId?: string;
   disciplineId: string;
   facilityId: string;
   levelId: string;
@@ -37,5 +38,6 @@ export interface Event {
   level?: DictionaryItem;
   city?: DictionaryItem;
   organizer?: UserBrief;
+  coverImage?: CoverImage;
   _count?: { participations: number };
 }

@@ -208,6 +208,15 @@ export const appRoutes: Route[] = [
     data: { title: 'Wydarzenia (admin)' },
   },
   {
+    path: 'admin/cover-images',
+    loadComponent: () =>
+      import('./features/admin/pages/admin-cover-images/admin-cover-images.component').then(
+        (m) => m.AdminCoverImagesComponent,
+      ),
+    canActivate: [adminGuard],
+    data: { title: 'Galeria cover images' },
+  },
+  {
     path: 'admin/settings',
     loadComponent: () =>
       import('./features/admin/pages/admin-settings/admin-settings.component').then(

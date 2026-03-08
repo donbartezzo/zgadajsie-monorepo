@@ -10,11 +10,10 @@ import {
   signal,
 } from '@angular/core';
 import { Event } from '../../types';
-import { IconComponent } from '../../../core/icons/icon.component';
 
 @Component({
   selector: 'app-event-hero',
-  imports: [IconComponent],
+  imports: [],
   host: { class: 'block relative w-full shrink-0', style: 'height: var(--hero-h)' },
   template: `
     @let e = event(); @let hidden = heroHidden();
@@ -66,8 +65,8 @@ import { IconComponent } from '../../../core/icons/icon.component';
       </div>
       } @else {
       <!-- Hero content -->
-      @if (e?.coverImageUrl) {
-      <img [src]="e!.coverImageUrl" [alt]="e!.title" class="h-full w-full object-cover" />
+      @if (e?.coverImage?.url) {
+      <img [src]="e!.coverImage!.url" [alt]="e!.title" class="h-full w-full object-cover" />
       } @else {
       <div
         class="h-full w-full bg-gradient-to-br from-highlight-light to-highlight flex items-center justify-center"

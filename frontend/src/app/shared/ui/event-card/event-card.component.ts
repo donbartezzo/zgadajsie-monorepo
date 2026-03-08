@@ -12,8 +12,8 @@ import { EventListItem } from '../../types';
       class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200"
       (click)="selected.emit(event())"
     >
-      @if (event().coverImageUrl) {
-      <img [src]="event().coverImageUrl" [alt]="event().title" class="w-full h-40 object-cover" />
+      @if (event().coverImage?.url) {
+      <img [src]="event().coverImage!.url" [alt]="event().title" class="w-full h-40 object-cover" />
       } @else {
       <div
         class="w-full h-40 bg-gradient-to-br from-highlight-light to-highlight flex items-center justify-center"

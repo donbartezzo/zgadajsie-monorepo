@@ -84,7 +84,7 @@ export class CreateEventDto {
 
   @IsOptional()
   @IsString()
-  coverImageUrl?: string;
+  coverImageId?: string;
 
   @IsOptional()
   @IsBoolean()

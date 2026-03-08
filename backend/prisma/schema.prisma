@@ -77,7 +77,23 @@ model EventDiscipline {
   name String
   slug String @unique
 
-  events Event[]
+  events      Event[]
+  coverImages CoverImage[]
+}
+
+// ─── Cover Images (shared gallery) ──────────────────────────────────────────
+
+model CoverImage {
+  id           String   @id @default(uuid())
+  disciplineId String
+  url          String
+  originalName String
+  createdAt    DateTime @default(now())
+
+  discipline EventDiscipline @relation(fields: [disciplineId], references: [id])
+  events     Event[]
+
+  @@index([disciplineId])
 }
 
 model EventFacility {
@@ -102,7 +118,7 @@ model Event {
   id              String   @id @default(uuid())
   title           String
   description     String?
-  coverImageUrl   String?
+  coverImageId    String?
   disciplineId    String
   facilityId      String
   levelId         String
@@ -129,6 +145,7 @@ model Event {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  coverImage    CoverImage?          @relation(fields: [coverImageId], references: [id])
   discipline    EventDiscipline      @relation(fields: [disciplineId], references: [id])
   facility      EventFacility        @relation(fields: [facilityId], references: [id])
   level         EventLevel           @relation(fields: [levelId], references: [id])

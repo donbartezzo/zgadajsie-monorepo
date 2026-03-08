@@ -1,9 +1,25 @@
-autoInstallPeers: true
-strictPeerDependencies: false
-
 packages:
-  - 'backend'
-  - 'frontend'
-  - 'libs'
-  - 'backend-e2e'
-  - 'frontend-e2e'
+  - backend
+  - frontend
+  - libs
+  - backend-e2e
+  - frontend-e2e
+
+autoInstallPeers: true
+
+ignoredBuiltDependencies:
+  - '@nestjs/core'
+  - '@parcel/watcher'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@tailwindcss/oxide'
+  - bcrypt
+  - esbuild
+  - lmdb
+  - msgpackr-extract
+  - nx
+  - prisma
+  - sharp
+  - unrs-resolver
+
+strictPeerDependencies: false

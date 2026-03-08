@@ -6,14 +6,13 @@ import { forkJoin } from 'rxjs';
 import { IconComponent } from '../../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
-import { FileUploadComponent } from '../../../../shared/ui/file-upload/file-upload.component';
 import { MapComponent } from '../../../../shared/ui/map/map.component';
 import { RulesEditorComponent } from '../../../../shared/ui/rules-editor/rules-editor.component';
 import { EventService } from '../../../../core/services/event.service';
-import { MediaService } from '../../../../core/services/media.service';
+import { CoverImageService } from '../../../../core/services/cover-image.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { DictionaryItem, City, Event } from '../../../../shared/types';
+import { DictionaryItem, City, Event, CoverImage } from '../../../../shared/types';
 
 @Component({
   selector: 'app-event-form',
@@ -23,7 +22,6 @@ import { DictionaryItem, City, Event } from '../../../../shared/types';
     IconComponent,
     ButtonComponent,
     CardComponent,
-    FileUploadComponent,
     MapComponent,
     RulesEditorComponent,
   ],
@@ -56,16 +54,6 @@ import { DictionaryItem, City, Event } from '../../../../shared/types';
                 class="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-highlight"
                 placeholder="Opis wydarzenia..."
               ></textarea>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                >Grafika</label
-              >
-              <app-file-upload
-                accept="image/*"
-                [maxSizeMb]="5"
-                (fileSelected)="onCoverSelected($event)"
-              ></app-file-upload>
             </div>
           </div>
         </app-card>
@@ -310,6 +298,60 @@ import { DictionaryItem, City, Event } from '../../../../shared/types';
           </div>
         </app-card>
 
+        <!-- Cover image gallery -->
+        <app-card>
+          <div class="p-4 space-y-3">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Grafika wydarzenia</h3>
+            @if (!form.get('disciplineId')?.value) {
+            <p class="text-xs text-gray-400 dark:text-gray-500">
+              Najpierw wybierz dyscyplinę, aby zobaczyć dostępne grafiki.
+            </p>
+            } @else if (coverImagesLoading()) {
+            <div class="flex items-center justify-center py-6">
+              <div
+                class="h-6 w-6 animate-spin rounded-full border-2 border-highlight border-t-transparent"
+              ></div>
+            </div>
+            } @else if (coverImages().length === 0) {
+            <p class="text-xs text-gray-400 dark:text-gray-500">
+              Brak dostępnych grafik dla wybranej dyscypliny.
+            </p>
+            } @else {
+            <div class="grid grid-cols-2 gap-2">
+              @for (cover of coverImages(); track cover.id) {
+              <button
+                type="button"
+                [class]="
+                  'relative overflow-hidden rounded-xl border-2 transition-all ' +
+                  (selectedCoverImageId() === cover.id
+                    ? 'border-highlight ring-2 ring-highlight/30'
+                    : 'border-gray-200 dark:border-slate-600 hover:border-gray-400 dark:hover:border-slate-500')
+                "
+                (click)="selectCoverImage(cover)"
+              >
+                <img
+                  [src]="cover.url"
+                  [alt]="cover.originalName"
+                  class="w-full aspect-[700/250] object-cover"
+                />
+                @if (selectedCoverImageId() === cover.id) {
+                <div
+                  class="absolute inset-0 bg-highlight/20 flex items-center justify-center"
+                >
+                  <div
+                    class="rounded-full bg-highlight p-1"
+                  >
+                    <app-icon name="check" size="sm" class="text-white" />
+                  </div>
+                </div>
+                }
+              </button>
+              }
+            </div>
+            }
+          </div>
+        </app-card>
+
         <div>
           <app-button
             type="submit"
@@ -332,7 +374,7 @@ export class EventFormComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
-  private readonly mediaService = inject(MediaService);
+  private readonly coverImageService = inject(CoverImageService);
   private readonly dictService = inject(DictionaryService);
   private readonly snackbar = inject(SnackbarService);
 
@@ -346,8 +388,10 @@ export class EventFormComponent implements OnInit {
   readonly levels = signal<DictionaryItem[]>([]);
   readonly cities = signal<City[]>([]);
   readonly eventRules = signal<any[]>([]);
+  readonly coverImages = signal<CoverImage[]>([]);
+  readonly coverImagesLoading = signal(false);
+  readonly selectedCoverImageId = signal<string | null>(null);
 
-  private coverFile: File | null = null;
   private eventId: string | null = null;
 
   readonly form = this.fb.group({
@@ -385,6 +429,16 @@ export class EventFormComponent implements OnInit {
       this.cities.set(cities);
     });
 
+    // Watch discipline changes to load cover images
+    this.form.get('disciplineId')?.valueChanges.subscribe((disciplineId) => {
+      if (disciplineId) {
+        this.loadCoverImages(disciplineId);
+      } else {
+        this.coverImages.set([]);
+        this.selectedCoverImageId.set(null);
+      }
+    });
+
     this.eventId = this.route.snapshot.paramMap.get('id');
     if (this.eventId) {
       this.isEdit.set(true);
@@ -417,12 +471,16 @@ export class EventFormComponent implements OnInit {
         this.eventRules.set(this.parseRules(e.rules));
         this.mapLat.set(e.lat);
         this.mapLng.set(e.lng);
+
+        if (e.coverImageId) {
+          this.selectedCoverImageId.set(e.coverImageId);
+        }
       });
     }
   }
 
-  onCoverSelected(file: File): void {
-    this.coverFile = file;
+  selectCoverImage(cover: CoverImage): void {
+    this.selectedCoverImageId.set(cover.id);
   }
 
   onMarkerMoved(pos: { lat: number; lng: number }): void {
@@ -481,6 +539,7 @@ export class EventFormComponent implements OnInit {
       lat: val.lat || undefined,
       lng: val.lng || undefined,
       rules: this.formatRules(this.eventRules()),
+      coverImageId: this.selectedCoverImageId() || undefined,
     };
 
     const req$ = this.eventId
@@ -489,9 +548,6 @@ export class EventFormComponent implements OnInit {
 
     req$.subscribe({
       next: (created) => {
-        if (this.coverFile) {
-          this.mediaService.upload(this.coverFile).subscribe();
-        }
         this.snackbar.success(this.isEdit() ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone');
         this.router.navigate(['/events', created.id]);
         this.submitting.set(false);
@@ -499,6 +555,26 @@ export class EventFormComponent implements OnInit {
       error: (err) => {
         this.snackbar.error(err?.error?.message || 'Nie udało się zapisać');
         this.submitting.set(false);
+      },
+    });
+  }
+
+  private loadCoverImages(disciplineId: string): void {
+    this.coverImagesLoading.set(true);
+    this.coverImageService.getAll(disciplineId).subscribe({
+      next: (images) => {
+        this.coverImages.set(images);
+        this.coverImagesLoading.set(false);
+
+        // Auto-select random if nothing selected and images available
+        if (!this.selectedCoverImageId() && images.length > 0) {
+          const randomIdx = Math.floor(Math.random() * images.length);
+          this.selectedCoverImageId.set(images[randomIdx].id);
+        }
+      },
+      error: () => {
+        this.coverImages.set([]);
+        this.coverImagesLoading.set(false);
       },
     });
   }
