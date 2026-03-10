@@ -18,10 +18,10 @@ import { Event } from '../../types';
   template: `
     @let e = event(); @let hidden = heroHidden();
 
-    <!-- Date badge — always visible, high z-index -->
+    <!-- Date badge — fixed, always visible, constrained to max-w-app -->
     @if (e) {
-    <div class="fixed top-2 right-2 z-[51] mx-auto max-w-app">
-      <div class="overflow-hidden rounded-lg bg-white shadow-xl text-center dark:bg-slate-800">
+    <div class="fixed top-2 inset-x-0 z-[51] mx-auto max-w-app flex justify-end pointer-events-none px-2">
+      <div class="overflow-hidden rounded-lg bg-white shadow-xl text-center dark:bg-slate-800 pointer-events-auto">
         <span
           class="block bg-highlight px-3 py-0.5 text-[10px] font-semibold uppercase leading-tight text-white"
           >{{ month() }}</span
