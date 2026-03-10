@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Param, Query, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Query, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { IsActiveGuard } from '../auth/guards/is-active.guard';
@@ -29,18 +29,17 @@ export class ChatController {
     @Param('eventId') eventId: string,
     @Param('userId') userId: string,
     @CurrentUser() user: AuthUser,
-    @Body('reason') reason?: string,
   ) {
-    return this.chatService.banUser(eventId, userId, user.id, reason);
+    return this.chatService.banUser(eventId, userId, user.id);
   }
 
   @Delete('ban/:userId')
   unbanUser(
     @Param('eventId') eventId: string,
     @Param('userId') userId: string,
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() _user: AuthUser,
   ) {
-    return this.chatService.unbanUser(eventId, userId, user.id);
+    return this.chatService.unbanUser(eventId, userId);
   }
 
   @Get('private/conversations')

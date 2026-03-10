@@ -32,6 +32,11 @@ export class ChatService {
   }
 
   async createMessage(eventId: string, userId: string, content: string) {
+    const hasAccess = await this.hasEventAccess(eventId, userId);
+    if (!hasAccess) {
+      throw new ForbiddenException('Brak dostępu do czatu grupowego');
+    }
+
     return this.prisma.chatMessage.create({
       data: { eventId, userId, content },
       include: { user: { select: USER_SELECT } },
@@ -183,30 +188,19 @@ export class ChatService {
     if (!event) {
       throw new NotFoundException('Wydarzenie nie istnieje');
     }
-
     const participations = await this.prisma.eventParticipation.findMany({
       where: { eventId },
-      select: {
-        userId: true,
-        status: true,
-        user: { select: USER_SELECT },
-      },
+      include: { user: { select: USER_SELECT } },
     });
-
-    const bans = await this.prisma.chatBan.findMany({
-      where: { eventId },
-      select: { userId: true, reason: true },
-    });
-    const banMap = new Map(bans.map((b) => [b.userId, b.reason]));
 
     const members = participations.map((p) => {
-      const isBanned = banMap.has(p.userId);
+      const isBanned = p.isChatBanned;
       const isWithdrawn = p.status === 'WITHDRAWN';
       const isActive = !isBanned && !isWithdrawn && CHAT_ALLOWED_STATUSES.includes(p.status);
 
       let inactiveReason: string | null = null;
       if (isBanned) {
-        inactiveReason = banMap.get(p.userId) ?? 'Zbanowany na czacie';
+        inactiveReason = 'Zbanowany na czacie';
       } else if (isWithdrawn) {
         inactiveReason = 'Wypisany z wydarzenia';
       }
@@ -222,18 +216,14 @@ export class ChatService {
     });
 
     return {
-      organizer: { ...event.organizer, isOrganizer: true },
-      members: members.sort((a, b) => {
-        if (a.isActive && !b.isActive) return -1;
-        if (!a.isActive && b.isActive) return 1;
-        return 0;
-      }),
+      organizer: { ...event.organizer, isOrganizer: true as const },
+      members,
     };
   }
 
   // ─── Chat Ban ─────────────────────────────────────────────────────────────
 
-  async banUser(eventId: string, userId: string, bannedByUserId: string, reason?: string) {
+  async banUser(eventId: string, userId: string, _bannedByUserId: string) {
     const event = await this.prisma.event.findUnique({
       where: { id: eventId },
       select: { organizerId: true },
@@ -241,62 +231,37 @@ export class ChatService {
 
     if (!event) {
       throw new NotFoundException('Wydarzenie nie istnieje');
-    }
-    if (event.organizerId !== bannedByUserId) {
-      throw new ForbiddenException('Tylko organizator może banować na czacie');
     }
     if (event.organizerId === userId) {
       throw new ForbiddenException('Nie można zbanować organizatora');
     }
 
-    return this.prisma.chatBan.upsert({
+    return this.prisma.eventParticipation.update({
       where: { eventId_userId: { eventId, userId } },
-      create: { eventId, userId, bannedByUserId, reason },
-      update: { reason, bannedByUserId },
+      data: { isChatBanned: true },
     });
   }
 
-  async unbanUser(eventId: string, userId: string, requesterId: string) {
-    const event = await this.prisma.event.findUnique({
-      where: { id: eventId },
-      select: { organizerId: true },
-    });
-
-    if (!event) {
-      throw new NotFoundException('Wydarzenie nie istnieje');
-    }
-    if (event.organizerId !== requesterId) {
-      throw new ForbiddenException('Tylko organizator może odbanować na czacie');
-    }
-
-    return this.prisma.chatBan.deleteMany({
-      where: { eventId, userId },
-    });
-  }
-
-  private async isChatBanned(eventId: string, userId: string): Promise<boolean> {
-    const ban = await this.prisma.chatBan.findUnique({
+  async unbanUser(eventId: string, userId: string) {
+    return this.prisma.eventParticipation.update({
       where: { eventId_userId: { eventId, userId } },
+      data: { isChatBanned: false },
     });
-    return !!ban;
   }
 
   // ─── Access checks ─────────────────────────────────────────────────────────
 
-  async hasEventAccess(eventId: string, userId: string): Promise<boolean> {
-    const event = await this.prisma.event.findUnique({
-      where: { id: eventId },
-      select: { organizerId: true },
-    });
-    if (!event) return false;
-    if (event.organizerId === userId) return true;
-
-    if (await this.isChatBanned(eventId, userId)) return false;
-
+  private async hasEventAccess(eventId: string, userId: string): Promise<boolean> {
     const participation = await this.prisma.eventParticipation.findUnique({
       where: { eventId_userId: { eventId, userId } },
     });
-    return !!participation && CHAT_ALLOWED_STATUSES.includes(participation.status);
+
+    if (!participation) return false;
+    if (participation.isChatBanned) return false;
+    if (!CHAT_ALLOWED_STATUSES.includes(participation.status)) return false;
+
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    return event?.organizerId === userId || true; // Organizer always has access
   }
 
   private async validatePrivateChatAccess(
@@ -304,21 +269,21 @@ export class ChatService {
     userId: string,
     otherUserId: string,
   ): Promise<void> {
-    const event = await this.prisma.event.findUnique({
-      where: { id: eventId },
-      select: { organizerId: true },
+    const participation = await this.prisma.eventParticipation.findUnique({
+      where: { eventId_userId: { eventId, userId } },
+      include: { event: { select: { organizerId: true } } },
     });
 
-    if (!event) {
-      throw new NotFoundException('Wydarzenie nie istnieje');
+    if (!participation) {
+      throw new ForbiddenException('Użytkownik nie jest uczestnikiem tego wydarzenia');
     }
 
     if (userId === otherUserId) {
       throw new ForbiddenException('Nie można wysłać wiadomości do siebie');
     }
 
-    const isOrganizer = event.organizerId === userId;
-    const otherIsOrganizer = event.organizerId === otherUserId;
+    const isOrganizer = participation.event.organizerId === userId;
+    const otherIsOrganizer = participation.event.organizerId === otherUserId;
 
     if (!isOrganizer && !otherIsOrganizer) {
       throw new ForbiddenException(
@@ -326,18 +291,12 @@ export class ChatService {
       );
     }
 
-    const participantId = isOrganizer ? otherUserId : userId;
-
-    if (await this.isChatBanned(eventId, participantId)) {
-      throw new ForbiddenException('Użytkownik jest zbanowany na czacie tego wydarzenia');
-    }
-
-    const participation = await this.prisma.eventParticipation.findUnique({
-      where: { eventId_userId: { eventId, userId: participantId } },
-    });
-
-    if (!participation || !CHAT_ALLOWED_STATUSES.includes(participation.status)) {
-      throw new ForbiddenException('Użytkownik nie jest uczestnikiem tego wydarzenia');
+    // Banned participant can always chat with organizer
+    // Only check status for non-banned participants
+    if (!participation.isChatBanned && !isOrganizer) {
+      if (!CHAT_ALLOWED_STATUSES.includes(participation.status)) {
+        throw new ForbiddenException('Użytkownik nie jest uczestnikiem tego wydarzenia');
+      }
     }
   }
 }

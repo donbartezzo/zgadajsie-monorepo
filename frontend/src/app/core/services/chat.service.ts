@@ -23,6 +23,8 @@ export class ChatService {
   private typingSubject = new Subject<{ userId: string; displayName: string }>();
   private privateMessageSubject = new Subject<PrivateChatMessage>();
   private privateTypingSubject = new Subject<{ userId: string; displayName: string }>();
+  private errorMessageSubject = new Subject<{ type: string; message: string }>();
+  private chatBannedSubject = new Subject<boolean>();
 
   // ─── Group Chat ─────────────────────────────────────────────────────────────
 
@@ -38,6 +40,10 @@ export class ChatService {
 
     this.socket.on('userTyping', (data: { userId: string; displayName: string }) => {
       this.typingSubject.next(data);
+    });
+
+    this.socket.on('errorMessage', (data: { type: string; message: string }) => {
+      this.errorMessageSubject.next(data);
     });
   }
 
@@ -148,8 +154,8 @@ export class ChatService {
     );
   }
 
-  banUser(eventId: string, userId: string, reason?: string): Observable<unknown> {
-    return this.http.post(`${environment.apiUrl}/events/${eventId}/chat/ban/${userId}`, { reason });
+  banUser(eventId: string, userId: string): Observable<unknown> {
+    return this.http.post(`${environment.apiUrl}/events/${eventId}/chat/ban/${userId}`, {});
   }
 
   unbanUser(eventId: string, userId: string): Observable<unknown> {
@@ -157,6 +163,14 @@ export class ChatService {
   }
 
   // ─── Shared ─────────────────────────────────────────────────────────────────
+
+  onErrorMessage(): Observable<{ type: string; message: string }> {
+    return this.errorMessageSubject.asObservable();
+  }
+
+  onChatBanned(): Observable<boolean> {
+    return this.chatBannedSubject.asObservable();
+  }
 
   disconnect(): void {
     if (this.socket) {
@@ -166,11 +180,21 @@ export class ChatService {
   }
 
   private createSocket(): Socket {
-    return io(`${environment.wsUrl}/chat`, {
+    const socket = io(`${environment.wsUrl}/chat`, {
       auth: {
         token: this.authService.getAccessToken(),
         userId: this.authService.currentUser()?.id,
       },
     });
+
+    // Handle connection errors (e.g., banned user trying to join)
+    socket.on('connect_error', (error: unknown) => {
+      const err = error as { message?: string };
+      if (err.message?.includes('Brak dostępu do czatu grupowego')) {
+        this.chatBannedSubject.next(true);
+      }
+    });
+
+    return socket;
   }
 }

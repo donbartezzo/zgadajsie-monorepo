@@ -118,6 +118,6 @@ export class OrganizerChatsOverlayComponent implements OnInit {
 
   openChat(participantId: string): void {
     this.closed.emit();
-    this.router.navigate(['/events', this.eventId(), 'chat', participantId]);
+    this.router.navigate(['/events', this.eventId(), 'host-chat', participantId]);
   }
 }

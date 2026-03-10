@@ -41,8 +41,6 @@ model User {
   reprimandsReceived Reprimand[]         @relation("ReprimandTo")
   organizerBans     OrganizerBan[]       @relation("OrganizerBanOrganizer")
   bannedByOrganizers OrganizerBan[]      @relation("OrganizerBanBanned")
-  chatBans          ChatBan[]            @relation("ChatBanUser")
-  chatBansIssued    ChatBan[]            @relation("ChatBanBannedBy")
   notifications     Notification[]
   pushSubscriptions PushSubscription[]
   eventLimit        UserEventLimit?
@@ -161,7 +159,6 @@ model Event {
   payments        Payment[]            @relation("EventPayments")
   paymentIntents  PaymentIntent[]      @relation("EventPaymentIntents")
   issuedVouchers  OrganizerVoucher[]
-  chatBans        ChatBan[]
 
   @@index([cityId, status, startsAt])
 }
@@ -173,6 +170,7 @@ model EventParticipation {
   eventId       String
   userId        String
   status        String   @default("APPLIED")
+  isChatBanned  Boolean  @default(false)
   addedByUserId String?
   isGuest       Boolean  @default(false)
   createdAt     DateTime @default(now())
@@ -288,7 +286,7 @@ model ChatMessage {
   @@index([eventId, createdAt])
 }
 
-// ─── Private Chat (Organizer ↔ Participant, per Event) ──────────────────────
+// ─── Private Chat (Organizer Participant, per Event) ──────────────────────
 
 model PrivateChatMessage {
   id          String   @id @default(uuid())
@@ -304,24 +302,6 @@ model PrivateChatMessage {
 
   @@index([eventId, senderId, recipientId, createdAt])
   @@index([eventId, recipientId, senderId, createdAt])
-}
-
-// ─── Chat Bans ───────────────────────────────────────────────────────────────
-
-model ChatBan {
-  id             String   @id @default(uuid())
-  eventId        String
-  userId         String
-  bannedByUserId String
-  reason         String?
-  createdAt      DateTime @default(now())
-
-  event    Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user     User  @relation("ChatBanUser", fields: [userId], references: [id])
-  bannedBy User  @relation("ChatBanBannedBy", fields: [bannedByUserId], references: [id])
-
-  @@unique([eventId, userId])
-  @@index([eventId])
 }
 
 // ─── Moderation ──────────────────────────────────────────────────────────────

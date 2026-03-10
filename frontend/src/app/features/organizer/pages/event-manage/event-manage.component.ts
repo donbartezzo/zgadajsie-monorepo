@@ -282,7 +282,7 @@ export class EventManageComponent implements OnInit {
   }
 
   openChat(userId: string): void {
-    this.router.navigate(['/events', this.eventId, 'chat', userId]);
+    this.router.navigate(['/events', this.eventId, 'host-chat', userId]);
   }
 
   onRefundMoney(paymentId: string): void {

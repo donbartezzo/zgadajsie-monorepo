@@ -7,7 +7,7 @@ import {
   OnDestroy,
   signal,
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { IconComponent } from '../../../../core/icons/icon.component';
 import { EventSubpageLayoutComponent } from '../../../../shared/ui/event-subpage-layout/event-subpage-layout.component';
@@ -20,6 +20,7 @@ import {
   ChatViewMessage,
 } from '../../../../shared/ui/chat-view/chat-view.component';
 import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay.component';
+import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 
 @Component({
   selector: 'app-unified-chat',
@@ -35,6 +36,7 @@ import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay
       [title]="chatTitle()"
       [subtitle]="isPrivate ? 'Wiadomość prywatna' : 'Grupowy'"
     >
+      @if (!chatDisabled()) {
       <button
         headerActions
         type="button"
@@ -51,6 +53,7 @@ import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay
         </span>
         }
       </button>
+      }
 
       <div class="flex-1 flex flex-col min-h-0">
         <app-chat-view
@@ -59,6 +62,9 @@ import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay
           [loading]="loading()"
           [typingUser]="typingUser()"
           [inactiveUsers]="inactiveUsers()"
+          [disabled]="!isPrivate && chatDisabled()"
+          [eventId]="eventId"
+          [organizerId]="organizerId()"
           (messageSent)="send($event)"
           (typing)="onTyping()"
         ></app-chat-view>
@@ -82,9 +88,11 @@ import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay
 })
 export class UnifiedChatComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly chatService = inject(ChatService);
   private readonly eventService = inject(EventService);
   private readonly auth = inject(AuthService);
+  private readonly snackbar = inject(SnackbarService);
 
   readonly event = signal<EventModel | null>(null);
   readonly groupMessages = signal<ChatMessage[]>([]);
@@ -97,6 +105,8 @@ export class UnifiedChatComponent implements OnInit, OnDestroy {
   readonly organizerId = signal('');
   readonly memberCount = signal(0);
   readonly inactiveUsers = signal<Map<string, 'banned' | 'withdrawn'>>(new Map());
+  readonly chatBanned = signal(false);
+  readonly chatDisabled = signal(false);
 
   eventId = '';
   otherUserId = '';
@@ -139,13 +149,14 @@ export class UnifiedChatComponent implements OnInit, OnDestroy {
 
   private msgSub!: Subscription;
   private typingSub!: Subscription;
+  private errorSub!: Subscription;
+  private bannedSub!: Subscription;
   private typingTimeout: ReturnType<typeof setTimeout> | undefined;
 
   ngOnInit(): void {
     this.eventId = this.route.snapshot.paramMap.get('id') ?? '';
-    this.otherUserId = this.route.snapshot.paramMap.get('userId') ?? '';
     this.currentUserId = this.auth.currentUser()?.id ?? '';
-    this.isPrivate = !!this.otherUserId;
+    this.isPrivate = !!this.route.snapshot.data['isPrivate'];
 
     this.eventService.getEvent(this.eventId).subscribe({
       next: (e) => {
@@ -154,19 +165,28 @@ export class UnifiedChatComponent implements OnInit, OnDestroy {
         this.isOrganizer.set(e.organizerId === this.currentUserId);
 
         if (this.isPrivate) {
-          const isOrg = e.organizer?.id === this.currentUserId;
+          const isOrg = e.organizerId === this.currentUserId;
+
           if (!isOrg) {
-            this.otherUserName.set(e.organizer?.displayName ?? 'Organizator');
+            this.router.navigate(['/events', this.eventId, 'host-chat']);
+            return;
           }
+
+          this.otherUserId = this.route.snapshot.paramMap.get('userId') ?? '';
+
+          if (!this.otherUserId || this.otherUserId === this.currentUserId) {
+            this.router.navigate(['/events', this.eventId, 'host-chat']);
+            return;
+          }
+
+          this.initPrivateChat();
         }
       },
     });
 
     this.loadMemberCount();
 
-    if (this.isPrivate) {
-      this.initPrivateChat();
-    } else {
+    if (!this.isPrivate) {
       this.initGroupChat();
     }
   }
@@ -175,6 +195,8 @@ export class UnifiedChatComponent implements OnInit, OnDestroy {
     this.chatService.disconnect();
     this.msgSub?.unsubscribe();
     this.typingSub?.unsubscribe();
+    this.errorSub?.unsubscribe();
+    this.bannedSub?.unsubscribe();
     if (this.typingTimeout) {
       clearTimeout(this.typingTimeout);
     }
@@ -209,22 +231,32 @@ export class UnifiedChatComponent implements OnInit, OnDestroy {
       next: (res) => {
         if (this.isPrivate) {
           this.memberCount.set(2);
-        } else {
+        } else if (res?.members) {
           // Check if organizer is already in members (has participation)
           const organizerInMembers = res.members.some((m) => m.user.id === res.organizer.id);
           this.memberCount.set(res.members.length + (organizerInMembers ? 0 : 1));
         }
 
-        // Build inactive users map
-        const inactiveMap = new Map<string, 'banned' | 'withdrawn'>();
-        res.members.forEach((m) => {
-          if (m.isBanned) {
-            inactiveMap.set(m.user.id, 'banned');
-          } else if (m.isWithdrawn) {
-            inactiveMap.set(m.user.id, 'withdrawn');
+        // Build inactive users map and check if current user is banned
+        if (res?.members) {
+          const inactiveMap = new Map<string, 'banned' | 'withdrawn'>();
+          res.members.forEach((m) => {
+            if (m.isBanned) {
+              inactiveMap.set(m.user.id, 'banned');
+            } else if (m.isWithdrawn) {
+              inactiveMap.set(m.user.id, 'withdrawn');
+            }
+          });
+          this.inactiveUsers.set(inactiveMap);
+
+          const currentUserBanned = res.members.some(
+            (m) => m.user.id === this.currentUserId && m.isBanned,
+          );
+          if (currentUserBanned && !this.isPrivate) {
+            this.chatBanned.set(true);
+            this.chatDisabled.set(true);
           }
-        });
-        this.inactiveUsers.set(inactiveMap);
+        }
       },
     });
   }
@@ -238,7 +270,12 @@ export class UnifiedChatComponent implements OnInit, OnDestroy {
         this.loading.set(false);
         this.setOtherUserNameFromMessages(res.data);
       },
-      error: () => this.loading.set(false),
+      error: (err) => {
+        this.loading.set(false);
+        const msg = err?.error?.message || 'Brak dostępu do tego czatu';
+        this.snackbar.error(msg);
+        this.router.navigate(['/events', this.eventId]);
+      },
     });
 
     this.chatService.connectPrivate(this.eventId, this.otherUserId);
@@ -258,7 +295,16 @@ export class UnifiedChatComponent implements OnInit, OnDestroy {
         this.groupMessages.set(res.data);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: (err) => {
+        this.loading.set(false);
+        if (err?.error?.message?.includes('Brak dostępu do czatu grupowego')) {
+          this.chatBanned.set(true);
+          this.chatDisabled.set(true);
+          this.snackbar.error('Jesteś zbanowany na czacie tego wydarzenia');
+        } else {
+          this.snackbar.error('Nie udało się załadować czatu');
+        }
+      },
     });
 
     this.chatService.connect(this.eventId);
@@ -270,6 +316,22 @@ export class UnifiedChatComponent implements OnInit, OnDestroy {
     this.typingSub = this.chatService.onTyping().subscribe((data) => {
       if (data.userId !== this.currentUserId) {
         this.handleTypingIndicator(data);
+      }
+    });
+
+    this.errorSub = this.chatService.onErrorMessage().subscribe((data) => {
+      if (data.type === 'sendMessage' && data.message?.includes('Brak dostępu do czatu grupowego')) {
+        this.snackbar.error('Jesteś zbanowany na czacie tego wydarzenia');
+      } else if (data.message) {
+        this.snackbar.error(data.message);
+      }
+    });
+
+    this.bannedSub = this.chatService.onChatBanned().subscribe((banned) => {
+      if (banned) {
+        this.chatBanned.set(true);
+        this.chatDisabled.set(true);
+        this.snackbar.error('Jesteś zbanowany na czacie tego wydarzenia');
       }
     });
   }

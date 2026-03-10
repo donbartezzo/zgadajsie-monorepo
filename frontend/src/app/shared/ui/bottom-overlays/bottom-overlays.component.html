@@ -37,11 +37,4 @@
   (closed)="overlays.close()"
   (confirmed)="overlays.confirmLeave()"
 />
-} @case ('organizerChats') {
-@if (overlays.event(); as ev) {
-<app-organizer-chats-overlay
-  [eventId]="ev.id"
-  (closed)="overlays.close()"
-/>
-}
 } }

@@ -37,6 +37,6 @@ export class App {
 
   readonly isEventSubpage = computed(() => {
     const url = this.url() ?? '';
-    return url.includes('/chat') || url.includes('/participants');
+    return url.includes('/chat') || url.includes('/host-chat') || url.includes('/participants');
   });
 }

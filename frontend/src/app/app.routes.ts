@@ -69,13 +69,22 @@ export const appRoutes: Route[] = [
     data: { title: 'Czat' },
   },
   {
-    path: 'events/:id/chat/:userId',
+    path: 'events/:id/host-chat',
+    loadComponent: () =>
+      import('./features/chat/pages/host-chat/host-chat.component').then(
+        (m) => m.HostChatComponent,
+      ),
+    canActivate: [authGuard, activeGuard],
+    data: { title: 'Konwersacje' },
+  },
+  {
+    path: 'events/:id/host-chat/:userId',
     loadComponent: () =>
       import('./features/chat/pages/unified-chat/unified-chat.component').then(
         (m) => m.UnifiedChatComponent,
       ),
     canActivate: [authGuard, activeGuard],
-    data: { title: 'Wiadomość prywatna' },
+    data: { title: 'Wiadomość prywatna', isPrivate: true },
   },
   {
     path: 'auth/login',

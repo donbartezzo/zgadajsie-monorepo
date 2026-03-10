@@ -6,7 +6,6 @@ import { AuthOverlayComponent } from '../../../features/auth/overlays/auth-overl
 import { JoinRulesOverlayComponent } from '../../../features/event/overlays/join-rules-overlay.component';
 import { JoinConfirmOverlayComponent } from '../../../features/event/overlays/join-confirm-overlay.component';
 import { LeaveConfirmOverlayComponent } from '../../../features/event/overlays/leave-confirm-overlay.component';
-import { OrganizerChatsOverlayComponent } from '../../../features/event/overlays/organizer-chats-overlay.component';
 import { BottomOverlaysService } from './bottom-overlays.service';
 
 @Component({
@@ -19,7 +18,6 @@ import { BottomOverlaysService } from './bottom-overlays.service';
     JoinRulesOverlayComponent,
     JoinConfirmOverlayComponent,
     LeaveConfirmOverlayComponent,
-    OrganizerChatsOverlayComponent,
   ],
   templateUrl: './bottom-overlays.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

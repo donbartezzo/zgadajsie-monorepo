@@ -40,12 +40,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
-    @ConnectedSocket() _client: Socket,
+    @ConnectedSocket() client: Socket,
     @MessageBody() data: { eventId: string; userId: string; content: string },
   ) {
-    const message = await this.chatService.createMessage(data.eventId, data.userId, data.content);
-    this.server.to(`event-${data.eventId}`).emit('newMessage', message);
-    return message;
+    try {
+      const message = await this.chatService.createMessage(data.eventId, data.userId, data.content);
+      this.server.to(`event-${data.eventId}`).emit('newMessage', message);
+      return message;
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      client.emit('errorMessage', {
+        type: 'sendMessage',
+        message: err.message || 'Nie udało się wysłać wiadomości',
+      });
+      return { error: err.message || 'Nie udało się wysłać wiadomości' };
+    }
   }
 
   @SubscribeMessage('typing')

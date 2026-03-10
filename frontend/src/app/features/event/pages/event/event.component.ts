@@ -317,14 +317,14 @@ export class EventComponent implements OnInit, OnDestroy {
   }
 
   openOrganizerChats(): void {
-    this.overlays.open('organizerChats');
+    this.router.navigate(['/events', this.eventId, 'host-chat']);
   }
 
   contactOrganizer(): void {
     const organizerId = this.event()?.organizerId;
     if (!organizerId) return;
     this.overlays.close();
-    this.router.navigate(['/events', this.eventId, 'chat', organizerId]);
+    this.router.navigate(['/events', this.eventId, 'host-chat']);
   }
 
   async requestLeave(): Promise<void> {

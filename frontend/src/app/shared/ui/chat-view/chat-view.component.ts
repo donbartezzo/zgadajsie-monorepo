@@ -2,11 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  inject,
   input,
   output,
   viewChild,
   effect,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../core/icons/icon.component';
@@ -36,6 +38,30 @@ export interface ChatViewMessage {
   ],
   host: { class: 'flex-1 min-h-0 pb-[var(--footer-height)]' },
   template: `
+    @if (disabled()) {
+    <div class="flex flex-col items-center justify-center h-full px-6 text-center gap-4 mt-4">
+      <div class="flex items-center justify-center w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30">
+        <app-icon name="shield-alert" size="lg" class="text-red-500 dark:text-red-400"></app-icon>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+        Zostałeś zbanowany na czacie
+      </h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+        Nie masz dostępu do czatu grupowego tego wydarzenia.
+        W celu wyjaśnienia skontaktuj się z organizatorem.
+      </p>
+      @if (eventId() && organizerId()) {
+      <button
+        type="button"
+        class="mt-2 inline-flex items-center gap-2 rounded-xl bg-highlight px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-highlight/90 transition-colors"
+        (click)="navigateToOrganizer()"
+      >
+        <app-icon name="send" size="sm"></app-icon>
+        Napisz do organizatora
+      </button>
+      }
+    </div>
+    } @else {
     <div class="px-4 py-4 space-y-3" #messagesContainer>
       @if (loading()) {
       <app-loading-spinner></app-loading-spinner>
@@ -100,15 +126,21 @@ export interface ChatViewMessage {
         </app-button>
       </div>
     </div>
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatViewComponent {
+  private readonly router = inject(Router);
+
   readonly messages = input.required<ChatViewMessage[]>();
   readonly currentUserId = input.required<string>();
   readonly loading = input(false);
   readonly typingUser = input<string | null>(null);
   readonly inactiveUsers = input<Map<string, 'banned' | 'withdrawn'>>(new Map());
+  readonly disabled = input(false);
+  readonly eventId = input('');
+  readonly organizerId = input('');
 
   readonly messageSent = output<string>();
   readonly typing = output<void>();
@@ -134,6 +166,10 @@ export class ChatViewComponent {
 
   onTyping(): void {
     this.typing.emit();
+  }
+
+  navigateToOrganizer(): void {
+    this.router.navigate(['/events', this.eventId(), 'host-chat']);
   }
 
   scrollToBottom(): void {
