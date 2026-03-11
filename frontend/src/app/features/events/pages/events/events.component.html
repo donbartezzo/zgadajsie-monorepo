@@ -1,9 +1,12 @@
-<section class="py-6 p-3">
-  <header class="mb-4">
-    <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100">Wydarzenia</h1>
-    <p class="text-sm text-gray-500 dark:text-gray-400">Znajdź coś dla siebie</p>
-  </header>
+<!-- Layout slots (auto-registered via directives) -->
 
+<ng-template appLayoutSlot="overlay">
+  <h1 class="text-lg font-extrabold text-white leading-tight">Wydarzenia</h1>
+  <p class="text-xs text-white/80 mt-0.5">Znajdź coś dla siebie</p>
+</ng-template>
+
+<!-- Content -->
+<section class="py-6 p-3">
   @if (isLoading() && events().length === 0) {
   <app-loading-spinner></app-loading-spinner>
   } @else if (error()) {

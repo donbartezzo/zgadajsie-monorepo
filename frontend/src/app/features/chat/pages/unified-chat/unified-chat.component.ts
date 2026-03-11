@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   OnInit,
   OnDestroy,
@@ -10,7 +11,8 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { IconComponent } from '../../../../core/icons/icon.component';
-import { EventSubpageLayoutComponent } from '../../../../shared/ui/event-subpage-layout/event-subpage-layout.component';
+import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
+import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 import { ChatService } from '../../../../core/services/chat.service';
 import { EventService } from '../../../../core/services/event.service';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -26,21 +28,26 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
   selector: 'app-unified-chat',
   imports: [
     IconComponent,
-    EventSubpageLayoutComponent,
+    LayoutSlotDirective,
     ChatViewComponent,
     ChatMembersOverlayComponent,
   ],
   template: `
-    <app-event-subpage-layout
-      [event]="event()"
-      [title]="chatTitle()"
-      [subtitle]="isPrivate ? 'Wiadomość prywatna' : 'Grupowy'"
-    >
-      @if (!chatDisabled()) {
+    <ng-template appLayoutSlot="overlay">
+      <h1 class="text-lg font-extrabold text-white leading-tight">{{ chatTitle() }}</h1>
+      <p class="text-xs text-white/80 mt-0.5">{{ isPrivate ? 'Wiadomość prywatna' : 'Grupowy' }}</p>
+    </ng-template>
+
+    <ng-template appLayoutSlot="miniBar">
+      <p class="text-xs font-bold text-gray-900 truncate">{{ chatTitle() }}</p>
+      <p class="text-[10px] text-gray-400 mt-0.5">{{ isPrivate ? 'Wiadomość prywatna' : 'Grupowy' }}</p>
+    </ng-template>
+
+    @if (!chatDisabled()) {
+    <div class="flex justify-end px-4 py-2">
       <button
-        headerActions
         type="button"
-        class="relative grid h-8 w-8 place-items-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+        class="relative grid h-8 w-8 place-items-center rounded-full text-gray-400 hover:bg-gray-100 transition-colors"
         (click)="showMembers.set(true)"
         aria-label="Uczestnicy"
       >
@@ -53,24 +60,24 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         </span>
         }
       </button>
-      }
+    </div>
+    }
 
-      <div class="flex-1 flex flex-col min-h-0">
-        <app-chat-view
-          [messages]="chatViewMessages()"
-          [currentUserId]="currentUserId"
-          [loading]="loading()"
-          [typingUser]="typingUser()"
-          [inactiveUsers]="inactiveUsers()"
-          [disabled]="!isPrivate && chatDisabled()"
-          [eventId]="eventId"
-          [organizerId]="organizerId()"
-          [citySlug]="event()?.city?.slug || ''"
-          (messageSent)="send($event)"
-          (typing)="onTyping()"
-        ></app-chat-view>
-      </div>
-    </app-event-subpage-layout>
+    <div class="flex-1 flex flex-col min-h-0">
+      <app-chat-view
+        [messages]="chatViewMessages()"
+        [currentUserId]="currentUserId"
+        [loading]="loading()"
+        [typingUser]="typingUser()"
+        [inactiveUsers]="inactiveUsers()"
+        [disabled]="!isPrivate && chatDisabled()"
+        [eventId]="eventId"
+        [organizerId]="organizerId()"
+        [citySlug]="event()?.city?.slug || ''"
+        (messageSent)="send($event)"
+        (typing)="onTyping()"
+      ></app-chat-view>
+    </div>
 
     @if (showMembers()) {
     <app-chat-members-overlay
@@ -94,6 +101,16 @@ export class UnifiedChatComponent implements OnInit, OnDestroy {
   private readonly eventService = inject(EventService);
   private readonly auth = inject(AuthService);
   private readonly snackbar = inject(SnackbarService);
+  private readonly layoutConfig = inject(LayoutConfigService);
+
+  constructor() {
+    effect(() => {
+      const url = this.event()?.coverImage?.url;
+      if (url) {
+        this.layoutConfig.coverImageUrl.set(url);
+      }
+    });
+  }
 
   readonly event = signal<EventModel | null>(null);
   readonly groupMessages = signal<ChatMessage[]>([]);

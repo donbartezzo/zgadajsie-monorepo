@@ -15,7 +15,7 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/home/pages/home/home.component').then((m) => m.HomeComponent),
     canActivate: [paymentRedirectGuard],
-    data: { title: '' },
+    data: { title: '', showHeader: false, showFooter: false },
   },
 
   // ── Public: event list per city ──
@@ -54,7 +54,7 @@ export const appRoutes: Route[] = [
         (m) => m.HostChatComponent,
       ),
     canActivate: [verifiedUserGuard],
-    data: { title: 'Wiadomość do organizatora' },
+    data: { title: 'Wiadomość do organizatora', showFooter: false },
   },
 
   // ── Participants: group chat ──
@@ -65,7 +65,7 @@ export const appRoutes: Route[] = [
         (m) => m.UnifiedChatComponent,
       ),
     canActivate: [verifiedUserGuard, participantGuard],
-    data: { title: 'Czat' },
+    data: { title: 'Czat', showFooter: false },
   },
 
   // ── Organizer: new event ──
@@ -109,7 +109,7 @@ export const appRoutes: Route[] = [
         (m) => m.HostChatComponent,
       ),
     canActivate: [verifiedUserGuard, organizerGuard],
-    data: { title: 'Konwersacje' },
+    data: { title: 'Konwersacje', showFooter: false },
   },
 
   // ── Organizer: chat with participant ──
@@ -120,7 +120,7 @@ export const appRoutes: Route[] = [
         (m) => m.UnifiedChatComponent,
       ),
     canActivate: [verifiedUserGuard, organizerGuard],
-    data: { title: 'Wiadomość prywatna', isPrivate: true },
+    data: { title: 'Wiadomość prywatna', isPrivate: true, showFooter: false },
   },
 
   // ── Utility (internal, skipLocationChange) ──

@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { IconComponent } from '../../core/icons/icon.component';
 import { UserAvatarComponent } from '../../shared/ui/user-avatar/user-avatar.component';
 import { AuthService } from '../../core/auth/auth.service';
-import { ThemeService } from '../../theme.service';
 import { BottomOverlaysService } from '../../shared/ui/bottom-overlays/bottom-overlays.service';
 
 @Component({
@@ -16,7 +15,6 @@ import { BottomOverlaysService } from '../../shared/ui/bottom-overlays/bottom-ov
 export class BottomNavComponent {
   private readonly router = inject(Router);
   readonly auth = inject(AuthService);
-  readonly theme = inject(ThemeService);
   protected readonly overlays = inject(BottomOverlaysService);
 
   toggleShareMenu(): void {
@@ -37,11 +35,6 @@ export class BottomNavComponent {
 
   navigateToLogin(): void {
     this.router.navigate(['/auth/login']);
-  }
-
-  toggleTheme(event: Event): void {
-    event.preventDefault();
-    this.theme.toggle();
   }
 
   logout(): void {

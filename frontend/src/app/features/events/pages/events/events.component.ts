@@ -6,10 +6,11 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
 import { EventService } from '../../../../core/services/event.service';
 import { EventListItem } from '../../../../shared/types';
+import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
 
 @Component({
   selector: 'app-events',
-  imports: [CommonModule, EventCardComponent, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [CommonModule, EventCardComponent, LoadingSpinnerComponent, EmptyStateComponent, LayoutSlotDirective],
   templateUrl: './events.component.html',
   styleUrls: ['./events.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,7 +19,6 @@ export class EventsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
-
   readonly events = signal<EventListItem[]>([]);
   readonly isLoading = signal(true);
   readonly error = signal<string | null>(null);

@@ -14,13 +14,13 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
-import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { EventService } from '../../../../core/services/event.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bottom-overlays.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
-import { EventHeroComponent } from '../../../../shared/ui/event-hero/event-hero.component';
+import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
+import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 import { Event as EventModel, Participation } from '../../../../shared/types';
 import {
   EventNotificationBarsComponent,
@@ -38,9 +38,8 @@ import {
     ButtonComponent,
     UserAvatarComponent,
     LoadingSpinnerComponent,
-    CardComponent,
-    EventHeroComponent,
     EventNotificationBarsComponent,
+    LayoutSlotDirective,
   ],
   templateUrl: './event.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,8 +53,11 @@ export class EventComponent implements OnInit, OnDestroy {
   private readonly snackbar = inject(SnackbarService);
   readonly overlays = inject(BottomOverlaysService);
   private readonly confirmModal = inject(ConfirmModalService);
+  readonly layoutConfig = inject(LayoutConfigService);
 
+  // ── Reactive state ──
   readonly event = signal<EventModel | null>(null);
+
   readonly participants = signal<Participation[]>([]);
   readonly isLoading = signal(true);
   readonly joining = signal(false);
@@ -79,6 +81,27 @@ export class EventComponent implements OnInit, OnDestroy {
     if (g === 'MALE') return 'Mężczyźni';
     if (g === 'FEMALE') return 'Kobiety';
     return g;
+  });
+
+  readonly eventMonth = computed(() => {
+    const e = this.event();
+    if (!e) return '';
+    return new Date(e.startsAt).toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase();
+  });
+
+  readonly eventDay = computed(() => {
+    const e = this.event();
+    if (!e) return '';
+    return new Date(e.startsAt).getDate().toString();
+  });
+
+  readonly eventStartTime = computed(() => {
+    const e = this.event();
+    if (!e) return '';
+    return new Date(e.startsAt).toLocaleTimeString('pl-PL', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   });
 
   readonly ageRange = computed(() => {
@@ -116,6 +139,14 @@ export class EventComponent implements OnInit, OnDestroy {
   }
 
   constructor() {
+    // Set cover image when event loads
+    effect(() => {
+      const url = this.event()?.coverImage?.url;
+      if (url) {
+        this.layoutConfig.coverImageUrl.set(url);
+      }
+    });
+
     // Sync local event/participants signals to the overlay service
     effect(() => {
       this.overlays.setEventContext(this.event(), this.participants(), this.isParticipant());

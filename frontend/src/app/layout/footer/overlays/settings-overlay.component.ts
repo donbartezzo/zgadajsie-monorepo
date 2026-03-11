@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { IconComponent, IconName } from '../../../core/icons/icon.component';
 import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
-import { ThemeService } from '../../../theme.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
@@ -15,39 +14,6 @@ import { AuthService } from '../../../core/auth/auth.service';
         <p class="text-sm text-gray-500 dark:text-gray-400">
           Zarządzaj kontem, motywem i najważniejszymi informacjami o platformie.
         </p>
-
-        <div class="overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-700/70">
-          <button
-            type="button"
-            (click)="toggleTheme()"
-            class="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
-          >
-            <div class="flex items-center gap-3">
-              <app-icon
-                [name]="theme.isDark() ? 'moon' : 'sun'"
-                size="md"
-                class="text-indigo-500"
-              />
-              <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Tryb ciemny</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ theme.isDark() ? 'Włączony' : 'Wyłączony' }}
-                </p>
-              </div>
-            </div>
-            <div
-              class="relative h-6 w-11 rounded-full transition-colors"
-              [class.bg-highlight]="theme.isDark()"
-              [class.bg-gray-300]="!theme.isDark()"
-            >
-              <div
-                class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-transform"
-                [class.translate-x-5]="theme.isDark()"
-                [class.translate-x-0.5]="!theme.isDark()"
-              ></div>
-            </div>
-          </button>
-        </div>
 
         @if (auth.isLoggedIn()) {
         <section class="space-y-1.5">
@@ -111,7 +77,6 @@ import { AuthService } from '../../../core/auth/auth.service';
 })
 export class SettingsOverlayComponent {
   private readonly router = inject(Router);
-  readonly theme = inject(ThemeService);
   readonly auth = inject(AuthService);
 
   readonly closed = output<void>();
@@ -127,10 +92,6 @@ export class SettingsOverlayComponent {
     },
     { label: 'Regulamin', route: '/terms', icon: 'edit' as IconName, iconColor: 'text-blue-500' },
   ];
-
-  toggleTheme(): void {
-    this.theme.toggle();
-  }
 
   handleLogout(): void {
     this.auth.logout();

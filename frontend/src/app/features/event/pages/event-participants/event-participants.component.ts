@@ -2,17 +2,19 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   OnInit,
   signal,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { EventSubpageLayoutComponent } from '../../../../shared/ui/event-subpage-layout/event-subpage-layout.component';
 import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
 import { IconComponent } from '../../../../core/icons/icon.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EventService } from '../../../../core/services/event.service';
 import { Event as EventModel, Participation } from '../../../../shared/types';
+import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
+import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 
 const ACTIVE_STATUSES = ['APPLIED', 'ACCEPTED', 'PARTICIPANT', 'PENDING_PAYMENT'];
 const PENDING_STATUSES = ['RESERVE'];
@@ -21,10 +23,10 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED', 'BANNED'];
 @Component({
   selector: 'app-event-participants',
   imports: [
-    EventSubpageLayoutComponent,
     UserAvatarComponent,
     IconComponent,
     LoadingSpinnerComponent,
+    LayoutSlotDirective,
   ],
   templateUrl: './event-participants.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,6 +34,16 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED', 'BANNED'];
 export class EventParticipantsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly eventService = inject(EventService);
+  private readonly layoutConfig = inject(LayoutConfigService);
+
+  constructor() {
+    effect(() => {
+      const url = this.event()?.coverImage?.url;
+      if (url) {
+        this.layoutConfig.coverImageUrl.set(url);
+      }
+    });
+  }
 
   readonly event = signal<EventModel | null>(null);
   readonly participants = signal<Participation[]>([]);

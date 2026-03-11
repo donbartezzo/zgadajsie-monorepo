@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   OnInit,
   OnDestroy,
@@ -11,7 +12,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { IconComponent } from '../../../../core/icons/icon.component';
-import { EventSubpageLayoutComponent } from '../../../../shared/ui/event-subpage-layout/event-subpage-layout.component';
+import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
+import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import {
@@ -33,101 +35,105 @@ import {
   imports: [
     DatePipe,
     IconComponent,
-    EventSubpageLayoutComponent,
+    LayoutSlotDirective,
     UserAvatarComponent,
     LoadingSpinnerComponent,
     ChatViewComponent,
   ],
   template: `
-    <app-event-subpage-layout
-      [event]="event()"
-      [title]="title()"
-      [subtitle]="isOrganizerMode() ? 'Organizator' : 'Wiadomość prywatna'"
-    >
-      @if (isOrganizerMode()) {
-      <!-- ─── ORGANIZER: conversation list ─── -->
-      <div class="p-4">
-        @if (loading()) {
-        <div class="py-8 flex justify-center">
-          <app-loading-spinner></app-loading-spinner>
-        </div>
-        } @else if (conversations().length === 0) {
-        <div class="text-center py-8">
-          <app-icon
-            name="message-circle"
-            size="lg"
-            class="text-gray-300 dark:text-gray-600 mx-auto mb-3"
-          ></app-icon>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            Brak prywatnych konwersacji z uczestnikami
-          </p>
-        </div>
-        } @else {
-        <div class="space-y-1">
-          @for (conv of conversations(); track conv.participant.id) {
-          <button
-            type="button"
-            class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-left"
-            (click)="openChat(conv.participant.id)"
-          >
-            <app-user-avatar
-              [avatarUrl]="conv.participant.avatarUrl"
-              [displayName]="conv.participant.displayName"
-              size="sm"
-            ></app-user-avatar>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                  {{ conv.participant.displayName }}
-                </p>
-                @if (conv.lastMessage) {
-                <span class="text-[10px] text-gray-400 dark:text-gray-500 flex-shrink-0">
-                  {{ conv.lastMessage.createdAt | date: 'dd.MM, HH:mm' }}
-                </span>
-                }
-              </div>
-              @if (conv.lastMessage) {
-              <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                @if (conv.lastMessage.isFromOrganizer) {
-                <span class="text-gray-400 dark:text-gray-500">Ty: </span>
-                }
-                {{ conv.lastMessage.content }}
+    <ng-template appLayoutSlot="overlay">
+      <h1 class="text-lg font-extrabold text-white leading-tight">{{ title() }}</h1>
+      <p class="text-xs text-white/80 mt-0.5">{{ isOrganizerMode() ? 'Organizator' : 'Wiadomość prywatna' }}</p>
+    </ng-template>
+
+    <ng-template appLayoutSlot="miniBar">
+      <p class="text-xs font-bold text-gray-900 truncate">{{ title() }}</p>
+      <p class="text-[10px] text-gray-400 mt-0.5">{{ isOrganizerMode() ? 'Organizator' : 'Wiadomość prywatna' }}</p>
+    </ng-template>
+
+    @if (isOrganizerMode()) {
+    <!-- ─── ORGANIZER: conversation list ─── -->
+    <div class="p-4">
+      @if (loading()) {
+      <div class="py-8 flex justify-center">
+        <app-loading-spinner></app-loading-spinner>
+      </div>
+      } @else if (conversations().length === 0) {
+      <div class="text-center py-8">
+        <app-icon
+          name="message-circle"
+          size="lg"
+          class="text-gray-300 mx-auto mb-3"
+        ></app-icon>
+        <p class="text-sm text-gray-500">
+          Brak prywatnych konwersacji z uczestnikami
+        </p>
+      </div>
+      } @else {
+      <div class="space-y-1">
+        @for (conv of conversations(); track conv.participant.id) {
+        <button
+          type="button"
+          class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors text-left"
+          (click)="openChat(conv.participant.id)"
+        >
+          <app-user-avatar
+            [avatarUrl]="conv.participant.avatarUrl"
+            [displayName]="conv.participant.displayName"
+            size="sm"
+          ></app-user-avatar>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-medium text-gray-900 truncate">
+                {{ conv.participant.displayName }}
               </p>
-              }
-              @if (conv.messageCount > 0) {
-              <span
-                class="inline-block mt-0.5 text-[10px] bg-highlight/10 text-highlight px-1.5 py-0.5 rounded-full"
-              >
-                {{ conv.messageCount }}
-                {{ conv.messageCount === 1 ? 'wiadomość' : 'wiadomości' }}
+              @if (conv.lastMessage) {
+              <span class="text-[10px] text-gray-400 flex-shrink-0">
+                {{ conv.lastMessage.createdAt | date: 'dd.MM, HH:mm' }}
               </span>
               }
             </div>
-            <app-icon
-              name="chevron-right"
-              size="sm"
-              class="text-gray-300 dark:text-gray-600 flex-shrink-0"
-            ></app-icon>
-          </button>
-          }
-        </div>
+            @if (conv.lastMessage) {
+            <p class="text-xs text-gray-500 truncate">
+              @if (conv.lastMessage.isFromOrganizer) {
+              <span class="text-gray-400">Ty: </span>
+              }
+              {{ conv.lastMessage.content }}
+            </p>
+            }
+            @if (conv.messageCount > 0) {
+            <span
+              class="inline-block mt-0.5 text-[10px] bg-highlight/10 text-highlight px-1.5 py-0.5 rounded-full"
+            >
+              {{ conv.messageCount }}
+              {{ conv.messageCount === 1 ? 'wiadomość' : 'wiadomości' }}
+            </span>
+            }
+          </div>
+          <app-icon
+            name="chevron-right"
+            size="sm"
+            class="text-gray-300 flex-shrink-0"
+          ></app-icon>
+        </button>
         }
       </div>
-      } @else {
-      <!-- ─── PARTICIPANT: private chat with organizer ─── -->
-      <div class="flex-1 flex flex-col min-h-0">
-        <app-chat-view
-          [messages]="chatViewMessages()"
-          [currentUserId]="currentUserId"
-          [loading]="loading()"
-          [typingUser]="typingUser()"
-          [disabled]="chatDisabled()"
-          (messageSent)="send($event)"
-          (typing)="onTyping()"
-        ></app-chat-view>
-      </div>
       }
-    </app-event-subpage-layout>
+    </div>
+    } @else {
+    <!-- ─── PARTICIPANT: private chat with organizer ─── -->
+    <div class="flex-1 flex flex-col min-h-0">
+      <app-chat-view
+        [messages]="chatViewMessages()"
+        [currentUserId]="currentUserId"
+        [loading]="loading()"
+        [typingUser]="typingUser()"
+        [disabled]="chatDisabled()"
+        (messageSent)="send($event)"
+        (typing)="onTyping()"
+      ></app-chat-view>
+    </div>
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -138,6 +144,16 @@ export class HostChatComponent implements OnInit, OnDestroy {
   private readonly eventService = inject(EventService);
   private readonly auth = inject(AuthService);
   private readonly snackbar = inject(SnackbarService);
+  private readonly layoutConfig = inject(LayoutConfigService);
+
+  constructor() {
+    effect(() => {
+      const url = this.event()?.coverImage?.url;
+      if (url) {
+        this.layoutConfig.coverImageUrl.set(url);
+      }
+    });
+  }
 
   readonly event = signal<EventModel | null>(null);
   readonly conversations = signal<OrganizerConversation[]>([]);
