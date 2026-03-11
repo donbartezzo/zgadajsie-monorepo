@@ -21,7 +21,7 @@ import { OrganizerVoucherGroup } from '../../../../shared/types';
       } @else {
         @for (group of groups(); track group.organizer.id) {
           <app-card>
-            <div class="p-4 space-y-3">
+            <div class="space-y-3">
               <div class="flex items-center gap-3">
                 @if (group.organizer.avatarUrl) {
                   <img

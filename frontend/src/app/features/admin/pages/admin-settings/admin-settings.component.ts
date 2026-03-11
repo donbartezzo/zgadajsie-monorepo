@@ -33,7 +33,7 @@ interface Setting {
       <app-loading-spinner></app-loading-spinner>
       } @else {
       <app-card>
-        <div class="p-4 space-y-3">
+        <div class="space-y-3">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Parametry</h3>
           @for (s of settings(); track s.key) {
           <div class="flex items-center gap-2">
@@ -53,7 +53,7 @@ interface Setting {
       <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-6 mb-3">Słowniki</h2>
       @for (dict of dictTypes; track dict.type) {
       <app-card>
-        <div class="p-4 mb-3">
+        <div class="mb-3">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
             {{ dict.label }}
           </h3>

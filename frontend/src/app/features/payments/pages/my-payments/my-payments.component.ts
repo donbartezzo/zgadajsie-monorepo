@@ -25,7 +25,7 @@ interface PaymentItem {
       <app-loading-spinner></app-loading-spinner>
       } @else { @for (p of payments(); track p.id) {
       <app-card>
-        <div class="p-4 flex justify-between items-center">
+        <div class="flex justify-between items-center">
           <div>
             <a
               [routerLink]="['/w', p.event?.city?.slug, p.event?.id]"

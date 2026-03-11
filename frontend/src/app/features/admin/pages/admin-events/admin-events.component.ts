@@ -31,7 +31,7 @@ import { EventListItem } from '../../../../shared/types';
       <div class="space-y-2">
         @for (e of events(); track e.id) {
         <app-card>
-          <div class="p-3 flex items-center justify-between">
+          <div class="flex items-center justify-between">
             <div>
               <a
                 [routerLink]="['/w', e.city?.slug, e.id]"

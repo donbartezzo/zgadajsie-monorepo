@@ -13,7 +13,6 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
   template: `
     <div class="py-8">
       <app-card>
-        <div class="p-6">
           <div class="text-center mb-6">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Nowe hasło</h1>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Ustaw nowe hasło do konta</p>
@@ -58,7 +57,6 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
               Zmień hasło
             </app-button>
           </form>
-        </div>
       </app-card>
     </div>
   `,

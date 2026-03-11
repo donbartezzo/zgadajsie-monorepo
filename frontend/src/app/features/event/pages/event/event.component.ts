@@ -26,6 +26,7 @@ import {
   EventNotificationBarsComponent,
   NotificationBarConfig,
 } from '../../ui/event-notification-bars/event-notification-bars.component';
+import { CardComponent } from 'frontend/src/app/shared/ui/card/card.component';
 
 @Component({
   selector: 'app-event',
@@ -38,6 +39,7 @@ import {
     ButtonComponent,
     UserAvatarComponent,
     LoadingSpinnerComponent,
+    CardComponent,
     EventNotificationBarsComponent,
     LayoutSlotDirective,
   ],
@@ -139,7 +141,8 @@ export class EventComponent implements OnInit, OnDestroy {
   }
 
   constructor() {
-    // Set cover image when event loads
+    // Set cover image and white content background for event page
+    this.layoutConfig.contentBgClass.set('bg-white');
     effect(() => {
       const url = this.event()?.coverImage?.url;
       if (url) {

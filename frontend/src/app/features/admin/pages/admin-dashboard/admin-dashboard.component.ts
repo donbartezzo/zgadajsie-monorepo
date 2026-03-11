@@ -13,7 +13,7 @@ import { AdminService } from '../../../../core/services/admin.service';
       <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">Panel administratora</h1>
       <div class="grid grid-cols-2 gap-4 mb-6">
         <app-card
-          ><div class="p-4 text-center">
+          ><div class="text-center">
             <app-icon name="users" size="lg" variant="primary"></app-icon>
             <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2">
               {{ stats().users }}
@@ -22,7 +22,7 @@ import { AdminService } from '../../../../core/services/admin.service';
           </div></app-card
         >
         <app-card
-          ><div class="p-4 text-center">
+          ><div class="text-center">
             <app-icon name="calendar" size="lg" variant="primary"></app-icon>
             <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2">
               {{ stats().events }}
@@ -34,7 +34,7 @@ import { AdminService } from '../../../../core/services/admin.service';
       <div class="space-y-3">
         <a routerLink="/admin/users"
           ><app-card
-            ><div class="p-4 flex items-center gap-3">
+            ><div class="flex items-center gap-3">
               <app-icon name="users" size="sm"></app-icon>
               <span class="text-sm font-medium text-gray-900 dark:text-gray-100"
                 >Zarządzaj użytkownikami</span
@@ -44,7 +44,7 @@ import { AdminService } from '../../../../core/services/admin.service';
         >
         <a routerLink="/admin/events"
           ><app-card
-            ><div class="p-4 flex items-center gap-3">
+            ><div class="flex items-center gap-3">
               <app-icon name="calendar" size="sm"></app-icon>
               <span class="text-sm font-medium text-gray-900 dark:text-gray-100"
                 >Zarządzaj wydarzeniami</span
@@ -54,7 +54,7 @@ import { AdminService } from '../../../../core/services/admin.service';
         >
         <a routerLink="/admin/cover-images"
           ><app-card
-            ><div class="p-4 flex items-center gap-3">
+            ><div class="flex items-center gap-3">
               <app-icon name="image" size="sm"></app-icon>
               <span class="text-sm font-medium text-gray-900 dark:text-gray-100"
                 >Galeria cover images</span
@@ -64,7 +64,7 @@ import { AdminService } from '../../../../core/services/admin.service';
         >
         <a routerLink="/admin/settings"
           ><app-card
-            ><div class="p-4 flex items-center gap-3">
+            ><div class="flex items-center gap-3">
               <app-icon name="settings" size="sm"></app-icon>
               <span class="text-sm font-medium text-gray-900 dark:text-gray-100"
                 >Ustawienia systemowe</span

@@ -39,7 +39,7 @@ import { Participation } from '../../../../shared/types';
       <div class="space-y-3">
         @for (p of participations(); track p.id) {
         <app-card>
-          <div class="p-4 flex items-center justify-between">
+          <div class="flex items-center justify-between">
             <div>
               <a
                 [routerLink]="['/w', p.event?.city?.slug, p.eventId]"

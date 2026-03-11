@@ -54,7 +54,7 @@ interface PaymentListItem {
       </div>
 
       <app-card>
-        <div class="p-4 space-y-3">
+        <div class="space-y-3">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Edycja</h3>
           <input
             [(ngModel)]="editName"
@@ -68,7 +68,7 @@ interface PaymentListItem {
       </app-card>
 
       <app-card>
-        <div class="p-4 space-y-3 mt-4">
+        <div class="space-y-3 mt-4">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Płatności</h3>
           @for (p of payments(); track p.id) {
           <div

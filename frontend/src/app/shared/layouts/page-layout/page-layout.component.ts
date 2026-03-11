@@ -61,6 +61,9 @@ export class PageLayoutComponent {
   readonly hasBadge = computed(() => !!this.layoutConfig.badgeTpl());
   readonly hasMiniBar = computed(() => !!this.layoutConfig.miniBarTpl());
   readonly hasHeroExtra = computed(() => !!this.layoutConfig.heroExtraTpl());
+  readonly isDefaultBg = computed(
+    () => this.layoutConfig.contentBgClass() === LayoutConfigService.DEFAULT_CONTENT_BG,
+  );
 
   // ── Internal state ──
   readonly heroHidden = signal(false);
@@ -90,7 +93,10 @@ export class PageLayoutComponent {
         filter((e) => e instanceof NavigationStart),
         takeUntilDestroyed(),
       )
-      .subscribe(() => this.layoutConfig.coverImageUrl.set(''));
+      .subscribe(() => {
+        this.layoutConfig.coverImageUrl.set('');
+        this.layoutConfig.contentBgClass.set(LayoutConfigService.DEFAULT_CONTENT_BG);
+      });
   }
 
   goBack(): void {

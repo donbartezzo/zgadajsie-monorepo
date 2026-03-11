@@ -38,7 +38,7 @@ import { User } from '../../../../shared/types';
         @for (u of users(); track u.id) {
         <a [routerLink]="['/admin/users', u.id]">
           <app-card>
-            <div class="p-3 flex items-center gap-3">
+            <div class="flex items-center gap-3">
               <app-user-avatar
                 [avatarUrl]="u.avatarUrl"
                 [displayName]="u.displayName"

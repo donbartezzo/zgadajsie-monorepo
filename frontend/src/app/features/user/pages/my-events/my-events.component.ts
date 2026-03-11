@@ -46,7 +46,6 @@ import { Event as EventModel } from '../../../../shared/types';
       <div class="space-y-3">
         @for (e of events(); track e.id) {
         <app-card>
-          <div class="p-4">
             <div class="flex items-center justify-between mb-2">
               <a
                 [routerLink]="['/w', e.city?.slug, e.id]"
@@ -84,7 +83,6 @@ import { Event as EventModel } from '../../../../shared/types';
                 ><app-icon name="copy" size="sm"></app-icon
               ></app-button>
             </div>
-          </div>
         </app-card>
         }
       </div>

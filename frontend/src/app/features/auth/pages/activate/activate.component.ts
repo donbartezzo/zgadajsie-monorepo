@@ -12,7 +12,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
   template: `
     <div class="py-8">
       <app-card>
-        <div class="p-6 text-center">
+        <div class="text-center">
           @if (loading()) {
           <app-icon name="loader" size="lg" variant="primary" class="animate-spin mb-4"></app-icon>
           <p class="text-gray-600 dark:text-gray-400">Aktywowanie konta...</p>

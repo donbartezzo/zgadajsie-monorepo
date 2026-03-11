@@ -23,7 +23,7 @@ type PaymentStatusState =
   template: `
     <div class="p-4 flex items-center justify-center min-h-[60vh]">
       <app-card>
-        <div class="p-6 text-center space-y-4 max-w-md">
+        <div class="text-center space-y-4 max-w-md">
           @switch (status()) {
             @case ('loading') {
               <div class="space-y-4">

@@ -15,15 +15,18 @@ body {
 // ── App shell: single source of truth for app max-width ──
 $app-max-width: 700px;
 $cover-image-height: 250px;
+$app-bg-color: #eaeaef;
 
 :root {
   --app-max-width: #{$app-max-width};
   --footer-height: 70px;
   --hero-h: #{$cover-image-height};
+  --app-bg-color: #{$app-bg-color};
 }
 
 .app {
-  @apply min-h-screen relative overflow-hidden bg-[#eaeaef] dark:bg-slate-900;
+  @apply min-h-screen relative overflow-hidden dark:bg-slate-900;
+  background-color: var(--app-bg-color);
 
   // Mobile (default): background pattern hidden, container plain
   .app-bg-pattern {
@@ -67,7 +70,7 @@ $cover-image-height: 250px;
       margin-right: auto;
       overflow: hidden;
       border-radius: 1rem;
-      background-color: #eaeaef;
+      background-color: var(--app-bg-color);
       box-shadow: 8px 0 24px -4px rgba(0, 0, 0, 0.15), -8px 0 24px -4px rgba(0, 0, 0, 0.15);
     }
 
