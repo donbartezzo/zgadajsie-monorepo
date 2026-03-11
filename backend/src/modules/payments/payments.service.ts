@@ -339,7 +339,7 @@ export class PaymentsService {
         voucherAmountUsed: true,
         paidAt: true,
         createdAt: true,
-        event: { select: { id: true, title: true } },
+        event: { select: { id: true, title: true, city: { select: { slug: true } } } },
       },
     });
     if (!payment) {
@@ -358,7 +358,7 @@ export class PaymentsService {
         voucherReserved: true,
         createdAt: true,
         participation: {
-          select: { event: { select: { id: true, title: true } } },
+          select: { event: { select: { id: true, title: true, city: { select: { slug: true } } } } },
         },
       },
     });
@@ -381,7 +381,7 @@ export class PaymentsService {
         voucherAmountUsed: true,
         paidAt: true,
         createdAt: true,
-        event: { select: { id: true, title: true } },
+        event: { select: { id: true, title: true, city: { select: { slug: true } } } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -417,7 +417,7 @@ export class PaymentsService {
           status: true,
           paidAt: true,
           createdAt: true,
-          event: { select: { id: true, title: true } },
+          event: { select: { id: true, title: true, city: { select: { slug: true } } } },
         },
       }),
       this.prisma.payment.count({ where: { userId } }),
@@ -464,7 +464,7 @@ export class PaymentsService {
         take: limit,
         include: {
           user: { select: { id: true, displayName: true, email: true } },
-          event: { select: { id: true, title: true } },
+          event: { select: { id: true, title: true, city: { select: { slug: true } } } },
         },
       }),
       this.prisma.payment.count(),
@@ -477,7 +477,7 @@ export class PaymentsService {
       where: { id: paymentId },
       include: {
         user: { select: { id: true, displayName: true, email: true } },
-        event: { select: { id: true, title: true, organizerId: true } },
+        event: { select: { id: true, title: true, organizerId: true, city: { select: { slug: true } } } },
         participation: { select: { id: true, status: true } },
       },
     });

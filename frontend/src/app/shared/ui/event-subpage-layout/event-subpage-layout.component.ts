@@ -20,7 +20,7 @@ import { Event as EventModel } from '../../types';
       <header
         class="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-slate-700"
       >
-        <a [routerLink]="['/events', event()?.id]" class="text-gray-500 dark:text-gray-400">
+        <a [routerLink]="['/w', event()?.city?.slug, event()?.id]" class="text-gray-500 dark:text-gray-400">
           <app-icon name="arrow-left" size="sm"></app-icon>
         </a>
         <div class="flex-1 min-w-0">

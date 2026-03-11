@@ -72,7 +72,7 @@ export class EventsService {
     return { data: events, total, page, limit };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, userId?: string) {
     const event = await this.prisma.event.findUnique({
       where: { id },
       include: {
@@ -90,7 +90,19 @@ export class EventsService {
       },
     });
     if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
-    return event;
+
+    if (!userId) return event;
+
+    const participation = event.participations.find((p) => p.userId === userId);
+
+    return {
+      ...event,
+      currentUserAccess: {
+        isParticipant: !!participation,
+        isOrganizer: event.organizerId === userId,
+        participationStatus: participation?.status ?? null,
+      },
+    };
   }
 
   async update(id: string, userId: string, dto: UpdateEventDto) {

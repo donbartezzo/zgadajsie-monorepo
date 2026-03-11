@@ -57,7 +57,7 @@
 
     <!-- Overlapping participant avatars (clickable → opens participants page) -->
     @if (participants().length > 0) {
-    <a [routerLink]="['/events', e.id, 'participants']" class="flex items-center mb-4">
+    <a [routerLink]="['/w', e.city?.slug, e.id, 'participants']" class="flex items-center mb-4">
       <div class="flex items-center -space-x-3">
         @for (p of visibleAvatars(); track p.id; let i = $index) {
         <div

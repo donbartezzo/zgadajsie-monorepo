@@ -54,7 +54,7 @@ import { OrganizerVoucherGroup } from '../../../../shared/types';
                       @if (v.event) {
                         <span>—</span>
                         <a
-                          [routerLink]="'/events/' + v.event.id"
+                          [routerLink]="['/w', v.event.city?.slug, v.event.id]"
                           class="text-highlight hover:underline"
                         >{{ v.event.title }}</a>
                       }

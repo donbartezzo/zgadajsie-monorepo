@@ -42,7 +42,7 @@ import { Participation } from '../../../../shared/types';
           <div class="p-4 flex items-center justify-between">
             <div>
               <a
-                [routerLink]="['/events', p.eventId]"
+                [routerLink]="['/w', p.event?.city?.slug, p.eventId]"
                 class="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-highlight"
               >
                 {{ p.event?.title || 'Wydarzenie' }}

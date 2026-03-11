@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -19,5 +19,11 @@ export class DictionariesService {
 
   getLevels() {
     return this.prisma.eventLevel.findMany({ orderBy: { name: 'asc' } });
+  }
+
+  async getCityBySlug(slug: string) {
+    const city = await this.prisma.city.findUnique({ where: { slug } });
+    if (!city) throw new NotFoundException('Miejscowość nie znaleziona');
+    return city;
   }
 }

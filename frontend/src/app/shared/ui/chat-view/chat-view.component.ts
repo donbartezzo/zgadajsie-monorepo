@@ -141,6 +141,7 @@ export class ChatViewComponent {
   readonly disabled = input(false);
   readonly eventId = input('');
   readonly organizerId = input('');
+  readonly citySlug = input('');
 
   readonly messageSent = output<string>();
   readonly typing = output<void>();
@@ -169,7 +170,7 @@ export class ChatViewComponent {
   }
 
   navigateToOrganizer(): void {
-    this.router.navigate(['/events', this.eventId(), 'host-chat']);
+    this.router.navigate(['/w', this.citySlug(), this.eventId(), 'host-chat']);
   }
 
   scrollToBottom(): void {

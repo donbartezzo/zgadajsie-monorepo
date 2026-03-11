@@ -17,6 +17,7 @@ export interface Participation {
     startsAt: string;
     endsAt: string;
     status: string;
+    city?: { slug: string };
   };
   user?: UserBrief;
 }

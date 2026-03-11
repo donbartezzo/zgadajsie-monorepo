@@ -52,7 +52,7 @@ type PaymentStatusState =
                       Kwota: {{ _payment?.amount }} PLN
                     </p>
                   </div>
-                  <a [routerLink]="'/events/' + event.id">
+                  <a [routerLink]="['/w', event.city?.slug, event.id]">
                     <app-button variant="primary">Przejdź do wydarzenia</app-button>
                   </a>
                 } @else {
@@ -84,7 +84,7 @@ type PaymentStatusState =
                 }
                 <app-button (click)="checkStatus()" variant="outline">Sprawdź ponownie</app-button>
                 @if (_payment?.event; as event) {
-                  <a [routerLink]="'/events/' + event.id">
+                  <a [routerLink]="['/w', event.city?.slug, event.id]">
                     <app-button variant="primary">Przejdź do wydarzenia</app-button>
                   </a>
                 } @else {
@@ -106,7 +106,7 @@ type PaymentStatusState =
                   Twoja płatność nie została zrealizowana. Spróbuj ponownie.
                 </p>
                 @if (_payment?.event; as event) {
-                  <a [routerLink]="'/events/' + event.id">
+                  <a [routerLink]="['/w', event.city?.slug, event.id]">
                     <app-button variant="outline">Wróć do wydarzenia</app-button>
                   </a>
                 }

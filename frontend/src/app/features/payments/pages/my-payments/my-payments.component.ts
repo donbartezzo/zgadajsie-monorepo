@@ -11,7 +11,7 @@ interface PaymentItem {
   status: string;
   paidAt?: string;
   createdAt: string;
-  event?: { id: string; title: string };
+  event?: { id: string; title: string; city?: { slug: string } };
 }
 
 @Component({
@@ -28,7 +28,7 @@ interface PaymentItem {
         <div class="p-4 flex justify-between items-center">
           <div>
             <a
-              [routerLink]="'/events/' + p.event?.id"
+              [routerLink]="['/w', p.event?.city?.slug, p.event?.id]"
               class="text-sm font-medium text-highlight hover:underline"
               >{{ p.event?.title || 'Wydarzenie' }}</a
             >

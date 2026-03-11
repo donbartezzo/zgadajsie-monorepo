@@ -3,8 +3,13 @@ import { authGuard } from './core/auth/auth.guard';
 import { activeGuard } from './core/auth/active.guard';
 import { adminGuard } from './core/auth/admin.guard';
 import { paymentRedirectGuard } from './features/payments/guards/payment-redirect.guard';
+import { eventResolver } from './core/guards/event.resolver';
+import { verifiedUserGuard } from './core/guards/verified-user.guard';
+import { participantGuard } from './core/guards/participant.guard';
+import { organizerGuard } from './core/guards/organizer.guard';
 
 export const appRoutes: Route[] = [
+  // ── Home ──
   {
     path: '',
     loadComponent: () =>
@@ -12,80 +17,131 @@ export const appRoutes: Route[] = [
     canActivate: [paymentRedirectGuard],
     data: { title: '' },
   },
+
+  // ── Public: event list per city ──
   {
-    path: 'events',
+    path: 'w/:citySlug',
     loadComponent: () =>
       import('./features/events/pages/events/events.component').then((m) => m.EventsComponent),
     data: { title: 'Wydarzenia' },
   },
+
+  // ── Public: event detail ──
   {
-    path: 'events/new',
-    loadComponent: () =>
-      import('./features/events/pages/event-form/event-form.component').then(
-        (m) => m.EventFormComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: { title: 'Nowe wydarzenie' },
-  },
-  {
-    path: 'events/:id',
+    path: 'w/:citySlug/:id',
     loadComponent: () =>
       import('./features/event/pages/event/event.component').then((m) => m.EventComponent),
+    resolve: { event: eventResolver },
     data: { title: 'Wydarzenie' },
   },
+
+  // ── Verified users: participants ──
   {
-    path: 'events/:id/edit',
-    loadComponent: () =>
-      import('./features/events/pages/event-form/event-form.component').then(
-        (m) => m.EventFormComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: { title: 'Edycja wydarzenia' },
-  },
-  {
-    path: 'events/:id/manage',
-    loadComponent: () =>
-      import('./features/organizer/pages/event-manage/event-manage.component').then(
-        (m) => m.EventManageComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: { title: 'Zarządzanie' },
-  },
-  {
-    path: 'events/:id/participants',
+    path: 'w/:citySlug/:id/participants',
     loadComponent: () =>
       import('./features/event/pages/event-participants/event-participants.component').then(
         (m) => m.EventParticipantsComponent,
       ),
+    canActivate: [verifiedUserGuard],
     data: { title: 'Uczestnicy' },
   },
+
+  // ── Verified users: chat with organizer ──
   {
-    path: 'events/:id/chat',
-    loadComponent: () =>
-      import('./features/chat/pages/unified-chat/unified-chat.component').then(
-        (m) => m.UnifiedChatComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: { title: 'Czat' },
-  },
-  {
-    path: 'events/:id/host-chat',
+    path: 'w/:citySlug/:id/host-chat',
     loadComponent: () =>
       import('./features/chat/pages/host-chat/host-chat.component').then(
         (m) => m.HostChatComponent,
       ),
-    canActivate: [authGuard, activeGuard],
-    data: { title: 'Konwersacje' },
+    canActivate: [verifiedUserGuard],
+    data: { title: 'Wiadomość do organizatora' },
   },
+
+  // ── Participants: group chat ──
   {
-    path: 'events/:id/host-chat/:userId',
+    path: 'w/:citySlug/:id/chat',
     loadComponent: () =>
       import('./features/chat/pages/unified-chat/unified-chat.component').then(
         (m) => m.UnifiedChatComponent,
       ),
-    canActivate: [authGuard, activeGuard],
+    canActivate: [verifiedUserGuard, participantGuard],
+    data: { title: 'Czat' },
+  },
+
+  // ── Organizer: new event ──
+  {
+    path: 'o/w/new',
+    loadComponent: () =>
+      import('./features/events/pages/event-form/event-form.component').then(
+        (m) => m.EventFormComponent,
+      ),
+    canActivate: [verifiedUserGuard],
+    data: { title: 'Nowe wydarzenie' },
+  },
+
+  // ── Organizer: edit event ──
+  {
+    path: 'o/w/:id/edit',
+    loadComponent: () =>
+      import('./features/events/pages/event-form/event-form.component').then(
+        (m) => m.EventFormComponent,
+      ),
+    canActivate: [verifiedUserGuard, organizerGuard],
+    data: { title: 'Edycja wydarzenia' },
+  },
+
+  // ── Organizer: manage event ──
+  {
+    path: 'o/w/:id/manage',
+    loadComponent: () =>
+      import('./features/organizer/pages/event-manage/event-manage.component').then(
+        (m) => m.EventManageComponent,
+      ),
+    canActivate: [verifiedUserGuard, organizerGuard],
+    data: { title: 'Zarządzanie' },
+  },
+
+  // ── Organizer: conversation list ──
+  {
+    path: 'o/w/:id/conversations',
+    loadComponent: () =>
+      import('./features/chat/pages/host-chat/host-chat.component').then(
+        (m) => m.HostChatComponent,
+      ),
+    canActivate: [verifiedUserGuard, organizerGuard],
+    data: { title: 'Konwersacje' },
+  },
+
+  // ── Organizer: chat with participant ──
+  {
+    path: 'o/w/:id/conversations/:userId',
+    loadComponent: () =>
+      import('./features/chat/pages/unified-chat/unified-chat.component').then(
+        (m) => m.UnifiedChatComponent,
+      ),
+    canActivate: [verifiedUserGuard, organizerGuard],
     data: { title: 'Wiadomość prywatna', isPrivate: true },
   },
+
+  // ── Utility (internal, skipLocationChange) ──
+  {
+    path: 'not-found',
+    loadComponent: () =>
+      import('./features/error/pages/not-found/not-found-page.component').then(
+        (m) => m.NotFoundPageComponent,
+      ),
+    data: { title: 'Nie znaleziono' },
+  },
+  {
+    path: 'unverified',
+    loadComponent: () =>
+      import('./features/auth/pages/unverified-account/unverified-account-page.component').then(
+        (m) => m.UnverifiedAccountPageComponent,
+      ),
+    data: { title: 'Konto niezweryfikowane' },
+  },
+
+  // ── Auth ──
   {
     path: 'auth/login',
     loadComponent: () =>
@@ -120,6 +176,8 @@ export const appRoutes: Route[] = [
       ),
     data: { title: 'Reset hasła' },
   },
+
+  // ── User ──
   {
     path: 'profile',
     loadComponent: () =>
@@ -154,6 +212,8 @@ export const appRoutes: Route[] = [
     canActivate: [authGuard, activeGuard],
     data: { title: 'Galeria' },
   },
+
+  // ── Payments ──
   {
     path: 'payments',
     loadComponent: () =>
@@ -180,7 +240,9 @@ export const appRoutes: Route[] = [
       ),
     data: { title: 'Status płatności' },
   },
-    {
+
+  // ── Admin ──
+  {
     path: 'admin',
     loadComponent: () =>
       import('./features/admin/pages/admin-dashboard/admin-dashboard.component').then(
@@ -234,6 +296,8 @@ export const appRoutes: Route[] = [
     canActivate: [adminGuard],
     data: { title: 'Ustawienia' },
   },
+
+  // ── Static ──
   {
     path: 'faq',
     loadComponent: () =>
@@ -258,5 +322,7 @@ export const appRoutes: Route[] = [
       import('./features/static/pages/terms/terms.component').then((m) => m.TermsComponent),
     data: { title: 'Regulamin' },
   },
+
+  // ── Catch-all ──
   { path: '**', redirectTo: '' },
 ];

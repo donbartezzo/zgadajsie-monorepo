@@ -24,4 +24,8 @@ export class DictionaryService {
   getLevels(): Observable<DictionaryItem[]> {
     return this.http.get<DictionaryItem[]>(`${this.apiUrl}/levels`);
   }
+
+  getCityBySlug(slug: string): Observable<City> {
+    return this.http.get<City>(`${this.apiUrl}/cities/${slug}`);
+  }
 }

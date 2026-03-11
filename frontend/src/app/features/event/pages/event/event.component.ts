@@ -309,7 +309,8 @@ export class EventComponent implements OnInit, OnDestroy {
 
   openChat(): void {
     this.overlays.close();
-    this.router.navigate(['/events', this.eventId, 'chat']);
+    const slug = this.event()?.city?.slug;
+    this.router.navigate(['/w', slug, this.eventId, 'chat']);
   }
 
   onFollow(): void {
@@ -317,14 +318,15 @@ export class EventComponent implements OnInit, OnDestroy {
   }
 
   openOrganizerChats(): void {
-    this.router.navigate(['/events', this.eventId, 'host-chat']);
+    this.router.navigate(['/o', 'w', this.eventId, 'conversations']);
   }
 
   contactOrganizer(): void {
     const organizerId = this.event()?.organizerId;
     if (!organizerId) return;
     this.overlays.close();
-    this.router.navigate(['/events', this.eventId, 'host-chat']);
+    const slug = this.event()?.city?.slug;
+    this.router.navigate(['/w', slug, this.eventId, 'host-chat']);
   }
 
   async requestLeave(): Promise<void> {

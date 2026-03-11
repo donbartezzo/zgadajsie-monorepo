@@ -17,4 +17,5 @@ export interface UserBriefWithEmail extends UserBrief {
 export interface EventRef {
   id: string;
   title: string;
+  city?: { slug: string };
 }

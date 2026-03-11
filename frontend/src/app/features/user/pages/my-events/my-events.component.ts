@@ -27,7 +27,7 @@ import { Event as EventModel } from '../../../../shared/types';
     <div class="p-4">
       <div class="flex items-center justify-between mb-4">
         <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100">Moje wydarzenia</h1>
-        <a routerLink="/events/new">
+        <a routerLink="/o/w/new">
           <app-button variant="primary" size="sm">
             <app-icon name="plus" size="sm"></app-icon> Nowe
           </app-button>
@@ -49,7 +49,7 @@ import { Event as EventModel } from '../../../../shared/types';
           <div class="p-4">
             <div class="flex items-center justify-between mb-2">
               <a
-                [routerLink]="['/events', e.id]"
+                [routerLink]="['/w', e.city?.slug, e.id]"
                 class="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-highlight"
                 >{{ e.title }}</a
               >
@@ -67,7 +67,12 @@ import { Event as EventModel } from '../../../../shared/types';
               {{ e.startsAt | date : 'd MMM yyyy, HH:mm' }}
             </p>
             <div class="flex gap-2">
-              <a [routerLink]="['/events', e.id, 'edit']">
+              <a [routerLink]="['/o', 'w', e.id, 'manage']">
+                <app-button variant="outline" size="sm"
+                  ><app-icon name="settings" size="sm"></app-icon
+                ></app-button>
+              </a>
+              <a [routerLink]="['/o', 'w', e.id, 'edit']">
                 <app-button variant="outline" size="sm"
                   ><app-icon name="edit" size="sm"></app-icon
                 ></app-button>

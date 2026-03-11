@@ -211,7 +211,7 @@ export class HostChatComponent implements OnInit, OnDestroy {
   }
 
   openChat(participantId: string): void {
-    this.router.navigate(['/events', this.eventId, 'host-chat', participantId]);
+    this.router.navigate(['/o', 'w', this.eventId, 'conversations', participantId]);
   }
 
   send(content: string): void {

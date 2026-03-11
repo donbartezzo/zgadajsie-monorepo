@@ -549,7 +549,7 @@ export class EventFormComponent implements OnInit {
     req$.subscribe({
       next: (created) => {
         this.snackbar.success(this.isEdit() ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone');
-        this.router.navigate(['/events', created.id]);
+        this.router.navigate(['/w', created.city?.slug, created.id]);
         this.submitting.set(false);
       },
       error: (err) => {

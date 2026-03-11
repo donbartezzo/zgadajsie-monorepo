@@ -65,6 +65,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
           [disabled]="!isPrivate && chatDisabled()"
           [eventId]="eventId"
           [organizerId]="organizerId()"
+          [citySlug]="event()?.city?.slug || ''"
           (messageSent)="send($event)"
           (typing)="onTyping()"
         ></app-chat-view>
@@ -168,14 +169,14 @@ export class UnifiedChatComponent implements OnInit, OnDestroy {
           const isOrg = e.organizerId === this.currentUserId;
 
           if (!isOrg) {
-            this.router.navigate(['/events', this.eventId, 'host-chat']);
+            this.router.navigate(['/o', 'w', this.eventId, 'conversations']);
             return;
           }
 
           this.otherUserId = this.route.snapshot.paramMap.get('userId') ?? '';
 
           if (!this.otherUserId || this.otherUserId === this.currentUserId) {
-            this.router.navigate(['/events', this.eventId, 'host-chat']);
+            this.router.navigate(['/o', 'w', this.eventId, 'conversations']);
             return;
           }
 
@@ -274,7 +275,8 @@ export class UnifiedChatComponent implements OnInit, OnDestroy {
         this.loading.set(false);
         const msg = err?.error?.message || 'Brak dostępu do tego czatu';
         this.snackbar.error(msg);
-        this.router.navigate(['/events', this.eventId]);
+        const slug = this.event()?.city?.slug;
+        this.router.navigate(['/w', slug, this.eventId]);
       },
     });
 

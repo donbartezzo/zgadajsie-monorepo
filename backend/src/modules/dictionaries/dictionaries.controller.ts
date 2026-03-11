@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { DictionariesService } from './dictionaries.service';
 
 @Controller('dictionaries')
@@ -23,5 +23,10 @@ export class DictionariesController {
   @Get('levels')
   getLevels() {
     return this.dictionariesService.getLevels();
+  }
+
+  @Get('cities/:slug')
+  getCityBySlug(@Param('slug') slug: string) {
+    return this.dictionariesService.getCityBySlug(slug);
   }
 }

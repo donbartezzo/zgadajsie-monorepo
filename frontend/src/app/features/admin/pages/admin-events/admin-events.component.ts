@@ -34,7 +34,7 @@ import { EventListItem } from '../../../../shared/types';
           <div class="p-3 flex items-center justify-between">
             <div>
               <a
-                [routerLink]="['/events', e.id]"
+                [routerLink]="['/w', e.city?.slug, e.id]"
                 class="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-highlight"
                 >{{ e.title }}</a
               >
@@ -43,7 +43,7 @@ import { EventListItem } from '../../../../shared/types';
               </p>
             </div>
             <div class="flex gap-1">
-              <a [routerLink]="['/events', e.id, 'edit']"
+              <a [routerLink]="['/o', 'w', e.id, 'edit']"
                 ><app-button variant="outline" size="sm"
                   ><app-icon name="edit" size="sm"></app-icon></app-button
               ></a>

@@ -28,7 +28,7 @@ export class BottomNavComponent {
   }
 
   navigateToEvents(): void {
-    this.router.navigate(['/events']);
+    this.router.navigate(['/w', 'zielona-gora']);
   }
 
   navigateToProfile(): void {

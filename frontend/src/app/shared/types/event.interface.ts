@@ -2,6 +2,12 @@ import { DictionaryItem } from './dictionary.interface';
 import { UserBrief } from './common.interface';
 import { CoverImage } from './cover-image.interface';
 
+export interface CurrentUserAccess {
+  isParticipant: boolean;
+  isOrganizer: boolean;
+  participationStatus: string | null;
+}
+
 export interface Event {
   id: string;
   title: string;
@@ -40,4 +46,5 @@ export interface Event {
   organizer?: UserBrief;
   coverImage?: CoverImage;
   _count?: { participations: number };
+  currentUserAccess?: CurrentUserAccess;
 }
