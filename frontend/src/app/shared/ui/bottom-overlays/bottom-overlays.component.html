@@ -37,4 +37,12 @@
   (closed)="overlays.close()"
   (confirmed)="overlays.confirmLeave()"
 />
+} @case ('organizerActions') {
+@if (overlays.event(); as evt) {
+<app-organizer-actions-overlay
+  [open]="true"
+  [eventId]="evt.id"
+  (closed)="overlays.close()"
+/>
+}
 } }

@@ -9,6 +9,7 @@ export type OverlayType =
   | 'joinRules'
   | 'joinConfirm'
   | 'leaveConfirm'
+  | 'organizerActions'
   | null;
 
 @Injectable({

@@ -299,72 +299,19 @@
     </div>
     }
 
-    <!-- Join / Leave / Login button -->
+    <!-- Notification bars (participant, organizer, etc.) -->
+    @if (notificationBars().length > 0) {
     <div class="mt-4">
-      @if (isParticipant()) {
+      <app-event-notification-bars
+        [bars]="notificationBars()"
+        (barAction)="handleBarAction($event)"
+      ></app-event-notification-bars>
+    </div>
+    }
 
-      <ng-template #participationNotification let-variant>
-        <div class="flex items-center gap-3">
-          <app-icon
-            name="check"
-            [size]="variant === 'sentinel' ? 'md' : 'xs'"
-            class="text-green-600 dark:text-green-400"
-          ></app-icon>
-
-          <!-- Content -->
-          <div class="flex-1 min-w-0">
-            <p
-              class="font-semibold text-gray-900 dark:text-gray-100 truncate {{
-                variant === 'sentinel' ? 'text-md' : 'text-xs'
-              }}"
-            >
-              @if (participantStatus() === 'PENDING_PAYMENT') { Oczekuje na płatność! } @else {
-              Jesteś już zapisany! }
-            </p>
-            <p class="text-[10px] text-gray-400 dark:text-gray-500">
-              @if (participantStatus() === 'PENDING_PAYMENT') { Rozpocząłeś proces płatności za to
-              wydarzenie. } @else { Dołączyłeś do tego wydarzenia. }
-            </p>
-          </div>
-
-          <!-- Action button -->
-          <app-button
-            variant="outline"
-            [size]="variant === 'sentinel' ? 'sm' : 'xs'"
-            (clicked)="openJoinSheet()"
-            class="shrink-0"
-          >
-            Szczegóły
-          </app-button>
-        </div>
-      </ng-template>
-
-      @if (isParticipant()) {
-      <div
-        #participationSentinel
-        class="relative z-10 bg-green-100 border border-green-200 overflow-hidden -mx-4"
-      >
-        <div class="px-4 py-3">
-          <ng-container
-            *ngTemplateOutlet="participationNotification; context: { $implicit: 'sentinel' }"
-          ></ng-container>
-        </div>
-      </div>
-
-      <!-- Fixed sticky bar — visible only when inline card scrolls out of viewport -->
-      @if (!sentinelVisible()) {
-      <div
-        class="fixed bottom-[var(--footer-height)] inset-x-0 z-30 max-w-app mx-auto animate-slide-up-bar"
-      >
-        <div
-          class="bg-green-100 border border-green-200 px-3 py-1 dark:bg-slate-800 dark:border-slate-600 dark:ring-slate-700"
-        >
-          <ng-container
-            *ngTemplateOutlet="participationNotification; context: { $implicit: 'sticky' }"
-          ></ng-container>
-        </div>
-      </div>
-      } } } @else {
+    <!-- Join / Login button (only when not participant) -->
+    @if (!isParticipant()) {
+    <div class="mt-4">
       <app-button
         variant="primary"
         [fullWidth]="true"
@@ -373,8 +320,8 @@
       >
         {{ auth.isLoggedIn() ? 'Dołącz do wydarzenia' : 'Zaloguj się, aby dołączyć' }}
       </app-button>
-      }
     </div>
+    }
 
     <!-- Group chat button — visible for participants and organizer -->
     @if (isParticipant() || isOrganizer()) {

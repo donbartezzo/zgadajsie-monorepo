@@ -3,12 +3,10 @@ import {
   Component,
   computed,
   effect,
-  ElementRef,
   inject,
   OnDestroy,
   OnInit,
   signal,
-  viewChild,
 } from '@angular/core';
 import { IconName, IconComponent } from '../../../../core/icons/icon.component';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
@@ -24,6 +22,10 @@ import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bot
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { EventHeroComponent } from '../../../../shared/ui/event-hero/event-hero.component';
 import { Event as EventModel, Participation } from '../../../../shared/types';
+import {
+  EventNotificationBarsComponent,
+  NotificationBarConfig,
+} from '../../ui/event-notification-bars/event-notification-bars.component';
 
 @Component({
   selector: 'app-event',
@@ -38,33 +40,13 @@ import { Event as EventModel, Participation } from '../../../../shared/types';
     LoadingSpinnerComponent,
     CardComponent,
     EventHeroComponent,
+    EventNotificationBarsComponent,
   ],
   templateUrl: './event.component.html',
-  styles: [
-    `
-      @keyframes slideUpBar {
-        from {
-          transform: translateY(100%);
-          opacity: 0;
-        }
-        to {
-          transform: translateY(0);
-          opacity: 1;
-        }
-      }
-      :host ::ng-deep .animate-slide-up-bar {
-        animation: slideUpBar 0.35s ease-out;
-      }
-    `,
-  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventComponent implements OnInit, OnDestroy {
   private countdownInterval: ReturnType<typeof setInterval> | null = null;
-  private sentinelObserver: IntersectionObserver | null = null;
-
-  readonly participationSentinel = viewChild<ElementRef<HTMLElement>>('participationSentinel');
-  readonly sentinelVisible = signal(true);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
@@ -152,21 +134,6 @@ export class EventComponent implements OnInit, OnDestroy {
     this.overlays.onOpenChat(() => this.openChat());
     this.overlays.onPay(() => this.payEvent());
     this.overlays.onContactOrganizer(() => this.contactOrganizer());
-
-    // Re-observe sentinel whenever the element appears/disappears (it's inside @if)
-    effect(() => {
-      const el = this.participationSentinel()?.nativeElement;
-      this.sentinelObserver?.disconnect();
-      if (el) {
-        this.sentinelObserver = new IntersectionObserver(
-          ([entry]) => this.sentinelVisible.set(entry.isIntersecting),
-          { threshold: 0, rootMargin: '0px 0px -120px 0px' },
-        );
-        this.sentinelObserver.observe(el);
-      } else {
-        this.sentinelVisible.set(true);
-      }
-    });
   }
 
   ngOnInit(): void {
@@ -186,7 +153,6 @@ export class EventComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.countdownInterval) clearInterval(this.countdownInterval);
-    this.sentinelObserver?.disconnect();
     this.overlays.clearCallbacks();
     this.overlays.setEventContext(null, []);
   }
@@ -234,6 +200,41 @@ export class EventComponent implements OnInit, OnDestroy {
     if (!userId) return null;
     const p = this.participants().find((pp) => pp.userId === userId);
     return p?.status ?? null;
+  });
+
+  readonly notificationBars = computed<NotificationBarConfig[]>(() => {
+    const bars: NotificationBarConfig[] = [];
+
+    if (this.isParticipant()) {
+      const isPending = this.participantStatus() === 'PENDING_PAYMENT';
+      bars.push({
+        id: 'participant',
+        icon: 'check',
+        iconColorClass: 'text-green-600 dark:text-green-400',
+        title: isPending ? 'Oczekuje na płatność!' : 'Jesteś już zapisany!',
+        subtitle: isPending
+          ? 'Rozpocząłeś proces płatności za to wydarzenie.'
+          : 'Dołączyłeś do tego wydarzenia.',
+        buttonLabel: 'Szczegóły',
+        bgClass: 'bg-green-100 dark:bg-green-900/20',
+        borderClass: 'border border-green-200 dark:border-green-800',
+      });
+    }
+
+    if (this.isOrganizer()) {
+      bars.push({
+        id: 'organizer',
+        icon: 'shield',
+        iconColorClass: 'text-blue-600 dark:text-blue-400',
+        title: 'Jesteś organizatorem',
+        subtitle: 'Zarządzaj tym wydarzeniem.',
+        buttonLabel: 'Opcje',
+        bgClass: 'bg-blue-100 dark:bg-blue-900/20',
+        borderClass: 'border border-blue-200 dark:border-blue-800',
+      });
+    }
+
+    return bars;
   });
 
   openJoinSheet(): void {
@@ -318,7 +319,20 @@ export class EventComponent implements OnInit, OnDestroy {
   }
 
   openOrganizerChats(): void {
+    this.overlays.close();
     this.router.navigate(['/o', 'w', this.eventId, 'conversations']);
+  }
+
+  openOrganizerActionsSheet(): void {
+    this.overlays.open('organizerActions');
+  }
+
+  handleBarAction(barId: string): void {
+    if (barId === 'participant') {
+      this.openJoinSheet();
+    } else if (barId === 'organizer') {
+      this.openOrganizerActionsSheet();
+    }
   }
 
   contactOrganizer(): void {
