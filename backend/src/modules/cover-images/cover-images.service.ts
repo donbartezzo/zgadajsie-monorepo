@@ -1,5 +1,4 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
@@ -11,15 +10,11 @@ const COVER_IMAGE_WIDTH = 700;
 const COVER_IMAGE_HEIGHT = 250;
 const COVER_IMAGE_FORMAT = 'webp' as const;
 
-const COVERS_DIR = path.join(process.cwd(), 'frontend/public/assets/covers');
-const COVERS_URL_PREFIX = '/assets/covers';
+const COVERS_DIR = path.join(process.cwd(), 'frontend/public/assets/covers/events');
 
 @Injectable()
 export class CoverImagesService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async findAll(disciplineId?: string) {
     return this.prisma.coverImage.findMany({
@@ -57,12 +52,11 @@ export class CoverImagesService {
     const filename = `${uuidv4()}.${COVER_IMAGE_FORMAT}`;
     await this.ensureCoversDir();
     await fs.writeFile(path.join(COVERS_DIR, filename), buffer);
-    const url = this.buildCoverUrl(filename);
 
     return this.prisma.coverImage.create({
       data: {
         disciplineId,
-        url,
+        filename,
         originalName: file.originalname,
       },
       include: { discipline: true },
@@ -74,16 +68,15 @@ export class CoverImagesService {
 
     const buffer = await this.processImage(file.buffer);
 
-    await this.deleteLocalFile(existing.url);
+    await this.deleteLocalFile(existing.filename);
 
     const filename = `${uuidv4()}.${COVER_IMAGE_FORMAT}`;
     await fs.writeFile(path.join(COVERS_DIR, filename), buffer);
-    const url = this.buildCoverUrl(filename);
 
     return this.prisma.coverImage.update({
       where: { id },
       data: {
-        url,
+        filename,
         originalName: file.originalname,
       },
       include: { discipline: true },
@@ -114,7 +107,7 @@ export class CoverImagesService {
       );
     }
 
-    await this.deleteLocalFile(existing.url);
+    await this.deleteLocalFile(existing.filename);
 
     return this.prisma.coverImage.delete({ where: { id } });
   }
@@ -139,13 +132,7 @@ export class CoverImagesService {
     await fs.mkdir(COVERS_DIR, { recursive: true });
   }
 
-  private buildCoverUrl(filename: string): string {
-    const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
-    return `${frontendUrl}${COVERS_URL_PREFIX}/${filename}`;
-  }
-
-  private async deleteLocalFile(url: string): Promise<void> {
-    const filename = url.split('/').pop();
+  private async deleteLocalFile(filename: string): Promise<void> {
     if (!filename) return;
     const filePath = path.join(COVERS_DIR, filename);
     try {

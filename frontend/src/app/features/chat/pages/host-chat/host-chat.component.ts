@@ -1,34 +1,13 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  inject,
-  OnInit,
-  OnDestroy,
-  signal,
-} from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { Subscription } from 'rxjs';
 import { IconComponent } from '../../../../core/icons/icon.component';
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
-import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
-import {
-  ChatViewComponent,
-  ChatViewMessage,
-} from '../../../../shared/ui/chat-view/chat-view.component';
-import { ChatService } from '../../../../core/services/chat.service';
-import { EventService } from '../../../../core/services/event.service';
-import { AuthService } from '../../../../core/auth/auth.service';
-import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import {
-  Event as EventModel,
-  OrganizerConversation,
-  PrivateChatMessage,
-} from '../../../../shared/types';
+import { ChatViewComponent } from '../../../../shared/ui/chat-view/chat-view.component';
+import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay.component';
+import { OrganizerConversation } from '../../../../shared/types';
+import { BaseChatComponent } from '../base-chat.component';
 
 @Component({
   selector: 'app-host-chat',
@@ -39,16 +18,37 @@ import {
     UserAvatarComponent,
     LoadingSpinnerComponent,
     ChatViewComponent,
+    ChatMembersOverlayComponent,
   ],
   template: `
     <ng-template appLayoutSlot="overlay">
-      <h1 class="text-lg font-extrabold text-white leading-tight">{{ title() }}</h1>
-      <p class="text-xs text-white/80 mt-0.5">{{ isOrganizerMode() ? 'Organizator' : 'Wiadomość prywatna' }}</p>
+      <h1 class="text-lg font-extrabold text-white leading-tight">{{ headerTitle() }}</h1>
+      <p class="text-xs text-white/80 mt-0.5">{{ headerSubtitle() }}</p>
     </ng-template>
 
     <ng-template appLayoutSlot="miniBar">
-      <p class="text-xs font-bold text-gray-900 truncate">{{ title() }}</p>
-      <p class="text-[10px] text-gray-400 mt-0.5">{{ isOrganizerMode() ? 'Organizator' : 'Wiadomość prywatna' }}</p>
+      <p class="text-xs font-bold text-gray-900 truncate">{{ headerTitle() }}</p>
+      <p class="text-[10px] text-gray-400 mt-0.5">{{ headerSubtitle() }}</p>
+    </ng-template>
+
+    <ng-template appLayoutSlot="badge">
+      @if (!chatDisabled()) {
+        <button
+          type="button"
+          class="relative grid h-8 w-8 place-items-center rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 transition-colors mt-1 mr-2"
+          (click)="showMembers.set(true)"
+          aria-label="Uczestnicy"
+        >
+          <app-icon name="users" size="sm"></app-icon>
+          @if (memberCount(); as count) {
+          <span
+            class="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-highlight text-[10px] font-bold text-white px-1"
+          >
+            {{ count }}
+          </span>
+          }
+        </button>
+      }
     </ng-template>
 
     @if (isOrganizerMode()) {
@@ -124,7 +124,7 @@ import {
     <!-- ─── PARTICIPANT: private chat with organizer ─── -->
     <div class="flex-1 flex flex-col min-h-0">
       <app-chat-view
-        [messages]="chatViewMessages()"
+        [messages]="privateChatViewMessages()"
         [currentUserId]="currentUserId"
         [loading]="loading()"
         [typingUser]="typingUser()"
@@ -134,75 +134,48 @@ import {
       ></app-chat-view>
     </div>
     }
+
+    @if (showMembers()) {
+    <app-chat-members-overlay
+      [eventId]="eventId"
+      [isOrganizer]="isOrganizer()"
+      [organizerId]="organizerId()"
+      [currentUserId]="currentUserId"
+      (closed)="showMembers.set(false)"
+      (memberBanned)="onMemberBanned($event)"
+      (memberUnbanned)="onMemberUnbanned($event)"
+    ></app-chat-members-overlay>
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HostChatComponent implements OnInit, OnDestroy {
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly chatService = inject(ChatService);
-  private readonly eventService = inject(EventService);
-  private readonly auth = inject(AuthService);
-  private readonly snackbar = inject(SnackbarService);
-  private readonly layoutConfig = inject(LayoutConfigService);
-
-  constructor() {
-    effect(() => {
-      const url = this.event()?.coverImage?.url;
-      if (url) {
-        this.layoutConfig.coverImageUrl.set(url);
-      }
-    });
-  }
-
-  readonly event = signal<EventModel | null>(null);
+export class HostChatComponent extends BaseChatComponent implements OnInit {
   readonly conversations = signal<OrganizerConversation[]>([]);
-  readonly privateMessages = signal<PrivateChatMessage[]>([]);
-  readonly loading = signal(true);
-  readonly typingUser = signal<string | null>(null);
   readonly isOrganizerMode = signal(false);
   readonly otherUserName = signal('');
-  readonly chatDisabled = signal(false);
 
-  currentUserId = '';
-  private eventId = '';
-  private organizerId = '';
+  private hostOrganizerId = '';
 
-  readonly title = computed(() => {
+  readonly headerTitle = computed(() => {
     if (this.isOrganizerMode()) {
       return 'Konwersacje prywatne';
     }
     return this.otherUserName() || 'Wiadomość prywatna';
   });
 
-  readonly chatViewMessages = computed<ChatViewMessage[]>(() =>
-    this.privateMessages().map((msg) => ({
-      id: msg.id,
-      senderId: msg.senderId,
-      content: msg.content,
-      createdAt: msg.createdAt,
-      sender: msg.sender
-        ? {
-            id: msg.sender.id,
-            displayName: msg.sender.displayName,
-            avatarUrl: msg.sender.avatarUrl,
-          }
-        : undefined,
-    })),
+  readonly headerSubtitle = computed(() =>
+    this.isOrganizerMode() ? 'Organizator' : 'Wiadomość prywatna',
   );
 
-  private msgSub!: Subscription;
-  private typingSub!: Subscription;
-  private typingTimeout: ReturnType<typeof setTimeout> | undefined;
-
   ngOnInit(): void {
-    this.eventId = this.route.snapshot.paramMap.get('id') ?? '';
-    this.currentUserId = this.auth.currentUser()?.id ?? '';
+    this.initBaseData();
 
     this.eventService.getEvent(this.eventId).subscribe({
       next: (e) => {
         this.event.set(e);
-        this.organizerId = e.organizerId;
+        this.hostOrganizerId = e.organizerId;
+        this.organizerId.set(e.organizerId);
+        this.isOrganizer.set(e.organizerId === this.currentUserId);
 
         if (e.organizerId === this.currentUserId) {
           this.isOrganizerMode.set(true);
@@ -215,15 +188,8 @@ export class HostChatComponent implements OnInit, OnDestroy {
       },
       error: () => this.loading.set(false),
     });
-  }
 
-  ngOnDestroy(): void {
-    this.chatService.disconnect();
-    this.msgSub?.unsubscribe();
-    this.typingSub?.unsubscribe();
-    if (this.typingTimeout) {
-      clearTimeout(this.typingTimeout);
-    }
+    this.loadMemberCount();
   }
 
   openChat(participantId: string): void {
@@ -231,11 +197,11 @@ export class HostChatComponent implements OnInit, OnDestroy {
   }
 
   send(content: string): void {
-    this.chatService.sendPrivateMessage(this.eventId, this.organizerId, content);
+    this.chatService.sendPrivateMessage(this.eventId, this.hostOrganizerId, content);
   }
 
   onTyping(): void {
-    this.chatService.sendPrivateTyping(this.eventId, this.organizerId);
+    this.chatService.sendPrivateTyping(this.eventId, this.hostOrganizerId);
   }
 
   private loadConversations(): void {
@@ -249,31 +215,6 @@ export class HostChatComponent implements OnInit, OnDestroy {
   }
 
   private initPrivateChat(): void {
-    this.chatService.getPrivateHistory(this.eventId, this.organizerId).subscribe({
-      next: (res) => {
-        this.privateMessages.set(res.data);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.loading.set(false);
-        const msg = err?.error?.message || 'Brak dostępu do tego czatu';
-        this.snackbar.error(msg);
-        this.chatDisabled.set(true);
-      },
-    });
-
-    this.chatService.connectPrivate(this.eventId, this.organizerId);
-
-    this.msgSub = this.chatService.onPrivateMessage().subscribe((msg) => {
-      this.privateMessages.update((prev) => [...prev, msg]);
-    });
-
-    this.typingSub = this.chatService.onPrivateTyping().subscribe((data) => {
-      this.typingUser.set(data.displayName);
-      if (this.typingTimeout) {
-        clearTimeout(this.typingTimeout);
-      }
-      this.typingTimeout = setTimeout(() => this.typingUser.set(null), 2000);
-    });
+    this.initPrivateChatBase(this.hostOrganizerId);
   }
 }

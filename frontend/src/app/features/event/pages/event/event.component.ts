@@ -22,6 +22,7 @@ import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 import { Event as EventModel, Participation } from '../../../../shared/types';
+import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 import {
   EventNotificationBarsComponent,
   NotificationBarConfig,
@@ -144,9 +145,9 @@ export class EventComponent implements OnInit, OnDestroy {
     // Set cover image and white content background for event page
     this.layoutConfig.contentBgClass.set('bg-white');
     effect(() => {
-      const url = this.event()?.coverImage?.url;
-      if (url) {
-        this.layoutConfig.coverImageUrl.set(url);
+      const filename = this.event()?.coverImage?.filename;
+      if (filename) {
+        this.layoutConfig.coverImageUrl.set(coverImageUrl(filename));
       }
     });
 

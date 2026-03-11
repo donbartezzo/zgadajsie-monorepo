@@ -84,7 +84,7 @@ model EventDiscipline {
 model CoverImage {
   id           String   @id @default(uuid())
   disciplineId String
-  url          String
+  filename     String
   originalName String
   createdAt    DateTime @default(now())
 

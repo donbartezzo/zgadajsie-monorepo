@@ -3,6 +3,7 @@ import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { UserAvatarComponent } from '../user-avatar/user-avatar.component';
 import { EventListItem } from '../../types';
+import { coverImageUrl } from '../../types/cover-image.interface';
 
 @Component({
   selector: 'app-event-card',
@@ -12,8 +13,8 @@ import { EventListItem } from '../../types';
       class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200"
       (click)="selected.emit(event())"
     >
-      @if (event().coverImage?.url) {
-      <img [src]="event().coverImage!.url" [alt]="event().title" class="w-full h-40 object-cover" />
+      @if (event().coverImage?.filename) {
+      <img [src]="coverUrl()" [alt]="event().title" class="w-full h-40 object-cover" />
       } @else {
       <div
         class="w-full h-40 bg-gradient-to-br from-highlight-light to-highlight flex items-center justify-center"
@@ -99,6 +100,11 @@ import { EventListItem } from '../../types';
 export class EventCardComponent {
   readonly event = input.required<EventListItem>();
   readonly selected = output<EventListItem>();
+
+  readonly coverUrl = computed(() => {
+    const filename = this.event().coverImage?.filename;
+    return filename ? coverImageUrl(filename) : '';
+  });
 
   readonly rulesList = computed(() => {
     const rules = this.event().rules;

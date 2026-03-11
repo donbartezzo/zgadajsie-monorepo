@@ -15,6 +15,7 @@ import { EventService } from '../../../../core/services/event.service';
 import { Event as EventModel, Participation } from '../../../../shared/types';
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
+import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 
 const ACTIVE_STATUSES = ['APPLIED', 'ACCEPTED', 'PARTICIPANT', 'PENDING_PAYMENT'];
 const PENDING_STATUSES = ['RESERVE'];
@@ -38,9 +39,9 @@ export class EventParticipantsComponent implements OnInit {
 
   constructor() {
     effect(() => {
-      const url = this.event()?.coverImage?.url;
-      if (url) {
-        this.layoutConfig.coverImageUrl.set(url);
+      const filename = this.event()?.coverImage?.filename;
+      if (filename) {
+        this.layoutConfig.coverImageUrl.set(coverImageUrl(filename));
       }
     });
   }

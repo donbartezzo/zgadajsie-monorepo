@@ -7,6 +7,7 @@ import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-sta
 import { EventService } from '../../../../core/services/event.service';
 import { EventListItem } from '../../../../shared/types';
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
+import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 
 @Component({
   selector: 'app-events',
@@ -19,6 +20,7 @@ export class EventsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
+  private readonly layoutConfig = inject(LayoutConfigService);
   readonly events = signal<EventListItem[]>([]);
   readonly isLoading = signal(true);
   readonly error = signal<string | null>(null);
@@ -28,6 +30,9 @@ export class EventsComponent implements OnInit {
 
   ngOnInit(): void {
     this.citySlug = this.route.snapshot.paramMap.get('citySlug') ?? '';
+    if (this.citySlug) {
+      this.layoutConfig.coverImageUrl.set(`assets/covers/cities/${this.citySlug}.webp`);
+    }
     this.loadEvents();
   }
 

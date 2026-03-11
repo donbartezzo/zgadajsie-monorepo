@@ -9,6 +9,7 @@ import { CoverImageService } from '../../../../core/services/cover-image.service
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { CoverImage, DictionaryItem } from '../../../../shared/types';
+import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 
 @Component({
   selector: 'app-admin-cover-images',
@@ -97,7 +98,7 @@ import { CoverImage, DictionaryItem } from '../../../../shared/types';
         <app-card>
           <div class="overflow-hidden rounded-xl">
             <img
-              [src]="cover.url"
+              [src]="getCoverUrl(cover)"
               [alt]="cover.originalName"
               class="w-full aspect-[700/250] object-cover"
             />
@@ -161,6 +162,10 @@ export class AdminCoverImagesComponent implements OnInit {
   uploadDisciplineId = '';
   uploadFile: File | null = null;
   filterDisciplineId = '';
+
+  getCoverUrl(cover: CoverImage): string {
+    return coverImageUrl(cover.filename);
+  }
 
   ngOnInit(): void {
     this.dictService.getDisciplines().subscribe((d) => this.disciplines.set(d));

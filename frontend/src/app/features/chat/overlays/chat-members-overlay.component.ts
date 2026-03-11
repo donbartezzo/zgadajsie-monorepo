@@ -12,38 +12,18 @@ import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.
 import { LoadingSpinnerComponent } from '../../../shared/ui/loading-spinner/loading-spinner.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { ChatService } from '../../../core/services/chat.service';
-import { ChatMember, ChatMembersResponse } from '../../../shared/types';
+import { ChatMember } from '../../../shared/types';
 
 @Component({
   selector: 'app-chat-members-overlay',
-  imports: [
-    BottomOverlayComponent,
-    UserAvatarComponent,
-    LoadingSpinnerComponent,
-    ButtonComponent,
-  ],
+  imports: [BottomOverlayComponent, UserAvatarComponent, LoadingSpinnerComponent, ButtonComponent],
   template: `
     <app-bottom-overlay [open]="true" title="Uczestnicy czatu" (closed)="closed.emit()">
       @if (loading()) {
       <div class="py-8 flex justify-center">
         <app-loading-spinner></app-loading-spinner>
       </div>
-      } @else { @if (showOrganizerSection() && organizer(); as org) {
-      <div class="flex items-center gap-3 p-3 mb-2 rounded-xl bg-highlight/5">
-        <app-user-avatar
-          [avatarUrl]="org.avatarUrl"
-          [displayName]="org.displayName"
-          size="sm"
-        ></app-user-avatar>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-            {{ org.displayName }}
-          </p>
-          <span class="text-[10px] text-highlight font-semibold uppercase">Organizator</span>
-        </div>
-      </div>
-      }
-
+      } @else {
       <p class="text-xs text-gray-400 dark:text-gray-500 mb-2 px-1">
         {{ activeCount() }} aktywnych · {{ totalCount() }} łącznie
       </p>
@@ -53,6 +33,7 @@ import { ChatMember, ChatMembersResponse } from '../../../shared/types';
         <div
           class="flex items-center gap-3 p-3 rounded-xl transition-colors"
           [class.opacity-40]="!m.isActive"
+          [class.bg-highlight/5]="m.user.id === organizerId()"
         >
           <app-user-avatar
             [avatarUrl]="m.user.avatarUrl"
@@ -63,7 +44,9 @@ import { ChatMember, ChatMembersResponse } from '../../../shared/types';
             <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
               {{ m.user.displayName }}
             </p>
-            @if (!m.isActive && m.inactiveReason) {
+            @if (m.user.id === organizerId()) {
+            <span class="text-[10px] text-highlight font-semibold uppercase">Organizator</span>
+            } @else if (!m.isActive && m.inactiveReason) {
             <span class="text-[10px] text-red-500 dark:text-red-400">
               {{ m.inactiveReason }}
             </span>
@@ -105,8 +88,6 @@ export class ChatMembersOverlayComponent implements OnInit {
   readonly memberUnbanned = output<string>();
 
   readonly members = signal<ChatMember[]>([]);
-  readonly organizer = signal<ChatMembersResponse['organizer'] | null>(null);
-  readonly showOrganizerSection = signal(true);
   readonly loading = signal(true);
   readonly activeCount = signal(0);
   readonly totalCount = signal(0);
@@ -118,47 +99,48 @@ export class ChatMembersOverlayComponent implements OnInit {
   private loadMembers(): void {
     this.chatService.getMembers(this.eventId()).subscribe({
       next: (res) => {
-        this.organizer.set(res.organizer);
-
         const privateUserId = this.otherUserId();
         const currentUserId = this.currentUserId();
         let filtered: typeof res.members;
-        let showOrganizer = true;
 
         if (privateUserId) {
-          // For private chat, show both users: current user and the other user
           const currentUserInMembers = res.members.find((m) => m.user.id === currentUserId);
           const otherUserInMembers = res.members.find((m) => m.user.id === privateUserId);
-          
+
           filtered = [];
-          
-          // Add current user if found in members
-          if (currentUserInMembers) {
-            filtered.push(currentUserInMembers);
-          }
-          
-          // Add other user if found in members
-          if (otherUserInMembers) {
-            filtered.push(otherUserInMembers);
-          }
-          
-          // Don't show separate organizer section if the other user is the organizer
-          showOrganizer = privateUserId !== res.organizer.id;
+          if (currentUserInMembers) filtered.push(currentUserInMembers);
+          if (otherUserInMembers) filtered.push(otherUserInMembers);
         } else {
-          // For group chat, show all members
           filtered = res.members;
         }
 
+        // Ensure organizer is first on the list
+        const orgId = res.organizer.id;
+        const organizerInList = filtered.some((m) => m.user.id === orgId);
+
+        if (organizerInList) {
+          filtered = [
+            ...filtered.filter((m) => m.user.id === orgId),
+            ...filtered.filter((m) => m.user.id !== orgId),
+          ];
+        } else {
+          // Organizer not in members (no participation) — create a virtual entry
+          filtered = [
+            {
+              user: res.organizer,
+              status: 'ORGANIZER',
+              isActive: true,
+              isBanned: false,
+              isWithdrawn: false,
+              inactiveReason: null,
+            } as ChatMember,
+            ...filtered,
+          ];
+        }
+
         this.members.set(filtered);
-        this.showOrganizerSection.set(showOrganizer);
-
-        // Check if organizer is already in members (has participation)
-        const organizerInMembers = res.members.some((m) => m.user.id === res.organizer.id);
-        const organizerBonus = organizerInMembers || !showOrganizer ? 0 : 1;
-
-        this.activeCount.set(filtered.filter((m) => m.isActive).length + organizerBonus);
-        this.totalCount.set(filtered.length + organizerBonus);
-
+        this.activeCount.set(filtered.filter((m) => m.isActive).length);
+        this.totalCount.set(filtered.length);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),

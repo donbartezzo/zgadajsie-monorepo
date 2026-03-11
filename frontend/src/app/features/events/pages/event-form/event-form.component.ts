@@ -13,6 +13,7 @@ import { CoverImageService } from '../../../../core/services/cover-image.service
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { DictionaryItem, City, Event, CoverImage } from '../../../../shared/types';
+import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 
 @Component({
   selector: 'app-event-form',
@@ -330,7 +331,7 @@ import { DictionaryItem, City, Event, CoverImage } from '../../../../shared/type
                 (click)="selectCoverImage(cover)"
               >
                 <img
-                  [src]="cover.url"
+                  [src]="coverUrl(cover)"
                   [alt]="cover.originalName"
                   class="w-full aspect-[700/250] object-cover"
                 />
@@ -477,6 +478,10 @@ export class EventFormComponent implements OnInit {
         }
       });
     }
+  }
+
+  coverUrl(cover: CoverImage): string {
+    return coverImageUrl(cover.filename);
   }
 
   selectCoverImage(cover: CoverImage): void {

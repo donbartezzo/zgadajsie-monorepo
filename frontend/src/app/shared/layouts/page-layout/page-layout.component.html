@@ -86,12 +86,10 @@
      ═══════════════════════════════════════════════════ -->
 <div class="relative z-10" [ngClass]="_showHeader ? '-mt-6' : ''">
   <div
-    class="overflow-hidden"
+    class="overflow-hidden rounded-2xl"
     [ngClass]="
       layoutConfig.contentBgClass() +
-      (_showFooter
-        ? ' rounded-2xl' + (isDefaultBg() ? '' : ' shadow-sm border border-gray-100')
-        : '')
+      (isDefaultBg() ? '' : ' shadow-sm border border-gray-100')
     "
   >
     @if (_showHeader) {
