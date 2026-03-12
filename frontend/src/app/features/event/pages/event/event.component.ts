@@ -355,7 +355,8 @@ export class EventComponent implements OnInit, OnDestroy {
 
   openOrganizerChats(): void {
     this.overlays.close();
-    this.router.navigate(['/o', 'w', this.eventId, 'conversations']);
+    const slug = this.event()?.city?.slug;
+    this.router.navigate(['/w', slug, this.eventId, 'host-chat']);
   }
 
   openOrganizerActionsSheet(): void {

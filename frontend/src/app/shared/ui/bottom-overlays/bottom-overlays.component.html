@@ -42,6 +42,7 @@
 <app-organizer-actions-overlay
   [open]="true"
   [eventId]="evt.id"
+  [citySlug]="evt.city?.slug ?? ''"
   (closed)="overlays.close()"
 />
 }

@@ -10,6 +10,7 @@ import { EventService } from '../../../../core/services/event.service';
 import { ModerationService } from '../../../../core/services/moderation.service';
 import { PaymentService } from '../../../../core/services/payment.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
 import { Participation, UserBrief } from '../../../../shared/types';
 
 interface EarningItem {
@@ -188,6 +189,7 @@ export class EventManageComponent implements OnInit {
   private readonly moderationService = inject(ModerationService);
   private readonly paymentService = inject(PaymentService);
   private readonly snackbar = inject(SnackbarService);
+  private readonly breadcrumb = inject(BreadcrumbService);
 
   readonly participants = signal<Participation[]>([]);
   readonly earnings = signal<EarningItem[]>([]);
@@ -195,6 +197,7 @@ export class EventManageComponent implements OnInit {
   readonly loading = signal(true);
   readonly autoAccept = signal(false);
   private eventId = '';
+  private citySlug = '';
 
   get pending(): () => Participation[] {
     return () => this.participants().filter((p) => p.status === 'PENDING');
@@ -206,7 +209,11 @@ export class EventManageComponent implements OnInit {
 
   ngOnInit(): void {
     this.eventId = this.route.snapshot.paramMap.get('id')!;
-    this.eventService.getEvent(this.eventId).subscribe((e) => this.autoAccept.set(e.autoAccept));
+    this.eventService.getEvent(this.eventId).subscribe((e) => {
+      this.autoAccept.set(e.autoAccept);
+      this.citySlug = e.city?.slug ?? '';
+      this.breadcrumb.setContext({ citySlug: this.citySlug });
+    });
     this.eventService.getParticipants(this.eventId).subscribe({
       next: (p) => {
         this.participants.set(p);
@@ -282,7 +289,7 @@ export class EventManageComponent implements OnInit {
   }
 
   openChat(userId: string): void {
-    this.router.navigate(['/o', 'w', this.eventId, 'conversations', userId]);
+    this.router.navigate(['/w', this.citySlug, this.eventId, 'host-chat', userId]);
   }
 
   onRefundMoney(paymentId: string): void {

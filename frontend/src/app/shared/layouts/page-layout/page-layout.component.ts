@@ -8,12 +8,13 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { CommonModule, Location, NgTemplateOutlet } from '@angular/common';
+import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { NavigationEnd, NavigationStart, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { LayoutConfigService } from './layout-config.service';
+import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
 
 @Component({
   selector: 'app-page-layout',
@@ -22,10 +23,10 @@ import { LayoutConfigService } from './layout-config.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PageLayoutComponent {
-  private readonly location = inject(Location);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   readonly layoutConfig = inject(LayoutConfigService);
+  readonly breadcrumb = inject(BreadcrumbService);
 
   // ── Route data → layout flags ──
   private readonly routeData = toSignal(
@@ -48,7 +49,7 @@ export class PageLayoutComponent {
     console.log('[PageLayout] showFooter computed:', showFooter, 'routeData:', routeData);
     return showFooter;
   });
-  readonly showBackButton = computed(() => this.routeData()?.['showBackButton'] !== false);
+  readonly showBackButton = computed(() => !!this.breadcrumb.parentUrl());
 
   private static readonly DEFAULT_COVER = 'assets/images/default-cover.png';
 
@@ -100,6 +101,9 @@ export class PageLayoutComponent {
   }
 
   goBack(): void {
-    this.location.back();
+    const url = this.breadcrumb.parentUrl();
+    if (url) {
+      this.router.navigateByUrl(url);
+    }
   }
 }

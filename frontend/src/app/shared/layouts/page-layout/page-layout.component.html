@@ -31,14 +31,24 @@
   <!-- Mini-bar content (after scroll) -->
   <div class="flex items-center gap-3 px-4 py-2">
     @if (showBackButton()) {
-    <button
-      type="button"
-      class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-700 transition-colors hover:bg-gray-100"
-      (click)="goBack()"
-      aria-label="Wróć"
-    >
-      <app-icon name="arrow-left" size="sm" variant="default"></app-icon>
-    </button>
+    <div class="relative h-9 w-9 shrink-0">
+      <button
+        type="button"
+        class="group/back absolute left-0 top-0 z-10 inline-flex h-9 shrink-0 items-center rounded-full bg-gray-100 text-gray-700 transition-all hover:bg-highlight hover:text-white hover:shadow-md"
+        (click)="goBack()"
+        aria-label="Wróć"
+      >
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center leading-[0]">
+          <app-icon name="arrow-left" size="sm" variant="default"></app-icon>
+        </span>
+        <span
+          class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 group-hover/back:max-w-48 group-hover/back:pr-3 group-hover/back:opacity-100"
+        >
+          <!-- <span class="block text-[10px] font-normal leading-tight opacity-80">Wróć do</span> -->
+          <span class="block text-xs font-semibold leading-tight">{{ breadcrumb.parentLabel() }}</span>
+        </span>
+      </button>
+    </div>
     }
     <div class="flex-1 min-w-0">
       @if (hasMiniBar()) {
@@ -59,11 +69,19 @@
   @if (showBackButton()) {
   <button
     type="button"
-    class="absolute left-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50"
+    class="group/back absolute left-3 top-3 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-gray-800 shadow-sm backdrop-blur-sm transition-all hover:bg-highlight hover:text-white hover:shadow-md"
     (click)="goBack()"
     aria-label="Wróć"
   >
-    <app-icon name="arrow-left" size="sm" variant="default"></app-icon>
+    <span class="flex h-9 w-9 shrink-0 items-center justify-center leading-[0]">
+      <app-icon name="arrow-left" size="sm" variant="default"></app-icon>
+    </span>
+    <span
+      class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 group-hover/back:max-w-48 group-hover/back:pr-3 group-hover/back:opacity-100"
+    >
+      <!-- <span class="block text-[10px] font-normal leading-tight opacity-80">Wróć do</span> -->
+      <span class="block text-xs font-semibold leading-tight">{{ breadcrumb.parentLabel() }}</span>
+    </span>
   </button>
   }
 

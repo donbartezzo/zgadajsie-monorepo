@@ -116,15 +116,16 @@ export class UnifiedChatComponent extends BaseChatComponent implements OnInit {
         this.isOrganizer.set(e.organizerId === this.currentUserId);
 
         if (this.isPrivate) {
+          const slug = e.city?.slug;
           if (e.organizerId !== this.currentUserId) {
-            this.router.navigate(['/o', 'w', this.eventId, 'conversations']);
+            this.router.navigate(['/w', slug, this.eventId, 'host-chat']);
             return;
           }
 
           this.otherUserId = this.route.snapshot.paramMap.get('userId') ?? '';
 
           if (!this.otherUserId || this.otherUserId === this.currentUserId) {
-            this.router.navigate(['/o', 'w', this.eventId, 'conversations']);
+            this.router.navigate(['/w', slug, this.eventId, 'host-chat']);
             return;
           }
 

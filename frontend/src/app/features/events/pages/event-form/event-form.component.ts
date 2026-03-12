@@ -12,6 +12,7 @@ import { EventService } from '../../../../core/services/event.service';
 import { CoverImageService } from '../../../../core/services/cover-image.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
 import { DictionaryItem, City, Event, CoverImage } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 
@@ -378,6 +379,7 @@ export class EventFormComponent implements OnInit {
   private readonly coverImageService = inject(CoverImageService);
   private readonly dictService = inject(DictionaryService);
   private readonly snackbar = inject(SnackbarService);
+  private readonly breadcrumb = inject(BreadcrumbService);
 
   readonly isEdit = signal(false);
   readonly submitting = signal(false);
@@ -444,6 +446,9 @@ export class EventFormComponent implements OnInit {
     if (this.eventId) {
       this.isEdit.set(true);
       this.eventService.getEvent(this.eventId).subscribe((e) => {
+        if (e.city?.slug) {
+          this.breadcrumb.setContext({ citySlug: e.city.slug });
+        }
         this.form.patchValue({
           title: e.title,
           description: e.description || '',

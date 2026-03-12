@@ -131,6 +131,7 @@ export class OrganizerActionsOverlayComponent {
 
   readonly open = input(false);
   readonly eventId = input.required<string>();
+  readonly citySlug = input.required<string>();
 
   readonly closed = output<void>();
 
@@ -146,6 +147,6 @@ export class OrganizerActionsOverlayComponent {
 
   navigateConversations(): void {
     this.overlays.close();
-    this.router.navigate(['/o', 'w', this.eventId(), 'conversations']);
+    this.router.navigate(['/w', this.citySlug(), this.eventId(), 'host-chat']);
   }
 }

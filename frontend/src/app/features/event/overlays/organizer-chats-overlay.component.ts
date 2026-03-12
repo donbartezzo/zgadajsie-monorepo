@@ -101,6 +101,7 @@ export class OrganizerChatsOverlayComponent implements OnInit {
   private readonly router = inject(Router);
 
   readonly eventId = input.required<string>();
+  readonly citySlug = input.required<string>();
   readonly closed = output<void>();
 
   readonly conversations = signal<OrganizerConversation[]>([]);
@@ -118,6 +119,6 @@ export class OrganizerChatsOverlayComponent implements OnInit {
 
   openChat(participantId: string): void {
     this.closed.emit();
-    this.router.navigate(['/o', 'w', this.eventId(), 'conversations', participantId]);
+    this.router.navigate(['/w', this.citySlug(), this.eventId(), 'host-chat', participantId]);
   }
 }

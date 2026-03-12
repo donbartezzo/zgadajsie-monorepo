@@ -193,7 +193,8 @@ export class HostChatComponent extends BaseChatComponent implements OnInit {
   }
 
   openChat(participantId: string): void {
-    this.router.navigate(['/o', 'w', this.eventId, 'conversations', participantId]);
+    const slug = this.event()?.city?.slug;
+    this.router.navigate(['/w', slug, this.eventId, 'host-chat', participantId]);
   }
 
   send(content: string): void {

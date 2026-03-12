@@ -23,7 +23,7 @@ export const appRoutes: Route[] = [
     path: 'w/:citySlug',
     loadComponent: () =>
       import('./features/events/pages/events/events.component').then((m) => m.EventsComponent),
-    data: { title: 'Wydarzenia' },
+    data: { title: 'Wydarzenia', breadcrumb: { parent: '/', label: 'Strona główna' } },
   },
 
   // ── Public: event detail ──
@@ -32,7 +32,7 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/event/pages/event/event.component').then((m) => m.EventComponent),
     resolve: { event: eventResolver },
-    data: { title: 'Wydarzenie' },
+    data: { title: 'Wydarzenie', breadcrumb: { parent: '/w/:citySlug', label: 'Lista wydarzeń' } },
   },
 
   // ── Verified users: participants ──
@@ -43,7 +43,10 @@ export const appRoutes: Route[] = [
         (m) => m.EventParticipantsComponent,
       ),
     canActivate: [verifiedUserGuard],
-    data: { title: 'Uczestnicy' },
+    data: {
+      title: 'Uczestnicy',
+      breadcrumb: { parent: '/w/:citySlug/:id', label: 'Wydarzenie' },
+    },
   },
 
   // ── Verified users: chat with organizer ──
@@ -54,7 +57,27 @@ export const appRoutes: Route[] = [
         (m) => m.HostChatComponent,
       ),
     canActivate: [verifiedUserGuard],
-    data: { title: 'Wiadomość do organizatora', showFooter: false },
+    data: {
+      title: 'Wiadomość do organizatora',
+      showFooter: false,
+      breadcrumb: { parent: '/w/:citySlug/:id', label: 'Wydarzenie' },
+    },
+  },
+
+  // ── Verified users: organizer private chat with participant ──
+  {
+    path: 'w/:citySlug/:id/host-chat/:userId',
+    loadComponent: () =>
+      import('./features/chat/pages/unified-chat/unified-chat.component').then(
+        (m) => m.UnifiedChatComponent,
+      ),
+    canActivate: [verifiedUserGuard],
+    data: {
+      title: 'Wiadomość prywatna',
+      isPrivate: true,
+      showFooter: false,
+      breadcrumb: { parent: '/w/:citySlug/:id/host-chat', label: 'Konwersacje' },
+    },
   },
 
   // ── Participants: group chat ──
@@ -65,7 +88,11 @@ export const appRoutes: Route[] = [
         (m) => m.UnifiedChatComponent,
       ),
     canActivate: [verifiedUserGuard, participantGuard],
-    data: { title: 'Czat', showFooter: false },
+    data: {
+      title: 'Czat',
+      showFooter: false,
+      breadcrumb: { parent: '/w/:citySlug/:id', label: 'Wydarzenie' },
+    },
   },
 
   // ── Organizer: new event ──
@@ -76,7 +103,10 @@ export const appRoutes: Route[] = [
         (m) => m.EventFormComponent,
       ),
     canActivate: [verifiedUserGuard],
-    data: { title: 'Nowe wydarzenie' },
+    data: {
+      title: 'Nowe wydarzenie',
+      breadcrumb: { parent: '/profile/events', label: 'Moje wydarzenia' },
+    },
   },
 
   // ── Organizer: edit event ──
@@ -87,7 +117,10 @@ export const appRoutes: Route[] = [
         (m) => m.EventFormComponent,
       ),
     canActivate: [verifiedUserGuard, organizerGuard],
-    data: { title: 'Edycja wydarzenia' },
+    data: {
+      title: 'Edycja wydarzenia',
+      breadcrumb: { parent: '/w/:citySlug/:id', label: 'Wydarzenie' },
+    },
   },
 
   // ── Organizer: manage event ──
@@ -98,29 +131,10 @@ export const appRoutes: Route[] = [
         (m) => m.EventManageComponent,
       ),
     canActivate: [verifiedUserGuard, organizerGuard],
-    data: { title: 'Zarządzanie' },
-  },
-
-  // ── Organizer: conversation list ──
-  {
-    path: 'o/w/:id/conversations',
-    loadComponent: () =>
-      import('./features/chat/pages/host-chat/host-chat.component').then(
-        (m) => m.HostChatComponent,
-      ),
-    canActivate: [verifiedUserGuard, organizerGuard],
-    data: { title: 'Konwersacje', showFooter: false },
-  },
-
-  // ── Organizer: chat with participant ──
-  {
-    path: 'o/w/:id/conversations/:userId',
-    loadComponent: () =>
-      import('./features/chat/pages/unified-chat/unified-chat.component').then(
-        (m) => m.UnifiedChatComponent,
-      ),
-    canActivate: [verifiedUserGuard, organizerGuard],
-    data: { title: 'Wiadomość prywatna', isPrivate: true, showFooter: false },
+    data: {
+      title: 'Zarządzanie',
+      breadcrumb: { parent: '/w/:citySlug/:id', label: 'Wydarzenie' },
+    },
   },
 
   // ── Utility (internal, skipLocationChange) ──
@@ -130,7 +144,7 @@ export const appRoutes: Route[] = [
       import('./features/error/pages/not-found/not-found-page.component').then(
         (m) => m.NotFoundPageComponent,
       ),
-    data: { title: 'Nie znaleziono' },
+    data: { title: 'Nie znaleziono', breadcrumb: { parent: '/', label: 'Strona główna' } },
   },
   {
     path: 'unverified',
@@ -138,7 +152,10 @@ export const appRoutes: Route[] = [
       import('./features/auth/pages/unverified-account/unverified-account-page.component').then(
         (m) => m.UnverifiedAccountPageComponent,
       ),
-    data: { title: 'Konto niezweryfikowane' },
+    data: {
+      title: 'Konto niezweryfikowane',
+      breadcrumb: { parent: '/', label: 'Strona główna' },
+    },
   },
 
   // ── Auth ──
@@ -146,19 +163,19 @@ export const appRoutes: Route[] = [
     path: 'auth/login',
     loadComponent: () =>
       import('./features/auth/pages/login/login.component').then((m) => m.LoginComponent),
-    data: { title: 'Logowanie' },
+    data: { title: 'Logowanie', breadcrumb: { parent: '/', label: 'Strona główna' } },
   },
   {
     path: 'auth/register',
     loadComponent: () =>
       import('./features/auth/pages/register/register.component').then((m) => m.RegisterComponent),
-    data: { title: 'Rejestracja' },
+    data: { title: 'Rejestracja', breadcrumb: { parent: '/auth/login', label: 'Logowanie' } },
   },
   {
     path: 'auth/activate',
     loadComponent: () =>
       import('./features/auth/pages/activate/activate.component').then((m) => m.ActivateComponent),
-    data: { title: 'Aktywacja' },
+    data: { title: 'Aktywacja', breadcrumb: { parent: '/', label: 'Strona główna' } },
   },
   {
     path: 'auth/forgot-password',
@@ -166,7 +183,10 @@ export const appRoutes: Route[] = [
       import('./features/auth/pages/forgot-password/forgot-password.component').then(
         (m) => m.ForgotPasswordComponent,
       ),
-    data: { title: 'Odzyskiwanie hasła' },
+    data: {
+      title: 'Odzyskiwanie hasła',
+      breadcrumb: { parent: '/auth/login', label: 'Logowanie' },
+    },
   },
   {
     path: 'auth/reset-password',
@@ -174,7 +194,7 @@ export const appRoutes: Route[] = [
       import('./features/auth/pages/reset-password/reset-password.component').then(
         (m) => m.ResetPasswordComponent,
       ),
-    data: { title: 'Reset hasła' },
+    data: { title: 'Reset hasła', breadcrumb: { parent: '/auth/login', label: 'Logowanie' } },
   },
 
   // ── User ──
@@ -183,7 +203,7 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/user/pages/profile/profile.component').then((m) => m.ProfileComponent),
     canActivate: [authGuard],
-    data: { title: 'Profil' },
+    data: { title: 'Profil', breadcrumb: { parent: '/', label: 'Strona główna' } },
   },
   {
     path: 'profile/events',
@@ -192,7 +212,7 @@ export const appRoutes: Route[] = [
         (m) => m.MyEventsComponent,
       ),
     canActivate: [authGuard, activeGuard],
-    data: { title: 'Moje wydarzenia' },
+    data: { title: 'Moje wydarzenia', breadcrumb: { parent: '/profile', label: 'Profil użytkownika' } },
   },
   {
     path: 'profile/participations',
@@ -201,7 +221,10 @@ export const appRoutes: Route[] = [
         (m) => m.MyParticipationsComponent,
       ),
     canActivate: [authGuard, activeGuard],
-    data: { title: 'Moje uczestnictwa' },
+    data: {
+      title: 'Moje uczestnictwa',
+      breadcrumb: { parent: '/profile', label: 'Profil użytkownika' },
+    },
   },
   {
     path: 'profile/media',
@@ -210,7 +233,7 @@ export const appRoutes: Route[] = [
         (m) => m.MediaGalleryComponent,
       ),
     canActivate: [authGuard, activeGuard],
-    data: { title: 'Galeria' },
+    data: { title: 'Galeria', breadcrumb: { parent: '/profile', label: 'Profil użytkownika' } },
   },
 
   // ── Payments ──
@@ -221,7 +244,7 @@ export const appRoutes: Route[] = [
         (m) => m.MyPaymentsComponent,
       ),
     canActivate: [authGuard, activeGuard],
-    data: { title: 'Moje płatności' },
+    data: { title: 'Moje płatności', breadcrumb: { parent: '/profile', label: 'Profil użytkownika' } },
   },
   {
     path: 'vouchers',
@@ -230,7 +253,7 @@ export const appRoutes: Route[] = [
         (m) => m.MyVouchersComponent,
       ),
     canActivate: [authGuard, activeGuard],
-    data: { title: 'Moje vouchery' },
+    data: { title: 'Moje vouchery', breadcrumb: { parent: '/profile', label: 'Profil użytkownika' } },
   },
   {
     path: 'payment/status',
@@ -249,7 +272,7 @@ export const appRoutes: Route[] = [
         (m) => m.AdminDashboardComponent,
       ),
     canActivate: [adminGuard],
-    data: { title: 'Panel admina' },
+    data: { title: 'Panel admina', breadcrumb: { parent: '/profile', label: 'Profil użytkownika' } },
   },
   {
     path: 'admin/users',
@@ -258,7 +281,7 @@ export const appRoutes: Route[] = [
         (m) => m.AdminUsersComponent,
       ),
     canActivate: [adminGuard],
-    data: { title: 'Użytkownicy' },
+    data: { title: 'Użytkownicy', breadcrumb: { parent: '/admin', label: 'Panel admina' } },
   },
   {
     path: 'admin/users/:id',
@@ -267,7 +290,10 @@ export const appRoutes: Route[] = [
         (m) => m.AdminUserDetailComponent,
       ),
     canActivate: [adminGuard],
-    data: { title: 'Użytkownik' },
+    data: {
+      title: 'Użytkownik',
+      breadcrumb: { parent: '/admin/users', label: 'Lista użytkowników' },
+    },
   },
   {
     path: 'admin/events',
@@ -276,7 +302,10 @@ export const appRoutes: Route[] = [
         (m) => m.AdminEventsComponent,
       ),
     canActivate: [adminGuard],
-    data: { title: 'Wydarzenia (admin)' },
+    data: {
+      title: 'Wydarzenia (admin)',
+      breadcrumb: { parent: '/admin', label: 'Panel admina' },
+    },
   },
   {
     path: 'admin/cover-images',
@@ -285,7 +314,10 @@ export const appRoutes: Route[] = [
         (m) => m.AdminCoverImagesComponent,
       ),
     canActivate: [adminGuard],
-    data: { title: 'Galeria cover images' },
+    data: {
+      title: 'Galeria cover images',
+      breadcrumb: { parent: '/admin', label: 'Panel admina' },
+    },
   },
   {
     path: 'admin/settings',
@@ -294,7 +326,7 @@ export const appRoutes: Route[] = [
         (m) => m.AdminSettingsComponent,
       ),
     canActivate: [adminGuard],
-    data: { title: 'Ustawienia' },
+    data: { title: 'Ustawienia', breadcrumb: { parent: '/admin', label: 'Panel admina' } },
   },
 
   // ── Static ──
@@ -302,25 +334,28 @@ export const appRoutes: Route[] = [
     path: 'faq',
     loadComponent: () =>
       import('./features/static/pages/faq/faq.component').then((m) => m.FaqComponent),
-    data: { title: 'FAQ' },
+    data: { title: 'FAQ', breadcrumb: { parent: '/', label: 'Strona główna' } },
   },
   {
     path: 'contact',
     loadComponent: () =>
       import('./features/static/pages/contact/contact.component').then((m) => m.ContactComponent),
-    data: { title: 'Kontakt' },
+    data: { title: 'Kontakt', breadcrumb: { parent: '/', label: 'Strona główna' } },
   },
   {
     path: 'privacy',
     loadComponent: () =>
       import('./features/static/pages/privacy/privacy.component').then((m) => m.PrivacyComponent),
-    data: { title: 'Polityka prywatności' },
+    data: {
+      title: 'Polityka prywatności',
+      breadcrumb: { parent: '/', label: 'Strona główna' },
+    },
   },
   {
     path: 'terms',
     loadComponent: () =>
       import('./features/static/pages/terms/terms.component').then((m) => m.TermsComponent),
-    data: { title: 'Regulamin' },
+    data: { title: 'Regulamin', breadcrumb: { parent: '/', label: 'Strona główna' } },
   },
 
   // ── Catch-all ──
