@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { EventCardComponent } from '../../../../shared/ui/event-card/event-card.component';
@@ -24,12 +24,25 @@ export class EventsComponent implements OnInit {
   readonly events = signal<EventListItem[]>([]);
   readonly isLoading = signal(true);
   readonly error = signal<string | null>(null);
+  readonly cityName = signal('');
   private citySlug = '';
   private page = 1;
   private hasMore = true;
 
+  readonly dateRangeFrom = computed(() => {
+    const d = new Date();
+    return { day: d.getDate(), month: d.toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase() };
+  });
+
+  readonly dateRangeTo = computed(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return { day: d.getDate(), month: d.toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase() };
+  });
+
   ngOnInit(): void {
     this.citySlug = this.route.snapshot.paramMap.get('citySlug') ?? '';
+    this.layoutConfig.titleText.set('Wydarzenia');
     if (this.citySlug) {
       this.layoutConfig.coverImageUrl.set(`assets/covers/cities/${this.citySlug}.webp`);
     }
@@ -43,6 +56,12 @@ export class EventsComponent implements OnInit {
       .subscribe({
       next: (res) => {
         this.events.update((prev) => [...prev, ...res.data]);
+        // Set city name from first event if not already set
+        if (!this.cityName() && res.data.length > 0) {
+          const name = res.data[0].city?.name || '';
+          this.cityName.set(name);
+          this.layoutConfig.titleText.set(name || 'Wydarzenia');
+        }
         this.hasMore = res.data.length === 20;
         this.page++;
         this.isLoading.set(false);

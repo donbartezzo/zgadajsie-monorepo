@@ -1,12 +1,6 @@
 <!-- ── Layout slots ── -->
-<ng-template appLayoutSlot="overlay">
-  <h1 class="text-lg font-extrabold text-white leading-tight">Uczestnicy</h1>
-  <p class="text-xs text-white/80 mt-0.5">{{ subtitle() }}</p>
-</ng-template>
-
-<ng-template appLayoutSlot="miniBar">
-  <p class="text-xs font-bold text-gray-900 truncate">Uczestnicy</p>
-  <p class="text-[10px] text-gray-400 mt-0.5">{{ subtitle() }}</p>
+<ng-template appLayoutSlot="extra">
+  <p class="opacity-80">{{ subtitle() }}</p>
 </ng-template>
 
 <!-- ── Content ── -->

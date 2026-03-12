@@ -1,7 +1,7 @@
 import { Directive, inject, input, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { LayoutConfigService } from './layout-config.service';
 
-export type LayoutSlotName = 'overlay' | 'badge' | 'miniBar' | 'heroExtra';
+export type LayoutSlotName = 'extra' | 'sticky';
 
 @Directive({ selector: '[appLayoutSlot]' })
 export class LayoutSlotDirective implements OnInit, OnDestroy {
@@ -23,10 +23,8 @@ export class LayoutSlotDirective implements OnInit, OnDestroy {
 
   private getSignal() {
     const map = {
-      overlay: this.layoutConfig.overlayTpl,
-      badge: this.layoutConfig.badgeTpl,
-      miniBar: this.layoutConfig.miniBarTpl,
-      heroExtra: this.layoutConfig.heroExtraTpl,
+      extra: this.layoutConfig.extraTpl,
+      sticky: this.layoutConfig.stickyTpl,
     };
     return map[this.appLayoutSlot()];
   }

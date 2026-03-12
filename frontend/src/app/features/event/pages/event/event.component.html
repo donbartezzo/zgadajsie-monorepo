@@ -1,7 +1,7 @@
-<!-- ── Layout slots (auto-registered via LayoutSlotDirective) ── -->
+<!-- ── Layout slots ── -->
 
-<ng-template appLayoutSlot="overlay">
-  <div class="mb-2 flex flex-wrap gap-1.5">
+<ng-template appLayoutSlot="extra">
+  <div class="flex flex-wrap gap-1.5">
     @if (event()?.discipline) {
     <span
       class="rounded-sm bg-highlight px-2 py-0.5 text-[10px] font-semibold uppercase text-white"
@@ -14,15 +14,14 @@
     >
     } @if (event()?.facility) {
     <span
-      class="rounded-sm bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase text-white backdrop-blur-sm"
+      class="rounded-sm bg-black/20 px-2 py-0.5 text-[10px] font-semibold uppercase backdrop-blur-sm"
       >{{ event()!.facility!.name }}</span
     >
     }
   </div>
-  <h1 class="text-sm font-extrabold text-white leading-tight">{{ event()?.title }}</h1>
 </ng-template>
 
-<ng-template appLayoutSlot="badge">
+<ng-template appLayoutSlot="sticky">
   <div class="overflow-hidden rounded-lg bg-white shadow-xl text-center">
     <span
       class="block bg-highlight px-3 py-0.5 text-[10px] font-semibold uppercase leading-tight text-white"
@@ -31,34 +30,6 @@
     <span class="block text-xl font-extrabold text-gray-900">{{ eventDay() }}</span>
     <span class="block text-xs font-medium text-gray-600">{{ eventStartTime() }}</span>
   </div>
-</ng-template>
-
-<ng-template appLayoutSlot="miniBar">
-  <p class="text-xs font-bold text-gray-900 truncate">{{ event()?.title }}</p>
-  <div class="flex items-center gap-1.5 mt-0.5">
-    @if (event()?.discipline) {
-    <span
-      class="rounded-sm bg-highlight px-1.5 py-px text-[9px] font-semibold uppercase text-white"
-      >{{ event()!.discipline!.name }}</span
-    >
-    }
-    <span class="text-[10px] text-gray-400">{{ eventDay() }} {{ eventMonth() }}</span>
-  </div>
-</ng-template>
-
-<ng-template appLayoutSlot="heroExtra">
-  @if (!isParticipant() && !isOrganizer()) {
-  <div class="absolute bottom-14 right-4">
-    <button
-      type="button"
-      class="rounded-lg bg-highlight px-5 py-2 text-xs font-bold uppercase text-white shadow-lg transition-colors hover:bg-highlight-dark"
-      [disabled]="joining()"
-      (click)="openJoinSheet()"
-    >
-      Dołącz
-    </button>
-  </div>
-  }
 </ng-template>
 
 @if (isLoading()) {
@@ -429,4 +400,20 @@
   </div>
   }
 </div>
+
+<!-- Fixed bottom CTA -->
+@if (!isParticipant() && !isOrganizer()) {
+<div class="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-app pointer-events-none pb-[calc(env(safe-area-inset-bottom)+4.5rem)] px-4">
+  <div class="flex justify-end pointer-events-auto">
+    <button
+      type="button"
+      class="rounded-xl bg-highlight px-6 py-2.5 text-sm font-bold uppercase text-white shadow-lg transition-colors hover:bg-highlight-dark disabled:opacity-50"
+      [disabled]="joining()"
+      (click)="openJoinSheet()"
+    >
+      Dołącz
+    </button>
+  </div>
+</div>
+}
 }

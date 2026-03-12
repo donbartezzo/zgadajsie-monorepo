@@ -58,10 +58,9 @@ export class PageLayoutComponent {
   readonly coverUrl = computed(
     () => this.layoutConfig.coverImageUrl() || PageLayoutComponent.DEFAULT_COVER,
   );
-  readonly hasOverlay = computed(() => !!this.layoutConfig.overlayTpl());
-  readonly hasBadge = computed(() => !!this.layoutConfig.badgeTpl());
-  readonly hasMiniBar = computed(() => !!this.layoutConfig.miniBarTpl());
-  readonly hasHeroExtra = computed(() => !!this.layoutConfig.heroExtraTpl());
+  readonly hasTitle = computed(() => !!this.layoutConfig.titleText());
+  readonly hasExtra = computed(() => !!this.layoutConfig.extraTpl());
+  readonly hasSticky = computed(() => !!this.layoutConfig.stickyTpl());
   readonly isDefaultBg = computed(
     () => this.layoutConfig.contentBgClass() === LayoutConfigService.DEFAULT_CONTENT_BG,
   );
@@ -97,6 +96,7 @@ export class PageLayoutComponent {
       .subscribe(() => {
         this.layoutConfig.coverImageUrl.set('');
         this.layoutConfig.contentBgClass.set(LayoutConfigService.DEFAULT_CONTENT_BG);
+        this.layoutConfig.titleText.set('');
       });
   }
 

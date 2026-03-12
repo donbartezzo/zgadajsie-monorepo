@@ -1,8 +1,21 @@
 <!-- Layout slots (auto-registered via directives) -->
 
-<ng-template appLayoutSlot="overlay">
-  <h1 class="text-lg font-extrabold text-white leading-tight">Wydarzenia</h1>
-  <p class="text-xs text-white/80 mt-0.5">Znajdź coś dla siebie</p>
+<ng-template appLayoutSlot="extra">
+  <p class="opacity-90">Wydarzenia na najbliższy tydzień</p>
+</ng-template>
+
+<ng-template appLayoutSlot="sticky">
+  <div class="flex items-center gap-1">
+    <div class="overflow-hidden rounded-lg bg-white shadow-xl text-center min-w-12">
+      <span class="block bg-highlight px-3 py-0.5 text-[10px] font-semibold uppercase leading-tight text-white">{{ dateRangeFrom().month }}</span>
+      <span class="block text-xl font-extrabold text-gray-900">{{ dateRangeFrom().day }}</span>
+    </div>
+    <span class="text-xl font-bold text-highlight">→</span>
+    <div class="overflow-hidden rounded-lg bg-white shadow-xl text-center min-w-12">
+      <span class="block bg-highlight px-3 py-0.5 text-[10px] font-semibold uppercase leading-tight text-white">{{ dateRangeTo().month }}</span>
+      <span class="block text-xl font-extrabold text-gray-900">{{ dateRangeTo().day }}</span>
+    </div>
+  </div>
 </ng-template>
 
 <!-- Content -->

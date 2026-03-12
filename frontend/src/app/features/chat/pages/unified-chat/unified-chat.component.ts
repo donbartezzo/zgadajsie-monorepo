@@ -10,17 +10,11 @@ import { BaseChatComponent } from '../base-chat.component';
   selector: 'app-unified-chat',
   imports: [IconComponent, LayoutSlotDirective, ChatViewComponent, ChatMembersOverlayComponent],
   template: `
-    <ng-template appLayoutSlot="overlay">
-      <h1 class="text-lg font-extrabold text-white leading-tight">{{ headerTitle() }}</h1>
-      <p class="text-xs text-white/80 mt-0.5">{{ headerSubtitle() }}</p>
+    <ng-template appLayoutSlot="extra">
+      <p class="opacity-80">{{ headerSubtitle() }}</p>
     </ng-template>
 
-    <ng-template appLayoutSlot="miniBar">
-      <p class="text-xs font-bold text-gray-900 truncate">{{ headerTitle() }}</p>
-      <p class="text-[10px] text-gray-400 mt-0.5">{{ headerSubtitle() }}</p>
-    </ng-template>
-
-    <ng-template appLayoutSlot="badge">
+    <ng-template appLayoutSlot="sticky">
       @if (!chatDisabled()) {
         <button
           type="button"

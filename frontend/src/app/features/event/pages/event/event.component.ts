@@ -145,10 +145,11 @@ export class EventComponent implements OnInit, OnDestroy {
     // Set cover image and white content background for event page
     this.layoutConfig.contentBgClass.set('bg-white');
     effect(() => {
-      const filename = this.event()?.coverImage?.filename;
-      if (filename) {
-        this.layoutConfig.coverImageUrl.set(coverImageUrl(filename));
+      const e = this.event();
+      if (e?.coverImage?.filename) {
+        this.layoutConfig.coverImageUrl.set(coverImageUrl(e.coverImage.filename));
       }
+      this.layoutConfig.titleText.set(e?.title || '');
     });
 
     // Sync local event/participants signals to the overlay service

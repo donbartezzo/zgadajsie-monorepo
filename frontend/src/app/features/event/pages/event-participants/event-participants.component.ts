@@ -38,6 +38,7 @@ export class EventParticipantsComponent implements OnInit {
   private readonly layoutConfig = inject(LayoutConfigService);
 
   constructor() {
+    this.layoutConfig.titleText.set('Uczestnicy');
     effect(() => {
       const filename = this.event()?.coverImage?.filename;
       if (filename) {

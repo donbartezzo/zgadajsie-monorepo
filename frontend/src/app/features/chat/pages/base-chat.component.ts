@@ -66,6 +66,9 @@ export abstract class BaseChatComponent implements OnDestroy {
         this.layoutConfig.coverImageUrl.set(coverImageUrl(filename));
       }
     });
+    effect(() => {
+      this.layoutConfig.titleText.set(this.headerTitle());
+    });
   }
 
   ngOnDestroy(): void {
