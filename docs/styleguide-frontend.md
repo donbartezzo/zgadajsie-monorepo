@@ -59,6 +59,7 @@
 ### Dostępne utilsy:
 
 **`date.utils.ts`** (eksportowane przez `shared/utils/index.ts`):
+
 - `getDaysDiff(date, now?)` — różnica w dniach między datami
 - `getRelativeDateLabel(date, now?)` — polski label: "Dziś", "Jutro", "Za 5 dni", "Wczoraj", "3 dni temu"
 - `getEventCountdown(startsAt, endsAt, now?, maxHours?)` — countdown do wydarzenia z `days`, `hours`, `minutes`, `seconds`, `isUrgent`, `label`
@@ -82,7 +83,7 @@ readonly badgeLabel = computed(() => {
 // ✅ DOBRE — użycie helpera
 import { getRelativeDateLabel } from '../../utils/date.utils';
 
-readonly badgeLabel = computed(() => 
+readonly badgeLabel = computed(() =>
   getRelativeDateLabel(new Date(this.event().startsAt))
 );
 ```
@@ -128,16 +129,16 @@ Projekt posiada **centralną paletę kolorów** zdefiniowaną jako statyczne hex
 
 #### Palety:
 
-| Paleta | Rola | Przykłady klas |
-|---|---|---|
-| `primary` (50–900) | Brand, przyciski, linki, akcenty | `bg-primary-500`, `text-primary-500`, `hover:bg-primary-600` |
-| `neutral` (50–950) | Tła, tekst, bordery, ikony muted | `bg-neutral-100`, `text-neutral-900`, `border-neutral-200` |
-| `success` (50–900) | Pozytywne statusy, notification bary | `bg-success-400`, `bg-success-50`, `text-success-600` |
-| `warning` (50–900) | Ostrzeżenia | `bg-warning-400`, `bg-warning-50` |
-| `danger` (50–900) | Błędy, destrukcyjne akcje | `bg-danger-400`, `bg-danger-50` |
-| `info` (50–900) | Informacje, linki, focus ring | `bg-info-400`, `ring-info-400` |
-| `teal` (50–900) | Dekoracyjny (karty) | `bg-teal-50`, `border-teal-200` |
-| `brown` (50–900) | Dekoracyjny (karty) | `bg-brown-50`, `border-brown-200` |
+| Paleta             | Rola                                 | Przykłady klas                                               |
+| ------------------ | ------------------------------------ | ------------------------------------------------------------ |
+| `primary` (50–900) | Brand, przyciski, linki, akcenty     | `bg-primary-500`, `text-primary-500`, `hover:bg-primary-600` |
+| `neutral` (50–950) | Tła, tekst, bordery, ikony muted     | `bg-neutral-100`, `text-neutral-900`, `border-neutral-200`   |
+| `success` (50–900) | Pozytywne statusy, notification bary | `bg-success-400`, `bg-success-50`, `text-success-600`        |
+| `warning` (50–900) | Ostrzeżenia                          | `bg-warning-400`, `bg-warning-50`                            |
+| `danger` (50–900)  | Błędy, destrukcyjne akcje            | `bg-danger-400`, `bg-danger-50`                              |
+| `info` (50–900)    | Informacje, linki, focus ring        | `bg-info-400`, `ring-info-400`                               |
+| `teal` (50–900)    | Dekoracyjny (karty)                  | `bg-teal-50`, `border-teal-200`                              |
+| `brown` (50–900)   | Dekoracyjny (karty)                  | `bg-brown-50`, `border-brown-200`                            |
 
 #### Konwencje:
 
@@ -146,9 +147,7 @@ Projekt posiada **centralną paletę kolorów** zdefiniowaną jako statyczne hex
 <div class="bg-white rounded-xl border border-neutral-200 p-4">
   <h2 class="text-neutral-900 font-semibold">Tytuł</h2>
   <p class="text-neutral-500 text-sm">Opis</p>
-  <button class="bg-primary-500 text-white rounded-lg px-4 py-2 hover:bg-primary-600">
-    Akcja
-  </button>
+  <button class="bg-primary-500 text-white rounded-lg px-4 py-2 hover:bg-primary-600">Akcja</button>
 </div>
 
 <!-- ❌ ŹLE — domyślne kolory Tailwind / dark mode -->

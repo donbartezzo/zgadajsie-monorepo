@@ -4,29 +4,29 @@ import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/botto
 import { LoginFormComponent } from '../../../shared/auth/ui/login-form/login-form.component';
 
 @Component({
- selector: 'app-auth-overlay',
- imports: [BottomOverlayComponent, LoginFormComponent],
- template: `
- <app-bottom-overlay [open]="true" title="Dołącz do wydarzenia" (closed)="closed.emit()">
- <app-login-form
- [returnUrl]="returnUrl"
- (authenticated)="authenticated.emit()"
- ></app-login-form>
- </app-bottom-overlay>
- `,
- changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-auth-overlay',
+  imports: [BottomOverlayComponent, LoginFormComponent],
+  template: `
+    <app-bottom-overlay [open]="true" title="Dołącz do wydarzenia" (closed)="closed.emit()">
+      <app-login-form
+        [returnUrl]="returnUrl"
+        (authenticated)="authenticated.emit()"
+      ></app-login-form>
+    </app-bottom-overlay>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AuthOverlayComponent {
- private readonly router = inject(Router);
+  private readonly router = inject(Router);
 
- readonly closed = output<void>();
- readonly authenticated = output<void>();
+  readonly closed = output<void>();
+  readonly authenticated = output<void>();
 
- readonly returnUrl = this.buildReturnUrl();
+  readonly returnUrl = this.buildReturnUrl();
 
- private buildReturnUrl(): string {
- const url = this.router.url;
- const separator = url.includes('?') ? '&' : '?';
- return `${url}${separator}openJoin=true`;
- }
+  private buildReturnUrl(): string {
+    const url = this.router.url;
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}openJoin=true`;
+  }
 }

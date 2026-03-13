@@ -43,50 +43,50 @@ Aplikacja obsługuje dwa scenariusze opłacenia uczestnictwa w wydarzeniu:
 
 Reprezentuje **zamiar płatności** przed finalizacją. Tworzony w momencie inicjacji, zachowywany jako trwały rekord po zakończeniu (nie jest usuwany).
 
-| Pole              | Typ       | Opis                                    |
-| ----------------- | --------- | --------------------------------------- |
-| `id`              | UUID      | Identyfikator intencji                  |
-| `participationId` | UUID (FK) | Powiązanie z uczestnictwem              |
-| `userId`          | UUID (FK) | Płacący użytkownik                      |
-| `eventId`         | UUID (FK) | Wydarzenie                              |
-| `amount`          | Decimal   | Pełna kwota wydarzenia                  |
-| `voucherReserved` | Decimal   | Kwota zarezerwowana z vouchera          |
-| `operatorTxId`    | String?   | ID transakcji Tpay (ustawiane po POST)  |
-| `createdAt`       | DateTime  | Czas utworzenia                          |
+| Pole              | Typ       | Opis                                   |
+| ----------------- | --------- | -------------------------------------- |
+| `id`              | UUID      | Identyfikator intencji                 |
+| `participationId` | UUID (FK) | Powiązanie z uczestnictwem             |
+| `userId`          | UUID (FK) | Płacący użytkownik                     |
+| `eventId`         | UUID (FK) | Wydarzenie                             |
+| `amount`          | Decimal   | Pełna kwota wydarzenia                 |
+| `voucherReserved` | Decimal   | Kwota zarezerwowana z vouchera         |
+| `operatorTxId`    | String?   | ID transakcji Tpay (ustawiane po POST) |
+| `createdAt`       | DateTime  | Czas utworzenia                        |
 
 ### Payment (finalizowany)
 
 Tworzony **wyłącznie** po potwierdzeniu płatności (webhook `tr_status=TRUE` lub pełne pokrycie voucherem).
 
-| Pole                | Typ       | Opis                                   |
-| ------------------- | --------- | -------------------------------------- |
-| `id`                | UUID      | Identyfikator płatności                |
-| `participationId`   | UUID (FK) | Powiązanie z uczestnictwem             |
-| `userId`            | UUID (FK) | Płacący użytkownik                     |
-| `eventId`           | UUID (FK) | Wydarzenie                             |
-| `amount`            | Decimal   | Pełna kwota                            |
-| `voucherAmountUsed` | Decimal   | Kwota pokryta voucherem                |
-| `organizerAmount`   | Decimal   | Kwota dla organizatora                 |
-| `platformFee`       | Decimal   | Prowizja platformy (MVP: 0)            |
+| Pole                | Typ       | Opis                                          |
+| ------------------- | --------- | --------------------------------------------- |
+| `id`                | UUID      | Identyfikator płatności                       |
+| `participationId`   | UUID (FK) | Powiązanie z uczestnictwem                    |
+| `userId`            | UUID (FK) | Płacący użytkownik                            |
+| `eventId`           | UUID (FK) | Wydarzenie                                    |
+| `amount`            | Decimal   | Pełna kwota                                   |
+| `voucherAmountUsed` | Decimal   | Kwota pokryta voucherem                       |
+| `organizerAmount`   | Decimal   | Kwota dla organizatora                        |
+| `platformFee`       | Decimal   | Prowizja platformy (MVP: 0)                   |
 | `status`            | String    | `COMPLETED` / `REFUNDED` / `VOUCHER_REFUNDED` |
-| `operatorTxId`      | String?   | ID transakcji Tpay                     |
-| `paidAt`            | DateTime? | Czas opłacenia                         |
-| `refundedAt`        | DateTime? | Czas zwrotu                            |
+| `operatorTxId`      | String?   | ID transakcji Tpay                            |
+| `paidAt`            | DateTime? | Czas opłacenia                                |
+| `refundedAt`        | DateTime? | Czas zwrotu                                   |
 
 ## Endpointy API
 
-| Metoda | Ścieżka                              | Guard          | Opis                                      |
-| ------ | ------------------------------------- | -------------- | ----------------------------------------- |
-| POST   | `/payments/tpay-webhook`              | brak (public)  | Webhook Tpay — weryfikacja JWS + md5sum   |
-| POST   | `/payments/simulate-success/:id`      | ADMIN          | Symulacja sukcesu (dev/test)              |
-| GET    | `/payments/my-payments`               | auth + active  | Lista płatności użytkownika (paginacja)   |
-| GET    | `/payments/:id/status`                | auth + active  | Status płatności po paymentId             |
-| GET    | `/payments/intent/:intentId/status`   | auth + active  | Status płatności po intentId (z ownership check) |
-| GET    | `/payments/event/:eventId/earnings`   | auth + active  | Zarobki organizatora dla wydarzenia       |
-| POST   | `/payments/:id/refund-voucher`        | auth + active  | Zwrot jako voucher organizatora           |
-| POST   | `/payments/:id/refund-money`          | auth + active  | Zwrot pieniężny przez Tpay                |
-| GET    | `/payments/admin/all`                 | ADMIN          | Lista wszystkich płatności (admin)        |
-| GET    | `/payments/admin/:id`                 | ADMIN          | Szczegóły płatności (admin)               |
+| Metoda | Ścieżka                             | Guard         | Opis                                             |
+| ------ | ----------------------------------- | ------------- | ------------------------------------------------ |
+| POST   | `/payments/tpay-webhook`            | brak (public) | Webhook Tpay — weryfikacja JWS + md5sum          |
+| POST   | `/payments/simulate-success/:id`    | ADMIN         | Symulacja sukcesu (dev/test)                     |
+| GET    | `/payments/my-payments`             | auth + active | Lista płatności użytkownika (paginacja)          |
+| GET    | `/payments/:id/status`              | auth + active | Status płatności po paymentId                    |
+| GET    | `/payments/intent/:intentId/status` | auth + active | Status płatności po intentId (z ownership check) |
+| GET    | `/payments/event/:eventId/earnings` | auth + active | Zarobki organizatora dla wydarzenia              |
+| POST   | `/payments/:id/refund-voucher`      | auth + active | Zwrot jako voucher organizatora                  |
+| POST   | `/payments/:id/refund-money`        | auth + active | Zwrot pieniężny przez Tpay                       |
+| GET    | `/payments/admin/all`               | ADMIN         | Lista wszystkich płatności (admin)               |
+| GET    | `/payments/admin/:id`               | ADMIN         | Szczegóły płatności (admin)                      |
 
 ## Weryfikacja webhooka
 
@@ -118,13 +118,13 @@ URL redirectu z Tpay zawiera parametr `result=success` lub `result=error`. **`re
 
 Frontend interpretuje kombinację `result` + status backendu:
 
-| `result` param | Backend status | Stan UI | Opis |
-|----------------|---------------|---------|------|
-| `error` | — (nie odpytuje) | **Płatność nieudana** | Tpay odrzucił płatność |
-| `success` | `PENDING` | **Płatność przyjęta** | Zlecenie przyjęte, webhook jeszcze nie dotarł |
-| `success` | `COMPLETED` | **Płatność udana!** | Webhook potwierdził płatność |
-| brak | `PENDING` | **Płatność w trakcie** | Wejście na stronę później, bez kontekstu Tpay redirect |
-| brak | `COMPLETED` | **Płatność udana!** | Wejście na stronę później, webhook już potwierdził |
+| `result` param | Backend status   | Stan UI                | Opis                                                   |
+| -------------- | ---------------- | ---------------------- | ------------------------------------------------------ |
+| `error`        | — (nie odpytuje) | **Płatność nieudana**  | Tpay odrzucił płatność                                 |
+| `success`      | `PENDING`        | **Płatność przyjęta**  | Zlecenie przyjęte, webhook jeszcze nie dotarł          |
+| `success`      | `COMPLETED`      | **Płatność udana!**    | Webhook potwierdził płatność                           |
+| brak           | `PENDING`        | **Płatność w trakcie** | Wejście na stronę później, bez kontekstu Tpay redirect |
+| brak           | `COMPLETED`      | **Płatność udana!**    | Wejście na stronę później, webhook już potwierdził     |
 
 Stan "Płatność przyjęta" ma przycisk "Sprawdź ponownie" — użytkownik może odświeżyć gdy webhook dotrze.
 

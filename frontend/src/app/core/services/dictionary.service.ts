@@ -6,26 +6,26 @@ import { City, DictionaryItem } from '../../shared/types';
 
 @Injectable({ providedIn: 'root' })
 export class DictionaryService {
- private readonly http = inject(HttpClient);
- private readonly apiUrl = environment.apiUrl + '/dictionaries';
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl + '/dictionaries';
 
- getCities(): Observable<City[]> {
- return this.http.get<City[]>(`${this.apiUrl}/cities`);
- }
+  getCities(): Observable<City[]> {
+    return this.http.get<City[]>(`${this.apiUrl}/cities`);
+  }
 
- getDisciplines(): Observable<DictionaryItem[]> {
- return this.http.get<DictionaryItem[]>(`${this.apiUrl}/disciplines`);
- }
+  getDisciplines(): Observable<DictionaryItem[]> {
+    return this.http.get<DictionaryItem[]>(`${this.apiUrl}/disciplines`);
+  }
 
- getFacilities(): Observable<DictionaryItem[]> {
- return this.http.get<DictionaryItem[]>(`${this.apiUrl}/facilities`);
- }
+  getFacilities(): Observable<DictionaryItem[]> {
+    return this.http.get<DictionaryItem[]>(`${this.apiUrl}/facilities`);
+  }
 
- getLevels(): Observable<DictionaryItem[]> {
- return this.http.get<DictionaryItem[]>(`${this.apiUrl}/levels`);
- }
+  getLevels(): Observable<DictionaryItem[]> {
+    return this.http.get<DictionaryItem[]>(`${this.apiUrl}/levels`);
+  }
 
- getCityBySlug(slug: string): Observable<City> {
- return this.http.get<City>(`${this.apiUrl}/cities/${slug}`);
- }
+  getCityBySlug(slug: string): Observable<City> {
+    return this.http.get<City>(`${this.apiUrl}/cities/${slug}`);
+  }
 }

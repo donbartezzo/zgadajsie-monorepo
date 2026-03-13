@@ -56,11 +56,7 @@ export class VouchersService {
     return Array.from(grouped.values());
   }
 
-  async deductVoucher(
-    userId: string,
-    organizerId: string,
-    amount: number,
-  ): Promise<void> {
+  async deductVoucher(userId: string, organizerId: string, amount: number): Promise<void> {
     const vouchers = await this.prisma.organizerVoucher.findMany({
       where: {
         recipientUserId: userId,
@@ -94,17 +90,11 @@ export class VouchersService {
     }
 
     if (remaining > 0) {
-      throw new BadRequestException(
-        'Niewystarczające saldo voucherów do realizacji płatności',
-      );
+      throw new BadRequestException('Niewystarczające saldo voucherów do realizacji płatności');
     }
   }
 
-  async restoreVoucher(
-    userId: string,
-    organizerId: string,
-    amount: number,
-  ): Promise<void> {
+  async restoreVoucher(userId: string, organizerId: string, amount: number): Promise<void> {
     // Create a new voucher to restore the deducted amount
     await this.prisma.organizerVoucher.create({
       data: {

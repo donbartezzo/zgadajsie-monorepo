@@ -117,6 +117,7 @@ Gdy brak bezpośredniego odpowiednika, wybierz **najbliższą skalę Tailwind**.
 ### 4.4. Typografia i kolory
 
 **Typografia:**
+
 - `fw-bold` → `font-semibold` lub `font-bold`
 - `small` → `text-xs` / `text-sm`
 
@@ -125,6 +126,7 @@ Gdy brak bezpośredniego odpowiednika, wybierz **najbliższą skalę Tailwind**.
 Projekt posiada **centralną paletę kolorów** zdefiniowaną jako statyczne hex values w `frontend/tailwind.config.js`. Brak CSS custom properties kolorów. Brak dark mode.
 
 **Źródło definicji:**
+
 - **Jedyne źródło prawdy:** `frontend/tailwind.config.js` (`extend.colors`)
 - **Pełna dokumentacja:** `docs/design-tokens.md`
 - **Podgląd wizualny:** `/dev/design-system` (tylko dev mode)
@@ -132,30 +134,35 @@ Projekt posiada **centralną paletę kolorów** zdefiniowaną jako statyczne hex
 **Zasada migracji Bootstrap → Tailwind:**
 Przy migracji kolorów z Bootstrapa używaj **wyłącznie** palet z `tailwind.config.js`:
 
-*Tekst i tła ogólne:*
+_Tekst i tła ogólne:_
+
 - `text-dark` / `text-body` → `text-neutral-900` (tekst główny)
 - `text-muted` / `text-secondary` → `text-neutral-500` (tekst drugorzędny)
 - `bg-white` → `bg-white` (tło karty/komponentu)
 - `bg-light` → `bg-neutral-50` (lekkie tło — Bootstrap `#f8f9fa` ≈ `neutral-50`)
 - `border-*` → `border-neutral-200` (domyślne obramowanie)
 
-*Brand:*
+_Brand:_
+
 - `bg-primary` → `bg-primary-500` (brand/akcent)
 - `text-primary` → `text-primary-500`
 
-*Statusy — solid bg (badge, button):*
+_Statusy — solid bg (badge, button):_
+
 - `bg-danger` → `bg-danger-400 text-white`
 - `bg-success` → `bg-success-400 text-white`
 - `bg-warning` → `bg-warning-400 text-white`
 - `bg-info` → `bg-info-400 text-white`
 
-*Statusy — tekst na jasnym tle (czytelność):*
+_Statusy — tekst na jasnym tle (czytelność):_
+
 - `text-danger` → `text-danger-500`
 - `text-success` → `text-success-600`
 - `text-warning` → `text-warning-600`
 - `text-info` → `text-info-600`
 
-*Focus ring:*
+_Focus ring:_
+
 - `:focus` / `.focus` → `focus:ring-2 focus:ring-primary-500 focus:outline-none`
 
 **ZABRONIONE:** domyślne kolory Tailwind (`gray-*`, `blue-*`, `slate-*`), arbitralne hexy (`bg-[#abc]`), prefixy `dark:`.
@@ -448,9 +455,7 @@ AI powinien utworzyć komponent layoutu, np. `BottomNavComponent` w `frontend/sr
 ### 12.3. Struktura Tailwind (koncepcja)
 
 ```html
-<nav
-  class="fixed inset-x-0 bottom-0 border-t border-neutral-200 bg-white/95 backdrop-blur"
->
+<nav class="fixed inset-x-0 bottom-0 border-t border-neutral-200 bg-white/95 backdrop-blur">
   <div class="mx-auto max-w-md px-4">
     <ul class="flex items-stretch justify-between py-2">
       @for (item of items(); track item.path) {

@@ -28,11 +28,7 @@ export class PaymentsService {
     for (const intent of intents) {
       const voucherReserved = intent.voucherReserved.toNumber();
       if (voucherReserved > 0) {
-        await this.vouchersService.restoreVoucher(
-          intent.userId,
-          organizerId,
-          voucherReserved,
-        );
+        await this.vouchersService.restoreVoucher(intent.userId, organizerId, voucherReserved);
       }
       await this.prisma.paymentIntent.delete({ where: { id: intent.id } });
     }
@@ -110,9 +106,13 @@ export class PaymentsService {
       await this.vouchersService.deductVoucher(userId, event.organizerId, voucherUsed);
     }
 
-    const successUrl = `${frontendBaseUrl}/payment/status?intentId=${encodeURIComponent(intent.id)}&result=success`;
-    const errorUrl = `${frontendBaseUrl}/payment/status?intentId=${encodeURIComponent(intent.id)}&result=error`;
-    
+    const successUrl = `${frontendBaseUrl}/payment/status?intentId=${encodeURIComponent(
+      intent.id,
+    )}&result=success`;
+    const errorUrl = `${frontendBaseUrl}/payment/status?intentId=${encodeURIComponent(
+      intent.id,
+    )}&result=error`;
+
     const result = await this.tpayService.createTransaction({
       amount: tpayAmount,
       description: `Zgadajsie – ${event.title}`,
@@ -132,14 +132,8 @@ export class PaymentsService {
     return { paymentUrl: result.paymentUrl };
   }
 
-  async handleWebhook(
-    body: TpayWebhookPayload,
-    jwsSignature?: string,
-  ): Promise<void> {
-    const verification = await this.tpayService.verifyWebhook(
-      body,
-      jwsSignature,
-    );
+  async handleWebhook(body: TpayWebhookPayload, jwsSignature?: string): Promise<void> {
+    const verification = await this.tpayService.verifyWebhook(body, jwsSignature);
     if (!verification.valid) {
       throw new BadRequestException('Nieprawidłowy podpis webhooka');
     }
@@ -211,10 +205,7 @@ export class PaymentsService {
     // Other statuses (CHARGEBACK etc.) — log and ignore for now
   }
 
-  async refundAsVoucher(
-    paymentId: string,
-    organizerUserId: string,
-  ): Promise<{ success: boolean }> {
+  async refundAsVoucher(paymentId: string, organizerUserId: string): Promise<{ success: boolean }> {
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
       include: {
@@ -261,10 +252,7 @@ export class PaymentsService {
     return { success: true };
   }
 
-  async refundAsMoney(
-    paymentId: string,
-    organizerUserId: string,
-  ): Promise<{ success: boolean }> {
+  async refundAsMoney(paymentId: string, organizerUserId: string): Promise<{ success: boolean }> {
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
       include: {
@@ -282,8 +270,7 @@ export class PaymentsService {
       throw new BadRequestException('Można zwrócić tylko opłaconą płatność');
     }
 
-    const tpayPaidAmount =
-      payment.amount.toNumber() - payment.voucherAmountUsed.toNumber();
+    const tpayPaidAmount = payment.amount.toNumber() - payment.voucherAmountUsed.toNumber();
 
     if (tpayPaidAmount <= 0 || !payment.operatorTxId) {
       throw new BadRequestException(
@@ -291,10 +278,7 @@ export class PaymentsService {
       );
     }
 
-    const result = await this.tpayService.createRefund(
-      payment.operatorTxId,
-      tpayPaidAmount,
-    );
+    const result = await this.tpayService.createRefund(payment.operatorTxId, tpayPaidAmount);
 
     if (result.success) {
       await this.prisma.$transaction(async (tx) => {
@@ -358,7 +342,9 @@ export class PaymentsService {
         voucherReserved: true,
         createdAt: true,
         participation: {
-          select: { event: { select: { id: true, title: true, city: { select: { slug: true } } } } },
+          select: {
+            event: { select: { id: true, title: true, city: { select: { slug: true } } } },
+          },
         },
       },
     });
@@ -447,10 +433,7 @@ export class PaymentsService {
       },
     });
 
-    const totalAmount = payments.reduce(
-      (sum, p) => sum + p.organizerAmount.toNumber(),
-      0,
-    );
+    const totalAmount = payments.reduce((sum, p) => sum + p.organizerAmount.toNumber(), 0);
 
     return { payments, totalAmount, eventId };
   }
@@ -477,7 +460,9 @@ export class PaymentsService {
       where: { id: paymentId },
       include: {
         user: { select: { id: true, displayName: true, email: true } },
-        event: { select: { id: true, title: true, organizerId: true, city: { select: { slug: true } } } },
+        event: {
+          select: { id: true, title: true, organizerId: true, city: { select: { slug: true } } },
+        },
         participation: { select: { id: true, status: true } },
       },
     });

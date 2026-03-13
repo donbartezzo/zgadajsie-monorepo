@@ -71,9 +71,7 @@ export class TpayService {
   }
 
   private get certBaseUrl(): string {
-    return this.isSandbox
-      ? 'https://secure.sandbox.tpay.com'
-      : 'https://secure.tpay.com';
+    return this.isSandbox ? 'https://secure.sandbox.tpay.com' : 'https://secure.tpay.com';
   }
 
   // ─── OAuth2 Token ──────────────────────────────────────────────────────────
@@ -114,9 +112,7 @@ export class TpayService {
 
   // ─── Create Transaction ────────────────────────────────────────────────────
 
-  async createTransaction(
-    params: CreateTransactionParams,
-  ): Promise<TpayTransactionResult> {
+  async createTransaction(params: CreateTransactionParams): Promise<TpayTransactionResult> {
     const token = await this.getAccessToken();
 
     const body = {
@@ -186,7 +182,9 @@ export class TpayService {
         .digest('hex');
 
       if (body.md5sum !== expectedMd5) {
-        this.logger.warn(`Tpay webhook md5sum mismatch: expected=${expectedMd5}, got=${body.md5sum}`);
+        this.logger.warn(
+          `Tpay webhook md5sum mismatch: expected=${expectedMd5}, got=${body.md5sum}`,
+        );
         return { valid: false };
       }
     }
@@ -211,10 +209,7 @@ export class TpayService {
     };
   }
 
-  private async verifyJwsSignature(
-    body: TpayWebhookPayload,
-    jwsHeader: string,
-  ): Promise<boolean> {
+  private async verifyJwsSignature(body: TpayWebhookPayload, jwsHeader: string): Promise<boolean> {
     try {
       const parts = jwsHeader.split('.');
       if (parts.length !== 3) {
@@ -279,10 +274,7 @@ export class TpayService {
     }
   }
 
-  private async fetchCertificate(
-    url: string,
-    type: 'jws' | 'ca',
-  ): Promise<string> {
+  private async fetchCertificate(url: string, type: 'jws' | 'ca'): Promise<string> {
     const cache = type === 'jws' ? this.jwsCertCache : this.jwsCaCertCache;
 
     if (cache && Date.now() - cache.fetchedAt < TpayService.JWS_CERT_TTL_MS) {
@@ -308,23 +300,17 @@ export class TpayService {
 
   // ─── Refund ────────────────────────────────────────────────────────────────
 
-  async createRefund(
-    transactionId: string,
-    amount: number,
-  ): Promise<{ success: boolean }> {
+  async createRefund(transactionId: string, amount: number): Promise<{ success: boolean }> {
     const token = await this.getAccessToken();
 
-    const response = await fetch(
-      `${this.apiUrl}/transactions/${transactionId}/refunds`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ amount }),
+    const response = await fetch(`${this.apiUrl}/transactions/${transactionId}/refunds`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
       },
-    );
+      body: JSON.stringify({ amount }),
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -340,23 +326,16 @@ export class TpayService {
 
   // ─── Get Transaction ──────────────────────────────────────────────────────
 
-  async getTransaction(
-    transactionId: string,
-  ): Promise<{ status: string; amount: number } | null> {
+  async getTransaction(transactionId: string): Promise<{ status: string; amount: number } | null> {
     const token = await this.getAccessToken();
 
-    const response = await fetch(
-      `${this.apiUrl}/transactions/${transactionId}`,
-      {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${token}` },
-      },
-    );
+    const response = await fetch(`${this.apiUrl}/transactions/${transactionId}`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     if (!response.ok) {
-      this.logger.error(
-        `Tpay get transaction failed: ${transactionId}, status=${response.status}`,
-      );
+      this.logger.error(`Tpay get transaction failed: ${transactionId}, status=${response.status}`);
       return null;
     }
 

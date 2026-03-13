@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
- selector: 'app-preloader',
- templateUrl: './preloader.component.html',
- changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-preloader',
+  templateUrl: './preloader.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PreloaderComponent {}

@@ -6,87 +6,79 @@ import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { AdminService } from '../../../../core/services/admin.service';
 
 @Component({
- selector: 'app-admin-dashboard',
- imports: [CommonModule, RouterLink, IconComponent, CardComponent],
- template: `
- <div class="p-4">
- <h1 class="text-xl font-bold text-neutral-900 mb-6">Panel administratora</h1>
- <div class="grid grid-cols-2 gap-4 mb-6">
- <app-card
- ><div class="text-center">
- <app-icon name="users" size="lg" variant="primary"></app-icon>
- <p class="text-2xl font-bold text-neutral-900 mt-2">
- {{ stats().users }}
- </p>
- <p class="text-xs text-neutral-500">Użytkownicy</p>
- </div></app-card
- >
- <app-card
- ><div class="text-center">
- <app-icon name="calendar" size="lg" variant="primary"></app-icon>
- <p class="text-2xl font-bold text-neutral-900 mt-2">
- {{ stats().events }}
- </p>
- <p class="text-xs text-neutral-500">Wydarzenia</p>
- </div></app-card
- >
- </div>
- <div class="space-y-3">
- <a routerLink="/admin/users"
- ><app-card
- ><div class="flex items-center gap-3">
- <app-icon name="users" size="sm"></app-icon>
- <span class="text-sm font-medium text-neutral-900"
- >Zarządzaj użytkownikami</span
- >
- </div></app-card
- ></a
- >
- <a routerLink="/admin/events"
- ><app-card
- ><div class="flex items-center gap-3">
- <app-icon name="calendar" size="sm"></app-icon>
- <span class="text-sm font-medium text-neutral-900"
- >Zarządzaj wydarzeniami</span
- >
- </div></app-card
- ></a
- >
- <a routerLink="/admin/cover-images"
- ><app-card
- ><div class="flex items-center gap-3">
- <app-icon name="image" size="sm"></app-icon>
- <span class="text-sm font-medium text-neutral-900"
- >Galeria cover images</span
- >
- </div></app-card
- ></a
- >
- <a routerLink="/admin/settings"
- ><app-card
- ><div class="flex items-center gap-3">
- <app-icon name="settings" size="sm"></app-icon>
- <span class="text-sm font-medium text-neutral-900"
- >Ustawienia systemowe</span
- >
- </div></app-card
- ></a
- >
- </div>
- </div>
- `,
- changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-admin-dashboard',
+  imports: [CommonModule, RouterLink, IconComponent, CardComponent],
+  template: `
+    <div class="p-4">
+      <h1 class="text-xl font-bold text-neutral-900 mb-6">Panel administratora</h1>
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <app-card
+          ><div class="text-center">
+            <app-icon name="users" size="lg" variant="primary"></app-icon>
+            <p class="text-2xl font-bold text-neutral-900 mt-2">
+              {{ stats().users }}
+            </p>
+            <p class="text-xs text-neutral-500">Użytkownicy</p>
+          </div></app-card
+        >
+        <app-card
+          ><div class="text-center">
+            <app-icon name="calendar" size="lg" variant="primary"></app-icon>
+            <p class="text-2xl font-bold text-neutral-900 mt-2">
+              {{ stats().events }}
+            </p>
+            <p class="text-xs text-neutral-500">Wydarzenia</p>
+          </div></app-card
+        >
+      </div>
+      <div class="space-y-3">
+        <a routerLink="/admin/users"
+          ><app-card
+            ><div class="flex items-center gap-3">
+              <app-icon name="users" size="sm"></app-icon>
+              <span class="text-sm font-medium text-neutral-900">Zarządzaj użytkownikami</span>
+            </div></app-card
+          ></a
+        >
+        <a routerLink="/admin/events"
+          ><app-card
+            ><div class="flex items-center gap-3">
+              <app-icon name="calendar" size="sm"></app-icon>
+              <span class="text-sm font-medium text-neutral-900">Zarządzaj wydarzeniami</span>
+            </div></app-card
+          ></a
+        >
+        <a routerLink="/admin/cover-images"
+          ><app-card
+            ><div class="flex items-center gap-3">
+              <app-icon name="image" size="sm"></app-icon>
+              <span class="text-sm font-medium text-neutral-900">Galeria cover images</span>
+            </div></app-card
+          ></a
+        >
+        <a routerLink="/admin/settings"
+          ><app-card
+            ><div class="flex items-center gap-3">
+              <app-icon name="settings" size="sm"></app-icon>
+              <span class="text-sm font-medium text-neutral-900">Ustawienia systemowe</span>
+            </div></app-card
+          ></a
+        >
+      </div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminDashboardComponent implements OnInit {
- private readonly adminService = inject(AdminService);
- readonly stats = signal({ users: 0, events: 0 });
+  private readonly adminService = inject(AdminService);
+  readonly stats = signal({ users: 0, events: 0 });
 
- ngOnInit(): void {
- this.adminService
- .getUsers(1, 1)
- .subscribe((r) => this.stats.update((s) => ({ ...s, users: r.total })));
- this.adminService
- .getEvents(1, 1)
- .subscribe((r) => this.stats.update((s) => ({ ...s, events: r.total })));
- }
+  ngOnInit(): void {
+    this.adminService
+      .getUsers(1, 1)
+      .subscribe((r) => this.stats.update((s) => ({ ...s, users: r.total })));
+    this.adminService
+      .getEvents(1, 1)
+      .subscribe((r) => this.stats.update((s) => ({ ...s, events: r.total })));
+  }
 }

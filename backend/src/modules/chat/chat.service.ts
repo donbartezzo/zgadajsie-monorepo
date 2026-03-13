@@ -1,13 +1,7 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
-const CHAT_ALLOWED_STATUSES = [
-  'APPLIED',
-  'ACCEPTED',
-  'PARTICIPANT',
-  'RESERVE',
-  'PENDING_PAYMENT',
-];
+const CHAT_ALLOWED_STATUSES = ['APPLIED', 'ACCEPTED', 'PARTICIPANT', 'RESERVE', 'PENDING_PAYMENT'];
 
 const USER_SELECT = { id: true, displayName: true, avatarUrl: true } as const;
 

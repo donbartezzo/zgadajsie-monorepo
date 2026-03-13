@@ -8,42 +8,40 @@
 <app-auth-overlay (closed)="overlays.close()" (authenticated)="overlays.handleAuthSuccess()" />
 } @case ('joinRules') {
 <app-join-rules-overlay
- [open]="true"
- [event]="overlays.event()"
- [loading]="overlays.loading()"
- [isOrganizer]="overlays.isOrganizer()"
- (closed)="overlays.close()"
- (confirmed)="overlays.confirmJoin()"
+  [open]="true"
+  [event]="overlays.event()"
+  [loading]="overlays.loading()"
+  [isOrganizer]="overlays.isOrganizer()"
+  (closed)="overlays.close()"
+  (confirmed)="overlays.confirmJoin()"
 />
 } @case ('joinConfirm') {
 <app-join-confirm-overlay
- [open]="true"
- [event]="overlays.event()"
- [participants]="overlays.participants()"
- [loading]="overlays.loading()"
- [participantStatus]="overlays.participantStatus()"
- (closed)="overlays.close()"
- (leaveRequested)="overlays.confirmLeave()"
- (openChat)="overlays.handleOpenChat()"
- (payRequested)="overlays.handlePay()"
- (contactOrganizer)="overlays.handleContactOrganizer()"
+  [open]="true"
+  [event]="overlays.event()"
+  [participants]="overlays.participants()"
+  [loading]="overlays.loading()"
+  [participantStatus]="overlays.participantStatus()"
+  (closed)="overlays.close()"
+  (leaveRequested)="overlays.confirmLeave()"
+  (openChat)="overlays.handleOpenChat()"
+  (payRequested)="overlays.handlePay()"
+  (contactOrganizer)="overlays.handleContactOrganizer()"
 />
 } @case ('leaveConfirm') {
 <app-leave-confirm-overlay
- [open]="true"
- [event]="overlays.event()"
- [participants]="overlays.participants()"
- [loading]="overlays.loading()"
- (closed)="overlays.close()"
- (confirmed)="overlays.confirmLeave()"
+  [open]="true"
+  [event]="overlays.event()"
+  [participants]="overlays.participants()"
+  [loading]="overlays.loading()"
+  (closed)="overlays.close()"
+  (confirmed)="overlays.confirmLeave()"
 />
-} @case ('organizerActions') {
-@if (overlays.event(); as evt) {
+} @case ('organizerActions') { @if (overlays.event(); as evt) {
 <app-organizer-actions-overlay
- [open]="true"
- [eventId]="evt.id"
- [citySlug]="evt.city?.slug ?? ''"
- (closed)="overlays.close()"
+  [open]="true"
+  [eventId]="evt.id"
+  [citySlug]="evt.city?.slug ?? ''"
+  (closed)="overlays.close()"
 />
-}
-} }
+} } }

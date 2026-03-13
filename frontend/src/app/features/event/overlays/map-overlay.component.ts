@@ -5,22 +5,22 @@ import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/botto
 import { Event as EventModel } from '../../../shared/types';
 
 @Component({
- selector: 'app-map-overlay',
- imports: [IconComponent, MapComponent, BottomOverlayComponent],
- template: `
- @if (event(); as e) { @if (e.lat && e.lng) {
- <app-bottom-overlay [open]="true" title="Lokalizacja" (closed)="closed.emit()">
- <app-map [lat]="e.lat" [lng]="e.lng" [interactive]="true" [height]="300"></app-map>
- <p class="mt-3 flex items-center gap-2 text-sm text-neutral-700">
- <app-icon name="map-pin" size="sm" variant="danger"></app-icon>
- {{ e.address }}
- </p>
- </app-bottom-overlay>
- } }
- `,
- changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-map-overlay',
+  imports: [IconComponent, MapComponent, BottomOverlayComponent],
+  template: `
+    @if (event(); as e) { @if (e.lat && e.lng) {
+    <app-bottom-overlay [open]="true" title="Lokalizacja" (closed)="closed.emit()">
+      <app-map [lat]="e.lat" [lng]="e.lng" [interactive]="true" [height]="300"></app-map>
+      <p class="mt-3 flex items-center gap-2 text-sm text-neutral-700">
+        <app-icon name="map-pin" size="sm" variant="danger"></app-icon>
+        {{ e.address }}
+      </p>
+    </app-bottom-overlay>
+    } }
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MapOverlayComponent {
- readonly event = input<EventModel | null>(null);
- readonly closed = output<void>();
+  readonly event = input<EventModel | null>(null);
+  readonly closed = output<void>();
 }

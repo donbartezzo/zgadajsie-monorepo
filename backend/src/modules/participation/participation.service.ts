@@ -47,7 +47,9 @@ export class ParticipationService {
     if (existing && existing.status === 'PENDING_PAYMENT' && isPaid) {
       const current = await this.prisma.eventParticipation.findUnique({
         where: { id: existing.id },
-        include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
+        include: {
+          user: { select: { id: true, displayName: true, avatarUrl: true, email: true } },
+        },
       });
       return { ...current, isPaid, costPerPerson: event.costPerPerson.toNumber() };
     }
@@ -61,7 +63,9 @@ export class ParticipationService {
           const updated = await this.prisma.eventParticipation.update({
             where: { id: existing.id },
             data: { status: restoredStatus },
-            include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
+            include: {
+              user: { select: { id: true, displayName: true, avatarUrl: true, email: true } },
+            },
           });
           return { ...updated, isPaid, costPerPerson: event.costPerPerson.toNumber() };
         }
@@ -70,7 +74,9 @@ export class ParticipationService {
         const updated = await this.prisma.eventParticipation.update({
           where: { id: existing.id },
           data: { status: 'PENDING_PAYMENT' },
-          include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
+          include: {
+            user: { select: { id: true, displayName: true, avatarUrl: true, email: true } },
+          },
         });
         return { ...updated, isPaid, costPerPerson: event.costPerPerson.toNumber() };
       }
@@ -78,7 +84,9 @@ export class ParticipationService {
       const updated = await this.prisma.eventParticipation.update({
         where: { id: existing.id },
         data: { status: newStatus },
-        include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
+        include: {
+          user: { select: { id: true, displayName: true, avatarUrl: true, email: true } },
+        },
       });
       return { ...updated, isPaid, costPerPerson: 0 };
     }
@@ -86,7 +94,10 @@ export class ParticipationService {
 
     if (event.maxParticipants) {
       const count = await this.prisma.eventParticipation.count({
-        where: { eventId, status: { in: ['APPLIED', 'ACCEPTED', 'PARTICIPANT', 'PENDING_PAYMENT'] } },
+        where: {
+          eventId,
+          status: { in: ['APPLIED', 'ACCEPTED', 'PARTICIPANT', 'PENDING_PAYMENT'] },
+        },
       });
       if (count >= event.maxParticipants) throw new BadRequestException('Wydarzenie jest pełne');
     }
@@ -96,14 +107,18 @@ export class ParticipationService {
       if (event.organizerId === userId) {
         const participation = await this.prisma.eventParticipation.create({
           data: { eventId, userId, status: 'ACCEPTED' },
-          include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
+          include: {
+            user: { select: { id: true, displayName: true, avatarUrl: true, email: true } },
+          },
         });
         return { ...participation, isPaid, costPerPerson: event.costPerPerson.toNumber() };
       }
 
       const participation = await this.prisma.eventParticipation.create({
         data: { eventId, userId, status: 'PENDING_PAYMENT' },
-        include: { user: { select: { id: true, displayName: true, avatarUrl: true, email: true } } },
+        include: {
+          user: { select: { id: true, displayName: true, avatarUrl: true, email: true } },
+        },
       });
       return { ...participation, isPaid, costPerPerson: event.costPerPerson.toNumber() };
     }
@@ -244,10 +259,7 @@ export class ParticipationService {
     if (!participation) throw new NotFoundException('Nie uczestniczysz w tym wydarzeniu');
 
     // Clean up any pending payment intents (restore reserved vouchers)
-    await this.paymentsService.cleanupIntents(
-      participation.id,
-      participation.event.organizerId,
-    );
+    await this.paymentsService.cleanupIntents(participation.id, participation.event.organizerId);
 
     return this.prisma.eventParticipation.update({
       where: { id: participation.id },

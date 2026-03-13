@@ -114,7 +114,9 @@ export class EmailService {
       `Potwierdzenie płatności – ${eventTitle}`,
       `
       <h2>Hej ${displayName}!</h2>
-      <p>Twoja płatność <strong>${amount.toFixed(2)} zł</strong> za wydarzenie <strong>${eventTitle}</strong> została zaksięgowana.</p>
+      <p>Twoja płatność <strong>${amount.toFixed(
+        2,
+      )} zł</strong> za wydarzenie <strong>${eventTitle}</strong> została zaksięgowana.</p>
     `,
     );
   }
@@ -130,7 +132,9 @@ export class EmailService {
       `Zwrot płatności – ${eventTitle}`,
       `
       <h2>Hej ${displayName}!</h2>
-      <p>Zwrot <strong>${amount.toFixed(2)} zł</strong> za wydarzenie <strong>${eventTitle}</strong> został zlecony.</p>
+      <p>Zwrot <strong>${amount.toFixed(
+        2,
+      )} zł</strong> za wydarzenie <strong>${eventTitle}</strong> został zlecony.</p>
     `,
     );
   }

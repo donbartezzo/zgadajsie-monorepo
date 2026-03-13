@@ -8,6 +8,7 @@ description: Globalne zasady pracy AI w tym projekcie
 Konwersację prowadźmy w języku polskim.
 
 Wszelką implementację ZAWSZE prowadź/wdrażaj według zasad opisanych w plikach:
+
 - jeśli dotyczy frontend'u to: `docs/styleguide-frontend.md`
 - jeśli dotyczy backend'u to: `docs/styleguide-backend.md`.
 
@@ -18,6 +19,7 @@ Głównym szablonem, na którym bazuje projekt jest: `ignored/themplates/sticky-
 # Design System
 
 **WAŻNE:** Jeśli wprowadzasz zmiany związane z design systemem (np. nowy kolor do palety, nowy token, nowa ikona, zmiana w spacing, nowy komponent UI), **ZAWSZE** zaktualizuj również:
+
 - `frontend/src/app/features/dev/pages/design-system/design-system.component.ts` (i `.html` jeśli potrzeba)
 - Dodaj nowy element do odpowiedniej sekcji (colors, typography, icons, spacing, components)
 - Upewnij się, że nowy token/element jest widoczny na stronie `/dev/design-system`
@@ -25,6 +27,7 @@ Głównym szablonem, na którym bazuje projekt jest: `ignored/themplates/sticky-
 Strona design-system to **single source of truth** dla wizualnego podglądu wszystkich elementów design systemu.
 
 # Ważne!
+
 W odpowiedzi na każde polecenie/prompa napisz czy zostało wykonane zgodnie z zasadami opisanymi powyżej oraz czy i który z powyższych plików został uwzględniony na potrzeby danego zadania. Jeśli żaden to napisz dlaczego, np. że nie było takiej potrzeby.
 
 ## Formatowanie kodu

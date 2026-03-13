@@ -19,10 +19,7 @@ export class EventsService {
   ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
-    const coverImageId = await this.resolveCoverImageId(
-      dto.coverImageId,
-      dto.disciplineId,
-    );
+    const coverImageId = await this.resolveCoverImageId(dto.coverImageId, dto.disciplineId);
 
     return this.prisma.event.create({
       data: {

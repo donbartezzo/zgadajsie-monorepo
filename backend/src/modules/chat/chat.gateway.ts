@@ -75,9 +75,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { eventId: string; otherUserId: string },
   ) {
-    const room = this.getPrivateRoomName(data.eventId, client.handshake.auth?.userId, data.otherUserId);
+    const room = this.getPrivateRoomName(
+      data.eventId,
+      client.handshake.auth?.userId,
+      data.otherUserId,
+    );
     client.join(room);
-    return { event: 'joinedPrivateRoom', data: { eventId: data.eventId, otherUserId: data.otherUserId } };
+    return {
+      event: 'joinedPrivateRoom',
+      data: { eventId: data.eventId, otherUserId: data.otherUserId },
+    };
   }
 
   @SubscribeMessage('leavePrivateRoom')
@@ -85,14 +92,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { eventId: string; otherUserId: string },
   ) {
-    const room = this.getPrivateRoomName(data.eventId, client.handshake.auth?.userId, data.otherUserId);
+    const room = this.getPrivateRoomName(
+      data.eventId,
+      client.handshake.auth?.userId,
+      data.otherUserId,
+    );
     client.leave(room);
   }
 
   @SubscribeMessage('sendPrivateMessage')
   async handleSendPrivateMessage(
     @ConnectedSocket() _client: Socket,
-    @MessageBody() data: { eventId: string; senderId: string; recipientId: string; content: string },
+    @MessageBody()
+    data: { eventId: string; senderId: string; recipientId: string; content: string },
   ) {
     const message = await this.chatService.createPrivateMessage(
       data.eventId,
@@ -108,7 +120,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('privateTyping')
   handlePrivateTyping(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { eventId: string; userId: string; otherUserId: string; displayName: string },
+    @MessageBody()
+    data: { eventId: string; userId: string; otherUserId: string; displayName: string },
   ) {
     const room = this.getPrivateRoomName(data.eventId, data.userId, data.otherUserId);
     client.to(room).emit('privateUserTyping', {

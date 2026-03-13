@@ -1,66 +1,64 @@
 <!-- Bottom Nav Bar -->
 <footer
- class="h-[var(--footer-height)] border-t border-neutral-200 bg-white/95 px-2 py-2 shadow-[0_-4px_12px_rgba(15,23,42,0.12)] backdrop-blur-md"
- aria-label="Główna nawigacja dolna"
+  class="h-[var(--footer-height)] border-t border-neutral-200 bg-white/95 px-2 py-2 shadow-[0_-4px_12px_rgba(15,23,42,0.12)] backdrop-blur-md"
+  aria-label="Główna nawigacja dolna"
 >
- <nav
- class="flex items-center justify-center text-xs font-medium text-neutral-500"
- >
- <!-- Centered Actions -->
- <div class="grid grid-cols-4 gap-x-3">
- <button
- type="button"
- (click)="navigateToEvents()"
- class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
- >
- <app-icon name="calendar" size="lg" variant="default" class="mb-1"></app-icon>
- <span>Wydarzenia</span>
- </button>
+  <nav class="flex items-center justify-center text-xs font-medium text-neutral-500">
+    <!-- Centered Actions -->
+    <div class="grid grid-cols-4 gap-x-3">
+      <button
+        type="button"
+        (click)="navigateToEvents()"
+        class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
+      >
+        <app-icon name="calendar" size="lg" variant="default" class="mb-1"></app-icon>
+        <span>Wydarzenia</span>
+      </button>
 
- <button
- type="button"
- (click)="toggleShareMenu()"
- class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
- aria-label="Udostępnij"
- >
- <app-icon name="share" size="lg" variant="default" class="mb-1"></app-icon>
- <span>Udostępnij</span>
- </button>
+      <button
+        type="button"
+        (click)="toggleShareMenu()"
+        class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
+        aria-label="Udostępnij"
+      >
+        <app-icon name="share" size="lg" variant="default" class="mb-1"></app-icon>
+        <span>Udostępnij</span>
+      </button>
 
- <button
- type="button"
- (click)="toggleSettingsMenu()"
- class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
- aria-label="Ustawienia"
- >
- <app-icon name="settings" size="lg" variant="default" class="mb-1"></app-icon>
- <span>Ustawienia</span>
- </button>
+      <button
+        type="button"
+        (click)="toggleSettingsMenu()"
+        class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
+        aria-label="Ustawienia"
+      >
+        <app-icon name="settings" size="lg" variant="default" class="mb-1"></app-icon>
+        <span>Ustawienia</span>
+      </button>
 
- @if (auth.isLoggedIn()) {
- <button
- type="button"
- (click)="navigateToProfile()"
- class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
- >
- <app-user-avatar
- [avatarUrl]="auth.currentUser()?.avatarUrl"
- [displayName]="auth.currentUser()?.displayName || ''"
- size="md"
- class="mb-1"
- ></app-user-avatar>
- <!-- <span>Profil</span> -->
- </button>
- } @else {
- <button
- type="button"
- (click)="navigateToLogin()"
- class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
- >
- <app-icon name="log-in" size="lg" variant="default" class="mb-1"></app-icon>
- <span>Zaloguj</span>
- </button>
- }
- </div>
- </nav>
+      @if (auth.isLoggedIn()) {
+      <button
+        type="button"
+        (click)="navigateToProfile()"
+        class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
+      >
+        <app-user-avatar
+          [avatarUrl]="auth.currentUser()?.avatarUrl"
+          [displayName]="auth.currentUser()?.displayName || ''"
+          size="md"
+          class="mb-1"
+        ></app-user-avatar>
+        <!-- <span>Profil</span> -->
+      </button>
+      } @else {
+      <button
+        type="button"
+        (click)="navigateToLogin()"
+        class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
+      >
+        <app-icon name="log-in" size="lg" variant="default" class="mb-1"></app-icon>
+        <span>Zaloguj</span>
+      </button>
+      }
+    </div>
+  </nav>
 </footer>

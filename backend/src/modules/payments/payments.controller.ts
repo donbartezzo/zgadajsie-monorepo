@@ -61,13 +61,19 @@ export class PaymentsController {
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Get('intent/:intentId/status')
-  getIntentPaymentStatus(@Param('intentId', ParseUUIDPipe) intentId: string, @CurrentUser() user: AuthUser) {
+  getIntentPaymentStatus(
+    @Param('intentId', ParseUUIDPipe) intentId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
     return this.paymentsService.getIntentPaymentStatus(intentId, user.id);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Get('event/:eventId/earnings')
-  getEventEarnings(@Param('eventId', ParseUUIDPipe) eventId: string, @CurrentUser() user: AuthUser) {
+  getEventEarnings(
+    @Param('eventId', ParseUUIDPipe) eventId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
     return this.paymentsService.getEventEarnings(eventId, user.id);
   }
 

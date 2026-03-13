@@ -10,20 +10,20 @@ import { OrganizerActionsOverlayComponent } from '../../../features/event/overla
 import { BottomOverlaysService } from './bottom-overlays.service';
 
 @Component({
- selector: 'app-bottom-overlays',
- imports: [
- ShareOverlayComponent,
- SettingsOverlayComponent,
- MapOverlayComponent,
- AuthOverlayComponent,
- JoinRulesOverlayComponent,
- JoinConfirmOverlayComponent,
- LeaveConfirmOverlayComponent,
- OrganizerActionsOverlayComponent,
- ],
- templateUrl: './bottom-overlays.component.html',
- changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-bottom-overlays',
+  imports: [
+    ShareOverlayComponent,
+    SettingsOverlayComponent,
+    MapOverlayComponent,
+    AuthOverlayComponent,
+    JoinRulesOverlayComponent,
+    JoinConfirmOverlayComponent,
+    LeaveConfirmOverlayComponent,
+    OrganizerActionsOverlayComponent,
+  ],
+  templateUrl: './bottom-overlays.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BottomOverlaysComponent {
- readonly overlays = inject(BottomOverlaysService);
+  readonly overlays = inject(BottomOverlaysService);
 }

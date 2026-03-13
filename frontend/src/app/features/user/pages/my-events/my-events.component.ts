@@ -12,122 +12,122 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 import { Event as EventModel } from '../../../../shared/types';
 
 @Component({
- selector: 'app-my-events',
- imports: [
- CommonModule,
- DatePipe,
- RouterLink,
- IconComponent,
- ButtonComponent,
- CardComponent,
- LoadingSpinnerComponent,
- EmptyStateComponent,
- ],
- template: `
- <div class="p-4">
- <div class="flex items-center justify-between mb-4">
- <h1 class="text-xl font-bold text-neutral-900">Moje wydarzenia</h1>
- <a routerLink="/o/w/new">
- <app-button variant="primary" size="sm">
- <app-icon name="plus" size="sm"></app-icon> Nowe
- </app-button>
- </a>
- </div>
+  selector: 'app-my-events',
+  imports: [
+    CommonModule,
+    DatePipe,
+    RouterLink,
+    IconComponent,
+    ButtonComponent,
+    CardComponent,
+    LoadingSpinnerComponent,
+    EmptyStateComponent,
+  ],
+  template: `
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-xl font-bold text-neutral-900">Moje wydarzenia</h1>
+        <a routerLink="/o/w/new">
+          <app-button variant="primary" size="sm">
+            <app-icon name="plus" size="sm"></app-icon> Nowe
+          </app-button>
+        </a>
+      </div>
 
- @if (loading()) {
- <app-loading-spinner></app-loading-spinner>
- } @else if (events().length === 0) {
- <app-empty-state
- icon="calendar"
- title="Brak wydarzeń"
- message="Nie utworzyłeś jeszcze żadnych wydarzeń."
- ></app-empty-state>
- } @else {
- <div class="space-y-3">
- @for (e of events(); track e.id) {
- <app-card>
- <div class="flex items-center justify-between mb-2">
- <a
- [routerLink]="['/w', e.city?.slug, e.id]"
- class="text-sm font-semibold text-neutral-900 hover:text-primary-500"
- >{{ e.title }}</a
- >
- <span
- [class]="
- 'text-xs px-2 py-0.5 rounded-full ' +
- (e.status === 'ACTIVE'
- ? 'bg-success-50 text-success-600'
- : 'bg-neutral-100 text-neutral-600')
-"
- >{{ e.status }}</span
- >
- </div>
- <p class="text-xs text-neutral-500 mb-3">
- {{ e.startsAt | date : 'd MMM yyyy, HH:mm' }}
- </p>
- <div class="flex gap-2">
- <a [routerLink]="['/o', 'w', e.id, 'manage']">
- <app-button variant="outline" size="sm"
- ><app-icon name="settings" size="sm"></app-icon
- ></app-button>
- </a>
- <a [routerLink]="['/o', 'w', e.id, 'edit']">
- <app-button variant="outline" size="sm"
- ><app-icon name="edit" size="sm"></app-icon
- ></app-button>
- </a>
- <app-button variant="outline" size="sm" (clicked)="onCancel(e.id)"
- ><app-icon name="x" size="sm"></app-icon
- ></app-button>
- <app-button variant="outline" size="sm" (clicked)="onDuplicate(e.id)"
- ><app-icon name="copy" size="sm"></app-icon
- ></app-button>
- </div>
- </app-card>
- }
- </div>
- }
- </div>
- `,
- changeDetection: ChangeDetectionStrategy.OnPush,
+      @if (loading()) {
+      <app-loading-spinner></app-loading-spinner>
+      } @else if (events().length === 0) {
+      <app-empty-state
+        icon="calendar"
+        title="Brak wydarzeń"
+        message="Nie utworzyłeś jeszcze żadnych wydarzeń."
+      ></app-empty-state>
+      } @else {
+      <div class="space-y-3">
+        @for (e of events(); track e.id) {
+        <app-card>
+          <div class="flex items-center justify-between mb-2">
+            <a
+              [routerLink]="['/w', e.city?.slug, e.id]"
+              class="text-sm font-semibold text-neutral-900 hover:text-primary-500"
+              >{{ e.title }}</a
+            >
+            <span
+              [class]="
+                'text-xs px-2 py-0.5 rounded-full ' +
+                (e.status === 'ACTIVE'
+                  ? 'bg-success-50 text-success-600'
+                  : 'bg-neutral-100 text-neutral-600')
+              "
+              >{{ e.status }}</span
+            >
+          </div>
+          <p class="text-xs text-neutral-500 mb-3">
+            {{ e.startsAt | date : 'd MMM yyyy, HH:mm' }}
+          </p>
+          <div class="flex gap-2">
+            <a [routerLink]="['/o', 'w', e.id, 'manage']">
+              <app-button variant="outline" size="sm"
+                ><app-icon name="settings" size="sm"></app-icon
+              ></app-button>
+            </a>
+            <a [routerLink]="['/o', 'w', e.id, 'edit']">
+              <app-button variant="outline" size="sm"
+                ><app-icon name="edit" size="sm"></app-icon
+              ></app-button>
+            </a>
+            <app-button variant="outline" size="sm" (clicked)="onCancel(e.id)"
+              ><app-icon name="x" size="sm"></app-icon
+            ></app-button>
+            <app-button variant="outline" size="sm" (clicked)="onDuplicate(e.id)"
+              ><app-icon name="copy" size="sm"></app-icon
+            ></app-button>
+          </div>
+        </app-card>
+        }
+      </div>
+      }
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MyEventsComponent implements OnInit {
- private readonly userService = inject(UserService);
- private readonly eventService = inject(EventService);
- private readonly snackbar = inject(SnackbarService);
+  private readonly userService = inject(UserService);
+  private readonly eventService = inject(EventService);
+  private readonly snackbar = inject(SnackbarService);
 
- readonly events = signal<EventModel[]>([]);
- readonly loading = signal(true);
+  readonly events = signal<EventModel[]>([]);
+  readonly loading = signal(true);
 
- ngOnInit(): void {
- this.userService.getMyEvents().subscribe({
- next: (e) => {
- this.events.set(e);
- this.loading.set(false);
- },
- error: () => this.loading.set(false),
- });
- }
+  ngOnInit(): void {
+    this.userService.getMyEvents().subscribe({
+      next: (e) => {
+        this.events.set(e);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
+  }
 
- onCancel(id: string): void {
- this.eventService.cancelEvent(id).subscribe({
- next: () => {
- this.events.update((prev) =>
- prev.map((e) => (e.id === id ? { ...e, status: 'CANCELLED' } : e)),
- );
- this.snackbar.info('Wydarzenie anulowane');
- },
- error: () => this.snackbar.error('Nie udało się anulować'),
- });
- }
+  onCancel(id: string): void {
+    this.eventService.cancelEvent(id).subscribe({
+      next: () => {
+        this.events.update((prev) =>
+          prev.map((e) => (e.id === id ? { ...e, status: 'CANCELLED' } : e)),
+        );
+        this.snackbar.info('Wydarzenie anulowane');
+      },
+      error: () => this.snackbar.error('Nie udało się anulować'),
+    });
+  }
 
- onDuplicate(id: string): void {
- this.eventService.duplicateEvent(id).subscribe({
- next: (dup) => {
- this.events.update((prev) => [dup, ...prev]);
- this.snackbar.success('Wydarzenie zduplikowane');
- },
- error: () => this.snackbar.error('Nie udało się zduplikować'),
- });
- }
+  onDuplicate(id: string): void {
+    this.eventService.duplicateEvent(id).subscribe({
+      next: (dup) => {
+        this.events.update((prev) => [dup, ...prev]);
+        this.snackbar.success('Wydarzenie zduplikowane');
+      },
+      error: () => this.snackbar.error('Nie udało się zduplikować'),
+    });
+  }
 }

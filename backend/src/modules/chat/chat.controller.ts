@@ -43,10 +43,7 @@ export class ChatController {
   }
 
   @Get('private/conversations')
-  getOrganizerConversations(
-    @Param('eventId') eventId: string,
-    @CurrentUser() user: AuthUser,
-  ) {
+  getOrganizerConversations(@Param('eventId') eventId: string, @CurrentUser() user: AuthUser) {
     return this.chatService.getOrganizerConversations(eventId, user.id);
   }
 

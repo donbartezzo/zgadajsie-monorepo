@@ -6,14 +6,14 @@ import { CanActivateFn, Router } from '@angular/router';
  * na /payment/status z zachowaniem query params. W przeciwnym razie przepuszcza.
  */
 export const paymentRedirectGuard: CanActivateFn = (route) => {
- const router = inject(Router);
- const intentId = route.queryParamMap.get('intentId');
+  const router = inject(Router);
+  const intentId = route.queryParamMap.get('intentId');
 
- if (intentId) {
- return router.createUrlTree(['/payment/status'], {
- queryParams: { intentId },
- });
- }
+  if (intentId) {
+    return router.createUrlTree(['/payment/status'], {
+      queryParams: { intentId },
+    });
+  }
 
- return true;
+  return true;
 };
