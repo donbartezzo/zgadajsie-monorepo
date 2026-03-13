@@ -10,7 +10,7 @@ export interface LayoutConfig {
 
 @Injectable({ providedIn: 'root' })
 export class LayoutConfigService {
-  static readonly DEFAULT_CONTENT_BG = 'bg-[var(--app-bg-color)]';
+  static readonly DEFAULT_CONTENT_BG = 'bg-background';
 
   readonly coverImageUrl = signal('');
   readonly contentBgClass = signal(LayoutConfigService.DEFAULT_CONTENT_BG);

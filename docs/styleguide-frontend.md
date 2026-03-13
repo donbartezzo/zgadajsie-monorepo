@@ -51,14 +51,65 @@
 
 - Zawsze gdzie to możliwe wykorzystuj własne komponenty stylowane czystym SCSS i klasami Tailwind CSS; Angular Material (mat-card, mat-button, itp.) traktuj jako uzupełnienie.
 - Styluj za pomocą klas Tailwind CSS.
-- Zachowaj spójność kolorystyki.
+- Zachowaj spójność kolorystyki — **priorytetowo używaj semantycznych tokenów kolorystycznych** (patrz sekcja poniżej).
 - Zapewnij responsywność z podejściem mobile-first.
+
+### Centralna paleta kolorów — Design Tokens (OBOWIĄZKOWE)
+
+Projekt posiada **centralną paletę kolorów** opartą na CSS Custom Properties (zdefiniowaną w `frontend/src/styles.scss`) z automatycznym przełączaniem light/dark mode. Tailwind mapuje te zmienne w `frontend/tailwind.config.js`.
+
+**ZASADA NADRZĘDNA:** Przy implementacji kolorów **ZAWSZE najpierw** szukaj odpowiedniego tokenu semantycznego. Surowe kolory Tailwind (np. `gray-500`, `slate-700`, `blue-600`) stosuj **tylko** gdy żaden token nie pasuje (np. jednorazowe dekoracje, gradienty wielokolorowe, specyficzne odcienie statusów).
+
+#### Konfiguracja i dostępne tokeny:
+
+**Źródło definicji:**
+- **CSS Variables:** `frontend/src/styles.scss` (`:root` = light mode, `.dark` = dark mode)
+- **Tailwind mapping:** `frontend/tailwind.config.js` (`extend.colors`)
+- **Podgląd wizualny:** `/dev/design-system` (dostępne tylko w trybie dev)
+
+**Kategorie tokenów:**
+- **Surfaces:** `background`, `surface`, `surface-elevated`
+- **Tekst:** `foreground`, `muted`, `muted-foreground`
+- **Brand/Primary:** `primary`, `primary-hover`, `primary-foreground`
+- **Status:** `success`, `warning`, `danger`, `info` (każdy z wariantem `*-foreground`)
+- **Utility:** `border`, `ring`
+
+**Użycie w Tailwind:** Każdy token mapuje się na klasy `bg-*`, `text-*`, `border-*`, np. `bg-surface`, `text-foreground`, `bg-primary`, `text-success`.
+
+#### Dark mode — automatyczne przełączanie:
+
+Tokeny semantyczne **automatycznie** przełączają wartości gdy na `<html>` jest klasa `.dark`. Nie musisz pisać `dark:bg-*` dla tokenów — wystarczy `bg-surface` i kolor zmieni się sam.
+
+Prefiks `dark:` stosuj **tylko** dla surowych kolorów Tailwind (np. `dark:bg-gray-800`) lub dla nadpisania tokenu w specyficznym kontekście.
+
+#### Przykłady poprawnego użycia:
+
+```html
+<!-- ✅ DOBRZE — tokeny semantyczne -->
+<div class="bg-surface rounded-xl border border-border p-4">
+  <h2 class="text-foreground font-semibold">Tytuł</h2>
+  <p class="text-muted text-sm">Opis</p>
+  <button class="bg-primary text-primary-foreground rounded-lg px-4 py-2 hover:bg-primary-hover">
+    Akcja
+  </button>
+</div>
+
+<!-- ❌ ŹLE — surowe kolory zamiast tokenów -->
+<div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+  <h2 class="text-gray-900 dark:text-white font-semibold">Tytuł</h2>
+</div>
+```
+
+#### Kolor `highlight` (statyczny):
+
+Kolor `highlight` (`#DA4453` / `#ED5565` / `#C0392B`) jest zachowany jako statyczna skala (nie zmienia się z dark mode) — używaj go dla elementów brandowych, które mają stały kolor niezależnie od theme.
 
 ### Layout, Tailwind, ikony — skrót dla AI
 
 **Layout i stylowanie (Tailwind)**
 
 - Używaj TYLKO Tailwind do layoutu i wyglądu (`flex`, `grid`, spacing, kolory, typografia, breakpointy, dark mode).
+- **PRIORYTET KOLORÓW:** semantyczne tokeny (`bg-surface`, `text-foreground`, `bg-primary`, etc.) → dopiero potem surowe kolory Tailwind.
 - Nie opieraj wyglądu na klasach `mat-*` ani Material Theme.
 - Responsywność realizuj przez Tailwind (`sm:`, `md:`, `lg:`, `xl:`), mobile-first.
 - Preferuj kompozycję klas Tailwind w HTML zamiast rozbudowanych nestów SCSS.

@@ -15,18 +15,87 @@ body {
 // ── App shell: single source of truth for app max-width ──
 $app-max-width: 700px;
 $cover-image-height: 250px;
-$app-bg-color: #eaeaef;
+
+// ────────────────────────────────────────────────────────────
+// CENTRALNA PALETA KOLORÓW — Design Tokens (CSS Custom Properties)
+//
+// Kolory bazują na szablonie sticky-mobile i są jedynym źródłem prawdy
+// kolorystycznej w projekcie. Tailwind mapuje je w tailwind.config.js.
+//
+// Użycie w szablonach:  bg-surface, text-foreground, bg-primary, text-muted, etc.
+// Dark mode:            automatyczne przełączanie — klasa .dark na <html>
+// ────────────────────────────────────────────────────────────
 
 :root {
+  // ── Layout ──
   --app-max-width: #{$app-max-width};
   --footer-height: 70px;
   --hero-h: #{$cover-image-height};
-  --app-bg-color: #{$app-bg-color};
+
+  // ── Surfaces ──
+  --color-background: #eaeaef;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #ffffff;
+
+  // ── Text ──
+  --color-foreground: #1f1f1f;
+  --color-muted: #6c6c6c;
+  --color-muted-foreground: #6c6c6c;
+
+  // ── Borders & Focus ──
+  --color-border: rgba(0, 0, 0, 0.1);
+  --color-ring: #4a89dc;
+
+  // ── Brand / Primary ──
+  --color-primary: #da4453;
+  --color-primary-hover: #c0392b;
+  --color-primary-foreground: #ffffff;
+
+  // ── Status ──
+  --color-success: #8cc152;
+  --color-success-foreground: #ffffff;
+  --color-warning: #e9573f;
+  --color-warning-foreground: #ffffff;
+  --color-danger: #da4453;
+  --color-danger-foreground: #ffffff;
+  --color-info: #4a89dc;
+  --color-info-foreground: #ffffff;
+}
+
+.dark {
+  // ── Surfaces ──
+  --color-background: #0f1117;
+  --color-surface: #21252a;
+  --color-surface-elevated: #2a2f36;
+
+  // ── Text ──
+  --color-foreground: #ffffff;
+  --color-muted: #898989;
+  --color-muted-foreground: #a0a0a0;
+
+  // ── Borders & Focus ──
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-ring: #5d9cec;
+
+  // ── Brand / Primary ──
+  --color-primary: #ed5565;
+  --color-primary-hover: #da4453;
+  --color-primary-foreground: #ffffff;
+
+  // ── Status ──
+  --color-success: #a0d468;
+  --color-success-foreground: #ffffff;
+  --color-warning: #fc6e51;
+  --color-warning-foreground: #ffffff;
+  --color-danger: #ed5565;
+  --color-danger-foreground: #ffffff;
+  --color-info: #5d9cec;
+  --color-info-foreground: #ffffff;
 }
 
 .app {
-  @apply min-h-screen relative overflow-hidden dark:bg-slate-900;
-  background-color: var(--app-bg-color);
+  @apply min-h-screen relative overflow-hidden;
+  background-color: var(--color-background);
 
   // Mobile (default): background pattern hidden, container plain
   .app-bg-pattern {
@@ -70,13 +139,8 @@ $app-bg-color: #eaeaef;
       margin-right: auto;
       overflow: hidden;
       border-radius: 1rem;
-      background-color: var(--app-bg-color);
+      background-color: var(--color-background);
       box-shadow: 8px 0 24px -4px rgba(0, 0, 0, 0.15), -8px 0 24px -4px rgba(0, 0, 0, 0.15);
-    }
-
-    .dark .app-container {
-      border-color: #334155; // slate-700
-      background-color: #0f172a; // slate-900
     }
   }
 }

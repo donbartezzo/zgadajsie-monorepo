@@ -15,5 +15,14 @@ Jeśli coś trzeba doprecyzować to napisz to w punktach i czekaj na decyzję. J
 
 Głównym szablonem, na którym bazuje projekt jest: `ignored/themplates/sticky-mobile`, ale oparty jest on na Bootstrapie, natomiast ten projekt oparty jest na Tailwind, więc jeśli implementacja dotyczy wdrażania podstron/komponentów/elementów z tego szablonu to należy przeprowadzić migrację i ogólnie postępować według zasad opisanych w: `docs/ai-bootstrap-to-tailwind-migration.md`
 
+# Design System
+
+**WAŻNE:** Jeśli wprowadzasz zmiany związane z design systemem (np. nowy kolor do palety, nowy token, nowa ikona, zmiana w spacing, nowy komponent UI), **ZAWSZE** zaktualizuj również:
+- `frontend/src/app/features/dev/pages/design-system/design-system.component.ts` (i `.html` jeśli potrzeba)
+- Dodaj nowy element do odpowiedniej sekcji (colors, typography, icons, spacing, components)
+- Upewnij się, że nowy token/element jest widoczny na stronie `/dev/design-system`
+
+Strona design-system to **single source of truth** dla wizualnego podglądu wszystkich elementów design systemu.
+
 # Ważne!
 W odpowiedzi na każde polecenie/prompa napisz czy zostało wykonane zgodnie z zasadami opisanymi powyżej oraz czy i który z powyższych plików został uwzględniony na potrzeby danego zadania. Jeśli żaden to napisz dlaczego, np. że nie było takiej potrzeby.

@@ -1,3 +1,4 @@
+import { isDevMode } from '@angular/core';
 import { Route } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { activeGuard } from './core/auth/active.guard';
@@ -357,6 +358,20 @@ export const appRoutes: Route[] = [
       import('./features/static/pages/terms/terms.component').then((m) => m.TermsComponent),
     data: { title: 'Regulamin', breadcrumb: { parent: '/', label: 'Strona główna' } },
   },
+
+  // ── Dev-only: Design System ──
+  ...(isDevMode()
+    ? [
+        {
+          path: 'dev/design-system',
+          loadComponent: () =>
+            import('./features/dev/pages/design-system/design-system.component').then(
+              (m) => m.DesignSystemComponent,
+            ),
+          data: { title: 'Design System', showHeader: false, showFooter: false },
+        },
+      ]
+    : []),
 
   // ── Catch-all ──
   { path: '**', redirectTo: '' },
