@@ -1,26 +1,41 @@
-<section
-    class="flex h-[calc(100dvh-var(--footer-height))] flex-col items-center justify-center px-5 text-center"
-  >
-    <div class="w-full max-w-sm">
-      <img
-        src="assets/images/default.svg"
-        alt="Ilustracja — społeczność sportowa"
-        class="mx-auto mb-10 w-3/4"
-      />
+<section class="flex h-[calc(100dvh-var(--footer-height))] flex-col items-center justify-center px-5 text-center">
+  <div>
 
-      <h1 class="text-3xl font-bold tracking-tight text-gray-900">ZgadajSię</h1>
-
-      <p class="-mt-0.5 text-xs font-medium text-highlight">
-        Sportowa społeczność Zielonej Góry
-      </p>
-
-      <p class="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-gray-500">
-        Znajdź ludzi do wspólnego grania, dołącz do wydarzeń sportowych i&nbsp;bądź aktywny
-        w&nbsp;swojej okolicy!
-      </p>
-
-      <a routerLink="/w/zielona-gora" class="mt-8 inline-block">
-        <app-button variant="primary" size="lg"> Rozpocznij </app-button>
-      </a>
+    <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-highlight/10">
+      <app-icon name="users" size="lg" class="text-highlight"></app-icon>
     </div>
+
+    <h1 class="text-3xl font-extrabold tracking-tight text-gray-900">ZgadajSię</h1>
+    <p class="-mt-0.5 text-xs font-semibold uppercase tracking-widest text-highlight">
+      Sportowa społeczność lokalna
+    </p>
+
+    <p class="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-gray-500">
+      Znajdź ludzi do wspólnego grania, dołącz do wydarzeń sportowych
+      i&nbsp;bądź aktywny w&nbsp;swojej okolicy.
+    </p>
+
+    <a routerLink="/w/zielona-gora" class="mt-6 inline-block">
+      <app-button variant="primary" size="lg" [fullWidth]="true">
+        <app-icon name="calendar" size="sm" class="mr-1"></app-icon>
+        Przeglądaj wydarzenia
+      </app-button>
+    </a>
+
+    <!-- Info -->
+    <div class="mx-auto mt-8 max-w-xs space-y-2 text-left">
+      <div class="flex items-start gap-2.5 rounded-xl bg-white p-3 shadow-sm ring-1 ring-gray-100">
+        <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-orange-500/10">
+          <app-icon name="map-pin" size="xs" class="text-orange-500"></app-icon>
+        </div>
+        <p class="text-[11px] leading-relaxed text-gray-500">
+          Na razie obsługujemy tylko <strong class="text-gray-700">Zieloną Górę</strong>,
+          ale miast będzie przybywało.
+          <a routerLink="/contact" class="font-semibold text-highlight hover:underline">Napisz do nas</a>,
+          jeśli chcesz, żebyśmy pojawili się w&nbsp;Twoim mieście.
+        </p>
+      </div>
+    </div>
+
+  </div>
 </section>
