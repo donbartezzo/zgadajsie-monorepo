@@ -24,6 +24,7 @@ import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layo
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 import { Event as EventModel, Participation } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
+import { getEventCountdown, EventCountdown } from '../../../../shared/utils/date.utils';
 import {
   EventNotificationBarsComponent,
   NotificationBarConfig,
@@ -118,12 +119,7 @@ export class EventComponent implements OnInit, OnDestroy {
     return null;
   });
 
-  readonly countdown = signal<{
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-  } | null>(null);
+  readonly countdown = signal<EventCountdown | null>(null);
 
   // @TODO: Replace hardcoded amenities with data from backend (event edit form)
   readonly amenities: { icon: IconName; label: string }[] = [
@@ -179,7 +175,7 @@ export class EventComponent implements OnInit, OnDestroy {
       next: (e) => {
         this.event.set(e);
         this.isLoading.set(false);
-        this.startCountdown(e.startsAt);
+        this.startCountdown(e.startsAt, e.endsAt);
         this.checkOpenJoinParam();
       },
       error: () => this.isLoading.set(false),
@@ -195,22 +191,14 @@ export class EventComponent implements OnInit, OnDestroy {
     this.overlays.setEventContext(null, []);
   }
 
-  private startCountdown(startsAt: string): void {
+  private startCountdown(startsAt: string, endsAt: string): void {
     const update = () => {
-      const diff = new Date(startsAt).getTime() - Date.now();
-
-      if (diff <= 0) {
-        this.countdown.set(null);
-        if (this.countdownInterval) clearInterval(this.countdownInterval);
-        return;
+      const result = getEventCountdown(startsAt, endsAt, new Date(), Infinity);
+      this.countdown.set(result);
+      if (!result && this.countdownInterval) {
+        clearInterval(this.countdownInterval);
+        this.countdownInterval = null;
       }
-      const absDiff = Math.abs(diff);
-      this.countdown.set({
-        days: Math.floor(absDiff / 86_400_000),
-        hours: Math.floor((absDiff % 86_400_000) / 3_600_000),
-        minutes: Math.floor((absDiff % 3_600_000) / 60_000),
-        seconds: Math.floor((absDiff % 60_000) / 1000),
-      });
     };
     update();
     this.countdownInterval = setInterval(update, 1000);

@@ -1,32 +1,46 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  input,
+  OnDestroy,
+  output,
+  signal,
+} from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { UserAvatarComponent } from '../user-avatar/user-avatar.component';
 import { DateBadgeComponent } from '../date-badge/date-badge.component';
+import { EventStatusBadgeComponent } from '../event-status-badge/event-status-badge.component';
 import { EventListItem } from '../../types';
 import { coverImageUrl } from '../../types/cover-image.interface';
+import { getEventCountdown, getRelativeDateLabel } from '../../utils/date.utils';
 
 @Component({
   selector: 'app-event-card',
-  imports: [CommonModule, DecimalPipe, IconComponent, UserAvatarComponent, DateBadgeComponent],
+  imports: [
+    DecimalPipe,
+    IconComponent,
+    UserAvatarComponent,
+    DateBadgeComponent,
+    EventStatusBadgeComponent,
+  ],
   template: `
+    @let _event = event(); @let _countdown = countdown();
     <div
       [class]="
-        'rounded-2xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 bg-white dark:bg-slate-800 border-2 ' +
-        (isOngoing()
-          ? 'border-green-400 dark:border-green-500'
-          : isToday()
-            ? 'border-red-400 dark:border-red-500'
-            : 'border-gray-200 dark:border-slate-700')
+        'rounded-2xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 bg-surface border-2 ' +
+        borderClass()
       "
-      (click)="selected.emit(event())"
+      (click)="selected.emit(_event)"
     >
       <!-- Cover hero -->
       <div class="relative h-44 overflow-hidden">
-        @if (event().coverImage?.filename) {
+        @if (_event.coverImage?.filename) {
         <img
           [src]="coverUrl()"
-          [alt]="event().title"
+          [alt]="_event.title"
           class="absolute inset-0 h-full w-full object-cover"
         />
         } @else {
@@ -38,16 +52,19 @@ import { coverImageUrl } from '../../types/cover-image.interface';
           class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"
         ></div>
 
-        <!-- "Trwa" badge (top-left) -->
-        @if (isOngoing()) {
-        <div class="absolute left-2 top-2 z-10 flex items-center gap-1.5 rounded-full bg-green-500 px-2.5 py-1 shadow-lg">
-          <span class="relative flex h-2 w-2">
-            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
-            <span class="relative inline-flex h-2 w-2 rounded-full bg-white"></span>
-          </span>
-          <span class="text-[10px] font-bold uppercase tracking-wide text-white">Trwa</span>
+        <!-- Status badge (top-left) -->
+        <div class="absolute left-2 top-2 z-10">
+          @if (isOngoing()) {
+          <app-event-status-badge variant="ongoing" label="TRWA" />
+          } @else if (_countdown) {
+          <app-event-status-badge
+            [variant]="_countdown.isUrgent ? 'countdown-urgent' : 'countdown-soon'"
+            [label]="_countdown.label"
+          />
+          } @else {
+          <app-event-status-badge variant="date" [label]="badgeLabel()" />
+          }
         </div>
-        }
 
         <!-- Mini calendar (top-right) -->
         <div class="absolute right-2 top-2">
@@ -62,23 +79,23 @@ import { coverImageUrl } from '../../types/cover-image.interface';
         <!-- Title + badges (bottom-left) -->
         <div class="absolute inset-x-0 bottom-0 p-3">
           <h3 class="text-sm font-bold text-white line-clamp-2 drop-shadow-sm">
-            {{ event().title }}
+            {{ _event.title }}
           </h3>
           <div class="mt-1 flex flex-wrap gap-1">
-            @if (event().discipline) {
+            @if (_event.discipline) {
             <span
               class="rounded-sm bg-highlight px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white"
-              >{{ event().discipline!.name }}</span
+              >{{ _event.discipline!.name }}</span
             >
-            } @if (event().level) {
+            } @if (_event.level) {
             <span
               class="rounded-sm bg-orange-500 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white"
-              >{{ event().level!.name }}</span
+              >{{ _event.level!.name }}</span
             >
-            } @if (event().facility) {
+            } @if (_event.facility) {
             <span
               class="rounded-sm bg-black/25 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white backdrop-blur-sm"
-              >{{ event().facility!.name }}</span
+              >{{ _event.facility!.name }}</span
             >
             }
           </div>
@@ -87,14 +104,12 @@ import { coverImageUrl } from '../../types/cover-image.interface';
 
       <!-- Content -->
       <div class="p-3 space-y-2">
-        <div class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+        <div class="flex items-center gap-1 text-sm text-muted">
           <app-icon name="map-pin" size="sm" variant="muted" />
-          <span class="truncate">{{ event().address }}</span>
+          <span class="truncate">{{ _event.address }}</span>
         </div>
 
-        <div
-          class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400"
-        >
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
           <span class="flex items-center gap-1">
             <app-icon name="clock" size="xs" variant="muted" />
             {{ eventStartTime() }}–{{ eventEndTime() }} ({{ duration() }})
@@ -107,49 +122,45 @@ import { coverImageUrl } from '../../types/cover-image.interface';
 
         @if (rulesList().length > 0) {
         <div class="text-sm">
-          <div class="flex items-center gap-1 text-gray-600 dark:text-gray-300 font-medium mb-1">
+          <div class="flex items-center gap-1 text-foreground font-medium mb-1">
             <app-icon name="check-circle" size="sm" variant="muted" />
             Zasady
           </div>
-          <div class="text-gray-600 dark:text-gray-400 text-xs space-y-0.5 ml-5">
+          <div class="text-muted text-xs space-y-0.5 ml-5">
             @for (rule of rulesList().slice(0, 3); track $index) {
             <div class="truncate">{{ rule }}</div>
             } @if (rulesList().length > 3) {
-            <div class="text-gray-500 dark:text-gray-500">...</div>
+            <div class="text-muted">...</div>
             }
           </div>
         </div>
         }
 
-        <div
-          class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-slate-700"
-        >
+        <div class="flex items-center justify-between pt-2 border-t border-border">
           <div class="flex items-center gap-2">
-            @if (event().organizer) {
+            @if (_event.organizer) {
             <app-user-avatar
-              [avatarUrl]="event().organizer!.avatarUrl"
-              [displayName]="event().organizer!.displayName"
+              [avatarUrl]="_event.organizer!.avatarUrl"
+              [displayName]="_event.organizer!.displayName"
               size="sm"
             />
-            <span class="text-sm text-gray-600 dark:text-gray-300">{{
-              event().organizer!.displayName
-            }}</span>
+            <span class="text-sm text-foreground">{{ _event.organizer!.displayName }}</span>
             }
           </div>
           <div class="flex items-center gap-3 text-sm">
-            @if (event()._count) {
-            <span class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+            @if (_event._count) {
+            <span class="flex items-center gap-1 text-muted">
               <app-icon name="users" size="sm" variant="muted" />
-              {{ event()._count!.participations }}@if (event().maxParticipants) {/{{
-                event().maxParticipants
+              {{ _event._count!.participations }}@if (_event.maxParticipants) {/{{
+                _event.maxParticipants
               }}}
             </span>
-            } @if (event().costPerPerson > 0) {
-            <span class="font-semibold text-green-600 dark:text-green-400"
-              >{{ event().costPerPerson | number : '1.0-2' }} zł</span
+            } @if (_event.costPerPerson > 0) {
+            <span class="font-semibold text-success"
+              >{{ _event.costPerPerson | number : '1.0-2' }} zł</span
             >
             } @else {
-            <span class="font-semibold text-green-600 dark:text-green-400">Bezpłatne</span>
+            <span class="font-semibold text-success">Bezpłatne</span>
             }
           </div>
         </div>
@@ -158,10 +169,14 @@ import { coverImageUrl } from '../../types/cover-image.interface';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EventCardComponent {
+export class EventCardComponent implements OnDestroy {
   readonly event = input.required<EventListItem>();
   readonly isOngoing = input(false);
+  readonly dateLabel = input<string | null>(null);
   readonly selected = output<EventListItem>();
+
+  private readonly now = signal(new Date());
+  private intervalId?: number;
 
   readonly coverUrl = computed(() => {
     const filename = this.event().coverImage?.filename;
@@ -176,6 +191,19 @@ export class EventCardComponent {
       d.getMonth() === now.getMonth() &&
       d.getDate() === now.getDate()
     );
+  });
+
+  readonly countdown = computed(() =>
+    getEventCountdown(this.event().startsAt, this.event().endsAt, this.now()),
+  );
+
+  readonly borderClass = computed(() => {
+    if (this.isOngoing()) return 'border-success';
+    const cd = this.countdown();
+    if (cd?.isUrgent) return 'border-warning';
+    if (cd) return 'border-info';
+    if (this.isToday()) return 'border-danger';
+    return 'border-border';
   });
 
   readonly eventMonth = computed(() =>
@@ -221,4 +249,43 @@ export class EventCardComponent {
     if (!rules?.trim()) return [];
     return rules.split('\n').filter((r) => r.trim());
   });
+
+  readonly badgeLabel = computed(() => {
+    const label = this.dateLabel();
+    if (label) return label;
+    return getRelativeDateLabel(new Date(this.event().startsAt));
+  });
+
+  constructor() {
+    effect(() => {
+      const evt = this.event();
+      const start = new Date(evt.startsAt).getTime();
+      const nowMs = this.now().getTime();
+      const hoursUntil = (start - nowMs) / 3600000;
+
+      if (hoursUntil > 0 && hoursUntil <= 24) {
+        this.startCountdown();
+      } else {
+        this.stopCountdown();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.stopCountdown();
+  }
+
+  private startCountdown(): void {
+    if (this.intervalId) return;
+    this.intervalId = window.setInterval(() => {
+      this.now.set(new Date());
+    }, 60000);
+  }
+
+  private stopCountdown(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = undefined;
+    }
+  }
 }

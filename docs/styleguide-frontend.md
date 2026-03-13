@@ -9,6 +9,7 @@
 - W obecnej wersji Angulara każdy komponent jest domyślnie traktowany jako standalone, a więc nie ma konieczności jawnego ustawiania opcji `standalone: true`!!!
 - Domyślnie stosuj ChangeDetectionStrategy.OnPush.
 - Zawsze używaj silnego typowania TypeScript (tryb strict).
+- **ZAWSZE sprawdzaj `frontend/src/app/shared/utils/index.ts` przed implementacją nowej logiki** — w żadnym wypadku nie powielaj istniejących utilsów.
 
 ## Sygnały i zarządzanie stanem
 
@@ -46,6 +47,65 @@
 7. Lifecycle
 8. Metody publiczne
 9. Metody prywatne
+
+## Reużywanie utilsów (OBOWIĄZKOWE)
+
+**Przed implementacją jakiejkolwiek logiki biznesowej, obliczeń, formatowania czy transformacji danych:**
+
+1. **Sprawdź `frontend/src/app/shared/utils/index.ts`** — czy istnieje już gotowy helper.
+2. **Nie powielaj logiki** — jeśli helper istnieje, użyj go zamiast pisać własną implementację.
+3. **Dodaj nowy utils** — jeśli logika będzie używana w >1 miejscu, wydziel ją do `shared/utils/`.
+
+### Dostępne utilsy:
+
+**`date.utils.ts`** (eksportowane przez `shared/utils/index.ts`):
+- `getDaysDiff(date, now?)` — różnica w dniach między datami
+- `getRelativeDateLabel(date, now?)` — polski label: "Dziś", "Jutro", "Za 5 dni", "Wczoraj", "3 dni temu"
+- `getEventCountdown(startsAt, endsAt, now?, maxHours?)` — countdown do wydarzenia z `days`, `hours`, `minutes`, `seconds`, `isUrgent`, `label`
+- `EventCountdown` — interfejs typu zwracanego przez `getEventCountdown`
+
+### Przykłady użycia:
+
+```typescript
+// ❌ ZŁE — duplikacja logiki
+readonly badgeLabel = computed(() => {
+  const d = new Date(this.event().startsAt);
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const eventDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.round((eventDay.getTime() - todayStart.getTime()) / 86400000);
+  if (diffDays === 0) return 'Dziś';
+  if (diffDays === 1) return 'Jutro';
+  // ... 15 linii więcej
+});
+
+// ✅ DOBRE — użycie helpera
+import { getRelativeDateLabel } from '../../utils/date.utils';
+
+readonly badgeLabel = computed(() => 
+  getRelativeDateLabel(new Date(this.event().startsAt))
+);
+```
+
+```typescript
+// ❌ ZŁE — ręczne obliczanie countdown
+readonly countdown = computed(() => {
+  const start = new Date(this.event().startsAt).getTime();
+  const end = new Date(this.event().endsAt).getTime();
+  const nowMs = this.now().getTime();
+  if (start <= nowMs && end > nowMs) return null;
+  // ... 20 linii więcej
+});
+
+// ✅ DOBRE — użycie helpera
+import { getEventCountdown } from '../../utils/date.utils';
+
+readonly countdown = computed(() =>
+  getEventCountdown(this.event().startsAt, this.event().endsAt, this.now())
+);
+```
+
+**Zasada:** Jeśli widzisz powtarzającą się logikę w 2+ miejscach → wydziel do utils i zaktualizuj wszystkie miejsca użycia.
 
 ## Wytyczne stylów
 
