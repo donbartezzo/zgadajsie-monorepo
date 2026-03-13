@@ -11,192 +11,192 @@ import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layo
 import { getDaysDiff, getRelativeDateLabel } from '../../../../shared/utils/date.utils';
 
 interface EventGroup {
-  dateKey: string;
-  label: string;
-  shortLabel: string | null;
-  isToday: boolean;
-  isPast: boolean;
-  isOngoing: boolean;
-  events: EventListItem[];
+ dateKey: string;
+ label: string;
+ shortLabel: string | null;
+ isToday: boolean;
+ isPast: boolean;
+ isOngoing: boolean;
+ events: EventListItem[];
 }
 
 interface DateGroup {
-  dateKey: string;
-  label: string;
-  shortLabel: string;
-  isToday: boolean;
-  events: EventListItem[];
+ dateKey: string;
+ label: string;
+ shortLabel: string;
+ isToday: boolean;
+ events: EventListItem[];
 }
 
 @Component({
-  selector: 'app-events',
-  imports: [
-    EventCardComponent,
-    LoadingSpinnerComponent,
-    EmptyStateComponent,
-    DateBadgeComponent,
-    LayoutSlotDirective,
-  ],
-  templateUrl: './events.component.html',
-  styleUrls: ['./events.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+ selector: 'app-events',
+ imports: [
+ EventCardComponent,
+ LoadingSpinnerComponent,
+ EmptyStateComponent,
+ DateBadgeComponent,
+ LayoutSlotDirective,
+ ],
+ templateUrl: './events.component.html',
+ styleUrls: ['./events.component.css'],
+ changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventsComponent implements OnInit {
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly eventService = inject(EventService);
-  private readonly layoutConfig = inject(LayoutConfigService);
+ private readonly route = inject(ActivatedRoute);
+ private readonly router = inject(Router);
+ private readonly eventService = inject(EventService);
+ private readonly layoutConfig = inject(LayoutConfigService);
 
-  readonly events = signal<EventListItem[]>([]);
-  readonly isLoading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly cityName = signal('');
+ readonly events = signal<EventListItem[]>([]);
+ readonly isLoading = signal(true);
+ readonly error = signal<string | null>(null);
+ readonly cityName = signal('');
 
-  private citySlug = '';
-  private page = 1;
-  private hasMore = true;
+ private citySlug = '';
+ private page = 1;
+ private hasMore = true;
 
-  readonly dateRangeFrom = computed(() => {
-    const d = new Date();
-    return {
-      day: d.getDate(),
-      month: d.toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase(),
-    };
-  });
+ readonly dateRangeFrom = computed(() => {
+ const d = new Date();
+ return {
+ day: d.getDate(),
+ month: d.toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase(),
+ };
+ });
 
-  readonly dateRangeTo = computed(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 7);
-    return {
-      day: d.getDate(),
-      month: d.toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase(),
-    };
-  });
+ readonly dateRangeTo = computed(() => {
+ const d = new Date();
+ d.setDate(d.getDate() + 7);
+ return {
+ day: d.getDate(),
+ month: d.toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase(),
+ };
+ });
 
-  readonly groupedEvents = computed(() => {
-    const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+ readonly groupedEvents = computed(() => {
+ const now = new Date();
+ const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    const ongoing: EventListItem[] = [];
-    const upcoming: EventListItem[] = [];
-    const past: EventListItem[] = [];
+ const ongoing: EventListItem[] = [];
+ const upcoming: EventListItem[] = [];
+ const past: EventListItem[] = [];
 
-    for (const event of this.events()) {
-      const start = new Date(event.startsAt).getTime();
-      const end = new Date(event.endsAt).getTime();
-      const nowMs = now.getTime();
+ for (const event of this.events()) {
+ const start = new Date(event.startsAt).getTime();
+ const end = new Date(event.endsAt).getTime();
+ const nowMs = now.getTime();
 
-      if (start <= nowMs && end > nowMs) {
-        ongoing.push(event);
-      } else if (end > nowMs) {
-        upcoming.push(event);
-      } else {
-        past.push(event);
-      }
-    }
+ if (start <= nowMs && end > nowMs) {
+ ongoing.push(event);
+ } else if (end > nowMs) {
+ upcoming.push(event);
+ } else {
+ past.push(event);
+ }
+ }
 
-    const byStartAsc = (a: EventListItem, b: EventListItem) =>
-      new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
-    ongoing.sort(byStartAsc);
-    upcoming.sort(byStartAsc);
-    past.sort(byStartAsc);
+ const byStartAsc = (a: EventListItem, b: EventListItem) =>
+ new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
+ ongoing.sort(byStartAsc);
+ upcoming.sort(byStartAsc);
+ past.sort(byStartAsc);
 
-    const groups: EventGroup[] = [];
+ const groups: EventGroup[] = [];
 
-    if (ongoing.length > 0) {
-      groups.push({
-        dateKey: '__ongoing',
-        label: 'Trwające',
-        shortLabel: null,
-        isToday: false,
-        isPast: false,
-        isOngoing: true,
-        events: ongoing,
-      });
-    }
+ if (ongoing.length > 0) {
+ groups.push({
+ dateKey: '__ongoing',
+ label: 'Trwające',
+ shortLabel: null,
+ isToday: false,
+ isPast: false,
+ isOngoing: true,
+ events: ongoing,
+ });
+ }
 
-    const upcomingByDate = this.groupByDate(upcoming, todayStart);
-    for (const g of upcomingByDate) {
-      groups.push({ ...g, isPast: false, isOngoing: false });
-    }
+ const upcomingByDate = this.groupByDate(upcoming, todayStart);
+ for (const g of upcomingByDate) {
+ groups.push({ ...g, isPast: false, isOngoing: false });
+ }
 
-    const pastByDate = this.groupByDate(past, todayStart);
-    for (const g of pastByDate) {
-      groups.push({ ...g, shortLabel: null, isPast: true, isOngoing: false });
-    }
+ const pastByDate = this.groupByDate(past, todayStart);
+ for (const g of pastByDate) {
+ groups.push({ ...g, shortLabel: null, isPast: true, isOngoing: false });
+ }
 
-    return groups;
-  });
+ return groups;
+ });
 
-  ngOnInit(): void {
-    this.citySlug = this.route.snapshot.paramMap.get('citySlug') ?? '';
-    this.layoutConfig.titleText.set('Wydarzenia');
-    if (this.citySlug) {
-      this.layoutConfig.coverImageUrl.set(`assets/covers/cities/${this.citySlug}.webp`);
-    }
-    this.loadEvents();
-  }
+ ngOnInit(): void {
+ this.citySlug = this.route.snapshot.paramMap.get('citySlug') ?? '';
+ this.layoutConfig.titleText.set('Wydarzenia');
+ if (this.citySlug) {
+ this.layoutConfig.coverImageUrl.set(`assets/covers/cities/${this.citySlug}.webp`);
+ }
+ this.loadEvents();
+ }
 
-  loadEvents(): void {
-    if (!this.hasMore) return;
-    this.eventService
-      .getEvents({ page: this.page, limit: 20, sortBy: 'startsAt', citySlug: this.citySlug })
-      .subscribe({
-        next: (res) => {
-          this.events.update((prev) => [...prev, ...res.data]);
-          if (!this.cityName() && res.data.length > 0) {
-            const name = res.data[0].city?.name || '';
-            this.cityName.set(name);
-            this.layoutConfig.titleText.set(name || 'Wydarzenia');
-          }
-          this.hasMore = res.data.length === 20;
-          this.page++;
-          this.isLoading.set(false);
-        },
-        error: () => {
-          this.error.set('Nie udało się pobrać wydarzeń');
-          this.isLoading.set(false);
-        },
-      });
-  }
+ loadEvents(): void {
+ if (!this.hasMore) return;
+ this.eventService
+ .getEvents({ page: this.page, limit: 20, sortBy: 'startsAt', citySlug: this.citySlug })
+ .subscribe({
+ next: (res) => {
+ this.events.update((prev) => [...prev, ...res.data]);
+ if (!this.cityName() && res.data.length > 0) {
+ const name = res.data[0].city?.name || '';
+ this.cityName.set(name);
+ this.layoutConfig.titleText.set(name || 'Wydarzenia');
+ }
+ this.hasMore = res.data.length === 20;
+ this.page++;
+ this.isLoading.set(false);
+ },
+ error: () => {
+ this.error.set('Nie udało się pobrać wydarzeń');
+ this.isLoading.set(false);
+ },
+ });
+ }
 
-  onEventSelected(event: EventListItem): void {
-    const slug = event.city?.slug || this.citySlug;
-    this.router.navigate(['/w', slug, event.id]);
-  }
+ onEventSelected(event: EventListItem): void {
+ const slug = event.city?.slug || this.citySlug;
+ this.router.navigate(['/w', slug, event.id]);
+ }
 
-  onScroll(): void {
-    if (!this.isLoading() && this.hasMore) {
-      this.loadEvents();
-    }
-  }
+ onScroll(): void {
+ if (!this.isLoading() && this.hasMore) {
+ this.loadEvents();
+ }
+ }
 
-  private groupByDate(events: EventListItem[], todayStart: Date): DateGroup[] {
-    const groups: DateGroup[] = [];
-    const todayKey = `${todayStart.getFullYear()}-${todayStart.getMonth()}-${todayStart.getDate()}`;
+ private groupByDate(events: EventListItem[], todayStart: Date): DateGroup[] {
+ const groups: DateGroup[] = [];
+ const todayKey = `${todayStart.getFullYear()}-${todayStart.getMonth()}-${todayStart.getDate()}`;
 
-    for (const event of events) {
-      const d = new Date(event.startsAt);
-      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-      const isToday = key === todayKey;
-      const diffDays = getDaysDiff(d, todayStart);
-      const shortLabel = getRelativeDateLabel(d, todayStart);
+ for (const event of events) {
+ const d = new Date(event.startsAt);
+ const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+ const isToday = key === todayKey;
+ const diffDays = getDaysDiff(d, todayStart);
+ const shortLabel = getRelativeDateLabel(d, todayStart);
 
-      const dateStr = d.toLocaleDateString('pl-PL', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-      });
-      const sub = `<span class="opacity-60 font-normal ml-1">· ${dateStr}</span>`;
-      const label = diffDays === 0 ? shortLabel : `${shortLabel} ${sub}`;
+ const dateStr = d.toLocaleDateString('pl-PL', {
+ weekday: 'long',
+ day: 'numeric',
+ month: 'long',
+ });
+ const sub = `<span class="opacity-60 font-normal ml-1">· ${dateStr}</span>`;
+ const label = diffDays === 0 ? shortLabel : `${shortLabel} ${sub}`;
 
-      const last = groups[groups.length - 1];
-      if (last && last.dateKey === key) {
-        last.events.push(event);
-      } else {
-        groups.push({ dateKey: key, label, shortLabel, isToday, events: [event] });
-      }
-    }
-    return groups;
-  }
+ const last = groups[groups.length - 1];
+ if (last && last.dateKey === key) {
+ last.events.push(event);
+ } else {
+ groups.push({ dateKey: key, label, shortLabel, isToday, events: [event] });
+ }
+ }
+ return groups;
+ }
 }

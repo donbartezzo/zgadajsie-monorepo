@@ -3,19 +3,19 @@ import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 
 export const verifiedUserGuard: CanActivateFn = (_route, state) => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
+ const authService = inject(AuthService);
+ const router = inject(Router);
 
-  if (!authService.isLoggedIn()) {
-    return router.createUrlTree(['/auth/login'], {
-      queryParams: { returnUrl: state.url },
-    });
-  }
+ if (!authService.isLoggedIn()) {
+ return router.createUrlTree(['/auth/login'], {
+ queryParams: { returnUrl: state.url },
+ });
+ }
 
-  if (!authService.isActive()) {
-    router.navigate(['/unverified'], { skipLocationChange: true });
-    return false;
-  }
+ if (!authService.isActive()) {
+ router.navigate(['/unverified'], { skipLocationChange: true });
+ return false;
+ }
 
-  return true;
+ return true;
 };

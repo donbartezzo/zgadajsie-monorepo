@@ -1,441 +1,439 @@
-<div class="min-h-screen bg-background">
-  <!-- Header -->
-  <header class="bg-surface border-b border-border sticky top-0 z-10">
-    <div class="max-w-app mx-auto px-4 py-3">
-      <h1 class="text-xl font-bold text-foreground">Design System</h1>
-      <p class="text-sm text-muted">Podgląd tokenów wizualnych — tylko tryb dev</p>
-    </div>
-    <!-- Section tabs -->
-    <div class="max-w-app mx-auto px-4 pb-2 flex gap-2 overflow-x-auto">
-      @for (section of sections; track section.id) {
-        <button
-          [class]="'px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors '
-            + (activeSection() === section.id
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-surface-elevated text-muted hover:text-foreground')"
-          (click)="setSection(section.id)"
-        >
-          {{ section.label }}
-        </button>
-      }
-    </div>
-  </header>
+<div class="min-h-screen bg-neutral-100">
+ <!-- Header -->
+ <header class="bg-white border-b border-neutral-200 sticky top-0 z-10">
+ <div class="max-w-app mx-auto px-4 py-3">
+ <h1 class="text-xl font-bold text-neutral-900">Design System</h1>
+ <p class="text-sm text-neutral-500">Podgląd tokenów wizualnych — tylko tryb dev</p>
+ </div>
+ <!-- Section tabs -->
+ <div class="max-w-app mx-auto px-4 pb-2 flex gap-2 overflow-x-auto">
+ @for (section of sections; track section.id) {
+ <button
+ [class]="'px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors '
+ + (activeSection() === section.id
+ ? 'bg-primary-500 text-white'
+ : 'bg-white text-neutral-500 hover:text-neutral-900')"
+ (click)="setSection(section.id)"
+ >
+ {{ section.label }}
+ </button>
+ }
+ </div>
+ </header>
 
-  <main class="max-w-app mx-auto px-4 py-6 space-y-8">
+ <main class="max-w-app mx-auto px-4 py-6 space-y-8">
 
-    <!-- ══════════════ COLORS ══════════════ -->
-    @if (activeSection() === 'colors') {
+ <!-- ══════════════ COLORS ══════════════ -->
+ @if (activeSection() === 'colors') {
 
-      <!-- Surfaces -->
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Surfaces</h2>
-        <div class="grid grid-cols-1 gap-3">
-          @for (token of surfaceTokens; track token.name) {
-            <div class="flex items-stretch rounded-xl overflow-hidden border border-border">
-              <div class="w-24 shrink-0" [style.background-color]="'var(' + token.cssVar + ')'"></div>
-              <div class="flex-1 bg-surface p-3">
-                <p class="text-sm font-semibold text-foreground">{{ token.name }}</p>
-                <p class="text-xs text-muted">{{ token.twClass }}</p>
-                <p class="text-xs text-muted-foreground mt-0.5">{{ token.description }}</p>
-                <code class="text-xs text-muted-foreground">{{ token.cssVar }}</code>
-              </div>
-            </div>
-          }
-        </div>
-      </section>
+ <section>
+ <p class="text-sm text-neutral-500 mb-6">
+  Base Palette — jedyne źródło prawdy kolorystycznej.
+  Definicja: <code class="bg-white px-1 rounded text-xs">tailwind.config.js</code> ·
+  Dokumentacja: <code class="bg-white px-1 rounded text-xs">docs/design-tokens.md</code>
+ </p>
+ </section>
 
-      <!-- Text -->
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Tekst</h2>
-        <div class="bg-surface rounded-xl border border-border p-4 space-y-4">
-          @for (token of textTokens; track token.name) {
-            <div class="flex items-center gap-4">
-              <span class="text-base font-medium" [style.color]="'var(' + token.cssVar + ')'">
-                Aa Przykładowy tekst
-              </span>
-              <div class="flex-1">
-                <p class="text-xs font-semibold text-foreground">{{ token.name }}</p>
-                <code class="text-xs text-muted">{{ token.twClass }}</code>
-              </div>
-            </div>
-          }
-        </div>
-      </section>
+ @for (palette of palettes; track palette.name) {
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-1">{{ palette.name }}</h2>
+ <p class="text-sm text-neutral-500 mb-3">{{ palette.description }}</p>
+ <div class="grid grid-cols-5 gap-1.5">
+  @for (swatch of palette.swatches; track swatch.shade) {
+  <div class="rounded-lg overflow-hidden border border-neutral-200">
+   <div
+    class="h-12 flex items-end justify-start p-1"
+    [style.background-color]="swatch.hex"
+   >
+    <span
+     class="text-[10px] font-bold"
+     [class.text-white]="isDark(swatch.hex)"
+     [class.text-neutral-900]="!isDark(swatch.hex)"
+    >{{ swatch.shade }}</span>
+   </div>
+   <div class="bg-white p-1 text-center">
+    <p class="text-[10px] text-neutral-500 font-mono">{{ swatch.hex }}</p>
+   </div>
+  </div>
+  }
+ </div>
+ </section>
+ }
 
-      <!-- Brand / Primary -->
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Brand / Primary</h2>
-        <div class="grid grid-cols-1 gap-3">
-          @for (token of brandTokens; track token.name) {
-            <div class="flex items-stretch rounded-xl overflow-hidden border border-border">
-              <div class="w-24 shrink-0" [style.background-color]="'var(' + token.cssVar + ')'"></div>
-              <div class="flex-1 bg-surface p-3">
-                <p class="text-sm font-semibold text-foreground">{{ token.name }}</p>
-                <p class="text-xs text-muted">{{ token.twClass }}</p>
-                <p class="text-xs text-muted-foreground mt-0.5">{{ token.description }}</p>
-              </div>
-            </div>
-          }
-        </div>
-        <!-- Example button -->
-        <div class="mt-4 bg-surface rounded-xl border border-border p-4">
-          <p class="text-xs text-muted mb-3">Przykład przycisku:</p>
-          <button class="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-medium hover:bg-primary-hover transition-colors">
-            Przycisk Primary
-          </button>
-        </div>
-      </section>
+ <!-- Konwencje użycia -->
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-4">Konwencje użycia</h2>
+ <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-3 text-sm">
+  <div class="flex items-center gap-3">
+   <span class="w-8 h-8 rounded-lg bg-neutral-100 shrink-0"></span>
+   <span class="text-neutral-900"><strong>Tło strony:</strong> bg-neutral-100</span>
+  </div>
+  <div class="flex items-center gap-3">
+   <span class="w-8 h-8 rounded-lg bg-white border border-neutral-200 shrink-0"></span>
+   <span class="text-neutral-900"><strong>Karta / panel:</strong> bg-white</span>
+  </div>
+  <div class="flex items-center gap-3">
+   <span class="w-8 h-8 rounded-lg bg-primary-500 shrink-0"></span>
+   <span class="text-neutral-900"><strong>Primary button:</strong> bg-primary-500 hover:bg-primary-600 text-white</span>
+  </div>
+  <div class="flex items-center gap-3">
+   <span class="w-8 h-8 rounded-lg bg-neutral-200 shrink-0"></span>
+   <span class="text-neutral-900"><strong>Border:</strong> border-neutral-200</span>
+  </div>
+  <div class="flex items-center gap-3">
+   <span class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+    <span class="text-neutral-900 text-xs font-bold">Aa</span>
+   </span>
+   <span class="text-neutral-900"><strong>Tekst główny:</strong> text-neutral-900</span>
+  </div>
+  <div class="flex items-center gap-3">
+   <span class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+    <span class="text-neutral-500 text-xs font-bold">Aa</span>
+   </span>
+   <span class="text-neutral-900"><strong>Tekst muted:</strong> text-neutral-500</span>
+  </div>
+ </div>
+ </section>
 
-      <!-- Status -->
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Status</h2>
-        <div class="grid grid-cols-2 gap-3">
-          @for (token of statusTokens; track token.name) {
-            <div class="rounded-xl overflow-hidden border border-border">
-              <div class="h-16" [style.background-color]="'var(' + token.cssVar + ')'">
-                <span class="flex items-center justify-center h-full text-sm font-medium text-white">
-                  {{ token.name }}
-                </span>
-              </div>
-              <div class="bg-surface p-2">
-                <p class="text-xs text-muted">{{ token.twClass }}</p>
-                <p class="text-xs text-muted-foreground">{{ token.description }}</p>
-              </div>
-            </div>
-          }
-        </div>
-      </section>
+ <!-- Notification bars preview -->
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-4">Notification bars (pastelowe tła)</h2>
+ <div class="space-y-3">
+  <div class="flex items-center gap-3 bg-success-50 border border-success-200 rounded-xl p-3">
+   <app-icon name="check-circle" class="w-5 h-5 text-success-600" />
+   <div>
+    <span class="text-sm text-neutral-900">Success bar</span>
+    <p class="text-xs text-neutral-500">bg-success-50 · border-success-200 · text-success-600</p>
+   </div>
+  </div>
+  <div class="flex items-center gap-3 bg-info-50 border border-info-200 rounded-xl p-3">
+   <app-icon name="help-circle" class="w-5 h-5 text-info-600" />
+   <div>
+    <span class="text-sm text-neutral-900">Info bar</span>
+    <p class="text-xs text-neutral-500">bg-info-50 · border-info-200 · text-info-600</p>
+   </div>
+  </div>
+  <div class="flex items-center gap-3 bg-warning-50 border border-warning-200 rounded-xl p-3">
+   <app-icon name="alert-triangle" class="w-5 h-5 text-warning-400" />
+   <div>
+    <span class="text-sm text-neutral-900">Warning bar</span>
+    <p class="text-xs text-neutral-500">bg-warning-50 · border-warning-200 · text-warning-400</p>
+   </div>
+  </div>
+  <div class="flex items-center gap-3 bg-danger-50 border border-danger-200 rounded-xl p-3">
+   <app-icon name="shield-alert" class="w-5 h-5 text-danger-500" />
+   <div>
+    <span class="text-sm text-neutral-900">Danger bar</span>
+    <p class="text-xs text-neutral-500">bg-danger-50 · border-danger-200 · text-danger-500</p>
+   </div>
+  </div>
+  <div class="flex items-center gap-3 bg-teal-50 border border-teal-200 rounded-xl p-3">
+   <app-icon name="help-circle" class="w-5 h-5 text-teal-600" />
+   <div>
+    <span class="text-sm text-neutral-900">Teal bar</span>
+    <p class="text-xs text-neutral-500">bg-teal-50 · border-teal-200 · text-teal-600</p>
+   </div>
+  </div>
+  <div class="flex items-center gap-3 bg-brown-50 border border-brown-200 rounded-xl p-3">
+   <app-icon name="help-circle" class="w-5 h-5 text-brown-600" />
+   <div>
+    <span class="text-sm text-neutral-900">Brown bar</span>
+    <p class="text-xs text-neutral-500">bg-brown-50 · border-brown-200 · text-brown-600</p>
+   </div>
+  </div>
+ </div>
+ </section>
+ }
 
-      <!-- Utility (border, ring) -->
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Border & Ring</h2>
-        <div class="grid grid-cols-1 gap-3">
-          @for (token of utilityTokens; track token.name) {
-            <div class="flex items-stretch rounded-xl overflow-hidden border border-border">
-              <div class="w-24 shrink-0 flex items-center justify-center bg-surface">
-                @if (token.name === 'border') {
-                  <div class="w-12 h-12 rounded-lg border-2" [style.border-color]="'var(' + token.cssVar + ')'"></div>
-                } @else {
-                  <div class="w-12 h-12 rounded-lg ring-2" [style.--tw-ring-color]="'var(' + token.cssVar + ')'"></div>
-                }
-              </div>
-              <div class="flex-1 bg-surface p-3">
-                <p class="text-sm font-semibold text-foreground">{{ token.name }}</p>
-                <p class="text-xs text-muted">{{ token.twClass }}</p>
-                <p class="text-xs text-muted-foreground mt-0.5">{{ token.description }}</p>
-              </div>
-            </div>
-          }
-        </div>
-      </section>
+ <!-- ══════════════ TYPOGRAPHY ══════════════ -->
+ @if (activeSection() === 'typography') {
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-4">Skala typografii (Tailwind)</h2>
+ <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-4">
+ <div>
+ <p class="text-xs text-neutral-500 mb-1">text-xs (0.75rem)</p>
+ <p class="text-xs text-neutral-900">Szybki brązowy lis przeskoczył przez leniwego psa.</p>
+ </div>
+ <div>
+ <p class="text-xs text-neutral-500 mb-1">text-sm (0.875rem)</p>
+ <p class="text-sm text-neutral-900">Szybki brązowy lis przeskoczył przez leniwego psa.</p>
+ </div>
+ <div>
+ <p class="text-xs text-neutral-500 mb-1">text-base (1rem)</p>
+ <p class="text-base text-neutral-900">Szybki brązowy lis przeskoczył przez leniwego psa.</p>
+ </div>
+ <div>
+ <p class="text-xs text-neutral-500 mb-1">text-lg (1.125rem)</p>
+ <p class="text-lg text-neutral-900">Szybki brązowy lis przeskoczył przez leniwego psa.</p>
+ </div>
+ <div>
+ <p class="text-xs text-neutral-500 mb-1">text-xl (1.25rem)</p>
+ <p class="text-xl text-neutral-900">Szybki brązowy lis przeskoczył przez leniwego psa.</p>
+ </div>
+ <div>
+ <p class="text-xs text-neutral-500 mb-1">text-2xl (1.5rem)</p>
+ <p class="text-2xl text-neutral-900">Szybki brązowy lis przeskoczył przez leniwego psa.</p>
+ </div>
+ <div>
+ <p class="text-xs text-neutral-500 mb-1">text-3xl (1.875rem)</p>
+ <p class="text-3xl text-neutral-900">Szybki brązowy lis.</p>
+ </div>
+ </div>
+ </section>
 
-      <!-- Highlight (static scale) -->
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Highlight (statyczna skala)</h2>
-        <p class="text-sm text-muted mb-3">Kolor brandowy, nie zmienia się z theme.</p>
-        <div class="grid grid-cols-3 gap-2">
-          @for (shade of highlightScale; track shade.shade) {
-            <div class="rounded-lg overflow-hidden border border-border">
-              <div class="h-12" [style.background-color]="shade.hex"></div>
-              <div class="bg-surface p-1.5 text-center">
-                <p class="text-xs font-medium text-foreground">{{ shade.shade }}</p>
-                <p class="text-xs text-muted">{{ shade.hex }}</p>
-              </div>
-            </div>
-          }
-        </div>
-      </section>
-    }
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-4">Grubości czcionek</h2>
+ <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-3">
+ <p class="text-base font-light text-neutral-900">font-light (300) — Przykładowy tekst</p>
+ <p class="text-base font-normal text-neutral-900">font-normal (400) — Przykładowy tekst</p>
+ <p class="text-base font-medium text-neutral-900">font-medium (500) — Przykładowy tekst</p>
+ <p class="text-base font-semibold text-neutral-900">font-semibold (600) — Przykładowy tekst</p>
+ <p class="text-base font-bold text-neutral-900">font-bold (700) — Przykładowy tekst</p>
+ </div>
+ </section>
 
-    <!-- ══════════════ TYPOGRAPHY ══════════════ -->
-    @if (activeSection() === 'typography') {
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Skala typografii (Tailwind)</h2>
-        <div class="bg-surface rounded-xl border border-border p-4 space-y-4">
-          <div>
-            <p class="text-xs text-muted mb-1">text-xs (0.75rem)</p>
-            <p class="text-xs text-foreground">Szybki brązowy lis przeskoczył przez leniwego psa.</p>
-          </div>
-          <div>
-            <p class="text-xs text-muted mb-1">text-sm (0.875rem)</p>
-            <p class="text-sm text-foreground">Szybki brązowy lis przeskoczył przez leniwego psa.</p>
-          </div>
-          <div>
-            <p class="text-xs text-muted mb-1">text-base (1rem)</p>
-            <p class="text-base text-foreground">Szybki brązowy lis przeskoczył przez leniwego psa.</p>
-          </div>
-          <div>
-            <p class="text-xs text-muted mb-1">text-lg (1.125rem)</p>
-            <p class="text-lg text-foreground">Szybki brązowy lis przeskoczył przez leniwego psa.</p>
-          </div>
-          <div>
-            <p class="text-xs text-muted mb-1">text-xl (1.25rem)</p>
-            <p class="text-xl text-foreground">Szybki brązowy lis przeskoczył przez leniwego psa.</p>
-          </div>
-          <div>
-            <p class="text-xs text-muted mb-1">text-2xl (1.5rem)</p>
-            <p class="text-2xl text-foreground">Szybki brązowy lis przeskoczył przez leniwego psa.</p>
-          </div>
-          <div>
-            <p class="text-xs text-muted mb-1">text-3xl (1.875rem)</p>
-            <p class="text-3xl text-foreground">Szybki brązowy lis.</p>
-          </div>
-        </div>
-      </section>
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-4">Kolory tekstu (tokeny)</h2>
+ <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-3">
+ <p class="text-base text-neutral-900">text-neutral-900 — Tekst główny</p>
+ <p class="text-base text-neutral-500">text-neutral-500 — Tekst drugorzędny</p>
+ <p class="text-base text-neutral-500">text-neutral-500 — Tekst na muted tle</p>
+ <p class="text-base text-primary-500">text-primary-500 — Tekst akcentowy</p>
+ <p class="text-base text-success-400">text-success-400 — Sukces</p>
+ <p class="text-base text-warning-400">text-warning-400 — Ostrzeżenie</p>
+ <p class="text-base text-danger-400">text-danger-400 — Błąd</p>
+ <p class="text-base text-info-400">text-info-400 — Informacja</p>
+ </div>
+ </section>
+ }
 
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Grubości czcionek</h2>
-        <div class="bg-surface rounded-xl border border-border p-4 space-y-3">
-          <p class="text-base font-light text-foreground">font-light (300) — Przykładowy tekst</p>
-          <p class="text-base font-normal text-foreground">font-normal (400) — Przykładowy tekst</p>
-          <p class="text-base font-medium text-foreground">font-medium (500) — Przykładowy tekst</p>
-          <p class="text-base font-semibold text-foreground">font-semibold (600) — Przykładowy tekst</p>
-          <p class="text-base font-bold text-foreground">font-bold (700) — Przykładowy tekst</p>
-        </div>
-      </section>
+ <!-- ══════════════ ICONS ══════════════ -->
+ @if (activeSection() === 'icons') {
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-2">Wszystkie ikony ({{ allIcons.length }})</h2>
+ <p class="text-sm text-neutral-500 mb-4">Komponent: <code class="bg-white px-1 rounded">&lt;app-icon name="..." /&gt;</code></p>
+ <div class="grid grid-cols-4 gap-2">
+ @for (icon of allIcons; track icon) {
+ <div class="bg-white rounded-lg border border-neutral-200 p-3 flex flex-col items-center gap-2">
+ <app-icon [name]="icon" class="w-6 h-6 text-neutral-900" />
+ <span class="text-xs text-neutral-500 truncate w-full text-center">{{ icon }}</span>
+ </div>
+ }
+ </div>
+ </section>
 
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Kolory tekstu (tokeny)</h2>
-        <div class="bg-surface rounded-xl border border-border p-4 space-y-3">
-          <p class="text-base text-foreground">text-foreground — Tekst główny</p>
-          <p class="text-base text-muted">text-muted — Tekst drugorzędny</p>
-          <p class="text-base text-muted-foreground">text-muted-foreground — Tekst na muted tle</p>
-          <p class="text-base text-primary">text-primary — Tekst akcentowy</p>
-          <p class="text-base text-success">text-success — Sukces</p>
-          <p class="text-base text-warning">text-warning — Ostrzeżenie</p>
-          <p class="text-base text-danger">text-danger — Błąd</p>
-          <p class="text-base text-info">text-info — Informacja</p>
-        </div>
-      </section>
-    }
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-4">Rozmiary ikon</h2>
+ <div class="bg-white rounded-xl border border-neutral-200 p-4 flex items-end gap-6">
+ <div class="flex flex-col items-center gap-1">
+ <app-icon name="heart" size="xs" class="text-neutral-900" />
+ <span class="text-xs text-neutral-500">xs (12)</span>
+ </div>
+ <div class="flex flex-col items-center gap-1">
+ <app-icon name="heart" size="sm" class="text-neutral-900" />
+ <span class="text-xs text-neutral-500">sm (16)</span>
+ </div>
+ <div class="flex flex-col items-center gap-1">
+ <app-icon name="heart" size="md" class="text-neutral-900" />
+ <span class="text-xs text-neutral-500">md (20)</span>
+ </div>
+ <div class="flex flex-col items-center gap-1">
+ <app-icon name="heart" size="lg" class="text-neutral-900" />
+ <span class="text-xs text-neutral-500">lg (24)</span>
+ </div>
+ </div>
+ </section>
 
-    <!-- ══════════════ ICONS ══════════════ -->
-    @if (activeSection() === 'icons') {
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-2">Wszystkie ikony ({{ allIcons.length }})</h2>
-        <p class="text-sm text-muted mb-4">Komponent: <code class="bg-surface-elevated px-1 rounded">&lt;app-icon name="..." /&gt;</code></p>
-        <div class="grid grid-cols-4 gap-2">
-          @for (icon of allIcons; track icon) {
-            <div class="bg-surface rounded-lg border border-border p-3 flex flex-col items-center gap-2">
-              <app-icon [name]="icon" class="w-6 h-6 text-foreground" />
-              <span class="text-xs text-muted truncate w-full text-center">{{ icon }}</span>
-            </div>
-          }
-        </div>
-      </section>
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-4">Warianty kolorystyczne</h2>
+ <div class="bg-white rounded-xl border border-neutral-200 p-4 flex items-center gap-6">
+ <div class="flex flex-col items-center gap-1">
+ <app-icon name="star" variant="default" />
+ <span class="text-xs text-neutral-500">default</span>
+ </div>
+ <div class="flex flex-col items-center gap-1">
+ <app-icon name="star" variant="muted" />
+ <span class="text-xs text-neutral-500">muted</span>
+ </div>
+ <div class="flex flex-col items-center gap-1">
+ <app-icon name="star" variant="primary" />
+ <span class="text-xs text-neutral-500">primary</span>
+ </div>
+ <div class="flex flex-col items-center gap-1">
+ <app-icon name="star" variant="danger" />
+ <span class="text-xs text-neutral-500">danger</span>
+ </div>
+ </div>
+ </section>
+ }
 
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Rozmiary ikon</h2>
-        <div class="bg-surface rounded-xl border border-border p-4 flex items-end gap-6">
-          <div class="flex flex-col items-center gap-1">
-            <app-icon name="heart" size="xs" class="text-foreground" />
-            <span class="text-xs text-muted">xs (12)</span>
-          </div>
-          <div class="flex flex-col items-center gap-1">
-            <app-icon name="heart" size="sm" class="text-foreground" />
-            <span class="text-xs text-muted">sm (16)</span>
-          </div>
-          <div class="flex flex-col items-center gap-1">
-            <app-icon name="heart" size="md" class="text-foreground" />
-            <span class="text-xs text-muted">md (20)</span>
-          </div>
-          <div class="flex flex-col items-center gap-1">
-            <app-icon name="heart" size="lg" class="text-foreground" />
-            <span class="text-xs text-muted">lg (24)</span>
-          </div>
-        </div>
-      </section>
+ <!-- ══════════════ SPACING ══════════════ -->
+ @if (activeSection() === 'spacing') {
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-4">Skala spacing (Tailwind)</h2>
+ <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-3">
+ @for (sp of spacingScale; track sp.name) {
+ <div class="flex items-center gap-3">
+ <code class="text-xs text-neutral-500 w-8 text-right shrink-0">{{ sp.name }}</code>
+ <div class="bg-primary-500 rounded" [style.width]="sp.rem" [style.height]="'12px'"></div>
+ <span class="text-xs text-neutral-500">{{ sp.rem }} ({{ sp.px }})</span>
+ </div>
+ }
+ </div>
+ </section>
 
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Warianty kolorystyczne</h2>
-        <div class="bg-surface rounded-xl border border-border p-4 flex items-center gap-6">
-          <div class="flex flex-col items-center gap-1">
-            <app-icon name="star" variant="default" />
-            <span class="text-xs text-muted">default</span>
-          </div>
-          <div class="flex flex-col items-center gap-1">
-            <app-icon name="star" variant="muted" />
-            <span class="text-xs text-muted">muted</span>
-          </div>
-          <div class="flex flex-col items-center gap-1">
-            <app-icon name="star" variant="primary" />
-            <span class="text-xs text-muted">primary</span>
-          </div>
-          <div class="flex flex-col items-center gap-1">
-            <app-icon name="star" variant="danger" />
-            <span class="text-xs text-muted">danger</span>
-          </div>
-        </div>
-      </section>
-    }
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-4">Border radius</h2>
+ <div class="bg-white rounded-xl border border-neutral-200 p-4">
+ <div class="flex flex-wrap gap-4">
+ <div class="flex flex-col items-center gap-2">
+ <div class="w-16 h-16 bg-primary-500/20 border-2 border-primary rounded-none"></div>
+ <span class="text-xs text-neutral-500">none</span>
+ </div>
+ <div class="flex flex-col items-center gap-2">
+ <div class="w-16 h-16 bg-primary-500/20 border-2 border-primary rounded"></div>
+ <span class="text-xs text-neutral-500">rounded</span>
+ </div>
+ <div class="flex flex-col items-center gap-2">
+ <div class="w-16 h-16 bg-primary-500/20 border-2 border-primary rounded-lg"></div>
+ <span class="text-xs text-neutral-500">lg</span>
+ </div>
+ <div class="flex flex-col items-center gap-2">
+ <div class="w-16 h-16 bg-primary-500/20 border-2 border-primary rounded-xl"></div>
+ <span class="text-xs text-neutral-500">xl</span>
+ </div>
+ <div class="flex flex-col items-center gap-2">
+ <div class="w-16 h-16 bg-primary-500/20 border-2 border-primary rounded-2xl"></div>
+ <span class="text-xs text-neutral-500">2xl</span>
+ </div>
+ <div class="flex flex-col items-center gap-2">
+ <div class="w-16 h-16 bg-primary-500/20 border-2 border-primary rounded-full"></div>
+ <span class="text-xs text-neutral-500">full</span>
+ </div>
+ </div>
+ </div>
+ </section>
 
-    <!-- ══════════════ SPACING ══════════════ -->
-    @if (activeSection() === 'spacing') {
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Skala spacing (Tailwind)</h2>
-        <div class="bg-surface rounded-xl border border-border p-4 space-y-3">
-          @for (sp of spacingScale; track sp.name) {
-            <div class="flex items-center gap-3">
-              <code class="text-xs text-muted w-8 text-right shrink-0">{{ sp.name }}</code>
-              <div class="bg-primary rounded" [style.width]="sp.rem" [style.height]="'12px'"></div>
-              <span class="text-xs text-muted-foreground">{{ sp.rem }} ({{ sp.px }})</span>
-            </div>
-          }
-        </div>
-      </section>
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-4">Shadows</h2>
+ <div class="bg-neutral-100 rounded-xl p-4">
+ <div class="flex flex-wrap gap-6">
+ <div class="flex flex-col items-center gap-2">
+ <div class="w-20 h-20 bg-white rounded-xl shadow-sm"></div>
+ <span class="text-xs text-neutral-500">sm</span>
+ </div>
+ <div class="flex flex-col items-center gap-2">
+ <div class="w-20 h-20 bg-white rounded-xl shadow"></div>
+ <span class="text-xs text-neutral-500">default</span>
+ </div>
+ <div class="flex flex-col items-center gap-2">
+ <div class="w-20 h-20 bg-white rounded-xl shadow-md"></div>
+ <span class="text-xs text-neutral-500">md</span>
+ </div>
+ <div class="flex flex-col items-center gap-2">
+ <div class="w-20 h-20 bg-white rounded-xl shadow-lg"></div>
+ <span class="text-xs text-neutral-500">lg</span>
+ </div>
+ <div class="flex flex-col items-center gap-2">
+ <div class="w-20 h-20 bg-white rounded-xl shadow-xl"></div>
+ <span class="text-xs text-neutral-500">xl</span>
+ </div>
+ </div>
+ </div>
+ </section>
+ }
 
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Border radius</h2>
-        <div class="bg-surface rounded-xl border border-border p-4">
-          <div class="flex flex-wrap gap-4">
-            <div class="flex flex-col items-center gap-2">
-              <div class="w-16 h-16 bg-primary/20 border-2 border-primary rounded-none"></div>
-              <span class="text-xs text-muted">none</span>
-            </div>
-            <div class="flex flex-col items-center gap-2">
-              <div class="w-16 h-16 bg-primary/20 border-2 border-primary rounded"></div>
-              <span class="text-xs text-muted">rounded</span>
-            </div>
-            <div class="flex flex-col items-center gap-2">
-              <div class="w-16 h-16 bg-primary/20 border-2 border-primary rounded-lg"></div>
-              <span class="text-xs text-muted">lg</span>
-            </div>
-            <div class="flex flex-col items-center gap-2">
-              <div class="w-16 h-16 bg-primary/20 border-2 border-primary rounded-xl"></div>
-              <span class="text-xs text-muted">xl</span>
-            </div>
-            <div class="flex flex-col items-center gap-2">
-              <div class="w-16 h-16 bg-primary/20 border-2 border-primary rounded-2xl"></div>
-              <span class="text-xs text-muted">2xl</span>
-            </div>
-            <div class="flex flex-col items-center gap-2">
-              <div class="w-16 h-16 bg-primary/20 border-2 border-primary rounded-full"></div>
-              <span class="text-xs text-muted">full</span>
-            </div>
-          </div>
-        </div>
-      </section>
+ <!-- ══════════════ COMPONENTS ══════════════ -->
+ @if (activeSection() === 'components') {
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-4">Karta (Surface)</h2>
+ <div class="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4">
+ <h3 class="text-base font-semibold text-neutral-900">Przykładowa karta</h3>
+ <p class="text-sm text-neutral-500 mt-1">To jest przykład karty z tokenami surface + foreground + muted + border.</p>
+ <div class="mt-3 flex gap-2">
+ <button class="bg-primary-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors">
+ Primary
+ </button>
+ <button class="border border-neutral-200 bg-white text-neutral-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-white transition-colors">
+ Outline
+ </button>
+ </div>
+ </div>
+ </section>
 
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Shadows</h2>
-        <div class="bg-background rounded-xl p-4">
-          <div class="flex flex-wrap gap-6">
-            <div class="flex flex-col items-center gap-2">
-              <div class="w-20 h-20 bg-surface rounded-xl shadow-sm"></div>
-              <span class="text-xs text-muted">sm</span>
-            </div>
-            <div class="flex flex-col items-center gap-2">
-              <div class="w-20 h-20 bg-surface rounded-xl shadow"></div>
-              <span class="text-xs text-muted">default</span>
-            </div>
-            <div class="flex flex-col items-center gap-2">
-              <div class="w-20 h-20 bg-surface rounded-xl shadow-md"></div>
-              <span class="text-xs text-muted">md</span>
-            </div>
-            <div class="flex flex-col items-center gap-2">
-              <div class="w-20 h-20 bg-surface rounded-xl shadow-lg"></div>
-              <span class="text-xs text-muted">lg</span>
-            </div>
-            <div class="flex flex-col items-center gap-2">
-              <div class="w-20 h-20 bg-surface rounded-xl shadow-xl"></div>
-              <span class="text-xs text-muted">xl</span>
-            </div>
-          </div>
-        </div>
-      </section>
-    }
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-4">Alerty / Statusy</h2>
+ <div class="space-y-3">
+ <div class="flex items-center gap-3 bg-success-50 border border-success-200 rounded-xl p-3">
+ <app-icon name="check-circle" class="w-5 h-5 text-success-600" />
+ <span class="text-sm text-neutral-900">Operacja zakończona pomyślnie.</span>
+ </div>
+ <div class="flex items-center gap-3 bg-info-50 border border-info-200 rounded-xl p-3">
+ <app-icon name="help-circle" class="w-5 h-5 text-info-600" />
+ <span class="text-sm text-neutral-900">To jest informacja dla użytkownika.</span>
+ </div>
+ <div class="flex items-center gap-3 bg-teal-50 border border-teal-200 rounded-xl p-3">
+ <app-icon name="alert-triangle" class="w-5 h-5 text-teal-600" />
+ <span class="text-sm text-neutral-900">Uwaga — sprawdź dane przed kontynuacją.</span>
+ </div>
+ <div class="flex items-center gap-3 bg-danger-50 border border-danger-200 rounded-xl p-3">
+ <app-icon name="shield-alert" class="w-5 h-5 text-danger-500" />
+ <span class="text-sm text-neutral-900">Wystąpił błąd. Spróbuj ponownie.</span>
+ </div>
+ </div>
+ </section>
 
-    <!-- ══════════════ COMPONENTS ══════════════ -->
-    @if (activeSection() === 'components') {
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Karta (Surface)</h2>
-        <div class="bg-surface rounded-2xl shadow-sm border border-border p-4">
-          <h3 class="text-base font-semibold text-foreground">Przykładowa karta</h3>
-          <p class="text-sm text-muted mt-1">To jest przykład karty z tokenami surface + foreground + muted + border.</p>
-          <div class="mt-3 flex gap-2">
-            <button class="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors">
-              Primary
-            </button>
-            <button class="border border-border bg-surface text-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-surface-elevated transition-colors">
-              Outline
-            </button>
-          </div>
-        </div>
-      </section>
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-4">Lista z dividerami</h2>
+ <div class="bg-white rounded-xl border border-neutral-200 divide-y divide-neutral-200">
+ <div class="flex items-center gap-3 p-4">
+ <app-icon name="calendar" class="w-5 h-5 text-neutral-500" />
+ <div>
+ <p class="text-sm font-medium text-neutral-900">Wydarzenie 1</p>
+ <p class="text-xs text-neutral-500">Jutro, 18:00</p>
+ </div>
+ </div>
+ <div class="flex items-center gap-3 p-4">
+ <app-icon name="calendar" class="w-5 h-5 text-neutral-500" />
+ <div>
+ <p class="text-sm font-medium text-neutral-900">Wydarzenie 2</p>
+ <p class="text-xs text-neutral-500">Za 3 dni, 20:00</p>
+ </div>
+ </div>
+ <div class="flex items-center gap-3 p-4">
+ <app-icon name="calendar" class="w-5 h-5 text-neutral-500" />
+ <div>
+ <p class="text-sm font-medium text-neutral-900">Wydarzenie 3</p>
+ <p class="text-xs text-neutral-500">W piątek, 16:30</p>
+ </div>
+ </div>
+ </div>
+ </section>
 
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Alerty / Statusy</h2>
-        <div class="space-y-3">
-          <div class="flex items-center gap-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-3">
-            <app-icon name="check-circle" class="w-5 h-5 text-success" />
-            <span class="text-sm text-foreground">Operacja zakończona pomyślnie.</span>
-          </div>
-          <div class="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-3">
-            <app-icon name="help-circle" class="w-5 h-5 text-info" />
-            <span class="text-sm text-foreground">To jest informacja dla użytkownika.</span>
-          </div>
-          <div class="flex items-center gap-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-3">
-            <app-icon name="alert-triangle" class="w-5 h-5 text-warning" />
-            <span class="text-sm text-foreground">Uwaga — sprawdź dane przed kontynuacją.</span>
-          </div>
-          <div class="flex items-center gap-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
-            <app-icon name="shield-alert" class="w-5 h-5 text-danger" />
-            <span class="text-sm text-foreground">Wystąpił błąd. Spróbuj ponownie.</span>
-          </div>
-        </div>
-      </section>
+ <section>
+ <h2 class="text-lg font-semibold text-neutral-900 mb-4">Formularz (input + focus)</h2>
+ <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-3">
+ <div>
+ <label for="ds-name" class="block text-sm font-medium text-neutral-900 mb-1">Nazwa</label>
+ <input
+ id="ds-name"
+ type="text"
+ placeholder="Wpisz nazwę..."
+ class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-info-400"
+ />
+ </div>
+ <div>
+ <label for="ds-desc" class="block text-sm font-medium text-neutral-900 mb-1">Opis</label>
+ <textarea
+ id="ds-desc"
+ rows="3"
+ placeholder="Opis wydarzenia..."
+ class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-info-400"
+ ></textarea>
+ </div>
+ </div>
+ </section>
+ }
 
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Lista z dividerami</h2>
-        <div class="bg-surface rounded-xl border border-border divide-y divide-border">
-          <div class="flex items-center gap-3 p-4">
-            <app-icon name="calendar" class="w-5 h-5 text-muted" />
-            <div>
-              <p class="text-sm font-medium text-foreground">Wydarzenie 1</p>
-              <p class="text-xs text-muted">Jutro, 18:00</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 p-4">
-            <app-icon name="calendar" class="w-5 h-5 text-muted" />
-            <div>
-              <p class="text-sm font-medium text-foreground">Wydarzenie 2</p>
-              <p class="text-xs text-muted">Za 3 dni, 20:00</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 p-4">
-            <app-icon name="calendar" class="w-5 h-5 text-muted" />
-            <div>
-              <p class="text-sm font-medium text-foreground">Wydarzenie 3</p>
-              <p class="text-xs text-muted">W piątek, 16:30</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="text-lg font-semibold text-foreground mb-4">Formularz (input + focus)</h2>
-        <div class="bg-surface rounded-xl border border-border p-4 space-y-3">
-          <div>
-            <label for="ds-name" class="block text-sm font-medium text-foreground mb-1">Nazwa</label>
-            <input
-              id="ds-name"
-              type="text"
-              placeholder="Wpisz nazwę..."
-              class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-          <div>
-            <label for="ds-desc" class="block text-sm font-medium text-foreground mb-1">Opis</label>
-            <textarea
-              id="ds-desc"
-              rows="3"
-              placeholder="Opis wydarzenia..."
-              class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-            ></textarea>
-          </div>
-        </div>
-      </section>
-    }
-
-  </main>
+ </main>
 </div>

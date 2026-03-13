@@ -6,32 +6,32 @@ import { Payment, PaginatedPayments, EventEarnings } from '../../shared/types';
 
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl + '/payments';
+ private readonly http = inject(HttpClient);
+ private readonly apiUrl = environment.apiUrl + '/payments';
 
-  getMyPayments(page = 1, limit = 20): Observable<PaginatedPayments> {
-    return this.http.get<PaginatedPayments>(`${this.apiUrl}/my-payments`, {
-      params: { page, limit },
-    });
-  }
+ getMyPayments(page = 1, limit = 20): Observable<PaginatedPayments> {
+ return this.http.get<PaginatedPayments>(`${this.apiUrl}/my-payments`, {
+ params: { page, limit },
+ });
+ }
 
-  getPaymentStatus(paymentId: string): Observable<Payment> {
-    return this.http.get<Payment>(`${this.apiUrl}/${paymentId}/status`);
-  }
+ getPaymentStatus(paymentId: string): Observable<Payment> {
+ return this.http.get<Payment>(`${this.apiUrl}/${paymentId}/status`);
+ }
 
-  getPaymentStatusByIntentId(intentId: string): Observable<Payment> {
-    return this.http.get<Payment>(`${this.apiUrl}/intent/${intentId}/status`);
-  }
+ getPaymentStatusByIntentId(intentId: string): Observable<Payment> {
+ return this.http.get<Payment>(`${this.apiUrl}/intent/${intentId}/status`);
+ }
 
-  getEventEarnings(eventId: string): Observable<EventEarnings> {
-    return this.http.get<EventEarnings>(`${this.apiUrl}/event/${eventId}/earnings`);
-  }
+ getEventEarnings(eventId: string): Observable<EventEarnings> {
+ return this.http.get<EventEarnings>(`${this.apiUrl}/event/${eventId}/earnings`);
+ }
 
-  refundAsVoucher(paymentId: string): Observable<{ success: boolean }> {
-    return this.http.post<{ success: boolean }>(`${this.apiUrl}/${paymentId}/refund-voucher`, {});
-  }
+ refundAsVoucher(paymentId: string): Observable<{ success: boolean }> {
+ return this.http.post<{ success: boolean }>(`${this.apiUrl}/${paymentId}/refund-voucher`, {});
+ }
 
-  refundAsMoney(paymentId: string): Observable<{ success: boolean }> {
-    return this.http.post<{ success: boolean }>(`${this.apiUrl}/${paymentId}/refund-money`, {});
-  }
+ refundAsMoney(paymentId: string): Observable<{ success: boolean }> {
+ return this.http.post<{ success: boolean }>(`${this.apiUrl}/${paymentId}/refund-money`, {});
+ }
 }

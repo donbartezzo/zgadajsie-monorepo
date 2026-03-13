@@ -120,31 +120,47 @@ Gdy brak bezpośredniego odpowiednika, wybierz **najbliższą skalę Tailwind**.
 - `fw-bold` → `font-semibold` lub `font-bold`
 - `small` → `text-xs` / `text-sm`
 
-**Kolory — PRIORYTET: semantyczne tokeny z centralnej palety:**
+**Kolory — WYŁĄCZNIE z palety projektowej:**
 
-Projekt posiada **centralną paletę kolorów** opartą na CSS Custom Properties z automatycznym przełączaniem light/dark mode.
+Projekt posiada **centralną paletę kolorów** zdefiniowaną jako statyczne hex values w `frontend/tailwind.config.js`. Brak CSS custom properties kolorów. Brak dark mode.
 
 **Źródło definicji:**
-- **CSS Variables:** `frontend/src/styles.scss` (`:root` = light, `.dark` = dark)
-- **Tailwind mapping:** `frontend/tailwind.config.js` (`extend.colors`)
+- **Jedyne źródło prawdy:** `frontend/tailwind.config.js` (`extend.colors`)
+- **Pełna dokumentacja:** `docs/design-tokens.md`
 - **Podgląd wizualny:** `/dev/design-system` (tylko dev mode)
-- **Pełna dokumentacja:** `docs/styleguide-frontend.md` → sekcja „Centralna paleta kolorów"
 
 **Zasada migracji Bootstrap → Tailwind:**
-Przy migracji kolorów z Bootstrapa **ZAWSZE najpierw** szukaj odpowiedniego tokenu semantycznego:
-- `text-dark` / `text-body` → `text-foreground` (tekst główny)
-- `text-muted` / `text-secondary` → `text-muted` (tekst drugorzędny)
-- `bg-white` / `bg-light` → `bg-surface` (tło karty/komponentu)
-- `bg-primary` → `bg-primary` (brand/akcent)
-- `bg-danger` / `text-danger` → `bg-danger` / `text-danger` (błąd)
-- `bg-success` / `text-success` → `bg-success` / `text-success` (sukces)
-- `bg-warning` / `text-warning` → `bg-warning` / `text-warning` (ostrzeżenie)
-- `bg-info` / `text-info` → `bg-info` / `text-info` (informacja)
-- `border-*` → `border-border` (domyślne obramowanie)
+Przy migracji kolorów z Bootstrapa używaj **wyłącznie** palet z `tailwind.config.js`:
 
-Surowe kolory Tailwind (np. `gray-500`, `blue-600`) stosuj **tylko** gdy żaden token nie pasuje.
+*Tekst i tła ogólne:*
+- `text-dark` / `text-body` → `text-neutral-900` (tekst główny)
+- `text-muted` / `text-secondary` → `text-neutral-500` (tekst drugorzędny)
+- `bg-white` → `bg-white` (tło karty/komponentu)
+- `bg-light` → `bg-neutral-50` (lekkie tło — Bootstrap `#f8f9fa` ≈ `neutral-50`)
+- `border-*` → `border-neutral-200` (domyślne obramowanie)
 
-**Nigdy nie używaj** klas kolorów Bootstrapa. Zawsze dobieraj klasy Tailwind — priorytetowo tokeny semantyczne.
+*Brand:*
+- `bg-primary` → `bg-primary-500` (brand/akcent)
+- `text-primary` → `text-primary-500`
+
+*Statusy — solid bg (badge, button):*
+- `bg-danger` → `bg-danger-400 text-white`
+- `bg-success` → `bg-success-400 text-white`
+- `bg-warning` → `bg-warning-400 text-white`
+- `bg-info` → `bg-info-400 text-white`
+
+*Statusy — tekst na jasnym tle (czytelność):*
+- `text-danger` → `text-danger-500`
+- `text-success` → `text-success-600`
+- `text-warning` → `text-warning-600`
+- `text-info` → `text-info-600`
+
+*Focus ring:*
+- `:focus` / `.focus` → `focus:ring-2 focus:ring-primary-500 focus:outline-none`
+
+**ZABRONIONE:** domyślne kolory Tailwind (`gray-*`, `blue-*`, `slate-*`), arbitralne hexy (`bg-[#abc]`), prefixy `dark:`.
+
+**Nigdy nie używaj** klas kolorów Bootstrapa. Zawsze dobieraj klasy z palety projektowej.
 
 ### 4.5. Przyciski
 
@@ -154,8 +170,8 @@ Dla przycisków mobilnych:
 
 - Stwórz lub użyj istniejącego komponentu `Button` w `shared/ui` (np. `UiButtonComponent`).
 - Wewnątrz nadaj klasy Tailwind, np.:
-  - podstawowy: `inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-50`;
-  - wariant `outline`: `border border-border bg-surface text-foreground`.
+  - podstawowy: `inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-50`;
+  - wariant `outline`: `border border-neutral-200 bg-white text-neutral-900`.
 - Eksponuj API: `[variant]`, `[size]`, `[disabled]`, `(clicked)`.
 
 Przy migracjach używaj **zawsze** własnego przycisku z `shared/ui`, nie anonimowego `<button>` rozmnożonego po projekcie.
@@ -165,9 +181,9 @@ Przy migracjach używaj **zawsze** własnego przycisku z `shared/ui`, nie anonim
 Jeśli Bootstrap używa `card`, `list-group`, `navbar`, `nav`:
 
 - Twórz semantyczne struktury HTML z Tailwind:
-  - karty: `rounded-2xl bg-surface shadow-sm p-4 border border-border`;
-  - listy: `divide-y divide-border` + elementy `py-3 flex items-center gap-3`;
-  - bottom nav (sticky): `fixed inset-x-0 bottom-0 border-t border-border bg-surface/95 backdrop-blur` + grid/flex.
+  - karty: `rounded-2xl bg-white shadow-sm p-4 border border-neutral-200`;
+  - listy: `divide-y divide-neutral-200` + elementy `py-3 flex items-center gap-3`;
+  - bottom nav (sticky): `fixed inset-x-0 bottom-0 border-t border-neutral-200 bg-white/95 backdrop-blur` + grid/flex.
 - Dla wzorców powtarzalnych (np. **karta wydarzenia**) rozważ `EventCardComponent` w `shared/ui`.
 
 ### 4.7. Grid i breakpointy (mobile-first)
@@ -366,18 +382,18 @@ Asystent AI powinien podjąć następujące decyzje:
 
 ```html
 <article
-  class="rounded-2xl bg-surface shadow-sm border border-border p-4 flex items-start justify-between gap-4"
+  class="rounded-2xl bg-white shadow-sm border border-neutral-200 p-4 flex items-start justify-between gap-4"
 >
   <div class="space-y-1 text-sm">
-    <h2 class="text-base font-semibold text-foreground">{{ event().title }}</h2>
+    <h2 class="text-base font-semibold text-neutral-900">{{ event().title }}</h2>
 
-    <p class="flex items-center gap-1 text-xs text-muted">
-      <app-icon name="calendar" class="w-4 h-4 text-muted" />
+    <p class="flex items-center gap-1 text-xs text-neutral-500">
+      <app-icon name="calendar" class="w-4 h-4 text-neutral-400" />
       <span>{{ event().date | date: 'dd.MM.yyyy, HH:mm' }}</span>
     </p>
 
-    <p class="flex items-center gap-1 text-xs text-muted">
-      <app-icon name="location" class="w-4 h-4 text-muted" />
+    <p class="flex items-center gap-1 text-xs text-neutral-500">
+      <app-icon name="location" class="w-4 h-4 text-neutral-400" />
       <span>{{ event().location }}</span>
     </p>
   </div>
@@ -433,7 +449,7 @@ AI powinien utworzyć komponent layoutu, np. `BottomNavComponent` w `frontend/sr
 
 ```html
 <nav
-  class="fixed inset-x-0 bottom-0 border-t border-border bg-surface/95 backdrop-blur"
+  class="fixed inset-x-0 bottom-0 border-t border-neutral-200 bg-white/95 backdrop-blur"
 >
   <div class="mx-auto max-w-md px-4">
     <ul class="flex items-stretch justify-between py-2">
@@ -441,8 +457,8 @@ AI powinien utworzyć komponent layoutu, np. `BottomNavComponent` w `frontend/sr
       <li class="flex-1">
         <a
           [routerLink]="item.path"
-          routerLinkActive="text-primary"
-          class="flex flex-col items-center justify-center gap-0.5 py-1 text-xs text-muted"
+          routerLinkActive="text-primary-500"
+          class="flex flex-col items-center justify-center gap-0.5 py-1 text-xs text-neutral-500"
         >
           <app-icon [name]="item.icon" class="w-5 h-5" />
           <span>{{ item.label }}</span>
@@ -456,7 +472,7 @@ AI powinien utworzyć komponent layoutu, np. `BottomNavComponent` w `frontend/sr
 
 **Uwagi dla AI:**
 
-- `fixed-bottom`, `navbar`, `container-fluid`, `text-muted`, `small` → zastąpione Tailwindem (`fixed inset-x-0 bottom-0`, `mx-auto max-w-md`, `text-zinc-500`, `text-xs`).
+- `fixed-bottom`, `navbar`, `container-fluid`, `text-muted`, `small` → zastąpione Tailwindem (`fixed inset-x-0 bottom-0`, `mx-auto max-w-md`, `text-neutral-500`, `text-xs`).
 - Użyj nowej składni `@for` do renderowania elementów menu.
 - Zadbaj o to, by bottom-nav nie nachodził na główną treść – w layoucie strony uwzględnij dodatkowy dolny padding (`pb-16` itp.).
 

@@ -26,3 +26,20 @@ Strona design-system to **single source of truth** dla wizualnego podglądu wszy
 
 # Ważne!
 W odpowiedzi na każde polecenie/prompa napisz czy zostało wykonane zgodnie z zasadami opisanymi powyżej oraz czy i który z powyższych plików został uwzględniony na potrzeby danego zadania. Jeśli żaden to napisz dlaczego, np. że nie było takiej potrzeby.
+
+## Formatowanie kodu
+
+- Cały generowany kod musi być zgodny z konfiguracją Prettier z pliku `.prettierrc` w projekcie.
+- Kod w JavaScript, TypeScript, HTML, CSS i innych obsługiwanych językach powinien być automatycznie sformatowany zgodnie z tymi zasadami.
+- Nigdy nie nadpisuj ustawień Prettier. Jeśli istnieje konflikt między stylami, zawsze przestrzegaj ustawień z `.prettierrc`.
+- Przykład stylu Prettier, którego należy przestrzegać:
+  - `singleQuote: true` – używaj pojedynczych cudzysłowów
+  - `trailingComma: "all"` – stosuj przecinek po ostatnim elemencie w obiektach/tablicach
+  - `printWidth: 100` – maksymalna długość linii 100 znaków
+  - `semi: true` – każda linia kończy się średnikiem
+- Jeśli AI generuje fragment kodu, upewnij się, że jego formatowanie odzwierciedla powyższe zasady, np. wcięcia, spacje, średniki i cudzysłowy.
+
+## Wskazówki dla AI
+
+- Zawsze staraj się, aby wygenerowany kod był gotowy do użycia z Prettier, nawet jeśli w projekcie zostanie uruchomione automatyczne formatowanie.
+- Jeśli nie masz pewności co do formatowania, generuj kod w formie zgodnej z przykładowym stylem powyżej.

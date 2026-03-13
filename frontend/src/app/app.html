@@ -1,21 +1,21 @@
 <div class="app">
-  <!-- Rotated tiled background (hidden on mobile, shown on desktop via styles.scss) -->
-  <div class="app-bg-pattern" aria-hidden="true"></div>
+ <!-- Rotated tiled background (hidden on mobile, shown on desktop via styles.scss) -->
+ <div class="app-bg-pattern" aria-hidden="true"></div>
 
-  <!-- Main app container (styled on desktop via styles.scss) -->
-  <div class="app-container">
-    <app-snackbar></app-snackbar>
+ <!-- Main app container (styled on desktop via styles.scss) -->
+ <div class="app-container">
+ <app-snackbar></app-snackbar>
 
-    <main class="app-content">
-      <app-page-layout>
-        <router-outlet></router-outlet>
-      </app-page-layout>
-    </main>
+ <main class="app-content">
+ <app-page-layout>
+ <router-outlet></router-outlet>
+ </app-page-layout>
+ </main>
 
-    <app-bottom-overlays />
-    <app-confirm-modal />
-  </div>
+ <app-bottom-overlays />
+ <app-confirm-modal />
+ </div>
 
-  <!-- Bottom nav: fixed outside container so overflow:hidden doesn't affect it -->
-  <app-bottom-nav></app-bottom-nav>
+ <!-- Bottom nav: fixed outside container so overflow:hidden doesn't affect it -->
+ <app-bottom-nav></app-bottom-nav>
 </div>

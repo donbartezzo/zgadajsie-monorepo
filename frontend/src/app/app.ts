@@ -7,18 +7,18 @@ import { ConfirmModalComponent } from './shared/ui/confirm-modal/confirm-modal.c
 import { PageLayoutComponent } from './shared/layouts/page-layout/page-layout.component';
 
 @Component({
-  imports: [
-    RouterModule,
-    BottomNavComponent,
-    SnackbarComponent,
-    BottomOverlaysComponent,
-    ConfirmModalComponent,
-    PageLayoutComponent,
-  ],
-  selector: 'app-root',
-  templateUrl: './app.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+ imports: [
+ RouterModule,
+ BottomNavComponent,
+ SnackbarComponent,
+ BottomOverlaysComponent,
+ ConfirmModalComponent,
+ PageLayoutComponent,
+ ],
+ selector: 'app-root',
+ templateUrl: './app.html',
+ changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
-  protected title = 'ZgadajSię';
+ protected title = 'ZgadajSię';
 }

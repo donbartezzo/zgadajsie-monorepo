@@ -5,31 +5,31 @@ import { environment } from '../../../environments/environment';
 import { User, Event, Participation, AvatarUrl } from '../../shared/types';
 
 interface UpdateProfileData {
-  displayName?: string;
-  avatarUrl?: AvatarUrl;
-  email?: string;
-  currentPassword?: string;
-  newPassword?: string;
+ displayName?: string;
+ avatarUrl?: AvatarUrl;
+ email?: string;
+ currentPassword?: string;
+ newPassword?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl + '/users';
+ private readonly http = inject(HttpClient);
+ private readonly apiUrl = environment.apiUrl + '/users';
 
-  updateProfile(data: UpdateProfileData): Observable<User> {
-    return this.http.patch<User>(`${this.apiUrl}/me`, data);
-  }
+ updateProfile(data: UpdateProfileData): Observable<User> {
+ return this.http.patch<User>(`${this.apiUrl}/me`, data);
+ }
 
-  getMyEvents(): Observable<Event[]> {
-    return this.http.get<Event[]>(`${this.apiUrl}/me/events`);
-  }
+ getMyEvents(): Observable<Event[]> {
+ return this.http.get<Event[]>(`${this.apiUrl}/me/events`);
+ }
 
-  getMyParticipations(): Observable<Participation[]> {
-    return this.http.get<Participation[]>(`${this.apiUrl}/me/participations`);
-  }
+ getMyParticipations(): Observable<Participation[]> {
+ return this.http.get<Participation[]>(`${this.apiUrl}/me/participations`);
+ }
 
-  getMyReprimands(): Observable<unknown[]> {
-    return this.http.get<unknown[]>(`${this.apiUrl}/me/reprimands`);
-  }
+ getMyReprimands(): Observable<unknown[]> {
+ return this.http.get<unknown[]>(`${this.apiUrl}/me/reprimands`);
+ }
 }
