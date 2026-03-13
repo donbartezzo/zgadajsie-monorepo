@@ -16,13 +16,14 @@ import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avat
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { DateBadgeComponent } from '../../../../shared/ui/date-badge/date-badge.component';
 import { EventService } from '../../../../core/services/event.service';
+import { EventAnnouncementService } from '../../../../core/services/event-announcement.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bottom-overlays.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
-import { Event as EventModel, Participation } from '../../../../shared/types';
+import { Event as EventModel, Participation, EventAnnouncement } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 import { getEventCountdown, EventCountdown } from '../../../../shared/utils/date.utils';
 import {
@@ -30,6 +31,7 @@ import {
   NotificationBarConfig,
 } from '../../ui/event-notification-bars/event-notification-bars.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
+import { EventAnnouncementsComponent } from '../../ui/event-announcements/event-announcements.component';
 
 @Component({
   selector: 'app-event',
@@ -44,6 +46,7 @@ import { CardComponent } from '../../../../shared/ui/card/card.component';
     LoadingSpinnerComponent,
     CardComponent,
     EventNotificationBarsComponent,
+    EventAnnouncementsComponent,
     DateBadgeComponent,
     LayoutSlotDirective,
   ],
@@ -55,6 +58,7 @@ export class EventComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
+  private readonly announcementService = inject(EventAnnouncementService);
   readonly auth = inject(AuthService);
   private readonly snackbar = inject(SnackbarService);
   readonly overlays = inject(BottomOverlaysService);
@@ -67,6 +71,8 @@ export class EventComponent implements OnInit, OnDestroy {
   readonly participants = signal<Participation[]>([]);
   readonly isLoading = signal(true);
   readonly joining = signal(false);
+  readonly announcements = signal<EventAnnouncement[]>([]);
+  readonly hasAnnouncements = signal(false);
 
   readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
   readonly remainingCount = computed(() => Math.max(0, this.participants().length - 6));
@@ -181,6 +187,12 @@ export class EventComponent implements OnInit, OnDestroy {
     });
     this.eventService.getParticipants(this.eventId).subscribe({
       next: (p) => this.participants.set(p),
+    });
+    this.announcementService.getAnnouncements(this.eventId).subscribe({
+      next: (res) => {
+        this.announcements.set(res.announcements);
+        this.hasAnnouncements.set(res.hasAnnouncements);
+      },
     });
   }
 
@@ -359,6 +371,22 @@ export class EventComponent implements OnInit, OnDestroy {
     } else if (barId === 'organizer') {
       this.openOrganizerActionsSheet();
     }
+  }
+
+  confirmAnnouncement(announcementId: string): void {
+    this.announcementService.confirmManual(announcementId).subscribe({
+      next: () => {
+        this.announcements.update((prev) =>
+          prev.map((a) =>
+            a.id === announcementId && a.receipts?.length
+              ? { ...a, receipts: [{ ...a.receipts[0], confirmedAt: new Date().toISOString() }] }
+              : a,
+          ),
+        );
+        this.snackbar.success('Potwierdzono odbiór komunikatu');
+      },
+      error: () => this.snackbar.error('Nie udało się potwierdzić odbioru'),
+    });
   }
 
   contactOrganizer(): void {

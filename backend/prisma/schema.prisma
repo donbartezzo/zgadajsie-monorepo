@@ -43,6 +43,8 @@ model User {
   bannedByOrganizers OrganizerBan[]      @relation("OrganizerBanBanned")
   notifications     Notification[]
   pushSubscriptions PushSubscription[]
+  announcements          EventAnnouncement[]    @relation("OrganizerAnnouncements")
+  announcementReceipts   AnnouncementReceipt[]
   eventLimit        UserEventLimit?
   tpayMerchantId    String?
 }
@@ -156,6 +158,7 @@ model Event {
   privateChatMessages PrivateChatMessage[]
   reprimands    Reprimand[]
   notifications Notification[]       @relation("NotificationEvent")
+  announcements     EventAnnouncement[]
   payments        Payment[]            @relation("EventPayments")
   paymentIntents  PaymentIntent[]      @relation("EventPaymentIntents")
   issuedVouchers  OrganizerVoucher[]
@@ -362,6 +365,41 @@ model PushSubscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, endpoint])
+}
+
+// ─── Event Announcements ─────────────────────────────────────────────────────
+
+model EventAnnouncement {
+  id          String   @id @default(uuid())
+  eventId     String
+  organizerId String
+  message     String
+  priority    String   @default("INFORMATIONAL")
+  trigger     String   @default("MANUAL")
+  createdAt   DateTime @default(now())
+
+  event     Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  organizer User  @relation("OrganizerAnnouncements", fields: [organizerId], references: [id])
+  receipts  AnnouncementReceipt[]
+
+  @@index([eventId, createdAt])
+}
+
+model AnnouncementReceipt {
+  id              String    @id @default(uuid())
+  announcementId  String
+  userId          String
+  confirmToken    String    @unique @default(uuid())
+  viewedAt        DateTime?
+  confirmedAt     DateTime?
+  createdAt       DateTime  @default(now())
+
+  announcement EventAnnouncement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId])
+  @@index([confirmToken])
+  @@index([announcementId, viewedAt])
 }
 
 // ─── System ──────────────────────────────────────────────────────────────────

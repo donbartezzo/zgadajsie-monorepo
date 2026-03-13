@@ -17,6 +17,7 @@ import { ActivityRankModule } from '../modules/activity-rank/activity-rank.modul
 import { DictionariesModule } from '../modules/dictionaries/dictionaries.module';
 import { VouchersModule } from '../modules/vouchers/vouchers.module';
 import { CoverImagesModule } from '../modules/cover-images/cover-images.module';
+import { AnnouncementsModule } from '../modules/announcements/announcements.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { CoverImagesModule } from '../modules/cover-images/cover-images.module';
     DictionariesModule,
     VouchersModule,
     CoverImagesModule,
+    AnnouncementsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

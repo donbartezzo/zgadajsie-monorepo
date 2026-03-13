@@ -215,6 +215,17 @@
   <div class="border-t border-neutral-100"></div>
   }
 
+  <!-- Organizer announcements -->
+  @if (hasAnnouncements()) {
+  <app-event-announcements
+    [announcements]="announcements()"
+    [hasAnnouncements]="hasAnnouncements()"
+    [isLoggedIn]="auth.isLoggedIn()"
+    (confirm)="confirmAnnouncement($event)"
+  ></app-event-announcements>
+  <div class="mt-4 border-t border-neutral-100"></div>
+  }
+
   <!-- Countdown — ticking every second until event starts -->
   @if (countdown(); as cd) {
   <div class="mb-4 mt-4">

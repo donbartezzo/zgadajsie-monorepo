@@ -20,6 +20,7 @@ import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
   selector: 'app-page-layout',
   imports: [CommonModule, RouterLink, IconComponent, NgTemplateOutlet],
   templateUrl: './page-layout.component.html',
+  host: { class: 'flex-1 flex flex-col' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PageLayoutComponent {
@@ -46,10 +47,11 @@ export class PageLayoutComponent {
   readonly showFooter = computed(() => {
     const routeData = this.routeData();
     const showFooter = routeData ? routeData['showFooter'] !== false : false;
-    console.log('[PageLayout] showFooter computed:', showFooter, 'routeData:', routeData);
     return showFooter;
   });
   readonly showBackButton = computed(() => !!this.breadcrumb.parentUrl());
+  readonly centerContent = computed(() => this.routeData()?.['centerContent'] === true);
+  readonly contentBgColor = computed(() => this.routeData()?.['contentBgColor'] || '');
 
   private static readonly DEFAULT_COVER = 'assets/images/default-cover.png';
 

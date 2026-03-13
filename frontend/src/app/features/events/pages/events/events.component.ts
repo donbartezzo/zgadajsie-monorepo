@@ -127,9 +127,16 @@ export class EventsComponent implements OnInit {
       groups.push({ ...g, isPast: false, isOngoing: false });
     }
 
-    const pastByDate = this.groupByDate(past, todayStart);
-    for (const g of pastByDate) {
-      groups.push({ ...g, shortLabel: null, isPast: true, isOngoing: false });
+    if (past.length > 0) {
+      groups.push({
+        dateKey: '__past',
+        label: 'Niedawno zakończone',
+        shortLabel: null,
+        isToday: false,
+        isPast: true,
+        isOngoing: false,
+        events: past,
+      });
     }
 
     return groups;

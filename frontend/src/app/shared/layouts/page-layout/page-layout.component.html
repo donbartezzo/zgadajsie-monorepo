@@ -1,5 +1,5 @@
 @let _showHeader = showHeader(); @let _showFooter = showFooter(); @let _heroHidden = heroHidden();
-@let _hasCover = hasCover();
+@let _hasCover = hasCover(); @let _centerContent = centerContent(); @let _contentBgColor = contentBgColor();
 
 <!-- ═══════════════════════════════════════════════════
  PAGE HEADER (hero area)
@@ -111,11 +111,21 @@
 <!-- ═══════════════════════════════════════════════════
  PAGE CONTENT (router-outlet goes here)
  ═══════════════════════════════════════════════════ -->
-<div class="relative z-10" [ngClass]="_showHeader ? '-mt-6' : ''">
+<div
+  [ngClass]="{
+    'relative z-10': true,
+    '-mt-6': _showHeader,
+    'flex flex-1 items-center justify-center': _centerContent
+  }"
+  [class]="_contentBgColor"
+>
   <div
-    class="overflow-hidden rounded-2xl"
     [ngClass]="
-      layoutConfig.contentBgClass() + (isDefaultBg() ? '' : ' shadow-sm border border-neutral-100')
+      'rounded-2xl ' +
+      (_centerContent ? 'overflow-visible' : 'overflow-hidden') + ' ' +
+      (_contentBgColor || layoutConfig.contentBgClass()) +
+      (isDefaultBg() ? '' : ' shadow-sm border border-neutral-100') +
+      (_centerContent ? ' w-full' : '')
     "
   >
     @if (_showHeader) {

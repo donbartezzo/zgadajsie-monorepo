@@ -156,6 +156,37 @@ export class EmailService {
     );
   }
 
+  async sendAnnouncementEmail(
+    email: string,
+    displayName: string,
+    eventTitle: string,
+    message: string,
+    priority: string,
+    confirmToken: string,
+  ): Promise<void> {
+    const confirmLink = `${this.frontendUrl}/announcements/confirm/${confirmToken}`;
+    const priorityLabel =
+      priority === 'CRITICAL'
+        ? '🔴 Krytyczny'
+        : priority === 'ORGANIZATIONAL'
+          ? '🟡 Organizacyjny'
+          : 'ℹ️ Informacyjny';
+    await this.send(
+      email,
+      `${priority === 'CRITICAL' ? '[PILNE] ' : ''}Komunikat organizatora – ${eventTitle}`,
+      `
+      <h2>Hej ${displayName}!</h2>
+      <p>Organizator wydarzenia <strong>${eventTitle}</strong> wysłał komunikat:</p>
+      <div style="padding:12px 16px;background:#fef9c3;border:1px solid #fde68a;border-radius:8px;margin:16px 0;">
+        <p style="margin:0 0 4px 0;font-size:12px;color:#92400e;"><strong>${priorityLabel}</strong></p>
+        <p style="margin:0;font-size:14px;color:#1c1917;">${message}</p>
+      </div>
+      <p>W celu potwierdzenia otrzymania tego powiadomienia kliknij w poniższy link:</p>
+      <p><a href="${confirmLink}" style="display:inline-block;padding:12px 24px;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;">Potwierdzam odbiór</a></p>
+    `,
+    );
+  }
+
   async sendEventReminderEmail(
     email: string,
     displayName: string,

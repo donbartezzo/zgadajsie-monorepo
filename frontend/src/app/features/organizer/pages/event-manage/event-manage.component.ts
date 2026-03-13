@@ -7,11 +7,13 @@ import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EventService } from '../../../../core/services/event.service';
+import { EventAnnouncementService } from '../../../../core/services/event-announcement.service';
+import { FormsModule } from '@angular/forms';
 import { ModerationService } from '../../../../core/services/moderation.service';
 import { PaymentService } from '../../../../core/services/payment.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
-import { Participation, UserBrief } from '../../../../shared/types';
+import { Participation, UserBrief, AnnouncementReceiptStats } from '../../../../shared/types';
 
 interface EarningItem {
   id: string;
@@ -31,6 +33,7 @@ interface EarningItem {
     CardComponent,
     UserAvatarComponent,
     LoadingSpinnerComponent,
+    FormsModule,
   ],
   template: `
     <div class="py-6">
@@ -142,6 +145,42 @@ interface EarningItem {
         </app-card>
         }
       </div>
+      } @if (true) {
+      <div class="mt-6 border-t border-neutral-100 pt-4">
+        <h2 class="text-sm font-semibold text-neutral-900 mb-3">Wyślij komunikat</h2>
+        <textarea
+          class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+          rows="3"
+          placeholder="Treść komunikatu..."
+          [(ngModel)]="announcementMessage"
+        ></textarea>
+        <div class="mt-2 flex items-center gap-3">
+          <select
+            class="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-900 focus:border-primary-500 focus:outline-none"
+            [(ngModel)]="announcementPriority"
+          >
+            <option value="INFORMATIONAL">Informacyjny</option>
+            <option value="ORGANIZATIONAL">Organizacyjny</option>
+            <option value="CRITICAL">Krytyczny</option>
+          </select>
+          <app-button
+            variant="primary"
+            size="sm"
+            [loading]="sendingAnnouncement()"
+            (clicked)="sendAnnouncement()"
+          >
+            <app-icon name="send" size="xs"></app-icon>
+            Wyślij
+          </app-button>
+        </div>
+        @if (lastAnnouncementStats(); as stats) {
+        <div class="mt-3 flex items-center gap-4 text-xs text-neutral-500">
+          <span>Wysłano do: {{ stats.total }}</span>
+          <span>Wyświetlone: {{ stats.viewed }}/{{ stats.total }}</span>
+          <span>Potwierdzone: {{ stats.confirmed }}/{{ stats.total }}</span>
+        </div>
+        }
+      </div>
       } @if (earnings().length > 0) {
       <h2 class="text-sm font-semibold text-neutral-900 mt-6 mb-3">
         Przychody ({{ totalEarnings() | number : '1.2-2' }} zł)
@@ -184,6 +223,7 @@ export class EventManageComponent implements OnInit {
   private readonly eventService = inject(EventService);
   private readonly moderationService = inject(ModerationService);
   private readonly paymentService = inject(PaymentService);
+  private readonly announcementService = inject(EventAnnouncementService);
   private readonly snackbar = inject(SnackbarService);
   private readonly breadcrumb = inject(BreadcrumbService);
 
@@ -192,6 +232,10 @@ export class EventManageComponent implements OnInit {
   readonly totalEarnings = signal(0);
   readonly loading = signal(true);
   readonly autoAccept = signal(false);
+  readonly sendingAnnouncement = signal(false);
+  readonly lastAnnouncementStats = signal<AnnouncementReceiptStats | null>(null);
+  announcementMessage = '';
+  announcementPriority = 'INFORMATIONAL';
   private eventId = '';
   private citySlug = '';
 
@@ -281,6 +325,36 @@ export class EventManageComponent implements OnInit {
       },
       error: (err) => this.snackbar.error(err?.error?.message || 'Nie udało się przyznać vouchera'),
     });
+  }
+
+  sendAnnouncement(): void {
+    if (!this.announcementMessage.trim()) {
+      this.snackbar.error('Wpisz treść komunikatu');
+      return;
+    }
+    this.sendingAnnouncement.set(true);
+    this.announcementService
+      .createAnnouncement(this.eventId, this.announcementMessage.trim(), this.announcementPriority)
+      .subscribe({
+        next: (res) => {
+          this.snackbar.success(`Komunikat wysłany do ${res.dispatchedTo} uczestników`);
+          this.announcementMessage = '';
+          this.sendingAnnouncement.set(false);
+          this.loadAnnouncementStats(res.announcementId);
+        },
+        error: (err) => {
+          this.snackbar.error(err?.error?.message || 'Nie udało się wysłać komunikatu');
+          this.sendingAnnouncement.set(false);
+        },
+      });
+  }
+
+  private loadAnnouncementStats(announcementId: string): void {
+    setTimeout(() => {
+      this.announcementService.getStats(announcementId).subscribe({
+        next: (stats) => this.lastAnnouncementStats.set(stats),
+      });
+    }, 2000);
   }
 
   openChat(userId: string): void {

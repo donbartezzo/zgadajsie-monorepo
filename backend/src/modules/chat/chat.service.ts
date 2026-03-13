@@ -37,6 +37,13 @@ export class ChatService {
     });
   }
 
+  async createSystemMessage(eventId: string, userId: string, content: string) {
+    return this.prisma.chatMessage.create({
+      data: { eventId, userId, content },
+      include: { user: { select: USER_SELECT } },
+    });
+  }
+
   // ─── Private Chat (Organizer ↔ Participant) ────────────────────────────────
 
   async getPrivateMessages(

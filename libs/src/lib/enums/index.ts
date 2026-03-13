@@ -7,5 +7,7 @@ export * from './payment-status.enum';
 export * from './voucher-source.enum';
 export * from './voucher-status.enum';
 export * from './notification-type.enum';
+export * from './notification-priority.enum';
+export * from './notification-trigger.enum';
 export * from './social-provider.enum';
 export * from './activity-rank.enum';

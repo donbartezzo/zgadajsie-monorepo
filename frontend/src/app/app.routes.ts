@@ -138,6 +138,16 @@ export const appRoutes: Route[] = [
     },
   },
 
+  // ── Announcement confirm (from email link, no auth required) ──
+  {
+    path: 'announcements/confirm/:token',
+    loadComponent: () =>
+      import(
+        './features/announcements/pages/confirm-announcement/confirm-announcement.component'
+      ).then((m) => m.ConfirmAnnouncementComponent),
+    data: { title: 'Potwierdzenie komunikatu', showHeader: false, showFooter: false, centerContent: true, contentBgColor: 'bg-white' },
+  },
+
   // ── Utility (internal, skipLocationChange) ──
   {
     path: 'not-found',
@@ -176,7 +186,7 @@ export const appRoutes: Route[] = [
     path: 'auth/activate',
     loadComponent: () =>
       import('./features/auth/pages/activate/activate.component').then((m) => m.ActivateComponent),
-    data: { title: 'Aktywacja', breadcrumb: { parent: '/', label: 'Strona główna' } },
+    data: { title: 'Aktywacja', showHeader: false, showFooter: false, centerContent: true, contentBgColor: 'bg-white' },
   },
   {
     path: 'auth/forgot-password',
@@ -195,7 +205,7 @@ export const appRoutes: Route[] = [
       import('./features/auth/pages/reset-password/reset-password.component').then(
         (m) => m.ResetPasswordComponent,
       ),
-    data: { title: 'Reset hasła', breadcrumb: { parent: '/auth/login', label: 'Logowanie' } },
+    data: { title: 'Reset hasła', showHeader: false, showFooter: false, centerContent: true, contentBgColor: 'bg-white' },
   },
 
   // ── User ──
