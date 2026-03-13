@@ -14,6 +14,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
+import { DateBadgeComponent } from '../../../../shared/ui/date-badge/date-badge.component';
 import { EventService } from '../../../../core/services/event.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
@@ -27,7 +28,7 @@ import {
   EventNotificationBarsComponent,
   NotificationBarConfig,
 } from '../../ui/event-notification-bars/event-notification-bars.component';
-import { CardComponent } from 'frontend/src/app/shared/ui/card/card.component';
+import { CardComponent } from '../../../../shared/ui/card/card.component';
 
 @Component({
   selector: 'app-event',
@@ -42,6 +43,7 @@ import { CardComponent } from 'frontend/src/app/shared/ui/card/card.component';
     LoadingSpinnerComponent,
     CardComponent,
     EventNotificationBarsComponent,
+    DateBadgeComponent,
     LayoutSlotDirective,
   ],
   templateUrl: './event.component.html',

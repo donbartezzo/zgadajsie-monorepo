@@ -22,14 +22,7 @@
 </ng-template>
 
 <ng-template appLayoutSlot="sticky">
-  <div class="overflow-hidden rounded-lg bg-white shadow-xl text-center">
-    <span
-      class="block bg-highlight px-3 py-0.5 text-[10px] font-semibold uppercase leading-tight text-white"
-      >{{ eventMonth() }}</span
-    >
-    <span class="block text-xl font-extrabold text-gray-900">{{ eventDay() }}</span>
-    <span class="block text-xs font-medium text-gray-600">{{ eventStartTime() }}</span>
-  </div>
+  <app-date-badge [month]="eventMonth()" [day]="eventDay()" [time]="eventStartTime()" />
 </ng-template>
 
 @if (isLoading()) {
