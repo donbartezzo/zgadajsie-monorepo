@@ -26,7 +26,7 @@ export const appConfig: ApplicationConfig = {
     ),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideServiceWorker('ngsw-worker.js', {
-      enabled: !isDevMode(),
+      enabled: !isDevMode(), // enabled: true, // - enable PUSH notifications in DEV mode
       registrationStrategy: 'registerWhenStable:30000',
     }),
     provideAppInitializer(() => {

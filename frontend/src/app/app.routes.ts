@@ -9,6 +9,34 @@ import { verifiedUserGuard } from './core/guards/verified-user.guard';
 import { participantGuard } from './core/guards/participant.guard';
 import { organizerGuard } from './core/guards/organizer.guard';
 
+// ── Layout data constants ──
+const BARE_LAYOUT = {
+  showHeader: false,
+  showFooter: false,
+  centerContent: true,
+  contentBgColor: 'bg-white',
+} as const;
+
+const SIMPLE_LAYOUT = {
+  showHeader: false,
+  showFooter: false,
+} as const;
+
+const BREADCRUMB_TO_HOME = {
+  parent: '/',
+  label: 'Strona główna',
+} as const;
+
+const BREADCRUMB_TO_PROFILE = {
+  parent: '/profile',
+  label: 'Profil użytkownika',
+} as const;
+
+const BREADCRUMB_TO_EVENT = {
+  parent: '/w/:citySlug/:id',
+  label: 'Wydarzenie',
+} as const;
+
 export const appRoutes: Route[] = [
   // ── Home ──
   {
@@ -16,7 +44,7 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/home/pages/home/home.component').then((m) => m.HomeComponent),
     canActivate: [paymentRedirectGuard],
-    data: { title: '', showHeader: false, showFooter: false },
+    data: { title: '', ...SIMPLE_LAYOUT },
   },
 
   // ── Public: event list per city ──
@@ -24,7 +52,7 @@ export const appRoutes: Route[] = [
     path: 'w/:citySlug',
     loadComponent: () =>
       import('./features/events/pages/events/events.component').then((m) => m.EventsComponent),
-    data: { title: 'Wydarzenia', breadcrumb: { parent: '/', label: 'Strona główna' } },
+    data: { title: 'Wydarzenia', breadcrumb: BREADCRUMB_TO_HOME },
   },
 
   // ── Public: event detail ──
@@ -46,7 +74,7 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard],
     data: {
       title: 'Uczestnicy',
-      breadcrumb: { parent: '/w/:citySlug/:id', label: 'Wydarzenie' },
+      breadcrumb: BREADCRUMB_TO_EVENT,
     },
   },
 
@@ -61,7 +89,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Wiadomość do organizatora',
       showFooter: false,
-      breadcrumb: { parent: '/w/:citySlug/:id', label: 'Wydarzenie' },
+      breadcrumb: BREADCRUMB_TO_EVENT,
     },
   },
 
@@ -92,7 +120,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Czat',
       showFooter: false,
-      breadcrumb: { parent: '/w/:citySlug/:id', label: 'Wydarzenie' },
+      breadcrumb: BREADCRUMB_TO_EVENT,
     },
   },
 
@@ -120,7 +148,7 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Edycja wydarzenia',
-      breadcrumb: { parent: '/w/:citySlug/:id', label: 'Wydarzenie' },
+      breadcrumb: BREADCRUMB_TO_EVENT,
     },
   },
 
@@ -134,7 +162,7 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Zarządzanie',
-      breadcrumb: { parent: '/w/:citySlug/:id', label: 'Wydarzenie' },
+      breadcrumb: BREADCRUMB_TO_EVENT,
     },
   },
 
@@ -145,7 +173,7 @@ export const appRoutes: Route[] = [
       import(
         './features/announcements/pages/confirm-announcement/confirm-announcement.component'
       ).then((m) => m.ConfirmAnnouncementComponent),
-    data: { title: 'Potwierdzenie komunikatu', showHeader: false, showFooter: false, centerContent: true, contentBgColor: 'bg-white' },
+    data: { title: 'Potwierdzenie komunikatu', ...BARE_LAYOUT },
   },
 
   // ── Utility (internal, skipLocationChange) ──
@@ -155,7 +183,7 @@ export const appRoutes: Route[] = [
       import('./features/error/pages/not-found/not-found-page.component').then(
         (m) => m.NotFoundPageComponent,
       ),
-    data: { title: 'Nie znaleziono', breadcrumb: { parent: '/', label: 'Strona główna' } },
+    data: { title: 'Nie znaleziono', breadcrumb: BREADCRUMB_TO_HOME },
   },
   {
     path: 'unverified',
@@ -163,10 +191,7 @@ export const appRoutes: Route[] = [
       import('./features/auth/pages/unverified-account/unverified-account-page.component').then(
         (m) => m.UnverifiedAccountPageComponent,
       ),
-    data: {
-      title: 'Konto niezweryfikowane',
-      breadcrumb: { parent: '/', label: 'Strona główna' },
-    },
+    data: { title: 'Konto niezweryfikowane', ...BARE_LAYOUT },
   },
 
   // ── Auth ──
@@ -174,19 +199,19 @@ export const appRoutes: Route[] = [
     path: 'auth/login',
     loadComponent: () =>
       import('./features/auth/pages/login/login.component').then((m) => m.LoginComponent),
-    data: { title: 'Logowanie', breadcrumb: { parent: '/', label: 'Strona główna' } },
+    data: { title: 'Logowanie', ...BARE_LAYOUT },
   },
   {
     path: 'auth/register',
     loadComponent: () =>
       import('./features/auth/pages/register/register.component').then((m) => m.RegisterComponent),
-    data: { title: 'Rejestracja', breadcrumb: { parent: '/auth/login', label: 'Logowanie' } },
+    data: { title: 'Rejestracja', ...BARE_LAYOUT },
   },
   {
     path: 'auth/activate',
     loadComponent: () =>
       import('./features/auth/pages/activate/activate.component').then((m) => m.ActivateComponent),
-    data: { title: 'Aktywacja', showHeader: false, showFooter: false, centerContent: true, contentBgColor: 'bg-white' },
+    data: { title: 'Aktywacja', ...BARE_LAYOUT },
   },
   {
     path: 'auth/forgot-password',
@@ -194,10 +219,7 @@ export const appRoutes: Route[] = [
       import('./features/auth/pages/forgot-password/forgot-password.component').then(
         (m) => m.ForgotPasswordComponent,
       ),
-    data: {
-      title: 'Odzyskiwanie hasła',
-      breadcrumb: { parent: '/auth/login', label: 'Logowanie' },
-    },
+    data: { title: 'Odzyskiwanie hasła', ...BARE_LAYOUT },
   },
   {
     path: 'auth/reset-password',
@@ -205,7 +227,7 @@ export const appRoutes: Route[] = [
       import('./features/auth/pages/reset-password/reset-password.component').then(
         (m) => m.ResetPasswordComponent,
       ),
-    data: { title: 'Reset hasła', showHeader: false, showFooter: false, centerContent: true, contentBgColor: 'bg-white' },
+    data: { title: 'Reset hasła', ...BARE_LAYOUT },
   },
 
   // ── User ──
@@ -214,7 +236,7 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/user/pages/profile/profile.component').then((m) => m.ProfileComponent),
     canActivate: [authGuard],
-    data: { title: 'Profil', breadcrumb: { parent: '/', label: 'Strona główna' } },
+    data: { title: 'Profil', breadcrumb: BREADCRUMB_TO_HOME },
   },
   {
     path: 'profile/events',
@@ -225,7 +247,7 @@ export const appRoutes: Route[] = [
     canActivate: [authGuard, activeGuard],
     data: {
       title: 'Moje wydarzenia',
-      breadcrumb: { parent: '/profile', label: 'Profil użytkownika' },
+      breadcrumb: BREADCRUMB_TO_PROFILE,
     },
   },
   {
@@ -237,7 +259,7 @@ export const appRoutes: Route[] = [
     canActivate: [authGuard, activeGuard],
     data: {
       title: 'Moje uczestnictwa',
-      breadcrumb: { parent: '/profile', label: 'Profil użytkownika' },
+      breadcrumb: BREADCRUMB_TO_PROFILE,
     },
   },
   {
@@ -247,7 +269,7 @@ export const appRoutes: Route[] = [
         (m) => m.MediaGalleryComponent,
       ),
     canActivate: [authGuard, activeGuard],
-    data: { title: 'Galeria', breadcrumb: { parent: '/profile', label: 'Profil użytkownika' } },
+    data: { title: 'Galeria', breadcrumb: BREADCRUMB_TO_PROFILE },
   },
 
   // ── Payments ──
@@ -260,7 +282,7 @@ export const appRoutes: Route[] = [
     canActivate: [authGuard, activeGuard],
     data: {
       title: 'Moje płatności',
-      breadcrumb: { parent: '/profile', label: 'Profil użytkownika' },
+      breadcrumb: BREADCRUMB_TO_PROFILE,
     },
   },
   {
@@ -272,7 +294,7 @@ export const appRoutes: Route[] = [
     canActivate: [authGuard, activeGuard],
     data: {
       title: 'Moje vouchery',
-      breadcrumb: { parent: '/profile', label: 'Profil użytkownika' },
+      breadcrumb: BREADCRUMB_TO_PROFILE,
     },
   },
   {
@@ -294,7 +316,7 @@ export const appRoutes: Route[] = [
     canActivate: [adminGuard],
     data: {
       title: 'Panel admina',
-      breadcrumb: { parent: '/profile', label: 'Profil użytkownika' },
+      breadcrumb: BREADCRUMB_TO_PROFILE,
     },
   },
   {
@@ -357,13 +379,13 @@ export const appRoutes: Route[] = [
     path: 'faq',
     loadComponent: () =>
       import('./features/static/pages/faq/faq.component').then((m) => m.FaqComponent),
-    data: { title: 'FAQ', breadcrumb: { parent: '/', label: 'Strona główna' } },
+    data: { title: 'FAQ', breadcrumb: BREADCRUMB_TO_HOME },
   },
   {
     path: 'contact',
     loadComponent: () =>
       import('./features/static/pages/contact/contact.component').then((m) => m.ContactComponent),
-    data: { title: 'Kontakt', breadcrumb: { parent: '/', label: 'Strona główna' } },
+    data: { title: 'Kontakt', breadcrumb: BREADCRUMB_TO_HOME },
   },
   {
     path: 'privacy',
@@ -371,14 +393,14 @@ export const appRoutes: Route[] = [
       import('./features/static/pages/privacy/privacy.component').then((m) => m.PrivacyComponent),
     data: {
       title: 'Polityka prywatności',
-      breadcrumb: { parent: '/', label: 'Strona główna' },
+      breadcrumb: BREADCRUMB_TO_HOME,
     },
   },
   {
     path: 'terms',
     loadComponent: () =>
       import('./features/static/pages/terms/terms.component').then((m) => m.TermsComponent),
-    data: { title: 'Regulamin', breadcrumb: { parent: '/', label: 'Strona główna' } },
+    data: { title: 'Regulamin', breadcrumb: BREADCRUMB_TO_HOME },
   },
 
   // ── Dev-only: Design System ──
@@ -390,7 +412,7 @@ export const appRoutes: Route[] = [
             import('./features/dev/pages/design-system/design-system.component').then(
               (m) => m.DesignSystemComponent,
             ),
-          data: { title: 'Design System', showHeader: false, showFooter: false },
+          data: { title: 'Design System', ...SIMPLE_LAYOUT },
         },
       ]
     : []),

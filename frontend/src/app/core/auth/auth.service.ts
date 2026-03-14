@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User } from '../../shared/types';
+import { NotificationService } from '../services/notification.service';
 
 interface AuthTokens {
   accessToken: string;
@@ -18,6 +19,7 @@ interface LoginResponse extends AuthTokens {
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly notificationService = inject(NotificationService);
   private readonly apiUrl = environment.apiUrl + '/auth';
 
   currentUser = signal<User | null>(null);
@@ -55,6 +57,7 @@ export class AuthService {
     );
     this.setTokens(res);
     this.currentUser.set(res.user);
+    this.notificationService.initPushSubscription();
   }
 
   async logout(): Promise<void> {
@@ -109,6 +112,7 @@ export class AuthService {
   async handleSocialCallback(accessToken: string, refreshToken: string): Promise<void> {
     this.setTokens({ accessToken, refreshToken });
     await this.fetchUser();
+    this.notificationService.initPushSubscription();
   }
 
   getSocialLoginUrl(provider: 'google' | 'facebook'): string {
@@ -119,6 +123,9 @@ export class AuthService {
     const token = this.getAccessToken();
     if (token) {
       await this.fetchUser();
+      if (this.isLoggedIn()) {
+        this.notificationService.initPushSubscription();
+      }
     }
   }
 }

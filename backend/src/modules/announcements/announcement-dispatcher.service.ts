@@ -41,7 +41,7 @@ export class AnnouncementDispatcherService {
   ): Promise<DispatchResult> {
     const event = await this.prisma.event.findUniqueOrThrow({
       where: { id: eventId },
-      select: { id: true, title: true, organizerId: true },
+      select: { id: true, title: true, organizerId: true, city: { select: { slug: true } } },
     });
 
     const participants = await this.prisma.eventParticipation.findMany({
@@ -66,7 +66,17 @@ export class AnnouncementDispatcherService {
 
     const receiptsByUserId = new Map(receipts.map((r) => [r.userId, r]));
 
-    this.dispatchAsync(event.title, announcement.id, message, priority, participants, receiptsByUserId);
+    const eventUrl = `/w/${event.city.slug}/${eventId}`;
+
+    this.dispatchAsync(
+      event.title,
+      announcement.id,
+      message,
+      priority,
+      participants,
+      receiptsByUserId,
+      eventUrl,
+    );
 
     this.dispatchChatMessage(eventId, organizerId, message, priority);
 
@@ -80,6 +90,7 @@ export class AnnouncementDispatcherService {
     priority: string,
     participants: { userId: string; user: { id: string; email: string; displayName: string } }[],
     receiptsByUserId: Map<string, { id: string; confirmToken: string }>,
+    eventUrl: string,
   ): void {
     setImmediate(async () => {
       try {
@@ -97,6 +108,7 @@ export class AnnouncementDispatcherService {
                   priority,
                   p.user,
                   receipt,
+                  eventUrl,
                 ),
               ];
             }),
@@ -119,6 +131,7 @@ export class AnnouncementDispatcherService {
     priority: string,
     user: { id: string; email: string; displayName: string },
     receipt: { id: string; confirmToken: string },
+    eventUrl: string,
   ): Promise<void> {
     const title =
       priority === 'CRITICAL'
@@ -126,7 +139,7 @@ export class AnnouncementDispatcherService {
         : `Komunikat: ${eventTitle}`;
 
     const results = await Promise.allSettled([
-      this.pushService.notifyUser(user.id, 'ANNOUNCEMENT', title, message),
+      this.pushService.notifyUser(user.id, 'ANNOUNCEMENT', title, message, undefined, eventUrl),
       this.emailService.sendAnnouncementEmail(
         user.email,
         user.displayName,

@@ -9,10 +9,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
   selector: 'app-unverified-account-page',
   imports: [RouterLink, ButtonComponent, IconComponent],
   template: `
-    <section
-      class="flex h-[calc(100dvh-4rem)] flex-col items-center justify-center px-5 text-center"
-    >
-      <div class="w-full max-w-sm">
+    <div class="p-6 max-w-md mx-auto text-center">
         <div
           class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-warning-50"
         >
@@ -45,7 +42,6 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
           </a>
         </div>
       </div>
-    </section>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

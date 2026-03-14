@@ -30,7 +30,6 @@ import {
   EventNotificationBarsComponent,
   NotificationBarConfig,
 } from '../../ui/event-notification-bars/event-notification-bars.component';
-import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { EventAnnouncementsComponent } from '../../ui/event-announcements/event-announcements.component';
 
 @Component({
@@ -44,7 +43,6 @@ import { EventAnnouncementsComponent } from '../../ui/event-announcements/event-
     ButtonComponent,
     UserAvatarComponent,
     LoadingSpinnerComponent,
-    CardComponent,
     EventNotificationBarsComponent,
     EventAnnouncementsComponent,
     DateBadgeComponent,

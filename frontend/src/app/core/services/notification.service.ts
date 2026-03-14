@@ -45,6 +45,13 @@ export class NotificationService {
     const vapidKey = environment.vapidPublicKey;
     if (!vapidKey) return;
 
+    // Request notification permission first
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      console.warn('Notification permission denied:', permission);
+      return;
+    }
+
     try {
       const registration = await navigator.serviceWorker.ready;
       let subscription = await registration.pushManager.getSubscription();

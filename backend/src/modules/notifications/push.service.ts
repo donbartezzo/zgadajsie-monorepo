@@ -45,6 +45,7 @@ export class PushService {
     title: string,
     body: string,
     relatedEventId?: string,
+    clickUrl?: string,
   ): Promise<void> {
     // Save in-app notification
     await this.notificationsService.create(userId, type, title, body, relatedEventId);
@@ -54,7 +55,22 @@ export class PushService {
       where: { userId },
     });
 
-    const payload = JSON.stringify({ title, body, type, relatedEventId });
+    const payload = JSON.stringify({
+      notification: {
+        title,
+        body,
+        data: {
+          type,
+          relatedEventId,
+          onActionClick: {
+            default: {
+              operation: 'navigateLastFocusedOrOpen',
+              url: clickUrl || '/',
+            },
+          },
+        },
+      },
+    });
 
     for (const sub of subscriptions) {
       try {
@@ -76,18 +92,28 @@ export class PushService {
     }
   }
 
+  private async getEventUrl(eventId: string): Promise<string> {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { city: { select: { slug: true } } },
+    });
+    return event ? `/w/${event.city.slug}/${eventId}` : '/';
+  }
+
   async notifyNewApplication(
     organizerId: string,
     applicantName: string,
     eventTitle: string,
     eventId: string,
   ): Promise<void> {
+    const url = await this.getEventUrl(eventId);
     await this.notifyUser(
       organizerId,
       'NEW_APPLICATION',
       'Nowe zgłoszenie',
       `${applicantName} zgłosił się do "${eventTitle}"`,
       eventId,
+      url,
     );
   }
 
@@ -98,22 +124,30 @@ export class PushService {
     eventId: string,
   ): Promise<void> {
     const statusText = status === 'ACCEPTED' ? 'zaakceptowane' : 'odrzucone';
+    const url = await this.getEventUrl(eventId);
     await this.notifyUser(
       userId,
       'PARTICIPATION_STATUS',
       `Zgłoszenie ${statusText}`,
       `Twoje zgłoszenie do "${eventTitle}" zostało ${statusText}`,
       eventId,
+      url,
     );
   }
 
-  async notifyEventCancelled(userId: string, eventTitle: string, eventId: string): Promise<void> {
+  async notifyEventCancelled(
+    userId: string,
+    eventTitle: string,
+    eventId: string,
+  ): Promise<void> {
+    const url = await this.getEventUrl(eventId);
     await this.notifyUser(
       userId,
       'EVENT_CANCELLED',
       'Wydarzenie anulowane',
       `Wydarzenie "${eventTitle}" zostało anulowane`,
       eventId,
+      url,
     );
   }
 
@@ -123,12 +157,14 @@ export class PushService {
     eventTitle: string,
     eventId: string,
   ): Promise<void> {
+    const url = await this.getEventUrl(eventId);
     await this.notifyUser(
       userId,
       'NEW_CHAT_MESSAGE',
       `Nowa wiadomość – ${eventTitle}`,
       `${senderName} napisał wiadomość w czacie`,
       eventId,
+      `${url}/chat`,
     );
   }
 
@@ -138,12 +174,14 @@ export class PushService {
     eventId: string,
     hoursLeft: number,
   ): Promise<void> {
+    const url = await this.getEventUrl(eventId);
     await this.notifyUser(
       userId,
       'EVENT_REMINDER',
       'Przypomnienie o wydarzeniu',
       `"${eventTitle}" rozpoczyna się za ${hoursLeft}h`,
       eventId,
+      url,
     );
   }
 
@@ -153,12 +191,14 @@ export class PushService {
     reason: string,
     eventId: string,
   ): Promise<void> {
+    const url = await this.getEventUrl(eventId);
     await this.notifyUser(
       userId,
       'REPRIMAND',
       'Reprymenda',
       `Otrzymałeś reprymendę za "${eventTitle}": ${reason}`,
       eventId,
+      url,
     );
   }
 }

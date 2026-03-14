@@ -1,23 +1,20 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { LoginFormComponent } from '../../../../shared/auth/ui/login-form/login-form.component';
 
 @Component({
   selector: 'app-login',
-  imports: [CardComponent, LoginFormComponent],
+  imports: [LoginFormComponent],
   template: `
-    <div class="py-8">
-      <app-card>
+    <div class="p-6 max-w-md mx-auto">
         <div class="text-center mb-6">
           <h1 class="text-2xl font-bold text-neutral-900">Zaloguj się</h1>
           <p class="mt-1 text-sm text-neutral-500">Witaj ponownie w ZgadajSię</p>
         </div>
 
         <app-login-form (authenticated)="onAuthenticated()"></app-login-form>
-      </app-card>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

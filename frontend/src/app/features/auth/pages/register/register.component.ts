@@ -4,94 +4,93 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
-import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, FormsModule, RouterLink, IconComponent, ButtonComponent, CardComponent],
+  imports: [CommonModule, FormsModule, RouterLink, IconComponent, ButtonComponent],
   template: `
-    <div class="py-8">
-      <app-card>
-        <div class="text-center mb-6">
-          <h1 class="text-2xl font-bold text-neutral-900">Utwórz konto</h1>
-          <p class="mt-1 text-sm text-neutral-500">Dołącz do społeczności ZgadajSię</p>
+    <div class="p-6 max-w-md mx-auto">
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold text-neutral-900">Utwórz konto</h1>
+        <p class="mt-1 text-sm text-neutral-500">Dołącz do społeczności ZgadajSię</p>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" class="space-y-4">
+        <div>
+          <label for="displayName" class="block text-sm font-medium text-neutral-700 mb-1"
+            >Nazwa wyświetlana</label
+          >
+          <input
+            id="displayName"
+            type="text"
+            [(ngModel)]="displayName"
+            name="displayName"
+            required
+            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Jan Kowalski"
+          />
         </div>
 
-        <form (ngSubmit)="onSubmit()" class="space-y-4">
-          <div>
-            <label for="displayName" class="block text-sm font-medium text-neutral-700 mb-1"
-              >Nazwa wyświetlana</label
-            >
-            <input
-              id="displayName"
-              type="text"
-              [(ngModel)]="displayName"
-              name="displayName"
-              required
-              class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="Jan Kowalski"
-            />
-          </div>
+        <div>
+          <label for="email" class="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+          <input
+            id="email"
+            type="email"
+            [(ngModel)]="email"
+            name="email"
+            required
+            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="twoj@email.pl"
+          />
+        </div>
 
-          <div>
-            <label for="email" class="block text-sm font-medium text-neutral-700 mb-1">Email</label>
-            <input
-              id="email"
-              type="email"
-              [(ngModel)]="email"
-              name="email"
-              required
-              class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="twoj@email.pl"
-            />
-          </div>
+        <div>
+          <label for="password" class="block text-sm font-medium text-neutral-700 mb-1"
+            >Hasło</label
+          >
+          <input
+            id="password"
+            type="password"
+            [(ngModel)]="password"
+            name="password"
+            required
+            minlength="8"
+            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Min. 8 znaków"
+          />
+        </div>
 
-          <div>
-            <label for="password" class="block text-sm font-medium text-neutral-700 mb-1"
-              >Hasło</label
-            >
-            <input
-              id="password"
-              type="password"
-              [(ngModel)]="password"
-              name="password"
-              required
-              minlength="8"
-              class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="Min. 8 znaków"
-            />
-          </div>
+        <div>
+          <label for="confirmPassword" class="block text-sm font-medium text-neutral-700 mb-1"
+            >Potwierdź hasło</label
+          >
+          <input
+            id="confirmPassword"
+            type="password"
+            [(ngModel)]="confirmPassword"
+            name="confirmPassword"
+            required
+            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Powtórz hasło"
+          />
+        </div>
 
-          <div>
-            <label for="confirmPassword" class="block text-sm font-medium text-neutral-700 mb-1"
-              >Potwierdź hasło</label
-            >
-            <input
-              id="confirmPassword"
-              type="password"
-              [(ngModel)]="confirmPassword"
-              name="confirmPassword"
-              required
-              class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="Powtórz hasło"
-            />
-          </div>
-
+        <div class="mt-4">
           <app-button type="submit" variant="primary" [fullWidth]="true" [loading]="loading()">
             <app-icon name="user-plus" size="sm"></app-icon>
             Utwórz konto
           </app-button>
-        </form>
-
-        <div class="mt-6 text-center text-sm text-neutral-500">
-          Masz już konto?
-          <a routerLink="/auth/login" class="text-primary-500 font-medium hover:underline"
-            >Zaloguj się</a
-          >
         </div>
-      </app-card>
+      </form>
+
+      <div class="mt-6 text-center text-sm text-neutral-500">
+        Masz już konto?
+        <a routerLink="/auth/login" class="text-primary-500 font-medium hover:underline"
+          >Zaloguj się</a
+        >
+      </div>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
