@@ -253,16 +253,20 @@ export class ChatService {
   // ─── Access checks ─────────────────────────────────────────────────────────
 
   private async hasEventAccess(eventId: string, userId: string): Promise<boolean> {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) return false;
+
     const participation = await this.prisma.eventParticipation.findUnique({
       where: { eventId_userId: { eventId, userId } },
     });
 
-    if (!participation) return false;
+    if (!participation) {
+      return event.organizerId === userId;
+    }
     if (participation.isChatBanned) return false;
     if (!CHAT_ALLOWED_STATUSES.includes(participation.status)) return false;
 
-    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
-    return event?.organizerId === userId || true; // Organizer always has access
+    return true;
   }
 
   private async validatePrivateChatAccess(

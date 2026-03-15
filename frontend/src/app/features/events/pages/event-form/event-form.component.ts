@@ -15,6 +15,8 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
 import { DictionaryItem, City, Event, CoverImage } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
+import { EventStatus } from '@zgadajsie/shared';
+import { isEventJoinable } from '../../../../shared/utils/event-time-status.util';
 
 @Component({
   selector: 'app-event-form',
@@ -411,6 +413,15 @@ export class EventFormComponent implements OnInit {
     if (this.eventId) {
       this.isEdit.set(true);
       this.eventService.getEvent(this.eventId).subscribe((e) => {
+        if (!isEventJoinable(e.startsAt, e.status)) {
+          const reason =
+            e.status === EventStatus.CANCELLED
+              ? 'Nie można edytować odwołanego wydarzenia.'
+              : 'Edycja jest możliwa tylko przed rozpoczęciem wydarzenia.';
+          this.snackbar.info(reason);
+          this.router.navigate(['/w', e.city?.slug, e.id]);
+          return;
+        }
         if (e.city?.slug) {
           this.breadcrumb.setContext({ citySlug: e.city.slug });
         }

@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   BadRequestException,
 } from '@nestjs/common';
+import { hoursFromNow } from '../../common/utils/date.util';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -32,7 +33,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const activationToken = uuidv4();
-    const activationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const activationTokenExpiresAt = hoursFromNow(24);
 
     const user = await this.prisma.user.create({
       data: {
@@ -120,7 +121,7 @@ export class AuthService {
     }
 
     const activationToken = uuidv4();
-    const activationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const activationTokenExpiresAt = hoursFromNow(24);
 
     await this.prisma.user.update({
       where: { id: user.id },

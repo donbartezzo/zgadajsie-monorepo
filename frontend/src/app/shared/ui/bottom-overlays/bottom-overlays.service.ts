@@ -31,6 +31,7 @@ export class BottomOverlaysService {
   private openChatCallback: (() => void) | null = null;
   private payCallback: (() => void) | null = null;
   private contactOrganizerCallback: (() => void) | null = null;
+  private cancelEventCallback: (() => void) | null = null;
 
   readonly active = this.activeSignal.asReadonly();
   readonly event = this.eventSignal.asReadonly();
@@ -99,6 +100,10 @@ export class BottomOverlaysService {
     this.contactOrganizerCallback = callback;
   }
 
+  onCancelEvent(callback: () => void): void {
+    this.cancelEventCallback = callback;
+  }
+
   confirmJoin(): void {
     this.joinCallback?.();
   }
@@ -119,11 +124,16 @@ export class BottomOverlaysService {
     this.contactOrganizerCallback?.();
   }
 
+  handleCancelEvent(): void {
+    this.cancelEventCallback?.();
+  }
+
   clearCallbacks(): void {
     this.joinCallback = null;
     this.authSuccessCallback = null;
     this.openChatCallback = null;
     this.payCallback = null;
     this.contactOrganizerCallback = null;
+    this.cancelEventCallback = null;
   }
 }

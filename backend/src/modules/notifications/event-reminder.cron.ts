@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
+import { hoursFromNow } from '../../common/utils/date.util';
 import { EmailService } from './email.service';
 import { PushService } from './push.service';
 
@@ -21,13 +22,13 @@ export class EventReminderCron {
     const now = new Date();
 
     // 24h reminder
-    const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    const in24hLower = new Date(now.getTime() + 23.5 * 60 * 60 * 1000);
+    const in24h = hoursFromNow(24, now);
+    const in24hLower = hoursFromNow(23.5, now);
     await this.sendReminders(in24hLower, in24h, 24);
 
     // 2h reminder
-    const in2h = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-    const in2hLower = new Date(now.getTime() + 1.5 * 60 * 60 * 1000);
+    const in2h = hoursFromNow(2, now);
+    const in2hLower = hoursFromNow(1.5, now);
     await this.sendReminders(in2hLower, in2h, 2);
   }
 

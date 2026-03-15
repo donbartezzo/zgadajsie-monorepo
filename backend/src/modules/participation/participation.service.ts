@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
 import { PaymentsService } from '../payments/payments.service';
+import { isEventJoinable } from '../events/event-time-status.util';
 
 @Injectable()
 export class ParticipationService {
@@ -27,6 +28,11 @@ export class ParticipationService {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
     if (event.status !== 'ACTIVE') throw new BadRequestException('Wydarzenie nie jest aktywne');
+    if (!isEventJoinable(event)) {
+      throw new BadRequestException(
+        'Wydarzenie już się rozpoczęło — dołączenie nie jest możliwe',
+      );
+    }
 
     const isPaid = event.costPerPerson.toNumber() > 0;
 
@@ -157,6 +163,12 @@ export class ParticipationService {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
 
+    if (!isEventJoinable(event)) {
+      throw new BadRequestException(
+        'Wydarzenie już się rozpoczęło — dołączenie nie jest możliwe',
+      );
+    }
+
     const guestCount = await this.prisma.eventParticipation.count({
       where: { eventId, addedByUserId, isGuest: true },
     });
@@ -281,6 +293,9 @@ export class ParticipationService {
     }
 
     const event = participation.event;
+    if (event.status === 'CANCELLED') {
+      throw new BadRequestException('Wydarzenie zostało odwołane — płatność nie jest możliwa');
+    }
     if (event.costPerPerson.toNumber() <= 0) {
       throw new BadRequestException('To wydarzenie jest bezpłatne');
     }

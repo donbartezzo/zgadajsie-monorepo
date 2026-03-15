@@ -1,4 +1,10 @@
-import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
@@ -8,6 +14,8 @@ import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptio
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
+import { getEventTimeStatus } from './event-time-status.util';
+import { daysFromNow } from '../../common/utils/date.util';
 
 @Injectable()
 export class EventsService {
@@ -68,7 +76,14 @@ export class EventsService {
 
   async findAll(query: EventQueryDto) {
     const { page = 1, limit = 20, citySlug, disciplineSlug, sortBy } = query;
-    const where: Record<string, unknown> = { status: 'ACTIVE', visibility: 'PUBLIC' };
+    const now = new Date();
+    const dateFrom = daysFromNow(-7, now);
+    const dateTo = daysFromNow(7, now);
+    const where: Record<string, unknown> = {
+      status: { in: ['ACTIVE', 'CANCELLED'] },
+      visibility: 'PUBLIC',
+      startsAt: { gte: dateFrom, lte: dateTo },
+    };
 
     if (citySlug) {
       where.city = { slug: citySlug };
@@ -121,12 +136,15 @@ export class EventsService {
     });
     if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
 
-    if (!userId) return event;
+    const eventTimeStatus = getEventTimeStatus(event);
+
+    if (!userId) return { ...event, eventTimeStatus };
 
     const participation = event.participations.find((p) => p.userId === userId);
 
     return {
       ...event,
+      eventTimeStatus,
       currentUserAccess: {
         isParticipant: !!participation,
         isOrganizer: event.organizerId === userId,
@@ -140,6 +158,12 @@ export class EventsService {
     if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
     if (event.organizerId !== userId) {
       throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+    }
+
+    if (event.status !== 'ACTIVE' || new Date() >= event.startsAt) {
+      throw new BadRequestException(
+        'Wydarzenie nie może być edytowane — skontaktuj się z administracją serwisu.',
+      );
     }
 
     const data: Record<string, unknown> = { ...dto };
@@ -160,42 +184,137 @@ export class EventsService {
       throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
     }
 
-    const updated = await this.prisma.event.update({
-      where: { id },
-      data: { status: 'CANCELLED' },
-    });
+    if (event.status === 'CANCELLED') {
+      throw new BadRequestException('Wydarzenie zostało już odwołane');
+    }
 
-    // Auto voucher refund for paid participants
-    const refundedCount = await this.vouchersService.bulkCreateForCancelledEvent(id);
+    // Single transaction: cancel event + refund vouchers + cleanup pending intents
+    const { updated, refundedCount, cleanedUpIntents } = await this.prisma.$transaction(
+      async (tx) => {
+        const updatedEvent = await tx.event.update({
+          where: { id },
+          data: { status: 'CANCELLED' },
+        });
 
-    // Notify all active participants about cancellation
+        // Refund paid participants via vouchers
+        const paidParticipations = await tx.eventParticipation.findMany({
+          where: {
+            eventId: id,
+            status: { in: ['APPLIED', 'ACCEPTED', 'PARTICIPANT'] },
+            payments: { some: { status: 'COMPLETED' } },
+          },
+          include: {
+            payments: {
+              where: { status: 'COMPLETED' },
+              orderBy: { createdAt: 'desc' },
+            },
+          },
+        });
+
+        let refunded = 0;
+        for (const participation of paidParticipations) {
+          const payment = participation.payments[0];
+          if (!payment) continue;
+
+          await tx.payment.update({
+            where: { id: payment.id },
+            data: { status: 'VOUCHER_REFUNDED', refundedAt: new Date() },
+          });
+          await tx.eventParticipation.update({
+            where: { id: participation.id },
+            data: { status: 'WITHDRAWN' },
+          });
+          await tx.organizerVoucher.create({
+            data: {
+              recipientUserId: participation.userId,
+              organizerUserId: event.organizerId,
+              eventId: id,
+              amount: payment.amount,
+              remainingAmount: payment.amount,
+              source: 'EVENT_CANCELLATION',
+              status: 'ACTIVE',
+            },
+          });
+          refunded++;
+        }
+
+        // Cleanup pending payment intents (restore reserved vouchers)
+        const pendingParticipations = await tx.eventParticipation.findMany({
+          where: { eventId: id, status: 'PENDING_PAYMENT' },
+        });
+
+        let cleanedIntents = 0;
+        for (const participation of pendingParticipations) {
+          const intents = await tx.paymentIntent.findMany({
+            where: { participationId: participation.id },
+          });
+          for (const intent of intents) {
+            const reserved = intent.voucherReserved.toNumber();
+            if (reserved > 0) {
+              await tx.organizerVoucher.create({
+                data: {
+                  recipientUserId: intent.userId,
+                  organizerUserId: event.organizerId,
+                  amount: intent.voucherReserved,
+                  remainingAmount: intent.voucherReserved,
+                  source: 'MANUAL_REFUND',
+                  status: 'ACTIVE',
+                },
+              });
+            }
+            await tx.paymentIntent.delete({ where: { id: intent.id } });
+            cleanedIntents++;
+          }
+          await tx.eventParticipation.update({
+            where: { id: participation.id },
+            data: { status: 'WITHDRAWN' },
+          });
+        }
+
+        return { updated: updatedEvent, refundedCount: refunded, cleanedUpIntents: cleanedIntents };
+      },
+    );
+
+    // Notifications (fire-and-forget, outside transaction)
+    const notificationErrors: string[] = [];
     const participants = await this.prisma.eventParticipation.findMany({
-      where: { eventId: id, status: { in: ['APPLIED', 'ACCEPTED', 'PARTICIPANT', 'WITHDRAWN'] } },
+      where: {
+        eventId: id,
+        status: { in: ['APPLIED', 'ACCEPTED', 'PARTICIPANT', 'WITHDRAWN'] },
+      },
       include: { user: { select: { id: true, email: true, displayName: true } } },
     });
+
     for (const p of participants) {
-      await this.pushService.notifyEventCancelled(p.user.id, event.title, id);
-      await this.emailService.sendEventCancelledEmail(
-        p.user.email,
-        p.user.displayName,
-        event.title,
+      try {
+        await this.pushService.notifyEventCancelled(p.user.id, event.title, id);
+      } catch (err) {
+        notificationErrors.push(`push:${p.user.id}:${(err as Error).message}`);
+      }
+      try {
+        await this.emailService.sendEventCancelledEmail(
+          p.user.email,
+          p.user.displayName,
+          event.title,
+        );
+      } catch (err) {
+        notificationErrors.push(`email:${p.user.email}:${(err as Error).message}`);
+      }
+    }
+
+    if (notificationErrors.length > 0) {
+      this.logger.error(
+        `Event ${id} cancelled — ${notificationErrors.length} notification errors: ${notificationErrors.join(', ')}`,
       );
     }
 
-    return { ...updated, refundedParticipants: refundedCount };
-  }
-
-  async archive(id: string, userId: string) {
-    const event = await this.prisma.event.findUnique({ where: { id } });
-    if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
-    if (event.organizerId !== userId) {
-      throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
-    }
-
-    return this.prisma.event.update({
-      where: { id },
-      data: { status: 'ARCHIVED' },
-    });
+    return {
+      ...updated,
+      refundedParticipants: refundedCount,
+      cleanedUpIntents,
+      notifiedParticipants: participants.length,
+      notificationErrors: notificationErrors.length,
+    };
   }
 
   async duplicate(id: string, userId: string) {
@@ -217,9 +336,24 @@ export class EventsService {
     });
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId: string, isAdmin: boolean) {
     const event = await this.prisma.event.findUnique({ where: { id } });
     if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
+
+    if (!isAdmin) {
+      if (event.organizerId !== userId) {
+        throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+      }
+      const participantCount = await this.prisma.eventParticipation.count({
+        where: { eventId: id },
+      });
+      if (participantCount > 0) {
+        throw new BadRequestException(
+          'Nie można usunąć — są zgłoszeni uczestnicy. Możesz oznaczyć wydarzenie jako odwołane.',
+        );
+      }
+    }
+
     return this.prisma.event.delete({ where: { id } });
   }
 
@@ -228,6 +362,11 @@ export class EventsService {
     if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
     if (event.organizerId !== userId) {
       throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+    }
+    if (event.status !== 'ACTIVE' || new Date() >= event.startsAt) {
+      throw new BadRequestException(
+        'Nie można zmienić autoakceptacji dla wydarzenia, które się rozpoczęło lub zostało odwołane.',
+      );
     }
 
     return this.prisma.event.update({

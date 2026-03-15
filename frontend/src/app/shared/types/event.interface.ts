@@ -1,3 +1,4 @@
+import { EventStatus } from '@zgadajsie/shared';
 import { DictionaryItem } from './dictionary.interface';
 import { UserBrief } from './common.interface';
 import { CoverImage } from './cover-image.interface';
@@ -28,7 +29,7 @@ export interface Event {
   gender: string;
   visibility: string;
   autoAccept: boolean;
-  status: string;
+  status: EventStatus;
   address: string;
   lat: number;
   lng: number;
@@ -47,4 +48,5 @@ export interface Event {
   coverImage?: CoverImage;
   _count?: { participations: number };
   currentUserAccess?: CurrentUserAccess;
+  eventTimeStatus?: 'UPCOMING' | 'ONGOING' | 'ENDED';
 }

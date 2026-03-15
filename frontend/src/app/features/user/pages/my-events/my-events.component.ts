@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
@@ -10,6 +10,9 @@ import { UserService } from '../../../../core/services/user.service';
 import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { Event as EventModel } from '../../../../shared/types';
+import { EventStatus } from '@zgadajsie/shared';
+import { isEventJoinable } from '../../../../shared/utils/event-time-status.util';
+import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 
 @Component({
   selector: 'app-my-events',
@@ -55,11 +58,13 @@ import { Event as EventModel } from '../../../../shared/types';
             <span
               [class]="
                 'text-xs px-2 py-0.5 rounded-full ' +
-                (e.status === 'ACTIVE'
-                  ? 'bg-success-50 text-success-600'
-                  : 'bg-neutral-100 text-neutral-600')
+                (e.status === 'CANCELLED'
+                  ? 'bg-danger-50 text-danger-600'
+                  : isUpcoming(e)
+                    ? 'bg-success-50 text-success-600'
+                    : 'bg-neutral-100 text-neutral-600')
               "
-              >{{ e.status }}</span
+              >{{ getStatusLabel(e) }}</span
             >
           </div>
           <p class="text-xs text-neutral-500 mb-3">
@@ -71,13 +76,26 @@ import { Event as EventModel } from '../../../../shared/types';
                 ><app-icon name="settings" size="sm"></app-icon
               ></app-button>
             </a>
-            <a [routerLink]="['/o', 'w', e.id, 'edit']">
-              <app-button variant="outline" size="sm"
-                ><app-icon name="edit" size="sm"></app-icon
-              ></app-button>
-            </a>
-            <app-button variant="outline" size="sm" (clicked)="onCancel(e.id)"
+            <app-button
+              variant="outline"
+              size="sm"
+              [disabled]="!isUpcoming(e)"
+              (clicked)="handleEdit(e)"
+              ><app-icon name="edit" size="sm"></app-icon
+            ></app-button>
+            <app-button
+              variant="outline"
+              size="sm"
+              [disabled]="e.status === 'CANCELLED'"
+              (clicked)="handleCancel(e)"
               ><app-icon name="x" size="sm"></app-icon
+            ></app-button>
+            <app-button
+              variant="danger"
+              size="sm"
+              [disabled]="!isUpcoming(e)"
+              (clicked)="handleDelete(e)"
+              ><app-icon name="trash" size="sm"></app-icon
             ></app-button>
             <app-button variant="outline" size="sm" (clicked)="onDuplicate(e.id)"
               ><app-icon name="copy" size="sm"></app-icon
@@ -92,9 +110,11 @@ import { Event as EventModel } from '../../../../shared/types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MyEventsComponent implements OnInit {
+  private readonly router = inject(Router);
   private readonly userService = inject(UserService);
   private readonly eventService = inject(EventService);
   private readonly snackbar = inject(SnackbarService);
+  private readonly confirmModal = inject(ConfirmModalService);
 
   readonly events = signal<EventModel[]>([]);
   readonly loading = signal(true);
@@ -109,15 +129,60 @@ export class MyEventsComponent implements OnInit {
     });
   }
 
-  onCancel(id: string): void {
-    this.eventService.cancelEvent(id).subscribe({
+  handleEdit(e: EventModel): void {
+    if (!this.isUpcoming(e)) {
+      const reason =
+        e.status === EventStatus.CANCELLED
+          ? 'Nie można edytować odwołanego wydarzenia.'
+          : 'Edycja jest możliwa tylko przed rozpoczęciem wydarzenia.';
+      this.snackbar.info(reason);
+      return;
+    }
+    this.router.navigate(['/o', 'w', e.id, 'edit']);
+  }
+
+  handleCancel(e: EventModel): void {
+    if (e.status === EventStatus.CANCELLED) {
+      this.snackbar.info('To wydarzenie zostało już odwołane.');
+      return;
+    }
+    this.eventService.cancelEvent(e.id).subscribe({
       next: () => {
         this.events.update((prev) =>
-          prev.map((e) => (e.id === id ? { ...e, status: 'CANCELLED' } : e)),
+          prev.map((ev) => (ev.id === e.id ? { ...ev, status: EventStatus.CANCELLED } : ev)),
         );
         this.snackbar.info('Wydarzenie anulowane');
       },
       error: () => this.snackbar.error('Nie udało się anulować'),
+    });
+  }
+
+  async handleDelete(e: EventModel): Promise<void> {
+    if (!this.isUpcoming(e)) {
+      const reason =
+        e.status === 'CANCELLED'
+          ? 'Nie można usunąć odwołanego wydarzenia.'
+          : 'Usunięcie jest możliwe tylko przed rozpoczęciem wydarzenia.';
+      this.snackbar.info(reason);
+      return;
+    }
+
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Usuń wydarzenie',
+      message: 'Czy na pewno chcesz usunąć to wydarzenie? Ta operacja jest nieodwracalna.',
+      confirmLabel: 'Usuń',
+      cancelLabel: 'Anuluj',
+      variant: 'danger',
+    });
+    if (!confirmed) return;
+
+    this.eventService.deleteEvent(e.id).subscribe({
+      next: () => {
+        this.events.update((prev) => prev.filter((ev) => ev.id !== e.id));
+        this.snackbar.success('Wydarzenie usunięte');
+      },
+      error: (err: { error?: { message?: string } }) =>
+        this.snackbar.error(err?.error?.message || 'Nie udało się usunąć'),
     });
   }
 
@@ -129,5 +194,19 @@ export class MyEventsComponent implements OnInit {
       },
       error: () => this.snackbar.error('Nie udało się zduplikować'),
     });
+  }
+
+  isUpcoming(e: EventModel): boolean {
+    return isEventJoinable(e.startsAt, e.status);
+  }
+
+  getStatusLabel(e: EventModel): string {
+    if (e.status === EventStatus.CANCELLED) return 'ODWOŁANE';
+    const now = new Date();
+    const start = new Date(e.startsAt);
+    const end = new Date(e.endsAt);
+    if (now >= start && now < end) return 'W TRAKCIE';
+    if (now >= end) return 'ZAKOŃCZONE';
+    return 'AKTYWNE';
   }
 }

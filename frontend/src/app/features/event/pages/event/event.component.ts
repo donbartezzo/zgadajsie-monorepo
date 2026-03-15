@@ -26,6 +26,12 @@ import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layo
 import { Event as EventModel, Participation, EventAnnouncement } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 import { getEventCountdown, EventCountdown } from '../../../../shared/utils/date.utils';
+import { EventStatus } from '@zgadajsie/shared';
+import {
+  isEventJoinable,
+  EventTimeStatus,
+} from '../../../../shared/utils/event-time-status.util';
+import { EventLifecycleBannerComponent } from '../../../../shared/ui/event-lifecycle-banner/event-lifecycle-banner.component';
 import {
   EventNotificationBarsComponent,
   NotificationBarConfig,
@@ -48,6 +54,7 @@ import { NotificationStatusService } from '../../../../core/services/notificatio
     EventAnnouncementsComponent,
     DateBadgeComponent,
     LayoutSlotDirective,
+    EventLifecycleBannerComponent,
   ],
   templateUrl: './event.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -192,6 +199,7 @@ export class EventComponent implements OnInit, OnDestroy {
     this.overlays.onOpenChat(() => this.openChat());
     this.overlays.onPay(() => this.payEvent());
     this.overlays.onContactOrganizer(() => this.contactOrganizer());
+    this.overlays.onCancelEvent(() => this.cancelEvent());
   }
 
   ngOnInit(): void {
@@ -259,19 +267,47 @@ export class EventComponent implements OnInit, OnDestroy {
     return p?.status ?? null;
   });
 
+  readonly eventTimeStatus = computed<EventTimeStatus | null>(() => {
+    const e = this.event();
+    return e?.eventTimeStatus ?? null;
+  });
+
+  readonly canJoin = computed(() => {
+    const e = this.event();
+    if (!e) return false;
+    return isEventJoinable(e.startsAt, e.status);
+  });
+
+  readonly isCancelled = computed(() => this.event()?.status === EventStatus.CANCELLED);
+
+  readonly lifecycleBannerVariant = computed(() => {
+    if (this.isCancelled()) return 'cancelled' as const;
+    const ts = this.eventTimeStatus();
+    if (ts === 'ONGOING') return 'ongoing' as const;
+    if (ts === 'ENDED') return 'ended' as const;
+    return null;
+  });
+
   readonly notificationBars = computed<NotificationBarConfig[]>(() => {
     const bars: NotificationBarConfig[] = [];
 
     if (this.isParticipant()) {
       const isPending = this.participantStatus() === 'PENDING_PAYMENT';
+      const isEnded = this.eventTimeStatus() === 'ENDED' || this.isCancelled();
       bars.push({
         id: 'participant',
         icon: 'check',
         iconColorClass: 'text-success-600',
-        title: isPending ? 'Oczekuje na płatność!' : 'Jesteś już zapisany!',
+        title: isPending
+          ? 'Oczekuje na płatność!'
+          : isEnded
+            ? 'Byłeś(aś) uczestnikiem'
+            : 'Jesteś już zapisany!',
         subtitle: isPending
           ? 'Rozpocząłeś proces płatności za to wydarzenie.'
-          : 'Dołączyłeś do tego wydarzenia.',
+          : isEnded
+            ? 'To wydarzenie już się zakończyło.'
+            : 'Dołączyłeś do tego wydarzenia.',
         buttonLabel: 'Szczegóły',
         bgClass: 'bg-success-50',
         borderClass: 'border border-success-200',
@@ -427,6 +463,27 @@ export class EventComponent implements OnInit, OnDestroy {
         }
       },
       error: () => this.snackbar.error('Nie udało się potwierdzić odbioru komunikatów'),
+    });
+  }
+
+  async cancelEvent(): Promise<void> {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Odwołaj wydarzenie',
+      message:
+        'Czy na pewno chcesz odwołać to wydarzenie? Uczestnicy z opłaconymi zgłoszeniami otrzymają zwrot w formie vouchera.',
+      confirmLabel: 'Odwołaj',
+      cancelLabel: 'Anuluj',
+      variant: 'danger',
+    });
+    if (!confirmed) return;
+
+    this.eventService.cancelEvent(this.eventId).subscribe({
+      next: () => {
+        this.event.update((e) => (e ? { ...e, status: EventStatus.CANCELLED } : e));
+        this.snackbar.success('Wydarzenie zostało odwołane');
+      },
+      error: (err: { error?: { message?: string } }) =>
+        this.snackbar.error(err?.error?.message || 'Nie udało się odwołać wydarzenia'),
     });
   }
 

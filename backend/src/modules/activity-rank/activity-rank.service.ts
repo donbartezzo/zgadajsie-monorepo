@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { daysFromNow } from '../../common/utils/date.util';
 
 @Injectable()
 export class ActivityRankService {
   constructor(private prisma: PrismaService) {}
 
   async getUserRank(userId: string) {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = daysFromNow(-30);
 
     const participationCount = await this.prisma.eventParticipation.count({
       where: {

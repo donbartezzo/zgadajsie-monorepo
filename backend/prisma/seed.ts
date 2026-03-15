@@ -8,15 +8,21 @@ async function main() {
 
   // ─── Czyszczenie (kolejność ważna – relacje) ────────────────────────────
   console.log('Czyszczę istniejące dane...');
+  await prisma.announcementReceipt.deleteMany({});
+  await prisma.eventAnnouncement.deleteMany({});
+  await prisma.privateChatMessage.deleteMany({});
+  await prisma.chatMessage.deleteMany({});
   await prisma.paymentIntent.deleteMany({});
   await prisma.payment.deleteMany({});
-  await prisma.chatMessage.deleteMany({});
+  await prisma.organizerVoucher.deleteMany({});
   await prisma.eventParticipation.deleteMany({});
   await prisma.reprimand.deleteMany({});
   await prisma.organizerBan.deleteMany({});
   await prisma.notification.deleteMany({});
   await prisma.pushSubscription.deleteMany({});
+  await prisma.citySubscription.deleteMany({});
   await prisma.mediaFile.deleteMany({});
+  await prisma.coverImage.deleteMany({});
   await prisma.event.deleteMany({});
   await prisma.socialAccount.deleteMany({});
   await prisma.userEventLimit.deleteMany({});
@@ -113,25 +119,26 @@ async function main() {
       isEmailVerified: true,
     },
   });
+
   // ─── Przykładowe wydarzenia ─────────────────────────────────────────────
   console.log('Tworzę przykładowe wydarzenia...');
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(18, 0, 0, 0);
-  const tomorrowEnd = new Date(tomorrow);
-  tomorrowEnd.setHours(19, 30, 0, 0);
+  const now = new Date();
 
+  // Helper: tworzy datę względem teraz
+  const hoursFromNow = (h: number): Date => new Date(now.getTime() + h * 60 * 60 * 1000);
+
+  // 1) ZAKOŃCZONE — wczoraj 16:00–17:30
   await prisma.event.create({
     data: {
-      title: 'Wieczorny mecz na orliku',
+      title: 'Wieczorny mecz na orliku (zakończony)',
       description: 'Zapraszamy na rekreacyjny mecz piłki nożnej w Zielonej Górze!',
-      disciplineId: disciplines[0].id, // Piłka nożna
-      facilityId: facilities[0].id, // Orlik
-      levelId: levels[0].id, // Rekreacyjny
+      disciplineId: disciplines[0].id,
+      facilityId: facilities[0].id,
+      levelId: levels[0].id,
       cityId: city.id,
       organizerId: testUser.id,
-      startsAt: tomorrow,
-      endsAt: tomorrowEnd,
+      startsAt: hoursFromNow(-26),
+      endsAt: hoursFromNow(-24.5),
       costPerPerson: 10,
       maxParticipants: 14,
       gender: 'ANY',
@@ -143,23 +150,111 @@ async function main() {
     },
   });
 
-  const dayAfter = new Date();
-  dayAfter.setDate(dayAfter.getDate() + 2);
-  dayAfter.setHours(20, 0, 0, 0);
-  const dayAfterEnd = new Date(dayAfter);
-  dayAfterEnd.setHours(21, 30, 0, 0);
-
+  // 2) ODWOŁANE — wczoraj, status CANCELLED
   await prisma.event.create({
     data: {
-      title: 'Siatkówka w hali sportowej',
-      description: 'Szukamy chętnych na amatorski mecz siatkówki. Dobra atmosfera gwarantowana!',
-      disciplineId: disciplines[1].id, // Siatkówka
-      facilityId: facilities[1].id, // Hala sportowa
-      levelId: levels[1].id, // Amatorski
+      title: 'Koszykówka (odwołana)',
+      description: 'Ten mecz został odwołany z powodu złej pogody.',
+      disciplineId: disciplines[2].id,
+      facilityId: facilities[1].id,
+      levelId: levels[1].id,
+      cityId: city.id,
+      organizerId: testUser.id,
+      startsAt: hoursFromNow(-20),
+      endsAt: hoursFromNow(-18.5),
+      costPerPerson: 0,
+      maxParticipants: 10,
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      status: 'CANCELLED',
+      address: 'ul. Wyspiańskiego 10, Zielona Góra',
+      lat: 51.9412,
+      lng: 15.5089,
+    },
+  });
+
+  // 3) TRWAJĄCE — start 1h temu, koniec za 1h
+  await prisma.event.create({
+    data: {
+      title: 'Siatkówka w hali (trwa!)',
+      description: 'Mecz w trakcie — dołącz jako kibic!',
+      disciplineId: disciplines[1].id,
+      facilityId: facilities[1].id,
+      levelId: levels[1].id,
       cityId: city.id,
       organizerId: admin.id,
-      startsAt: dayAfter,
-      endsAt: dayAfterEnd,
+      startsAt: hoursFromNow(-1),
+      endsAt: hoursFromNow(1),
+      costPerPerson: 15,
+      maxParticipants: 12,
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      autoAccept: true,
+      status: 'ACTIVE',
+      address: 'ul. Wyspiańskiego 10, Zielona Góra',
+      lat: 51.9412,
+      lng: 15.5089,
+    },
+  });
+
+  // 4) NADCHODZĄCE — start za 5h (< 8h, countdown urgent)
+  await prisma.event.create({
+    data: {
+      title: 'Tenis na korcie (już niedługo!)',
+      description: 'Mecz tenisowy startuje za kilka godzin — zapisz się!',
+      disciplineId: disciplines[3].id,
+      facilityId: facilities[5].id,
+      levelId: levels[2].id,
+      cityId: city.id,
+      organizerId: testUser.id,
+      startsAt: hoursFromNow(5),
+      endsAt: hoursFromNow(6.5),
+      costPerPerson: 20,
+      maxParticipants: 4,
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      address: 'ul. Botaniczna 5, Zielona Góra',
+      lat: 51.9380,
+      lng: 15.5120,
+    },
+  });
+
+  // 5) NADCHODZĄCE — jutro
+  await prisma.event.create({
+    data: {
+      title: 'Piłka nożna jutro wieczorem',
+      description: 'Zapraszamy na jutrzejszy mecz piłki nożnej!',
+      disciplineId: disciplines[0].id,
+      facilityId: facilities[0].id,
+      levelId: levels[0].id,
+      cityId: city.id,
+      organizerId: testUser.id,
+      startsAt: hoursFromNow(24),
+      endsAt: hoursFromNow(25.5),
+      costPerPerson: 10,
+      maxParticipants: 14,
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      address: 'ul. Sulechowska 30, Zielona Góra',
+      lat: 51.9356,
+      lng: 15.5062,
+    },
+  });
+
+  // 6) NADCHODZĄCE — pojutrze
+  await prisma.event.create({
+    data: {
+      title: 'Siatkówka pojutrze',
+      description: 'Szukamy chętnych na amatorski mecz siatkówki!',
+      disciplineId: disciplines[1].id,
+      facilityId: facilities[1].id,
+      levelId: levels[1].id,
+      cityId: city.id,
+      organizerId: admin.id,
+      startsAt: hoursFromNow(48),
+      endsAt: hoursFromNow(49.5),
       costPerPerson: 15,
       maxParticipants: 12,
       gender: 'ANY',

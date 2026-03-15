@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { daysFromNow } from '../../common/utils/date.util';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
 import { CreateReprimandDto } from './dto/create-reprimand.dto';
@@ -20,9 +21,7 @@ export class ModerationService {
         toUserId: dto.toUserId,
         eventId: dto.eventId,
         reason: dto.reason,
-        expiresAt: dto.expiresAt
-          ? new Date(dto.expiresAt)
-          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : daysFromNow(30),
       },
     });
 

@@ -51,10 +51,6 @@ export class EventService {
     return this.http.post<Event>(`${this.apiUrl}/${id}/cancel`, {});
   }
 
-  archiveEvent(id: string): Observable<Event> {
-    return this.http.post<Event>(`${this.apiUrl}/${id}/archive`, {});
-  }
-
   duplicateEvent(id: string): Observable<Event> {
     return this.http.post<Event>(`${this.apiUrl}/${id}/duplicate`, {});
   }
@@ -105,5 +101,9 @@ export class EventService {
       `${environment.apiUrl}/participations/${participationId}/reject`,
       {},
     );
+  }
+
+  deleteEvent(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

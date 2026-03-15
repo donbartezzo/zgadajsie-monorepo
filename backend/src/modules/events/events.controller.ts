@@ -16,8 +16,6 @@ import { EventQueryDto } from './dto/event-query.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { IsActiveGuard } from '../auth/guards/is-active.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
@@ -55,22 +53,15 @@ export class EventsController {
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
-  @Post(':id/archive')
-  archive(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.eventsService.archive(id, user.id);
-  }
-
-  @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Post(':id/duplicate')
   duplicate(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.eventsService.duplicate(id, user.id);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.eventsService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.eventsService.remove(id, user.id, user.role === 'ADMIN');
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)

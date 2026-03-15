@@ -29,24 +29,31 @@
 <app-loading-spinner></app-loading-spinner>
 } @else if (event(); as e) {
 <div class="px-4 pt-3 pb-5">
-  <!-- Date label -->
-  <span class="block text-[10px] font-light uppercase tracking-wide text-primary-500">
-    {{ e.startsAt | date : 'd MMMM yyyy - HH:mm' }}
-  </span>
+  <!-- Date and location row -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
+    <!-- Date label -->
+    <span class="text-[10px] font-light uppercase tracking-wide text-primary-500">
+      {{ e.startsAt | date : 'd MMMM yyyy - HH:mm' }}
+    </span>
 
-  <!-- Title -->
-  <strong class="-mt-0.5 block text-lg font-extrabold text-neutral-900">{{ e.title }}</strong>
+    <!-- Location (clickable → opens map sheet) -->
+    @if (fullAddress()) {
+    <button
+      type="button"
+      class="flex items-center gap-1.5 pb-2 text-[11px] text-neutral-400 hover:text-primary-500 transition-colors sm:pb-0"
+      (click)="overlays.open('map')"
+    >
+      <app-icon name="map-pin" size="sm" variant="muted"></app-icon>
+      <span>{{ fullAddress() }}</span>
+    </button>
+    }
+  </div>
 
-  <!-- Location (clickable → opens map sheet) -->
-  @if (fullAddress()) {
-  <button
-    type="button"
-    class="mt-1 flex items-center gap-1.5 pb-2 text-[11px] text-neutral-400 hover:text-primary-500 transition-colors"
-    (click)="overlays.open('map')"
-  >
-    <app-icon name="map-pin" size="sm" variant="muted"></app-icon>
-    <span>{{ fullAddress() }}</span>
-  </button>
+  <!-- Event lifecycle banner -->
+  @if (lifecycleBannerVariant(); as variant) {
+  <div class="mt-2">
+    <app-event-lifecycle-banner [variant]="variant" />
+  </div>
   }
 
   <!-- Description -->
@@ -211,9 +218,6 @@
     }
   </div>
 
-  <!-- Divider -->
-  <div class="mt-2 border-t border-neutral-100"></div>
-
   <!-- Amenities / Features — 3-column icon grid -->
   @if (amenities.length > 0) {
   <h3 class="mt-4 text-base font-bold text-neutral-900">Udogodnienia</h3>
@@ -225,11 +229,12 @@
     </div>
     }
   </div>
-  <div class="border-t border-neutral-100"></div>
   }
 
   <!-- Countdown — ticking every second until event starts -->
   @if (countdown(); as cd) {
+  <div class="border-t border-neutral-100"></div>
+
   <div class="mb-4 mt-4">
     <h3 class="text-base font-bold text-neutral-900">Pospiesz się! Czas ucieka!</h3>
     <p class="mt-1 mb-3 text-sm text-neutral-500">Dołącz zanim będzie za późno.</p>
@@ -264,8 +269,8 @@
   </div>
   }
 
-  <!-- Join / Login button (only when not participant) -->
-  @if (!isParticipant()) {
+  <!-- Join / Login button (only when not participant and event is joinable) -->
+  @if (!isParticipant() && canJoin()) {
   <div class="mt-4">
     <app-button
       variant="primary"
@@ -349,7 +354,7 @@
 </div>
 
 <!-- Fixed bottom CTA -->
-@if (!isParticipant() && !isOrganizer()) {
+@if (!isParticipant() && !isOrganizer() && canJoin()) {
 <div
   class="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-app pointer-events-none pb-[calc(env(safe-area-inset-bottom)+4.5rem)] px-4"
 >

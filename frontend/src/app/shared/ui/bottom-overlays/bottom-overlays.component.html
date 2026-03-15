@@ -31,6 +31,9 @@
   [open]="true"
   [eventId]="evt.id"
   [citySlug]="evt.city?.slug ?? ''"
+  [eventStatus]="evt.status"
+  [eventStartsAt]="evt.startsAt"
   (closed)="overlays.close()"
+  (cancelRequested)="overlays.handleCancelEvent()"
 />
 } } }

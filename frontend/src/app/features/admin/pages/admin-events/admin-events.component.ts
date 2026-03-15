@@ -9,6 +9,7 @@ import { PaginationComponent } from '../../../../shared/ui/pagination/pagination
 import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { EventListItem } from '../../../../shared/types';
+import { EventStatus } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-admin-events',
@@ -100,7 +101,7 @@ export class AdminEventsComponent implements OnInit {
     this.eventService.cancelEvent(id).subscribe({
       next: () => {
         this.events.update((prev) =>
-          prev.map((e) => (e.id === id ? { ...e, status: 'CANCELLED' } : e)),
+          prev.map((e) => (e.id === id ? { ...e, status: EventStatus.CANCELLED } : e)),
         );
         this.snackbar.info('Anulowano');
       },

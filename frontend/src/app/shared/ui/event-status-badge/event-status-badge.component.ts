@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { IconComponent } from '../../../core/icons/icon.component';
 
-type BadgeVariant = 'ongoing' | 'countdown-urgent' | 'countdown-soon' | 'date';
+type BadgeVariant = 'ongoing' | 'countdown-urgent' | 'countdown-soon' | 'date' | 'ended' | 'cancelled';
 
 @Component({
   selector: 'app-event-status-badge',
@@ -46,6 +46,10 @@ type BadgeVariant = 'ongoing' | 'countdown-urgent' | 'countdown-soon' | 'date';
       <app-icon name="clock" size="xs" class="shrink-0 text-white" style="display: flex" />
       } @case ('date') {
       <app-icon name="calendar" size="xs" class="shrink-0 text-neutral-500" style="display: flex" />
+      } @case ('ended') {
+      <app-icon name="clock" size="xs" class="shrink-0 text-white" style="display: flex" />
+      } @case ('cancelled') {
+      <app-icon name="x" size="xs" class="shrink-0 text-white" style="display: flex" />
       } }
       <span [class]="textClass()">{{ label() }}</span>
     </div>
@@ -67,6 +71,10 @@ export class EventStatusBadgeComponent {
         return `${base} bg-info-400`;
       case 'date':
         return `${base} bg-white shadow-sm`;
+      case 'ended':
+        return `${base} bg-neutral-400`;
+      case 'cancelled':
+        return `${base} bg-danger-400`;
     }
   });
 
@@ -81,6 +89,10 @@ export class EventStatusBadgeComponent {
         return `${base} text-white`;
       case 'date':
         return `${base} text-neutral-500`;
+      case 'ended':
+        return `${base} text-white`;
+      case 'cancelled':
+        return `${base} text-white`;
     }
   });
 }

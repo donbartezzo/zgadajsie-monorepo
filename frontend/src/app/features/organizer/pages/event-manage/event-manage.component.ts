@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IconComponent } from '../../../../core/icons/icon.component';
@@ -13,7 +13,13 @@ import { ModerationService } from '../../../../core/services/moderation.service'
 import { PaymentService } from '../../../../core/services/payment.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
-import { Participation, UserBrief, AnnouncementReceiptStats } from '../../../../shared/types';
+import { Participation, UserBrief, AnnouncementReceiptStats, Event } from '../../../../shared/types';
+import { EventStatus } from '@zgadajsie/shared';
+import {
+  EventLifecycleBannerComponent,
+  LifecycleBannerVariant,
+} from '../../../../shared/ui/event-lifecycle-banner/event-lifecycle-banner.component';
+import { getEventTimeStatus } from '../../../../shared/utils/event-time-status.util';
 
 interface EarningItem {
   id: string;
@@ -34,10 +40,17 @@ interface EarningItem {
     UserAvatarComponent,
     LoadingSpinnerComponent,
     FormsModule,
+    EventLifecycleBannerComponent,
   ],
   template: `
-    <div class="py-6">
+    <div class="p-4">
       <h1 class="text-xl font-bold text-neutral-900 mb-4">Zarządzanie wydarzeniem</h1>
+
+      @if (lifecycleBannerVariant(); as variant) {
+      <div class="mb-4">
+        <app-event-lifecycle-banner [variant]="variant" />
+      </div>
+      }
 
       <div class="grid grid-cols-3 gap-3 mb-6">
         <app-card
@@ -231,6 +244,7 @@ export class EventManageComponent implements OnInit {
   readonly earnings = signal<EarningItem[]>([]);
   readonly totalEarnings = signal(0);
   readonly loading = signal(true);
+  readonly eventData = signal<Event | null>(null);
   readonly autoAccept = signal(false);
   readonly sendingAnnouncement = signal(false);
   readonly lastAnnouncementStats = signal<AnnouncementReceiptStats | null>(null);
@@ -238,6 +252,16 @@ export class EventManageComponent implements OnInit {
   announcementPriority = 'INFORMATIONAL';
   private eventId = '';
   private citySlug = '';
+
+  readonly lifecycleBannerVariant = computed<LifecycleBannerVariant | null>(() => {
+    const e = this.eventData();
+    if (!e) return null;
+    if (e.status === EventStatus.CANCELLED) return 'cancelled';
+    const ts = getEventTimeStatus(e.startsAt, e.endsAt, e.status);
+    if (ts === 'ONGOING') return 'ongoing';
+    if (ts === 'ENDED') return 'ended';
+    return null;
+  });
 
   get pending(): () => Participation[] {
     return () => this.participants().filter((p) => p.status === 'PENDING');
@@ -250,6 +274,7 @@ export class EventManageComponent implements OnInit {
   ngOnInit(): void {
     this.eventId = this.route.snapshot.paramMap.get('id')!;
     this.eventService.getEvent(this.eventId).subscribe((e) => {
+      this.eventData.set(e);
       this.autoAccept.set(e.autoAccept);
       this.citySlug = e.city?.slug ?? '';
       this.breadcrumb.setContext({ citySlug: this.citySlug });

@@ -1,3 +1,4 @@
+import { EventStatus } from '@zgadajsie/shared';
 import { DictionaryItem } from './dictionary.interface';
 import { UserBrief } from './common.interface';
 import { CoverImage } from './cover-image.interface';
@@ -14,7 +15,7 @@ export interface EventListItem {
   lng: number;
   rules?: string;
   gender: string;
-  status: string;
+  status: EventStatus;
   maxParticipants?: number;
 
   discipline?: DictionaryItem;
