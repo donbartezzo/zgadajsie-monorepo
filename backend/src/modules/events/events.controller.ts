@@ -8,11 +8,13 @@ import {
   Param,
   Query,
   UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
+import { CancelPaymentDto } from './dto/cancel-payment.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { IsActiveGuard } from '../auth/guards/is-active.guard';
@@ -73,6 +75,33 @@ export class EventsController {
   @Get(':id/participants')
   getParticipants(@Param('id') id: string) {
     return this.eventsService.getParticipants(id);
+  }
+
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  @Get(':id/participants/manage')
+  getParticipantsManage(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.eventsService.getParticipantsForOrganizer(id, user.id);
+  }
+
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  @Post(':id/mark-paid/:participationId')
+  markPaid(
+    @Param('id') id: string,
+    @Param('participationId', ParseUUIDPipe) participationId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.eventsService.markPaid(id, participationId, user.id);
+  }
+
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  @Post(':id/cancel-payment/:paymentId')
+  cancelPayment(
+    @Param('id') id: string,
+    @Param('paymentId', ParseUUIDPipe) paymentId: string,
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CancelPaymentDto,
+  ) {
+    return this.eventsService.cancelPayment(id, paymentId, user.id, dto);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)

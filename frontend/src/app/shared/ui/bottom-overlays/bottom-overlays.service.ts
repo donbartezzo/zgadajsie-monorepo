@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Event as EventModel } from '../../types';
+import { Event as EventModel, ParticipantPaymentInfo } from '../../types';
 
 export type OverlayType =
   | 'share'
@@ -10,6 +10,7 @@ export type OverlayType =
   | 'joinConfirm'
   | 'organizerActions'
   | 'notifications'
+  | 'cancelPayment'
   | null;
 
 @Injectable({
@@ -32,6 +33,15 @@ export class BottomOverlaysService {
   private payCallback: (() => void) | null = null;
   private contactOrganizerCallback: (() => void) | null = null;
   private cancelEventCallback: (() => void) | null = null;
+  private cancelPaymentCallback:
+    | ((options: { refundAsVoucher: boolean; notifyUser: boolean }) => void)
+    | null = null;
+
+  // Cancel payment context
+  private readonly cancelPaymentSignal = signal<ParticipantPaymentInfo | null>(null);
+  private readonly cancelPaymentUserNameSignal = signal('');
+  readonly cancelPayment = this.cancelPaymentSignal.asReadonly();
+  readonly cancelPaymentUserName = this.cancelPaymentUserNameSignal.asReadonly();
 
   readonly active = this.activeSignal.asReadonly();
   readonly event = this.eventSignal.asReadonly();
@@ -104,6 +114,18 @@ export class BottomOverlaysService {
     this.cancelEventCallback = callback;
   }
 
+  onCancelPaymentConfirmed(
+    callback: (options: { refundAsVoucher: boolean; notifyUser: boolean }) => void,
+  ): void {
+    this.cancelPaymentCallback = callback;
+  }
+
+  openCancelPayment(payment: ParticipantPaymentInfo, userName: string): void {
+    this.cancelPaymentSignal.set(payment);
+    this.cancelPaymentUserNameSignal.set(userName);
+    this.open('cancelPayment');
+  }
+
   confirmJoin(): void {
     this.joinCallback?.();
   }
@@ -128,6 +150,10 @@ export class BottomOverlaysService {
     this.cancelEventCallback?.();
   }
 
+  handleCancelPayment(options: { refundAsVoucher: boolean; notifyUser: boolean }): void {
+    this.cancelPaymentCallback?.(options);
+  }
+
   clearCallbacks(): void {
     this.joinCallback = null;
     this.authSuccessCallback = null;
@@ -135,5 +161,6 @@ export class BottomOverlaysService {
     this.payCallback = null;
     this.contactOrganizerCallback = null;
     this.cancelEventCallback = null;
+    this.cancelPaymentCallback = null;
   }
 }

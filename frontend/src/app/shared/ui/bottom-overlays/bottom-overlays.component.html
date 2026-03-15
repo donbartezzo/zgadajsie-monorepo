@@ -36,4 +36,11 @@
   (closed)="overlays.close()"
   (cancelRequested)="overlays.handleCancelEvent()"
 />
+} } @case ('cancelPayment') { @if (overlays.cancelPayment(); as payment) {
+<app-cancel-payment-overlay
+  [payment]="payment"
+  [userName]="overlays.cancelPaymentUserName()"
+  (confirmed)="overlays.handleCancelPayment($event)"
+  (closed)="overlays.close()"
+/>
 } } }

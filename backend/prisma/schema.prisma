@@ -237,9 +237,10 @@ model Payment {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  participation EventParticipation @relation(fields: [participationId], references: [id])
-  user          User               @relation("UserPayments", fields: [userId], references: [id])
-  event         Event              @relation("EventPayments", fields: [eventId], references: [id])
+  participation   EventParticipation @relation(fields: [participationId], references: [id])
+  user             User               @relation("UserPayments", fields: [userId], references: [id])
+  event            Event              @relation("EventPayments", fields: [eventId], references: [id])
+  issuedVouchers   OrganizerVoucher[] @relation("VoucherSourcePayment")
 
   @@index([eventId, status])
   @@index([userId, createdAt])
@@ -249,21 +250,23 @@ model Payment {
 // ─── Organizer Vouchers ──────────────────────────────────────────────────────
 
 model OrganizerVoucher {
-  id              String    @id @default(uuid())
-  recipientUserId String
-  organizerUserId String
-  eventId         String?
-  amount          Decimal   @db.Decimal(10, 2)
-  remainingAmount Decimal   @db.Decimal(10, 2)
-  source          String    @default("EVENT_CANCELLATION")
-  status          String    @default("ACTIVE")
-  expiresAt       DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id               String    @id @default(uuid())
+  recipientUserId  String
+  organizerUserId  String
+  eventId          String?
+  sourcePaymentId  String?
+  amount           Decimal   @db.Decimal(10, 2)
+  remainingAmount  Decimal   @db.Decimal(10, 2)
+  source           String    @default("EVENT_CANCELLATION")
+  status           String    @default("ACTIVE")
+  expiresAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  recipient User   @relation("VoucherRecipient", fields: [recipientUserId], references: [id])
-  organizer User   @relation("VoucherOrganizer", fields: [organizerUserId], references: [id])
-  event     Event? @relation(fields: [eventId], references: [id])
+  recipient     User     @relation("VoucherRecipient", fields: [recipientUserId], references: [id])
+  organizer     User     @relation("VoucherOrganizer", fields: [organizerUserId], references: [id])
+  event         Event?   @relation(fields: [eventId], references: [id])
+  sourcePayment Payment? @relation("VoucherSourcePayment", fields: [sourcePaymentId], references: [id])
 
   @@index([recipientUserId, organizerUserId, status])
   @@index([organizerUserId, status])

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IconComponent } from '../../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
@@ -10,29 +10,28 @@ import { EventService } from '../../../../core/services/event.service';
 import { EventAnnouncementService } from '../../../../core/services/event-announcement.service';
 import { FormsModule } from '@angular/forms';
 import { ModerationService } from '../../../../core/services/moderation.service';
-import { PaymentService } from '../../../../core/services/payment.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
-import { Participation, UserBrief, AnnouncementReceiptStats, Event } from '../../../../shared/types';
+import {
+  AnnouncementReceiptStats,
+  Event,
+  EventAnnouncement,
+  ParticipantManageItem,
+} from '../../../../shared/types';
 import { EventStatus } from '@zgadajsie/shared';
 import {
   EventLifecycleBannerComponent,
   LifecycleBannerVariant,
 } from '../../../../shared/ui/event-lifecycle-banner/event-lifecycle-banner.component';
 import { getEventTimeStatus } from '../../../../shared/utils/event-time-status.util';
-
-interface EarningItem {
-  id: string;
-  amount: number;
-  organizerAmount: number;
-  paidAt?: string;
-  user?: UserBrief;
-}
+import { paymentMethodLabel } from '../../../../shared/utils/payment.utils';
+import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bottom-overlays.service';
+import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
+import { EventAnnouncementsComponent } from '../../../event/ui/event-announcements/event-announcements.component';
 
 @Component({
   selector: 'app-event-manage',
   imports: [
-    CommonModule,
     DecimalPipe,
     IconComponent,
     ButtonComponent,
@@ -41,6 +40,7 @@ interface EarningItem {
     LoadingSpinnerComponent,
     FormsModule,
     EventLifecycleBannerComponent,
+    EventAnnouncementsComponent,
   ],
   template: `
     <div class="p-4">
@@ -53,30 +53,24 @@ interface EarningItem {
       }
 
       <div class="grid grid-cols-3 gap-3 mb-6">
-        <app-card
-          ><div class="p-3 text-center">
-            <p class="text-2xl font-bold text-neutral-900">
-              {{ pending().length }}
-            </p>
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ pendingList().length }}</p>
             <p class="text-xs text-neutral-500">Zgłoszenia</p>
-          </div></app-card
-        >
-        <app-card
-          ><div class="p-3 text-center">
-            <p class="text-2xl font-bold text-neutral-900">
-              {{ accepted().length }}
-            </p>
+          </div>
+        </app-card>
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ activeList().length }}</p>
             <p class="text-xs text-neutral-500">Uczestnicy</p>
-          </div></app-card
-        >
-        <app-card
-          ><div class="p-3 text-center">
-            <p class="text-2xl font-bold text-neutral-900">
-              {{ participants().length }}
-            </p>
+          </div>
+        </app-card>
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ manageParticipants().length }}</p>
             <p class="text-xs text-neutral-500">Łącznie</p>
-          </div></app-card
-        >
+          </div>
+        </app-card>
       </div>
 
       <div class="flex items-center justify-between mb-3">
@@ -89,87 +83,144 @@ interface EarningItem {
             class="peer sr-only"
           />
           <div
-            class="h-6 w-11 rounded-full bg-neutral-200 peer-checked:bg-primary-500 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full"
+            class="h-6 w-11 rounded-full bg-neutral-200 peer-checked:bg-primary-500
+              after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5
+              after:rounded-full after:bg-white after:transition-all
+              peer-checked:after:translate-x-full"
           ></div>
         </label>
       </div>
 
       @if (loading()) {
-      <app-loading-spinner></app-loading-spinner>
-      } @else { @if (pending().length > 0) {
+      <app-loading-spinner />
+      } @else {
+
+      <!-- Oczekujące zgłoszenia -->
+      @if (pendingList().length > 0) {
       <h2 class="text-sm font-semibold text-neutral-900 mb-3">Oczekujące zgłoszenia</h2>
       <div class="space-y-2 mb-6">
-        @for (p of pending(); track p.id) {
+        @for (p of pendingList(); track p.id) {
         <app-card>
           <div class="p-3 flex items-center gap-3">
             <app-user-avatar
-              [avatarUrl]="p.user?.avatarUrl"
-              [displayName]="p.user?.displayName || ''"
+              [avatarUrl]="p.user.avatarUrl"
+              [displayName]="p.user.displayName"
               size="sm"
-            ></app-user-avatar>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-neutral-900">
-                {{ p.user?.displayName }}
+            />
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-neutral-900 truncate">
+                {{ p.user.displayName }}
               </p>
             </div>
             <div class="flex gap-1">
               <app-button variant="outline" size="sm" (clicked)="openChat(p.userId)">
-                <app-icon name="message-circle" size="sm"></app-icon>
+                <app-icon name="message-circle" size="sm" />
               </app-button>
-              <app-button variant="primary" size="sm" (clicked)="onAccept(p.id)"
-                ><app-icon name="check" size="sm"></app-icon
-              ></app-button>
-              <app-button variant="danger" size="sm" (clicked)="onReject(p.id)"
-                ><app-icon name="x" size="sm"></app-icon
-              ></app-button>
+              <app-button variant="primary" size="sm" (clicked)="onAccept(p.id)">
+                <app-icon name="check" size="sm" />
+              </app-button>
+              <app-button variant="danger" size="sm" (clicked)="onReject(p.id)">
+                <app-icon name="x" size="sm" />
+              </app-button>
             </div>
           </div>
         </app-card>
         }
       </div>
-      } @if (accepted().length > 0) {
+      }
+
+      <!-- Uczestnicy (unified) -->
+      @if (activeList().length > 0) {
       <h2 class="text-sm font-semibold text-neutral-900 mb-3">Uczestnicy</h2>
+
+      @if (isPaidEvent()) {
+      <div class="mb-4 flex items-center gap-3">
+        <div class="flex-1 h-2 rounded-full bg-neutral-100 overflow-hidden">
+          <div
+            class="h-full rounded-full bg-success-400 transition-all"
+            [style.width.%]="paidPercent()"
+          ></div>
+        </div>
+        <span class="text-xs font-medium text-neutral-600">
+          {{ paidCount() }}/{{ activeList().length }} opłaconych
+        </span>
+        <span class="text-xs font-semibold text-neutral-900">
+          {{ totalPaidAmount() | number : '1.2-2' }} zł
+        </span>
+      </div>
+      }
+
       <div class="space-y-2">
-        @for (p of accepted(); track p.id) {
+        @for (p of activeList(); track p.id) {
         <app-card>
-          <div class="p-3 flex items-center gap-3">
-            <app-user-avatar
-              [avatarUrl]="p.user?.avatarUrl"
-              [displayName]="p.user?.displayName || ''"
-              size="sm"
-            ></app-user-avatar>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-neutral-900">
-                {{ p.user?.displayName }}
-              </p>
-            </div>
-            <div class="flex gap-1">
-              <app-button variant="outline" size="sm" (clicked)="openChat(p.userId)">
-                <app-icon name="message-circle" size="sm"></app-icon>
-              </app-button>
-              <app-button variant="outline" size="sm" (clicked)="onReprimand(p.userId)">
-                <app-icon name="flag" size="sm"></app-icon>
-              </app-button>
-              <app-button variant="danger" size="sm" (clicked)="onBan(p.userId)">
-                <app-icon name="shield-alert" size="sm"></app-icon>
-              </app-button>
+          <div class="p-3">
+            <div class="flex items-center gap-3">
+              <app-user-avatar
+                [avatarUrl]="p.user.avatarUrl"
+                [displayName]="p.user.displayName"
+                size="sm"
+              />
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-neutral-900 truncate">
+                  {{ p.user.displayName }}
+                </p>
+                @if (isPaidEvent()) {
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span [class]="paymentStatusClass(p)">{{ paymentStatusLabel(p) }}</span>
+                  @if (p.payment) {
+                  <span class="text-xs text-neutral-400">
+                    {{ paymentMethodLabel(p.payment.method) }}
+                  </span>
+                  }
+                </div>
+                }
+              </div>
+              <div class="flex gap-1">
+                @if (isPaidEvent() && p.status === 'PENDING_PAYMENT') {
+                <app-button variant="primary" size="sm" (clicked)="onMarkPaid(p.id)">
+                  Oznacz jako opłacone
+                </app-button>
+                } @if (isPaidEvent() && p.payment?.status === 'COMPLETED') {
+                <app-button
+                  variant="outline"
+                  size="sm"
+                  (clicked)="openCancelOverlay(p)"
+                >
+                  <app-icon name="x" size="sm" />
+                </app-button>
+                }
+                <app-button variant="outline" size="sm" (clicked)="openChat(p.userId)">
+                  <app-icon name="message-circle" size="sm" />
+                </app-button>
+                <app-button variant="outline" size="sm" (clicked)="onReprimand(p.userId)">
+                  <app-icon name="flag" size="sm" />
+                </app-button>
+                <app-button variant="danger" size="sm" (clicked)="onBan(p.userId)">
+                  <app-icon name="shield-alert" size="sm" />
+                </app-button>
+              </div>
             </div>
           </div>
         </app-card>
         }
       </div>
-      } @if (true) {
+      }
+
+      <!-- Komunikaty -->
       <div class="mt-6 border-t border-neutral-100 pt-4">
         <h2 class="text-sm font-semibold text-neutral-900 mb-3">Wyślij komunikat</h2>
         <textarea
-          class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+          class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm
+            text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500
+            focus:ring-1 focus:ring-primary-500 focus:outline-none"
           rows="3"
           placeholder="Treść komunikatu..."
           [(ngModel)]="announcementMessage"
         ></textarea>
         <div class="mt-2 flex items-center gap-3">
           <select
-            class="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-900 focus:border-primary-500 focus:outline-none"
+            class="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs
+              text-neutral-900 focus:border-primary-500 focus:outline-none"
             [(ngModel)]="announcementPriority"
           >
             <option value="INFORMATIONAL">Informacyjny</option>
@@ -182,7 +233,7 @@ interface EarningItem {
             [loading]="sendingAnnouncement()"
             (clicked)="sendAnnouncement()"
           >
-            <app-icon name="send" size="xs"></app-icon>
+            <app-icon name="send" size="xs" />
             Wyślij
           </app-button>
         </div>
@@ -193,40 +244,17 @@ interface EarningItem {
           <span>Potwierdzone: {{ stats.confirmed }}/{{ stats.total }}</span>
         </div>
         }
+
+        <app-event-announcements
+          [announcements]="announcements()"
+          [hasAnnouncements]="announcements().length > 0"
+          [isLoggedIn]="true"
+          mode="organizer"
+        />
       </div>
-      } @if (earnings().length > 0) {
-      <h2 class="text-sm font-semibold text-neutral-900 mt-6 mb-3">
-        Przychody ({{ totalEarnings() | number : '1.2-2' }} zł)
-      </h2>
-      <div class="space-y-2">
-        @for (e of earnings(); track e.id) {
-        <app-card>
-          <div class="p-3 flex items-center gap-3">
-            <app-user-avatar
-              [avatarUrl]="e.user?.avatarUrl"
-              [displayName]="e.user?.displayName || ''"
-              size="sm"
-            ></app-user-avatar>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-neutral-900">
-                {{ e.user?.displayName }}
-              </p>
-              <p class="text-xs text-neutral-400">
-                {{ e.organizerAmount | number : '1.2-2' }} zł netto
-              </p>
-            </div>
-            <app-button variant="outline" size="sm" (clicked)="onRefundVoucher(e.id)">
-              Voucher
-            </app-button>
-            <app-button variant="danger" size="sm" (clicked)="onRefundMoney(e.id)">
-              Zwrot
-            </app-button>
-          </div>
-        </app-card>
-        }
-      </div>
-      } }
+      }
     </div>
+
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -235,14 +263,14 @@ export class EventManageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
   private readonly moderationService = inject(ModerationService);
-  private readonly paymentService = inject(PaymentService);
   private readonly announcementService = inject(EventAnnouncementService);
   private readonly snackbar = inject(SnackbarService);
   private readonly breadcrumb = inject(BreadcrumbService);
+  private readonly overlays = inject(BottomOverlaysService);
+  private readonly confirmModal = inject(ConfirmModalService);
 
-  readonly participants = signal<Participation[]>([]);
-  readonly earnings = signal<EarningItem[]>([]);
-  readonly totalEarnings = signal(0);
+  readonly manageParticipants = signal<ParticipantManageItem[]>([]);
+  readonly announcements = signal<EventAnnouncement[]>([]);
   readonly loading = signal(true);
   readonly eventData = signal<Event | null>(null);
   readonly autoAccept = signal(false);
@@ -252,6 +280,8 @@ export class EventManageComponent implements OnInit {
   announcementPriority = 'INFORMATIONAL';
   private eventId = '';
   private citySlug = '';
+
+  readonly paymentMethodLabel = paymentMethodLabel;
 
   readonly lifecycleBannerVariant = computed<LifecycleBannerVariant | null>(() => {
     const e = this.eventData();
@@ -263,45 +293,85 @@ export class EventManageComponent implements OnInit {
     return null;
   });
 
-  get pending(): () => Participation[] {
-    return () => this.participants().filter((p) => p.status === 'PENDING');
-  }
+  readonly isPaidEvent = computed(() => {
+    const e = this.eventData();
+    return e ? e.costPerPerson > 0 : false;
+  });
 
-  get accepted(): () => Participation[] {
-    return () => this.participants().filter((p) => p.status === 'ACCEPTED');
-  }
+  readonly pendingList = computed(() =>
+    this.manageParticipants().filter((p) => p.status === 'PENDING' || p.status === 'APPLIED'),
+  );
+
+  readonly activeList = computed(() =>
+    this.manageParticipants().filter(
+      (p) =>
+        p.status === 'ACCEPTED' ||
+        p.status === 'PARTICIPANT' ||
+        p.status === 'PENDING_PAYMENT',
+    ),
+  );
+
+  readonly paidCount = computed(
+    () => this.activeList().filter((p) => p.payment?.status === 'COMPLETED').length,
+  );
+
+  readonly totalPaidAmount = computed(() =>
+    this.activeList()
+      .filter((p) => p.payment?.status === 'COMPLETED')
+      .reduce((sum, p) => sum + (p.payment?.organizerAmount ?? 0), 0),
+  );
+
+  readonly paidPercent = computed(() => {
+    const total = this.activeList().length;
+    return total > 0 ? (this.paidCount() / total) * 100 : 0;
+  });
 
   ngOnInit(): void {
-    this.eventId = this.route.snapshot.paramMap.get('id')!;
+    this.eventId = this.route.snapshot.paramMap.get('id') ?? '';
     this.eventService.getEvent(this.eventId).subscribe((e) => {
       this.eventData.set(e);
       this.autoAccept.set(e.autoAccept);
       this.citySlug = e.city?.slug ?? '';
       this.breadcrumb.setContext({ citySlug: this.citySlug });
     });
-    this.eventService.getParticipants(this.eventId).subscribe({
-      next: (p) => {
-        this.participants.set(p);
+    this.loadManageParticipants();
+    this.loadAnnouncements();
+
+    this.overlays.onCancelPaymentConfirmed((result) => {
+      const payment = this.overlays.cancelPayment();
+      if (!payment) return;
+      this.eventService.cancelPayment(this.eventId, payment.id, result).subscribe({
+        next: (items) => {
+          this.manageParticipants.set(items);
+          this.overlays.close();
+          this.snackbar.success('Płatność anulowana');
+        },
+        error: (err) =>
+          this.snackbar.error(err?.error?.message || 'Nie udało się anulować płatności'),
+      });
+    });
+  }
+
+  private loadManageParticipants(): void {
+    this.eventService.getParticipantsManage(this.eventId).subscribe({
+      next: (items) => {
+        this.manageParticipants.set(items);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
     });
-    this.loadEarnings();
   }
 
-  private loadEarnings(): void {
-    this.paymentService.getEventEarnings(this.eventId).subscribe({
-      next: (r) => {
-        this.earnings.set(r.payments);
-        this.totalEarnings.set(r.totalAmount);
-      },
+  private loadAnnouncements(): void {
+    this.announcementService.getAnnouncements(this.eventId).subscribe({
+      next: (res) => this.announcements.set(res.announcements),
     });
   }
 
   onAccept(id: string): void {
     this.eventService.acceptParticipation(id).subscribe({
       next: () => {
-        this.participants.update((prev) =>
+        this.manageParticipants.update((prev) =>
           prev.map((p) => (p.id === id ? { ...p, status: 'ACCEPTED' } : p)),
         );
         this.snackbar.success('Zaakceptowano');
@@ -312,7 +382,7 @@ export class EventManageComponent implements OnInit {
   onReject(id: string): void {
     this.eventService.rejectParticipation(id).subscribe({
       next: () => {
-        this.participants.update((prev) =>
+        this.manageParticipants.update((prev) =>
           prev.map((p) => (p.id === id ? { ...p, status: 'REJECTED' } : p)),
         );
         this.snackbar.info('Odrzucono');
@@ -342,14 +412,27 @@ export class EventManageComponent implements OnInit {
     });
   }
 
-  onRefundVoucher(paymentId: string): void {
-    this.paymentService.refundAsVoucher(paymentId).subscribe({
-      next: () => {
-        this.snackbar.success('Voucher przyznany uczestnikowi');
-        this.loadEarnings();
-      },
-      error: (err) => this.snackbar.error(err?.error?.message || 'Nie udało się przyznać vouchera'),
+  async onMarkPaid(participationId: string): Promise<void> {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Oznaczenie jako opłacone',
+      message: 'Czy na pewno chcesz oznaczyć tego uczestnika jako opłaconego (gotówka)?',
+      confirmLabel: 'Tak, oznacz',
+      variant: 'info',
     });
+    if (!confirmed) return;
+    this.eventService.markAsPaid(this.eventId, participationId).subscribe({
+      next: (items) => {
+        this.manageParticipants.set(items);
+        this.snackbar.success('Oznaczono jako opłacone');
+      },
+      error: (err) =>
+        this.snackbar.error(err?.error?.message || 'Nie udało się oznaczyć płatności'),
+    });
+  }
+
+  openCancelOverlay(p: ParticipantManageItem): void {
+    if (!p.payment) return;
+    this.overlays.openCancelPayment(p.payment, p.user.displayName);
   }
 
   sendAnnouncement(): void {
@@ -366,6 +449,7 @@ export class EventManageComponent implements OnInit {
           this.announcementMessage = '';
           this.sendingAnnouncement.set(false);
           this.loadAnnouncementStats(res.announcementId);
+          this.loadAnnouncements();
         },
         error: (err) => {
           this.snackbar.error(err?.error?.message || 'Nie udało się wysłać komunikatu');
@@ -374,26 +458,42 @@ export class EventManageComponent implements OnInit {
       });
   }
 
+  openChat(userId: string): void {
+    this.router.navigate(['/w', this.citySlug, this.eventId, 'host-chat', userId]);
+  }
+
+  paymentStatusLabel(p: ParticipantManageItem): string {
+    if (!p.payment) {
+      return p.status === 'PENDING_PAYMENT' ? 'Oczekuje' : '—';
+    }
+    const map: Record<string, string> = {
+      COMPLETED: 'Opłacone',
+      VOUCHER_REFUNDED: 'Zwrócone (voucher)',
+      CANCELLED: 'Anulowane',
+    };
+    return map[p.payment.status] ?? p.payment.status;
+  }
+
+  paymentStatusClass(p: ParticipantManageItem): string {
+    const base = 'text-xs font-medium px-1.5 py-0.5 rounded-full';
+    if (!p.payment) {
+      return p.status === 'PENDING_PAYMENT'
+        ? `${base} bg-warning-50 text-warning-600`
+        : `${base} text-neutral-400`;
+    }
+    const map: Record<string, string> = {
+      COMPLETED: `${base} bg-success-50 text-success-600`,
+      VOUCHER_REFUNDED: `${base} bg-neutral-100 text-neutral-500`,
+      CANCELLED: `${base} bg-danger-50 text-danger-600`,
+    };
+    return map[p.payment.status] ?? `${base} text-neutral-400`;
+  }
+
   private loadAnnouncementStats(announcementId: string): void {
     setTimeout(() => {
       this.announcementService.getStats(announcementId).subscribe({
         next: (stats) => this.lastAnnouncementStats.set(stats),
       });
     }, 2000);
-  }
-
-  openChat(userId: string): void {
-    this.router.navigate(['/w', this.citySlug, this.eventId, 'host-chat', userId]);
-  }
-
-  onRefundMoney(paymentId: string): void {
-    this.paymentService.refundAsMoney(paymentId).subscribe({
-      next: () => {
-        this.snackbar.success('Zwrot pieniężny zlecony');
-        this.loadEarnings();
-      },
-      error: (err) =>
-        this.snackbar.error(err?.error?.message || 'Nie udało się zlecić zwrotu pieniężnego'),
-    });
   }
 }

@@ -34,3 +34,23 @@ export interface EventEarnings {
   totalAmount: number;
   eventId: string;
 }
+
+export interface ParticipantPaymentInfo {
+  id: string;
+  amount: number;
+  voucherAmountUsed: number;
+  organizerAmount: number;
+  method: string | null;
+  status: string;
+  paidAt: string | null;
+}
+
+export interface ParticipantManageItem {
+  id: string;
+  userId: string;
+  status: string;
+  isGuest: boolean;
+  createdAt: string;
+  user: { id: string; displayName: string; avatarUrl: string | null; email: string };
+  payment: ParticipantPaymentInfo | null;
+}

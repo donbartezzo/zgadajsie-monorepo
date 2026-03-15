@@ -68,27 +68,6 @@ export class PaymentsController {
     return this.paymentsService.getIntentPaymentStatus(intentId, user.id);
   }
 
-  @UseGuards(JwtAuthGuard, IsActiveGuard)
-  @Get('event/:eventId/earnings')
-  getEventEarnings(
-    @Param('eventId', ParseUUIDPipe) eventId: string,
-    @CurrentUser() user: AuthUser,
-  ) {
-    return this.paymentsService.getEventEarnings(eventId, user.id);
-  }
-
-  @UseGuards(JwtAuthGuard, IsActiveGuard)
-  @Post(':id/refund-voucher')
-  refundAsVoucher(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
-    return this.paymentsService.refundAsVoucher(id, user.id);
-  }
-
-  @UseGuards(JwtAuthGuard, IsActiveGuard)
-  @Post(':id/refund-money')
-  refundAsMoney(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
-    return this.paymentsService.refundAsMoney(id, user.id);
-  }
-
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Get('admin/all')

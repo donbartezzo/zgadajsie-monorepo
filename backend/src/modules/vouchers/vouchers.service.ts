@@ -181,6 +181,7 @@ export class VouchersService {
             recipientUserId: participation.userId,
             organizerUserId: event.organizerId,
             eventId,
+            sourcePaymentId: payment.id,
             amount: new Decimal(refundAmount),
             remainingAmount: new Decimal(refundAmount),
             source: 'EVENT_CANCELLATION',

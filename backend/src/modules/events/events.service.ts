@@ -8,14 +8,16 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
-import { VouchersService } from '../vouchers/vouchers.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CoverImagesService } from '../cover-images/cover-images.service';
 import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptions.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
+import { CancelPaymentDto } from './dto/cancel-payment.dto';
 import { getEventTimeStatus } from './event-time-status.util';
 import { daysFromNow } from '../../common/utils/date.util';
+import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class EventsService {
@@ -25,7 +27,7 @@ export class EventsService {
     private prisma: PrismaService,
     private emailService: EmailService,
     private pushService: PushService,
-    private vouchersService: VouchersService,
+    private notificationsService: NotificationsService,
     private coverImagesService: CoverImagesService,
     private citySubscriptionsService: CitySubscriptionsService,
   ) {}
@@ -383,6 +385,172 @@ export class EventsService {
       },
       orderBy: { createdAt: 'asc' },
     });
+  }
+
+  // ─── Organizer Participant Management ────────────────────────────────────────
+
+  async getParticipantsForOrganizer(eventId: string, organizerUserId: string) {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException('Wydarzenie nie znalezione');
+    }
+    if (event.organizerId !== organizerUserId) {
+      throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+    }
+
+    const participations = await this.prisma.eventParticipation.findMany({
+      where: { eventId },
+      include: {
+        user: { select: { id: true, displayName: true, avatarUrl: true, email: true } },
+        payments: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            amount: true,
+            voucherAmountUsed: true,
+            organizerAmount: true,
+            method: true,
+            status: true,
+            paidAt: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return participations.map((p) => ({
+      id: p.id,
+      userId: p.userId,
+      status: p.status,
+      isGuest: p.isGuest,
+      createdAt: p.createdAt,
+      user: p.user,
+      payment: p.payments[0] ?? null,
+    }));
+  }
+
+  async markPaid(eventId: string, participationId: string, organizerUserId: string) {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException('Wydarzenie nie znalezione');
+    }
+    if (event.organizerId !== organizerUserId) {
+      throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+    }
+
+    const participation = await this.prisma.eventParticipation.findFirst({
+      where: { id: participationId, eventId },
+    });
+    if (!participation) {
+      throw new NotFoundException('Uczestnictwo nie znalezione');
+    }
+    if (participation.status !== 'PENDING_PAYMENT') {
+      throw new BadRequestException('Uczestnik nie oczekuje na płatność');
+    }
+
+    const amount = event.costPerPerson.toNumber();
+    const newStatus = event.autoAccept ? 'ACCEPTED' : 'APPLIED';
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.payment.create({
+        data: {
+          participationId,
+          userId: participation.userId,
+          eventId,
+          amount: new Decimal(amount),
+          voucherAmountUsed: new Decimal(0),
+          organizerAmount: new Decimal(amount),
+          platformFee: new Decimal(0),
+          status: 'COMPLETED',
+          method: 'cash',
+          paidAt: new Date(),
+        },
+      });
+
+      await tx.eventParticipation.update({
+        where: { id: participationId },
+        data: { status: newStatus },
+      });
+    });
+
+    return this.getParticipantsForOrganizer(eventId, organizerUserId);
+  }
+
+  async cancelPayment(
+    eventId: string,
+    paymentId: string,
+    organizerUserId: string,
+    dto: CancelPaymentDto,
+  ) {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException('Wydarzenie nie znalezione');
+    }
+    if (event.organizerId !== organizerUserId) {
+      throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+    }
+
+    const payment = await this.prisma.payment.findFirst({
+      where: { id: paymentId, eventId },
+      include: { participation: true },
+    });
+    if (!payment) {
+      throw new NotFoundException('Płatność nie znaleziona');
+    }
+    if (payment.status !== 'COMPLETED') {
+      throw new BadRequestException('Można anulować tylko opłaconą płatność');
+    }
+
+    const isCash = payment.method === 'cash';
+    const refundAsVoucher = dto.refundAsVoucher ?? !isCash;
+    const notifyUser = dto.notifyUser ?? !isCash;
+    const refundAmount = payment.amount.toNumber();
+
+    await this.prisma.$transaction(async (tx) => {
+      if (isCash && !refundAsVoucher) {
+        await tx.payment.delete({ where: { id: paymentId } });
+      } else if (refundAsVoucher) {
+        await tx.payment.update({
+          where: { id: paymentId },
+          data: { status: 'VOUCHER_REFUNDED', refundedAt: new Date() },
+        });
+        await tx.organizerVoucher.create({
+          data: {
+            recipientUserId: payment.userId,
+            organizerUserId,
+            eventId,
+            sourcePaymentId: paymentId,
+            amount: new Decimal(refundAmount),
+            remainingAmount: new Decimal(refundAmount),
+            source: 'MANUAL_REFUND',
+            status: 'ACTIVE',
+          },
+        });
+      } else {
+        await tx.payment.update({
+          where: { id: paymentId },
+          data: { status: 'CANCELLED', refundedAt: new Date() },
+        });
+      }
+
+      await tx.eventParticipation.update({
+        where: { id: payment.participationId },
+        data: { status: 'PENDING_PAYMENT' },
+      });
+    });
+
+    if (notifyUser) {
+      await this.notificationsService.create(
+        payment.userId,
+        'PAYMENT_CANCELLED',
+        'Płatność anulowana',
+        `Twoja płatność za wydarzenie "${event.title}" została anulowana.${refundAsVoucher ? ' Kwota została zwrócona na voucher organizatora.' : ''}`,
+        eventId,
+      );
+    }
+
+    return this.getParticipantsForOrganizer(eventId, organizerUserId);
   }
 
   async createSeries(organizerId: string, dto: CreateEventDto) {

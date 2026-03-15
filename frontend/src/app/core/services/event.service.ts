@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Event, EventListItem, Participation } from '../../shared/types';
+import { Event, EventListItem, Participation, ParticipantManageItem } from '../../shared/types';
 
 interface PaginatedEvents {
   data: EventListItem[];
@@ -105,5 +105,29 @@ export class EventService {
 
   deleteEvent(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getParticipantsManage(eventId: string): Observable<ParticipantManageItem[]> {
+    return this.http.get<ParticipantManageItem[]>(
+      `${this.apiUrl}/${eventId}/participants/manage`,
+    );
+  }
+
+  markAsPaid(eventId: string, participationId: string): Observable<ParticipantManageItem[]> {
+    return this.http.post<ParticipantManageItem[]>(
+      `${this.apiUrl}/${eventId}/mark-paid/${participationId}`,
+      {},
+    );
+  }
+
+  cancelPayment(
+    eventId: string,
+    paymentId: string,
+    options: { refundAsVoucher: boolean; notifyUser: boolean },
+  ): Observable<ParticipantManageItem[]> {
+    return this.http.post<ParticipantManageItem[]>(
+      `${this.apiUrl}/${eventId}/cancel-payment/${paymentId}`,
+      options,
+    );
   }
 }

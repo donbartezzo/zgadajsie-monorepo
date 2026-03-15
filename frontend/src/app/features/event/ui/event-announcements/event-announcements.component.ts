@@ -5,6 +5,8 @@ import { IconComponent } from '../../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { EventAnnouncement } from '../../../../shared/types';
 
+export type AnnouncementMode = 'participant' | 'organizer';
+
 @Component({
   selector: 'app-event-announcements',
   imports: [DatePipe, RouterLink, IconComponent, ButtonComponent],
@@ -18,7 +20,7 @@ import { EventAnnouncement } from '../../../../shared/types';
           <h3 class="text-sm font-semibold text-neutral-900">Komunikaty organizatora</h3>
           <span class="text-[10px] text-neutral-400">({{ announcements().length }})</span>
         </div>
-        @if (isLoggedIn() && showConfirmAll()) {
+        @if (mode() === 'participant' && isLoggedIn() && showConfirmAll()) {
         <button
           type="button"
           class="text-[11px] font-semibold text-primary-500 hover:text-primary-600 transition-colors whitespace-nowrap"
@@ -56,7 +58,14 @@ import { EventAnnouncement } from '../../../../shared/types';
               </span>
             </div>
             <!-- Confirm button/status -->
-            @if (a.receipts && a.receipts.length > 0 && !a.receipts[0].confirmedAt) {
+            @if (mode() === 'organizer') {
+            <span
+              class="text-xs text-neutral-500 flex items-center gap-1 whitespace-nowrap shrink-0"
+            >
+              <app-icon name="check" size="xs" [class]="'text-success-500'"></app-icon>
+              Wysłane
+            </span>
+            } @else if (a.receipts && a.receipts.length > 0 && !a.receipts[0].confirmedAt) {
             <app-button variant="outline" size="xs" (clicked)="confirm.emit(a.id)" class="shrink-0 self-start h-7">
               Potwierdź
             </app-button>
@@ -73,7 +82,7 @@ import { EventAnnouncement } from '../../../../shared/types';
         </div>
         }
       </div>
-      } @else {
+      } @else if (mode() !== 'organizer') {
       <div
         class="rounded-3xl border border-warning-200 bg-warning-50 px-4 py-3.5 sm:px-5 sm:py-4 flex items-center gap-3"
       >
@@ -100,6 +109,7 @@ export class EventAnnouncementsComponent {
   readonly announcements = input<EventAnnouncement[]>([]);
   readonly hasAnnouncements = input(false);
   readonly isLoggedIn = input(false);
+  readonly mode = input<AnnouncementMode>('participant');
   readonly loginQueryParams = input<Record<string, string>>({});
   readonly confirm = output<string>();
   readonly confirmAll = output<void>();
