@@ -262,6 +262,32 @@ export class AnnouncementDispatcherService {
     });
   }
 
+  async confirmAllForEvent(eventId: string, userId: string) {
+    const receipts = await this.prisma.announcementReceipt.findMany({
+      where: {
+        announcement: { eventId },
+        userId,
+        confirmedAt: null,
+      },
+      select: { id: true, viewedAt: true },
+    });
+
+    if (receipts.length === 0) {
+      return { confirmed: 0 };
+    }
+
+    const now = new Date();
+    await this.prisma.announcementReceipt.updateMany({
+      where: { id: { in: receipts.map((r) => r.id) } },
+      data: {
+        confirmedAt: now,
+        viewedAt: now,
+      },
+    });
+
+    return { confirmed: receipts.length, confirmedAt: now.toISOString() };
+  }
+
   async getReceiptStats(announcementId: string) {
     const [total, viewed, confirmed] = await Promise.all([
       this.prisma.announcementReceipt.count({ where: { announcementId } }),

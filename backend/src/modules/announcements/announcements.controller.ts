@@ -66,6 +66,15 @@ export class AnnouncementsController {
     return { confirmed: true, confirmedAt: receipt.confirmedAt };
   }
 
+  @Post('announcements/confirm-all/:eventId')
+  @UseGuards(JwtAuthGuard)
+  async confirmAll(
+    @Param('eventId') eventId: string,
+    @Request() req: { user: { id: string } },
+  ) {
+    return this.dispatcher.confirmAllForEvent(eventId, req.user.id);
+  }
+
   @Post('announcements/:announcementId/confirm')
   @UseGuards(JwtAuthGuard)
   async confirmManual(

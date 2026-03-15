@@ -409,6 +409,27 @@ export class EventComponent implements OnInit, OnDestroy {
     });
   }
 
+  confirmAllAnnouncements(): void {
+    this.announcementService.confirmAllForEvent(this.eventId).subscribe({
+      next: (res) => {
+        if (res.confirmed > 0) {
+          const confirmedAt = res.confirmedAt;
+          this.announcements.update((prev) =>
+            prev.map((a) =>
+              a.receipts?.length && !a.receipts[0].confirmedAt
+                ? { ...a, receipts: [{ ...a.receipts[0], confirmedAt }] }
+                : a,
+            ),
+          );
+          this.snackbar.success(`Potwierdzono odbiór ${res.confirmed} komunikatów`);
+        } else {
+          this.snackbar.info('Brak niepotwierdzonych komunikatów');
+        }
+      },
+      error: () => this.snackbar.error('Nie udało się potwierdzić odbioru komunikatów'),
+    });
+  }
+
   contactOrganizer(): void {
     const organizerId = this.event()?.organizerId;
     if (!organizerId) return;

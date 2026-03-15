@@ -42,6 +42,15 @@ export class EventAnnouncementService {
     );
   }
 
+  confirmAllForEvent(
+    eventId: string,
+  ): Observable<{ confirmed: number; confirmedAt: string }> {
+    return this.http.post<{ confirmed: number; confirmedAt: string }>(
+      `${this.apiUrl}/announcements/confirm-all/${eventId}`,
+      {},
+    );
+  }
+
   getStats(announcementId: string): Observable<AnnouncementReceiptStats> {
     return this.http.get<AnnouncementReceiptStats>(
       `${this.apiUrl}/announcements/${announcementId}/stats`,
