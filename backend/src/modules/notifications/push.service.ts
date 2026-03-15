@@ -185,6 +185,22 @@ export class PushService {
     );
   }
 
+  async notifyNewEventInCity(
+    userId: string,
+    eventTitle: string,
+    eventId: string,
+  ): Promise<void> {
+    const url = await this.getEventUrl(eventId);
+    await this.notifyUser(
+      userId,
+      'NEW_EVENT_IN_CITY',
+      'Nowe wydarzenie',
+      `"${eventTitle}"`,
+      eventId,
+      url,
+    );
+  }
+
   async notifyReprimand(
     userId: string,
     eventTitle: string,

@@ -24,6 +24,7 @@ import { ChatMember } from '../../../shared/types';
  <app-loading-spinner></app-loading-spinner>
  </div>
  } @else {
+  <div class="max-w-lg mx-auto">
  <p class="text-xs text-neutral-400 mb-2 px-1">
  {{ activeCount() }} aktywnych · {{ totalCount() }} łącznie
  </p>
@@ -69,6 +70,7 @@ import { ChatMember } from '../../../shared/types';
  }
  </div>
  }
+ </div>
  </div>
  }
  </app-bottom-overlay>

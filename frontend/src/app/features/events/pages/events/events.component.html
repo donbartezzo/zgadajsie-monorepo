@@ -1,5 +1,8 @@
-<!-- Layout slots (auto-registered via directives) -->
+@let _isLoading = isLoading();
+@let _error = error();
+@let _events = events();
 
+<!-- Layout slots -->
 <ng-template appLayoutSlot="extra">
   <p class="opacity-90">Wydarzenia na najbliższy tydzień</p>
 </ng-template>
@@ -17,11 +20,12 @@
 
 <!-- Content -->
 <section class="py-4 px-3">
-  @if (isLoading() && events().length === 0) {
+
+  @if (_isLoading && _events.length === 0) {
   <app-loading-spinner></app-loading-spinner>
-  } @else if (error()) {
-  <app-empty-state icon="x" [title]="'Błąd'" [message]="error()!"></app-empty-state>
-  } @else if (events().length === 0) {
+  } @else if (_error) {
+  <app-empty-state icon="x" [title]="'Błąd'" [message]="_error"></app-empty-state>
+  } @else if (_events.length === 0) {
   <app-empty-state
     icon="calendar"
     title="Brak wydarzeń"
@@ -31,7 +35,6 @@
   <div class="space-y-5">
     @for (group of groupedEvents(); track group.dateKey) {
     <div>
-      <!-- Date separator -->
       <div class="mb-3 flex items-center justify-center gap-2">
         <div class="h-px flex-1 bg-neutral-200"></div>
         <span
@@ -40,10 +43,10 @@
             (group.isOngoing
               ? 'bg-success-400 text-white'
               : group.isToday
-              ? 'bg-primary-500 text-white'
-              : group.isPast
-              ? 'bg-white text-neutral-500'
-              : 'bg-white text-neutral-900')
+                ? 'bg-primary-500 text-white'
+                : group.isPast
+                  ? 'bg-white text-neutral-500'
+                  : 'bg-white text-neutral-900')
           "
         >
           <span [innerHTML]="group.label"></span>
@@ -51,7 +54,6 @@
         <div class="h-px flex-1 bg-neutral-200"></div>
       </div>
 
-      <!-- Events for this date -->
       <div class="flex flex-col gap-3">
         @for (event of group.events; track event.id) {
         <div [class]="group.isPast ? 'opacity-50 grayscale-[30%]' : ''">

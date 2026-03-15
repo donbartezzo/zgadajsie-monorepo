@@ -1,27 +1,31 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
 import { VouchersService } from '../vouchers/vouchers.service';
 import { CoverImagesService } from '../cover-images/cover-images.service';
+import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptions.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
 
 @Injectable()
 export class EventsService {
+  private readonly logger = new Logger(EventsService.name);
+
   constructor(
     private prisma: PrismaService,
     private emailService: EmailService,
     private pushService: PushService,
     private vouchersService: VouchersService,
     private coverImagesService: CoverImagesService,
+    private citySubscriptionsService: CitySubscriptionsService,
   ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
     const coverImageId = await this.resolveCoverImageId(dto.coverImageId, dto.disciplineId);
 
-    return this.prisma.event.create({
+    const event = await this.prisma.event.create({
       data: {
         ...dto,
         startsAt: new Date(dto.startsAt),
@@ -30,6 +34,35 @@ export class EventsService {
         coverImageId,
       },
       include: { discipline: true, facility: true, level: true, city: true, coverImage: true },
+    });
+
+    this.notifyCitySubscribers(event.id, event.title, event.cityId, organizerId);
+
+    return event;
+  }
+
+  private notifyCitySubscribers(
+    eventId: string,
+    eventTitle: string,
+    cityId: string,
+    organizerId: string,
+  ): void {
+    setImmediate(async () => {
+      try {
+        const subscriberIds =
+          await this.citySubscriptionsService.getSubscriberIds(cityId);
+        const filtered = subscriberIds.filter((id) => id !== organizerId);
+        for (const userId of filtered) {
+          await this.pushService.notifyNewEventInCity(userId, eventTitle, eventId);
+        }
+        if (filtered.length > 0) {
+          this.logger.log(
+            `Notified ${filtered.length} city subscribers about new event "${eventTitle}"`,
+          );
+        }
+      } catch (err) {
+        this.logger.error(`Failed to notify city subscribers: ${(err as Error).message}`);
+      }
     });
   }
 

@@ -31,6 +31,7 @@ import {
   NotificationBarConfig,
 } from '../../ui/event-notification-bars/event-notification-bars.component';
 import { EventAnnouncementsComponent } from '../../ui/event-announcements/event-announcements.component';
+import { NotificationStatusService } from '../../../../core/services/notification-status.service';
 
 @Component({
   selector: 'app-event',
@@ -62,6 +63,7 @@ export class EventComponent implements OnInit, OnDestroy {
   readonly overlays = inject(BottomOverlaysService);
   private readonly confirmModal = inject(ConfirmModalService);
   readonly layoutConfig = inject(LayoutConfigService);
+  private readonly notifStatus = inject(NotificationStatusService);
 
   // ── Reactive state ──
   readonly event = signal<EventModel | null>(null);
@@ -71,6 +73,7 @@ export class EventComponent implements OnInit, OnDestroy {
   readonly joining = signal(false);
   readonly announcements = signal<EventAnnouncement[]>([]);
   readonly hasAnnouncements = signal(false);
+  readonly loginQueryParams = { returnUrl: inject(Router).url };
 
   readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
   readonly remainingCount = computed(() => Math.max(0, this.participants().length - 6));
@@ -164,6 +167,25 @@ export class EventComponent implements OnInit, OnDestroy {
       this.overlays.setLoading(this.joining());
     });
 
+    // Sync notification status for event
+    effect(() => {
+      const e = this.event();
+      const isPart = this.isParticipant();
+      if (e) {
+        if (isPart) {
+          this.notifStatus.setConfig({
+            resourceType: 'event',
+            resourceId: e.id,
+            resourceLabel: e.title,
+            subscribed: true,
+            canToggle: false,
+          });
+        } else {
+          this.notifStatus.clearConfig();
+        }
+      }
+    });
+
     // Register overlay callbacks
     this.overlays.onJoinConfirmed(() => this.confirmJoin());
     this.overlays.onLeaveConfirmed(() => this.confirmLeave());
@@ -198,6 +220,7 @@ export class EventComponent implements OnInit, OnDestroy {
     if (this.countdownInterval) clearInterval(this.countdownInterval);
     this.overlays.clearCallbacks();
     this.overlays.setEventContext(null, []);
+    this.notifStatus.clearConfig();
   }
 
   private startCountdown(startsAt: string, endsAt: string): void {

@@ -45,6 +45,7 @@ model User {
   pushSubscriptions PushSubscription[]
   announcements          EventAnnouncement[]    @relation("OrganizerAnnouncements")
   announcementReceipts   AnnouncementReceipt[]
+  citySubscriptions CitySubscription[]
   eventLimit        UserEventLimit?
   tpayMerchantId    String?
 }
@@ -69,7 +70,8 @@ model City {
   slug     String  @unique
   isActive Boolean @default(true)
 
-  events Event[]
+  events        Event[]
+  subscriptions CitySubscription[]
 }
 
 model EventDiscipline {
@@ -400,6 +402,21 @@ model AnnouncementReceipt {
   @@unique([announcementId, userId])
   @@index([confirmToken])
   @@index([announcementId, viewedAt])
+}
+
+// ─── City Subscriptions ─────────────────────────────────────────────────────
+
+model CitySubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  cityId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cityId])
+  @@index([cityId])
 }
 
 // ─── System ──────────────────────────────────────────────────────────────────

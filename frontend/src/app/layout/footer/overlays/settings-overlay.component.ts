@@ -10,7 +10,7 @@ import { AuthService } from '../../../core/auth/auth.service';
   imports: [CommonModule, RouterLink, IconComponent, BottomOverlayComponent],
   template: `
     <app-bottom-overlay [open]="true" title="Ustawienia" (closed)="closed.emit()">
-      <div class="space-y-3">
+      <div class="space-y-3 max-w-lg mx-auto">
         <p class="text-sm text-neutral-500">
           Zarządzaj kontem, motywem i najważniejszymi informacjami o platformie.
         </p>

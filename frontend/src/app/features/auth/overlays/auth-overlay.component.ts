@@ -8,10 +8,12 @@ import { LoginFormComponent } from '../../../shared/auth/ui/login-form/login-for
   imports: [BottomOverlayComponent, LoginFormComponent],
   template: `
     <app-bottom-overlay [open]="true" title="Dołącz do wydarzenia" (closed)="closed.emit()">
-      <app-login-form
-        [returnUrl]="returnUrl"
-        (authenticated)="authenticated.emit()"
-      ></app-login-form>
+      <div class="max-w-lg mx-auto">
+        <app-login-form
+          [returnUrl]="returnUrl"
+          (authenticated)="authenticated.emit()"
+        ></app-login-form>
+      </div>
     </app-bottom-overlay>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

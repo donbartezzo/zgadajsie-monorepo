@@ -37,7 +37,7 @@ import { OrganizerConversation } from '../../../shared/types';
         <p class="text-sm text-neutral-500">Brak prywatnych konwersacji z uczestnikami</p>
       </div>
       } @else {
-      <div class="space-y-1">
+      <div class="space-y-1 max-w-lg mx-auto">
         @for (conv of conversations(); track conv.participant.id) {
         <button
           type="button"

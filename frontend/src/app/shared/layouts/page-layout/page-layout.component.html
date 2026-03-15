@@ -1,5 +1,6 @@
 @let _showHeader = showHeader(); @let _showFooter = showFooter(); @let _heroHidden = heroHidden();
-@let _hasCover = hasCover(); @let _centerContent = centerContent(); @let _contentBgColor = contentBgColor();
+@let _hasCover = hasCover(); @let _centerContent = centerContent(); @let _contentBgColor =
+contentBgColor();
 
 <!-- ═══════════════════════════════════════════════════
  PAGE HEADER (hero area)
@@ -96,24 +97,53 @@
 
   <!-- Bottom title + extra content on hero -->
   <div class="absolute inset-x-0 bottom-0 p-4 mb-6 text-white">
-    @if (hasTitle()) {
-    <h1 class="text-lg font-extrabold leading-tight">{{ layoutConfig.titleText() }}</h1>
-    } @if (hasExtra()) {
-    <div class="mt-1">
-      <ng-container *ngTemplateOutlet="layoutConfig.extraTpl()"></ng-container>
+    <div class="flex items-end gap-2">
+      <div class="flex-1 min-w-0">
+        @if (hasTitle()) {
+        <h1 class="text-lg font-extrabold leading-tight">{{ layoutConfig.titleText() }}</h1>
+        } @if (hasExtra()) {
+        <div class="mt-1">
+          <ng-container *ngTemplateOutlet="layoutConfig.extraTpl()"></ng-container>
+        </div>
+        }
+      </div>
+
+      @if (notifBellState(); as bellState) {
+      <button
+        type="button"
+        class="group/notif absolute right-3 bottom-3 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-sm backdrop-blur-sm transition-all [@media(hover:hover)]:hover:bg-primary-500 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:shadow-md"
+        (click)="onNotifBellClick()"
+        aria-label="Powiadomienia"
+      >
+        <span
+          class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 [@media(hover:hover)]:group-hover/notif:max-w-48 [@media(hover:hover)]:group-hover/notif:pl-3 [@media(hover:hover)]:group-hover/notif:opacity-100"
+        >
+          <span class="block text-xs font-semibold leading-tight"> Powiadomienia </span>
+        </span>
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center leading-[0]">
+          <app-icon
+            [name]="bellState === 'off' ? 'bell-off' : 'bell'"
+            size="sm"
+            variant="default"
+          ></app-icon>
+        </span>
+      </button>
+      }
     </div>
-    }
   </div>
   }
 </div>
 }
+
+<!-- Notification overlay (global, managed by NotificationStatusService) -->
+<app-notification-overlay></app-notification-overlay>
 
 <!-- ═══════════════════════════════════════════════════
  PAGE CONTENT (router-outlet goes here)
  ═══════════════════════════════════════════════════ -->
 <div
   [ngClass]="{
-    'relative z-10': true,
+    relative: true,
     '-mt-6': _showHeader,
     'flex flex-1 items-center justify-center': _centerContent
   }"
@@ -122,7 +152,8 @@
   <div
     [ngClass]="
       'rounded-2xl ' +
-      (_centerContent ? 'overflow-visible' : 'overflow-hidden') + ' ' +
+      (_centerContent ? 'overflow-visible' : 'overflow-hidden') +
+      ' ' +
       (_contentBgColor || layoutConfig.contentBgClass()) +
       (isDefaultBg() ? '' : ' shadow-sm border border-neutral-100') +
       (_centerContent ? ' w-full' : '')
@@ -131,6 +162,13 @@
     @if (_showHeader) {
     <!-- Drag handle -->
     <div class="mx-auto mt-2 h-[5px] w-12 rounded-full bg-neutral-300/60"></div>
+    }
+
+    <!-- Notification alert (global) -->
+    @if (notifStatus.alertVisible()) {
+    <div class="px-3 pt-3">
+      <app-notification-alert></app-notification-alert>
+    </div>
     }
 
     <ng-content></ng-content>

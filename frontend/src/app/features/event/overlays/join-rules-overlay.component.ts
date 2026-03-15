@@ -90,7 +90,7 @@ import { EventCriteriaDescriptionComponent } from '../ui/event-criteria-descript
         </label>
 
         <!-- Action -->
-        <div class="mt-3">
+        <div class="mt-3 max-w-lg mx-auto">
           <app-button
             variant="primary"
             [fullWidth]="true"

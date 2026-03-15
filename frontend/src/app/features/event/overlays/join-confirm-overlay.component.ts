@@ -12,7 +12,7 @@ import { Event as EventModel, Participation } from '../../../shared/types';
   template: `
     <app-bottom-overlay [open]="open()" (closed)="closed.emit()">
       @let _event = event();
-      <div class="space-y-4">
+      <div class="space-y-4 max-w-lg mx-auto">
         <!-- Status header -->
         <div class="text-center">
           @if (participantStatus() === 'PENDING_PAYMENT') {
@@ -22,7 +22,7 @@ import { Event as EventModel, Participation } from '../../../shared/types';
             <app-icon name="clock" size="lg" class="text-warning-400"></app-icon>
           </div>
           <h2 class="text-lg font-bold text-neutral-900">Zgłoszenie przyjęte!</h2>
-          <p class="mt-1 text-sm text-neutral-500 max-w-xs mx-auto">
+          <p class="mt-1 text-sm text-neutral-500">
             Twoje zgłoszenie zostało zarejestrowane. Opłać udział, aby potwierdzić uczestnictwo.
           </p>
           } @else {
@@ -35,7 +35,7 @@ import { Event as EventModel, Participation } from '../../../shared/types';
             @if (participantStatus() === 'ACCEPTED') { Jesteś uczestnikiem! } @else { Zgłoszenie
             wysłane! }
           </h2>
-          <p class="mt-1 text-sm text-neutral-500 max-w-xs mx-auto">
+          <p class="mt-1 text-sm text-neutral-500">
             @if (participantStatus() === 'ACCEPTED') { Dołączyłeś do tego wydarzenia. } @else {
             Organizator rozpatrzy Twoje zgłoszenie. }
           </p>

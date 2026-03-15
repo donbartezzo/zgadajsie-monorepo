@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { IconComponent, IconName } from '../../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { EventAnnouncement } from '../../../../shared/types';
 
 @Component({
   selector: 'app-event-announcements',
-  imports: [DatePipe, IconComponent, ButtonComponent],
+  imports: [DatePipe, RouterLink, IconComponent, ButtonComponent],
   template: `
     @if (hasAnnouncements()) {
     <div class="mt-4">
@@ -62,7 +63,12 @@ import { EventAnnouncement } from '../../../../shared/types';
             Organizator wysłał komunikat
           </p>
           <p class="text-xs text-neutral-500">
-            Zaloguj się, aby zobaczyć treść komunikatów organizatora.
+            <a
+              routerLink="/auth/login"
+              [queryParams]="loginQueryParams()"
+              class="text-primary-500 font-semibold hover:underline"
+              >Zaloguj się</a
+            >, aby zobaczyć treść komunikatów organizatora.
           </p>
         </div>
       </div>
@@ -76,6 +82,7 @@ export class EventAnnouncementsComponent {
   readonly announcements = input<EventAnnouncement[]>([]);
   readonly hasAnnouncements = input(false);
   readonly isLoggedIn = input(false);
+  readonly loginQueryParams = input<Record<string, string>>({});
   readonly confirm = output<string>();
 
   getPriorityClasses(priority: string): string {

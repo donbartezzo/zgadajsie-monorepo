@@ -79,12 +79,13 @@
   </a>
   }
 
-    <!-- Organizer announcements -->
+  <!-- Organizer announcements -->
   @if (hasAnnouncements()) {
   <app-event-announcements
     [announcements]="announcements()"
     [hasAnnouncements]="hasAnnouncements()"
     [isLoggedIn]="auth.isLoggedIn()"
+    [loginQueryParams]="loginQueryParams"
     (confirm)="confirmAnnouncement($event)"
   ></app-event-announcements>
   <div class="mt-4 border-t border-neutral-100"></div>

@@ -15,10 +15,25 @@ import { filter, map, startWith } from 'rxjs';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { LayoutConfigService } from './layout-config.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import {
+  NotificationState,
+  NotificationStatusService,
+} from '../../../core/services/notification-status.service';
+import { BottomOverlaysService } from '../../ui/bottom-overlays/bottom-overlays.service';
+import { NotificationAlertComponent } from './notification/notification-alert/notification-alert.component';
+import { NotificationOverlayComponent } from './notification/notification-overlay/notification-overlay.component';
 
 @Component({
   selector: 'app-page-layout',
-  imports: [CommonModule, RouterLink, IconComponent, NgTemplateOutlet],
+  imports: [
+    CommonModule,
+    RouterLink,
+    IconComponent,
+    NgTemplateOutlet,
+    NotificationAlertComponent,
+    NotificationOverlayComponent,
+  ],
   templateUrl: './page-layout.component.html',
   host: { class: 'flex-1 flex flex-col' },
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,6 +41,9 @@ import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
 export class PageLayoutComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
+  private readonly overlays = inject(BottomOverlaysService);
+  readonly notifStatus = inject(NotificationStatusService);
   readonly layoutConfig = inject(LayoutConfigService);
   readonly breadcrumb = inject(BreadcrumbService);
 
@@ -50,6 +68,22 @@ export class PageLayoutComponent {
     return showFooter;
   });
   readonly showBackButton = computed(() => !!this.breadcrumb.parentUrl());
+
+  readonly notifBellState = computed<'off' | 'complete' | 'incomplete' | null>(() => {
+    const state = this.notifStatus.state();
+    switch (state) {
+      case NotificationState.Off:
+        return 'off';
+      case NotificationState.OnComplete:
+        return 'complete';
+      case NotificationState.OnIncomplete:
+        return 'incomplete';
+      case NotificationState.NotLoggedIn:
+        return 'off';
+      default:
+        return null;
+    }
+  });
   readonly centerContent = computed(() => this.routeData()?.['centerContent'] === true);
   readonly contentBgColor = computed(() => this.routeData()?.['contentBgColor'] || '');
 
@@ -107,5 +141,13 @@ export class PageLayoutComponent {
     if (url) {
       this.router.navigateByUrl(url);
     }
+  }
+
+  onNotifBellClick(): void {
+    if (!this.auth.isLoggedIn()) {
+      this.router.navigate(['/auth/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+    this.overlays.open('notifications');
   }
 }

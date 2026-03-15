@@ -17,14 +17,14 @@ import { Event as EventModel, Participation } from '../../../shared/types';
   ],
   template: `
     <app-bottom-overlay [open]="open()" (closed)="closed.emit()">
-      <div class="text-center">
+      <div class="text-center max-w-lg mx-auto">
         <div
           class="mx-auto my-3 flex h-16 w-16 items-center justify-center rounded-full bg-danger-50"
         >
           <app-icon name="user-x" size="lg" variant="danger"></app-icon>
         </div>
         <h2 class="text-xl font-bold text-neutral-900">Wypisz się z wydarzenia</h2>
-        <p class="mt-1 text-sm text-neutral-500 max-w-xs mx-auto">
+        <p class="mt-1 text-sm text-neutral-500">
           Czy na pewno chcesz zrezygnować z uczestnictwa?
         </p>
 

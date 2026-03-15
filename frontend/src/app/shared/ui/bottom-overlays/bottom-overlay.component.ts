@@ -16,10 +16,10 @@ import { IconComponent } from '../../../core/icons/icon.component';
         class="relative z-10 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl animate-slide-up"
       >
         <!-- Handle + header -->
-        <div class="sticky top-0 z-10 bg-white px-4 pt-3 pb-2 rounded-t-2xl relative">
+        <div class="sticky top-0 z-10 bg-white px-4 pt-3 pb-2 rounded-t-2xl relative text-center">
           <div class="mx-auto mb-3 h-1 w-10 rounded-full bg-neutral-300"></div>
           @if (title()) {
-          <h2 class="text-lg font-bold text-neutral-900 pr-8">{{ title() }}</h2>
+          <h2 class="text-lg font-bold text-neutral-900">{{ title() }}</h2>
           }
           <!-- Close button - absolutely positioned -->
           <button

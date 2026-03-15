@@ -16,7 +16,7 @@ interface ShareOption {
   imports: [CommonModule, IconComponent, BottomOverlayComponent],
   template: `
     <app-bottom-overlay [open]="true" title="Udostępnij" (closed)="closed.emit()">
-      <div class="space-y-3">
+      <div class="space-y-3 max-w-lg mx-auto">
         <p class="text-sm text-neutral-500">
           Przekaż informację o wydarzeniu znajomym jednym kliknięciem.
         </p>

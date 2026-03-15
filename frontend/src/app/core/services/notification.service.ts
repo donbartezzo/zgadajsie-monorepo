@@ -10,6 +10,22 @@ export class NotificationService {
   private readonly apiUrl = environment.apiUrl + '/notifications';
 
   unreadCount = signal(0);
+  pushPermission = signal<NotificationPermission>(this.detectPushPermission());
+
+  private detectPushPermission(): NotificationPermission {
+    if (typeof Notification === 'undefined') return 'denied';
+    return Notification.permission;
+  }
+
+  async requestPushPermission(): Promise<boolean> {
+    if (typeof Notification === 'undefined') return false;
+    const result = await Notification.requestPermission();
+    this.pushPermission.set(result);
+    if (result === 'granted') {
+      await this.initPushSubscription();
+    }
+    return result === 'granted';
+  }
 
   getNotifications(page = 1, limit = 20): Observable<PaginatedNotifications> {
     return this.http.get<PaginatedNotifications>(this.apiUrl, {
@@ -45,12 +61,9 @@ export class NotificationService {
     const vapidKey = environment.vapidPublicKey;
     if (!vapidKey) return;
 
-    // Request notification permission first
     const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      console.warn('Notification permission denied:', permission);
-      return;
-    }
+    this.pushPermission.set(permission);
+    if (permission !== 'granted') return;
 
     try {
       const registration = await navigator.serviceWorker.ready;

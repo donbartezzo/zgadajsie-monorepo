@@ -18,6 +18,7 @@ import { DictionariesModule } from '../modules/dictionaries/dictionaries.module'
 import { VouchersModule } from '../modules/vouchers/vouchers.module';
 import { CoverImagesModule } from '../modules/cover-images/cover-images.module';
 import { AnnouncementsModule } from '../modules/announcements/announcements.module';
+import { CitySubscriptionsModule } from '../modules/city-subscriptions/city-subscriptions.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { AnnouncementsModule } from '../modules/announcements/announcements.modu
     VouchersModule,
     CoverImagesModule,
     AnnouncementsModule,
+    CitySubscriptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

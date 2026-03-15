@@ -2,7 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
+  OnDestroy,
   OnInit,
   signal,
 } from '@angular/core';
@@ -12,10 +14,14 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
 import { DateBadgeComponent } from '../../../../shared/ui/date-badge/date-badge.component';
 import { EventService } from '../../../../core/services/event.service';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { CitySubscriptionService } from '../../../../core/services/city-subscription.service';
+import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { EventListItem } from '../../../../shared/types';
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 import { getDaysDiff, getRelativeDateLabel } from '../../../../shared/utils/date.utils';
+import { NotificationStatusService } from '../../../../core/services/notification-status.service';
 
 interface EventGroup {
   dateKey: string;
@@ -48,20 +54,25 @@ interface DateGroup {
   styleUrls: ['./events.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EventsComponent implements OnInit {
+export class EventsComponent implements OnInit, OnDestroy {
+  // ── Inject ──
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
   private readonly layoutConfig = inject(LayoutConfigService);
+  private readonly auth = inject(AuthService);
+  private readonly citySubscriptionService = inject(CitySubscriptionService);
+  private readonly snackbar = inject(SnackbarService);
+  private readonly notifStatus = inject(NotificationStatusService);
 
   readonly events = signal<EventListItem[]>([]);
   readonly isLoading = signal(true);
   readonly error = signal<string | null>(null);
   readonly cityName = signal('');
+  readonly cityId = signal('');
+  readonly citySubscribed = signal(false);
 
-  private citySlug = '';
-  private page = 1;
-  private hasMore = true;
+  readonly isLoggedIn = computed(() => this.auth.isLoggedIn());
 
   readonly dateRangeFrom = computed(() => {
     const d = new Date();
@@ -142,6 +153,29 @@ export class EventsComponent implements OnInit {
     return groups;
   });
 
+  private citySlug = '';
+  private page = 1;
+  private hasMore = true;
+
+  constructor() {
+    effect(() => {
+      const id = this.cityId();
+      const name = this.cityName();
+      const subscribed = this.citySubscribed();
+      if (id) {
+        this.notifStatus.setConfig({
+          resourceType: 'city',
+          resourceId: id,
+          resourceLabel: name,
+          subscribed,
+          canToggle: true,
+          onSubscribe: () => this.subscribeToCityInternal(),
+          onUnsubscribe: () => this.unsubscribeFromCityInternal(),
+        });
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.citySlug = this.route.snapshot.paramMap.get('citySlug') ?? '';
     this.layoutConfig.titleText.set('Wydarzenia');
@@ -160,8 +194,11 @@ export class EventsComponent implements OnInit {
           this.events.update((prev) => [...prev, ...res.data]);
           if (!this.cityName() && res.data.length > 0) {
             const name = res.data[0].city?.name || '';
+            const id = res.data[0].city?.id || '';
             this.cityName.set(name);
+            this.cityId.set(id);
             this.layoutConfig.titleText.set(name || 'Wydarzenia');
+            this.loadCitySubscription(id);
           }
           this.hasMore = res.data.length === 20;
           this.page++;
@@ -183,6 +220,43 @@ export class EventsComponent implements OnInit {
     if (!this.isLoading() && this.hasMore) {
       this.loadEvents();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.notifStatus.clearConfig();
+  }
+
+  private subscribeToCityInternal(): void {
+    const id = this.cityId();
+    if (!id || this.citySubscribed()) return;
+    this.citySubscriptionService.subscribe(id).subscribe({
+      next: () => {
+        this.citySubscribed.set(true);
+        this.notifStatus.updateSubscribed(true);
+        this.snackbar.success('Powiadomienia włączone');
+      },
+      error: () => this.snackbar.error('Nie udało się włączyć powiadomień'),
+    });
+  }
+
+  private unsubscribeFromCityInternal(): void {
+    const id = this.cityId();
+    if (!id || !this.citySubscribed()) return;
+    this.citySubscriptionService.unsubscribe(id).subscribe({
+      next: () => {
+        this.citySubscribed.set(false);
+        this.notifStatus.updateSubscribed(false);
+        this.snackbar.info('Powiadomienia wyłączone');
+      },
+      error: () => this.snackbar.error('Nie udało się wyłączyć powiadomień'),
+    });
+  }
+
+  private loadCitySubscription(cityId: string): void {
+    if (!this.isLoggedIn() || !cityId) return;
+    this.citySubscriptionService.isSubscribed(cityId).subscribe({
+      next: (res) => this.citySubscribed.set(res.subscribed),
+    });
   }
 
   private groupByDate(events: EventListItem[], todayStart: Date): DateGroup[] {
