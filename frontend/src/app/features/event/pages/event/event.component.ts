@@ -158,7 +158,7 @@ export class EventComponent implements OnInit, OnDestroy {
 
     // Sync local event/participants signals to the overlay service
     effect(() => {
-      this.overlays.setEventContext(this.event(), this.participants(), this.isParticipant());
+      this.overlays.setEventContext(this.event(), this.isParticipant());
     });
     effect(() => {
       this.overlays.setIsOrganizer(this.isOrganizer());
@@ -188,7 +188,6 @@ export class EventComponent implements OnInit, OnDestroy {
 
     // Register overlay callbacks
     this.overlays.onJoinConfirmed(() => this.confirmJoin());
-    this.overlays.onLeaveConfirmed(() => this.confirmLeave());
     this.overlays.onAuthSuccess(() => this.onAuthSuccess());
     this.overlays.onOpenChat(() => this.openChat());
     this.overlays.onPay(() => this.payEvent());
@@ -219,7 +218,7 @@ export class EventComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.countdownInterval) clearInterval(this.countdownInterval);
     this.overlays.clearCallbacks();
-    this.overlays.setEventContext(null, []);
+    this.overlays.setEventContext(null);
     this.notifStatus.clearConfig();
   }
 

@@ -8,21 +8,15 @@ import { BottomOverlaysService } from '../../../shared/ui/bottom-overlays/bottom
   selector: 'app-organizer-actions-overlay',
   imports: [IconComponent, BottomOverlayComponent],
   template: `
-    <app-bottom-overlay [open]="open()" title="Panel organizatora" (closed)="closed.emit()">
+    <app-bottom-overlay
+      [open]="open()"
+      icon="shield"
+      iconVariant="info"
+      title="Jesteś organizatorem"
+      description="Zarządzaj swoim wydarzeniem, edytuj szczegóły lub sprawdź konwersacje z uczestnikami."
+      (closed)="closed.emit()"
+    >
       <div class="space-y-4 max-w-lg mx-auto">
-        <!-- Status header -->
-        <div class="text-center">
-          <div
-            class="mx-auto my-2 flex h-14 w-14 items-center justify-center rounded-full bg-info-50"
-          >
-            <app-icon name="shield" size="lg" class="text-info-400"></app-icon>
-          </div>
-          <h2 class="text-lg font-bold text-neutral-900">Jesteś organizatorem</h2>
-          <p class="mt-1 text-sm text-neutral-500">
-            Zarządzaj swoim wydarzeniem, edytuj szczegóły lub sprawdź konwersacje z uczestnikami.
-          </p>
-        </div>
-
         <!-- Organizer options -->
         <div>
           <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-2">

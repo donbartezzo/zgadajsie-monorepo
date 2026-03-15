@@ -1,47 +1,27 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
-import { IconComponent } from '../../../core/icons/icon.component';
+import { IconComponent, IconName } from '../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
-import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
+import {
+  BottomOverlayComponent,
+  OverlayIconVariant,
+} from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
 import { ConfirmModalService } from '../../../shared/ui/confirm-modal/confirm-modal.service';
-import { Event as EventModel, Participation } from '../../../shared/types';
+import { Event as EventModel } from '../../../shared/types';
 
 @Component({
   selector: 'app-join-confirm-overlay',
-  imports: [IconComponent, ButtonComponent, UserAvatarComponent, BottomOverlayComponent],
+  imports: [IconComponent, ButtonComponent, BottomOverlayComponent],
   template: `
-    <app-bottom-overlay [open]="open()" (closed)="closed.emit()">
+    <app-bottom-overlay
+      [open]="open()"
+      [icon]="headerIcon()"
+      [iconVariant]="headerIconVariant()"
+      [title]="headerTitle()"
+      [description]="headerDescription()"
+      (closed)="closed.emit()"
+    >
       @let _event = event();
       <div class="space-y-4 max-w-lg mx-auto">
-        <!-- Status header -->
-        <div class="text-center">
-          @if (participantStatus() === 'PENDING_PAYMENT') {
-          <div
-            class="mx-auto my-2 flex h-14 w-14 items-center justify-center rounded-full bg-warning-50"
-          >
-            <app-icon name="clock" size="lg" class="text-warning-400"></app-icon>
-          </div>
-          <h2 class="text-lg font-bold text-neutral-900">Zgłoszenie przyjęte!</h2>
-          <p class="mt-1 text-sm text-neutral-500">
-            Twoje zgłoszenie zostało zarejestrowane. Opłać udział, aby potwierdzić uczestnictwo.
-          </p>
-          } @else {
-          <div
-            class="mx-auto my-2 flex h-14 w-14 items-center justify-center rounded-full bg-success-50"
-          >
-            <app-icon name="check" size="lg" class="text-success-400"></app-icon>
-          </div>
-          <h2 class="text-lg font-bold text-neutral-900">
-            @if (participantStatus() === 'ACCEPTED') { Jesteś uczestnikiem! } @else { Zgłoszenie
-            wysłane! }
-          </h2>
-          <p class="mt-1 text-sm text-neutral-500">
-            @if (participantStatus() === 'ACCEPTED') { Dołączyłeś do tego wydarzenia. } @else {
-            Organizator rozpatrzy Twoje zgłoszenie. }
-          </p>
-          }
-        </div>
-
         <!-- Event info row -->
         <div class="rounded-xl border border-neutral-100 bg-neutral-50 p-3">
           <div class="flex justify-center gap-5 text-center">
@@ -65,25 +45,6 @@ import { Event as EventModel, Participation } from '../../../shared/types';
             </div>
           </div>
         </div>
-
-        <!-- Participants preview -->
-        @if (participants().length > 0) {
-        <div class="flex items-center justify-center gap-1">
-          <div class="flex -space-x-2">
-            @for (p of visibleAvatars(); track p.id) {
-            <app-user-avatar
-              [avatarUrl]="p.user?.avatarUrl"
-              [displayName]="p.user?.displayName || ''"
-              size="sm"
-              class="ring-2 ring-white rounded-full"
-            ></app-user-avatar>
-            }
-          </div>
-          @if (remainingCount() > 0) {
-          <span class="text-xs text-neutral-400 ml-2"> +{{ remainingCount() }} innych </span>
-          }
-        </div>
-        }
 
         <!-- Payment CTA (highlighted) -->
         @if (needsPayment()) {
@@ -187,18 +148,39 @@ export class JoinConfirmOverlayComponent {
 
   readonly open = input(false);
   readonly event = input<EventModel | null>(null);
-  readonly participants = input<Participation[]>([]);
   readonly loading = input(false);
   readonly participantStatus = input<string | null>(null);
 
   readonly closed = output<void>();
-  readonly leaveRequested = output<void>();
   readonly openChat = output<void>();
   readonly payRequested = output<void>();
   readonly contactOrganizer = output<void>();
 
-  readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
-  readonly remainingCount = computed(() => Math.max(0, this.participants().length - 6));
+  readonly headerIcon = computed<IconName>(() =>
+    this.participantStatus() === 'PENDING_PAYMENT' ? 'clock' : 'check',
+  );
+
+  readonly headerIconVariant = computed<OverlayIconVariant>(() =>
+    this.participantStatus() === 'PENDING_PAYMENT' ? 'warning' : 'success',
+  );
+
+  readonly headerTitle = computed(() => {
+    const status = this.participantStatus();
+    if (status === 'PENDING_PAYMENT') {
+      return 'Zgłoszenie przyjęte!';
+    }
+    return status === 'ACCEPTED' ? 'Jesteś uczestnikiem!' : 'Zgłoszenie wysłane!';
+  });
+
+  readonly headerDescription = computed(() => {
+    const status = this.participantStatus();
+    if (status === 'PENDING_PAYMENT') {
+      return 'Twoje zgłoszenie zostało zarejestrowane. Opłać udział, aby potwierdzić uczestnictwo.';
+    }
+    return status === 'ACCEPTED'
+      ? 'Dołączyłeś do tego wydarzenia.'
+      : 'Organizator rozpatrzy Twoje zgłoszenie.';
+  });
 
   readonly address = computed(() => this.event()?.address || '');
 
@@ -235,7 +217,9 @@ export class JoinConfirmOverlayComponent {
       variant: 'danger',
     });
     if (confirmed) {
-      this.leaveRequested.emit();
+      // Directly call leave event API since leave-confirm-overlay was removed
+      // TODO: This should be refactored to use a service callback
+      window.location.reload(); // Temporary fallback
     }
   }
 }

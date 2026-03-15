@@ -19,23 +19,12 @@
 <app-join-confirm-overlay
   [open]="true"
   [event]="overlays.event()"
-  [participants]="overlays.participants()"
   [loading]="overlays.loading()"
   [participantStatus]="overlays.participantStatus()"
   (closed)="overlays.close()"
-  (leaveRequested)="overlays.confirmLeave()"
   (openChat)="overlays.handleOpenChat()"
   (payRequested)="overlays.handlePay()"
   (contactOrganizer)="overlays.handleContactOrganizer()"
-/>
-} @case ('leaveConfirm') {
-<app-leave-confirm-overlay
-  [open]="true"
-  [event]="overlays.event()"
-  [participants]="overlays.participants()"
-  [loading]="overlays.loading()"
-  (closed)="overlays.close()"
-  (confirmed)="overlays.confirmLeave()"
 />
 } @case ('organizerActions') { @if (overlays.event(); as evt) {
 <app-organizer-actions-overlay

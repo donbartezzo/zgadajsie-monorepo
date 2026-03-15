@@ -14,22 +14,16 @@ import { EventCriteriaDescriptionComponent } from '../ui/event-criteria-descript
     EventCriteriaDescriptionComponent,
   ],
   template: `
-    <app-bottom-overlay [open]="open()" (closed)="closed.emit()">
+    <app-bottom-overlay
+      [open]="open()"
+      icon="list"
+      iconVariant="info"
+      title="Chcesz dołączyć?"
+      description="Zapoznaj się z poniższymi danymi i organizacją tego wydarzenia."
+      (closed)="closed.emit()"
+    >
       @let _event = event(); @if (_event) {
       <div class="space-y-4">
-        <!-- Header -->
-        <div class="text-center">
-          <div
-            class="mx-auto my-2 flex h-14 w-14 items-center justify-center rounded-full bg-info-50"
-          >
-            <app-icon name="list" size="lg" class="text-info-400"></app-icon>
-          </div>
-          <h2 class="text-lg font-bold text-neutral-900">Chcesz dołączyć?</h2>
-          <p class="mt-1 text-sm text-neutral-500">
-            Zapoznaj się z poniższymi danymi i organizacją tego wydarzenia.
-          </p>
-        </div>
-
         <!-- Event details -->
         <div>
           <h3 class="font-bold text-neutral-900 mb-2">
