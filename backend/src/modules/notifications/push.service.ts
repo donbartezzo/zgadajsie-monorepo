@@ -123,7 +123,12 @@ export class PushService {
     status: string,
     eventId: string,
   ): Promise<void> {
-    const statusText = status === 'ACCEPTED' ? 'zaakceptowane' : 'odrzucone';
+    const statusText =
+      status === 'APPROVED'
+        ? 'zatwierdzone — potwierdź uczestnictwo'
+        : status === 'CONFIRMED'
+          ? 'potwierdzone'
+          : 'odrzucone';
     const url = await this.getEventUrl(eventId);
     await this.notifyUser(
       userId,

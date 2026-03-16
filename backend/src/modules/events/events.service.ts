@@ -16,6 +16,7 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
 import { CancelPaymentDto } from './dto/cancel-payment.dto';
 import { getEventTimeStatus } from './event-time-status.util';
+import { getEnrollmentPhase, shouldSkipPreEnrollment } from './enrollment-phase.util';
 import { daysFromNow } from '../../common/utils/date.util';
 import { Decimal } from '@prisma/client/runtime/library';
 
@@ -35,13 +36,17 @@ export class EventsService {
   async create(organizerId: string, dto: CreateEventDto) {
     const coverImageId = await this.resolveCoverImageId(dto.coverImageId, dto.disciplineId);
 
+    const startsAt = new Date(dto.startsAt);
+    const lotteryExecutedAt = shouldSkipPreEnrollment(startsAt) ? new Date() : null;
+
     const event = await this.prisma.event.create({
       data: {
         ...dto,
-        startsAt: new Date(dto.startsAt),
+        startsAt,
         endsAt: new Date(dto.endsAt),
         organizerId,
         coverImageId,
+        lotteryExecutedAt,
       },
       include: { discipline: true, facility: true, level: true, city: true, coverImage: true },
     });
@@ -110,7 +115,11 @@ export class EventsService {
           city: true,
           coverImage: true,
           organizer: { select: { id: true, displayName: true, avatarUrl: true } },
-          _count: { select: { participations: true } },
+          _count: {
+            select: {
+              participations: { where: { status: { notIn: ['WITHDRAWN', 'REJECTED'] } } },
+            },
+          },
         },
       }),
       this.prisma.event.count({ where }),
@@ -139,18 +148,36 @@ export class EventsService {
     if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
 
     const eventTimeStatus = getEventTimeStatus(event);
+    const enrollmentPhase = getEnrollmentPhase(event);
 
-    if (!userId) return { ...event, eventTimeStatus };
+    if (!userId) return { ...event, eventTimeStatus, enrollmentPhase };
 
     const participation = event.participations.find((p) => p.userId === userId);
+
+    let isBannedByOrganizer = false;
+    if (event.organizerId !== userId) {
+      const relation = await this.prisma.organizerUserRelation.findUnique({
+        where: {
+          organizerUserId_targetUserId: {
+            organizerUserId: event.organizerId,
+            targetUserId: userId,
+          },
+        },
+        select: { isBanned: true },
+      });
+      isBannedByOrganizer = relation?.isBanned === true;
+    }
 
     return {
       ...event,
       eventTimeStatus,
+      enrollmentPhase,
       currentUserAccess: {
         isParticipant: !!participation,
         isOrganizer: event.organizerId === userId,
         participationStatus: participation?.status ?? null,
+        participationId: participation?.id ?? null,
+        isBannedByOrganizer,
       },
     };
   }
@@ -202,7 +229,7 @@ export class EventsService {
         const paidParticipations = await tx.eventParticipation.findMany({
           where: {
             eventId: id,
-            status: { in: ['APPLIED', 'ACCEPTED', 'PARTICIPANT'] },
+            status: { in: ['PENDING', 'APPROVED', 'CONFIRMED'] },
             payments: { some: { status: 'COMPLETED' } },
           },
           include: {
@@ -242,7 +269,7 @@ export class EventsService {
 
         // Cleanup pending payment intents (restore reserved vouchers)
         const pendingParticipations = await tx.eventParticipation.findMany({
-          where: { eventId: id, status: 'PENDING_PAYMENT' },
+          where: { eventId: id, status: { in: ['PENDING', 'APPROVED'] } },
         });
 
         let cleanedIntents = 0;
@@ -282,7 +309,7 @@ export class EventsService {
     const participants = await this.prisma.eventParticipation.findMany({
       where: {
         eventId: id,
-        status: { in: ['APPLIED', 'ACCEPTED', 'PARTICIPANT', 'WITHDRAWN'] },
+        status: { in: ['PENDING', 'APPROVED', 'CONFIRMED', 'WITHDRAWN'] },
       },
       include: { user: { select: { id: true, email: true, displayName: true } } },
     });
@@ -359,27 +386,9 @@ export class EventsService {
     return this.prisma.event.delete({ where: { id } });
   }
 
-  async toggleAutoAccept(id: string, userId: string) {
-    const event = await this.prisma.event.findUnique({ where: { id } });
-    if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
-    if (event.organizerId !== userId) {
-      throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
-    }
-    if (event.status !== 'ACTIVE' || new Date() >= event.startsAt) {
-      throw new BadRequestException(
-        'Nie można zmienić autoakceptacji dla wydarzenia, które się rozpoczęło lub zostało odwołane.',
-      );
-    }
-
-    return this.prisma.event.update({
-      where: { id },
-      data: { autoAccept: !event.autoAccept },
-    });
-  }
-
   async getParticipants(eventId: string) {
     return this.prisma.eventParticipation.findMany({
-      where: { eventId },
+      where: { eventId, status: { notIn: ['WITHDRAWN', 'REJECTED'] } },
       include: {
         user: { select: { id: true, displayName: true, avatarUrl: true } },
       },
@@ -445,33 +454,27 @@ export class EventsService {
     if (!participation) {
       throw new NotFoundException('Uczestnictwo nie znalezione');
     }
-    if (participation.status !== 'PENDING_PAYMENT') {
-      throw new BadRequestException('Uczestnik nie oczekuje na płatność');
+    if (!['APPROVED', 'CONFIRMED'].includes(participation.status)) {
+      throw new BadRequestException(
+        'Oznaczenie jako opłacone możliwe tylko dla zatwierdzonych/potwierdzonych uczestników',
+      );
     }
 
     const amount = event.costPerPerson.toNumber();
-    const newStatus = event.autoAccept ? 'ACCEPTED' : 'APPLIED';
 
-    await this.prisma.$transaction(async (tx) => {
-      await tx.payment.create({
-        data: {
-          participationId,
-          userId: participation.userId,
-          eventId,
-          amount: new Decimal(amount),
-          voucherAmountUsed: new Decimal(0),
-          organizerAmount: new Decimal(amount),
-          platformFee: new Decimal(0),
-          status: 'COMPLETED',
-          method: 'cash',
-          paidAt: new Date(),
-        },
-      });
-
-      await tx.eventParticipation.update({
-        where: { id: participationId },
-        data: { status: newStatus },
-      });
+    await this.prisma.payment.create({
+      data: {
+        participationId,
+        userId: participation.userId,
+        eventId,
+        amount: new Decimal(amount),
+        voucherAmountUsed: new Decimal(0),
+        organizerAmount: new Decimal(amount),
+        platformFee: new Decimal(0),
+        status: 'COMPLETED',
+        method: 'cash',
+        paidAt: new Date(),
+      },
     });
 
     return this.getParticipantsForOrganizer(eventId, organizerUserId);
@@ -536,7 +539,7 @@ export class EventsService {
 
       await tx.eventParticipation.update({
         where: { id: payment.participationId },
-        data: { status: 'PENDING_PAYMENT' },
+        data: { status: 'APPROVED' },
       });
     });
 
@@ -565,20 +568,24 @@ export class EventsService {
     );
 
     // Create parent event
+    const parentStartsAt = new Date(dto.startsAt);
+    const parentLotteryExecutedAt = shouldSkipPreEnrollment(parentStartsAt) ? new Date() : null;
     const parent = await this.prisma.event.create({
       data: {
         ...dto,
-        startsAt: new Date(dto.startsAt),
+        startsAt: parentStartsAt,
         endsAt: new Date(dto.endsAt),
         organizerId,
         isRecurring: true,
         recurringRule: dto.recurringRule,
+        lotteryExecutedAt: parentLotteryExecutedAt,
       },
       include: { discipline: true, facility: true, level: true, city: true },
     });
 
     // Create child instances
     for (const { start, end } of dates.slice(1)) {
+      const childLotteryExecutedAt = shouldSkipPreEnrollment(start) ? new Date() : null;
       await this.prisma.event.create({
         data: {
           title: dto.title,
@@ -596,7 +603,6 @@ export class EventsService {
           ageMax: dto.ageMax,
           gender: dto.gender,
           visibility: dto.visibility,
-          autoAccept: dto.autoAccept,
           address: dto.address,
           lat: dto.lat,
           lng: dto.lng,
@@ -605,6 +611,7 @@ export class EventsService {
           isRecurring: true,
           recurringRule: dto.recurringRule,
           parentEventId: parent.id,
+          lotteryExecutedAt: childLotteryExecutedAt,
         },
       });
     }
@@ -625,7 +632,6 @@ export class EventsService {
     if (dto.cityId !== undefined) data.cityId = dto.cityId;
     if (dto.costPerPerson !== undefined) data.costPerPerson = dto.costPerPerson;
     if (dto.maxParticipants !== undefined) data.maxParticipants = dto.maxParticipants;
-    if (dto.autoAccept !== undefined) data.autoAccept = dto.autoAccept;
     if (dto.address !== undefined) data.address = dto.address;
     if (dto.lat !== undefined) data.lat = dto.lat;
     if (dto.lng !== undefined) data.lng = dto.lng;

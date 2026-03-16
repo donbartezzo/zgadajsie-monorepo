@@ -16,15 +16,27 @@ export class ModerationService {
     return this.http.get<unknown[]>(`${this.apiUrl}/reprimands/${userId}`);
   }
 
-  createBan(userId: string, reason?: string): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/bans`, { userId, reason });
+  banUser(userId: string, reason?: string): Observable<unknown> {
+    return this.http.post(`${this.apiUrl}/ban`, { userId, reason });
   }
 
-  removeBan(banId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/bans/${banId}`);
+  unbanUser(targetUserId: string): Observable<unknown> {
+    return this.http.delete(`${this.apiUrl}/ban/${targetUserId}`);
   }
 
-  getBans(page = 1, limit = 20): Observable<unknown> {
-    return this.http.get(`${this.apiUrl}/bans`, { params: { page, limit } });
+  trustUser(targetUserId: string): Observable<unknown> {
+    return this.http.post(`${this.apiUrl}/trust/${targetUserId}`, {});
+  }
+
+  untrustUser(targetUserId: string): Observable<unknown> {
+    return this.http.delete(`${this.apiUrl}/trust/${targetUserId}`);
+  }
+
+  getRelations(page = 1, limit = 20): Observable<unknown> {
+    return this.http.get(`${this.apiUrl}/relations`, { params: { page, limit } });
+  }
+
+  getRelation(targetUserId: string): Observable<unknown> {
+    return this.http.get(`${this.apiUrl}/relation/${targetUserId}`);
   }
 }

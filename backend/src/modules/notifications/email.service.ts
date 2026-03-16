@@ -61,7 +61,12 @@ export class EmailService {
     eventTitle: string,
     status: string,
   ): Promise<void> {
-    const statusText = status === 'ACCEPTED' ? 'zaakceptowane' : 'odrzucone';
+    const statusText =
+      status === 'APPROVED'
+        ? 'zatwierdzone — potwierdź uczestnictwo'
+        : status === 'CONFIRMED'
+          ? 'potwierdzone'
+          : 'odrzucone';
     await this.send(
       email,
       `Zmiana statusu uczestnictwa – ${eventTitle}`,

@@ -3,12 +3,11 @@ import { ModerationService } from './moderation.service';
 import { CreateReprimandDto } from './dto/create-reprimand.dto';
 import { CreateBanDto } from './dto/create-ban.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { IsActiveGuard } from '../auth/guards/is-active.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, IsActiveGuard)
 @Controller('moderation')
 export class ModerationController {
   constructor(private moderationService: ModerationService) {}
@@ -23,24 +22,41 @@ export class ModerationController {
     return this.moderationService.getReprimands(userId);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
-  @Post('bans')
-  createBan(@CurrentUser() admin: AuthUser, @Body() dto: CreateBanDto) {
-    return this.moderationService.createBan(admin.id, dto);
+  @Post('ban')
+  banUser(@CurrentUser() user: AuthUser, @Body() dto: CreateBanDto) {
+    return this.moderationService.banUser(user.id, dto);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
-  @Delete('bans/:id')
-  removeBan(@Param('id') id: string) {
-    return this.moderationService.removeBan(id);
+  @Delete('ban/:targetUserId')
+  unbanUser(@Param('targetUserId') targetUserId: string, @CurrentUser() user: AuthUser) {
+    return this.moderationService.unbanUser(user.id, targetUserId);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
-  @Get('bans')
-  getBans(@Query('page') page?: string, @Query('limit') limit?: string) {
-    return this.moderationService.getBans(page ? +page : 1, limit ? +limit : 20);
+  @Post('trust/:targetUserId')
+  trustUser(@Param('targetUserId') targetUserId: string, @CurrentUser() user: AuthUser) {
+    return this.moderationService.trustUser(user.id, targetUserId);
+  }
+
+  @Delete('trust/:targetUserId')
+  untrustUser(@Param('targetUserId') targetUserId: string, @CurrentUser() user: AuthUser) {
+    return this.moderationService.untrustUser(user.id, targetUserId);
+  }
+
+  @Get('relations')
+  getRelations(
+    @CurrentUser() user: AuthUser,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.moderationService.getRelationsForOrganizer(
+      user.id,
+      page ? +page : 1,
+      limit ? +limit : 20,
+    );
+  }
+
+  @Get('relation/:targetUserId')
+  getRelation(@Param('targetUserId') targetUserId: string, @CurrentUser() user: AuthUser) {
+    return this.moderationService.getRelation(user.id, targetUserId);
   }
 }

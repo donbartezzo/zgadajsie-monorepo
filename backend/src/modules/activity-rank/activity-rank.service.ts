@@ -12,7 +12,7 @@ export class ActivityRankService {
     const participationCount = await this.prisma.eventParticipation.count({
       where: {
         userId,
-        status: { in: ['ACCEPTED', 'PARTICIPANT'] },
+        status: { in: ['APPROVED', 'CONFIRMED'] },
         createdAt: { gte: thirtyDaysAgo },
       },
     });

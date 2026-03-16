@@ -49,12 +49,15 @@
     }
   </div>
 
-  <!-- Event lifecycle banner -->
-  @if (lifecycleBannerVariant(); as variant) {
+  <!-- Enrollment status banner -->
   <div class="mt-2">
-    <app-event-lifecycle-banner [variant]="variant" />
+    <app-enrollment-status-banner
+      [enrollmentPhase]="enrollmentPhase()"
+      [eventTimeStatus]="eventTimeStatus()"
+      [isCancelled]="isCancelled()"
+      [participantCount]="participantCount()"
+    />
   </div>
-  }
 
   <!-- Description -->
   @if (e.description) {
@@ -63,27 +66,38 @@
   </p>
   }
 
-  <!-- Overlapping participant avatars (clickable → opens participants page) -->
-  @if (participants().length > 0) {
-  <a [routerLink]="['/w', e.city?.slug, e.id, 'participants']" class="flex items-center mb-4">
-    <div class="flex items-center -space-x-3">
-      @for (p of visibleAvatars(); track p.id; let i = $index) {
-      <div class="relative h-7 w-7 shrink-0 rounded-full ring-2 ring-white" [style.z-index]="6 - i">
-        <app-user-avatar
-          [avatarUrl]="p.user?.avatarUrl"
-          [displayName]="p.user?.displayName || ''"
-          size="sm"
-        ></app-user-avatar>
-      </div>
-      }
+  <!-- Participants section -->
+  @if (isPreEnrollment()) {
+    <!-- Pre-enrollment: only show count, no avatar list, no link -->
+    @if (participantCount() > 0) {
+    <div class="mb-4 flex items-center gap-2">
+      <app-icon name="users" size="sm" class="text-info-400"></app-icon>
+      <span class="text-xs text-neutral-500">
+        {{ participantCount() }} {{ participantCount() === 1 ? 'osoba zgłoszona' : 'osób zgłoszonych' }}
+      </span>
     </div>
-    <span class="pl-4 text-[10px] text-neutral-400">
-      @if (remainingCount() > 0) { +{{ remainingCount() }} uczestników } @else {
-      {{ participants().length }}
-      {{ participants().length === 1 ? 'uczestnik' : 'uczestników' }}
-      }
-    </span>
-  </a>
+    }
+  } @else if (participants().length > 0) {
+    <!-- Normal: clickable avatars → participants page -->
+    <a [routerLink]="['/w', e.city?.slug, e.id, 'participants']" class="flex items-center mb-4">
+      <div class="flex items-center -space-x-3">
+        @for (p of visibleAvatars(); track p.id; let i = $index) {
+        <div class="relative h-7 w-7 shrink-0 rounded-full ring-2 ring-white" [style.z-index]="6 - i">
+          <app-user-avatar
+            [avatarUrl]="p.user?.avatarUrl"
+            [displayName]="p.user?.displayName || ''"
+            size="sm"
+          ></app-user-avatar>
+        </div>
+        }
+      </div>
+      <span class="pl-4 text-[10px] text-neutral-400">
+        @if (remainingCount() > 0) { +{{ remainingCount() }} uczestników } @else {
+        {{ participants().length }}
+        {{ participants().length === 1 ? 'uczestnik' : 'uczestników' }}
+        }
+      </span>
+    </a>
   }
 
   <!-- Organizer announcements -->
@@ -195,16 +209,20 @@
     </div>
     }
 
-    <!-- Auto accept -->
+    <!-- Enrollment phase -->
+    @if (enrollmentPhase(); as phase) {
     <div class="flex items-start gap-2.5">
-      <app-icon name="check" size="md" class="text-success-400 mt-0.5 shrink-0"></app-icon>
+      <app-icon name="users" size="md" class="text-primary-400 mt-0.5 shrink-0"></app-icon>
       <div>
-        <span class="block text-[10px] text-neutral-400">Akceptacja</span>
+        <span class="block text-[10px] text-neutral-400">Zapisy</span>
         <strong class="block text-xs font-semibold text-neutral-900">
-          @if (e.autoAccept) { Automatyczna } @else { Wymaga zatwierdzenia }
+          @if (phase === 'PRE_ENROLLMENT') { Wstępne zapisy }
+          @else if (phase === 'LOTTERY_PENDING') { Losowanie w toku }
+          @else { Otwarte zapisy }
         </strong>
       </div>
     </div>
+    }
 
     <!-- City -->
     @if (e.city) {
@@ -231,32 +249,31 @@
   </div>
   }
 
-  <!-- Countdown — ticking every second until event starts -->
+  <!-- Countdown — always to event start -->
   @if (countdown(); as cd) {
-  <div class="border-t border-neutral-100"></div>
-
-  <div class="mb-4 mt-4">
-    <h3 class="text-base font-bold text-neutral-900">Pospiesz się! Czas ucieka!</h3>
-    <p class="mt-1 mb-3 text-sm text-neutral-500">Dołącz zanim będzie za późno.</p>
-    <div class="grid grid-cols-4 gap-2 text-center">
-      <div>
-        <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.days }}</span>
-        <span class="block text-[11px] text-neutral-400">dni</span>
-      </div>
-      <div>
-        <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.hours }}</span>
-        <span class="block text-[11px] text-neutral-400">godzin</span>
-      </div>
-      <div>
-        <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.minutes }}</span>
-        <span class="block text-[11px] text-neutral-400">minut</span>
-      </div>
-      <div>
-        <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.seconds }}</span>
-        <span class="block text-[11px] text-neutral-400">sekund</span>
+    <div class="border-t border-neutral-100"></div>
+    <div class="mb-4 mt-4">
+      <h3 class="text-base font-bold text-neutral-900">Wydarzenie za:</h3>
+      <p class="mt-1 mb-3 text-sm text-neutral-500">Dołącz zanim będzie za późno.</p>
+      <div class="grid grid-cols-4 gap-2 text-center">
+        <div>
+          <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.days }}</span>
+          <span class="block text-[11px] text-neutral-400">dni</span>
+        </div>
+        <div>
+          <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.hours }}</span>
+          <span class="block text-[11px] text-neutral-400">godzin</span>
+        </div>
+        <div>
+          <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.minutes }}</span>
+          <span class="block text-[11px] text-neutral-400">minut</span>
+        </div>
+        <div>
+          <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.seconds }}</span>
+          <span class="block text-[11px] text-neutral-400">sekund</span>
+        </div>
       </div>
     </div>
-  </div>
   }
 
   <!-- Notification bars (participant, organizer, etc.) -->
@@ -269,8 +286,26 @@
   </div>
   }
 
-  <!-- Join / Login button (only when not participant and event is joinable) -->
-  @if (!isParticipant() && canJoin()) {
+  <!-- Ban banner -->
+  @if (isBannedByOrganizer()) {
+  <div class="mt-4 rounded-xl border border-danger-200 bg-danger-50 p-4">
+    <div class="flex items-start gap-3">
+      <app-icon name="shield-alert" size="sm" class="text-danger-400 mt-0.5 shrink-0"></app-icon>
+      <div>
+        <p class="text-sm font-semibold text-danger-600">
+          Nie możesz dołączyć do wydarzeń tego organizatora
+        </p>
+        <p class="mt-1 text-xs text-danger-500">
+          Organizator zablokował Ci możliwość zapisu na swoje wydarzenia. Jeśli uważasz, że to
+          pomyłka, skontaktuj się bezpośrednio z organizatorem.
+        </p>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Join / Login button (only when not participant, not organizer, not banned, and event is joinable) -->
+  @if (!isParticipant() && !isOrganizer() && !isBannedByOrganizer() && canJoin()) {
   <div class="mt-4">
     <app-button
       variant="primary"
@@ -278,7 +313,7 @@
       [loading]="joining()"
       (clicked)="openJoinSheet()"
     >
-      {{ auth.isLoggedIn() ? 'Dołącz do wydarzenia' : 'Zaloguj się, aby dołączyć' }}
+      {{ ctaLabel() }}
     </app-button>
   </div>
   }
@@ -354,7 +389,7 @@
 </div>
 
 <!-- Fixed bottom CTA -->
-@if (!isParticipant() && !isOrganizer() && canJoin()) {
+@if (!isParticipant() && !isOrganizer() && !isBannedByOrganizer() && canJoin()) {
 <div
   class="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-app pointer-events-none pb-[calc(env(safe-area-inset-bottom)+4.5rem)] px-4"
 >
@@ -365,7 +400,7 @@
       [disabled]="joining()"
       (click)="openJoinSheet()"
     >
-      Dołącz
+      {{ ctaLabelShort() }}
     </button>
   </div>
 </div>

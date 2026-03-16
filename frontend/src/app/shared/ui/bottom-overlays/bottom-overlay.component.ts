@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  output,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent, IconName } from '../../../core/icons/icon.component';
 
@@ -17,13 +26,16 @@ const ICON_VARIANT_MAP: Record<OverlayIconVariant, { bg: string; text: string }>
   imports: [CommonModule, IconComponent],
   template: `
     @if (open()) {
-    <div class="fixed inset-x-0 top-0 bottom-16 z-[60] flex flex-col justify-end max-w-app mx-auto">
+    <div class="fixed inset-x-0 top-0 bottom-16 z-[60] flex flex-col max-w-app mx-auto">
       <!-- Backdrop -->
       <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="closed.emit()"></div>
 
+      <!-- Spacer — pushes sheet down when content is small, collapses when content is large -->
+      <div class="relative z-10 flex-1 min-h-0" (click)="closed.emit()"></div>
+
       <!-- Sheet -->
       <div
-        class="relative z-10 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl animate-slide-up"
+        class="relative z-10 min-h-0 overflow-y-auto rounded-t-2xl bg-white shadow-2xl animate-slide-up"
       >
         <!-- Handle + header -->
         <div class="sticky top-0 z-10 bg-white px-4 pt-3 pb-2 rounded-t-2xl relative text-center">
@@ -82,6 +94,8 @@ const ICON_VARIANT_MAP: Record<OverlayIconVariant, { bg: string; text: string }>
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BottomOverlayComponent {
+  private readonly destroyRef = inject(DestroyRef);
+
   readonly open = input(false);
   readonly title = input('');
   readonly description = input('');
@@ -91,4 +105,19 @@ export class BottomOverlayComponent {
 
   protected readonly iconBgClass = computed(() => ICON_VARIANT_MAP[this.iconVariant()].bg);
   protected readonly iconTextClass = computed(() => ICON_VARIANT_MAP[this.iconVariant()].text);
+
+  constructor() {
+    // Prevent body scroll when overlay is open - @TODO?
+    effect(() => {
+      if (this.open()) {
+        document.body.classList.add('overflow-hidden');
+      } else {
+        document.body.classList.remove('overflow-hidden');
+      }
+    });
+
+    this.destroyRef.onDestroy(() => {
+      document.body.classList.remove('overflow-hidden');
+    });
+  }
 }

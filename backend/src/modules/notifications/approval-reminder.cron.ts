@@ -1,0 +1,69 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { PrismaService } from '../prisma/prisma.service';
+import { PushService } from './push.service';
+import { EmailService } from './email.service';
+
+@Injectable()
+export class ApprovalReminderCron {
+  private readonly logger = new Logger(ApprovalReminderCron.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private pushService: PushService,
+    private emailService: EmailService,
+  ) {}
+
+  @Cron(CronExpression.EVERY_30_MINUTES)
+  async handleApprovalReminders(): Promise<void> {
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const twentyFourAndHalfHoursAgo = new Date(now.getTime() - 24.5 * 60 * 60 * 1000);
+
+    // Find APPROVED participations that were approved ~24h ago and not yet confirmed
+    const participations = await this.prisma.eventParticipation.findMany({
+      where: {
+        status: 'APPROVED',
+        approvedAt: {
+          gte: twentyFourAndHalfHoursAgo,
+          lt: twentyFourHoursAgo,
+        },
+        event: { status: 'ACTIVE' },
+      },
+      include: {
+        user: { select: { id: true, email: true, displayName: true } },
+        addedBy: { select: { id: true, email: true, displayName: true } },
+        event: { select: { id: true, title: true } },
+      },
+    });
+
+    for (const p of participations) {
+      // Route notification to host for guests, to user for self
+      const recipient = p.isGuest && p.addedBy ? p.addedBy : p.user;
+      const guestLabel = p.isGuest ? ` (gość: ${p.user.displayName})` : '';
+
+      try {
+        await this.pushService.notifyParticipationStatus(
+          recipient.id,
+          p.event.title,
+          'APPROVAL_REMINDER',
+          p.event.id,
+        );
+        await this.emailService.sendParticipationStatusEmail(
+          recipient.email,
+          recipient.displayName,
+          `${p.event.title}${guestLabel}`,
+          'APPROVAL_REMINDER',
+        );
+      } catch (err) {
+        this.logger.error(
+          `Approval reminder failed for user ${recipient.id}, event ${p.event.id}: ${err}`,
+        );
+      }
+    }
+
+    if (participations.length > 0) {
+      this.logger.log(`Sent ${participations.length} approval reminders`);
+    }
+  }
+}

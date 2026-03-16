@@ -53,18 +53,20 @@ import { Participation } from '../../../../shared/types';
               <span
                 [class]="
                   'text-xs mt-1 inline-block px-2 py-0.5 rounded-full ' +
-                  (p.status === 'ACCEPTED'
+                  (p.status === 'CONFIRMED'
                     ? 'bg-success-50 text-success-600'
+                    : p.status === 'APPROVED'
+                    ? 'bg-info-50 text-info-600'
                     : p.status === 'PENDING'
                     ? 'bg-warning-50 text-warning-400'
                     : 'bg-neutral-100 text-neutral-600')
                 "
               >
-                {{ p.status }}
+                {{ statusLabel(p.status) }}
               </span>
             </div>
-            @if (p.status === 'ACCEPTED' || p.status === 'PENDING') {
-            <app-button variant="outline" size="sm" (clicked)="onLeave(p.eventId)">
+            @if (p.status === 'PENDING' || p.status === 'APPROVED' || p.status === 'CONFIRMED') {
+            <app-button variant="outline" size="sm" (clicked)="onLeave(p.id)">
               <app-icon name="user-x" size="sm"></app-icon>
             </app-button>
             }
@@ -95,13 +97,26 @@ export class MyParticipationsComponent implements OnInit {
     });
   }
 
-  onLeave(eventId: string): void {
-    this.eventService.leaveEvent(eventId).subscribe({
+  onLeave(participationId: string): void {
+    this.eventService.leaveParticipation(participationId).subscribe({
       next: () => {
-        this.participations.update((prev) => prev.filter((p) => p.eventId !== eventId));
+        this.participations.update((prev) =>
+          prev.map((p) => (p.id === participationId ? { ...p, status: 'WITHDRAWN' } : p)),
+        );
         this.snackbar.info('Wypisano z wydarzenia');
       },
       error: () => this.snackbar.error('Nie udało się wypisać'),
     });
+  }
+
+  statusLabel(status: string): string {
+    const map: Record<string, string> = {
+      PENDING: 'Oczekuje',
+      APPROVED: 'Zatwierdzone',
+      CONFIRMED: 'Potwierdzone',
+      WITHDRAWN: 'Wycofane',
+      REJECTED: 'Odrzucone',
+    };
+    return map[status] ?? status;
   }
 }

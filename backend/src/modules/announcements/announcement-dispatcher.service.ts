@@ -7,13 +7,7 @@ import { ChatGateway } from '../chat/chat.gateway';
 
 const CHUNK_SIZE = 50;
 
-const ACTIVE_PARTICIPANT_STATUSES = [
-  'APPLIED',
-  'ACCEPTED',
-  'PARTICIPANT',
-  'RESERVE',
-  'PENDING_PAYMENT',
-];
+const ACTIVE_PARTICIPANT_STATUSES = ['PENDING', 'APPROVED', 'CONFIRMED'];
 
 export interface DispatchResult {
   announcementId: string;

@@ -348,6 +348,13 @@ export type IconVariant = 'default' | 'muted' | 'primary' | 'danger';
       </svg>
     </span>
   `,
+  styles: [
+    `
+      :host {
+        display: contents;
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class IconComponent {

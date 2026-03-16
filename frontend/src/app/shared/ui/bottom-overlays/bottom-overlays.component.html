@@ -25,6 +25,7 @@
   (openChat)="overlays.handleOpenChat()"
   (payRequested)="overlays.handlePay()"
   (contactOrganizer)="overlays.handleContactOrganizer()"
+  (leaveRequested)="overlays.handleLeaveRequested()"
 />
 } @case ('organizerActions') { @if (overlays.event(); as evt) {
 <app-organizer-actions-overlay
@@ -35,6 +36,19 @@
   [eventStartsAt]="evt.startsAt"
   (closed)="overlays.close()"
   (cancelRequested)="overlays.handleCancelEvent()"
+/>
+} } @case ('enrollmentDetails') { @if (overlays.event(); as evt) {
+<app-enrollment-details-overlay
+  [open]="true"
+  [enrollmentPhase]="evt.enrollmentPhase ?? null"
+  [eventTimeStatus]="evt.eventTimeStatus ?? null"
+  [isCancelled]="evt.status === 'CANCELLED'"
+  [startsAt]="evt.startsAt"
+  [participantCount]="evt._count?.participations ?? 0"
+  [maxParticipants]="evt.maxParticipants"
+  [costPerPerson]="evt.costPerPerson"
+  [lotteryCountdown]="overlays.lotteryCountdown()"
+  (closed)="overlays.close()"
 />
 } } @case ('cancelPayment') { @if (overlays.cancelPayment(); as payment) {
 <app-cancel-payment-overlay

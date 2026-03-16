@@ -40,7 +40,7 @@ export class EventReminderCron {
       },
       include: {
         participations: {
-          where: { status: { in: ['ACCEPTED', 'PARTICIPANT'] } },
+          where: { status: { in: ['APPROVED', 'CONFIRMED'] } },
           include: {
             user: { select: { id: true, email: true, displayName: true } },
           },

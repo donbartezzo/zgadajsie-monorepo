@@ -2,7 +2,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
     "module": "commonjs",
     "types": ["node"],
     "experimentalDecorators": true,
@@ -11,6 +10,6 @@
     "composite": true,
     "declaration": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
+  "include": ["src/**/*.ts", "../libs/src/**/*.ts"],
+  "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts", "../libs/src/**/*.spec.ts", "../libs/src/**/*.test.ts"]
 }

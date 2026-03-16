@@ -1,4 +1,4 @@
-import { Controller, Post, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
 import { ParticipationService } from './participation.service';
 import { JoinGuestDto } from './dto/join-guest.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -25,9 +25,14 @@ export class ParticipationController {
     return this.participationService.joinGuest(eventId, user.id, dto.displayName);
   }
 
-  @Post('participations/:id/accept')
-  accept(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.accept(id, user.id);
+  @Post('participations/:id/approve')
+  approve(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.participationService.approve(id, user.id);
+  }
+
+  @Post('participations/:id/confirm')
+  confirm(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.participationService.confirm(id, user.id);
   }
 
   @Post('participations/:id/reject')
@@ -35,13 +40,27 @@ export class ParticipationController {
     return this.participationService.reject(id, user.id);
   }
 
-  @Post('events/:eventId/leave')
-  leave(@Param('eventId') eventId: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.leave(eventId, user.id);
+  @Post('participations/:id/leave')
+  leave(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.participationService.leave(id, user.id);
   }
 
-  @Post('events/:eventId/pay')
-  pay(@Param('eventId') eventId: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.initiateEventPayment(eventId, user.id);
+  @Post('participations/:id/pay')
+  pay(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.participationService.initiateEventPayment(id, user.id);
+  }
+
+  @Post('participations/:id/organizer-pick')
+  setOrganizerPick(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+    @Body('picked') picked: boolean,
+  ) {
+    return this.participationService.setOrganizerPick(id, user.id, picked);
+  }
+
+  @Get('events/:eventId/my-guests')
+  getActiveGuests(@Param('eventId') eventId: string, @CurrentUser() user: AuthUser) {
+    return this.participationService.getActiveGuestsForHost(eventId, user.id);
   }
 }

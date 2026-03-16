@@ -13,13 +13,14 @@ import { IconComponent } from '../../../../core/icons/icon.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EventService } from '../../../../core/services/event.service';
 import { Event as EventModel, Participation } from '../../../../shared/types';
+import { getEnrollmentPhase } from '../../../../shared/utils/enrollment-phase.util';
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 
-const ACTIVE_STATUSES = ['APPLIED', 'ACCEPTED', 'PARTICIPANT', 'PENDING_PAYMENT'];
-const PENDING_STATUSES = ['RESERVE'];
-const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED', 'BANNED'];
+const ACTIVE_STATUSES = ['APPROVED', 'CONFIRMED'];
+const PENDING_STATUSES = ['PENDING'];
+const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
 
 @Component({
   selector: 'app-event-participants',
@@ -59,9 +60,19 @@ export class EventParticipantsComponent implements OnInit {
   );
 
   readonly subtitle = computed(() => {
+    if (this.isPreEnrollment()) return 'Pre-zapisy';
     const count = this.activeParticipants().length;
     return `${count} ${count === 1 ? 'uczestnik' : 'uczestników'}`;
   });
+
+  readonly isPreEnrollment = computed(() => {
+    const e = this.event();
+    if (!e) return false;
+    const phase = getEnrollmentPhase(e.startsAt, e.lotteryExecutedAt, e.status);
+    return phase === 'PRE_ENROLLMENT';
+  });
+
+  readonly totalPendingCount = computed(() => this.participants().length);
 
   private get eventId(): string {
     return this.route.snapshot.paramMap.get('id') ?? '';

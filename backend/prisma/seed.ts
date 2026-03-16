@@ -17,7 +17,7 @@ async function main() {
   await prisma.organizerVoucher.deleteMany({});
   await prisma.eventParticipation.deleteMany({});
   await prisma.reprimand.deleteMany({});
-  await prisma.organizerBan.deleteMany({});
+  await prisma.organizerUserRelation.deleteMany({});
   await prisma.notification.deleteMany({});
   await prisma.pushSubscription.deleteMany({});
   await prisma.citySubscription.deleteMany({});
@@ -106,13 +106,14 @@ async function main() {
     ],
   });
 
-  // ─── Przykładowy użytkownik testowy ──────────────────────────────────────
-  console.log('Tworzę użytkownika testowego...');
-  const testUserHash = await bcrypt.hash('Test1234!', 10);
-  const testUser = await prisma.user.create({
+  // ─── Użytkownicy testowi ───────────────────────────────────────────────
+  console.log('Tworzę użytkowników testowych...');
+  const userHash = await bcrypt.hash('Test1234!', 10);
+
+  const jan = await prisma.user.create({
     data: {
       email: 'jan.kowalski@example.com',
-      passwordHash: testUserHash,
+      passwordHash: userHash,
       displayName: 'Jan Kowalski',
       role: 'USER',
       isActive: true,
@@ -120,27 +121,76 @@ async function main() {
     },
   });
 
-  // ─── Przykładowe wydarzenia ─────────────────────────────────────────────
-  console.log('Tworzę przykładowe wydarzenia...');
-  const now = new Date();
+  const anna = await prisma.user.create({
+    data: {
+      email: 'anna.nowak@example.com',
+      passwordHash: userHash,
+      displayName: 'Anna Nowak',
+      role: 'USER',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
 
-  // Helper: tworzy datę względem teraz
+  const marek = await prisma.user.create({
+    data: {
+      email: 'marek.wisniewski@example.com',
+      passwordHash: userHash,
+      displayName: 'Marek Wiśniewski',
+      role: 'USER',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+
+  const kasia = await prisma.user.create({
+    data: {
+      email: 'kasia.zielinska@example.com',
+      passwordHash: userHash,
+      displayName: 'Kasia Zielińska',
+      role: 'USER',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+
+  const tomek = await prisma.user.create({
+    data: {
+      email: 'tomek.lewandowski@example.com',
+      passwordHash: userHash,
+      displayName: 'Tomek Lewandowski',
+      role: 'USER',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+
+  console.log('Użytkownicy:', [jan, anna, marek, kasia, tomek].map((u) => u.displayName));
+
+  // ─── Przykładowe wydarzenia ─────────────────────────────────────────────
+  console.log('Tworzę wydarzenia...');
+  const now = new Date();
   const hoursFromNow = (h: number): Date => new Date(now.getTime() + h * 60 * 60 * 1000);
 
-  // 1) ZAKOŃCZONE — wczoraj 16:00–17:30
-  await prisma.event.create({
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ZAKOŃCZONE (2 szt.)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // 1) Zakończone — piłka nożna wczoraj
+  const ended1 = await prisma.event.create({
     data: {
-      title: 'Wieczorny mecz na orliku (zakończony)',
-      description: 'Zapraszamy na rekreacyjny mecz piłki nożnej w Zielonej Górze!',
+      title: 'Wieczorne granie na orliku',
+      description: 'Rekreacyjna piłka nożna w Zielonej Górze — zakończone z powodzeniem!',
       disciplineId: disciplines[0].id,
       facilityId: facilities[0].id,
       levelId: levels[0].id,
       cityId: city.id,
-      organizerId: testUser.id,
+      organizerId: jan.id,
       startsAt: hoursFromNow(-26),
       endsAt: hoursFromNow(-24.5),
       costPerPerson: 10,
       maxParticipants: 14,
+      lotteryExecutedAt: hoursFromNow(-74),
       gender: 'ANY',
       visibility: 'PUBLIC',
       status: 'ACTIVE',
@@ -150,20 +200,71 @@ async function main() {
     },
   });
 
-  // 2) ODWOŁANE — wczoraj, status CANCELLED
-  await prisma.event.create({
+  // Participations — confirmed participants for ended event
+  await prisma.eventParticipation.createMany({
+    data: [
+      { eventId: ended1.id, userId: anna.id, status: 'CONFIRMED', approvedAt: hoursFromNow(-73) },
+      { eventId: ended1.id, userId: marek.id, status: 'CONFIRMED', approvedAt: hoursFromNow(-73) },
+      { eventId: ended1.id, userId: kasia.id, status: 'CONFIRMED', approvedAt: hoursFromNow(-72) },
+      { eventId: ended1.id, userId: tomek.id, status: 'CONFIRMED', approvedAt: hoursFromNow(-72) },
+    ],
+  });
+
+  // 2) Zakończone — siatkówka przedwczoraj
+  const ended2 = await prisma.event.create({
     data: {
-      title: 'Koszykówka (odwołana)',
-      description: 'Ten mecz został odwołany z powodu złej pogody.',
+      title: 'Siatkówka w hali — spotkanie',
+      description: 'Spotkanie siatkarskie dla amatorów — super atmosfera!',
+      disciplineId: disciplines[1].id,
+      facilityId: facilities[1].id,
+      levelId: levels[1].id,
+      cityId: city.id,
+      organizerId: admin.id,
+      startsAt: hoursFromNow(-50),
+      endsAt: hoursFromNow(-47),
+      costPerPerson: 15,
+      maxParticipants: 12,
+      lotteryExecutedAt: hoursFromNow(-98),
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      address: 'ul. Wyspiańskiego 10, Zielona Góra',
+      lat: 51.9412,
+      lng: 15.5089,
+    },
+  });
+
+  await prisma.eventParticipation.createMany({
+    data: [
+      { eventId: ended2.id, userId: jan.id, status: 'CONFIRMED', approvedAt: hoursFromNow(-97) },
+      { eventId: ended2.id, userId: anna.id, status: 'CONFIRMED', approvedAt: hoursFromNow(-97) },
+      {
+        eventId: ended2.id,
+        userId: marek.id,
+        status: 'CONFIRMED',
+        approvedAt: hoursFromNow(-96),
+      },
+    ],
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ODWOŁANE (2 szt.)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // 3) Odwołane — koszykówka
+  const cancelled1 = await prisma.event.create({
+    data: {
+      title: 'Koszykówka 3v3 — odwołana',
+      description: 'Odwołane z powodu złych warunków pogodowych.',
       disciplineId: disciplines[2].id,
       facilityId: facilities[1].id,
       levelId: levels[1].id,
       cityId: city.id,
-      organizerId: testUser.id,
+      organizerId: jan.id,
       startsAt: hoursFromNow(-20),
       endsAt: hoursFromNow(-18.5),
       costPerPerson: 0,
-      maxParticipants: 10,
+      maxParticipants: 6,
       gender: 'ANY',
       visibility: 'PUBLIC',
       status: 'CANCELLED',
@@ -173,11 +274,45 @@ async function main() {
     },
   });
 
-  // 3) TRWAJĄCE — start 1h temu, koniec za 1h
+  await prisma.eventParticipation.createMany({
+    data: [
+      { eventId: cancelled1.id, userId: anna.id, status: 'WITHDRAWN' },
+      { eventId: cancelled1.id, userId: tomek.id, status: 'WITHDRAWN' },
+    ],
+  });
+
+  // 4) Odwołane — squash jutro miał być
   await prisma.event.create({
     data: {
-      title: 'Siatkówka w hali (trwa!)',
-      description: 'Mecz w trakcie — dołącz jako kibic!',
+      title: 'Squash dla początkujących — odwołany',
+      description: 'Organizator odwołał z przyczyn osobistych.',
+      disciplineId: disciplines[5].id,
+      facilityId: facilities[1].id,
+      levelId: levels[0].id,
+      cityId: city.id,
+      organizerId: anna.id,
+      startsAt: hoursFromNow(20),
+      endsAt: hoursFromNow(21.5),
+      costPerPerson: 25,
+      maxParticipants: 4,
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      status: 'CANCELLED',
+      address: 'ul. Botaniczna 5, Zielona Góra',
+      lat: 51.938,
+      lng: 15.512,
+    },
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // W TRAKCIE (2 szt.)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // 5) W trakcie — siatkówka (start 1h temu, koniec za 1h)
+  const ongoing1 = await prisma.event.create({
+    data: {
+      title: 'Siatkówka w hali — trwa!',
+      description: 'Wydarzenie w trakcie — dołącz jako widz!',
       disciplineId: disciplines[1].id,
       facilityId: facilities[1].id,
       levelId: levels[1].id,
@@ -187,9 +322,9 @@ async function main() {
       endsAt: hoursFromNow(1),
       costPerPerson: 15,
       maxParticipants: 12,
+      lotteryExecutedAt: hoursFromNow(-49),
       gender: 'ANY',
       visibility: 'PUBLIC',
-      autoAccept: true,
       status: 'ACTIVE',
       address: 'ul. Wyspiańskiego 10, Zielona Góra',
       lat: 51.9412,
@@ -197,43 +332,133 @@ async function main() {
     },
   });
 
-  // 4) NADCHODZĄCE — start za 5h (< 8h, countdown urgent)
-  await prisma.event.create({
+  await prisma.eventParticipation.createMany({
+    data: [
+      {
+        eventId: ongoing1.id,
+        userId: jan.id,
+        status: 'CONFIRMED',
+        approvedAt: hoursFromNow(-48),
+      },
+      {
+        eventId: ongoing1.id,
+        userId: anna.id,
+        status: 'CONFIRMED',
+        approvedAt: hoursFromNow(-48),
+      },
+      {
+        eventId: ongoing1.id,
+        userId: kasia.id,
+        status: 'CONFIRMED',
+        approvedAt: hoursFromNow(-47),
+      },
+    ],
+  });
+
+  // 6) W trakcie — bieganie (start 30 min temu, koniec za 1.5h)
+  const ongoing2 = await prisma.event.create({
     data: {
-      title: 'Tenis na korcie (już niedługo!)',
-      description: 'Mecz tenisowy startuje za kilka godzin — zapisz się!',
+      title: 'Poranny bieg w parku — trwa!',
+      description: 'Bieg rekreacyjny po parku Piastowskim.',
+      disciplineId: disciplines[6].id,
+      facilityId: facilities[6].id,
+      levelId: levels[0].id,
+      cityId: city.id,
+      organizerId: anna.id,
+      startsAt: hoursFromNow(-0.5),
+      endsAt: hoursFromNow(1.5),
+      costPerPerson: 0,
+      maxParticipants: 20,
+      lotteryExecutedAt: hoursFromNow(-48.5),
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      address: 'Park Piastowski, Zielona Góra',
+      lat: 51.9401,
+      lng: 15.4975,
+    },
+  });
+
+  await prisma.eventParticipation.createMany({
+    data: [
+      {
+        eventId: ongoing2.id,
+        userId: marek.id,
+        status: 'CONFIRMED',
+        approvedAt: hoursFromNow(-47),
+      },
+      {
+        eventId: ongoing2.id,
+        userId: tomek.id,
+        status: 'CONFIRMED',
+        approvedAt: hoursFromNow(-47),
+      },
+    ],
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // NADCHODZĄCE — OTWARTE ZAPISY (lotteryExecutedAt != null, start > now)
+  // Faza: OPEN_ENROLLMENT
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // 7) Otwarte zapisy — tenis za 5h (lotteria odbyła się, wolne miejsca)
+  const openEnroll1 = await prisma.event.create({
+    data: {
+      title: 'Tenis na korcie — otwarte zapisy!',
+      description:
+        'Losowanie za nami, ale wciąż zostały wolne miejsca. Zapisz się w trybie otwartym!',
       disciplineId: disciplines[3].id,
       facilityId: facilities[5].id,
       levelId: levels[2].id,
       cityId: city.id,
-      organizerId: testUser.id,
+      organizerId: jan.id,
       startsAt: hoursFromNow(5),
       endsAt: hoursFromNow(6.5),
       costPerPerson: 20,
       maxParticipants: 4,
+      lotteryExecutedAt: hoursFromNow(-1),
       gender: 'ANY',
       visibility: 'PUBLIC',
       status: 'ACTIVE',
       address: 'ul. Botaniczna 5, Zielona Góra',
-      lat: 51.9380,
-      lng: 15.5120,
+      lat: 51.938,
+      lng: 15.512,
     },
   });
 
-  // 5) NADCHODZĄCE — jutro
-  await prisma.event.create({
+  // 1 participant approved (awaiting confirmation), 1 confirmed
+  await prisma.eventParticipation.createMany({
+    data: [
+      {
+        eventId: openEnroll1.id,
+        userId: anna.id,
+        status: 'CONFIRMED',
+        approvedAt: hoursFromNow(-0.5),
+      },
+      {
+        eventId: openEnroll1.id,
+        userId: marek.id,
+        status: 'APPROVED',
+        approvedAt: hoursFromNow(-0.5),
+      },
+    ],
+  });
+
+  // 8) Otwarte zapisy — piłka nożna jutro (loteria dawno przeszła)
+  const openEnroll2 = await prisma.event.create({
     data: {
-      title: 'Piłka nożna jutro wieczorem',
-      description: 'Zapraszamy na jutrzejszy mecz piłki nożnej!',
+      title: 'Piłka nożna jutro wieczorem — zapisy otwarte',
+      description: 'Losowanie zakończone, ale są jeszcze miejsca! Zapisz się szybko.',
       disciplineId: disciplines[0].id,
       facilityId: facilities[0].id,
       levelId: levels[0].id,
       cityId: city.id,
-      organizerId: testUser.id,
+      organizerId: jan.id,
       startsAt: hoursFromNow(24),
       endsAt: hoursFromNow(25.5),
       costPerPerson: 10,
       maxParticipants: 14,
+      lotteryExecutedAt: hoursFromNow(-24),
       gender: 'ANY',
       visibility: 'PUBLIC',
       status: 'ACTIVE',
@@ -243,23 +468,47 @@ async function main() {
     },
   });
 
-  // 6) NADCHODZĄCE — pojutrze
-  await prisma.event.create({
+  await prisma.eventParticipation.createMany({
+    data: [
+      {
+        eventId: openEnroll2.id,
+        userId: anna.id,
+        status: 'CONFIRMED',
+        approvedAt: hoursFromNow(-23),
+      },
+      {
+        eventId: openEnroll2.id,
+        userId: marek.id,
+        status: 'CONFIRMED',
+        approvedAt: hoursFromNow(-23),
+      },
+      {
+        eventId: openEnroll2.id,
+        userId: kasia.id,
+        status: 'APPROVED',
+        approvedAt: hoursFromNow(-23),
+      },
+      { eventId: openEnroll2.id, userId: tomek.id, status: 'PENDING' },
+    ],
+  });
+
+  // 9) Otwarte zapisy — badminton za 10h (pełne, ma odrzuconego)
+  const openEnroll3 = await prisma.event.create({
     data: {
-      title: 'Siatkówka pojutrze',
-      description: 'Szukamy chętnych na amatorski mecz siatkówki!',
-      disciplineId: disciplines[1].id,
+      title: 'Badminton debel — zapisy zamknięte (pełne)',
+      description: 'Wszystkie miejsca zajęte po losowaniu. Może następnym razem!',
+      disciplineId: disciplines[4].id,
       facilityId: facilities[1].id,
       levelId: levels[1].id,
       cityId: city.id,
-      organizerId: admin.id,
-      startsAt: hoursFromNow(48),
-      endsAt: hoursFromNow(49.5),
+      organizerId: anna.id,
+      startsAt: hoursFromNow(10),
+      endsAt: hoursFromNow(11.5),
       costPerPerson: 15,
-      maxParticipants: 12,
+      maxParticipants: 4,
+      lotteryExecutedAt: hoursFromNow(-38),
       gender: 'ANY',
       visibility: 'PUBLIC',
-      autoAccept: true,
       status: 'ACTIVE',
       address: 'ul. Wyspiańskiego 10, Zielona Góra',
       lat: 51.9412,
@@ -267,7 +516,336 @@ async function main() {
     },
   });
 
+  await prisma.eventParticipation.createMany({
+    data: [
+      {
+        eventId: openEnroll3.id,
+        userId: jan.id,
+        status: 'CONFIRMED',
+        approvedAt: hoursFromNow(-37),
+        organizerPicked: true,
+      },
+      {
+        eventId: openEnroll3.id,
+        userId: marek.id,
+        status: 'CONFIRMED',
+        approvedAt: hoursFromNow(-37),
+      },
+      {
+        eventId: openEnroll3.id,
+        userId: kasia.id,
+        status: 'CONFIRMED',
+        approvedAt: hoursFromNow(-37),
+      },
+      {
+        eventId: openEnroll3.id,
+        userId: tomek.id,
+        status: 'CONFIRMED',
+        approvedAt: hoursFromNow(-37),
+      },
+      { eventId: openEnroll3.id, userId: admin.id, status: 'REJECTED' },
+    ],
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // NADCHODZĄCE — PRE-ZAPISY (lotteryExecutedAt == null, start > 48h)
+  // Faza: PRE_ENROLLMENT
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // 10) Pre-zapisy — piłka nożna za 4 dni
+  const preEnroll1 = await prisma.event.create({
+    data: {
+      title: 'Piłka nożna weekend — pre-zapisy',
+      description:
+        'Wydarzenie za 4 dni. Trwają wstępne zapisy — Twoje miejsce zależy od losowania!',
+      disciplineId: disciplines[0].id,
+      facilityId: facilities[4].id,
+      levelId: levels[0].id,
+      cityId: city.id,
+      organizerId: jan.id,
+      startsAt: hoursFromNow(96),
+      endsAt: hoursFromNow(97.5),
+      costPerPerson: 10,
+      maxParticipants: 14,
+      // lotteryExecutedAt: null → PRE_ENROLLMENT (start > 48h from now)
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      address: 'ul. Sulechowska 30, Zielona Góra',
+      lat: 51.9356,
+      lng: 15.5062,
+    },
+  });
+
+  // Pre-enrollees — all PENDING, some organizer-picked
+  await prisma.eventParticipation.createMany({
+    data: [
+      {
+        eventId: preEnroll1.id,
+        userId: anna.id,
+        status: 'PENDING',
+        organizerPicked: true,
+      },
+      { eventId: preEnroll1.id, userId: marek.id, status: 'PENDING' },
+      { eventId: preEnroll1.id, userId: kasia.id, status: 'PENDING' },
+      { eventId: preEnroll1.id, userId: tomek.id, status: 'PENDING' },
+      { eventId: preEnroll1.id, userId: admin.id, status: 'PENDING' },
+    ],
+  });
+
+  // 11) Pre-zapisy — koszykówka za 5 dni (płatna, mało chętnych)
+  const preEnroll2 = await prisma.event.create({
+    data: {
+      title: 'Koszykówka 5v5 — pre-zapisy otwarte',
+      description: 'Szukamy chętnych na koszykówkę. Zapisz się wstępnie i czekaj na losowanie.',
+      disciplineId: disciplines[2].id,
+      facilityId: facilities[1].id,
+      levelId: levels[2].id,
+      cityId: city.id,
+      organizerId: admin.id,
+      startsAt: hoursFromNow(120),
+      endsAt: hoursFromNow(122),
+      costPerPerson: 20,
+      maxParticipants: 10,
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      address: 'ul. Wyspiańskiego 10, Zielona Góra',
+      lat: 51.9412,
+      lng: 15.5089,
+    },
+  });
+
+  await prisma.eventParticipation.createMany({
+    data: [
+      { eventId: preEnroll2.id, userId: jan.id, status: 'PENDING' },
+      { eventId: preEnroll2.id, userId: anna.id, status: 'PENDING' },
+    ],
+  });
+
+  // 12) Pre-zapisy — pływanie za tydzień (darmowe, dużo chętnych)
+  const preEnroll3 = await prisma.event.create({
+    data: {
+      title: 'Trening pływacki — pre-zapisy (duże zainteresowanie!)',
+      description:
+        'Darmowy trening pływacki na basenie olimpijskim. ' +
+        'Dużo chętnych — miejsce gwarantowane tylko dla wylosowanych!',
+      disciplineId: disciplines[8].id,
+      facilityId: facilities[1].id,
+      levelId: levels[0].id,
+      cityId: city.id,
+      organizerId: anna.id,
+      startsAt: hoursFromNow(168),
+      endsAt: hoursFromNow(169.5),
+      costPerPerson: 0,
+      maxParticipants: 6,
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      address: 'ul. Urszuli 6, Zielona Góra',
+      lat: 51.9345,
+      lng: 15.5135,
+    },
+  });
+
+  await prisma.eventParticipation.createMany({
+    data: [
+      {
+        eventId: preEnroll3.id,
+        userId: jan.id,
+        status: 'PENDING',
+        organizerPicked: true,
+      },
+      { eventId: preEnroll3.id, userId: marek.id, status: 'PENDING' },
+      { eventId: preEnroll3.id, userId: kasia.id, status: 'PENDING' },
+      { eventId: preEnroll3.id, userId: tomek.id, status: 'PENDING' },
+      { eventId: preEnroll3.id, userId: admin.id, status: 'PENDING' },
+    ],
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // NADCHODZĄCE — LOTTERY_PENDING (lotteryExecutedAt == null, start <= 48h)
+  // Faza: LOTTERY_PENDING (czeka na cron)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // 13) Loteria — siatkówka pojutrze (dokładnie ~47h, zaraz loteria)
+  const lotteryPend1 = await prisma.event.create({
+    data: {
+      title: 'Siatkówka pojutrze — losowanie lada moment!',
+      description:
+        'Pre-zapisy zamknięte, losowanie miejsc zaraz nastąpi. Trzymaj kciuki!',
+      disciplineId: disciplines[1].id,
+      facilityId: facilities[1].id,
+      levelId: levels[1].id,
+      cityId: city.id,
+      organizerId: admin.id,
+      startsAt: hoursFromNow(47),
+      endsAt: hoursFromNow(48.5),
+      costPerPerson: 15,
+      maxParticipants: 8,
+      // lotteryExecutedAt: null → LOTTERY_PENDING (start ≤ 48h)
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      address: 'ul. Wyspiańskiego 10, Zielona Góra',
+      lat: 51.9412,
+      lng: 15.5089,
+    },
+  });
+
+  await prisma.eventParticipation.createMany({
+    data: [
+      {
+        eventId: lotteryPend1.id,
+        userId: jan.id,
+        status: 'PENDING',
+        organizerPicked: true,
+      },
+      {
+        eventId: lotteryPend1.id,
+        userId: anna.id,
+        status: 'PENDING',
+        organizerPicked: true,
+      },
+      { eventId: lotteryPend1.id, userId: marek.id, status: 'PENDING' },
+      { eventId: lotteryPend1.id, userId: kasia.id, status: 'PENDING' },
+      { eventId: lotteryPend1.id, userId: tomek.id, status: 'PENDING' },
+    ],
+  });
+
+  // 14) Loteria — kolarstwo za ~40h
+  const lotteryPend2 = await prisma.event.create({
+    data: {
+      title: 'Kolarstwo grupowe — oczekiwanie na losowanie',
+      description: 'Rajd rowerowy po okolicach. Losowanie miejsc niedługo!',
+      disciplineId: disciplines[7].id,
+      facilityId: facilities[6].id,
+      levelId: levels[1].id,
+      cityId: city.id,
+      organizerId: jan.id,
+      startsAt: hoursFromNow(40),
+      endsAt: hoursFromNow(43),
+      costPerPerson: 0,
+      maxParticipants: 10,
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      address: 'Park Piastowski, Zielona Góra',
+      lat: 51.9401,
+      lng: 15.4975,
+    },
+  });
+
+  await prisma.eventParticipation.createMany({
+    data: [
+      { eventId: lotteryPend2.id, userId: anna.id, status: 'PENDING' },
+      { eventId: lotteryPend2.id, userId: marek.id, status: 'PENDING' },
+      { eventId: lotteryPend2.id, userId: kasia.id, status: 'PENDING' },
+    ],
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // NADCHODZĄCE — utworzone < 48h do startu (automatycznie OPEN_ENROLLMENT)
+  // lotteryExecutedAt = now (bo shouldSkipPreEnrollment → true przy create)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // 15) Szybkie zapisy — squash za 3h (start < 48h, skip pre-enrollment)
+  const quickOpen1 = await prisma.event.create({
+    data: {
+      title: 'Squash last-minute — dołącz teraz!',
+      description:
+        'Szybkie wydarzenie squashowe — utworzone na ostatnią chwilę, bez pre-zapisów!',
+      disciplineId: disciplines[5].id,
+      facilityId: facilities[1].id,
+      levelId: levels[0].id,
+      cityId: city.id,
+      organizerId: marek.id,
+      startsAt: hoursFromNow(3),
+      endsAt: hoursFromNow(4),
+      costPerPerson: 30,
+      maxParticipants: 4,
+      lotteryExecutedAt: now,
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      address: 'ul. Botaniczna 5, Zielona Góra',
+      lat: 51.938,
+      lng: 15.512,
+    },
+  });
+
+  await prisma.eventParticipation.createMany({
+    data: [
+      {
+        eventId: quickOpen1.id,
+        userId: jan.id,
+        status: 'APPROVED',
+        approvedAt: hoursFromNow(-1),
+      },
+    ],
+  });
+
+  // 16) Szybkie zapisy — bieganie dziś wieczorem
+  await prisma.event.create({
+    data: {
+      title: 'Wieczorny bieg — otwarte zapisy',
+      description: 'Wieczorny bieg po mieście. Zapisz się i biegnij z nami!',
+      disciplineId: disciplines[6].id,
+      facilityId: facilities[6].id,
+      levelId: levels[0].id,
+      cityId: city.id,
+      organizerId: kasia.id,
+      startsAt: hoursFromNow(8),
+      endsAt: hoursFromNow(9.5),
+      costPerPerson: 0,
+      maxParticipants: 30,
+      lotteryExecutedAt: hoursFromNow(-2),
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      address: 'Deptak, Zielona Góra',
+      lat: 51.9365,
+      lng: 15.5058,
+    },
+  });
+
+  // ─── OrganizerUserRelation — trust/ban examples ─────────────────────────
+  console.log('Tworzę relacje organizator ↔ użytkownik...');
+  await prisma.organizerUserRelation.create({
+    data: {
+      organizerUserId: jan.id,
+      targetUserId: anna.id,
+      isTrusted: true,
+      note: 'Zawsze punktualna, świetna uczestniczka',
+    },
+  });
+
+  await prisma.organizerUserRelation.create({
+    data: {
+      organizerUserId: admin.id,
+      targetUserId: tomek.id,
+      isBanned: true,
+      note: 'Wielokrotne niestawienie się na wydarzeniach',
+    },
+  });
+
   console.log('Seed zakończony sukcesem!');
+  console.log('');
+  console.log('=== Podsumowanie ===');
+  console.log('Użytkownicy: admin@zgadajsie.pl (Admin123!), jan.kowalski@example.com (Test1234!)');
+  console.log(
+    '             anna.nowak@example.com, marek.wisniewski@example.com, ' +
+      'kasia.zielinska@example.com, tomek.lewandowski@example.com (Test1234!)',
+  );
+  console.log('');
+  console.log('Wydarzenia:');
+  console.log('  Zakończone (2): #1 piłka nożna, #2 siatkówka');
+  console.log('  Odwołane (2):   #3 koszykówka, #4 squash');
+  console.log('  W trakcie (2):  #5 siatkówka, #6 bieg');
+  console.log('  OPEN_ENROLLMENT (5): #7 tenis 5h, #8 piłka jutro, #9 badminton pełne,');
+  console.log('                       #15 squash last-minute 3h, #16 bieg wieczorem');
+  console.log('  PRE_ENROLLMENT (3):  #10 piłka 4d, #11 koszykówka 5d, #12 pływanie 7d');
+  console.log('  LOTTERY_PENDING (2): #13 siatkówka ~47h, #14 kolarstwo ~40h');
 }
 
 main()

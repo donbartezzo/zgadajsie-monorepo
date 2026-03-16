@@ -23,7 +23,12 @@ import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bot
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
-import { Event as EventModel, Participation, EventAnnouncement } from '../../../../shared/types';
+import {
+  Event as EventModel,
+  Participation,
+  EventAnnouncement,
+  EnrollmentPhase,
+} from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 import { getEventCountdown, EventCountdown } from '../../../../shared/utils/date.utils';
 import { EventStatus } from '@zgadajsie/shared';
@@ -31,7 +36,8 @@ import {
   isEventJoinable,
   EventTimeStatus,
 } from '../../../../shared/utils/event-time-status.util';
-import { EventLifecycleBannerComponent } from '../../../../shared/ui/event-lifecycle-banner/event-lifecycle-banner.component';
+import { EnrollmentStatusBannerComponent } from '../../ui/enrollment-status-banner/enrollment-status-banner.component';
+import { getLotteryThreshold } from '../../../../shared/utils/enrollment-phase.util';
 import {
   EventNotificationBarsComponent,
   NotificationBarConfig,
@@ -54,7 +60,7 @@ import { NotificationStatusService } from '../../../../core/services/notificatio
     EventAnnouncementsComponent,
     DateBadgeComponent,
     LayoutSlotDirective,
-    EventLifecycleBannerComponent,
+    EnrollmentStatusBannerComponent,
   ],
   templateUrl: './event.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -173,6 +179,9 @@ export class EventComponent implements OnInit, OnDestroy {
     effect(() => {
       this.overlays.setLoading(this.joining());
     });
+    effect(() => {
+      this.overlays.setLotteryCountdown(this.lotteryCountdown());
+    });
 
     // Sync notification status for event
     effect(() => {
@@ -200,6 +209,7 @@ export class EventComponent implements OnInit, OnDestroy {
     this.overlays.onPay(() => this.payEvent());
     this.overlays.onContactOrganizer(() => this.contactOrganizer());
     this.overlays.onCancelEvent(() => this.cancelEvent());
+    this.overlays.onLeaveRequested(() => this.requestLeave());
   }
 
   ngOnInit(): void {
@@ -231,9 +241,20 @@ export class EventComponent implements OnInit, OnDestroy {
   }
 
   private startCountdown(startsAt: string, endsAt: string): void {
+    const lotteryThreshold = getLotteryThreshold(startsAt);
     const update = () => {
-      const result = getEventCountdown(startsAt, endsAt, new Date(), Infinity);
+      const now = new Date();
+      const result = getEventCountdown(startsAt, endsAt, now, Infinity);
       this.countdown.set(result);
+
+      if (now < lotteryThreshold && now < new Date(startsAt)) {
+        const lotteryIso = lotteryThreshold.toISOString();
+        const lotteryResult = getEventCountdown(lotteryIso, startsAt, now, Infinity);
+        this.lotteryCountdown.set(lotteryResult);
+      } else {
+        this.lotteryCountdown.set(null);
+      }
+
       if (!result && this.countdownInterval) {
         clearInterval(this.countdownInterval);
         this.countdownInterval = null;
@@ -250,7 +271,7 @@ export class EventComponent implements OnInit, OnDestroy {
       this.participants().some(
         (p) =>
           p.userId === userId &&
-          (p.status === 'APPLIED' || p.status === 'ACCEPTED' || p.status === 'PENDING_PAYMENT'),
+          (p.status === 'PENDING' || p.status === 'APPROVED' || p.status === 'CONFIRMED'),
       )
     );
   });
@@ -272,13 +293,46 @@ export class EventComponent implements OnInit, OnDestroy {
     return e?.eventTimeStatus ?? null;
   });
 
+  readonly enrollmentPhase = computed<EnrollmentPhase | null>(() => {
+    return this.event()?.enrollmentPhase ?? null;
+  });
+
+  readonly currentParticipationId = computed<string | null>(() => {
+    return this.event()?.currentUserAccess?.participationId ?? null;
+  });
+
   readonly canJoin = computed(() => {
     const e = this.event();
     if (!e) return false;
-    return isEventJoinable(e.startsAt, e.status);
+    if (!isEventJoinable(e.startsAt, e.status)) return false;
+    const phase = this.enrollmentPhase();
+    return phase === 'PRE_ENROLLMENT' || phase === 'OPEN_ENROLLMENT';
   });
 
+  readonly isPreEnrollment = computed(() => this.enrollmentPhase() === 'PRE_ENROLLMENT');
+
+  readonly participantCount = computed(() => this.participants().length);
+
+  readonly ctaLabel = computed(() => {
+    if (!this.auth.isLoggedIn()) return 'Zaloguj się, aby dołączyć';
+    const phase = this.enrollmentPhase();
+    if (phase === 'PRE_ENROLLMENT') return 'Zgłoś się wstępnie';
+    return 'Dołącz do wydarzenia';
+  });
+
+  readonly ctaLabelShort = computed(() => {
+    const phase = this.enrollmentPhase();
+    if (phase === 'PRE_ENROLLMENT') return 'Zgłoś się';
+    return 'Dołącz';
+  });
+
+  readonly lotteryCountdown = signal<EventCountdown | null>(null);
+
   readonly isCancelled = computed(() => this.event()?.status === EventStatus.CANCELLED);
+
+  readonly isBannedByOrganizer = computed(
+    () => this.event()?.currentUserAccess?.isBannedByOrganizer === true,
+  );
 
   readonly lifecycleBannerVariant = computed(() => {
     if (this.isCancelled()) return 'cancelled' as const;
@@ -290,28 +344,12 @@ export class EventComponent implements OnInit, OnDestroy {
 
   readonly notificationBars = computed<NotificationBarConfig[]>(() => {
     const bars: NotificationBarConfig[] = [];
+    const status = this.participantStatus();
+    const isEnded = this.eventTimeStatus() === 'ENDED' || this.isCancelled();
 
     if (this.isParticipant()) {
-      const isPending = this.participantStatus() === 'PENDING_PAYMENT';
-      const isEnded = this.eventTimeStatus() === 'ENDED' || this.isCancelled();
-      bars.push({
-        id: 'participant',
-        icon: 'check',
-        iconColorClass: 'text-success-600',
-        title: isPending
-          ? 'Oczekuje na płatność!'
-          : isEnded
-            ? 'Byłeś(aś) uczestnikiem'
-            : 'Jesteś już zapisany!',
-        subtitle: isPending
-          ? 'Rozpocząłeś proces płatności za to wydarzenie.'
-          : isEnded
-            ? 'To wydarzenie już się zakończyło.'
-            : 'Dołączyłeś do tego wydarzenia.',
-        buttonLabel: 'Szczegóły',
-        bgClass: 'bg-success-50',
-        borderClass: 'border border-success-200',
-      });
+      const config = this.getParticipantBarConfig(status, isEnded);
+      bars.push(config);
     }
 
     if (this.isOrganizer()) {
@@ -329,6 +367,62 @@ export class EventComponent implements OnInit, OnDestroy {
 
     return bars;
   });
+
+  private getParticipantBarConfig(
+    status: string | null,
+    isEnded: boolean,
+  ): NotificationBarConfig {
+    if (status === 'PENDING') {
+      const phase = this.enrollmentPhase();
+      const isPreEnroll = phase === 'PRE_ENROLLMENT';
+      return {
+        id: 'participant',
+        icon: isPreEnroll ? 'users' : 'clock',
+        iconColorClass: isPreEnroll ? 'text-info-600' : 'text-warning-600',
+        title: isPreEnroll ? 'Jesteś wstępnie zgłoszony' : 'Zgłoszenie wysłane',
+        subtitle: isPreEnroll
+          ? 'Twoje miejsce zależy od losowania. Wyniki poznasz po zamknięciu pre-zapisów.'
+          : 'Oczekuje na akceptację organizatora.',
+        buttonLabel: 'Szczegóły',
+        bgClass: isPreEnroll ? 'bg-info-50' : 'bg-warning-50',
+        borderClass: isPreEnroll ? 'border border-info-200' : 'border border-warning-200',
+      };
+    }
+    if (status === 'APPROVED') {
+      return {
+        id: 'participant',
+        icon: 'check',
+        iconColorClass: 'text-info-600',
+        title: 'Zatwierdzone — potwierdź udział!',
+        subtitle: 'Twoje miejsce zostało przyznane. Potwierdź uczestnictwo.',
+        buttonLabel: 'Potwierdź',
+        bgClass: 'bg-info-50',
+        borderClass: 'border border-info-200',
+      };
+    }
+    if (status === 'CONFIRMED') {
+      return {
+        id: 'participant',
+        icon: 'check',
+        iconColorClass: 'text-success-600',
+        title: isEnded ? 'Byłeś(aś) uczestnikiem' : 'Jesteś potwierdzonym uczestnikiem!',
+        subtitle: isEnded ? 'To wydarzenie już się zakończyło.' : 'Twój udział jest potwierdzony.',
+        buttonLabel: 'Szczegóły',
+        bgClass: 'bg-success-50',
+        borderClass: 'border border-success-200',
+      };
+    }
+    return {
+      id: 'participant',
+      icon: 'check',
+      iconColorClass: 'text-success-600',
+      title: 'Jesteś zapisany',
+      subtitle: 'Dołączyłeś do tego wydarzenia.',
+      buttonLabel: 'Szczegóły',
+      bgClass: 'bg-success-50',
+      borderClass: 'border border-success-200',
+    };
+  }
 
   openJoinSheet(): void {
     if (this.auth.isLoggedIn()) {
@@ -371,17 +465,19 @@ export class EventComponent implements OnInit, OnDestroy {
   }
 
   payEvent(): void {
+    const pId = this.currentParticipationId();
+    if (!pId) return;
     this.joining.set(true);
-    this.eventService.payEvent(this.eventId).subscribe({
+    this.eventService.payParticipation(pId).subscribe({
       next: (result) => {
         this.joining.set(false);
         if (result.paidByVoucher) {
           this.snackbar.success('Opłacono voucherem!');
-          this.overlays.setParticipantStatus('ACCEPTED');
+          this.overlays.setParticipantStatus('CONFIRMED');
           const userId = this.auth.currentUser()?.id;
           if (userId) {
             this.participants.update((prev) =>
-              prev.map((pp) => (pp.userId === userId ? { ...pp, status: 'ACCEPTED' } : pp)),
+              prev.map((pp) => (pp.userId === userId ? { ...pp, status: 'CONFIRMED' } : pp)),
             );
           }
           return;
@@ -509,9 +605,11 @@ export class EventComponent implements OnInit, OnDestroy {
   }
 
   confirmLeave(): void {
+    const pId = this.currentParticipationId();
+    if (!pId) return;
     this.overlays.close();
     this.joining.set(true);
-    this.eventService.leaveEvent(this.eventId).subscribe({
+    this.eventService.leaveParticipation(pId).subscribe({
       next: () => {
         const userId = this.auth.currentUser()?.id;
         this.participants.update((prev) =>

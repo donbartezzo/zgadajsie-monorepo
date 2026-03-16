@@ -45,11 +45,10 @@ export class CreateEventDto {
   @Min(2)
   minParticipants?: number;
 
-  @IsOptional()
   @IsInt()
   @Min(2)
   @Max(100)
-  maxParticipants?: number;
+  maxParticipants: number;
 
   @IsOptional()
   @IsInt()
@@ -68,10 +67,6 @@ export class CreateEventDto {
   @IsOptional()
   @IsString()
   visibility?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  autoAccept?: boolean;
 
   @IsString()
   address: string;

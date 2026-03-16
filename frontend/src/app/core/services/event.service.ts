@@ -55,10 +55,6 @@ export class EventService {
     return this.http.post<Event>(`${this.apiUrl}/${id}/duplicate`, {});
   }
 
-  toggleAutoAccept(id: string): Observable<Event> {
-    return this.http.patch<Event>(`${this.apiUrl}/${id}/auto-accept`, {});
-  }
-
   getParticipants(eventId: string): Observable<Participation[]> {
     return this.http.get<Participation[]>(`${this.apiUrl}/${eventId}/participants`);
   }
@@ -72,11 +68,11 @@ export class EventService {
     );
   }
 
-  payEvent(
-    eventId: string,
+  payParticipation(
+    participationId: string,
   ): Observable<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
     return this.http.post<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }>(
-      `${this.apiUrl}/${eventId}/pay`,
+      `${environment.apiUrl}/participations/${participationId}/pay`,
       {},
     );
   }
@@ -85,13 +81,23 @@ export class EventService {
     return this.http.post<Participation>(`${this.apiUrl}/${eventId}/join-guest`, { displayName });
   }
 
-  leaveEvent(eventId: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/${eventId}/leave`, {});
+  leaveParticipation(participationId: string): Observable<void> {
+    return this.http.post<void>(
+      `${environment.apiUrl}/participations/${participationId}/leave`,
+      {},
+    );
   }
 
-  acceptParticipation(participationId: string): Observable<Participation> {
+  approveParticipation(participationId: string): Observable<Participation> {
     return this.http.post<Participation>(
-      `${environment.apiUrl}/participations/${participationId}/accept`,
+      `${environment.apiUrl}/participations/${participationId}/approve`,
+      {},
+    );
+  }
+
+  confirmParticipation(participationId: string): Observable<Participation> {
+    return this.http.post<Participation>(
+      `${environment.apiUrl}/participations/${participationId}/confirm`,
       {},
     );
   }
@@ -101,6 +107,17 @@ export class EventService {
       `${environment.apiUrl}/participations/${participationId}/reject`,
       {},
     );
+  }
+
+  setOrganizerPick(participationId: string, picked: boolean): Observable<Participation> {
+    return this.http.post<Participation>(
+      `${environment.apiUrl}/participations/${participationId}/organizer-pick`,
+      { picked },
+    );
+  }
+
+  getMyGuests(eventId: string): Observable<Participation[]> {
+    return this.http.get<Participation[]>(`${this.apiUrl}/${eventId}/my-guests`);
   }
 
   deleteEvent(id: string): Observable<void> {

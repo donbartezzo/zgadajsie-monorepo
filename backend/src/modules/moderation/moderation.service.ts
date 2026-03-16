@@ -68,44 +68,104 @@ export class ModerationService {
     });
   }
 
-  async createBan(organizerUserId: string, dto: CreateBanDto) {
-    return this.prisma.organizerBan.create({
-      data: {
+  async banUser(organizerUserId: string, dto: CreateBanDto) {
+    return this.prisma.organizerUserRelation.upsert({
+      where: {
+        organizerUserId_targetUserId: {
+          organizerUserId,
+          targetUserId: dto.userId,
+        },
+      },
+      create: {
         organizerUserId,
-        bannedUserId: dto.userId,
-        reason: dto.reason,
+        targetUserId: dto.userId,
+        isBanned: true,
+        note: dto.reason,
+      },
+      update: {
+        isBanned: true,
+        note: dto.reason,
       },
     });
   }
 
-  async removeBan(banId: string) {
-    const ban = await this.prisma.organizerBan.findUnique({ where: { id: banId } });
-    if (!ban) throw new NotFoundException('Ban nie znaleziony');
-    return this.prisma.organizerBan.delete({ where: { id: banId } });
+  async unbanUser(organizerUserId: string, targetUserId: string) {
+    const relation = await this.prisma.organizerUserRelation.findUnique({
+      where: {
+        organizerUserId_targetUserId: { organizerUserId, targetUserId },
+      },
+    });
+    if (!relation) {
+      throw new NotFoundException('Relacja nie znaleziona');
+    }
+    return this.prisma.organizerUserRelation.update({
+      where: { id: relation.id },
+      data: { isBanned: false },
+    });
   }
 
-  async getBans(page = 1, limit = 20) {
-    const [bans, total] = await Promise.all([
-      this.prisma.organizerBan.findMany({
+  async trustUser(organizerUserId: string, targetUserId: string) {
+    return this.prisma.organizerUserRelation.upsert({
+      where: {
+        organizerUserId_targetUserId: { organizerUserId, targetUserId },
+      },
+      create: {
+        organizerUserId,
+        targetUserId,
+        isTrusted: true,
+      },
+      update: {
+        isTrusted: true,
+      },
+    });
+  }
+
+  async untrustUser(organizerUserId: string, targetUserId: string) {
+    const relation = await this.prisma.organizerUserRelation.findUnique({
+      where: {
+        organizerUserId_targetUserId: { organizerUserId, targetUserId },
+      },
+    });
+    if (!relation) {
+      throw new NotFoundException('Relacja nie znaleziona');
+    }
+    return this.prisma.organizerUserRelation.update({
+      where: { id: relation.id },
+      data: { isTrusted: false },
+    });
+  }
+
+  async getRelation(organizerUserId: string, targetUserId: string) {
+    return this.prisma.organizerUserRelation.findUnique({
+      where: {
+        organizerUserId_targetUserId: { organizerUserId, targetUserId },
+      },
+    });
+  }
+
+  async getRelationsForOrganizer(organizerUserId: string, page = 1, limit = 20) {
+    const [data, total] = await Promise.all([
+      this.prisma.organizerUserRelation.findMany({
+        where: { organizerUserId },
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { updatedAt: 'desc' },
         include: {
-          organizer: { select: { id: true, displayName: true, email: true } },
-          bannedUser: { select: { id: true, displayName: true } },
+          targetUser: { select: { id: true, displayName: true, avatarUrl: true } },
         },
       }),
-      this.prisma.organizerBan.count(),
+      this.prisma.organizerUserRelation.count({ where: { organizerUserId } }),
     ]);
-    return { data: bans, total, page, limit };
+    return { data, total, page, limit };
   }
 
-  async isUserBanned(organizerUserId: string, bannedUserId: string): Promise<boolean> {
-    const ban = await this.prisma.organizerBan.findUnique({
+  async isUserBanned(organizerUserId: string, targetUserId: string): Promise<boolean> {
+    const relation = await this.prisma.organizerUserRelation.findUnique({
       where: {
-        organizerUserId_bannedUserId: { organizerUserId, bannedUserId },
+        organizerUserId_targetUserId: { organizerUserId, targetUserId },
       },
+      select: { isBanned: true },
     });
-    return !!ban;
+    return relation?.isBanned === true;
   }
 }

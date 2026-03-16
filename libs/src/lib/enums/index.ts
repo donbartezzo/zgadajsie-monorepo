@@ -11,3 +11,4 @@ export * from './notification-priority.enum';
 export * from './notification-trigger.enum';
 export * from './social-provider.enum';
 export * from './activity-rank.enum';
+export * from './enrollment-phase.enum';

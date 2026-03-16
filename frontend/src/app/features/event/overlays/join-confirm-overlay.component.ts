@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { IconComponent, IconName } from '../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import {
   BottomOverlayComponent,
   OverlayIconVariant,
 } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
-import { ConfirmModalService } from '../../../shared/ui/confirm-modal/confirm-modal.service';
 import { Event as EventModel } from '../../../shared/types';
 
 @Component({
@@ -123,7 +122,7 @@ import { Event as EventModel } from '../../../shared/types';
             <button
               type="button"
               class="flex w-full items-center gap-3 rounded-xl border border-danger-50 bg-white p-3 text-left transition-colors hover:bg-danger-500"
-              (click)="onRequestLeave()"
+              (click)="leaveRequested.emit()"
             >
               <div
                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-danger-50"
@@ -144,8 +143,6 @@ import { Event as EventModel } from '../../../shared/types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JoinConfirmOverlayComponent {
-  private readonly confirmModal = inject(ConfirmModalService);
-
   readonly open = input(false);
   readonly event = input<EventModel | null>(null);
   readonly loading = input(false);
@@ -155,31 +152,39 @@ export class JoinConfirmOverlayComponent {
   readonly openChat = output<void>();
   readonly payRequested = output<void>();
   readonly contactOrganizer = output<void>();
+  readonly leaveRequested = output<void>();
 
-  readonly headerIcon = computed<IconName>(() =>
-    this.participantStatus() === 'PENDING_PAYMENT' ? 'clock' : 'check',
-  );
+  readonly headerIcon = computed<IconName>(() => {
+    const s = this.participantStatus();
+    if (s === 'PENDING') return 'clock';
+    if (s === 'APPROVED') return 'check';
+    return 'check-circle';
+  });
 
-  readonly headerIconVariant = computed<OverlayIconVariant>(() =>
-    this.participantStatus() === 'PENDING_PAYMENT' ? 'warning' : 'success',
-  );
+  readonly headerIconVariant = computed<OverlayIconVariant>(() => {
+    const s = this.participantStatus();
+    if (s === 'PENDING') return 'warning';
+    if (s === 'APPROVED') return 'info';
+    return 'success';
+  });
 
   readonly headerTitle = computed(() => {
     const status = this.participantStatus();
-    if (status === 'PENDING_PAYMENT') {
-      return 'Zgłoszenie przyjęte!';
-    }
-    return status === 'ACCEPTED' ? 'Jesteś uczestnikiem!' : 'Zgłoszenie wysłane!';
+    if (status === 'PENDING') return 'Zgłoszenie wysłane!';
+    if (status === 'APPROVED') return 'Zatwierdzone — potwierdź udział!';
+    if (status === 'CONFIRMED') return 'Jesteś potwierdzonym uczestnikiem!';
+    return 'Zgłoszenie wysłane!';
   });
 
   readonly headerDescription = computed(() => {
     const status = this.participantStatus();
-    if (status === 'PENDING_PAYMENT') {
-      return 'Twoje zgłoszenie zostało zarejestrowane. Opłać udział, aby potwierdzić uczestnictwo.';
+    if (status === 'PENDING') {
+      return 'Twoje zgłoszenie oczekuje na losowanie lub akceptację organizatora.';
     }
-    return status === 'ACCEPTED'
-      ? 'Dołączyłeś do tego wydarzenia.'
-      : 'Organizator rozpatrzy Twoje zgłoszenie.';
+    if (status === 'APPROVED') {
+      return 'Twoje miejsce zostało przyznane. Potwierdź uczestnictwo.';
+    }
+    return 'Twój udział jest potwierdzony. Do zobaczenia!';
   });
 
   readonly address = computed(() => this.event()?.address || '');
@@ -187,7 +192,7 @@ export class JoinConfirmOverlayComponent {
   readonly needsPayment = computed(() => {
     const status = this.participantStatus();
     const cost = this.event()?.costPerPerson ?? 0;
-    return status === 'PENDING_PAYMENT' && cost > 0;
+    return status === 'APPROVED' && cost > 0;
   });
 
   readonly startDateFormatted = computed(() => {
@@ -208,18 +213,4 @@ export class JoinConfirmOverlayComponent {
     return new Date(e.endsAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
   });
 
-  async onRequestLeave(): Promise<void> {
-    const confirmed = await this.confirmModal.confirm({
-      title: 'Wypisanie z wydarzenia',
-      message: 'Czy na pewno chcesz wypisać się z tego wydarzenia? Stracisz swoje miejsce.',
-      confirmLabel: 'Tak, wypisz mnie',
-      cancelLabel: 'Anuluj',
-      variant: 'danger',
-    });
-    if (confirmed) {
-      // Directly call leave event API since leave-confirm-overlay was removed
-      // TODO: This should be refactored to use a service callback
-      window.location.reload(); // Temporary fallback
-    }
-  }
 }

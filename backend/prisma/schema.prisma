@@ -39,8 +39,8 @@ model User {
   privateChatMessagesReceived PrivateChatMessage[] @relation("PrivateChatRecipient")
   reprimandsGiven        Reprimand[]          @relation("ReprimandFrom")
   reprimandsReceived Reprimand[]         @relation("ReprimandTo")
-  organizerBans     OrganizerBan[]       @relation("OrganizerBanOrganizer")
-  bannedByOrganizers OrganizerBan[]      @relation("OrganizerBanBanned")
+  organizerRelations   OrganizerUserRelation[] @relation("OrgRelOrganizer")
+  targetOfRelations    OrganizerUserRelation[] @relation("OrgRelTarget")
   notifications     Notification[]
   pushSubscriptions PushSubscription[]
   announcements          EventAnnouncement[]    @relation("OrganizerAnnouncements")
@@ -137,13 +137,13 @@ model Event {
   endsAt          DateTime
   costPerPerson   Decimal     @default(0) @db.Decimal(10, 2)
   minParticipants Int?
-  maxParticipants Int?
+  maxParticipants Int
   ageMin          Int?
   ageMax          Int?
   gender          String      @default("ANY")
   visibility      String      @default("PUBLIC")
-  autoAccept      Boolean     @default(false)
-  status          EventStatus @default(ACTIVE)
+  lotteryExecutedAt DateTime?
+  status             EventStatus @default(ACTIVE)
   address         String
   lat             Float
   lng             Float
@@ -181,12 +181,14 @@ model EventParticipation {
   id            String   @id @default(uuid())
   eventId       String
   userId        String
-  status        String   @default("APPLIED")
-  isChatBanned  Boolean  @default(false)
-  addedByUserId String?
-  isGuest       Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  status          String   @default("PENDING")
+  isChatBanned    Boolean  @default(false)
+  addedByUserId   String?
+  isGuest         Boolean  @default(false)
+  organizerPicked Boolean  @default(false)
+  approvedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user      User     @relation("UserParticipations", fields: [userId], references: [id])
@@ -335,17 +337,20 @@ model Reprimand {
   event    Event @relation(fields: [eventId], references: [id])
 }
 
-model OrganizerBan {
+model OrganizerUserRelation {
   id              String   @id @default(uuid())
   organizerUserId String
-  bannedUserId    String
-  reason          String?
+  targetUserId    String
+  isBanned        Boolean  @default(false)
+  isTrusted       Boolean  @default(false)
+  note            String?
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  organizer  User @relation("OrganizerBanOrganizer", fields: [organizerUserId], references: [id])
-  bannedUser User @relation("OrganizerBanBanned", fields: [bannedUserId], references: [id])
+  organizer  User @relation("OrgRelOrganizer", fields: [organizerUserId], references: [id])
+  targetUser User @relation("OrgRelTarget", fields: [targetUserId], references: [id])
 
-  @@unique([organizerUserId, bannedUserId])
+  @@unique([organizerUserId, targetUserId])
 }
 
 // ─── Notifications ───────────────────────────────────────────────────────────

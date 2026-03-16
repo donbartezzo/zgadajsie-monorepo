@@ -66,12 +66,6 @@ export class EventsController {
     return this.eventsService.remove(id, user.id, user.role === 'ADMIN');
   }
 
-  @UseGuards(JwtAuthGuard, IsActiveGuard)
-  @Patch(':id/auto-accept')
-  toggleAutoAccept(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.eventsService.toggleAutoAccept(id, user.id);
-  }
-
   @Get(':id/participants')
   getParticipants(@Param('id') id: string) {
     return this.eventsService.getParticipants(id);

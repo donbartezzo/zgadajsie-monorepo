@@ -6,11 +6,21 @@ import { EmailService } from './email.service';
 import { EmailTestService } from '../email/email-test.service';
 import { PushService } from './push.service';
 import { EventReminderCron } from './event-reminder.cron';
+import { EnrollmentLotteryCron } from './enrollment-lottery.cron';
+import { ApprovalReminderCron } from './approval-reminder.cron';
 
 @Module({
   imports: [ScheduleModule.forRoot()],
   controllers: [NotificationsController],
-  providers: [NotificationsService, EmailService, EmailTestService, PushService, EventReminderCron],
+  providers: [
+    NotificationsService,
+    EmailService,
+    EmailTestService,
+    PushService,
+    EventReminderCron,
+    EnrollmentLotteryCron,
+    ApprovalReminderCron,
+  ],
   exports: [NotificationsService, EmailService, PushService],
 })
 export class NotificationsModule {}

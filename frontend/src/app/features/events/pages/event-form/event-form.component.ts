@@ -233,15 +233,6 @@ import { isEventJoinable } from '../../../../shared/utils/event-time-status.util
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 />
               </div>
-              <div class="flex items-center gap-3">
-                <label class="relative inline-flex cursor-pointer items-center">
-                  <input type="checkbox" formControlName="autoAccept" class="peer sr-only" />
-                  <div
-                    class="h-6 w-11 rounded-full bg-neutral-200 peer-checked:bg-primary-500 peer-focus:ring-2 peer-focus:ring-primary-400 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full"
-                  ></div>
-                </label>
-                <span class="text-sm text-neutral-700">Automatyczne akceptowanie</span>
-              </div>
             </div>
           </div>
         </app-card>
@@ -380,7 +371,6 @@ export class EventFormComponent implements OnInit {
     ageMax: [undefined],
     gender: ['ANY'],
     visibility: ['PUBLIC'],
-    autoAccept: [true],
     address: ['', Validators.required],
     lat: [51.935],
     lng: [15.506],
@@ -439,7 +429,6 @@ export class EventFormComponent implements OnInit {
           maxParticipants: e.maxParticipants || 10,
           gender: e.gender,
           visibility: e.visibility,
-          autoAccept: e.autoAccept,
           address: e.address,
           lat: e.lat,
           lng: e.lng,
@@ -520,7 +509,6 @@ export class EventFormComponent implements OnInit {
       ageMax: val.ageMax || undefined,
       gender: val.gender || undefined,
       visibility: val.visibility || undefined,
-      autoAccept: val.autoAccept || undefined,
       address: val.address || undefined,
       lat: val.lat || undefined,
       lng: val.lng || undefined,

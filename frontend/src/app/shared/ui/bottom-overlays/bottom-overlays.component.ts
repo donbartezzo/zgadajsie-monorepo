@@ -7,6 +7,7 @@ import { JoinRulesOverlayComponent } from '../../../features/event/overlays/join
 import { JoinConfirmOverlayComponent } from '../../../features/event/overlays/join-confirm-overlay.component';
 import { OrganizerActionsOverlayComponent } from '../../../features/event/overlays/organizer-actions-overlay.component';
 import { CancelPaymentOverlayComponent } from '../../../features/organizer/overlays/cancel-payment-overlay.component';
+import { EnrollmentDetailsOverlayComponent } from '../../../features/event/overlays/enrollment-details-overlay.component';
 import { BottomOverlaysService } from './bottom-overlays.service';
 
 @Component({
@@ -20,6 +21,7 @@ import { BottomOverlaysService } from './bottom-overlays.service';
     JoinConfirmOverlayComponent,
     OrganizerActionsOverlayComponent,
     CancelPaymentOverlayComponent,
+    EnrollmentDetailsOverlayComponent,
   ],
   templateUrl: './bottom-overlays.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

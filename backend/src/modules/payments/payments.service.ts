@@ -75,13 +75,9 @@ export class PaymentsService {
 
       await this.vouchersService.deductVoucher(userId, event.organizerId, amount);
 
-      const newStatus = event.organizerId
-        ? await this.resolveParticipationStatus(eventId)
-        : 'APPLIED';
-
       await this.prisma.eventParticipation.update({
         where: { id: participationId },
-        data: { status: newStatus },
+        data: { status: 'CONFIRMED' },
       });
 
       return { paymentId: payment.id, paidByVoucher: true };
@@ -158,11 +154,7 @@ export class PaymentsService {
 
     // Tpay sends tr_status = 'TRUE' for successful payment
     if (verification.status === 'TRUE') {
-      const event = intent.participation.event;
-      const newParticipationStatus = event.autoAccept ? 'ACCEPTED' : 'APPLIED';
-
       await this.prisma.$transaction(async (tx) => {
-        // Create finalized Payment from intent data
         await tx.payment.create({
           data: {
             participationId: intent.participationId,
@@ -180,7 +172,7 @@ export class PaymentsService {
 
         await tx.eventParticipation.update({
           where: { id: intent.participationId },
-          data: { status: newParticipationStatus },
+          data: { status: 'CONFIRMED' },
         });
       });
 
@@ -337,15 +329,6 @@ export class PaymentsService {
     return payment;
   }
 
-  private async resolveParticipationStatus(eventId: string): Promise<string> {
-    const event = await this.prisma.event.findUnique({
-      where: { id: eventId },
-      select: { autoAccept: true },
-    });
-    if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
-    return event.autoAccept ? 'ACCEPTED' : 'APPLIED';
-  }
-
   // DEV ONLY: Simulate successful webhook for local testing
   async simulateSuccessfulPayment(intentId: string) {
     const intent = await this.prisma.paymentIntent.findUnique({
@@ -364,8 +347,6 @@ export class PaymentsService {
     if (existing) {
       return existing;
     }
-
-    const newStatus = await this.resolveParticipationStatus(intent.eventId);
 
     return this.prisma.$transaction(async (tx) => {
       const payment = await tx.payment.create({
@@ -386,7 +367,7 @@ export class PaymentsService {
 
       await tx.eventParticipation.update({
         where: { id: intent.participationId },
-        data: { status: newStatus },
+        data: { status: 'CONFIRMED' },
       });
 
       return payment;

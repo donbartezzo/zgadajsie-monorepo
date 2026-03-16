@@ -73,24 +73,6 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
         </app-card>
       </div>
 
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-sm font-semibold text-neutral-900">Autoakceptacja</h2>
-        <label class="relative inline-flex cursor-pointer items-center">
-          <input
-            type="checkbox"
-            [checked]="autoAccept()"
-            (change)="toggleAutoAccept()"
-            class="peer sr-only"
-          />
-          <div
-            class="h-6 w-11 rounded-full bg-neutral-200 peer-checked:bg-primary-500
-              after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5
-              after:rounded-full after:bg-white after:transition-all
-              peer-checked:after:translate-x-full"
-          ></div>
-        </label>
-      </div>
-
       @if (loading()) {
       <app-loading-spinner />
       } @else {
@@ -116,7 +98,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
               <app-button variant="outline" size="sm" (clicked)="openChat(p.userId)">
                 <app-icon name="message-circle" size="sm" />
               </app-button>
-              <app-button variant="primary" size="sm" (clicked)="onAccept(p.id)">
+              <app-button variant="primary" size="sm" (clicked)="onApprove(p.id)">
                 <app-icon name="check" size="sm" />
               </app-button>
               <app-button variant="danger" size="sm" (clicked)="onReject(p.id)">
@@ -176,7 +158,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
                 }
               </div>
               <div class="flex gap-1">
-                @if (isPaidEvent() && p.status === 'PENDING_PAYMENT') {
+                @if (isPaidEvent() && !p.payment && (p.status === 'APPROVED' || p.status === 'CONFIRMED')) {
                 <app-button variant="primary" size="sm" (clicked)="onMarkPaid(p.id)">
                   Oznacz jako opłacone
                 </app-button>
@@ -273,7 +255,6 @@ export class EventManageComponent implements OnInit {
   readonly announcements = signal<EventAnnouncement[]>([]);
   readonly loading = signal(true);
   readonly eventData = signal<Event | null>(null);
-  readonly autoAccept = signal(false);
   readonly sendingAnnouncement = signal(false);
   readonly lastAnnouncementStats = signal<AnnouncementReceiptStats | null>(null);
   announcementMessage = '';
@@ -299,15 +280,12 @@ export class EventManageComponent implements OnInit {
   });
 
   readonly pendingList = computed(() =>
-    this.manageParticipants().filter((p) => p.status === 'PENDING' || p.status === 'APPLIED'),
+    this.manageParticipants().filter((p) => p.status === 'PENDING'),
   );
 
   readonly activeList = computed(() =>
     this.manageParticipants().filter(
-      (p) =>
-        p.status === 'ACCEPTED' ||
-        p.status === 'PARTICIPANT' ||
-        p.status === 'PENDING_PAYMENT',
+      (p) => p.status === 'APPROVED' || p.status === 'CONFIRMED',
     ),
   );
 
@@ -330,7 +308,6 @@ export class EventManageComponent implements OnInit {
     this.eventId = this.route.snapshot.paramMap.get('id') ?? '';
     this.eventService.getEvent(this.eventId).subscribe((e) => {
       this.eventData.set(e);
-      this.autoAccept.set(e.autoAccept);
       this.citySlug = e.city?.slug ?? '';
       this.breadcrumb.setContext({ citySlug: this.citySlug });
     });
@@ -368,13 +345,13 @@ export class EventManageComponent implements OnInit {
     });
   }
 
-  onAccept(id: string): void {
-    this.eventService.acceptParticipation(id).subscribe({
+  onApprove(id: string): void {
+    this.eventService.approveParticipation(id).subscribe({
       next: () => {
         this.manageParticipants.update((prev) =>
-          prev.map((p) => (p.id === id ? { ...p, status: 'ACCEPTED' } : p)),
+          prev.map((p) => (p.id === id ? { ...p, status: 'APPROVED' } : p)),
         );
-        this.snackbar.success('Zaakceptowano');
+        this.snackbar.success('Zatwierdzono');
       },
     });
   }
@@ -390,12 +367,6 @@ export class EventManageComponent implements OnInit {
     });
   }
 
-  toggleAutoAccept(): void {
-    this.eventService.toggleAutoAccept(this.eventId).subscribe({
-      next: (e) => this.autoAccept.set(e.autoAccept),
-    });
-  }
-
   onReprimand(userId: string): void {
     this.moderationService
       .createReprimand(userId, this.eventId, 'Reprymenda od organizatora')
@@ -406,7 +377,7 @@ export class EventManageComponent implements OnInit {
   }
 
   onBan(userId: string): void {
-    this.moderationService.createBan(userId, 'Ban od organizatora').subscribe({
+    this.moderationService.banUser(userId, 'Ban od organizatora').subscribe({
       next: () => this.snackbar.info('Użytkownik zbanowany'),
       error: () => this.snackbar.error('Nie udało się zbanować'),
     });
@@ -464,7 +435,7 @@ export class EventManageComponent implements OnInit {
 
   paymentStatusLabel(p: ParticipantManageItem): string {
     if (!p.payment) {
-      return p.status === 'PENDING_PAYMENT' ? 'Oczekuje' : '—';
+      return p.status === 'APPROVED' ? 'Oczekuje na płatność' : '—';
     }
     const map: Record<string, string> = {
       COMPLETED: 'Opłacone',
@@ -477,7 +448,7 @@ export class EventManageComponent implements OnInit {
   paymentStatusClass(p: ParticipantManageItem): string {
     const base = 'text-xs font-medium px-1.5 py-0.5 rounded-full';
     if (!p.payment) {
-      return p.status === 'PENDING_PAYMENT'
+      return p.status === 'APPROVED'
         ? `${base} bg-warning-50 text-warning-600`
         : `${base} text-neutral-400`;
     }

@@ -141,7 +141,7 @@ export class VouchersService {
     const paidParticipations = await this.prisma.eventParticipation.findMany({
       where: {
         eventId,
-        status: { in: ['APPLIED', 'ACCEPTED', 'PARTICIPANT'] },
+        status: { in: ['PENDING', 'APPROVED', 'CONFIRMED'] },
         payments: { some: { status: 'COMPLETED' } },
       },
       include: {

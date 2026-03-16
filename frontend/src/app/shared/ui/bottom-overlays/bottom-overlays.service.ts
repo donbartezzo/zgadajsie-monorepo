@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { Event as EventModel, ParticipantPaymentInfo } from '../../types';
+import { EventCountdown } from '../../utils/date.utils';
 
 export type OverlayType =
   | 'share'
@@ -11,6 +12,7 @@ export type OverlayType =
   | 'organizerActions'
   | 'notifications'
   | 'cancelPayment'
+  | 'enrollmentDetails'
   | null;
 
 @Injectable({
@@ -33,9 +35,14 @@ export class BottomOverlaysService {
   private payCallback: (() => void) | null = null;
   private contactOrganizerCallback: (() => void) | null = null;
   private cancelEventCallback: (() => void) | null = null;
+  private leaveCallback: (() => void) | null = null;
   private cancelPaymentCallback:
     | ((options: { refundAsVoucher: boolean; notifyUser: boolean }) => void)
     | null = null;
+
+  // Lottery countdown context (for enrollment details overlay)
+  private readonly lotteryCountdownSignal = signal<EventCountdown | null>(null);
+  readonly lotteryCountdown = this.lotteryCountdownSignal.asReadonly();
 
   // Cancel payment context
   private readonly cancelPaymentSignal = signal<ParticipantPaymentInfo | null>(null);
@@ -88,6 +95,10 @@ export class BottomOverlaysService {
     this.loadingSignal.set(loading);
   }
 
+  setLotteryCountdown(countdown: EventCountdown | null): void {
+    this.lotteryCountdownSignal.set(countdown);
+  }
+
   // ── Callbacks ──
 
   onJoinConfirmed(callback: () => void): void {
@@ -112,6 +123,10 @@ export class BottomOverlaysService {
 
   onCancelEvent(callback: () => void): void {
     this.cancelEventCallback = callback;
+  }
+
+  onLeaveRequested(callback: () => void): void {
+    this.leaveCallback = callback;
   }
 
   onCancelPaymentConfirmed(
@@ -150,6 +165,10 @@ export class BottomOverlaysService {
     this.cancelEventCallback?.();
   }
 
+  handleLeaveRequested(): void {
+    this.leaveCallback?.();
+  }
+
   handleCancelPayment(options: { refundAsVoucher: boolean; notifyUser: boolean }): void {
     this.cancelPaymentCallback?.(options);
   }
@@ -161,6 +180,7 @@ export class BottomOverlaysService {
     this.payCallback = null;
     this.contactOrganizerCallback = null;
     this.cancelEventCallback = null;
+    this.leaveCallback = null;
     this.cancelPaymentCallback = null;
   }
 }
