@@ -1,9 +1,5 @@
-<!-- ── Layout slots ── -->
-<ng-template appLayoutSlot="extra">
-  <p class="opacity-80">{{ subtitle() }}</p>
-</ng-template>
+<app-event-hero-slots [event]="event()" />
 
-<!-- ── Content ── -->
 @if (loading()) {
 <app-loading-spinner></app-loading-spinner>
 } @else if (isPreEnrollment()) {

@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   OnInit,
   signal,
@@ -14,9 +13,7 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { EventService } from '../../../../core/services/event.service';
 import { Event as EventModel, Participation } from '../../../../shared/types';
 import { getEnrollmentPhase } from '../../../../shared/utils/enrollment-phase.util';
-import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
-import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
-import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
+import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
 
 const ACTIVE_STATUSES = ['APPROVED', 'CONFIRMED'];
 const PENDING_STATUSES = ['PENDING'];
@@ -24,24 +21,13 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
 
 @Component({
   selector: 'app-event-participants',
-  imports: [UserAvatarComponent, IconComponent, LoadingSpinnerComponent, LayoutSlotDirective],
+  imports: [UserAvatarComponent, IconComponent, LoadingSpinnerComponent, EventHeroSlotsComponent],
   templateUrl: './event-participants.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventParticipantsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly eventService = inject(EventService);
-  private readonly layoutConfig = inject(LayoutConfigService);
-
-  constructor() {
-    this.layoutConfig.titleText.set('Uczestnicy');
-    effect(() => {
-      const filename = this.event()?.coverImage?.filename;
-      if (filename) {
-        this.layoutConfig.coverImageUrl.set(coverImageUrl(filename));
-      }
-    });
-  }
 
   readonly event = signal<EventModel | null>(null);
   readonly participants = signal<Participation[]>([]);

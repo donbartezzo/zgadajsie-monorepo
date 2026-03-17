@@ -1,14 +1,12 @@
-import { computed, Directive, effect, inject, OnDestroy, signal } from '@angular/core';
+import { computed, Directive, inject, OnDestroy, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { LayoutConfigService } from '../../../shared/layouts/page-layout/layout-config.service';
 import { ChatService } from '../../../core/services/chat.service';
 import { EventService } from '../../../core/services/event.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 import { Event as EventModel, PrivateChatMessage } from '../../../shared/types';
 import { ChatViewMessage } from '../../../shared/ui/chat-view/chat-view.component';
-import { coverImageUrl } from '../../../shared/types/cover-image.interface';
 
 @Directive()
 export abstract class BaseChatComponent implements OnDestroy {
@@ -18,7 +16,6 @@ export abstract class BaseChatComponent implements OnDestroy {
   protected readonly eventService = inject(EventService);
   protected readonly auth = inject(AuthService);
   protected readonly snackbar = inject(SnackbarService);
-  protected readonly layoutConfig = inject(LayoutConfigService);
 
   readonly event = signal<EventModel | null>(null);
   readonly privateMessages = signal<PrivateChatMessage[]>([]);
@@ -40,9 +37,6 @@ export abstract class BaseChatComponent implements OnDestroy {
   protected bannedSub!: Subscription;
   protected typingTimeout: ReturnType<typeof setTimeout> | undefined;
 
-  abstract readonly headerTitle: ReturnType<typeof computed<string>>;
-  abstract readonly headerSubtitle: ReturnType<typeof computed<string>>;
-
   readonly privateChatViewMessages = computed<ChatViewMessage[]>(() =>
     this.privateMessages().map((msg) => ({
       id: msg.id,
@@ -58,18 +52,6 @@ export abstract class BaseChatComponent implements OnDestroy {
         : undefined,
     })),
   );
-
-  constructor() {
-    effect(() => {
-      const filename = this.event()?.coverImage?.filename;
-      if (filename) {
-        this.layoutConfig.coverImageUrl.set(coverImageUrl(filename));
-      }
-    });
-    effect(() => {
-      this.layoutConfig.titleText.set(this.headerTitle());
-    });
-  }
 
   ngOnDestroy(): void {
     this.chatService.disconnect();

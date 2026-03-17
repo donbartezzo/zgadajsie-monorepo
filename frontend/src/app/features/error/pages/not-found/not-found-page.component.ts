@@ -12,36 +12,30 @@ interface NotFoundState {
   selector: 'app-not-found-page',
   imports: [RouterLink, ButtonComponent, IconComponent],
   template: `
-    <section
-      class="flex h-[calc(100dvh-4rem)] flex-col items-center justify-center px-5 text-center"
-    >
-      <div class="w-full max-w-sm">
-        <div
-          class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-neutral-100"
-        >
-          <app-icon name="search" class="text-neutral-400" size="lg"></app-icon>
-        </div>
-
-        <h1 class="text-2xl font-bold text-neutral-900">{{ title() }}</h1>
-
-        <p class="mt-2 text-sm text-neutral-500">{{ description() }}</p>
-
-        <div class="mt-8 flex flex-col gap-3">
-          @if (citySlug()) {
-          <a [routerLink]="['/w', citySlug()]">
-            <app-button variant="primary" size="lg" class="w-full">
-              Wydarzenia w mieście
-            </app-button>
-          </a>
-          }
-          <a routerLink="/">
-            <app-button [variant]="citySlug() ? 'outline' : 'primary'" size="lg" class="w-full">
-              Strona główna
-            </app-button>
-          </a>
-        </div>
+    <div class="text-center">
+      <div
+        class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-neutral-100"
+      >
+        <app-icon name="search" class="text-neutral-400" size="lg"></app-icon>
       </div>
-    </section>
+
+      <h1 class="text-2xl font-bold text-neutral-900">{{ title() }}</h1>
+
+      <p class="mt-2 text-sm text-neutral-500">{{ description() }}</p>
+
+      <div class="mt-8 flex flex-col gap-3">
+        @if (citySlug()) {
+        <a [routerLink]="['/w', citySlug()]">
+          <app-button variant="primary" size="lg" class="w-full"> Wydarzenia w mieście </app-button>
+        </a>
+        }
+        <a routerLink="/">
+          <app-button [variant]="citySlug() ? 'outline' : 'primary'" size="lg" class="w-full">
+            Strona główna
+          </app-button>
+        </a>
+      </div>
+    </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -4,6 +4,7 @@ import {
   computed,
   DestroyRef,
   ElementRef,
+  HostBinding,
   inject,
   signal,
   ViewChild,
@@ -47,6 +48,19 @@ export class PageLayoutComponent {
   readonly layoutConfig = inject(LayoutConfigService);
   readonly breadcrumb = inject(BreadcrumbService);
 
+  constructor() {
+    this.destroyRef.onDestroy(() => this.observer?.disconnect());
+
+    this.router.events
+      .pipe(
+        filter((e) => e instanceof NavigationStart),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => {
+        this.layoutConfig.reset();
+      });
+  }
+
   // ── Route data → layout flags ──
   private readonly routeData = toSignal(
     this.router.events.pipe(
@@ -60,6 +74,13 @@ export class PageLayoutComponent {
     ),
     { initialValue: undefined },
   );
+
+  @HostBinding('class')
+  get dynamicClass(): string {
+    return this.contentClass();
+  }
+
+  private static readonly DEFAULT_COVER = 'assets/images/default-cover.png';
 
   readonly showHeader = computed(() => this.routeData()?.['showHeader'] !== false);
   readonly showFooter = computed(() => {
@@ -85,9 +106,8 @@ export class PageLayoutComponent {
     }
   });
   readonly centerContent = computed(() => this.routeData()?.['centerContent'] === true);
-  readonly contentBgColor = computed(() => this.routeData()?.['contentBgColor'] || '');
-
-  private static readonly DEFAULT_COVER = 'assets/images/default-cover.png';
+  readonly contentClass = computed(() => this.routeData()?.['contentClass'] || '');
+  readonly showBorder = computed(() => this.routeData()?.['showBorder'] !== false);
 
   // ── Derived from LayoutConfigService ──
   readonly hasCover = computed(() => true);
@@ -97,9 +117,6 @@ export class PageLayoutComponent {
   readonly hasTitle = computed(() => !!this.layoutConfig.titleText());
   readonly hasExtra = computed(() => !!this.layoutConfig.extraTpl());
   readonly hasSticky = computed(() => !!this.layoutConfig.stickyTpl());
-  readonly isDefaultBg = computed(
-    () => this.layoutConfig.contentBgClass() === LayoutConfigService.DEFAULT_CONTENT_BG,
-  );
 
   // ── Internal state ──
   readonly heroHidden = signal(false);
@@ -119,21 +136,6 @@ export class PageLayoutComponent {
     } else {
       this.heroHidden.set(false);
     }
-  }
-
-  constructor() {
-    this.destroyRef.onDestroy(() => this.observer?.disconnect());
-
-    this.router.events
-      .pipe(
-        filter((e) => e instanceof NavigationStart),
-        takeUntilDestroyed(),
-      )
-      .subscribe(() => {
-        this.layoutConfig.coverImageUrl.set('');
-        this.layoutConfig.contentBgClass.set(LayoutConfigService.DEFAULT_CONTENT_BG);
-        this.layoutConfig.titleText.set('');
-      });
   }
 
   goBack(): void {

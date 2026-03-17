@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { IconComponent } from '../../../../core/icons/icon.component';
-import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
+import { EventHeroSlotsComponent } from '../../../event/ui/event-hero-slots/event-hero-slots.component';
 import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { ChatViewComponent } from '../../../../shared/ui/chat-view/chat-view.component';
@@ -14,36 +14,14 @@ import { BaseChatComponent } from '../base-chat.component';
   imports: [
     DatePipe,
     IconComponent,
-    LayoutSlotDirective,
+    EventHeroSlotsComponent,
     UserAvatarComponent,
     LoadingSpinnerComponent,
     ChatViewComponent,
     ChatMembersOverlayComponent,
   ],
   template: `
-    <ng-template appLayoutSlot="extra">
-      <p class="opacity-80">{{ headerSubtitle() }}</p>
-    </ng-template>
-
-    <ng-template appLayoutSlot="sticky">
-      @if (!chatDisabled()) {
-      <button
-        type="button"
-        class="relative grid h-8 w-8 place-items-center rounded-full bg-neutral-200 text-neutral-600 hover:bg-neutral-300 transition-colors mt-1 mr-2"
-        (click)="showMembers.set(true)"
-        aria-label="Uczestnicy"
-      >
-        <app-icon name="users" size="sm"></app-icon>
-        @if (memberCount(); as count) {
-        <span
-          class="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary-500 text-[10px] font-bold text-white px-1"
-        >
-          {{ count }}
-        </span>
-        }
-      </button>
-      }
-    </ng-template>
+    <app-event-hero-slots [event]="event()" />
 
     @if (isOrganizerMode()) {
     <!-- ─── ORGANIZER: conversation list ─── -->
@@ -140,17 +118,6 @@ export class HostChatComponent extends BaseChatComponent implements OnInit {
   readonly otherUserName = signal('');
 
   private hostOrganizerId = '';
-
-  readonly headerTitle = computed(() => {
-    if (this.isOrganizerMode()) {
-      return 'Konwersacje prywatne';
-    }
-    return this.otherUserName() || 'Wiadomość prywatna';
-  });
-
-  readonly headerSubtitle = computed(() =>
-    this.isOrganizerMode() ? 'Organizator' : 'Wiadomość prywatna',
-  );
 
   ngOnInit(): void {
     this.initBaseData();

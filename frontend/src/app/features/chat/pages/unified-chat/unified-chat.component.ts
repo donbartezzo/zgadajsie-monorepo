@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, OnInit, signal } from '@angular/core';
-import { IconComponent } from '../../../../core/icons/icon.component';
-import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
+import { EventHeroSlotsComponent } from '../../../event/ui/event-hero-slots/event-hero-slots.component';
 import {
   ChatViewComponent,
   ChatViewMessage,
@@ -11,31 +10,9 @@ import { BaseChatComponent } from '../base-chat.component';
 
 @Component({
   selector: 'app-unified-chat',
-  imports: [IconComponent, LayoutSlotDirective, ChatViewComponent, ChatMembersOverlayComponent],
+  imports: [EventHeroSlotsComponent, ChatViewComponent, ChatMembersOverlayComponent],
   template: `
-    <ng-template appLayoutSlot="extra">
-      <p class="opacity-80">{{ headerSubtitle() }}</p>
-    </ng-template>
-
-    <ng-template appLayoutSlot="sticky">
-      @if (!chatDisabled()) {
-      <button
-        type="button"
-        class="relative grid h-8 w-8 place-items-center rounded-full bg-neutral-200 text-neutral-600 hover:bg-neutral-300 transition-colors mt-1 mr-2"
-        (click)="showMembers.set(true)"
-        aria-label="Uczestnicy"
-      >
-        <app-icon name="users" size="sm"></app-icon>
-        @if (memberCount(); as count) {
-        <span
-          class="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary-500 text-[10px] font-bold text-white px-1"
-        >
-          {{ count }}
-        </span>
-        }
-      </button>
-      }
-    </ng-template>
+    <app-event-hero-slots [event]="event()" />
 
     <div class="flex-1 flex flex-col min-h-0">
       <app-chat-view
@@ -75,15 +52,6 @@ export class UnifiedChatComponent extends BaseChatComponent implements OnInit {
 
   otherUserId = '';
   isPrivate = false;
-
-  readonly headerTitle = computed(() => {
-    if (this.isPrivate) {
-      return this.otherUserName() || 'Wiadomość prywatna';
-    }
-    return 'Chat wydarzenia';
-  });
-
-  readonly headerSubtitle = computed(() => (this.isPrivate ? 'Wiadomość prywatna' : 'Grupowy'));
 
   readonly chatViewMessages = computed<ChatViewMessage[]>(() => {
     if (this.isPrivate) {

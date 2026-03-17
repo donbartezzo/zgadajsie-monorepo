@@ -9,17 +9,16 @@ import { verifiedUserGuard } from './core/guards/verified-user.guard';
 import { participantGuard } from './core/guards/participant.guard';
 import { organizerGuard } from './core/guards/organizer.guard';
 
-// ── Layout data constants ──
-const BARE_LAYOUT = {
-  showHeader: false,
+const SIMPLE_LAYOUT = {
+  showBorder: false,
   showFooter: false,
-  centerContent: true,
-  contentBgColor: 'bg-white',
+  showHeader: false,
 } as const;
 
-const SIMPLE_LAYOUT = {
-  showHeader: false,
-  showFooter: false,
+const BARE_LAYOUT = {
+  ...SIMPLE_LAYOUT,
+  centerContent: true,
+  contentClass: 'bg-white',
 } as const;
 
 const BREADCRUMB_TO_HOME = {
@@ -44,7 +43,7 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/home/pages/home/home.component').then((m) => m.HomeComponent),
     canActivate: [paymentRedirectGuard],
-    data: { title: '', ...SIMPLE_LAYOUT },
+    data: { title: '', centerContent: true, ...SIMPLE_LAYOUT },
   },
 
   // ── Public: event list per city ──
@@ -73,7 +72,9 @@ export const appRoutes: Route[] = [
       ),
     canActivate: [verifiedUserGuard],
     data: {
-      title: 'Uczestnicy',
+      showFooter: false,
+      showBorder: false,
+      contentClass: 'bg-white',
       breadcrumb: BREADCRUMB_TO_EVENT,
     },
   },
@@ -87,8 +88,9 @@ export const appRoutes: Route[] = [
       ),
     canActivate: [verifiedUserGuard],
     data: {
-      title: 'Wiadomość do organizatora',
       showFooter: false,
+      showBorder: false,
+      contentClass: 'bg-white',
       breadcrumb: BREADCRUMB_TO_EVENT,
     },
   },
@@ -102,9 +104,9 @@ export const appRoutes: Route[] = [
       ),
     canActivate: [verifiedUserGuard],
     data: {
-      title: 'Wiadomość prywatna',
       isPrivate: true,
       showFooter: false,
+      contentClass: 'bg-white',
       breadcrumb: { parent: '/w/:citySlug/:id/host-chat', label: 'Konwersacje' },
     },
   },
@@ -118,8 +120,9 @@ export const appRoutes: Route[] = [
       ),
     canActivate: [verifiedUserGuard, participantGuard],
     data: {
-      title: 'Czat',
       showFooter: false,
+      showBorder: false,
+      contentClass: 'bg-white',
       breadcrumb: BREADCRUMB_TO_EVENT,
     },
   },
@@ -183,7 +186,7 @@ export const appRoutes: Route[] = [
       import('./features/error/pages/not-found/not-found-page.component').then(
         (m) => m.NotFoundPageComponent,
       ),
-    data: { title: 'Nie znaleziono', breadcrumb: BREADCRUMB_TO_HOME },
+    data: { title: 'Nie znaleziono', breadcrumb: BREADCRUMB_TO_HOME, ...BARE_LAYOUT },
   },
   {
     path: 'unverified',

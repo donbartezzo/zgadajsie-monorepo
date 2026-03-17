@@ -1,10 +1,10 @@
 @let _showHeader = showHeader(); @let _showFooter = showFooter(); @let _heroHidden = heroHidden();
-@let _hasCover = hasCover(); @let _centerContent = centerContent(); @let _contentBgColor =
-contentBgColor();
+@let _hasCover = hasCover(); @let _centerContent = centerContent(); @let _contentClass =
+contentClass(); @let _showBorder = showBorder();
 
 <!-- ═══════════════════════════════════════════════════
- PAGE HEADER (hero area)
- ═══════════════════════════════════════════════════ -->
+   PAGE HEADER (hero area)
+   ═══════════════════════════════════════════════════ -->
 @if (_showHeader && _hasCover) {
 <!-- Sentinel: always in DOM so IntersectionObserver works without infinite loop -->
 <div #heroSentinel class="relative w-full shrink-0" style="height: var(--hero-h)"></div>
@@ -22,12 +22,10 @@ contentBgColor();
 
 <!-- Fixed hero / mini-bar container -->
 <div
-  [class]="
-    'fixed inset-x-0 top-0 mx-auto max-w-app ' +
-    (_heroHidden
-      ? 'z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-neutral-200'
-      : 'z-0')
-  "
+  [ngClass]="[
+    'fixed inset-x-0 top-0 mx-auto max-w-app',
+    _heroHidden ? 'z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-neutral-200' : 'z-0'
+  ]"
   [style.height]="_heroHidden ? 'auto' : 'var(--hero-h)'"
 >
   @if (_heroHidden) {
@@ -142,22 +140,19 @@ contentBgColor();
  PAGE CONTENT (router-outlet goes here)
  ═══════════════════════════════════════════════════ -->
 <div
-  [ngClass]="{
-    relative: true,
-    '-mt-6': _showHeader,
-    'flex flex-1 items-center justify-center': _centerContent
-  }"
-  [class]="_contentBgColor"
+  [ngClass]="[
+    'relative',
+    _showHeader ? '-mt-6' : '',
+    _centerContent ? 'flex flex-1 items-center justify-center' : ''
+  ]"
 >
   <div
-    [ngClass]="
-      'rounded-2xl ' +
-      (_centerContent ? 'overflow-visible' : 'overflow-hidden') +
-      ' ' +
-      (_contentBgColor || layoutConfig.contentBgClass()) +
-      (isDefaultBg() ? '' : ' shadow-sm border border-neutral-100') +
-      (_centerContent ? ' w-full' : '')
-    "
+    [ngClass]="[
+      'rounded-2xl border',
+      _showBorder ? 'shadow-sm border-neutral-100' : 'border-transparent',
+      _centerContent ? 'overflow-visible w-full' : 'overflow-hidden',
+      _contentClass || layoutConfig.contentClass()
+    ]"
   >
     @if (_showHeader) {
     <!-- Drag handle -->

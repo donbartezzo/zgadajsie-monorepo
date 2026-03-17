@@ -14,22 +14,19 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
-import { DateBadgeComponent } from '../../../../shared/ui/date-badge/date-badge.component';
 import { EventService } from '../../../../core/services/event.service';
 import { EventAnnouncementService } from '../../../../core/services/event-announcement.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bottom-overlays.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
-import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
-import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
+import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
 import {
   Event as EventModel,
   Participation,
   EventAnnouncement,
   EnrollmentPhase,
 } from '../../../../shared/types';
-import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 import { getEventCountdown, EventCountdown } from '../../../../shared/utils/date.utils';
 import { EventStatus } from '@zgadajsie/shared';
 import {
@@ -58,9 +55,8 @@ import { NotificationStatusService } from '../../../../core/services/notificatio
     LoadingSpinnerComponent,
     EventNotificationBarsComponent,
     EventAnnouncementsComponent,
-    DateBadgeComponent,
-    LayoutSlotDirective,
     EnrollmentStatusBannerComponent,
+    EventHeroSlotsComponent,
   ],
   templateUrl: './event.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -75,7 +71,6 @@ export class EventComponent implements OnInit, OnDestroy {
   private readonly snackbar = inject(SnackbarService);
   readonly overlays = inject(BottomOverlaysService);
   private readonly confirmModal = inject(ConfirmModalService);
-  readonly layoutConfig = inject(LayoutConfigService);
   private readonly notifStatus = inject(NotificationStatusService);
 
   // ── Reactive state ──
@@ -108,27 +103,6 @@ export class EventComponent implements OnInit, OnDestroy {
     return g;
   });
 
-  readonly eventMonth = computed(() => {
-    const e = this.event();
-    if (!e) return '';
-    return new Date(e.startsAt).toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase();
-  });
-
-  readonly eventDay = computed(() => {
-    const e = this.event();
-    if (!e) return '';
-    return new Date(e.startsAt).getDate().toString();
-  });
-
-  readonly eventStartTime = computed(() => {
-    const e = this.event();
-    if (!e) return '';
-    return new Date(e.startsAt).toLocaleTimeString('pl-PL', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  });
-
   readonly ageRange = computed(() => {
     const e = this.event();
     if (!e) return null;
@@ -159,16 +133,6 @@ export class EventComponent implements OnInit, OnDestroy {
   }
 
   constructor() {
-    // Set cover image and white content background for event page
-    this.layoutConfig.contentBgClass.set('bg-white');
-    effect(() => {
-      const e = this.event();
-      if (e?.coverImage?.filename) {
-        this.layoutConfig.coverImageUrl.set(coverImageUrl(e.coverImage.filename));
-      }
-      this.layoutConfig.titleText.set(e?.title || '');
-    });
-
     // Sync local event/participants signals to the overlay service
     effect(() => {
       this.overlays.setEventContext(this.event(), this.isParticipant());
