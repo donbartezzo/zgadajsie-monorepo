@@ -2,7 +2,14 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../core/icons/icon.component';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger' | 'success' | 'ghost';
+export type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'outline'
+  | 'outline-primary'
+  | 'danger'
+  | 'success'
+  | 'ghost';
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
 
 @Component({
@@ -63,6 +70,8 @@ export class ButtonComponent {
       secondary: 'bg-neutral-100 text-neutral-900 hover:bg-neutral-200 focus:ring-neutral-500',
       outline:
         'border border-neutral-300 text-neutral-700 hover:bg-neutral-50 focus:ring-primary-500',
+      'outline-primary':
+        'border border-primary-500 text-primary-500 hover:bg-primary-50 focus:ring-primary-500',
       danger: 'bg-danger-400 text-white hover:bg-danger-500 focus:ring-danger-400',
       success: 'bg-success-400 text-white hover:bg-success-500 focus:ring-success-400',
       ghost: 'text-neutral-600 hover:bg-neutral-100 focus:ring-neutral-500',
