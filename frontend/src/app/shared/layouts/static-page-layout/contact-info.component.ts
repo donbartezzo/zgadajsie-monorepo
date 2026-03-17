@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../core/icons/icon.component';
+import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
 
 @Component({
   selector: 'app-contact-info',
@@ -16,39 +17,13 @@ import { IconComponent } from '../../../core/icons/icon.component';
         </p>
         <div class="space-y-2 text-sm">
           <p class="flex items-center gap-2 text-neutral-700">
-            <app-icon
-              name="mail"
-              size="sm"
-              [ngClass]="{
-                'text-success-400': variant() === 'green',
-                'text-info-400': variant() === 'blue',
-                'text-info-300': variant() === 'purple',
-                'text-warning-300': variant() === 'orange'
-              }"
-            />
-            <a
-              href="mailto:kontakt@zgadajsie.pl"
-              [ngClass]="{
-                'text-success-400 hover:underline': variant() === 'green',
-                'text-info-400 hover:underline': variant() === 'blue',
-                'text-info-300 hover:underline': variant() === 'purple',
-                'text-warning-400 hover:underline': variant() === 'orange'
-              }"
-            >
+            <app-icon name="mail" size="sm" [ngClass]="textClass()" />
+            <a href="mailto:kontakt@zgadajsie.pl" [ngClass]="textClass() + ' hover:underline'">
               kontakt@zgadajsie.pl
             </a>
           </p>
           <p class="flex items-center gap-2 text-neutral-700">
-            <app-icon
-              name="map-pin"
-              size="sm"
-              [ngClass]="{
-                'text-success-400': variant() === 'green',
-                'text-info-400': variant() === 'blue',
-                'text-info-300': variant() === 'purple',
-                'text-warning-300': variant() === 'orange'
-              }"
-            />
+            <app-icon name="map-pin" size="sm" [ngClass]="textClass()" />
             <span>Zielona Góra, Polska</span>
           </p>
           @if (showButton()) {
@@ -56,12 +31,7 @@ import { IconComponent } from '../../../core/icons/icon.component';
             <a
               routerLink="/contact"
               class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors"
-              [ngClass]="{
-                'bg-success-400 hover:bg-success-400 text-white': variant() === 'green',
-                'bg-info-400 hover:bg-info-400 text-white': variant() === 'blue',
-                'bg-info-300 hover:bg-info-400 text-white': variant() === 'purple',
-                'bg-warning-300 hover:bg-warning-500 text-white': variant() === 'orange'
-              }"
+              [ngClass]="buttonClass()"
             >
               <app-icon name="send" size="sm" />
               <span>Wyślij wiadomość</span>
@@ -75,6 +45,9 @@ import { IconComponent } from '../../../core/icons/icon.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContactInfoComponent {
-  variant = input<'green' | 'blue' | 'purple' | 'orange'>('green');
+  variant = input<SemanticColor>('primary');
   showButton = input<boolean>(true);
+
+  readonly textClass = computed(() => SEMANTIC_COLOR_CLASSES.text[this.variant()]);
+  readonly buttonClass = computed(() => SEMANTIC_COLOR_CLASSES.button[this.variant()]);
 }

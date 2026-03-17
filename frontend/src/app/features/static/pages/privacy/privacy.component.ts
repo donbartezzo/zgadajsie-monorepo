@@ -7,7 +7,7 @@ import { StaticPageLayoutComponent } from '../../../../shared/layouts/static-pag
   imports: [CommonModule, StaticPageLayoutComponent],
   template: `
     <app-static-page-layout
-      variant="green"
+      variant="success"
       heroIcon="shield"
       title="Polityka Prywatności"
       subtitle="Twoja prywatność jest naszym priorytetem. Dowiedz się jak chronimy Twoje dane."

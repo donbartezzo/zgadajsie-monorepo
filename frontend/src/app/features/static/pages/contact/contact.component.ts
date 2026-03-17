@@ -12,7 +12,7 @@ import { environment } from '../../../../../environments/environment';
   imports: [CommonModule, ReactiveFormsModule, IconComponent, StaticPageLayoutComponent],
   template: `
     <app-static-page-layout
-      variant="orange"
+      variant="warning"
       heroIcon="mail"
       title="Skontaktuj się z nami"
       subtitle="Jesteśmy zawsze tutaj dla Ciebie! Napisz do nas, a odpowiemy najszybciej jak to możliwe."

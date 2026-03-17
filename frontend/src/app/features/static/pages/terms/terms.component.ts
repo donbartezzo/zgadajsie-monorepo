@@ -7,7 +7,7 @@ import { StaticPageLayoutComponent } from '../../../../shared/layouts/static-pag
   imports: [CommonModule, StaticPageLayoutComponent],
   template: `
     <app-static-page-layout
-      variant="blue"
+      variant="info"
       heroIcon="edit"
       title="Regulamin Serwisu"
       subtitle="Zasady korzystania z platformy ZgadajSię. Poznaj swoje prawa i obowiązki."

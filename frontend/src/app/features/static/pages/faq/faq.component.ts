@@ -14,7 +14,7 @@ interface FaqItem {
   imports: [CommonModule, FormsModule, IconComponent, StaticPageLayoutComponent],
   template: `
     <app-static-page-layout
-      variant="purple"
+      variant="primary"
       heroIcon="search"
       title="Baza Wiedzy"
       subtitle="Wyszukaj wszystko czego potrzebujesz na jednej stronie."

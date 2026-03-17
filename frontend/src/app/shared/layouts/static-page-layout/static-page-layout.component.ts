@@ -2,8 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { IconComponent, IconName } from '../../../core/icons/icon.component';
 import { ContactInfoComponent } from './contact-info.component';
-
-export type PageVariant = 'green' | 'blue' | 'purple' | 'orange';
+import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
 
 @Component({
   selector: 'app-static-page-layout',
@@ -32,7 +31,7 @@ export type PageVariant = 'green' | 'blue' | 'purple' | 'orange';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StaticPageLayoutComponent {
-  variant = input.required<PageVariant>();
+  variant = input.required<SemanticColor>();
   heroIcon = input.required<IconName>();
   title = input.required<string>();
   subtitle = input.required<string>();
@@ -40,12 +39,6 @@ export class StaticPageLayoutComponent {
 
   readonly heroGradientClass = computed(() => {
     const baseClasses = 'relative h-80 flex items-center justify-center bg-gradient-to-br';
-    const gradientMap: Record<PageVariant, string> = {
-      green: 'from-success-400 to-success-600',
-      blue: 'from-info-400 to-info-600',
-      purple: 'from-primary-400 to-primary-600',
-      orange: 'from-warning-400 to-danger-400',
-    };
-    return `${baseClasses} ${gradientMap[this.variant()]}`;
+    return `${baseClasses} ${SEMANTIC_COLOR_CLASSES.gradient[this.variant()]}`;
   });
 }
