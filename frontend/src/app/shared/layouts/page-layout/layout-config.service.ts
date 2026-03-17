@@ -17,12 +17,18 @@ export class LayoutConfigService {
   readonly titleText = signal('');
   readonly extraTpl = signal<TemplateRef<unknown> | null>(null);
   readonly stickyTpl = signal<TemplateRef<unknown> | null>(null);
+  readonly isReady = signal(false);
 
   reset(): void {
+    this.isReady.set(false);
     this.coverImageUrl.set('');
     this.contentClass.set(LayoutConfigService.DEFAULT_CONTENT);
     this.titleText.set('');
     this.extraTpl.set(null);
     this.stickyTpl.set(null);
+  }
+
+  markReady(): void {
+    this.isReady.set(true);
   }
 }

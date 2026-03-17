@@ -67,6 +67,16 @@ export class PageLayoutComponent {
       .subscribe(() => {
         this.layoutConfig.reset();
       });
+
+    this.router.events
+      .pipe(
+        filter((e) => e instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => {
+        // setTimeout ensures Angular CD completes first → child effects configure layout
+        setTimeout(() => this.layoutConfig.markReady());
+      });
   }
 
   // ── Route data → layout flags ──
