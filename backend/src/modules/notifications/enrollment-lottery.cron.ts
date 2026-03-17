@@ -45,7 +45,7 @@ export class EnrollmentLotteryCron {
     title: string;
   }): Promise<void> {
     const result = await this.prisma.$transaction(async (tx) => {
-      // Atomic lock — only one cron instance processes this event
+      // Atomic lock - only one cron instance processes this event
       const locked = await tx.event.updateMany({
         where: { id: event.id, lotteryExecutedAt: null },
         data: { lotteryExecutedAt: new Date() },
@@ -155,7 +155,7 @@ export class EnrollmentLotteryCron {
         });
       }
 
-      // Rejected stay PENDING — they can still join in open enrollment
+      // Rejected stay PENDING - they can still join in open enrollment
       // (we don't reject them, they just weren't selected)
 
       return { allApprovedIds, rejectedIds, pendingParticipations };
@@ -165,12 +165,12 @@ export class EnrollmentLotteryCron {
       return; // Already processed
     }
 
-    // Notifications — fire-and-forget, AFTER successful commit
+    // Notifications - fire-and-forget, AFTER successful commit
     const { allApprovedIds, pendingParticipations } = result;
 
     for (const p of pendingParticipations) {
       const isApproved = allApprovedIds.includes(p.id);
-      const recipientId = p.isGuest ? (p.addedByUserId ?? p.userId) : p.userId;
+      const recipientId = p.isGuest ? p.addedByUserId ?? p.userId : p.userId;
 
       try {
         if (isApproved) {

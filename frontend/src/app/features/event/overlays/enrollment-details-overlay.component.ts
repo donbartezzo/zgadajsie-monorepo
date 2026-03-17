@@ -70,7 +70,7 @@ interface StepConfig {
           }
         </div>
 
-        <!-- How enrollment works — step-by-step -->
+        <!-- How enrollment works - step-by-step -->
         @if (showSteps()) {
         <div>
           <h3 class="text-sm font-bold text-neutral-900 mb-3">Jak przebiegają zapisy?</h3>
@@ -113,7 +113,7 @@ interface StepConfig {
         </div>
         }
 
-        <!-- How to join — instructions -->
+        <!-- How to join - instructions -->
         @if (joinInstructions().length > 0) {
         <div>
           <h3 class="text-sm font-bold text-neutral-900 mb-2">Jak dołączyć?</h3>
@@ -323,7 +323,7 @@ export class EnrollmentDetailsOverlayComponent {
       },
       {
         icon: 'shuffle',
-        label: `Losowanie miejsc — ok. ${PRE_ENROLLMENT_HOURS} godz. przed startem wydarzenia`,
+        label: `Losowanie miejsc - ok. ${PRE_ENROLLMENT_HOURS} godz. przed startem wydarzenia`,
         active: isLottery,
         done: isOpen,
       },
@@ -381,7 +381,7 @@ export class EnrollmentDetailsOverlayComponent {
       const instructions = [
         'Naciśnij przycisk "Dołącz do wydarzenia" na karcie wydarzenia.',
         'Zapoznaj się z informacjami o wydarzeniu i potwierdź zgłoszenie.',
-        'Jeśli brałeś już udział w wydarzeniach tego organizatora — zostaniesz zatwierdzony automatycznie. W przeciwnym razie organizator zatwierdzi Twój udział ręcznie.',
+        'Jeśli brałeś już udział w wydarzeniach tego organizatora - zostaniesz zatwierdzony automatycznie. W przeciwnym razie organizator zatwierdzi Twój udział ręcznie.',
       ];
       if (isPaid) {
         instructions.push('Po zatwierdzeniu opłać udział online lub gotówką.');
@@ -399,7 +399,7 @@ export class EnrollmentDetailsOverlayComponent {
     const notes: string[] = [];
 
     if (phase === 'PRE_ENROLLMENT') {
-      notes.push('Zgłoszenie wstępne nie gwarantuje miejsca — o przydziale decyduje losowanie.');
+      notes.push('Zgłoszenie wstępne nie gwarantuje miejsca - o przydziale decyduje losowanie.');
       notes.push('Lista uczestników jest ukryta do czasu zakończenia losowania.');
       notes.push(
         `Losowanie i otwarcie zapisów następuje zawsze ok. ${PRE_ENROLLMENT_HOURS} godz. przed startem wydarzenia.`,

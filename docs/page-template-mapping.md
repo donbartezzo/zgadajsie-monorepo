@@ -8,10 +8,10 @@
 
 ### Stan obecny
 
-- **Header** (`layout/header/`) — sticky top, Tailwind, logo + theme toggle + dropdown użytkownika, `IconComponent`, `RouterLink`. ✅ Zgodny z wytycznymi.
-- **Footer / Bottom Nav** (`layout/footer/`) — sticky bottom nav z ikonami (Start, Wydarzenia, Dodaj, Profil). Tailwind, `RouterLinkActive`. ✅ Zgodny.
-- **App shell** (`app.ts` + `app.html`) — `<app-header>` + `<router-outlet>` + `<app-footer>` + `<app-snackbar>`.
-- **Kontener** — `max-w-md mx-auto px-4` — mobile-first z breakpointami Tailwind.
+- **Header** (`layout/header/`) - sticky top, Tailwind, logo + theme toggle + dropdown użytkownika, `IconComponent`, `RouterLink`. ✅ Zgodny z wytycznymi.
+- **Footer / Bottom Nav** (`layout/footer/`) - sticky bottom nav z ikonami (Start, Wydarzenia, Dodaj, Profil). Tailwind, `RouterLinkActive`. ✅ Zgodny.
+- **App shell** (`app.ts` + `app.html`) - `<app-header>` + `<router-outlet>` + `<app-footer>` + `<app-snackbar>`.
+- **Kontener** - `max-w-md mx-auto px-4` - mobile-first z breakpointami Tailwind.
 
 ### Szablon referencyjny
 
@@ -67,9 +67,9 @@ Brak klas BS, ikony przez `IconComponent`, Tailwind everywhere, standalone + OnP
 ### Porównanie z szablonem
 
 - Szablon ma zakładkę "Recommended" z dużymi kartami (full-width image + data + lokalizacja + avatary uczestników + strzałka).
-- **Obecna implementacja nie ma zakładek** (nie ma "Near You" / "Recommended") — to jest poprawne uproszczenie MVP.
+- **Obecna implementacja nie ma zakładek** (nie ma "Near You" / "Recommended") - to jest poprawne uproszczenie MVP.
 - Karta wydarzenia (szablon): miniatura, data (uppercase, kolor akcentu), tytuł, lokalizacja z ikoną, avatary uczestników, strzałka.
-- `EventCardComponent` powinien naśladować strukturę z zakładki "Recommended" — zweryfikować jego template.
+- `EventCardComponent` powinien naśladować strukturę z zakładki "Recommended" - zweryfikować jego template.
 
 ### Zgodność z wytycznymi ✅
 
@@ -94,7 +94,7 @@ Bogata strona detali:
 - Tytuł + badge'e dyscypliny/poziomu/obiektu
 - Karta organizatora (avatar + nazwa + rola)
 - Opis
-- Grid 2×2: data, lokalizacja, koszt, uczestnicy — z ikonami
+- Grid 2×2: data, lokalizacja, koszt, uczestnicy - z ikonami
 - Mapa (`MapComponent`)
 - Lista uczestników (avatar chips)
 - Sticky bottom bar: Dołącz / Chat / Wypisz się
@@ -136,7 +136,7 @@ Pełna zgodność. Signals, `@if`/`@for`, `IconComponent`, `CardComponent`, `Map
 
 - `page-faq.html` ma: hero z wyszukiwaniem (Knowledge Base), listę searchable items, sekcję "Frequent Questions" z collapse.
 - `component-accordion.html` ma klasyczne accordion z BS `data-bs-toggle="collapse"`.
-- **Obecna implementacja jest prostsza** — brak wyszukiwania, czysty accordion. Wystarczające dla MVP.
+- **Obecna implementacja jest prostsza** - brak wyszukiwania, czysty accordion. Wystarczające dla MVP.
 
 ### Zgodność z wytycznymi ✅
 
@@ -162,7 +162,7 @@ Brak BS, Tailwind borders + hover, `signal()` do state, `@for`/`@if`.
 
 - `page-contact.html` ma: hero image, formularz (Name, Email, Message + Submit), mapę Google, dane kontaktowe (tel, mail, social media), success state.
 - **Obecna implementacja pomija**: hero image, mapę, social links. Formularz i dane kontaktowe obecne.
-- Brak mapy na stronie kontaktu — sensowne uproszczenie.
+- Brak mapy na stronie kontaktu - sensowne uproszczenie.
 
 ### Zgodność z wytycznymi ✅
 
@@ -186,7 +186,7 @@ Tailwind inputs (`rounded-xl`, `focus:ring-2`), `ButtonComponent`, `CardComponen
 ### Porównanie z szablonem
 
 - W `page-terms.html` privacy policy jest połączona z Terms of Service w jednym pliku.
-- Obecna implementacja to osobna strona — lepsze SEO i czytelność.
+- Obecna implementacja to osobna strona - lepsze SEO i czytelność.
 
 ### Zgodność z wytycznymi ✅
 
@@ -209,7 +209,7 @@ Tailwind prose, brak BS, prosty statyczny komponent standalone.
 
 ### Zgodność z wytycznymi ✅
 
-Analogicznie do Privacy — poprawny.
+Analogicznie do Privacy - poprawny.
 
 ---
 
@@ -231,9 +231,9 @@ Analogicznie do Privacy — poprawny.
 
 ### Porównanie z szablonem
 
-- `page-account.html` — edycja konta: avatar, toggle'e ustawień (dark mode, newsletter, 2FA), pola: name, email, location, phone, social profiles, zmiana hasła.
-- `page-profile-1.html` — widok profilu: duży hero z imieniem, statystyki (followers/following/posts), galeria zdjęć.
-- **Obecna implementacja łączy oba** — widok + edycja w jednym. Uproszczone (brak social profiles, brak galerii na profilu — galeria jest na osobnej podstronie `/profile/media`).
+- `page-account.html` - edycja konta: avatar, toggle'e ustawień (dark mode, newsletter, 2FA), pola: name, email, location, phone, social profiles, zmiana hasła.
+- `page-profile-1.html` - widok profilu: duży hero z imieniem, statystyki (followers/following/posts), galeria zdjęć.
+- **Obecna implementacja łączy oba** - widok + edycja w jednym. Uproszczone (brak social profiles, brak galerii na profilu - galeria jest na osobnej podstronie `/profile/media`).
 
 ### Zgodność z wytycznymi ✅
 
@@ -241,7 +241,7 @@ Analogicznie do Privacy — poprawny.
 
 ---
 
-## 9. Panel organizatora — zarządzanie wydarzeniem (`/events/:id/manage`)
+## 9. Panel organizatora - zarządzanie wydarzeniem (`/events/:id/manage`)
 
 |                          |                                                                                                                                 |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -259,7 +259,7 @@ Analogicznie do Privacy — poprawny.
 
 ### Porównanie z szablonem
 
-- `page-admin-home-1.html` — dashboard z kartami statystyk (income, users, interactions) + wykresy. Obecna implementacja bierze **strukturę kart statystyk** ale bez wykresów (sensowne uproszczenie).
+- `page-admin-home-1.html` - dashboard z kartami statystyk (income, users, interactions) + wykresy. Obecna implementacja bierze **strukturę kart statystyk** ale bez wykresów (sensowne uproszczenie).
 - Lista uczestników: szablon nie ma bezpośredniego odpowiednika, ale lista z avatar + akcje jest bliska wzorcowi list z `page-chat-bubbles-4.html` (grupowy chat z avatarami).
 
 ### Zgodność z wytycznymi ✅
@@ -315,7 +315,7 @@ Wszystkie componenty: standalone, inline templates, Tailwind, `CardComponent`, `
 
 ### Porównanie z szablonem
 
-- `page-wallet.html` — karta z saldem (duży numer), zakładki History/Overview/Notifications, lista transakcji z ikonami, wykres.
+- `page-wallet.html` - karta z saldem (duży numer), zakładki History/Overview/Notifications, lista transakcji z ikonami, wykres.
 - **Obecna implementacja**: brak zakładek i wykresu, prostsza wersja. Adekwatne do MVP.
 
 ### Zgodność z wytycznymi ✅
@@ -340,7 +340,7 @@ Wszystkie componenty: standalone, inline templates, Tailwind, `CardComponent`, `
 
 ### Porównanie z szablonem
 
-- `page-chat-bubbles-4.html` — grupowy chat, avatary, badge ADMIN, input + przyciski na dole.
+- `page-chat-bubbles-4.html` - grupowy chat, avatary, badge ADMIN, input + przyciski na dole.
 - **Obecna implementacja pokrywa** te wzorce i jest czysto Tailwindowa.
 
 ### Zgodność z wytycznymi ✅
@@ -351,7 +351,7 @@ Wszystkie componenty: standalone, inline templates, Tailwind, `CardComponent`, `
 
 | Podstrona               | Komponent                                                    | Szablon ref.                                                              |
 | ----------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| `/auth/login`           | `features/auth/login/login.component.ts`                     | `page-signin.html` (lub brak bezpośredniego — generyczna forma logowania) |
+| `/auth/login`           | `features/auth/login/login.component.ts`                     | `page-signin.html` (lub brak bezpośredniego - generyczna forma logowania) |
 | `/auth/register`        | `features/auth/register/register.component.ts`               | `page-signup.html`                                                        |
 | `/auth/activate`        | `features/auth/activate/activate.component.ts`               | brak bezpośredniego                                                       |
 | `/auth/forgot-password` | `features/auth/forgot-password/forgot-password.component.ts` | brak bezpośredniego                                                       |
@@ -364,7 +364,7 @@ Wszystkie componenty: standalone, inline templates, Tailwind, `CardComponent`, `
 
 ### Uwaga
 
-Szablon sticky-mobile-template ma pliki `page-signin.html` i `page-signup.html` — warto upewnić się, że są w katalogu. Jeśli nie, obecne implementacje są samowystarczalne i zgodne z wytycznymi.
+Szablon sticky-mobile-template ma pliki `page-signin.html` i `page-signup.html` - warto upewnić się, że są w katalogu. Jeśli nie, obecne implementacje są samowystarczalne i zgodne z wytycznymi.
 
 ---
 
@@ -378,7 +378,7 @@ Szablon sticky-mobile-template ma pliki `page-signin.html` i `page-signup.html` 
 
 ### Stan ✅
 
-Podstrony profilowe użytkownika — zestawy list z filtrowaniem statusu.
+Podstrony profilowe użytkownika - zestawy list z filtrowaniem statusu.
 
 ---
 
@@ -398,7 +398,7 @@ Formularz reużywalny (tryb tworzenia i edycji na podstawie obecności `:id` w U
 
 | #   | Podstrona                            | Route                             | Szablon referencyjny                                                | Status |
 | --- | ------------------------------------ | --------------------------------- | ------------------------------------------------------------------- | ------ |
-| 0   | Layout (Header + Footer)             | —                                 | `_starter.html`                                                     | ✅ OK  |
+| 0   | Layout (Header + Footer)             | -                                 | `_starter.html`                                                     | ✅ OK  |
 | 1   | Strona główna                        | `/`                               | `splash-2.html`                                                     | ✅ OK  |
 | 2   | Listing eventów                      | `/events`                         | `page-events-category-tabs.html` (Recommended)                      | ✅ OK  |
 | 3   | Karta eventu                         | `/events/:id`                     | `page-events-detailed-3.html`                                       | ✅ OK  |
@@ -417,12 +417,12 @@ Formularz reużywalny (tryb tworzenia i edycji na podstawie obecności `:id` w U
 
 ### Kluczowe wnioski
 
-1. **Wszystkie podstrony są już zmigrowane do Tailwind** — brak klas Bootstrap w żadnym z komponentów.
+1. **Wszystkie podstrony są już zmigrowane do Tailwind** - brak klas Bootstrap w żadnym z komponentów.
 2. **Architektura Angular** jest poprawna: standalone, OnPush, signals, `@for`/`@if`, `input()`/`output()`.
-3. **Ikony** obsługiwane przez `IconComponent` — brak font icons.
+3. **Ikony** obsługiwane przez `IconComponent` - brak font icons.
 4. **Shared UI** prawidłowo wydzielone: `ButtonComponent`, `CardComponent`, `EventCardComponent`, `UserAvatarComponent`, `MapComponent`, `LoadingSpinnerComponent`, `EmptyStateComponent`, `PaginationComponent`, `FileUploadComponent`, `DialogComponent`, `SnackbarComponent`.
-5. **Layout** — wspólny kontener `max-w-md` z header sticky top + bottom nav sticky bottom. Zgodny z mobile-first PWA.
-6. **Dark mode** — obsługiwany przez `dark:` prefiksy Tailwind + `ThemeService`.
+5. **Layout** - wspólny kontener `max-w-md` z header sticky top + bottom nav sticky bottom. Zgodny z mobile-first PWA.
+6. **Dark mode** - obsługiwany przez `dark:` prefiksy Tailwind + `ThemeService`.
 
 ### Potencjalne ulepszenia (nie-blokujące, na przyszłość)
 

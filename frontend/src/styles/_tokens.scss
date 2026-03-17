@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────────────────
-// SEMANTIC COLOR TOKENS — CSS Variables (Source of Truth)
+// SEMANTIC COLOR TOKENS - CSS Variables (Source of Truth)
 //
 // Format: RGB space-separated (e.g., "55 188 155") dla pełnego
 // wsparcia Tailwind opacity modifiers (bg-primary-500/30).
@@ -12,7 +12,7 @@
 
 :root {
   // ══════════════════════════════════════════════════════════
-  // PRIMARY (mint) — Brand, CTA, przyciski, linki, akcenty
+  // PRIMARY (mint) - Brand, CTA, przyciski, linki, akcenty
   // ══════════════════════════════════════════════════════════
   --color-primary-50: 232 250 245;
   --color-primary-100: 209 245 234;
@@ -26,7 +26,7 @@
   --color-primary-900: 18 78 64;
 
   // ══════════════════════════════════════════════════════════
-  // NEUTRAL (dark/gray) — Tła, tekst, bordery, ikony muted
+  // NEUTRAL (dark/gray) - Tła, tekst, bordery, ikony muted
   // ══════════════════════════════════════════════════════════
   --color-neutral-50: 248 249 250;
   --color-neutral-100: 234 236 240;
@@ -41,7 +41,7 @@
   --color-neutral-950: 18 20 23;
 
   // ══════════════════════════════════════════════════════════
-  // SUCCESS (green) — Pozytywne statusy, potwierdzenia
+  // SUCCESS (green) - Pozytywne statusy, potwierdzenia
   // ══════════════════════════════════════════════════════════
   --color-success-50: 240 249 232;
   --color-success-100: 220 242 204;
@@ -55,7 +55,7 @@
   --color-success-900: 30 53 10;
 
   // ══════════════════════════════════════════════════════════
-  // WARNING (orange) — Ostrzeżenia, countdown urgent
+  // WARNING (orange) - Ostrzeżenia, countdown urgent
   // ══════════════════════════════════════════════════════════
   --color-warning-50: 255 243 224;
   --color-warning-100: 255 224 178;
@@ -69,7 +69,7 @@
   --color-warning-900: 92 26 5;
 
   // ══════════════════════════════════════════════════════════
-  // DANGER (red) — Błędy, usuwanie, destrukcyjne akcje
+  // DANGER (red) - Błędy, usuwanie, destrukcyjne akcje
   // ══════════════════════════════════════════════════════════
   --color-danger-50: 254 236 238;
   --color-danger-100: 252 212 217;
@@ -83,7 +83,7 @@
   --color-danger-900: 80 16 21;
 
   // ══════════════════════════════════════════════════════════
-  // INFO (blue) — Informacje, focus ring, linki informacyjne
+  // INFO (blue) - Informacje, focus ring, linki informacyjne
   // ══════════════════════════════════════════════════════════
   --color-info-50: 232 243 254;
   --color-info-100: 200 227 252;

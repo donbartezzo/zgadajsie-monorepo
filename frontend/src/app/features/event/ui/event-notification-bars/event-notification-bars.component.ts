@@ -56,7 +56,7 @@ export interface NotificationBarConfig {
       }
     </div>
 
-    <!-- Fixed sticky bars — visible only when sentinel scrolls out of viewport -->
+    <!-- Fixed sticky bars - visible only when sentinel scrolls out of viewport -->
     @if (!sentinelVisible()) {
     <div
       class="fixed bottom-[var(--footer-height)] inset-x-0 z-30 max-w-app mx-auto animate-slide-up-bar"

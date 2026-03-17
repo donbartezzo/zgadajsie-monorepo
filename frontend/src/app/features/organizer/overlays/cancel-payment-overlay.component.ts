@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  output,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
@@ -29,7 +23,7 @@ export interface CancelPaymentResult {
     >
       <p class="mb-4 text-sm text-neutral-500 text-center">
         {{ userName() }} &mdash; {{ payment().amount | number : '1.2-2' }} zł
-        <span class="text-neutral-400">({{ paymentMethodLabel(payment().method, '—') }})</span>
+        <span class="text-neutral-400">({{ paymentMethodLabel(payment().method, '-') }})</span>
       </p>
 
       <label class="mb-3 flex items-center gap-3 text-sm text-neutral-700">
@@ -39,8 +33,7 @@ export interface CancelPaymentResult {
           (change)="refundAsVoucher.set(!refundAsVoucher())"
           class="h-4 w-4 rounded border-neutral-300 text-primary-500 focus:ring-primary-500"
         />
-        Zwróć kwotę na voucher organizatora
-        ({{ payment().amount | number : '1.2-2' }} zł)
+        Zwróć kwotę na voucher organizatora ({{ payment().amount | number : '1.2-2' }} zł)
       </label>
 
       <label class="mb-5 flex items-center gap-3 text-sm text-neutral-700">

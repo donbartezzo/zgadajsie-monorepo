@@ -30,7 +30,7 @@ const ICON_VARIANT_MAP: Record<OverlayIconVariant, { bg: string; text: string }>
       <!-- Backdrop -->
       <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="closed.emit()"></div>
 
-      <!-- Spacer — pushes sheet down when content is small, collapses when content is large -->
+      <!-- Spacer - pushes sheet down when content is small, collapses when content is large -->
       <div class="relative z-10 flex-1 min-h-0" (click)="closed.emit()"></div>
 
       <!-- Sheet -->

@@ -70,7 +70,7 @@ Przed rozpoczęciem implementacji zapoznaj się z pełną dokumentacją projektu
 
 1. **Wymagania biznesowe:**
 
-   - [PRD — Product Requirements Document](../docs/prd.md) - opis projektu, cele i funkcjonalności
+   - [PRD - Product Requirements Document](../docs/prd.md) - opis projektu, cele i funkcjonalności
    - [Plan rozwoju MVP](../docs/mvp-development-plan.md) - kamienie milowe i etapy wdrożenia
 
 2. **Stack technologiczny i architektura:**

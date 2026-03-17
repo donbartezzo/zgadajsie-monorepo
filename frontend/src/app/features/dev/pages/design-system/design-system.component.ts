@@ -31,7 +31,7 @@ export class DesignSystemComponent {
   ];
 
   // ════════════════════════════════════════════════════════
-  // SEMANTIC PALETTES — główne palety do użycia w komponentach
+  // SEMANTIC PALETTES - główne palety do użycia w komponentach
   // Mapowane na CSS vars w _tokens.scss
   // ════════════════════════════════════════════════════════
   readonly semanticPalettes: ColorPalette[] = [
@@ -135,7 +135,7 @@ export class DesignSystemComponent {
   ];
 
   // ════════════════════════════════════════════════════════
-  // FOUNDATION PALETTES — raw kolory z szablonu sticky-mobile
+  // FOUNDATION PALETTES - raw kolory z szablonu sticky-mobile
   // Dostępne dla dekoracji, kart kolorowych, akcentów
   // ════════════════════════════════════════════════════════
   readonly foundationPalettes: ColorPalette[] = [

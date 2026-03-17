@@ -165,7 +165,10 @@ async function main() {
     },
   });
 
-  console.log('Użytkownicy:', [jan, anna, marek, kasia, tomek].map((u) => u.displayName));
+  console.log(
+    'Użytkownicy:',
+    [jan, anna, marek, kasia, tomek].map((u) => u.displayName),
+  );
 
   // ─── Przykładowe wydarzenia ─────────────────────────────────────────────
   console.log('Tworzę wydarzenia...');
@@ -176,11 +179,11 @@ async function main() {
   // ZAKOŃCZONE (2 szt.)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // 1) Zakończone — piłka nożna wczoraj
+  // 1) Zakończone - piłka nożna wczoraj
   const ended1 = await prisma.event.create({
     data: {
       title: 'Wieczorne granie na orliku',
-      description: 'Rekreacyjna piłka nożna w Zielonej Górze — zakończone z powodzeniem!',
+      description: 'Rekreacyjna piłka nożna w Zielonej Górze - zakończone z powodzeniem!',
       disciplineId: disciplines[0].id,
       facilityId: facilities[0].id,
       levelId: levels[0].id,
@@ -200,7 +203,7 @@ async function main() {
     },
   });
 
-  // Participations — confirmed participants for ended event
+  // Participations - confirmed participants for ended event
   await prisma.eventParticipation.createMany({
     data: [
       { eventId: ended1.id, userId: anna.id, status: 'CONFIRMED', approvedAt: hoursFromNow(-73) },
@@ -210,11 +213,11 @@ async function main() {
     ],
   });
 
-  // 2) Zakończone — siatkówka przedwczoraj
+  // 2) Zakończone - siatkówka przedwczoraj
   const ended2 = await prisma.event.create({
     data: {
-      title: 'Siatkówka w hali — spotkanie',
-      description: 'Spotkanie siatkarskie dla amatorów — super atmosfera!',
+      title: 'Siatkówka w hali - spotkanie',
+      description: 'Spotkanie siatkarskie dla amatorów - super atmosfera!',
       disciplineId: disciplines[1].id,
       facilityId: facilities[1].id,
       levelId: levels[1].id,
@@ -251,10 +254,10 @@ async function main() {
   // ODWOŁANE (2 szt.)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // 3) Odwołane — koszykówka
+  // 3) Odwołane - koszykówka
   const cancelled1 = await prisma.event.create({
     data: {
-      title: 'Koszykówka 3v3 — odwołana',
+      title: 'Koszykówka 3v3 - odwołana',
       description: 'Odwołane z powodu złych warunków pogodowych.',
       disciplineId: disciplines[2].id,
       facilityId: facilities[1].id,
@@ -281,10 +284,10 @@ async function main() {
     ],
   });
 
-  // 4) Odwołane — squash jutro miał być
+  // 4) Odwołane - squash jutro miał być
   await prisma.event.create({
     data: {
-      title: 'Squash dla początkujących — odwołany',
+      title: 'Squash dla początkujących - odwołany',
       description: 'Organizator odwołał z przyczyn osobistych.',
       disciplineId: disciplines[5].id,
       facilityId: facilities[1].id,
@@ -308,11 +311,11 @@ async function main() {
   // W TRAKCIE (2 szt.)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // 5) W trakcie — siatkówka (start 1h temu, koniec za 1h)
+  // 5) W trakcie - siatkówka (start 1h temu, koniec za 1h)
   const ongoing1 = await prisma.event.create({
     data: {
-      title: 'Siatkówka w hali — trwa!',
-      description: 'Wydarzenie w trakcie — dołącz jako widz!',
+      title: 'Siatkówka w hali - trwa!',
+      description: 'Wydarzenie w trakcie - dołącz jako widz!',
       disciplineId: disciplines[1].id,
       facilityId: facilities[1].id,
       levelId: levels[1].id,
@@ -355,10 +358,10 @@ async function main() {
     ],
   });
 
-  // 6) W trakcie — bieganie (start 30 min temu, koniec za 1.5h)
+  // 6) W trakcie - bieganie (start 30 min temu, koniec za 1.5h)
   const ongoing2 = await prisma.event.create({
     data: {
-      title: 'Poranny bieg w parku — trwa!',
+      title: 'Poranny bieg w parku - trwa!',
       description: 'Bieg rekreacyjny po parku Piastowskim.',
       disciplineId: disciplines[6].id,
       facilityId: facilities[6].id,
@@ -397,14 +400,14 @@ async function main() {
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // NADCHODZĄCE — OTWARTE ZAPISY (lotteryExecutedAt != null, start > now)
+  // NADCHODZĄCE - OTWARTE ZAPISY (lotteryExecutedAt != null, start > now)
   // Faza: OPEN_ENROLLMENT
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // 7) Otwarte zapisy — tenis za 5h (lotteria odbyła się, wolne miejsca)
+  // 7) Otwarte zapisy - tenis za 5h (lotteria odbyła się, wolne miejsca)
   const openEnroll1 = await prisma.event.create({
     data: {
-      title: 'Tenis na korcie — otwarte zapisy!',
+      title: 'Tenis na korcie - otwarte zapisy!',
       description:
         'Losowanie za nami, ale wciąż zostały wolne miejsca. Zapisz się w trybie otwartym!',
       disciplineId: disciplines[3].id,
@@ -444,10 +447,10 @@ async function main() {
     ],
   });
 
-  // 8) Otwarte zapisy — piłka nożna jutro (loteria dawno przeszła)
+  // 8) Otwarte zapisy - piłka nożna jutro (loteria dawno przeszła)
   const openEnroll2 = await prisma.event.create({
     data: {
-      title: 'Piłka nożna jutro wieczorem — zapisy otwarte',
+      title: 'Piłka nożna jutro wieczorem - zapisy otwarte',
       description: 'Losowanie zakończone, ale są jeszcze miejsca! Zapisz się szybko.',
       disciplineId: disciplines[0].id,
       facilityId: facilities[0].id,
@@ -492,10 +495,10 @@ async function main() {
     ],
   });
 
-  // 9) Otwarte zapisy — badminton za 10h (pełne, ma odrzuconego)
+  // 9) Otwarte zapisy - badminton za 10h (pełne, ma odrzuconego)
   const openEnroll3 = await prisma.event.create({
     data: {
-      title: 'Badminton debel — zapisy zamknięte (pełne)',
+      title: 'Badminton debel - zapisy zamknięte (pełne)',
       description: 'Wszystkie miejsca zajęte po losowaniu. Może następnym razem!',
       disciplineId: disciplines[4].id,
       facilityId: facilities[1].id,
@@ -548,16 +551,16 @@ async function main() {
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // NADCHODZĄCE — PRE-ZAPISY (lotteryExecutedAt == null, start > 48h)
+  // NADCHODZĄCE - PRE-ZAPISY (lotteryExecutedAt == null, start > 48h)
   // Faza: PRE_ENROLLMENT
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // 10) Pre-zapisy — piłka nożna za 4 dni
+  // 10) Pre-zapisy - piłka nożna za 4 dni
   const preEnroll1 = await prisma.event.create({
     data: {
-      title: 'Piłka nożna weekend — pre-zapisy',
+      title: 'Piłka nożna weekend - pre-zapisy',
       description:
-        'Wydarzenie za 4 dni. Trwają wstępne zapisy — Twoje miejsce zależy od losowania!',
+        'Wydarzenie za 4 dni. Trwają wstępne zapisy - Twoje miejsce zależy od losowania!',
       disciplineId: disciplines[0].id,
       facilityId: facilities[4].id,
       levelId: levels[0].id,
@@ -577,7 +580,7 @@ async function main() {
     },
   });
 
-  // Pre-enrollees — all PENDING, some organizer-picked
+  // Pre-enrollees - all PENDING, some organizer-picked
   await prisma.eventParticipation.createMany({
     data: [
       {
@@ -593,10 +596,10 @@ async function main() {
     ],
   });
 
-  // 11) Pre-zapisy — koszykówka za 5 dni (płatna, mało chętnych)
+  // 11) Pre-zapisy - koszykówka za 5 dni (płatna, mało chętnych)
   const preEnroll2 = await prisma.event.create({
     data: {
-      title: 'Koszykówka 5v5 — pre-zapisy otwarte',
+      title: 'Koszykówka 5v5 - pre-zapisy otwarte',
       description: 'Szukamy chętnych na koszykówkę. Zapisz się wstępnie i czekaj na losowanie.',
       disciplineId: disciplines[2].id,
       facilityId: facilities[1].id,
@@ -623,13 +626,13 @@ async function main() {
     ],
   });
 
-  // 12) Pre-zapisy — pływanie za tydzień (darmowe, dużo chętnych)
+  // 12) Pre-zapisy - pływanie za tydzień (darmowe, dużo chętnych)
   const preEnroll3 = await prisma.event.create({
     data: {
-      title: 'Trening pływacki — pre-zapisy (duże zainteresowanie!)',
+      title: 'Trening pływacki - pre-zapisy (duże zainteresowanie!)',
       description:
         'Darmowy trening pływacki na basenie olimpijskim. ' +
-        'Dużo chętnych — miejsce gwarantowane tylko dla wylosowanych!',
+        'Dużo chętnych - miejsce gwarantowane tylko dla wylosowanych!',
       disciplineId: disciplines[8].id,
       facilityId: facilities[1].id,
       levelId: levels[0].id,
@@ -664,16 +667,15 @@ async function main() {
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // NADCHODZĄCE — LOTTERY_PENDING (lotteryExecutedAt == null, start <= 48h)
+  // NADCHODZĄCE - LOTTERY_PENDING (lotteryExecutedAt == null, start <= 48h)
   // Faza: LOTTERY_PENDING (czeka na cron)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // 13) Loteria — siatkówka pojutrze (dokładnie ~47h, zaraz loteria)
+  // 13) Loteria - siatkówka pojutrze (dokładnie ~47h, zaraz loteria)
   const lotteryPend1 = await prisma.event.create({
     data: {
-      title: 'Siatkówka pojutrze — losowanie lada moment!',
-      description:
-        'Pre-zapisy zamknięte, losowanie miejsc zaraz nastąpi. Trzymaj kciuki!',
+      title: 'Siatkówka pojutrze - losowanie lada moment!',
+      description: 'Pre-zapisy zamknięte, losowanie miejsc zaraz nastąpi. Trzymaj kciuki!',
       disciplineId: disciplines[1].id,
       facilityId: facilities[1].id,
       levelId: levels[1].id,
@@ -713,10 +715,10 @@ async function main() {
     ],
   });
 
-  // 14) Loteria — kolarstwo za ~40h
+  // 14) Loteria - kolarstwo za ~40h
   const lotteryPend2 = await prisma.event.create({
     data: {
-      title: 'Kolarstwo grupowe — oczekiwanie na losowanie',
+      title: 'Kolarstwo grupowe - oczekiwanie na losowanie',
       description: 'Rajd rowerowy po okolicach. Losowanie miejsc niedługo!',
       disciplineId: disciplines[7].id,
       facilityId: facilities[6].id,
@@ -745,16 +747,15 @@ async function main() {
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // NADCHODZĄCE — utworzone < 48h do startu (automatycznie OPEN_ENROLLMENT)
+  // NADCHODZĄCE - utworzone < 48h do startu (automatycznie OPEN_ENROLLMENT)
   // lotteryExecutedAt = now (bo shouldSkipPreEnrollment → true przy create)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // 15) Szybkie zapisy — squash za 3h (start < 48h, skip pre-enrollment)
+  // 15) Szybkie zapisy - squash za 3h (start < 48h, skip pre-enrollment)
   const quickOpen1 = await prisma.event.create({
     data: {
-      title: 'Squash last-minute — dołącz teraz!',
-      description:
-        'Szybkie wydarzenie squashowe — utworzone na ostatnią chwilę, bez pre-zapisów!',
+      title: 'Squash last-minute - dołącz teraz!',
+      description: 'Szybkie wydarzenie squashowe - utworzone na ostatnią chwilę, bez pre-zapisów!',
       disciplineId: disciplines[5].id,
       facilityId: facilities[1].id,
       levelId: levels[0].id,
@@ -785,10 +786,10 @@ async function main() {
     ],
   });
 
-  // 16) Szybkie zapisy — bieganie dziś wieczorem
+  // 16) Szybkie zapisy - bieganie dziś wieczorem
   await prisma.event.create({
     data: {
-      title: 'Wieczorny bieg — otwarte zapisy',
+      title: 'Wieczorny bieg - otwarte zapisy',
       description: 'Wieczorny bieg po mieście. Zapisz się i biegnij z nami!',
       disciplineId: disciplines[6].id,
       facilityId: facilities[6].id,
@@ -809,7 +810,7 @@ async function main() {
     },
   });
 
-  // ─── OrganizerUserRelation — trust/ban examples ─────────────────────────
+  // ─── OrganizerUserRelation - trust/ban examples ─────────────────────────
   console.log('Tworzę relacje organizator ↔ użytkownik...');
   await prisma.organizerUserRelation.create({
     data: {

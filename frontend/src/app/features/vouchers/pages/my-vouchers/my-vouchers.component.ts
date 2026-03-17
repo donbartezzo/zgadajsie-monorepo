@@ -51,7 +51,7 @@ import { OrganizerVoucherGroup } from '../../../../shared/types';
               <div class="flex items-center gap-1.5">
                 <span>{{ sourceLabel(v.source) }}</span>
                 @if (v.event) {
-                <span>—</span>
+                <span>-</span>
                 <a
                   [routerLink]="['/w', v.event.city?.slug, v.event.id]"
                   class="text-primary-500 hover:underline"

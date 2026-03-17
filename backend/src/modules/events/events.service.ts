@@ -64,8 +64,7 @@ export class EventsService {
   ): void {
     setImmediate(async () => {
       try {
-        const subscriberIds =
-          await this.citySubscriptionsService.getSubscriberIds(cityId);
+        const subscriberIds = await this.citySubscriptionsService.getSubscriberIds(cityId);
         const filtered = subscriberIds.filter((id) => id !== organizerId);
         for (const userId of filtered) {
           await this.pushService.notifyNewEventInCity(userId, eventTitle, eventId);
@@ -191,7 +190,7 @@ export class EventsService {
 
     if (event.status !== 'ACTIVE' || new Date() >= event.startsAt) {
       throw new BadRequestException(
-        'Wydarzenie nie może być edytowane — skontaktuj się z administracją serwisu.',
+        'Wydarzenie nie może być edytowane - skontaktuj się z administracją serwisu.',
       );
     }
 
@@ -333,7 +332,9 @@ export class EventsService {
 
     if (notificationErrors.length > 0) {
       this.logger.error(
-        `Event ${id} cancelled — ${notificationErrors.length} notification errors: ${notificationErrors.join(', ')}`,
+        `Event ${id} cancelled - ${
+          notificationErrors.length
+        } notification errors: ${notificationErrors.join(', ')}`,
       );
     }
 
@@ -378,7 +379,7 @@ export class EventsService {
       });
       if (participantCount > 0) {
         throw new BadRequestException(
-          'Nie można usunąć — są zgłoszeni uczestnicy. Możesz oznaczyć wydarzenie jako odwołane.',
+          'Nie można usunąć - są zgłoszeni uczestnicy. Możesz oznaczyć wydarzenie jako odwołane.',
         );
       }
     }
@@ -548,7 +549,9 @@ export class EventsService {
         payment.userId,
         'PAYMENT_CANCELLED',
         'Płatność anulowana',
-        `Twoja płatność za wydarzenie "${event.title}" została anulowana.${refundAsVoucher ? ' Kwota została zwrócona na voucher organizatora.' : ''}`,
+        `Twoja płatność za wydarzenie "${event.title}" została anulowana.${
+          refundAsVoucher ? ' Kwota została zwrócona na voucher organizatora.' : ''
+        }`,
         eventId,
       );
     }

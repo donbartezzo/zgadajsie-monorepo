@@ -171,7 +171,7 @@ export class JoinConfirmOverlayComponent {
   readonly headerTitle = computed(() => {
     const status = this.participantStatus();
     if (status === 'PENDING') return 'Zgłoszenie wysłane!';
-    if (status === 'APPROVED') return 'Zatwierdzone — potwierdź udział!';
+    if (status === 'APPROVED') return 'Zatwierdzone - potwierdź udział!';
     if (status === 'CONFIRMED') return 'Jesteś potwierdzonym uczestnikiem!';
     return 'Zgłoszenie wysłane!';
   });
@@ -212,5 +212,4 @@ export class JoinConfirmOverlayComponent {
     if (!e) return '';
     return new Date(e.endsAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
   });
-
 }

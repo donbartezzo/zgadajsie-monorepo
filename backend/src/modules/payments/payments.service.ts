@@ -57,7 +57,7 @@ export class PaymentsService {
 
     const voucherBalance = await this.vouchersService.getBalance(userId, event.organizerId);
 
-    // Case 1: Voucher fully covers the cost — create Payment directly
+    // Case 1: Voucher fully covers the cost - create Payment directly
     if (voucherBalance >= amount) {
       const payment = await this.prisma.payment.create({
         data: {
@@ -83,7 +83,7 @@ export class PaymentsService {
       return { paymentId: payment.id, paidByVoucher: true };
     }
 
-    // Case 2: Tpay payment needed — create PaymentIntent (temporary)
+    // Case 2: Tpay payment needed - create PaymentIntent (temporary)
     const voucherUsed = voucherBalance > 0 ? voucherBalance : 0;
     const tpayAmount = Math.round((amount - voucherUsed) * 100) / 100;
 
@@ -147,9 +147,9 @@ export class PaymentsService {
         where: { operatorTxId: verification.transactionId },
       });
       if (existingPayment) {
-        return; // Already processed — idempotent
+        return; // Already processed - idempotent
       }
-      return; // Unknown transaction — ignore
+      return; // Unknown transaction - ignore
     }
 
     // Tpay sends tr_status = 'TRUE' for successful payment
@@ -194,7 +194,7 @@ export class PaymentsService {
       return;
     }
 
-    // Other statuses (CHARGEBACK etc.) — log and ignore for now
+    // Other statuses (CHARGEBACK etc.) - log and ignore for now
   }
 
   async getPaymentStatus(paymentId: string) {
@@ -260,7 +260,7 @@ export class PaymentsService {
       return payment;
     }
 
-    // No finalized payment yet — still pending
+    // No finalized payment yet - still pending
     return {
       id: intentId,
       status: 'PENDING',

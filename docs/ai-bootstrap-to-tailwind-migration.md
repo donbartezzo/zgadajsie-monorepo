@@ -121,7 +121,7 @@ Gdy brak bezpośredniego odpowiednika, wybierz **najbliższą skalę Tailwind**.
 - `fw-bold` → `font-semibold` lub `font-bold`
 - `small` → `text-xs` / `text-sm`
 
-**Kolory — WYŁĄCZNIE z palety projektowej:**
+**Kolory - WYŁĄCZNIE z palety projektowej:**
 
 Projekt posiada **centralną paletę kolorów** zdefiniowaną jako statyczne hex values w `frontend/tailwind.config.js`. Brak CSS custom properties kolorów. Brak dark mode.
 
@@ -139,7 +139,7 @@ _Tekst i tła ogólne:_
 - `text-dark` / `text-body` → `text-neutral-900` (tekst główny)
 - `text-muted` / `text-secondary` → `text-neutral-500` (tekst drugorzędny)
 - `bg-white` → `bg-white` (tło karty/komponentu)
-- `bg-light` → `bg-neutral-50` (lekkie tło — Bootstrap `#f8f9fa` ≈ `neutral-50`)
+- `bg-light` → `bg-neutral-50` (lekkie tło - Bootstrap `#f8f9fa` ≈ `neutral-50`)
 - `border-*` → `border-neutral-200` (domyślne obramowanie)
 
 _Brand:_
@@ -147,14 +147,14 @@ _Brand:_
 - `bg-primary` → `bg-primary-500` (brand/akcent)
 - `text-primary` → `text-primary-500`
 
-_Statusy — solid bg (badge, button):_
+_Statusy - solid bg (badge, button):_
 
 - `bg-danger` → `bg-danger-400 text-white`
 - `bg-success` → `bg-success-400 text-white`
 - `bg-warning` → `bg-warning-400 text-white`
 - `bg-info` → `bg-info-400 text-white`
 
-_Statusy — tekst na jasnym tle (czytelność):_
+_Statusy - tekst na jasnym tle (czytelność):_
 
 - `text-danger` → `text-danger-500`
 - `text-success` → `text-success-600`
@@ -223,7 +223,7 @@ Breakpointy:
 
 ---
 
-## 5. Angular Material — kiedy i jak używać przy migracji
+## 5. Angular Material - kiedy i jak używać przy migracji
 
 Angular Material/CDK wolno używać **tylko dla zachowania i dostępności**, NIGDY jako gotowy wygląd:
 

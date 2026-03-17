@@ -103,7 +103,7 @@ export class CoverImagesService {
 
     if (eventsCount > 0) {
       throw new BadRequestException(
-        `Nie można usunąć — ${eventsCount} wydarzeń używa tego cover image. Możesz jedynie zastąpić grafikę.`,
+        `Nie można usunąć - ${eventsCount} wydarzeń używa tego cover image. Możesz jedynie zastąpić grafikę.`,
       );
     }
 
@@ -138,7 +138,7 @@ export class CoverImagesService {
     try {
       await fs.unlink(filePath);
     } catch {
-      // File may not exist — ignore
+      // File may not exist - ignore
     }
   }
 

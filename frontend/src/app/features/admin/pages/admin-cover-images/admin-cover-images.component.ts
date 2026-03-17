@@ -238,7 +238,7 @@ export class AdminCoverImagesComponent implements OnInit {
       },
       error: (err) => {
         this.snackbar.error(
-          err?.error?.message || 'Nie udało się usunąć — sprawdź czy nie jest używany',
+          err?.error?.message || 'Nie udało się usunąć - sprawdź czy nie jest używany',
         );
       },
     });

@@ -23,7 +23,7 @@ export class ConfirmModalService {
     });
   }
 
-  /** @internal — called by ConfirmModalComponent */
+  /** @internal - called by ConfirmModalComponent */
   respond(result: boolean): void {
     const current = this.stateSignal();
     if (current) {

@@ -63,10 +63,10 @@ export class EmailService {
   ): Promise<void> {
     const statusText =
       status === 'APPROVED'
-        ? 'zatwierdzone — potwierdź uczestnictwo'
+        ? 'zatwierdzone - potwierdź uczestnictwo'
         : status === 'CONFIRMED'
-          ? 'potwierdzone'
-          : 'odrzucone';
+        ? 'potwierdzone'
+        : 'odrzucone';
     await this.send(
       email,
       `Zmiana statusu uczestnictwa – ${eventTitle}`,
@@ -174,8 +174,8 @@ export class EmailService {
       priority === 'CRITICAL'
         ? '🔴 Krytyczny'
         : priority === 'ORGANIZATIONAL'
-          ? '🟡 Organizacyjny'
-          : 'ℹ️ Informacyjny';
+        ? '🟡 Organizacyjny'
+        : 'ℹ️ Informacyjny';
     await this.send(
       email,
       `${priority === 'CRITICAL' ? '[PILNE] ' : ''}Komunikat organizatora – ${eventTitle}`,

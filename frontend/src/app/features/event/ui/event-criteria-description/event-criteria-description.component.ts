@@ -252,7 +252,7 @@ export class EventCriteriaDescriptionComponent {
 
   private getGenderPhrase(gender: string): string {
     if (!gender || gender === 'ANY') {
-      return 'dla <strong>wszystkich</strong> — płeć nie ma znaczenia';
+      return 'dla <strong>wszystkich</strong> - płeć nie ma znaczenia';
     }
     if (gender === 'MALE') {
       return 'tylko dla <strong>mężczyzn</strong>';

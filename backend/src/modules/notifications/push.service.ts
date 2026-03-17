@@ -125,10 +125,10 @@ export class PushService {
   ): Promise<void> {
     const statusText =
       status === 'APPROVED'
-        ? 'zatwierdzone — potwierdź uczestnictwo'
+        ? 'zatwierdzone - potwierdź uczestnictwo'
         : status === 'CONFIRMED'
-          ? 'potwierdzone'
-          : 'odrzucone';
+        ? 'potwierdzone'
+        : 'odrzucone';
     const url = await this.getEventUrl(eventId);
     await this.notifyUser(
       userId,
@@ -140,11 +140,7 @@ export class PushService {
     );
   }
 
-  async notifyEventCancelled(
-    userId: string,
-    eventTitle: string,
-    eventId: string,
-  ): Promise<void> {
+  async notifyEventCancelled(userId: string, eventTitle: string, eventId: string): Promise<void> {
     const url = await this.getEventUrl(eventId);
     await this.notifyUser(
       userId,
@@ -190,11 +186,7 @@ export class PushService {
     );
   }
 
-  async notifyNewEventInCity(
-    userId: string,
-    eventTitle: string,
-    eventId: string,
-  ): Promise<void> {
+  async notifyNewEventInCity(userId: string, eventTitle: string, eventId: string): Promise<void> {
     const url = await this.getEventUrl(eventId);
     await this.notifyUser(
       userId,

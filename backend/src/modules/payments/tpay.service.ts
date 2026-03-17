@@ -175,7 +175,7 @@ export class TpayService {
     body: TpayWebhookPayload,
     jwsSignatureHeader?: string,
   ): Promise<TpayWebhookVerificationResult> {
-    // 1. Verify md5sum (if securityCode is configured — optional extra layer)
+    // 1. Verify md5sum (if securityCode is configured - optional extra layer)
     if (this.securityCode) {
       const expectedMd5 = createHash('md5')
         .update(`${body.id}${body.tr_id}${body.tr_amount}${body.tr_crc}${this.securityCode}`)
@@ -213,7 +213,7 @@ export class TpayService {
     try {
       const parts = jwsHeader.split('.');
       if (parts.length !== 3) {
-        this.logger.warn('Invalid JWS header format — expected 3 parts');
+        this.logger.warn('Invalid JWS header format - expected 3 parts');
         return false;
       }
 

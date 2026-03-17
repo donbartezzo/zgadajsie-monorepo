@@ -9,7 +9,7 @@
 - W obecnej wersji Angulara każdy komponent jest domyślnie traktowany jako standalone, a więc nie ma konieczności jawnego ustawiania opcji `standalone: true`!!!
 - Domyślnie stosuj ChangeDetectionStrategy.OnPush.
 - Zawsze używaj silnego typowania TypeScript (tryb strict).
-- **ZAWSZE sprawdzaj `frontend/src/app/shared/utils/index.ts` przed implementacją nowej logiki** — w żadnym wypadku nie powielaj istniejących utilsów.
+- **ZAWSZE sprawdzaj `frontend/src/app/shared/utils/index.ts` przed implementacją nowej logiki** - w żadnym wypadku nie powielaj istniejących utilsów.
 
 ## Sygnały i zarządzanie stanem
 
@@ -52,23 +52,23 @@
 
 **Przed implementacją jakiejkolwiek logiki biznesowej, obliczeń, formatowania czy transformacji danych:**
 
-1. **Sprawdź `frontend/src/app/shared/utils/index.ts`** — czy istnieje już gotowy helper.
-2. **Nie powielaj logiki** — jeśli helper istnieje, użyj go zamiast pisać własną implementację.
-3. **Dodaj nowy utils** — jeśli logika będzie używana w >1 miejscu, wydziel ją do `shared/utils/`.
+1. **Sprawdź `frontend/src/app/shared/utils/index.ts`** - czy istnieje już gotowy helper.
+2. **Nie powielaj logiki** - jeśli helper istnieje, użyj go zamiast pisać własną implementację.
+3. **Dodaj nowy utils** - jeśli logika będzie używana w >1 miejscu, wydziel ją do `shared/utils/`.
 
 ### Dostępne utilsy:
 
 **`date.utils.ts`** (eksportowane przez `shared/utils/index.ts`):
 
-- `getDaysDiff(date, now?)` — różnica w dniach między datami
-- `getRelativeDateLabel(date, now?)` — polski label: "Dziś", "Jutro", "Za 5 dni", "Wczoraj", "3 dni temu"
-- `getEventCountdown(startsAt, endsAt, now?, maxHours?)` — countdown do wydarzenia z `days`, `hours`, `minutes`, `seconds`, `isUrgent`, `label`
-- `EventCountdown` — interfejs typu zwracanego przez `getEventCountdown`
+- `getDaysDiff(date, now?)` - różnica w dniach między datami
+- `getRelativeDateLabel(date, now?)` - polski label: "Dziś", "Jutro", "Za 5 dni", "Wczoraj", "3 dni temu"
+- `getEventCountdown(startsAt, endsAt, now?, maxHours?)` - countdown do wydarzenia z `days`, `hours`, `minutes`, `seconds`, `isUrgent`, `label`
+- `EventCountdown` - interfejs typu zwracanego przez `getEventCountdown`
 
 ### Przykłady użycia:
 
 ```typescript
-// ❌ ZŁE — duplikacja logiki
+// ❌ ZŁE - duplikacja logiki
 readonly badgeLabel = computed(() => {
   const d = new Date(this.event().startsAt);
   const now = new Date();
@@ -80,7 +80,7 @@ readonly badgeLabel = computed(() => {
   // ... 15 linii więcej
 });
 
-// ✅ DOBRE — użycie helpera
+// ✅ DOBRE - użycie helpera
 import { getRelativeDateLabel } from '../../utils/date.utils';
 
 readonly badgeLabel = computed(() =>
@@ -89,7 +89,7 @@ readonly badgeLabel = computed(() =>
 ```
 
 ```typescript
-// ❌ ZŁE — ręczne obliczanie countdown
+// ❌ ZŁE - ręczne obliczanie countdown
 readonly countdown = computed(() => {
   const start = new Date(this.event().startsAt).getTime();
   const end = new Date(this.event().endsAt).getTime();
@@ -98,7 +98,7 @@ readonly countdown = computed(() => {
   // ... 20 linii więcej
 });
 
-// ✅ DOBRE — użycie helpera
+// ✅ DOBRE - użycie helpera
 import { getEventCountdown } from '../../utils/date.utils';
 
 readonly countdown = computed(() =>
@@ -112,10 +112,10 @@ readonly countdown = computed(() =>
 
 - Zawsze gdzie to możliwe wykorzystuj własne komponenty stylowane czystym SCSS i klasami Tailwind CSS; Angular Material (mat-card, mat-button, itp.) traktuj jako uzupełnienie.
 - Styluj za pomocą klas Tailwind CSS.
-- Zachowaj spójność kolorystyki — **priorytetowo używaj semantycznych tokenów kolorystycznych** (patrz sekcja poniżej).
+- Zachowaj spójność kolorystyki - **priorytetowo używaj semantycznych tokenów kolorystycznych** (patrz sekcja poniżej).
 - Zapewnij responsywność z podejściem mobile-first.
 
-### Centralna paleta kolorów — Base Palette / Design Tokens (OBOWIĄZKOWE)
+### Centralna paleta kolorów - Base Palette / Design Tokens (OBOWIĄZKOWE)
 
 Projekt posiada **centralną paletę kolorów** zdefiniowaną jako statyczne hex values w `frontend/tailwind.config.js`. Brak CSS custom properties kolorów. Brak dark mode. Jeden statyczny theme.
 
@@ -143,25 +143,25 @@ Projekt posiada **centralną paletę kolorów** zdefiniowaną jako statyczne hex
 #### Konwencje:
 
 ```html
-<!-- ✅ DOBRZE — kolory z palety projektowej -->
+<!-- ✅ DOBRZE - kolory z palety projektowej -->
 <div class="bg-white rounded-xl border border-neutral-200 p-4">
   <h2 class="text-neutral-900 font-semibold">Tytuł</h2>
   <p class="text-neutral-500 text-sm">Opis</p>
   <button class="bg-primary-500 text-white rounded-lg px-4 py-2 hover:bg-primary-600">Akcja</button>
 </div>
 
-<!-- ❌ ŹLE — domyślne kolory Tailwind / dark mode -->
+<!-- ❌ ŹLE - domyślne kolory Tailwind / dark mode -->
 <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
   <h2 class="text-gray-900 dark:text-white font-semibold">Tytuł</h2>
 </div>
 ```
 
-### Layout, Tailwind, ikony — skrót dla AI
+### Layout, Tailwind, ikony - skrót dla AI
 
 **Layout i stylowanie (Tailwind)**
 
 - Używaj TYLKO Tailwind do layoutu i wyglądu (`flex`, `grid`, spacing, kolory, typografia, breakpointy).
-- **PRIORYTET KOLORÓW:** wyłącznie paleta projektowa z `tailwind.config.js` — patrz `docs/design-tokens.md`.
+- **PRIORYTET KOLORÓW:** wyłącznie paleta projektowa z `tailwind.config.js` - patrz `docs/design-tokens.md`.
 - Nie opieraj wyglądu na klasach `mat-*` ani Material Theme.
 - Responsywność realizuj przez Tailwind (`sm:`, `md:`, `lg:`, `xl:`), mobile-first.
 - Preferuj kompozycję klas Tailwind w HTML zamiast rozbudowanych nestów SCSS.
@@ -241,16 +241,16 @@ Projekt posiada **centralną paletę kolorów** zdefiniowaną jako statyczne hex
 
 ## Formatowanie kodu (Prettier)
 
-- **Najważniejszym źródłem prawdy dotyczącym formatowania kodu** jest plik `.prettierrc` w rootcie monorepo — zawsze go uwzględniaj.
+- **Najważniejszym źródłem prawdy dotyczącym formatowania kodu** jest plik `.prettierrc` w rootcie monorepo - zawsze go uwzględniaj.
 
 ## Linting kodu (ESLint)
 
-Projekt używa ESLint (flat config). Pełna konfiguracja: `eslint.config.mjs` (root), `frontend/eslint.config.mjs`, `backend/eslint.config.mjs`. Poniżej tylko reguły **nieoczywiste**, które AI musi znać — reszta jest wymuszona automatycznie przez ESLint.
+Projekt używa ESLint (flat config). Pełna konfiguracja: `eslint.config.mjs` (root), `frontend/eslint.config.mjs`, `backend/eslint.config.mjs`. Poniżej tylko reguły **nieoczywiste**, które AI musi znać - reszta jest wymuszona automatycznie przez ESLint.
 
-- **`no-console`** — `console.log` jest zakazany (warn); dozwolone tylko `console.warn` i `console.error`.
-- **`no-unused-vars`** — nieużywane parametry wymagane przez interfejs prefiksuj `_` (np. `_client: Socket`).
-- **`no-duplicate-attributes`** — w szablonach Angular nie łącz `class="..."` z `[class]="..."`. Zamiast tego: `[class]="'static-classes ' + dynamicExpr"`.
-- **`no-negated-async`** — nie neguj pipe async w szablonach (`!` przed `| async`).
+- **`no-console`** - `console.log` jest zakazany (warn); dozwolone tylko `console.warn` i `console.error`.
+- **`no-unused-vars`** - nieużywane parametry wymagane przez interfejs prefiksuj `_` (np. `_client: Socket`).
+- **`no-duplicate-attributes`** - w szablonach Angular nie łącz `class="..."` z `[class]="..."`. Zamiast tego: `[class]="'static-classes ' + dynamicExpr"`.
+- **`no-negated-async`** - nie neguj pipe async w szablonach (`!` przed `| async`).
 
 ## Pozostałe wytyczne:
 

@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IconComponent } from '../../../../core/icons/icon.component';
@@ -158,16 +165,13 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
                 }
               </div>
               <div class="flex gap-1">
-                @if (isPaidEvent() && !p.payment && (p.status === 'APPROVED' || p.status === 'CONFIRMED')) {
+                @if (isPaidEvent() && !p.payment && (p.status === 'APPROVED' || p.status ===
+                'CONFIRMED')) {
                 <app-button variant="primary" size="sm" (clicked)="onMarkPaid(p.id)">
                   Oznacz jako opłacone
                 </app-button>
                 } @if (isPaidEvent() && p.payment?.status === 'COMPLETED') {
-                <app-button
-                  variant="outline"
-                  size="sm"
-                  (clicked)="openCancelOverlay(p)"
-                >
+                <app-button variant="outline" size="sm" (clicked)="openCancelOverlay(p)">
                   <app-icon name="x" size="sm" />
                 </app-button>
                 }
@@ -236,7 +240,6 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
       </div>
       }
     </div>
-
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -284,9 +287,7 @@ export class EventManageComponent implements OnInit {
   );
 
   readonly activeList = computed(() =>
-    this.manageParticipants().filter(
-      (p) => p.status === 'APPROVED' || p.status === 'CONFIRMED',
-    ),
+    this.manageParticipants().filter((p) => p.status === 'APPROVED' || p.status === 'CONFIRMED'),
   );
 
   readonly paidCount = computed(
@@ -435,7 +436,7 @@ export class EventManageComponent implements OnInit {
 
   paymentStatusLabel(p: ParticipantManageItem): string {
     if (!p.payment) {
-      return p.status === 'APPROVED' ? 'Oczekuje na płatność' : '—';
+      return p.status === 'APPROVED' ? 'Oczekuje na płatność' : '-';
     }
     const map: Record<string, string> = {
       COMPLETED: 'Opłacone',

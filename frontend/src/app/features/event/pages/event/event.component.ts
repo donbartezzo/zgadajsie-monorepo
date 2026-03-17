@@ -29,10 +29,7 @@ import {
 } from '../../../../shared/types';
 import { getEventCountdown, EventCountdown } from '../../../../shared/utils/date.utils';
 import { EventStatus } from '@zgadajsie/shared';
-import {
-  isEventJoinable,
-  EventTimeStatus,
-} from '../../../../shared/utils/event-time-status.util';
+import { isEventJoinable, EventTimeStatus } from '../../../../shared/utils/event-time-status.util';
 import { EnrollmentStatusBannerComponent } from '../../ui/enrollment-status-banner/enrollment-status-banner.component';
 import { getLotteryThreshold } from '../../../../shared/utils/enrollment-phase.util';
 import {
@@ -332,10 +329,7 @@ export class EventComponent implements OnInit, OnDestroy {
     return bars;
   });
 
-  private getParticipantBarConfig(
-    status: string | null,
-    isEnded: boolean,
-  ): NotificationBarConfig {
+  private getParticipantBarConfig(status: string | null, isEnded: boolean): NotificationBarConfig {
     if (status === 'PENDING') {
       const phase = this.enrollmentPhase();
       const isPreEnroll = phase === 'PRE_ENROLLMENT';
@@ -357,7 +351,7 @@ export class EventComponent implements OnInit, OnDestroy {
         id: 'participant',
         icon: 'check',
         iconColorClass: 'text-info-600',
-        title: 'Zatwierdzone — potwierdź udział!',
+        title: 'Zatwierdzone - potwierdź udział!',
         subtitle: 'Twoje miejsce zostało przyznane. Potwierdź uczestnictwo.',
         buttonLabel: 'Potwierdź',
         bgClass: 'bg-info-50',

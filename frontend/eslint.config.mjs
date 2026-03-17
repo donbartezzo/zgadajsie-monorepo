@@ -40,7 +40,7 @@ export default [
       '@angular-eslint/template/eqeqeq': 'error',
       '@angular-eslint/template/no-duplicate-attributes': 'error',
 
-      // a11y — warn for now, promote to error once existing code is fixed
+      // a11y - warn for now, promote to error once existing code is fixed
       '@angular-eslint/template/click-events-have-key-events': 'warn',
       '@angular-eslint/template/interactive-supports-focus': 'warn',
       '@angular-eslint/template/label-has-associated-control': 'warn',

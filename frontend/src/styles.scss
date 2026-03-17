@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 // ────────────────────────────────────────────────────────────
-// SEMANTIC COLOR TOKENS — CSS Variables (Source of Truth)
+// SEMANTIC COLOR TOKENS - CSS Variables (Source of Truth)
 // Import musi być PO @tailwind directives, żeby :root był dostępny.
 // ────────────────────────────────────────────────────────────
 @import 'styles/tokens';
@@ -23,7 +23,7 @@ $app-max-width: 700px;
 $cover-image-height: 250px;
 
 // ────────────────────────────────────────────────────────────
-// Layout vars — jedyne CSS custom properties w projekcie (poza kolorami).
+// Layout vars - jedyne CSS custom properties w projekcie (poza kolorami).
 // Kolory semantyczne: _tokens.scss (CSS vars) → tailwind.config.js
 // Dokumentacja: docs/design-tokens.md
 // ────────────────────────────────────────────────────────────

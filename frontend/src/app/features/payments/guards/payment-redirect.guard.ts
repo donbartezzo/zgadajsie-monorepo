@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 
 /**
- * Guard na route '/' — jeśli URL zawiera ?intentId=..., przekierowuje
+ * Guard na route '/' - jeśli URL zawiera ?intentId=..., przekierowuje
  * na /payment/status z zachowaniem query params. W przeciwnym razie przepuszcza.
  */
 export const paymentRedirectGuard: CanActivateFn = (route) => {

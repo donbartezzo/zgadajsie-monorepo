@@ -1,4 +1,4 @@
-# Design Tokens — System Kolorów (3-warstwowa architektura)
+# Design Tokens - System Kolorów (3-warstwowa architektura)
 
 > **Source of Truth:** CSS variables w `frontend/src/styles/_tokens.scss` > **Tailwind mapping:** `frontend/tailwind.config.js` > **Podgląd wizualny:** `/dev/design-system` (tylko dev mode)
 
@@ -36,31 +36,31 @@
 
 | Plik                               | Rola                                                    |
 | ---------------------------------- | ------------------------------------------------------- |
-| `frontend/src/styles/_tokens.scss` | **Source of Truth** — CSS vars semantycznych palet      |
+| `frontend/src/styles/_tokens.scss` | **Source of Truth** - CSS vars semantycznych palet      |
 | `frontend/tailwind.config.js`      | Foundation palettes (raw) + Semantic mapping (CSS vars) |
 | `frontend/src/styles.scss`         | Import \_tokens.scss + layout vars                      |
 | `/dev/design-system`               | Podgląd wizualny (tylko dev mode)                       |
 
 ---
 
-## SEMANTIC PALETTES (główne — używaj w komponentach)
+## SEMANTIC PALETTES (główne - używaj w komponentach)
 
-### Primary (mint) — Brand, CTA, przyciski, linki
+### Primary (mint) - Brand, CTA, przyciski, linki
 
 | Odcień        | RGB (CSS var) | Hex       | Zastosowanie                         |
 | ------------- | ------------- | --------- | ------------------------------------ |
 | `primary-50`  | `232 250 245` | `#e8faf5` | Delikatne tło akcentowe              |
 | `primary-100` | `209 245 234` | `#d1f5ea` | Tło hover                            |
 | `primary-200` | `167 237 216` | `#a7edd8` | Border notification bar              |
-| `primary-300` | `114 223 189` | `#72dfbd` | —                                    |
+| `primary-300` | `114 223 189` | `#72dfbd` | -                                    |
 | `primary-400` | `72 207 173`  | `#48cfad` | Jaśniejszy wariant (gradienty)       |
-| `primary-500` | `55 188 155`  | `#37bc9b` | **Główny** — przyciski, badge, linki |
+| `primary-500` | `55 188 155`  | `#37bc9b` | **Główny** - przyciski, badge, linki |
 | `primary-600` | `38 163 134`  | `#26a386` | Hover na przyciskach                 |
 | `primary-700` | `30 130 107`  | `#1e826b` | Ciemny akcent                        |
-| `primary-800` | `24 104 86`   | `#186856` | —                                    |
-| `primary-900` | `18 78 64`    | `#124e40` | —                                    |
+| `primary-800` | `24 104 86`   | `#186856` | -                                    |
+| `primary-900` | `18 78 64`    | `#124e40` | -                                    |
 
-### Neutral (dark/gray) — Tła, tekst, bordery
+### Neutral (dark/gray) - Tła, tekst, bordery
 
 | Odcień        | RGB (CSS var) | Hex       | Zastosowanie                                |
 | ------------- | ------------- | --------- | ------------------------------------------- |
@@ -70,13 +70,13 @@
 | `neutral-300` | `188 192 202` | `#bcc0ca` | Placeholder text, disabled                  |
 | `neutral-400` | `158 162 174` | `#9ea2ae` | Ikony muted, secondary text                 |
 | `neutral-500` | `101 109 120` | `#656d78` | **Tekst drugorzędny** (`text-neutral-500`)  |
-| `neutral-600` | `67 74 84`    | `#434a54` | —                                           |
-| `neutral-700` | `52 57 65`    | `#343941` | —                                           |
-| `neutral-800` | `38 42 48`    | `#262a30` | —                                           |
+| `neutral-600` | `67 74 84`    | `#434a54` | -                                           |
+| `neutral-700` | `52 57 65`    | `#343941` | -                                           |
+| `neutral-800` | `38 42 48`    | `#262a30` | -                                           |
 | `neutral-900` | `28 31 35`    | `#1c1f23` | **Tekst główny** (`text-neutral-900`)       |
-| `neutral-950` | `18 20 23`    | `#121417` | —                                           |
+| `neutral-950` | `18 20 23`    | `#121417` | -                                           |
 
-### Success (green) — Pozytywne statusy
+### Success (green) - Pozytywne statusy
 
 | Odcień        | RGB (CSS var) | Hex       | Zastosowanie                   |
 | ------------- | ------------- | --------- | ------------------------------ |
@@ -85,7 +85,7 @@
 | `success-400` | `140 193 82`  | `#8cc152` | Badge "trwa", cena "Bezpłatne" |
 | `success-600` | `85 139 47`   | `#558b2f` | Tekst w notification bar       |
 
-### Warning (orange) — Ostrzeżenia
+### Warning (orange) - Ostrzeżenia
 
 | Odcień        | RGB (CSS var) | Hex       | Zastosowanie                        |
 | ------------- | ------------- | --------- | ----------------------------------- |
@@ -94,7 +94,7 @@
 | `warning-400` | `233 87 63`   | `#e9573f` | Badge warning                       |
 | `warning-600` | `191 54 12`   | `#bf360c` | Tekst                               |
 
-### Danger (red) — Błędy, destrukcyjne akcje
+### Danger (red) - Błędy, destrukcyjne akcje
 
 | Odcień       | RGB (CSS var) | Hex       | Zastosowanie         |
 | ------------ | ------------- | --------- | -------------------- |
@@ -103,7 +103,7 @@
 | `danger-400` | `237 85 101`  | `#ed5565` | Badge error          |
 | `danger-500` | `218 68 83`   | `#da4453` | Tekst                |
 
-### Info (blue) — Informacje, focus ring
+### Info (blue) - Informacje, focus ring
 
 | Odcień     | RGB (CSS var) | Hex       | Zastosowanie           |
 | ---------- | ------------- | --------- | ---------------------- |
@@ -114,7 +114,7 @@
 
 ---
 
-## FOUNDATION PALETTES (raw — dla dekoracji)
+## FOUNDATION PALETTES (raw - dla dekoracji)
 
 Dostępne jako raw kolory z szablonu sticky-mobile. Używaj do kart dekoracyjnych, akcentów, gradientów.
 
@@ -160,23 +160,23 @@ border-neutral-200
 
 <!-- Przyciski -->
 bg-primary-500 hover:bg-primary-600 text-white
-<!-- primary — główna akcja -->
+<!-- primary - główna akcja -->
 bg-neutral-100 hover:bg-neutral-200 text-neutral-900
-<!-- secondary — akcja alternatywna -->
+<!-- secondary - akcja alternatywna -->
 border border-neutral-200 text-neutral-700 hover:bg-neutral-50
-<!-- outline — subtelny wariant -->
+<!-- outline - subtelny wariant -->
 border border-primary-500 text-primary-500 hover:bg-primary-50
-<!-- outline-primary — outline w kolorze brand -->
+<!-- outline-primary - outline w kolorze brand -->
 bg-danger-400 hover:bg-danger-500 text-white
-<!-- danger — usuwanie / destrukcja -->
+<!-- danger - usuwanie / destrukcja -->
 bg-success-400 hover:bg-success-500 text-white
-<!-- success — potwierdzenie / akceptacja -->
+<!-- success - potwierdzenie / akceptacja -->
 bg-warning-400 hover:bg-warning-500 text-white
-<!-- warning — akcje wymagające uwagi -->
+<!-- warning - akcje wymagające uwagi -->
 text-neutral-600 hover:bg-neutral-100
-<!-- ghost — akcje pomocnicze -->
+<!-- ghost - akcje pomocnicze -->
 text-primary-500 underline hover:text-primary-600
-<!-- link — styl linkowy -->
+<!-- link - styl linkowy -->
 
 <!-- Focus ring -->
 focus:ring-2 focus:ring-primary-500
@@ -214,7 +214,7 @@ from-primary-400 to-primary-500
 ### DOZWOLONE
 
 - Klasy z palety: `bg-primary-500`, `text-neutral-900`, `border-success-200`, etc.
-- `white`, `black`, `transparent`, `current` — natywne kolory Tailwind
+- `white`, `black`, `transparent`, `current` - natywne kolory Tailwind
 - Opacity modifiers: `bg-primary-500/10`, `border-neutral-200/50`
 
 ### ZABRONIONE
@@ -289,5 +289,5 @@ from-primary-400 to-primary-500
 
 ### Zmiana istniejącego koloru semantycznego
 
-1. Zmień wartości RGB w `_tokens.scss` — to jest **jedyne miejsce** do edycji
+1. Zmień wartości RGB w `_tokens.scss` - to jest **jedyne miejsce** do edycji
 2. Tailwind automatycznie użyje nowych wartości

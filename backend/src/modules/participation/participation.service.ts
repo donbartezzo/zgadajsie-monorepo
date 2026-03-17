@@ -39,14 +39,12 @@ export class ParticipationService {
       throw new BadRequestException('Wydarzenie nie jest aktywne');
     }
     if (!isEventJoinable(event)) {
-      throw new BadRequestException(
-        'Wydarzenie już się rozpoczęło — dołączenie nie jest możliwe',
-      );
+      throw new BadRequestException('Wydarzenie już się rozpoczęło - dołączenie nie jest możliwe');
     }
 
     const phase = getEnrollmentPhase(event);
     if (phase === 'LOTTERY_PENDING') {
-      throw new BadRequestException('Trwa losowanie miejsc — spróbuj za chwilę');
+      throw new BadRequestException('Trwa losowanie miejsc - spróbuj za chwilę');
     }
 
     const isPaid = event.costPerPerson.toNumber() > 0;
@@ -93,14 +91,12 @@ export class ParticipationService {
       throw new NotFoundException('Wydarzenie nie znalezione');
     }
     if (!isEventJoinable(event)) {
-      throw new BadRequestException(
-        'Wydarzenie już się rozpoczęło — dołączenie nie jest możliwe',
-      );
+      throw new BadRequestException('Wydarzenie już się rozpoczęło - dołączenie nie jest możliwe');
     }
 
     const phase = getEnrollmentPhase(event);
     if (phase === 'LOTTERY_PENDING') {
-      throw new BadRequestException('Trwa losowanie miejsc — spróbuj za chwilę');
+      throw new BadRequestException('Trwa losowanie miejsc - spróbuj za chwilę');
     }
 
     // Only non-new users can add guests (organizer always can)
@@ -223,12 +219,7 @@ export class ParticipationService {
 
     const recipientId = updated.isGuest ? updated.addedByUserId : updated.userId;
     if (recipientId) {
-      await this.notifyStatusChange(
-        recipientId,
-        updated.event.title,
-        'CONFIRMED',
-        updated.eventId,
-      );
+      await this.notifyStatusChange(recipientId, updated.event.title, 'CONFIRMED', updated.eventId);
     }
 
     return updated;
@@ -257,12 +248,7 @@ export class ParticipationService {
 
     const recipientId = updated.isGuest ? updated.addedByUserId : updated.userId;
     if (recipientId) {
-      await this.notifyStatusChange(
-        recipientId,
-        updated.event.title,
-        'REJECTED',
-        updated.eventId,
-      );
+      await this.notifyStatusChange(recipientId, updated.event.title, 'REJECTED', updated.eventId);
     }
 
     this.promoteNextPending(updated.eventId, participation.event);
@@ -363,14 +349,14 @@ export class ParticipationService {
 
     const event = participation.event;
     if (event.status === 'CANCELLED') {
-      throw new BadRequestException('Wydarzenie zostało odwołane — płatność nie jest możliwa');
+      throw new BadRequestException('Wydarzenie zostało odwołane - płatność nie jest możliwa');
     }
     if (event.costPerPerson.toNumber() <= 0) {
       throw new BadRequestException('To wydarzenie jest bezpłatne');
     }
 
     const payingUserId = participation.isGuest
-      ? (participation.addedByUserId ?? participation.userId)
+      ? participation.addedByUserId ?? participation.userId
       : participation.userId;
     const user = await this.prisma.user.findUnique({
       where: { id: payingUserId },
@@ -452,10 +438,7 @@ export class ParticipationService {
     },
     isPaid: boolean,
   ) {
-    const eligible = await this.eligibility.isEligibleForOpenEnrollment(
-      userId,
-      event.organizerId,
-    );
+    const eligible = await this.eligibility.isEligibleForOpenEnrollment(userId, event.organizerId);
 
     if (!eligible) {
       return this.createPending(eventId, userId, event, isPaid);
@@ -508,10 +491,7 @@ export class ParticipationService {
       return { ...updated, isPaid, costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0 };
     }
 
-    const eligible = await this.eligibility.isEligibleForOpenEnrollment(
-      userId,
-      event.organizerId,
-    );
+    const eligible = await this.eligibility.isEligibleForOpenEnrollment(userId, event.organizerId);
     if (!eligible) {
       return { ...updated, isPaid, costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0 };
     }
@@ -574,9 +554,7 @@ export class ParticipationService {
             data: { status: nextStatus, approvedAt: new Date() },
           });
 
-          const recipientId = nextPending.isGuest
-            ? nextPending.addedByUserId
-            : nextPending.userId;
+          const recipientId = nextPending.isGuest ? nextPending.addedByUserId : nextPending.userId;
           if (recipientId) {
             await this.notifyStatusChange(recipientId, event.title, nextStatus, eventId);
           }

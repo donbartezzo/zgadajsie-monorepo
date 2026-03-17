@@ -1,4 +1,4 @@
-# Styleguide Backend — NestJS
+# Styleguide Backend - NestJS
 
 ## Ogólne wytyczne
 
@@ -8,15 +8,15 @@
 
 ## Formatowanie kodu (Prettier)
 
-- **Najważniejszym źródłem prawdy dotyczącym formatowania kodu** jest plik `.prettierrc` w rootcie monorepo — zawsze go uwzględniaj.
+- **Najważniejszym źródłem prawdy dotyczącym formatowania kodu** jest plik `.prettierrc` w rootcie monorepo - zawsze go uwzględniaj.
 
 ## Linting kodu (ESLint)
 
 Pełna konfiguracja: `eslint.config.mjs` (root) + `backend/eslint.config.mjs`. Poniżej tylko reguły **nieoczywiste dla AI**:
 
-- **`no-console`** — `console.log` jest zakazany (warn); dozwolone tylko `console.warn` i `console.error`.
-- **`no-unused-vars`** — nieużywane parametry wymagane przez interfejs prefiksuj `_` (np. `_client: Socket`).
-- W NestJS wyłączone są: `no-extraneous-class`, `no-useless-constructor`, `no-empty-interface` — klasy z dekoratorami i DI przez konstruktor to standardowy pattern.
+- **`no-console`** - `console.log` jest zakazany (warn); dozwolone tylko `console.warn` i `console.error`.
+- **`no-unused-vars`** - nieużywane parametry wymagane przez interfejs prefiksuj `_` (np. `_client: Socket`).
+- W NestJS wyłączone są: `no-extraneous-class`, `no-useless-constructor`, `no-empty-interface` - klasy z dekoratorami i DI przez konstruktor to standardowy pattern.
 
 ## Struktura projektu
 

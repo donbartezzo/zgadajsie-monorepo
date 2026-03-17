@@ -20,7 +20,7 @@ contentClass(); @let _showBorder = showBorder(); @let _isReady = layoutConfig.is
   <!-- Sentinel: always in DOM so IntersectionObserver works without infinite loop -->
   <div #heroSentinel class="relative w-full shrink-0" style="height: var(--hero-h)"></div>
 
-  <!-- Fixed sticky — top-right corner, always visible when header shown -->
+  <!-- Fixed sticky - top-right corner, always visible when header shown -->
   @if (hasSticky()) {
   <div
     class="fixed inset-x-0 top-2 z-[51] mx-auto flex max-w-app justify-end px-2 pointer-events-none"

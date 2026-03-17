@@ -5,7 +5,7 @@ type StoreCallback = (err: Error | null, state: string) => void;
 type VerifyCallback = (err: Error | null, ok: boolean, state?: string) => void;
 
 /**
- * In-memory OAuth state store — replaces the default SessionStore
+ * In-memory OAuth state store - replaces the default SessionStore
  * so that express-session is not required.
  * Automatically captures `returnUrl` from the initial request query
  * and makes it available via `getReturnUrl()` after OAuth callback.

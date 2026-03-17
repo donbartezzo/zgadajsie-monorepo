@@ -126,7 +126,7 @@ export class ChatMembersOverlayComponent implements OnInit {
             ...filtered.filter((m) => m.user.id !== orgId),
           ];
         } else {
-          // Organizer not in members (no participation) — create a virtual entry
+          // Organizer not in members (no participation) - create a virtual entry
           filtered = [
             {
               user: res.organizer,

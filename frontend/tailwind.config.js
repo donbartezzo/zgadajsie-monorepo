@@ -1,9 +1,9 @@
 // ────────────────────────────────────────────────────────────
-// SYSTEM KOLORÓW — 3-warstwowa architektura
+// SYSTEM KOLORÓW - 3-warstwowa architektura
 //
-// 1. FOUNDATION PALETTE (raw hex) — surowe kolory z szablonu sticky-mobile
-// 2. SEMANTIC TOKENS (CSS vars w _tokens.scss) — source of truth
-// 3. SEMANTIC MAPPING (poniżej) — Tailwind ← CSS vars
+// 1. FOUNDATION PALETTE (raw hex) - surowe kolory z szablonu sticky-mobile
+// 2. SEMANTIC TOKENS (CSS vars w _tokens.scss) - source of truth
+// 3. SEMANTIC MAPPING (poniżej) - Tailwind ← CSS vars
 //
 // W komponentach używaj TYLKO semantycznych klas (bg-primary-500, text-danger-400).
 // Raw palettes (red, mint, blue...) dostępne dla dekoracji.
@@ -40,7 +40,7 @@ module.exports = {
       },
       colors: {
         // ════════════════════════════════════════════════════════
-        // FOUNDATION PALETTE — raw hex z szablonu sticky-mobile
+        // FOUNDATION PALETTE - raw hex z szablonu sticky-mobile
         // Używaj do dekoracji, kart kolorowych, akcentów.
         // ════════════════════════════════════════════════════════
 
@@ -186,11 +186,11 @@ module.exports = {
         },
 
         // ════════════════════════════════════════════════════════
-        // SEMANTIC PALETTE — mapowanie na CSS vars (_tokens.scss)
+        // SEMANTIC PALETTE - mapowanie na CSS vars (_tokens.scss)
         // To jest główna paleta do użycia w komponentach!
         // ════════════════════════════════════════════════════════
 
-        // ── Primary (mint) — Brand, CTA, przyciski, linki ──
+        // ── Primary (mint) - Brand, CTA, przyciski, linki ──
         primary: {
           50: withOpacity('--color-primary-50'),
           100: withOpacity('--color-primary-100'),
@@ -204,7 +204,7 @@ module.exports = {
           900: withOpacity('--color-primary-900'),
         },
 
-        // ── Neutral (dark/gray) — Tła, tekst, bordery ──
+        // ── Neutral (dark/gray) - Tła, tekst, bordery ──
         neutral: {
           50: withOpacity('--color-neutral-50'),
           100: withOpacity('--color-neutral-100'),
@@ -219,7 +219,7 @@ module.exports = {
           950: withOpacity('--color-neutral-950'),
         },
 
-        // ── Success (green) — Pozytywne statusy ──
+        // ── Success (green) - Pozytywne statusy ──
         success: {
           50: withOpacity('--color-success-50'),
           100: withOpacity('--color-success-100'),
@@ -233,7 +233,7 @@ module.exports = {
           900: withOpacity('--color-success-900'),
         },
 
-        // ── Warning (orange) — Ostrzeżenia ──
+        // ── Warning (orange) - Ostrzeżenia ──
         warning: {
           50: withOpacity('--color-warning-50'),
           100: withOpacity('--color-warning-100'),
@@ -247,7 +247,7 @@ module.exports = {
           900: withOpacity('--color-warning-900'),
         },
 
-        // ── Danger (red) — Błędy, destrukcyjne akcje ──
+        // ── Danger (red) - Błędy, destrukcyjne akcje ──
         danger: {
           50: withOpacity('--color-danger-50'),
           100: withOpacity('--color-danger-100'),
@@ -261,7 +261,7 @@ module.exports = {
           900: withOpacity('--color-danger-900'),
         },
 
-        // ── Info (blue) — Informacje, focus ring ──
+        // ── Info (blue) - Informacje, focus ring ──
         info: {
           50: withOpacity('--color-info-50'),
           100: withOpacity('--color-info-100'),

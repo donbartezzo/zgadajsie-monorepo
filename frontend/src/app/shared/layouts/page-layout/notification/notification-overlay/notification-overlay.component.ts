@@ -94,7 +94,7 @@ import { NotificationStatusService } from '../../../../../core/services/notifica
           <div class="notif-channel-blocked flex items-start gap-2 rounded-lg border px-3 py-2">
             <app-icon name="x" size="xs" class="text-danger-500 mt-0.5 shrink-0"></app-icon>
             <div class="flex-1 min-w-0">
-              <span class="text-sm text-neutral-700">Push — zablokowany w przeglądarce</span>
+              <span class="text-sm text-neutral-700">Push - zablokowany w przeglądarce</span>
               <p class="mt-0.5 text-[11px] text-neutral-400 leading-tight">
                 Kliknij ikonę kłódki przy pasku adresu i zezwól na powiadomienia.
               </p>
@@ -106,7 +106,7 @@ import { NotificationStatusService } from '../../../../../core/services/notifica
           >
             <div class="flex items-center gap-2">
               <app-icon name="bell-off" size="xs" class="text-warning-500"></app-icon>
-              <span class="text-sm text-neutral-700">Push — nieaktywny</span>
+              <span class="text-sm text-neutral-700">Push - nieaktywny</span>
             </div>
             <app-button
               variant="primary"
@@ -135,44 +135,31 @@ import { NotificationStatusService } from '../../../../../core/services/notifica
 
         <!-- Actions -->
         <div class="mt-3 text-center">
-          @switch (_state) {
-            @case ('OFF') {
-              @if (_cfg.canToggle) {
-              <app-button variant="primary" size="sm" mx-auto (clicked)="subscribe()">
-                Włącz powiadomienia
-              </app-button>
-              }
-            }
-
-            @case ('ON_COMPLETE') {
-              @if (_cfg.canToggle) {
-              <app-button variant="outline" size="sm" mx-auto (clicked)="unsubscribe()">
-                Wyłącz powiadomienia
-              </app-button>
-              } @else {
-              <p class="text-xs text-neutral-400">
-                Powiadomienia wyłączysz po wypisaniu się z wydarzenia.
-              </p>
-              }
-            }
-
-            @case ('ON_INCOMPLETE') {
-              @if (_cfg.canToggle) {
-              <app-button variant="outline" size="sm" mx-auto (clicked)="unsubscribe()" class="mb-2">
-                Wyłącz powiadomienia
-              </app-button>
-              } @else {
-              <p class="text-xs text-neutral-400">
-                Powiadomienia wyłączysz po wypisaniu się z wydarzenia.
-              </p>
-              }
-              @if (_perm !== 'granted' && _perm !== 'denied') {
-              <app-button variant="primary" size="sm" mx-auto (clicked)="enablePush()">
-                Włącz powiadomienia Push
-              </app-button>
-              }
-            }
-          }
+          @switch (_state) { @case ('OFF') { @if (_cfg.canToggle) {
+          <app-button variant="primary" size="sm" mx-auto (clicked)="subscribe()">
+            Włącz powiadomienia
+          </app-button>
+          } } @case ('ON_COMPLETE') { @if (_cfg.canToggle) {
+          <app-button variant="outline" size="sm" mx-auto (clicked)="unsubscribe()">
+            Wyłącz powiadomienia
+          </app-button>
+          } @else {
+          <p class="text-xs text-neutral-400">
+            Powiadomienia wyłączysz po wypisaniu się z wydarzenia.
+          </p>
+          } } @case ('ON_INCOMPLETE') { @if (_cfg.canToggle) {
+          <app-button variant="outline" size="sm" mx-auto (clicked)="unsubscribe()" class="mb-2">
+            Wyłącz powiadomienia
+          </app-button>
+          } @else {
+          <p class="text-xs text-neutral-400">
+            Powiadomienia wyłączysz po wypisaniu się z wydarzenia.
+          </p>
+          } @if (_perm !== 'granted' && _perm !== 'denied') {
+          <app-button variant="primary" size="sm" mx-auto (clicked)="enablePush()">
+            Włącz powiadomienia Push
+          </app-button>
+          } } }
         </div>
       </div>
       }
