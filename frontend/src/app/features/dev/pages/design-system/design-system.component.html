@@ -461,6 +461,84 @@
     </section>
 
     <section>
+      <h2 class="text-lg font-semibold text-neutral-900 mb-4">Icon-Only Buttons</h2>
+      <p class="text-sm text-neutral-500 mb-4">
+        Kwadratowe przyciski z ikoną (iconOnly). Styl "Colors 2.0 Upgrade" z szablonu sticky-mobile.
+        Pastelowe tło + ciemna ikona.
+      </p>
+
+      <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-6">
+        <div>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+            Warianty kolorystyczne (semantic)
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <app-button variant="success" icon="check" [iconOnly]="true" />
+            <app-button variant="danger" icon="x" [iconOnly]="true" />
+            <app-button variant="info" icon="user" [iconOnly]="true" />
+            <app-button variant="primary" icon="heart" [iconOnly]="true" />
+            <app-button variant="warning" icon="alert-triangle" [iconOnly]="true" />
+            <app-button variant="neutral" icon="moon" [iconOnly]="true" />
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+            Rozmiary (primary)
+          </p>
+          <div class="flex flex-wrap items-center gap-2">
+            <app-button variant="primary" icon="check" [iconOnly]="true" size="xs" />
+            <app-button variant="primary" icon="check" [iconOnly]="true" size="sm" />
+            <app-button variant="primary" icon="check" [iconOnly]="true" size="md" />
+            <app-button variant="primary" icon="check" [iconOnly]="true" size="lg" />
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+            Disabled / Loading
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <app-button variant="success" icon="check" [iconOnly]="true" [disabled]="true" />
+            <app-button variant="primary" icon="check" [iconOnly]="true" [loading]="true" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-semibold text-neutral-900 mb-4">Buttons z ikoną + tekstem</h2>
+      <p class="text-sm text-neutral-500 mb-4">
+        Przyciski z ikoną po lewej lub prawej stronie tekstu.
+      </p>
+
+      <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-6">
+        <div>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+            Ikona po lewej (domyślnie)
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <app-button variant="primary" icon="check">Zapisz</app-button>
+            <app-button variant="danger" icon="trash">Usuń</app-button>
+            <app-button variant="success" icon="plus">Dodaj</app-button>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+            Ikona po prawej
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <app-button variant="primary" icon="arrow-right" iconPosition="right">Dalej</app-button>
+            <app-button variant="outline" icon="external-link" iconPosition="right"
+              >Otwórz</app-button
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
       <h2 class="text-lg font-semibold text-neutral-900 mb-4">Karta (Surface)</h2>
       <div class="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4">
         <h3 class="text-base font-semibold text-neutral-900">Przykładowa karta</h3>
