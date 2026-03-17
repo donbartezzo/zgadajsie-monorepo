@@ -149,15 +149,23 @@ border-neutral-200
 
 <!-- Przyciski -->
 bg-primary-500 hover:bg-primary-600 text-white
-<!-- primary -->
+<!-- primary — główna akcja -->
 bg-neutral-100 hover:bg-neutral-200 text-neutral-900
-<!-- secondary -->
+<!-- secondary — akcja alternatywna -->
 border border-neutral-200 text-neutral-700 hover:bg-neutral-50
-<!-- outline -->
+<!-- outline — subtelny wariant -->
+border border-primary-500 text-primary-500 hover:bg-primary-50
+<!-- outline-primary — outline w kolorze brand -->
 bg-danger-400 hover:bg-danger-500 text-white
-<!-- danger -->
+<!-- danger — usuwanie / destrukcja -->
 bg-success-400 hover:bg-success-500 text-white
-<!-- success -->
+<!-- success — potwierdzenie / akceptacja -->
+bg-warning-400 hover:bg-warning-500 text-white
+<!-- warning — akcje wymagające uwagi -->
+text-neutral-600 hover:bg-neutral-100
+<!-- ghost — akcje pomocnicze -->
+text-primary-500 underline hover:text-primary-600
+<!-- link — styl linkowy -->
 
 <!-- Focus ring -->
 focus:ring-2 focus:ring-primary-500

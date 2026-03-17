@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { IconComponent, IconName } from '../../../../core/icons/icon.component';
+import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 
 interface ColorSwatch {
   shade: string;
@@ -14,7 +15,7 @@ interface ColorPalette {
 
 @Component({
   selector: 'app-design-system',
-  imports: [IconComponent],
+  imports: [IconComponent, ButtonComponent],
   templateUrl: './design-system.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

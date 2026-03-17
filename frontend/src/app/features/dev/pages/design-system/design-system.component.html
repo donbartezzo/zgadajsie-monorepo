@@ -364,6 +364,63 @@
 
     <!-- ══════════════ COMPONENTS ══════════════ -->
     @if (activeSection() === 'components') {
+
+    <section>
+      <h2 class="text-lg font-semibold text-neutral-900 mb-4">Przyciski (app-button)</h2>
+      <p class="text-sm text-neutral-500 mb-4">
+        Warianty kolorystyczne zgodne z
+        <code class="bg-white px-1 rounded text-xs">docs/zasady-kolorystyki-przyciskow.md</code>
+      </p>
+
+      <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-6">
+        <div>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+            Warianty (size md)
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <app-button variant="primary">Primary</app-button>
+            <app-button variant="secondary">Secondary</app-button>
+            <app-button variant="danger">Danger</app-button>
+            <app-button variant="success">Success</app-button>
+            <app-button variant="warning">Warning</app-button>
+            <app-button variant="outline">Outline</app-button>
+            <app-button variant="outline-primary">Outline Primary</app-button>
+            <app-button variant="ghost">Ghost</app-button>
+            <app-button variant="link">Link</app-button>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+            Rozmiary (primary)
+          </p>
+          <div class="flex flex-wrap items-center gap-2">
+            <app-button variant="primary" size="xs">XS</app-button>
+            <app-button variant="primary" size="sm">SM</app-button>
+            <app-button variant="primary" size="md">MD</app-button>
+            <app-button variant="primary" size="lg">LG</app-button>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Disabled</p>
+          <div class="flex flex-wrap gap-2">
+            <app-button variant="primary" [disabled]="true">Primary</app-button>
+            <app-button variant="danger" [disabled]="true">Danger</app-button>
+            <app-button variant="success" [disabled]="true">Success</app-button>
+            <app-button variant="warning" [disabled]="true">Warning</app-button>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Loading</p>
+          <div class="flex flex-wrap gap-2">
+            <app-button variant="primary" [loading]="true">Zapisywanie…</app-button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section>
       <h2 class="text-lg font-semibold text-neutral-900 mb-4">Karta (Surface)</h2>
       <div class="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4">
