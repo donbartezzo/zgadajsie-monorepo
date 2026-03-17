@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+// ────────────────────────────────────────────────────────────
+// SEMANTIC COLOR TOKENS — CSS Variables (Source of Truth)
+// Import musi być PO @tailwind directives, żeby :root był dostępny.
+// ────────────────────────────────────────────────────────────
+@import 'styles/tokens';
+
 /* Sticky layout base only */
 html,
 body {
@@ -17,12 +23,14 @@ $app-max-width: 700px;
 $cover-image-height: 250px;
 
 // ────────────────────────────────────────────────────────────
-// Layout vars — jedyne CSS custom properties w projekcie.
-// Kolory zdefiniowane są w tailwind.config.js (base palette).
+// Layout vars — jedyne CSS custom properties w projekcie (poza kolorami).
+// Kolory semantyczne: _tokens.scss (CSS vars) → tailwind.config.js
 // Dokumentacja: docs/design-tokens.md
 // ────────────────────────────────────────────────────────────
 
-$app-bg-color: #eaeaef;
+// neutral-100 z palety semantycznej (via CSS var)
+// Uwaga: używamy rgb() z CSS var, bo --color-neutral-100 jest w formacie RGB space-separated
+$app-bg-color: rgb(var(--color-neutral-100));
 
 :root {
   --app-max-width: #{$app-max-width};

@@ -1,0 +1,98 @@
+// ────────────────────────────────────────────────────────────
+// SEMANTIC COLOR TOKENS — CSS Variables (Source of Truth)
+//
+// Format: RGB space-separated (e.g., "55 188 155") dla pełnego
+// wsparcia Tailwind opacity modifiers (bg-primary-500/30).
+//
+// Architektura:
+//   tailwind.config.js (foundation hex) → _tokens.scss (CSS vars) → Tailwind semantic mapping
+//
+// Dokumentacja: docs/design-tokens.md
+// ────────────────────────────────────────────────────────────
+
+:root {
+  // ══════════════════════════════════════════════════════════
+  // PRIMARY (mint) — Brand, CTA, przyciski, linki, akcenty
+  // ══════════════════════════════════════════════════════════
+  --color-primary-50: 232 250 245;
+  --color-primary-100: 209 245 234;
+  --color-primary-200: 167 237 216;
+  --color-primary-300: 114 223 189;
+  --color-primary-400: 72 207 173;
+  --color-primary-500: 55 188 155;
+  --color-primary-600: 38 163 134;
+  --color-primary-700: 30 130 107;
+  --color-primary-800: 24 104 86;
+  --color-primary-900: 18 78 64;
+
+  // ══════════════════════════════════════════════════════════
+  // NEUTRAL (dark/gray) — Tła, tekst, bordery, ikony muted
+  // ══════════════════════════════════════════════════════════
+  --color-neutral-50: 248 249 250;
+  --color-neutral-100: 234 236 240;
+  --color-neutral-200: 218 220 226;
+  --color-neutral-300: 188 192 202;
+  --color-neutral-400: 158 162 174;
+  --color-neutral-500: 101 109 120;
+  --color-neutral-600: 67 74 84;
+  --color-neutral-700: 52 57 65;
+  --color-neutral-800: 38 42 48;
+  --color-neutral-900: 28 31 35;
+  --color-neutral-950: 18 20 23;
+
+  // ══════════════════════════════════════════════════════════
+  // SUCCESS (green) — Pozytywne statusy, potwierdzenia
+  // ══════════════════════════════════════════════════════════
+  --color-success-50: 240 249 232;
+  --color-success-100: 220 242 204;
+  --color-success-200: 197 225 165;
+  --color-success-300: 160 212 104;
+  --color-success-400: 140 193 82;
+  --color-success-500: 111 168 52;
+  --color-success-600: 85 139 47;
+  --color-success-700: 67 112 32;
+  --color-success-800: 48 82 20;
+  --color-success-900: 30 53 10;
+
+  // ══════════════════════════════════════════════════════════
+  // WARNING (orange) — Ostrzeżenia, countdown urgent
+  // ══════════════════════════════════════════════════════════
+  --color-warning-50: 255 243 224;
+  --color-warning-100: 255 224 178;
+  --color-warning-200: 255 204 128;
+  --color-warning-300: 252 110 81;
+  --color-warning-400: 233 87 63;
+  --color-warning-500: 216 67 21;
+  --color-warning-600: 191 54 12;
+  --color-warning-700: 160 46 10;
+  --color-warning-800: 127 37 8;
+  --color-warning-900: 92 26 5;
+
+  // ══════════════════════════════════════════════════════════
+  // DANGER (red) — Błędy, usuwanie, destrukcyjne akcje
+  // ══════════════════════════════════════════════════════════
+  --color-danger-50: 254 236 238;
+  --color-danger-100: 252 212 217;
+  --color-danger-200: 249 180 188;
+  --color-danger-300: 242 140 150;
+  --color-danger-400: 237 85 101;
+  --color-danger-500: 218 68 83;
+  --color-danger-600: 192 57 43;
+  --color-danger-700: 160 32 32;
+  --color-danger-800: 122 26 36;
+  --color-danger-900: 80 16 21;
+
+  // ══════════════════════════════════════════════════════════
+  // INFO (blue) — Informacje, focus ring, linki informacyjne
+  // ══════════════════════════════════════════════════════════
+  --color-info-50: 232 243 254;
+  --color-info-100: 200 227 252;
+  --color-info-200: 157 204 248;
+  --color-info-300: 93 156 236;
+  --color-info-400: 74 137 220;
+  --color-info-500: 48 112 196;
+  --color-info-600: 21 101 192;
+  --color-info-700: 13 71 161;
+  --color-info-800: 10 52 112;
+  --color-info-900: 7 34 64;
+}

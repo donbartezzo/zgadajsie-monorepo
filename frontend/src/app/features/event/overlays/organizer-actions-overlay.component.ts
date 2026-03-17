@@ -33,9 +33,9 @@ import { isEventJoinable } from '../../../shared/utils/event-time-status.util';
               (click)="navigateManage()"
             >
               <div
-                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-100"
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-100"
               >
-                <app-icon name="settings" size="sm" class="text-teal-500"></app-icon>
+                <app-icon name="settings" size="sm" class="text-primary-500"></app-icon>
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-semibold text-neutral-900">Zarządzaj wydarzeniem</p>
@@ -128,9 +128,7 @@ export class OrganizerActionsOverlayComponent {
   readonly closed = output<void>();
   readonly cancelRequested = output<void>();
 
-  readonly isUpcoming = computed(() =>
-    isEventJoinable(this.eventStartsAt(), this.eventStatus()),
-  );
+  readonly isUpcoming = computed(() => isEventJoinable(this.eventStartsAt(), this.eventStatus()));
 
   readonly isCancelled = computed(() => this.eventStatus() === EventStatus.CANCELLED);
 

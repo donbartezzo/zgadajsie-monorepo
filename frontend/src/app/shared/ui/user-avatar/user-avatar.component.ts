@@ -74,7 +74,7 @@ export class UserAvatarComponent {
       'bg-info-300',
       'bg-warning-300',
       'bg-primary-400',
-      'bg-teal-500',
+      'bg-mint-500',
       'bg-info-400',
       'bg-danger-300',
     ];

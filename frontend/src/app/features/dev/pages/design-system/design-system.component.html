@@ -35,9 +35,46 @@
       </p>
     </section>
 
-    @for (palette of palettes; track palette.name) {
-    <section>
-      <h2 class="text-lg font-semibold text-neutral-900 mb-1">{{ palette.name }}</h2>
+    <!-- SEMANTIC PALETTES -->
+    <h2 class="text-lg font-bold text-neutral-900 mb-2 mt-4">Semantic Palettes</h2>
+    <p class="text-sm text-neutral-500 mb-4">
+      Główne palety do użycia w komponentach. Mapowane na CSS vars w
+      <code class="bg-white px-1 rounded text-xs">_tokens.scss</code>
+    </p>
+
+    @for (palette of semanticPalettes; track palette.name) {
+    <section class="mb-6">
+      <h3 class="text-base font-semibold text-neutral-900 mb-1">{{ palette.name }}</h3>
+      <p class="text-sm text-neutral-500 mb-3">{{ palette.description }}</p>
+      <div class="grid grid-cols-5 gap-1.5">
+        @for (swatch of palette.swatches; track swatch.shade) {
+        <div class="rounded-lg overflow-hidden border border-neutral-200">
+          <div class="h-12 flex items-end justify-start p-1" [style.background-color]="swatch.hex">
+            <span
+              class="text-[10px] font-bold"
+              [class.text-white]="isDark(swatch.hex)"
+              [class.text-neutral-900]="!isDark(swatch.hex)"
+              >{{ swatch.shade }}</span
+            >
+          </div>
+          <div class="bg-white p-1 text-center">
+            <p class="text-[10px] text-neutral-500 font-mono">{{ swatch.hex }}</p>
+          </div>
+        </div>
+        }
+      </div>
+    </section>
+    }
+
+    <!-- FOUNDATION PALETTES -->
+    <h2 class="text-lg font-bold text-neutral-900 mb-2 mt-8">Foundation Palettes</h2>
+    <p class="text-sm text-neutral-500 mb-4">
+      Raw kolory z szablonu sticky-mobile. Dostępne dla dekoracji, kart kolorowych, akcentów.
+    </p>
+
+    @for (palette of foundationPalettes; track palette.name) {
+    <section class="mb-6">
+      <h3 class="text-base font-semibold text-neutral-900 mb-1">{{ palette.name }}</h3>
       <p class="text-sm text-neutral-500 mb-3">{{ palette.description }}</p>
       <div class="grid grid-cols-5 gap-1.5">
         @for (swatch of palette.swatches; track swatch.shade) {
@@ -134,11 +171,13 @@
             </p>
           </div>
         </div>
-        <div class="flex items-center gap-3 bg-teal-50 border border-teal-200 rounded-xl p-3">
-          <app-icon name="help-circle" class="w-5 h-5 text-teal-600" />
+        <div class="flex items-center gap-3 bg-magenta-50 border border-magenta-200 rounded-xl p-3">
+          <app-icon name="help-circle" class="w-5 h-5 text-magenta-600" />
           <div>
-            <span class="text-sm text-neutral-900">Teal bar</span>
-            <p class="text-xs text-neutral-500">bg-teal-50 · border-teal-200 · text-teal-600</p>
+            <span class="text-sm text-neutral-900">Magenta bar</span>
+            <p class="text-xs text-neutral-500">
+              bg-magenta-50 · border-magenta-200 · text-magenta-600
+            </p>
           </div>
         </div>
         <div class="flex items-center gap-3 bg-brown-50 border border-brown-200 rounded-xl p-3">
@@ -454,8 +493,8 @@
           <app-icon name="help-circle" class="w-5 h-5 text-info-600" />
           <span class="text-sm text-neutral-900">To jest informacja dla użytkownika.</span>
         </div>
-        <div class="flex items-center gap-3 bg-teal-50 border border-teal-200 rounded-xl p-3">
-          <app-icon name="alert-triangle" class="w-5 h-5 text-teal-600" />
+        <div class="flex items-center gap-3 bg-magenta-50 border border-magenta-200 rounded-xl p-3">
+          <app-icon name="alert-triangle" class="w-5 h-5 text-magenta-600" />
           <span class="text-sm text-neutral-900">Uwaga — sprawdź dane przed kontynuacją.</span>
         </div>
         <div class="flex items-center gap-3 bg-danger-50 border border-danger-200 rounded-xl p-3">
