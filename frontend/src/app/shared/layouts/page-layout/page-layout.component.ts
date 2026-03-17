@@ -25,6 +25,14 @@ import { BottomOverlaysService } from '../../ui/bottom-overlays/bottom-overlays.
 import { NotificationAlertComponent } from './notification/notification-alert/notification-alert.component';
 import { NotificationOverlayComponent } from './notification/notification-overlay/notification-overlay.component';
 
+export interface RouteLayoutData {
+  showHeader?: boolean;
+  showFooter?: boolean;
+  showBorder?: boolean;
+  centerContent?: boolean;
+  contentClass?: string;
+}
+
 @Component({
   selector: 'app-page-layout',
   imports: [
@@ -69,10 +77,10 @@ export class PageLayoutComponent {
       map(() => {
         let route = this.router.routerState.root;
         while (route.firstChild) route = route.firstChild;
-        return route.snapshot.data;
+        return route.snapshot.data as RouteLayoutData;
       }),
     ),
-    { initialValue: undefined },
+    { initialValue: {} as RouteLayoutData },
   );
 
   @HostBinding('class')
@@ -82,12 +90,8 @@ export class PageLayoutComponent {
 
   private static readonly DEFAULT_COVER = 'assets/images/default-cover.png';
 
-  readonly showHeader = computed(() => this.routeData()?.['showHeader'] !== false);
-  readonly showFooter = computed(() => {
-    const routeData = this.routeData();
-    const showFooter = routeData ? routeData['showFooter'] !== false : false;
-    return showFooter;
-  });
+  readonly showHeader = computed(() => this.routeData().showHeader !== false);
+  readonly showFooter = computed(() => this.routeData().showFooter !== false);
   readonly showBackButton = computed(() => !!this.breadcrumb.parentUrl());
 
   readonly notifBellState = computed<'off' | 'complete' | 'incomplete' | null>(() => {
@@ -105,9 +109,9 @@ export class PageLayoutComponent {
         return null;
     }
   });
-  readonly centerContent = computed(() => this.routeData()?.['centerContent'] === true);
-  readonly contentClass = computed(() => this.routeData()?.['contentClass'] || '');
-  readonly showBorder = computed(() => this.routeData()?.['showBorder'] !== false);
+  readonly centerContent = computed(() => this.routeData().centerContent === true);
+  readonly contentClass = computed(() => this.routeData().contentClass || '');
+  readonly showBorder = computed(() => this.routeData().showBorder !== false);
 
   // ── Derived from LayoutConfigService ──
   readonly hasCover = computed(() => true);
