@@ -7,7 +7,39 @@ import {
   IsInt,
   Min,
   Max,
+  IsObject,
+  ValidateNested,
+  IsArray,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class EventRoleDto {
+  @IsString()
+  key: string;
+
+  @IsString()
+  title: string;
+
+  @IsString()
+  desc: string;
+
+  @IsInt()
+  @Min(0)
+  slots: number;
+
+  @IsBoolean()
+  isDefault: boolean;
+}
+
+class EventRoleConfigDto {
+  @IsString()
+  disciplineSlug: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => EventRoleDto)
+  roles: EventRoleDto[];
+}
 
 export class CreateEventDto {
   @IsString()
@@ -92,4 +124,10 @@ export class CreateEventDto {
   @IsOptional()
   @IsString()
   rules?: string;
+
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => EventRoleConfigDto)
+  roleConfig?: EventRoleConfigDto;
 }

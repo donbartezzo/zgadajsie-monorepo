@@ -41,24 +41,53 @@ export class EventsService {
     const startsAt = new Date(dto.startsAt);
     const lotteryExecutedAt = shouldSkipPreEnrollment(startsAt) ? new Date() : null;
 
+    // Validate roleConfig if provided
+    if (dto.roleConfig) {
+      this.validateRoleConfig(dto.roleConfig, dto.maxParticipants);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { roleConfig: _roleConfig, ...restDto } = dto;
+
     const event = await this.prisma.event.create({
       data: {
-        ...dto,
+        ...restDto,
         startsAt,
         endsAt: new Date(dto.endsAt),
         organizerId,
         coverImageId,
         lotteryExecutedAt,
+        roleConfig: dto.roleConfig ? JSON.parse(JSON.stringify(dto.roleConfig)) : undefined,
       },
       include: { discipline: true, facility: true, level: true, city: true, coverImage: true },
     });
 
-    // Create slots for the event
-    await this.slotService.createSlotsForEvent(event.id, dto.maxParticipants);
+    // Create slots for the event (with role assignment if roleConfig provided)
+    await this.slotService.createSlotsForEvent(event.id, dto.maxParticipants, dto.roleConfig);
 
     this.notifyCitySubscribers(event.id, event.title, event.cityId, organizerId);
 
     return event;
+  }
+
+  /**
+   * Validate roleConfig: sum of role slots must equal maxParticipants.
+   */
+  private validateRoleConfig(
+    roleConfig: { roles: { slots: number; isDefault: boolean }[] },
+    maxParticipants: number,
+  ): void {
+    const totalSlots = roleConfig.roles.reduce((sum, r) => sum + r.slots, 0);
+    if (totalSlots !== maxParticipants) {
+      throw new BadRequestException(
+        `Suma slotów ról (${totalSlots}) musi być równa liczbie uczestników (${maxParticipants})`,
+      );
+    }
+
+    const defaultRoles = roleConfig.roles.filter((r) => r.isDefault);
+    if (defaultRoles.length !== 1) {
+      throw new BadRequestException('Dokładnie jedna rola musi być oznaczona jako domyślna');
+    }
   }
 
   private notifyCitySubscribers(
@@ -434,7 +463,11 @@ export class EventsService {
       } else {
         status = 'PENDING';
       }
-      return { ...p, status };
+      return {
+        ...p,
+        status,
+        waitingReason: status === 'PENDING' ? p.waitingReason : null,
+      };
     });
   }
 
@@ -630,26 +663,54 @@ export class EventsService {
       dto.recurringRule,
     );
 
+    // Validate roleConfig if provided
+    if (dto.roleConfig) {
+      this.validateRoleConfig(dto.roleConfig, dto.maxParticipants);
+    }
+
+    const roleConfigJson = dto.roleConfig ? JSON.parse(JSON.stringify(dto.roleConfig)) : undefined;
+
     // Create parent event
     const parentStartsAt = new Date(dto.startsAt);
     const parentLotteryExecutedAt = shouldSkipPreEnrollment(parentStartsAt) ? new Date() : null;
     const parent = await this.prisma.event.create({
       data: {
-        ...dto,
+        title: dto.title,
+        description: dto.description,
+        disciplineId: dto.disciplineId,
+        facilityId: dto.facilityId,
+        levelId: dto.levelId,
+        cityId: dto.cityId,
         startsAt: parentStartsAt,
         endsAt: new Date(dto.endsAt),
+        costPerPerson: dto.costPerPerson,
+        minParticipants: dto.minParticipants,
+        maxParticipants: dto.maxParticipants,
+        ageMin: dto.ageMin,
+        ageMax: dto.ageMax,
+        gender: dto.gender,
+        visibility: dto.visibility,
+        address: dto.address,
+        lat: dto.lat,
+        lng: dto.lng,
+        coverImageId: dto.coverImageId,
+        rules: dto.rules,
         organizerId,
         isRecurring: true,
         recurringRule: dto.recurringRule,
         lotteryExecutedAt: parentLotteryExecutedAt,
+        roleConfig: roleConfigJson,
       },
       include: { discipline: true, facility: true, level: true, city: true },
     });
 
+    // Create slots for parent event
+    await this.slotService.createSlotsForEvent(parent.id, dto.maxParticipants, dto.roleConfig);
+
     // Create child instances
     for (const { start, end } of dates.slice(1)) {
       const childLotteryExecutedAt = shouldSkipPreEnrollment(start) ? new Date() : null;
-      await this.prisma.event.create({
+      const child = await this.prisma.event.create({
         data: {
           title: dto.title,
           description: dto.description,
@@ -675,8 +736,11 @@ export class EventsService {
           recurringRule: dto.recurringRule,
           parentEventId: parent.id,
           lotteryExecutedAt: childLotteryExecutedAt,
+          roleConfig: roleConfigJson,
         },
       });
+      // Create slots for child event
+      await this.slotService.createSlotsForEvent(child.id, dto.maxParticipants, dto.roleConfig);
     }
 
     return parent;

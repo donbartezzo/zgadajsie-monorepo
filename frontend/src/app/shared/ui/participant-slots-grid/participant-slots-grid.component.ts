@@ -1,12 +1,18 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { UserAvatarComponent } from '../user-avatar/user-avatar.component';
 import { IconComponent } from '../../../core/icons/icon.component';
-import { Participation, ParticipantManageItem } from '../../types';
+import { Participation, ParticipantManageItem, EventRoleConfig, EventRole } from '../../types';
 import { EnrollmentPhase } from '../../types/event.interface';
 
 export type SlotMode = 'public' | 'organizer';
 
 export type ParticipantItem = Participation | ParticipantManageItem;
+
+export interface RoleGroup {
+  role: EventRole;
+  participants: ParticipantItem[];
+  emptySlots: number;
+}
 
 // Participants who occupy a slot (have guaranteed place)
 // APPROVED = has slot, not confirmed yet (pending payment for paid events)
@@ -34,8 +40,78 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
       <p class="mt-2 text-xs font-medium text-info-600">Zgłoszonych: {{ totalCount() }}</p>
       }
     </div>
+    } @else { @if (hasRoles()) {
+    <!-- ROLE-GROUPED VIEW -->
+    <div class="space-y-6">
+      @for (group of roleGroups(); track group.role.key) {
+      <div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-xs font-semibold text-neutral-700">{{ group.role.title }}</span>
+          <span class="text-xs px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-500">
+            {{ group.participants.length }}/{{ group.role.slots }}
+          </span>
+          @if (group.role.isDefault) {
+          <span class="text-xs px-1.5 py-0.5 rounded bg-primary-100 text-primary-600"
+            >domyślna</span
+          >
+          }
+        </div>
+        <div class="flex flex-wrap gap-3 justify-center">
+          @for (p of group.participants; track p.id) {
+          <button
+            type="button"
+            [attr.data-user-id]="p.userId"
+            [class]="
+              'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-none ' +
+              (isCurrentUser(p)
+                ? 'ring-2 ring-primary-400 bg-primary-50'
+                : 'focus:ring-2 focus:ring-primary-200')
+            "
+            (click)="onParticipantClick(p)"
+          >
+            <app-user-avatar
+              [avatarUrl]="getAvatarUrl(p)"
+              [displayName]="getDisplayName(p)"
+              size="lg"
+              [showPaymentWarning]="needsPayment(p)"
+              [status]="getStatusIndicator(p)"
+            />
+            <span
+              class="text-[11px] text-neutral-700 text-center leading-tight mt-1 w-full line-clamp-2 min-h-[2.5em]"
+            >
+              {{ getDisplayName(p) }}
+            </span>
+          </button>
+          } @for (i of getEmptySlotIndices(group.emptySlots); track i) {
+          <button
+            type="button"
+            class="flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-200"
+            (click)="emptySlotClicked.emit()"
+          >
+            <div
+              class="w-14 h-14 rounded-xl border-2 border-dashed border-neutral-200 flex items-center justify-center bg-neutral-50"
+            >
+              <app-icon name="plus" size="sm" class="text-neutral-300"></app-icon>
+            </div>
+            <span class="text-[11px] text-neutral-400 text-center leading-tight mt-1 min-h-[2.5em]"
+              >Wolne</span
+            >
+          </button>
+          }
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Summary row for roles -->
+    <div class="mt-4 flex items-center justify-between text-xs text-neutral-500">
+      <span> {{ slotParticipants().length }}/{{ maxSlots() }} miejsc zajętych </span>
+      @if (emptySlotCount() > 0) {
+      <span class="text-primary-500">{{ emptySlotCount() }} wolnych</span>
+      }
+    </div>
     } @else {
-    <!-- SECTION 1: SLOTS (maxSlots places) -->
+    <!-- STANDARD VIEW (no roles) -->
     <div class="flex flex-wrap gap-3 justify-center">
       <!-- Occupied slots -->
       @for (p of slotParticipants(); track p.id) {
@@ -91,6 +167,7 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
       <span class="text-primary-500">{{ emptySlotCount() }} wolnych</span>
       }
     </div>
+    }
 
     <!-- SECTION 2: PENDING (outside slots) -->
     @if (pendingParticipants().length > 0) {
@@ -175,11 +252,36 @@ export class ParticipantSlotsGridComponent {
   readonly enrollmentPhase = input<EnrollmentPhase | null>(null);
   readonly isPaidEvent = input(false);
   readonly currentUserId = input<string | null>(null);
+  readonly roleConfig = input<EventRoleConfig | null>(null);
 
   readonly participantClicked = output<ParticipantItem>();
   readonly emptySlotClicked = output<void>();
 
   readonly isPreEnrollment = computed(() => this.enrollmentPhase() === 'PRE_ENROLLMENT');
+  readonly hasRoles = computed(() => {
+    const config = this.roleConfig();
+    return config?.roles && config.roles.length > 1;
+  });
+
+  readonly roleGroups = computed<RoleGroup[]>(() => {
+    const config = this.roleConfig();
+    if (!config?.roles || config.roles.length <= 1) return [];
+
+    const slotParticipants = this.slotParticipants();
+
+    return config.roles.map((role) => {
+      const roleParticipants = slotParticipants.filter((p) => {
+        const pRoleKey =
+          'slot' in p && p.slot?.roleKey ? p.slot.roleKey : (p as Participation).roleKey;
+        return pRoleKey === role.key;
+      });
+      return {
+        role,
+        participants: roleParticipants,
+        emptySlots: Math.max(0, role.slots - roleParticipants.length),
+      };
+    });
+  });
 
   // Section 1: Participants who occupy slots (APPROVED, CONFIRMED, PENDING_PAYMENT)
   readonly slotParticipants = computed(() =>
@@ -208,6 +310,10 @@ export class ParticipantSlotsGridComponent {
     const count = this.emptySlotCount();
     return Array.from({ length: count }, (_, i) => i);
   });
+
+  getEmptySlotIndices(count: number): number[] {
+    return Array.from({ length: count }, (_, i) => i);
+  }
 
   getAvatarUrl(p: ParticipantItem): string | null {
     return p.user?.avatarUrl ?? null;

@@ -4,6 +4,7 @@ export interface EventSlot {
   id: string;
   eventId: string;
   participationId: string | null;
+  roleKey: string | null;
   confirmed: boolean;
   assignedAt: string | null;
   createdAt: string;
@@ -22,7 +23,15 @@ export type WaitingReason =
   | 'NEW_USER' // First time with this organizer, needs approval
   | 'BANNED' // Banned by organizer
   | 'NO_SLOTS' // No free slots available
+  | 'NO_SLOTS_FOR_ROLE' // No free slots for selected role (but other roles available)
   | 'PRE_ENROLLMENT'; // Pre-enrollment phase, lottery pending
+
+// Available role with free slots (used for suggestions when NO_SLOTS_FOR_ROLE)
+export interface AvailableRole {
+  key: string;
+  title: string;
+  freeSlots: number;
+}
 
 export interface Participation {
   id: string;
@@ -33,6 +42,7 @@ export interface Participation {
   isChatBanned: boolean;
   addedByUserId?: string;
   isGuest: boolean;
+  roleKey?: string | null;
   createdAt: string;
   updatedAt: string;
 
@@ -42,6 +52,9 @@ export interface Participation {
 
   // Reason why user is waiting (only present when status is PENDING)
   waitingReason?: WaitingReason | null;
+
+  // Available roles when waitingReason is NO_SLOTS_FOR_ROLE
+  availableRoles?: AvailableRole[] | null;
 
   event?: {
     id: string;

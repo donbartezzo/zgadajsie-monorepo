@@ -17,6 +17,7 @@
     [enrollmentPhase]="enrollmentPhase()"
     [isPaidEvent]="isPaidEvent()"
     [currentUserId]="currentUserId()"
+    [roleConfig]="event()?.roleConfig ?? null"
     mode="public"
     (participantClicked)="onParticipantClick($event)"
     (emptySlotClicked)="onEmptySlotClick()"

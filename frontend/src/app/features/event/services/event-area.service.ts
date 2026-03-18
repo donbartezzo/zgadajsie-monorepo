@@ -15,7 +15,14 @@ import {
 } from '../../../shared/types';
 import { getEnrollmentPhase } from '../../../shared/utils/enrollment-phase.util';
 import { isEventJoinable, EventTimeStatus } from '../../../shared/utils/event-time-status.util';
+import {
+  getWaitingReasonToast,
+  getWaitingReasonBarTitle,
+  getWaitingReasonBarSubtitle,
+} from '../../../shared/utils/waiting-reason-messages.util';
+import { getParticipationStatusConfig, ParticipationStatusOptions } from '../../../shared/utils';
 import { NotificationBarConfig } from '../ui/event-notification-bars/event-notification-bars.component';
+import type { IconName } from '../../../core/icons/icon.component';
 
 const AUTO_REFRESH_INTERVAL = 30000; // 30 seconds
 
@@ -206,7 +213,7 @@ export class EventAreaService {
   }
 
   private registerOverlayCallbacks(): void {
-    this.overlays.onJoinConfirmed(() => this.confirmJoin());
+    this.overlays.onJoinConfirmed((roleKey?: string) => this.confirmJoin(roleKey));
     this.overlays.onOpenChat(() => this.openChat());
     this.overlays.onPay(() => this.payEvent());
     this.overlays.onContactOrganizer(() => this.contactOrganizer());
@@ -272,12 +279,12 @@ export class EventAreaService {
     });
   }
 
-  confirmJoin(): void {
+  confirmJoin(roleKey?: string): void {
     this.overlays.close();
     this.joining.set(true);
 
     this.eventService
-      .joinEvent(this._eventId)
+      .joinEvent(this._eventId, roleKey)
       .pipe(finalize(() => this.joining.set(false)))
       .subscribe({
         next: (p) => {
@@ -329,94 +336,54 @@ export class EventAreaService {
     if (status === 'CONFIRMED') return 'Dołączono do wydarzenia!';
     if (status === 'APPROVED') return 'Masz przyznane miejsce! Potwierdź udział.';
     if (status === 'PENDING') {
-      if (waitingReason === 'NEW_USER') {
-        return 'Zgłoszenie wysłane! Oczekujesz na akceptację organizatora.';
-      }
-      if (waitingReason === 'NO_SLOTS') {
-        return 'Dodano do listy oczekujących. Powiadomimy Cię gdy zwolni się miejsce.';
-      }
-      if (waitingReason === 'PRE_ENROLLMENT') {
-        return 'Zgłoszenie przyjęte! Miejsca zostaną przydzielone w losowaniu.';
-      }
-      return 'Zgłoszenie wysłane! Oczekujesz na akceptację.';
+      return getWaitingReasonToast(waitingReason as WaitingReason | null);
     }
     return 'Zgłoszenie wysłane!';
   }
 
   getParticipantBarConfig(status: string | null, isEnded = false): NotificationBarConfig {
+    const options: ParticipationStatusOptions = { isEnded };
+
     if (status === 'PENDING') {
-      const phase = this.enrollmentPhase();
-      const isPreEnroll = phase === 'PRE_ENROLLMENT';
-      return {
-        id: 'participant',
-        icon: isPreEnroll ? 'users' : 'clock',
-        iconColorClass: isPreEnroll ? 'text-info-600' : 'text-warning-600',
-        title: isPreEnroll ? 'Jesteś wstępnie zgłoszony' : 'Zgłoszenie wysłane',
-        subtitle: isPreEnroll
-          ? 'Twoje miejsce zależy od losowania.'
-          : 'Oczekuje na akceptację organizatora.',
-        buttonLabel: 'Szczegóły',
-        bgClass: isPreEnroll ? 'bg-info-50' : 'bg-warning-50',
-        borderClass: isPreEnroll ? 'border border-info-200' : 'border border-warning-200',
-      };
+      const reason = this.waitingReason();
+      return this.getPendingBarConfig(reason);
     }
-    if (status === 'APPROVED') {
-      return {
-        id: 'participant',
-        icon: 'check',
-        iconColorClass: 'text-info-600',
-        title: 'Zatwierdzone - potwierdź udział!',
-        subtitle: 'Twoje miejsce zostało przyznane.',
-        buttonLabel: 'Potwierdź',
-        bgClass: 'bg-info-50',
-        borderClass: 'border border-info-200',
-      };
-    }
-    if (status === 'CONFIRMED') {
-      return {
-        id: 'participant',
-        icon: 'check',
-        iconColorClass: 'text-success-600',
-        title: isEnded ? 'Byłeś(aś) uczestnikiem' : 'Jesteś potwierdzonym uczestnikiem!',
-        subtitle: isEnded ? 'To wydarzenie już się zakończyło.' : 'Twój udział jest potwierdzony.',
-        buttonLabel: 'Szczegóły',
-        bgClass: 'bg-success-50',
-        borderClass: 'border border-success-200',
-      };
-    }
-    if (status === 'WITHDRAWN') {
-      return {
-        id: 'participant',
-        icon: 'user-x',
-        iconColorClass: 'text-neutral-500',
-        title: 'Wypisano z wydarzenia',
-        subtitle: 'Nie jesteś już uczestnikiem.',
-        buttonLabel: 'Szczegóły',
-        bgClass: 'bg-neutral-100',
-        borderClass: 'border border-neutral-200',
-      };
-    }
-    if (status === 'REJECTED') {
-      return {
-        id: 'participant',
-        icon: 'x',
-        iconColorClass: 'text-danger-500',
-        title: 'Zgłoszenie odrzucone',
-        subtitle: 'Organizator odrzucił Twoje zgłoszenie.',
-        buttonLabel: 'Szczegóły',
-        bgClass: 'bg-danger-50',
-        borderClass: 'border border-danger-200',
-      };
-    }
+
+    const config = getParticipationStatusConfig(status as ParticipationStatus | null, options);
+
     return {
       id: 'participant',
-      icon: 'check',
-      iconColorClass: 'text-success-600',
-      title: 'Jesteś zapisany',
-      subtitle: 'Dołączyłeś do tego wydarzenia.',
+      icon: config.icon as IconName,
+      iconColorClass: config.iconColorClass,
+      title: config.title,
+      subtitle: config.subtitle,
+      buttonLabel: config.buttonLabel,
+      bgClass: config.bgClass,
+      borderClass: config.borderClass,
+    };
+  }
+
+  private getPendingBarConfig(reason: WaitingReason | null): NotificationBarConfig {
+    const isPreEnroll = reason === 'PRE_ENROLLMENT';
+    const isBanned = reason === 'BANNED';
+
+    return {
+      id: 'participant',
+      icon: isPreEnroll ? 'users' : isBanned ? 'alert-triangle' : 'clock',
+      iconColorClass: isPreEnroll
+        ? 'text-info-600'
+        : isBanned
+        ? 'text-danger-600'
+        : 'text-warning-600',
+      title: getWaitingReasonBarTitle(reason),
+      subtitle: getWaitingReasonBarSubtitle(reason),
       buttonLabel: 'Szczegóły',
-      bgClass: 'bg-success-50',
-      borderClass: 'border border-success-200',
+      bgClass: isPreEnroll ? 'bg-info-50' : isBanned ? 'bg-danger-50' : 'bg-warning-50',
+      borderClass: isPreEnroll
+        ? 'border border-info-200'
+        : isBanned
+        ? 'border border-danger-200'
+        : 'border border-warning-200',
     };
   }
 }

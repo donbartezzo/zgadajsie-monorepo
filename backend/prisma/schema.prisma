@@ -7,47 +7,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── Users ───────────────────────────────────────────────────────────────────
-
 model User {
-  id                          String    @id @default(uuid())
-  email                       String    @unique
+  id                          String                  @id @default(uuid())
+  email                       String                  @unique
   passwordHash                String?
   displayName                 String
   avatarUrl                   String?
-  role                        String    @default("USER")
-  isActive                    Boolean   @default(false)
-  isEmailVerified             Boolean   @default(false)
+  role                        String                  @default("USER")
+  isActive                    Boolean                 @default(false)
+  isEmailVerified             Boolean                 @default(false)
   activationToken             String?
   activationTokenExpiresAt    DateTime?
   passwordResetToken          String?
   passwordResetTokenExpiresAt DateTime?
-  createdAt                   DateTime  @default(now())
-  updatedAt                   DateTime  @updatedAt
-
-  socialAccounts    SocialAccount[]
-  organizedEvents   Event[]              @relation("OrganizerEvents")
-  participations    EventParticipation[] @relation("UserParticipations")
-  addedParticipants EventParticipation[] @relation("AddedByUser")
-  payments          Payment[]            @relation("UserPayments")
-  paymentIntents    PaymentIntent[]      @relation("UserPaymentIntents")
-  vouchersReceived  OrganizerVoucher[]   @relation("VoucherRecipient")
-  vouchersIssued    OrganizerVoucher[]   @relation("VoucherOrganizer")
-  mediaFiles        MediaFile[]
-  chatMessages              ChatMessage[]
-  privateChatMessagesSent    PrivateChatMessage[] @relation("PrivateChatSender")
-  privateChatMessagesReceived PrivateChatMessage[] @relation("PrivateChatRecipient")
-  reprimandsGiven        Reprimand[]          @relation("ReprimandFrom")
-  reprimandsReceived Reprimand[]         @relation("ReprimandTo")
-  organizerRelations   OrganizerUserRelation[] @relation("OrgRelOrganizer")
-  targetOfRelations    OrganizerUserRelation[] @relation("OrgRelTarget")
-  notifications     Notification[]
-  pushSubscriptions PushSubscription[]
-  announcements          EventAnnouncement[]    @relation("OrganizerAnnouncements")
-  announcementReceipts   AnnouncementReceipt[]
-  citySubscriptions CitySubscription[]
-  eventLimit        UserEventLimit?
-  tpayMerchantId    String?
+  createdAt                   DateTime                @default(now())
+  updatedAt                   DateTime                @updatedAt
+  tpayMerchantId              String?
+  announcementReceipts        AnnouncementReceipt[]
+  chatMessages                ChatMessage[]
+  citySubscriptions           CitySubscription[]
+  organizedEvents             Event[]                 @relation("OrganizerEvents")
+  announcements               EventAnnouncement[]     @relation("OrganizerAnnouncements")
+  addedParticipants           EventParticipation[]    @relation("AddedByUser")
+  participations              EventParticipation[]    @relation("UserParticipations")
+  mediaFiles                  MediaFile[]
+  notifications               Notification[]
+  organizerRelations          OrganizerUserRelation[] @relation("OrgRelOrganizer")
+  targetOfRelations           OrganizerUserRelation[] @relation("OrgRelTarget")
+  vouchersIssued              OrganizerVoucher[]      @relation("VoucherOrganizer")
+  vouchersReceived            OrganizerVoucher[]      @relation("VoucherRecipient")
+  payments                    Payment[]               @relation("UserPayments")
+  paymentIntents              PaymentIntent[]         @relation("UserPaymentIntents")
+  privateChatMessagesReceived PrivateChatMessage[]    @relation("PrivateChatRecipient")
+  privateChatMessagesSent     PrivateChatMessage[]    @relation("PrivateChatSender")
+  pushSubscriptions           PushSubscription[]
+  reprimandsGiven             Reprimand[]             @relation("ReprimandFrom")
+  reprimandsReceived          Reprimand[]             @relation("ReprimandTo")
+  socialAccounts              SocialAccount[]
+  eventLimit                  UserEventLimit?
 }
 
 model SocialAccount {
@@ -56,242 +53,210 @@ model SocialAccount {
   provider       String
   providerUserId String
   createdAt      DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerUserId])
 }
 
-// ─── Dictionaries ────────────────────────────────────────────────────────────
-
 model City {
-  id       String  @id @default(uuid())
-  name     String
-  slug     String  @unique
-  isActive Boolean @default(true)
-
-  events        Event[]
+  id            String             @id @default(uuid())
+  name          String
+  slug          String             @unique
+  isActive      Boolean            @default(true)
   subscriptions CitySubscription[]
+  events        Event[]
 }
 
 model EventDiscipline {
-  id   String @id @default(uuid())
-  name String
-  slug String @unique
-
-  events      Event[]
+  id          String       @id @default(uuid())
+  name        String
+  slug        String       @unique
   coverImages CoverImage[]
+  events      Event[]
 }
 
-// ─── Cover Images (shared gallery) ──────────────────────────────────────────
-
 model CoverImage {
-  id           String   @id @default(uuid())
+  id           String          @id @default(uuid())
   disciplineId String
   filename     String
   originalName String
-  createdAt    DateTime @default(now())
-
-  discipline EventDiscipline @relation(fields: [disciplineId], references: [id])
-  events     Event[]
+  createdAt    DateTime        @default(now())
+  discipline   EventDiscipline @relation(fields: [disciplineId], references: [id])
+  events       Event[]
 
   @@index([disciplineId])
 }
 
 model EventFacility {
-  id   String @id @default(uuid())
-  name String
-  slug String @unique
-
+  id     String  @id @default(uuid())
+  name   String
+  slug   String  @unique
   events Event[]
 }
 
 model EventLevel {
-  id   String @id @default(uuid())
-  name String
-  slug String @unique
-
+  id     String  @id @default(uuid())
+  name   String
+  slug   String  @unique
   events Event[]
 }
 
-// ─── Enums ───────────────────────────────────────────────────────────────────
-
-enum EventStatus {
-  ACTIVE
-  CANCELLED
-}
-
-// ─── Events ──────────────────────────────────────────────────────────────────
-
 model Event {
-  id              String      @id @default(uuid())
-  title           String
-  description     String?
-  coverImageId    String?
-  disciplineId    String
-  facilityId      String
-  levelId         String
-  cityId          String
-  organizerId     String
-  startsAt        DateTime
-  endsAt          DateTime
-  costPerPerson   Decimal     @default(0) @db.Decimal(10, 2)
-  minParticipants Int?
-  maxParticipants Int
-  ageMin          Int?
-  ageMax          Int?
-  gender          String      @default("ANY")
-  visibility      String      @default("PUBLIC")
-  lotteryExecutedAt DateTime?
-  status             EventStatus @default(ACTIVE)
-  address         String
-  lat             Float
-  lng             Float
-  rules           String?
-  isRecurring     Boolean  @default(false)
-  recurringRule   String?
-  parentEventId   String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  coverImage    CoverImage?          @relation(fields: [coverImageId], references: [id])
-  discipline    EventDiscipline      @relation(fields: [disciplineId], references: [id])
-  facility      EventFacility        @relation(fields: [facilityId], references: [id])
-  level         EventLevel           @relation(fields: [levelId], references: [id])
-  city          City                 @relation(fields: [cityId], references: [id])
-  organizer     User                 @relation("OrganizerEvents", fields: [organizerId], references: [id])
-  parentEvent   Event?               @relation("RecurringEvents", fields: [parentEventId], references: [id])
-  childEvents   Event[]              @relation("RecurringEvents")
-  participations EventParticipation[]
-  slots         EventSlot[]
-  chatMessages  ChatMessage[]
+  id                  String               @id @default(uuid())
+  title               String
+  description         String?
+  disciplineId        String
+  facilityId          String
+  levelId             String
+  cityId              String
+  organizerId         String
+  startsAt            DateTime
+  endsAt              DateTime
+  costPerPerson       Decimal              @default(0) @db.Decimal(10, 2)
+  minParticipants     Int?
+  maxParticipants     Int
+  ageMin              Int?
+  ageMax              Int?
+  gender              String               @default("ANY")
+  visibility          String               @default("PUBLIC")
+  status              EventStatus          @default(ACTIVE)
+  address             String
+  lat                 Float
+  lng                 Float
+  isRecurring         Boolean              @default(false)
+  recurringRule       String?
+  parentEventId       String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  rules               String?
+  coverImageId        String?
+  lotteryExecutedAt   DateTime?
+  roleConfig          Json?
+  chatMessages        ChatMessage[]
+  city                City                 @relation(fields: [cityId], references: [id])
+  coverImage          CoverImage?          @relation(fields: [coverImageId], references: [id])
+  discipline          EventDiscipline      @relation(fields: [disciplineId], references: [id])
+  facility            EventFacility        @relation(fields: [facilityId], references: [id])
+  level               EventLevel           @relation(fields: [levelId], references: [id])
+  organizer           User                 @relation("OrganizerEvents", fields: [organizerId], references: [id])
+  parentEvent         Event?               @relation("RecurringEvents", fields: [parentEventId], references: [id])
+  childEvents         Event[]              @relation("RecurringEvents")
+  announcements       EventAnnouncement[]
+  participations      EventParticipation[]
+  slots               EventSlot[]
+  notifications       Notification[]       @relation("NotificationEvent")
+  issuedVouchers      OrganizerVoucher[]
+  payments            Payment[]            @relation("EventPayments")
+  paymentIntents      PaymentIntent[]      @relation("EventPaymentIntents")
   privateChatMessages PrivateChatMessage[]
-  reprimands    Reprimand[]
-  notifications Notification[]       @relation("NotificationEvent")
-  announcements     EventAnnouncement[]
-  payments        Payment[]            @relation("EventPayments")
-  paymentIntents  PaymentIntent[]      @relation("EventPaymentIntents")
-  issuedVouchers  OrganizerVoucher[]
+  reprimands          Reprimand[]
 
   @@index([cityId, status, startsAt])
 }
 
-// ─── Participations ──────────────────────────────────────────────────────────
-
 model EventParticipation {
-  id            String   @id @default(uuid())
-  eventId       String
-  userId        String
-  wantsIn         Boolean  @default(true)
-  isChatBanned    Boolean  @default(false)
-  addedByUserId   String?
-  isGuest         Boolean  @default(false)
-  withdrawnBy     String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user      User     @relation("UserParticipations", fields: [userId], references: [id])
-  addedBy   User?    @relation("AddedByUser", fields: [addedByUserId], references: [id])
+  id             String          @id @default(uuid())
+  eventId        String
+  userId         String
+  addedByUserId  String?
+  isGuest        Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  isChatBanned   Boolean         @default(false)
+  wantsIn        Boolean         @default(true)
+  withdrawnBy    String?
+  roleKey        String?
+  waitingReason  String?
+  addedBy        User?           @relation("AddedByUser", fields: [addedByUserId], references: [id])
+  event          Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user           User            @relation("UserParticipations", fields: [userId], references: [id])
+  slot           EventSlot?
   payments       Payment[]
   paymentIntents PaymentIntent[]
-  slot           EventSlot?
 
   @@unique([eventId, userId])
 }
 
-// ─── Event Slots ────────────────────────────────────────────────────────────────
-
 model EventSlot {
-  id              String    @id @default(uuid())
+  id              String              @id @default(uuid())
   eventId         String
-  participationId String?   @unique
-  confirmed       Boolean   @default(false)
+  participationId String?             @unique
+  confirmed       Boolean             @default(false)
   assignedAt      DateTime?
-  createdAt       DateTime  @default(now())
-
-  event         Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  participation EventParticipation? @relation(fields: [participationId], references: [id], onDelete: SetNull)
+  createdAt       DateTime            @default(now())
+  roleKey         String?
+  event           Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  participation   EventParticipation? @relation(fields: [participationId], references: [id])
 
   @@index([eventId])
+  @@index([eventId, roleKey])
 }
 
-// ─── Payment Intents (temporary, pre-payment) ──────────────────────────────
-
 model PaymentIntent {
-  id              String   @id @default(uuid())
+  id              String             @id @default(uuid())
   participationId String
   userId          String
   eventId         String
-  amount          Decimal  @db.Decimal(10, 2)
-  voucherReserved Decimal  @default(0) @db.Decimal(10, 2)
+  amount          Decimal            @db.Decimal(10, 2)
+  voucherReserved Decimal            @default(0) @db.Decimal(10, 2)
   operatorTxId    String?
-  createdAt       DateTime @default(now())
-
-  participation EventParticipation @relation(fields: [participationId], references: [id])
-  user          User               @relation("UserPaymentIntents", fields: [userId], references: [id])
-  event         Event              @relation("EventPaymentIntents", fields: [eventId], references: [id])
+  createdAt       DateTime           @default(now())
+  event           Event              @relation("EventPaymentIntents", fields: [eventId], references: [id])
+  participation   EventParticipation @relation(fields: [participationId], references: [id])
+  user            User               @relation("UserPaymentIntents", fields: [userId], references: [id])
 
   @@index([operatorTxId])
   @@index([participationId])
 }
 
-// ─── Payments (finalized transactions only) ─────────────────────────────────
-
 model Payment {
-  id              String    @id @default(uuid())
-  participationId String
-  userId          String
-  eventId         String
-  amount             Decimal   @db.Decimal(10, 2)
-  voucherAmountUsed  Decimal   @default(0) @db.Decimal(10, 2)
-  organizerAmount    Decimal   @db.Decimal(10, 2)
-  platformFee        Decimal   @db.Decimal(10, 2)
-  currency        String    @default("PLN")
-  status          String    @default("COMPLETED")
-  operatorTxId    String?
-  method          String?
-  paidAt          DateTime?
-  refundedAt      DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  participation   EventParticipation @relation(fields: [participationId], references: [id])
-  user             User               @relation("UserPayments", fields: [userId], references: [id])
-  event            Event              @relation("EventPayments", fields: [eventId], references: [id])
-  issuedVouchers   OrganizerVoucher[] @relation("VoucherSourcePayment")
+  id                String             @id @default(uuid())
+  participationId   String
+  userId            String
+  eventId           String
+  amount            Decimal            @db.Decimal(10, 2)
+  organizerAmount   Decimal            @db.Decimal(10, 2)
+  platformFee       Decimal            @db.Decimal(10, 2)
+  currency          String             @default("PLN")
+  status            String             @default("COMPLETED")
+  operatorTxId      String?
+  method            String?
+  paidAt            DateTime?
+  refundedAt        DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  voucherAmountUsed Decimal            @default(0) @db.Decimal(10, 2)
+  issuedVouchers    OrganizerVoucher[] @relation("VoucherSourcePayment")
+  event             Event              @relation("EventPayments", fields: [eventId], references: [id])
+  participation     EventParticipation @relation(fields: [participationId], references: [id])
+  user              User               @relation("UserPayments", fields: [userId], references: [id])
 
   @@index([eventId, status])
   @@index([userId, createdAt])
   @@index([participationId, createdAt])
 }
 
-// ─── Organizer Vouchers ──────────────────────────────────────────────────────
-
 model OrganizerVoucher {
-  id               String    @id @default(uuid())
-  recipientUserId  String
-  organizerUserId  String
-  eventId          String?
-  sourcePaymentId  String?
-  amount           Decimal   @db.Decimal(10, 2)
-  remainingAmount  Decimal   @db.Decimal(10, 2)
-  source           String    @default("EVENT_CANCELLATION")
-  status           String    @default("ACTIVE")
-  expiresAt        DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-
-  recipient     User     @relation("VoucherRecipient", fields: [recipientUserId], references: [id])
-  organizer     User     @relation("VoucherOrganizer", fields: [organizerUserId], references: [id])
-  event         Event?   @relation(fields: [eventId], references: [id])
-  sourcePayment Payment? @relation("VoucherSourcePayment", fields: [sourcePaymentId], references: [id])
+  id              String    @id @default(uuid())
+  recipientUserId String
+  organizerUserId String
+  eventId         String?
+  amount          Decimal   @db.Decimal(10, 2)
+  remainingAmount Decimal   @db.Decimal(10, 2)
+  source          String    @default("EVENT_CANCELLATION")
+  status          String    @default("ACTIVE")
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  sourcePaymentId String?
+  event           Event?    @relation(fields: [eventId], references: [id])
+  organizer       User      @relation("VoucherOrganizer", fields: [organizerUserId], references: [id])
+  recipient       User      @relation("VoucherRecipient", fields: [recipientUserId], references: [id])
+  sourcePayment   Payment?  @relation("VoucherSourcePayment", fields: [sourcePaymentId], references: [id])
 
   @@index([recipientUserId, organizerUserId, status])
   @@index([organizerUserId, status])
 }
-
-// ─── Media ───────────────────────────────────────────────────────────────────
 
 model MediaFile {
   id           String   @id @default(uuid())
@@ -301,11 +266,8 @@ model MediaFile {
   mimeType     String
   sizeBytes    Int
   createdAt    DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
-
-// ─── Chat ────────────────────────────────────────────────────────────────────
 
 model ChatMessage {
   id        String   @id @default(uuid())
@@ -313,14 +275,11 @@ model ChatMessage {
   userId    String
   content   String
   createdAt DateTime @default(now())
-
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id])
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
 
   @@index([eventId, createdAt])
 }
-
-// ─── Private Chat (Organizer Participant, per Event) ──────────────────────
 
 model PrivateChatMessage {
   id          String   @id @default(uuid())
@@ -329,16 +288,13 @@ model PrivateChatMessage {
   recipientId String
   content     String
   createdAt   DateTime @default(now())
-
-  event     Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  sender    User  @relation("PrivateChatSender", fields: [senderId], references: [id])
-  recipient User  @relation("PrivateChatRecipient", fields: [recipientId], references: [id])
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  recipient   User     @relation("PrivateChatRecipient", fields: [recipientId], references: [id])
+  sender      User     @relation("PrivateChatSender", fields: [senderId], references: [id])
 
   @@index([eventId, senderId, recipientId, createdAt])
   @@index([eventId, recipientId, senderId, createdAt])
 }
-
-// ─── Moderation ──────────────────────────────────────────────────────────────
 
 model Reprimand {
   id         String   @id @default(uuid())
@@ -348,10 +304,9 @@ model Reprimand {
   reason     String
   expiresAt  DateTime
   createdAt  DateTime @default(now())
-
-  fromUser User  @relation("ReprimandFrom", fields: [fromUserId], references: [id])
-  toUser   User  @relation("ReprimandTo", fields: [toUserId], references: [id])
-  event    Event @relation(fields: [eventId], references: [id])
+  event      Event    @relation(fields: [eventId], references: [id])
+  fromUser   User     @relation("ReprimandFrom", fields: [fromUserId], references: [id])
+  toUser     User     @relation("ReprimandTo", fields: [toUserId], references: [id])
 }
 
 model OrganizerUserRelation {
@@ -363,14 +318,11 @@ model OrganizerUserRelation {
   note            String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-
-  organizer  User @relation("OrgRelOrganizer", fields: [organizerUserId], references: [id])
-  targetUser User @relation("OrgRelTarget", fields: [targetUserId], references: [id])
+  organizer       User     @relation("OrgRelOrganizer", fields: [organizerUserId], references: [id])
+  targetUser      User     @relation("OrgRelTarget", fields: [targetUserId], references: [id])
 
   @@unique([organizerUserId, targetUserId])
 }
-
-// ─── Notifications ───────────────────────────────────────────────────────────
 
 model Notification {
   id             String   @id @default(uuid())
@@ -381,9 +333,8 @@ model Notification {
   isRead         Boolean  @default(false)
   relatedEventId String?
   createdAt      DateTime @default(now())
-
-  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  relatedEvent Event? @relation("NotificationEvent", fields: [relatedEventId], references: [id])
+  relatedEvent   Event?   @relation("NotificationEvent", fields: [relatedEventId], references: [id])
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead, createdAt])
 }
@@ -395,63 +346,53 @@ model PushSubscription {
   p256dh    String
   auth      String
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, endpoint])
 }
 
-// ─── Event Announcements ─────────────────────────────────────────────────────
-
 model EventAnnouncement {
-  id          String   @id @default(uuid())
+  id          String                @id @default(uuid())
   eventId     String
   organizerId String
   message     String
-  priority    String   @default("INFORMATIONAL")
-  trigger     String   @default("MANUAL")
-  createdAt   DateTime @default(now())
-
-  event     Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  organizer User  @relation("OrganizerAnnouncements", fields: [organizerId], references: [id])
-  receipts  AnnouncementReceipt[]
+  priority    String                @default("INFORMATIONAL")
+  trigger     String                @default("MANUAL")
+  createdAt   DateTime              @default(now())
+  receipts    AnnouncementReceipt[]
+  event       Event                 @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  organizer   User                  @relation("OrganizerAnnouncements", fields: [organizerId], references: [id])
 
   @@index([eventId, createdAt])
 }
 
 model AnnouncementReceipt {
-  id              String    @id @default(uuid())
-  announcementId  String
-  userId          String
-  confirmToken    String    @unique @default(uuid())
-  viewedAt        DateTime?
-  confirmedAt     DateTime?
-  createdAt       DateTime  @default(now())
-
-  announcement EventAnnouncement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String            @id @default(uuid())
+  announcementId String
+  userId         String
+  confirmToken   String            @unique @default(uuid())
+  viewedAt       DateTime?
+  confirmedAt    DateTime?
+  createdAt      DateTime          @default(now())
+  announcement   EventAnnouncement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([announcementId, userId])
   @@index([confirmToken])
   @@index([announcementId, viewedAt])
 }
 
-// ─── City Subscriptions ─────────────────────────────────────────────────────
-
 model CitySubscription {
   id        String   @id @default(uuid())
   userId    String
   cityId    String
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, cityId])
   @@index([cityId])
 }
-
-// ─── System ──────────────────────────────────────────────────────────────────
 
 model SystemSetting {
   key   String @id
@@ -462,6 +403,10 @@ model UserEventLimit {
   id              String @id @default(uuid())
   userId          String @unique
   maxActiveEvents Int
+  user            User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+enum EventStatus {
+  ACTIVE
+  CANCELLED
 }

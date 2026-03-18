@@ -13,7 +13,7 @@
   [loading]="overlays.loading()"
   [isOrganizer]="overlays.isOrganizer()"
   (closed)="overlays.close()"
-  (confirmed)="overlays.confirmJoin()"
+  (confirmed)="overlays.confirmJoin($event)"
 />
 } @case ('joinConfirm') {
 <app-join-confirm-overlay

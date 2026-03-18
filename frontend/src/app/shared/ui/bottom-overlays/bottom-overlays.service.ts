@@ -39,7 +39,7 @@ export class BottomOverlaysService {
   private readonly isOrganizerSignal = signal(false);
 
   // Callbacks for event-specific actions
-  private joinCallback: (() => void) | null = null;
+  private joinCallback: ((roleKey?: string) => void) | null = null;
   private authSuccessCallback: (() => void) | null = null;
   private openChatCallback: (() => void) | null = null;
   private payCallback: (() => void) | null = null;
@@ -115,7 +115,7 @@ export class BottomOverlaysService {
 
   // ── Callbacks ──
 
-  onJoinConfirmed(callback: () => void): void {
+  onJoinConfirmed(callback: (roleKey?: string) => void): void {
     this.joinCallback = callback;
   }
 
@@ -168,8 +168,8 @@ export class BottomOverlaysService {
     this.selectedParticipantSignal.set(null);
   }
 
-  confirmJoin(): void {
-    this.joinCallback?.();
+  confirmJoin(roleKey?: string): void {
+    this.joinCallback?.(roleKey);
   }
 
   handleAuthSuccess(): void {

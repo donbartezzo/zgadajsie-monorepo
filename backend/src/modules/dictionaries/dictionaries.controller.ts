@@ -1,5 +1,6 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
 import { DictionariesService } from './dictionaries.service';
+import { getDisciplineSchema } from '@zgadajsie/shared';
 
 @Controller('dictionaries')
 export class DictionariesController {
@@ -28,5 +29,14 @@ export class DictionariesController {
   @Get('cities/:slug')
   getCityBySlug(@Param('slug') slug: string) {
     return this.dictionariesService.getCityBySlug(slug);
+  }
+
+  @Get('disciplines/:slug/schema')
+  getDisciplineSchema(@Param('slug') slug: string) {
+    const schema = getDisciplineSchema(slug);
+    if (!schema) {
+      throw new NotFoundException(`Schemat dla dyscypliny "${slug}" nie istnieje`);
+    }
+    return schema;
   }
 }

@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
 import { ParticipationService } from './participation.service';
 import { JoinGuestDto } from './dto/join-guest.dto';
+import { JoinEventDto } from './dto/join-event.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { IsActiveGuard } from '../auth/guards/is-active.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -12,8 +13,12 @@ export class ParticipationController {
   constructor(private participationService: ParticipationService) {}
 
   @Post('events/:eventId/join')
-  join(@Param('eventId') eventId: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.join(eventId, user.id);
+  join(
+    @Param('eventId') eventId: string,
+    @CurrentUser() user: AuthUser,
+    @Body() dto: JoinEventDto,
+  ) {
+    return this.participationService.join(eventId, user.id, dto.roleKey);
   }
 
   @Post('events/:eventId/join-guest')

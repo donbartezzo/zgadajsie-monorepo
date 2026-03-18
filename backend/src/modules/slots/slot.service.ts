@@ -1,6 +1,7 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import { EventRoleConfig, AvailableRole } from './slot.types';
 
 @Injectable()
 export class SlotService {
@@ -9,23 +10,63 @@ export class SlotService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Create slots for an event (called when event is created)
+   * Create slots for an event (called when event is created).
+   * If roleConfig is provided, creates slots with roleKey assigned.
    */
-  async createSlotsForEvent(eventId: string, count: number): Promise<void> {
-    const slots = Array.from({ length: count }, () => ({
-      id: crypto.randomUUID(),
-      eventId,
-      participationId: null,
-      confirmed: false,
-      assignedAt: null,
-    }));
+  async createSlotsForEvent(
+    eventId: string,
+    count: number,
+    roleConfig?: EventRoleConfig | null,
+  ): Promise<void> {
+    if (roleConfig && roleConfig.roles.length > 0) {
+      // Create slots per role
+      const slots: Array<{
+        id: string;
+        eventId: string;
+        participationId: null;
+        roleKey: string;
+        confirmed: boolean;
+        assignedAt: null;
+      }> = [];
 
-    await this.prisma.eventSlot.createMany({ data: slots });
-    this.logger.log(`Created ${count} slots for event ${eventId}`);
+      for (const role of roleConfig.roles) {
+        for (let i = 0; i < role.slots; i++) {
+          slots.push({
+            id: crypto.randomUUID(),
+            eventId,
+            participationId: null,
+            roleKey: role.key,
+            confirmed: false,
+            assignedAt: null,
+          });
+        }
+      }
+
+      await this.prisma.eventSlot.createMany({ data: slots });
+      this.logger.log(
+        `Created ${slots.length} role-based slots for event ${eventId}: ${roleConfig.roles
+          .map((r) => `${r.key}:${r.slots}`)
+          .join(', ')}`,
+      );
+    } else {
+      // Create slots without roles (legacy behavior)
+      const slots = Array.from({ length: count }, () => ({
+        id: crypto.randomUUID(),
+        eventId,
+        participationId: null,
+        roleKey: null,
+        confirmed: false,
+        assignedAt: null,
+      }));
+
+      await this.prisma.eventSlot.createMany({ data: slots });
+      this.logger.log(`Created ${count} slots for event ${eventId}`);
+    }
   }
 
   /**
    * Atomically assign a free slot to a participation.
+   * If roleKey is provided, only assigns a slot with matching roleKey.
    * Returns the assigned slot or null if no free slots available.
    */
   async assignSlot(
@@ -33,25 +74,48 @@ export class SlotService {
     participationId: string,
     confirmed = false,
     tx?: Prisma.TransactionClient,
-  ): Promise<{ id: string; confirmed: boolean; assignedAt: Date } | null> {
+    roleKey?: string | null,
+  ): Promise<{ id: string; confirmed: boolean; assignedAt: Date; roleKey: string | null } | null> {
     const client = tx ?? this.prisma;
 
     // Find and update a free slot atomically
     // Using raw query for atomic "find first free and update" operation
-    const result = await client.$queryRaw<{ id: string }[]>`
-      UPDATE "EventSlot"
-      SET "participationId" = ${participationId},
-          "confirmed" = ${confirmed},
-          "assignedAt" = NOW()
-      WHERE "id" = (
-        SELECT "id" FROM "EventSlot"
-        WHERE "eventId" = ${eventId}
-          AND "participationId" IS NULL
-        LIMIT 1
-        FOR UPDATE SKIP LOCKED
-      )
-      RETURNING "id"
-    `;
+    let result: { id: string }[];
+
+    if (roleKey) {
+      // Role-specific slot assignment
+      result = await client.$queryRaw<{ id: string }[]>`
+        UPDATE "EventSlot"
+        SET "participationId" = ${participationId},
+            "confirmed" = ${confirmed},
+            "assignedAt" = NOW()
+        WHERE "id" = (
+          SELECT "id" FROM "EventSlot"
+          WHERE "eventId" = ${eventId}
+            AND "participationId" IS NULL
+            AND "roleKey" = ${roleKey}
+          LIMIT 1
+          FOR UPDATE SKIP LOCKED
+        )
+        RETURNING "id"
+      `;
+    } else {
+      // Any free slot (for events without roles or roleKey=null)
+      result = await client.$queryRaw<{ id: string }[]>`
+        UPDATE "EventSlot"
+        SET "participationId" = ${participationId},
+            "confirmed" = ${confirmed},
+            "assignedAt" = NOW()
+        WHERE "id" = (
+          SELECT "id" FROM "EventSlot"
+          WHERE "eventId" = ${eventId}
+            AND "participationId" IS NULL
+          LIMIT 1
+          FOR UPDATE SKIP LOCKED
+        )
+        RETURNING "id"
+      `;
+    }
 
     if (result.length === 0) {
       return null;
@@ -59,7 +123,7 @@ export class SlotService {
 
     const slot = await client.eventSlot.findUnique({
       where: { id: result[0].id },
-      select: { id: true, confirmed: true, assignedAt: true },
+      select: { id: true, confirmed: true, assignedAt: true, roleKey: true },
     });
 
     return slot;
@@ -101,11 +165,32 @@ export class SlotService {
 
   /**
    * Get count of free slots for an event.
+   * If roleKey is provided, counts only slots with that role.
    */
-  async getFreeSlotCount(eventId: string): Promise<number> {
-    return this.prisma.eventSlot.count({
+  async getFreeSlotCount(eventId: string, roleKey?: string | null): Promise<number> {
+    const where: Prisma.EventSlotWhereInput = { eventId, participationId: null };
+    if (roleKey !== undefined) {
+      where.roleKey = roleKey;
+    }
+    return this.prisma.eventSlot.count({ where });
+  }
+
+  /**
+   * Get free slot counts grouped by role.
+   * Returns a map of roleKey -> freeCount.
+   */
+  async getFreeSlotsByRole(eventId: string): Promise<Map<string, number>> {
+    const slots = await this.prisma.eventSlot.groupBy({
+      by: ['roleKey'],
       where: { eventId, participationId: null },
+      _count: { id: true },
     });
+
+    const result = new Map<string, number>();
+    for (const slot of slots) {
+      result.set(slot.roleKey ?? '__default__', slot._count.id);
+    }
+    return result;
   }
 
   /**
@@ -216,12 +301,15 @@ export class SlotService {
   /**
    * Get slot for a participation (if exists).
    */
-  async getSlotForParticipation(
-    participationId: string,
-  ): Promise<{ id: string; confirmed: boolean; assignedAt: Date | null } | null> {
+  async getSlotForParticipation(participationId: string): Promise<{
+    id: string;
+    confirmed: boolean;
+    assignedAt: Date | null;
+    roleKey: string | null;
+  } | null> {
     return this.prisma.eventSlot.findUnique({
       where: { participationId },
-      select: { id: true, confirmed: true, assignedAt: true },
+      select: { id: true, confirmed: true, assignedAt: true, roleKey: true },
     });
   }
 
@@ -280,5 +368,27 @@ export class SlotService {
     }
 
     return assigned;
+  }
+
+  /**
+   * Get available roles with free slots for an event.
+   * Used to suggest alternative roles when chosen role is full.
+   */
+  async getAvailableRoles(eventId: string, roleConfig: EventRoleConfig): Promise<AvailableRole[]> {
+    const freeByRole = await this.getFreeSlotsByRole(eventId);
+    const available: AvailableRole[] = [];
+
+    for (const role of roleConfig.roles) {
+      const freeSlots = freeByRole.get(role.key) ?? 0;
+      if (freeSlots > 0) {
+        available.push({
+          key: role.key,
+          title: role.title,
+          freeSlots,
+        });
+      }
+    }
+
+    return available;
   }
 }

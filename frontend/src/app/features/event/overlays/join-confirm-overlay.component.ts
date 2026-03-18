@@ -5,7 +5,11 @@ import {
   BottomOverlayComponent,
   OverlayIconVariant,
 } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
-import { Event as EventModel, WaitingReason } from '../../../shared/types';
+import { Event as EventModel, WaitingReason, ParticipationStatus } from '../../../shared/types';
+import {
+  getParticipationStatusDescription,
+  ParticipationStatusOptions,
+} from '../../../shared/utils';
 
 @Component({
   selector: 'app-join-confirm-overlay',
@@ -222,29 +226,11 @@ export class JoinConfirmOverlayComponent {
 
   readonly headerDescription = computed(() => {
     const status = this.participantStatus();
-    if (status === 'PENDING') {
-      const reason = this.waitingReason();
-      if (reason === 'NEW_USER') {
-        return 'To Twój pierwszy raz u tego organizatora. Oczekujesz na akceptację.';
-      }
-      if (reason === 'NO_SLOTS') {
-        return 'Wszystkie miejsca są zajęte. Oczekujesz na zwolnienie miejsca.';
-      }
-      if (reason === 'PRE_ENROLLMENT') {
-        return 'Trwa faza wstępnych zapisów. Miejsca zostaną przydzielone w losowaniu.';
-      }
-      return 'Twoje zgłoszenie oczekuje na akceptację organizatora.';
-    }
-    if (status === 'APPROVED') {
-      return 'Twoje miejsce zostało przyznane. Potwierdź uczestnictwo.';
-    }
-    if (status === 'WITHDRAWN') {
-      return 'Nie jesteś już uczestnikiem tego wydarzenia.';
-    }
-    if (status === 'REJECTED') {
-      return 'Organizator odrzucił Twoje zgłoszenie.';
-    }
-    return 'Twój udział jest potwierdzony. Do zobaczenia!';
+    const options: ParticipationStatusOptions = {
+      waitingReason: this.waitingReason(),
+    };
+
+    return getParticipationStatusDescription(status as ParticipationStatus | null, options);
   });
 
   readonly address = computed(() => this.event()?.address || '');

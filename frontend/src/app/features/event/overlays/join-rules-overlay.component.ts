@@ -1,13 +1,23 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
-import { Event as EventModel } from '../../../shared/types';
+import { Event as EventModel, EventRole } from '../../../shared/types';
 import { EventCriteriaDescriptionComponent } from '../ui/event-criteria-description/event-criteria-description.component';
 
 @Component({
   selector: 'app-join-rules-overlay',
   imports: [
+    CommonModule,
     IconComponent,
     ButtonComponent,
     BottomOverlayComponent,
@@ -64,12 +74,49 @@ import { EventCriteriaDescriptionComponent } from '../ui/event-criteria-descript
         </div>
         }
 
+        <!-- Role selection -->
+        @if (availableRoles().length > 0) {
+        <div>
+          <h3 class="font-bold text-neutral-900 mb-2">Wybierz swoją rolę:</h3>
+          <div class="space-y-2">
+            @for (role of availableRoles(); track role.key) {
+            <label
+              class="flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-colors"
+              [ngClass]="
+                selectedRoleKey() === role.key
+                  ? 'border-primary-300 bg-primary-50'
+                  : 'border-neutral-200 hover:border-neutral-300'
+              "
+            >
+              <input
+                type="radio"
+                name="roleSelection"
+                [value]="role.key"
+                [checked]="selectedRoleKey() === role.key"
+                (change)="selectedRoleKey.set(role.key)"
+                class="h-4 w-4 text-primary-500 accent-primary-500"
+              />
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-medium text-neutral-900">{{ role.title }}</span>
+                  @if (role.isDefault) {
+                  <span class="text-xs px-1.5 py-0.5 rounded bg-primary-100 text-primary-700"
+                    >domyślna</span
+                  >
+                  }
+                </div>
+                <p class="text-xs text-neutral-500 mt-0.5">{{ role.desc }}</p>
+              </div>
+            </label>
+            }
+          </div>
+        </div>
+        }
+
         <!-- Checkbox -->
         <label
-          [class]="
-            'flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-colors ' +
-            (rulesAccepted() ? 'border-success-200 bg-success-50' : 'border-neutral-200')
-          "
+          class="flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-colors"
+          [ngClass]="rulesAccepted() ? 'border-success-200 bg-success-50' : 'border-neutral-200'"
         >
           <input
             type="checkbox"
@@ -90,7 +137,7 @@ import { EventCriteriaDescriptionComponent } from '../ui/event-criteria-descript
             [fullWidth]="true"
             [loading]="loading()"
             [disabled]="!canJoin()"
-            (clicked)="confirmed.emit()"
+            (clicked)="onConfirm()"
           >
             <app-icon name="check" size="sm"></app-icon>
             Zgłoś chęć udziału
@@ -109,9 +156,10 @@ export class JoinRulesOverlayComponent {
   readonly isOrganizer = input(false);
 
   readonly closed = output<void>();
-  readonly confirmed = output<void>();
+  readonly confirmed = output<string | undefined>();
 
   readonly rulesAccepted = signal(false);
+  readonly selectedRoleKey = signal<string | null>(null);
 
   readonly rulesList = computed(() => {
     const rules = this.event()?.rules;
@@ -122,7 +170,34 @@ export class JoinRulesOverlayComponent {
       .filter((r) => r.length > 0);
   });
 
+  readonly availableRoles = computed<EventRole[]>(() => {
+    const e = this.event();
+    if (!e?.roleConfig?.roles) return [];
+    return e.roleConfig.roles;
+  });
+
+  readonly defaultRoleKey = computed<string | null>(() => {
+    const roles = this.availableRoles();
+    const defaultRole = roles.find((r) => r.isDefault);
+    return defaultRole?.key ?? null;
+  });
+
   readonly canJoin = computed(() => {
     return this.rulesAccepted();
   });
+
+  constructor() {
+    // Auto-select default role when roles become available
+    effect(() => {
+      const defaultKey = this.defaultRoleKey();
+      if (defaultKey && !this.selectedRoleKey()) {
+        this.selectedRoleKey.set(defaultKey);
+      }
+    });
+  }
+
+  onConfirm(): void {
+    const roleKey = this.selectedRoleKey() ?? undefined;
+    this.confirmed.emit(roleKey);
+  }
 }

@@ -61,10 +61,12 @@ export class EventService {
 
   joinEvent(
     eventId: string,
+    roleKey?: string,
   ): Observable<Participation & { isPaid?: boolean; costPerPerson?: number }> {
+    const body = roleKey ? { roleKey } : {};
     return this.http.post<Participation & { isPaid?: boolean; costPerPerson?: number }>(
       `${this.apiUrl}/${eventId}/join`,
-      {},
+      body,
     );
   }
 

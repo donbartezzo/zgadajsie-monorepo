@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,10 +20,18 @@ import { CoverImageService } from '../../../../core/services/cover-image.service
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
-import { DictionaryItem, City, Event, CoverImage } from '../../../../shared/types';
+import { DictionaryItem, City, Event, CoverImage, EventRoleConfig } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
-import { EventStatus } from '@zgadajsie/shared';
+import { EventStatus, getDisciplineSchema, DisciplineParticipantRoles } from '@zgadajsie/shared';
 import { isEventJoinable } from '../../../../shared/utils/event-time-status.util';
+
+interface RoleSlotConfig {
+  key: string;
+  title: string;
+  desc: string;
+  slots: number;
+  isDefault: boolean;
+}
 
 @Component({
   selector: 'app-event-form',
@@ -237,6 +252,68 @@ import { isEventJoinable } from '../../../../shared/utils/event-time-status.util
           </div>
         </app-card>
 
+        @if (rolesEnabled()) {
+        <app-card>
+          <div class="p-4 space-y-4">
+            <h3 class="text-sm font-semibold text-neutral-900">Role uczestników</h3>
+            <p class="text-xs text-neutral-500">
+              Określ liczbę miejsc dla każdej roli. Suma musi być równa maksymalnej liczbie
+              uczestników ({{ form.get('maxParticipants')?.value }}).
+            </p>
+
+            <div class="space-y-3">
+              @for (role of roleSlots(); track role.key) {
+              <div
+                class="flex items-center justify-between p-3 rounded-xl border"
+                [ngClass]="
+                  role.isDefault
+                    ? 'border-primary-200 bg-primary-50'
+                    : 'border-neutral-200 bg-white'
+                "
+              >
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-neutral-900">{{ role.title }}</span>
+                    @if (role.isDefault) {
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700"
+                      >domyślna</span
+                    >
+                    }
+                  </div>
+                  <p class="text-xs text-neutral-500 mt-0.5">{{ role.desc }}</p>
+                </div>
+                <div class="flex items-center gap-2 ml-4">
+                  @if (role.isDefault) {
+                  <span class="text-sm font-medium text-neutral-700 w-12 text-center">{{
+                    role.slots
+                  }}</span>
+                  } @else {
+                  <input
+                    type="number"
+                    [value]="role.slots"
+                    min="0"
+                    [max]="form.get('maxParticipants')?.value"
+                    (change)="updateRoleSlots(role.key, +$any($event.target).value)"
+                    class="w-16 rounded-lg border border-neutral-300 bg-white px-2 py-1 text-sm text-center text-neutral-900"
+                  />
+                  }
+                </div>
+              </div>
+              }
+            </div>
+
+            @if (roleSlotsSum() !== form.get('maxParticipants')?.value) {
+            <div class="text-xs text-danger-600 flex items-center gap-1">
+              <app-icon name="alert-triangle" size="xs" />
+              Suma slotów ({{ roleSlotsSum() }}) nie zgadza się z liczbą uczestników ({{
+                form.get('maxParticipants')?.value
+              }})
+            </div>
+            }
+          </div>
+        </app-card>
+        }
+
         <app-card>
           <div class="p-4 space-y-4">
             <h3 class="text-sm font-semibold text-neutral-900">Lokalizacja</h3>
@@ -353,6 +430,12 @@ export class EventFormComponent implements OnInit {
   readonly coverImagesLoading = signal(false);
   readonly selectedCoverImageId = signal<string | null>(null);
 
+  readonly disciplineRoles = signal<DisciplineParticipantRoles | null>(null);
+  readonly roleSlots = signal<RoleSlotConfig[]>([]);
+  readonly rolesEnabled = signal(false);
+
+  readonly roleSlotsSum = computed(() => this.roleSlots().reduce((sum, r) => sum + r.slots, 0));
+
   private eventId: string | null = null;
 
   readonly form = this.fb.group({
@@ -389,14 +472,23 @@ export class EventFormComponent implements OnInit {
       this.cities.set(cities);
     });
 
-    // Watch discipline changes to load cover images
+    // Watch discipline changes to load cover images and role schema
     this.form.get('disciplineId')?.valueChanges.subscribe((disciplineId) => {
       if (disciplineId) {
         this.loadCoverImages(disciplineId);
+        this.loadDisciplineRoles(disciplineId);
       } else {
         this.coverImages.set([]);
         this.selectedCoverImageId.set(null);
+        this.disciplineRoles.set(null);
+        this.roleSlots.set([]);
+        this.rolesEnabled.set(false);
       }
+    });
+
+    // Watch maxParticipants changes to adjust default role slots
+    this.form.get('maxParticipants')?.valueChanges.subscribe(() => {
+      this.recalculateDefaultRoleSlots();
     });
 
     this.eventId = this.route.snapshot.paramMap.get('id');
@@ -493,7 +585,7 @@ export class EventFormComponent implements OnInit {
     this.submitting.set(true);
 
     const val = this.form.getRawValue();
-    const payload: Partial<Event> = {
+    const payload: Partial<Event> & { roleConfig?: EventRoleConfig } = {
       title: val.title || undefined,
       description: val.description || undefined,
       disciplineId: val.disciplineId || undefined,
@@ -514,6 +606,7 @@ export class EventFormComponent implements OnInit {
       lng: val.lng || undefined,
       rules: this.formatRules(this.eventRules()),
       coverImageId: this.selectedCoverImageId() || undefined,
+      roleConfig: this.buildRoleConfig(),
     };
 
     const req$ = this.eventId
@@ -551,5 +644,100 @@ export class EventFormComponent implements OnInit {
         this.coverImagesLoading.set(false);
       },
     });
+  }
+
+  private loadDisciplineRoles(disciplineId: string): void {
+    const discipline = this.disciplines().find((d) => d.id === disciplineId);
+    if (!discipline?.slug) {
+      this.disciplineRoles.set(null);
+      this.roleSlots.set([]);
+      this.rolesEnabled.set(false);
+      return;
+    }
+
+    const schema = getDisciplineSchema(discipline.slug);
+    if (!schema?.participantRoles) {
+      this.disciplineRoles.set(null);
+      this.roleSlots.set([]);
+      this.rolesEnabled.set(false);
+      return;
+    }
+
+    this.disciplineRoles.set(schema.participantRoles);
+    this.initializeRoleSlots(schema.participantRoles);
+  }
+
+  private initializeRoleSlots(roles: DisciplineParticipantRoles): void {
+    const maxParticipants = this.form.get('maxParticipants')?.value || 10;
+    const specialSlotsSum = roles.special.reduce((sum, r) => sum + (r.slots || 0), 0);
+    const defaultSlots = Math.max(0, maxParticipants - specialSlotsSum);
+
+    const slots: RoleSlotConfig[] = [
+      {
+        key: roles.default.key,
+        title: roles.default.title,
+        desc: roles.default.desc,
+        slots: defaultSlots,
+        isDefault: true,
+      },
+      ...roles.special.map((r) => ({
+        key: r.key,
+        title: r.title,
+        desc: r.desc,
+        slots: r.slots || 0,
+        isDefault: false,
+      })),
+    ];
+
+    this.roleSlots.set(slots);
+    this.rolesEnabled.set(true);
+  }
+
+  private recalculateDefaultRoleSlots(): void {
+    if (!this.rolesEnabled()) return;
+
+    const maxParticipants = this.form.get('maxParticipants')?.value || 10;
+    const currentSlots = this.roleSlots();
+    const specialSlotsSum = currentSlots
+      .filter((r) => !r.isDefault)
+      .reduce((sum, r) => sum + r.slots, 0);
+    const defaultSlots = Math.max(0, maxParticipants - specialSlotsSum);
+
+    this.roleSlots.update((slots) =>
+      slots.map((s) => (s.isDefault ? { ...s, slots: defaultSlots } : s)),
+    );
+  }
+
+  updateRoleSlots(roleKey: string, newSlots: number): void {
+    const maxParticipants = this.form.get('maxParticipants')?.value || 10;
+
+    this.roleSlots.update((slots) => {
+      const updated = slots.map((s) => (s.key === roleKey ? { ...s, slots: newSlots } : s));
+      const specialSum = updated.filter((r) => !r.isDefault).reduce((sum, r) => sum + r.slots, 0);
+      const defaultSlots = Math.max(0, maxParticipants - specialSum);
+      return updated.map((s) => (s.isDefault ? { ...s, slots: defaultSlots } : s));
+    });
+  }
+
+  private buildRoleConfig(): EventRoleConfig | undefined {
+    if (!this.rolesEnabled() || this.roleSlots().length === 0) {
+      return undefined;
+    }
+
+    const discipline = this.disciplines().find(
+      (d) => d.id === this.form.get('disciplineId')?.value,
+    );
+    if (!discipline?.slug) return undefined;
+
+    return {
+      disciplineSlug: discipline.slug,
+      roles: this.roleSlots().map((r) => ({
+        key: r.key,
+        title: r.title,
+        desc: r.desc,
+        slots: r.slots,
+        isDefault: r.isDefault,
+      })),
+    };
   }
 }

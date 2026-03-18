@@ -1,4 +1,4 @@
-import { EventStatus } from '@zgadajsie/shared';
+import { EventDefaultableFields, EventStatus } from '@zgadajsie/shared';
 import { DictionaryItem } from './dictionary.interface';
 import { UserBrief } from './common.interface';
 import { CoverImage } from './cover-image.interface';
@@ -13,7 +13,33 @@ export interface CurrentUserAccess {
   isBannedByOrganizer?: boolean;
 }
 
-export interface Event {
+/**
+ * Konfiguracja roli w wydarzeniu (snapshot z schematu dyscypliny).
+ */
+export interface EventRole {
+  key: string;
+  title: string;
+  desc: string;
+  slots: number;
+  isDefault: boolean;
+}
+
+/**
+ * Konfiguracja ról dla wydarzenia (przechowywana jako JSON w Event.roleConfig).
+ */
+export interface EventRoleConfig {
+  disciplineSlug: string;
+  roles: EventRole[];
+}
+
+/**
+ * Event interface rozszerza pola z EventDefaultableFields dla spójności typów.
+ * - maxParticipants, gender: wymagane
+ * - minParticipants, ageMin, ageMax: opcjonalne
+ */
+export interface Event
+  extends Required<Pick<EventDefaultableFields, 'maxParticipants' | 'gender'>>,
+    Pick<EventDefaultableFields, 'minParticipants' | 'ageMin' | 'ageMax'> {
   id: string;
   title: string;
   description?: string;
@@ -26,11 +52,6 @@ export interface Event {
   startsAt: string;
   endsAt: string;
   costPerPerson: number;
-  minParticipants?: number;
-  maxParticipants: number;
-  ageMin?: number;
-  ageMax?: number;
-  gender: string;
   visibility: string;
   lotteryExecutedAt?: string | null;
   status: EventStatus;
@@ -43,6 +64,8 @@ export interface Event {
   parentEventId?: string;
   createdAt: string;
   updatedAt: string;
+
+  roleConfig?: EventRoleConfig | null;
 
   discipline?: DictionaryItem;
   facility?: DictionaryItem;
