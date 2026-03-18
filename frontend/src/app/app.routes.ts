@@ -54,77 +54,88 @@ export const appRoutes: Route[] = [
     data: { title: 'Wydarzenia', breadcrumb: BREADCRUMB_TO_HOME },
   },
 
-  // ── Public: event detail ──
+  // ── Event area (parent route for all event subpages) ──
   {
     path: 'w/:citySlug/:id',
     loadComponent: () =>
-      import('./features/event/pages/event/event.component').then((m) => m.EventComponent),
+      import('./features/event/pages/event-area/event-area.component').then(
+        (m) => m.EventAreaComponent,
+      ),
     resolve: { event: eventResolver },
-    data: { title: 'Wydarzenie', breadcrumb: { parent: '/w/:citySlug', label: 'Lista wydarzeń' } },
-  },
-
-  // ── Verified users: participants ──
-  {
-    path: 'w/:citySlug/:id/participants',
-    loadComponent: () =>
-      import('./features/event/pages/event-participants/event-participants.component').then(
-        (m) => m.EventParticipantsComponent,
-      ),
-    canActivate: [verifiedUserGuard],
-    data: {
-      showFooter: false,
-      showBorder: false,
-      contentClass: 'bg-white',
-      breadcrumb: BREADCRUMB_TO_EVENT,
-    },
-  },
-
-  // ── Verified users: chat with organizer ──
-  {
-    path: 'w/:citySlug/:id/host-chat',
-    loadComponent: () =>
-      import('./features/chat/pages/host-chat/host-chat.component').then(
-        (m) => m.HostChatComponent,
-      ),
-    canActivate: [verifiedUserGuard],
-    data: {
-      showFooter: false,
-      showBorder: false,
-      contentClass: 'bg-white',
-      breadcrumb: BREADCRUMB_TO_EVENT,
-    },
-  },
-
-  // ── Verified users: organizer private chat with participant ──
-  {
-    path: 'w/:citySlug/:id/host-chat/:userId',
-    loadComponent: () =>
-      import('./features/chat/pages/unified-chat/unified-chat.component').then(
-        (m) => m.UnifiedChatComponent,
-      ),
-    canActivate: [verifiedUserGuard],
-    data: {
-      isPrivate: true,
-      showFooter: false,
-      contentClass: 'bg-white',
-      breadcrumb: { parent: '/w/:citySlug/:id/host-chat', label: 'Konwersacje' },
-    },
-  },
-
-  // ── Participants: group chat ──
-  {
-    path: 'w/:citySlug/:id/chat',
-    loadComponent: () =>
-      import('./features/chat/pages/unified-chat/unified-chat.component').then(
-        (m) => m.UnifiedChatComponent,
-      ),
-    canActivate: [verifiedUserGuard, participantGuard],
-    data: {
-      showFooter: false,
-      showBorder: false,
-      contentClass: 'bg-white',
-      breadcrumb: BREADCRUMB_TO_EVENT,
-    },
+    children: [
+      // Event detail (default child)
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/event/pages/event-detail/event-detail.component').then(
+            (m) => m.EventDetailComponent,
+          ),
+        data: {
+          title: 'Wydarzenie',
+          breadcrumb: { parent: '/w/:citySlug', label: 'Lista wydarzeń' },
+        },
+      },
+      // Participants list
+      {
+        path: 'participants',
+        loadComponent: () =>
+          import('./features/event/pages/event-participants/event-participants.component').then(
+            (m) => m.EventParticipantsComponent,
+          ),
+        canActivate: [verifiedUserGuard],
+        data: {
+          showFooter: false,
+          showBorder: false,
+          contentClass: 'bg-white',
+          breadcrumb: BREADCRUMB_TO_EVENT,
+        },
+      },
+      // Chat with organizer (participant view) / Conversation list (organizer view)
+      {
+        path: 'host-chat',
+        loadComponent: () =>
+          import('./features/chat/pages/host-chat/host-chat.component').then(
+            (m) => m.HostChatComponent,
+          ),
+        canActivate: [verifiedUserGuard],
+        data: {
+          showFooter: false,
+          showBorder: false,
+          contentClass: 'bg-white',
+          breadcrumb: BREADCRUMB_TO_EVENT,
+        },
+      },
+      // Organizer private chat with specific participant
+      {
+        path: 'host-chat/:userId',
+        loadComponent: () =>
+          import('./features/chat/pages/unified-chat/unified-chat.component').then(
+            (m) => m.UnifiedChatComponent,
+          ),
+        canActivate: [verifiedUserGuard],
+        data: {
+          isPrivate: true,
+          showFooter: false,
+          contentClass: 'bg-white',
+          breadcrumb: { parent: '/w/:citySlug/:id/host-chat', label: 'Konwersacje' },
+        },
+      },
+      // Group chat (participants only)
+      {
+        path: 'chat',
+        loadComponent: () =>
+          import('./features/chat/pages/unified-chat/unified-chat.component').then(
+            (m) => m.UnifiedChatComponent,
+          ),
+        canActivate: [verifiedUserGuard, participantGuard],
+        data: {
+          showFooter: false,
+          showBorder: false,
+          contentClass: 'bg-white',
+          breadcrumb: BREADCRUMB_TO_EVENT,
+        },
+      },
+    ],
   },
 
   // ── Organizer: new event ──

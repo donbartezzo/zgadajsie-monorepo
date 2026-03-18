@@ -1,5 +1,11 @@
 import { Injectable, signal } from '@angular/core';
-import { Event as EventModel, ParticipantPaymentInfo } from '../../types';
+import {
+  Event as EventModel,
+  ParticipantPaymentInfo,
+  Participation,
+  ParticipantManageItem,
+  WaitingReason,
+} from '../../types';
 import { EventCountdown } from '../../utils/date.utils';
 
 export type OverlayType =
@@ -13,7 +19,10 @@ export type OverlayType =
   | 'notifications'
   | 'cancelPayment'
   | 'enrollmentDetails'
+  | 'participantDetail'
   | null;
+
+export type ParticipantDetailItem = Participation | ParticipantManageItem;
 
 @Injectable({
   providedIn: 'root',
@@ -26,6 +35,7 @@ export class BottomOverlaysService {
   private readonly loadingSignal = signal(false);
   private readonly isParticipantSignal = signal(false);
   private readonly participantStatusSignal = signal<string | null>(null);
+  private readonly waitingReasonSignal = signal<WaitingReason | null>(null);
   private readonly isOrganizerSignal = signal(false);
 
   // Callbacks for event-specific actions
@@ -36,6 +46,7 @@ export class BottomOverlaysService {
   private contactOrganizerCallback: (() => void) | null = null;
   private cancelEventCallback: (() => void) | null = null;
   private leaveCallback: (() => void) | null = null;
+  private rejoinCallback: (() => void) | null = null;
   private cancelPaymentCallback:
     | ((options: { refundAsVoucher: boolean; notifyUser: boolean }) => void)
     | null = null;
@@ -50,11 +61,16 @@ export class BottomOverlaysService {
   readonly cancelPayment = this.cancelPaymentSignal.asReadonly();
   readonly cancelPaymentUserName = this.cancelPaymentUserNameSignal.asReadonly();
 
+  // Participant detail context
+  private readonly selectedParticipantSignal = signal<ParticipantDetailItem | null>(null);
+  readonly selectedParticipant = this.selectedParticipantSignal.asReadonly();
+
   readonly active = this.activeSignal.asReadonly();
   readonly event = this.eventSignal.asReadonly();
   readonly loading = this.loadingSignal.asReadonly();
   readonly isParticipant = this.isParticipantSignal.asReadonly();
   readonly participantStatus = this.participantStatusSignal.asReadonly();
+  readonly waitingReason = this.waitingReasonSignal.asReadonly();
   readonly isOrganizer = this.isOrganizerSignal.asReadonly();
 
   open(type: OverlayType): void {
@@ -71,10 +87,7 @@ export class BottomOverlaysService {
 
   // ── Event context management ──
 
-  setEventContext(
-    event: EventModel | null,
-    isParticipant = false,
-  ): void {
+  setEventContext(event: EventModel | null, isParticipant = false): void {
     this.eventSignal.set(event);
     this.isParticipantSignal.set(isParticipant);
   }
@@ -83,8 +96,9 @@ export class BottomOverlaysService {
     this.isParticipantSignal.set(value);
   }
 
-  setParticipantStatus(status: string | null): void {
+  setParticipantStatus(status: string | null, waitingReason?: WaitingReason | null): void {
     this.participantStatusSignal.set(status);
+    this.waitingReasonSignal.set(waitingReason ?? null);
   }
 
   setIsOrganizer(value: boolean): void {
@@ -129,6 +143,10 @@ export class BottomOverlaysService {
     this.leaveCallback = callback;
   }
 
+  onRejoinRequested(callback: () => void): void {
+    this.rejoinCallback = callback;
+  }
+
   onCancelPaymentConfirmed(
     callback: (options: { refundAsVoucher: boolean; notifyUser: boolean }) => void,
   ): void {
@@ -139,6 +157,15 @@ export class BottomOverlaysService {
     this.cancelPaymentSignal.set(payment);
     this.cancelPaymentUserNameSignal.set(userName);
     this.open('cancelPayment');
+  }
+
+  openParticipantDetail(participant: ParticipantDetailItem): void {
+    this.selectedParticipantSignal.set(participant);
+    this.open('participantDetail');
+  }
+
+  clearParticipantDetail(): void {
+    this.selectedParticipantSignal.set(null);
   }
 
   confirmJoin(): void {
@@ -169,6 +196,10 @@ export class BottomOverlaysService {
     this.leaveCallback?.();
   }
 
+  handleRejoinRequested(): void {
+    this.rejoinCallback?.();
+  }
+
   handleCancelPayment(options: { refundAsVoucher: boolean; notifyUser: boolean }): void {
     this.cancelPaymentCallback?.(options);
   }
@@ -181,6 +212,7 @@ export class BottomOverlaysService {
     this.contactOrganizerCallback = null;
     this.cancelEventCallback = null;
     this.leaveCallback = null;
+    this.rejoinCallback = null;
     this.cancelPaymentCallback = null;
   }
 }

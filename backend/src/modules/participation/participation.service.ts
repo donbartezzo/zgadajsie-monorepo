@@ -10,12 +10,33 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
 import { PaymentsService } from '../payments/payments.service';
+import { SlotService } from '../slots/slot.service';
 import { EnrollmentEligibilityService } from './enrollment-eligibility.service';
 import { isEventJoinable } from '../events/event-time-status.util';
 import { getEnrollmentPhase } from '../events/enrollment-phase.util';
 
 const USER_SELECT = { id: true, displayName: true, avatarUrl: true, email: true };
 const MAX_GUESTS_PER_USER = 3;
+
+type ParticipationWithSlot = {
+  wantsIn: boolean;
+  withdrawnBy?: string | null;
+  slot?: { confirmed: boolean } | null;
+};
+
+function deriveStatus(p: ParticipationWithSlot): string {
+  if (!p.wantsIn) {
+    return p.withdrawnBy === 'ORGANIZER' ? 'REJECTED' : 'WITHDRAWN';
+  }
+  if (p.slot) {
+    return p.slot.confirmed ? 'CONFIRMED' : 'APPROVED';
+  }
+  return 'PENDING';
+}
+
+function withDerivedStatus<T extends ParticipationWithSlot>(p: T): T & { status: string } {
+  return { ...p, status: deriveStatus(p) };
+}
 
 @Injectable()
 export class ParticipationService {
@@ -27,6 +48,7 @@ export class ParticipationService {
     private emailService: EmailService,
     private pushService: PushService,
     private paymentsService: PaymentsService,
+    private slotService: SlotService,
     private eligibility: EnrollmentEligibilityService,
   ) {}
 
@@ -51,34 +73,40 @@ export class ParticipationService {
 
     const existing = await this.prisma.eventParticipation.findUnique({
       where: { eventId_userId: { eventId, userId } },
+      include: { slot: true },
     });
 
-    // Rejoin after WITHDRAWN
-    if (existing && existing.status === 'WITHDRAWN') {
+    // Rejoin after withdrawal
+    if (existing && !existing.wantsIn) {
       return this.handleRejoin(existing.id, event, userId, isPaid, phase);
     }
     if (existing) {
       throw new BadRequestException('Już uczestniczysz w tym wydarzeniu');
     }
 
-    // Organizer auto-confirmed
+    // Organizer auto-confirmed with slot
     if (event.organizerId === userId) {
-      const participation = await this.prisma.eventParticipation.create({
-        data: {
-          eventId,
-          userId,
-          status: 'CONFIRMED',
-          organizerPicked: true,
-          approvedAt: new Date(),
-        },
-        include: { user: { select: USER_SELECT } },
+      return this.prisma.$transaction(async (tx) => {
+        const participation = await tx.eventParticipation.create({
+          data: { eventId, userId, wantsIn: true },
+          include: { user: { select: USER_SELECT } },
+        });
+        await this.slotService.assignSlot(eventId, participation.id, true, tx);
+        const withSlot = await tx.eventParticipation.findUnique({
+          where: { id: participation.id },
+          include: { user: { select: USER_SELECT }, slot: true },
+        });
+        return {
+          ...withDerivedStatus(withSlot!),
+          isPaid,
+          costPerPerson: event.costPerPerson.toNumber(),
+        };
       });
-      return { ...participation, isPaid, costPerPerson: event.costPerPerson.toNumber() };
     }
 
-    // PRE_ENROLLMENT: always PENDING
+    // PRE_ENROLLMENT: always waiting (no slot)
     if (phase === 'PRE_ENROLLMENT') {
-      return this.createPending(eventId, userId, event, isPaid);
+      return this.createWaiting(eventId, userId, event, isPaid, 'PRE_ENROLLMENT');
     }
 
     // OPEN_ENROLLMENT: depends on eligibility + slot availability
@@ -126,40 +154,55 @@ export class ParticipationService {
       },
     });
 
-    // In open enrollment with free slots and organizer adding → auto CONFIRMED
-    if (phase === 'OPEN_ENROLLMENT' && isOrganizer) {
-      const slotsUsed = await this.countOccupiedSlots(eventId);
-      if (slotsUsed < event.maxParticipants) {
-        return this.prisma.eventParticipation.create({
-          data: {
-            eventId,
-            userId: guestUser.id,
-            addedByUserId,
-            isGuest: true,
-            status: 'CONFIRMED',
-            approvedAt: new Date(),
-          },
-          include: { user: { select: USER_SELECT } },
+    // In open enrollment with free slots → assign slot (confirmed=false, user must confirm)
+    if (phase === 'OPEN_ENROLLMENT') {
+      const freeSlots = await this.slotService.getFreeSlotCount(eventId);
+      if (freeSlots > 0) {
+        return this.prisma.$transaction(async (tx) => {
+          const participation = await tx.eventParticipation.create({
+            data: {
+              eventId,
+              userId: guestUser.id,
+              addedByUserId,
+              isGuest: true,
+              wantsIn: true,
+            },
+            include: { user: { select: USER_SELECT } },
+          });
+          // confirmed=false because user (host) must confirm
+          await this.slotService.assignSlot(eventId, participation.id, false, tx);
+          const withSlot = await tx.eventParticipation.findUnique({
+            where: { id: participation.id },
+            include: { user: { select: USER_SELECT }, slot: true },
+          });
+          return withDerivedStatus(withSlot!);
         });
       }
     }
 
-    return this.prisma.eventParticipation.create({
+    // No free slots or pre-enrollment → waiting list
+    const participation = await this.prisma.eventParticipation.create({
       data: {
         eventId,
         userId: guestUser.id,
         addedByUserId,
         isGuest: true,
-        status: 'PENDING',
+        wantsIn: true,
       },
-      include: { user: { select: USER_SELECT } },
+      include: { user: { select: USER_SELECT }, slot: true },
     });
+    return withDerivedStatus(participation);
   }
 
-  async approve(participationId: string, organizerUserId: string) {
+  /**
+   * Organizer assigns a slot to a waiting participant.
+   * In PRE_ENROLLMENT: no notification (user learns after lottery).
+   * In OPEN_ENROLLMENT: notification sent.
+   */
+  async assignSlotToParticipant(participationId: string, organizerUserId: string) {
     const participation = await this.prisma.eventParticipation.findUnique({
       where: { id: participationId },
-      include: { event: true },
+      include: { event: true, slot: true },
     });
     if (!participation) {
       throw new NotFoundException('Zgłoszenie nie znalezione');
@@ -167,36 +210,50 @@ export class ParticipationService {
     if (participation.event.organizerId !== organizerUserId) {
       throw new ForbiddenException('Nie jesteś organizatorem');
     }
-    if (participation.status !== 'PENDING') {
-      throw new BadRequestException('Tylko zgłoszenia ze statusem PENDING mogą być zatwierdzone');
+    if (!participation.wantsIn) {
+      throw new BadRequestException('Uczestnik wypisał się z wydarzenia');
+    }
+    if (participation.slot) {
+      throw new BadRequestException('Uczestnik już ma przydzielone miejsce');
     }
 
-    const slotsUsed = await this.countOccupiedSlots(participation.eventId);
-    if (slotsUsed >= participation.event.maxParticipants) {
+    const freeSlots = await this.slotService.getFreeSlotCount(participation.eventId);
+    if (freeSlots === 0) {
       throw new BadRequestException('Brak wolnych miejsc');
     }
 
-    const updated = await this.prisma.eventParticipation.update({
+    const phase = getEnrollmentPhase(participation.event);
+
+    // Assign slot (confirmed=false, user must confirm)
+    await this.slotService.assignSlot(participation.eventId, participationId, false);
+
+    const updated = await this.prisma.eventParticipation.findUnique({
       where: { id: participationId },
-      data: { status: 'APPROVED', approvedAt: new Date() },
       include: {
         user: { select: USER_SELECT },
         event: { select: { id: true, title: true } },
+        slot: true,
       },
     });
 
-    const recipientId = updated.isGuest ? updated.addedByUserId : updated.userId;
-    if (recipientId) {
-      await this.notifyStatusChange(recipientId, updated.event.title, 'APPROVED', updated.eventId);
+    // Notify only in OPEN_ENROLLMENT (not during pre-enrollment)
+    if (phase === 'OPEN_ENROLLMENT' && updated) {
+      const recipientId = updated.isGuest ? updated.addedByUserId : updated.userId;
+      if (recipientId) {
+        await this.notifySlotAssigned(recipientId, updated.event.title, updated.eventId);
+      }
     }
 
     return updated;
   }
 
-  async confirm(participationId: string, currentUserId: string) {
+  /**
+   * User confirms their slot (acknowledges they want to participate).
+   */
+  async confirmSlot(participationId: string, currentUserId: string) {
     const participation = await this.prisma.eventParticipation.findUnique({
       where: { id: participationId },
-      include: { event: true },
+      include: { event: true, slot: true },
     });
     if (!participation) {
       throw new NotFoundException('Zgłoszenie nie znalezione');
@@ -204,31 +261,35 @@ export class ParticipationService {
 
     this.assertCanActOnParticipation(participation, currentUserId);
 
-    if (participation.status !== 'APPROVED') {
-      throw new BadRequestException('Tylko zgłoszenia ze statusem APPROVED mogą być potwierdzone');
+    if (!participation.wantsIn) {
+      throw new BadRequestException('Uczestnik wypisał się z wydarzenia');
+    }
+    if (!participation.slot) {
+      throw new BadRequestException('Nie masz przydzielonego miejsca');
+    }
+    if (participation.slot.confirmed) {
+      throw new BadRequestException('Miejsce jest już potwierdzone');
     }
 
-    const updated = await this.prisma.eventParticipation.update({
+    await this.slotService.confirmSlot(participationId);
+
+    return this.prisma.eventParticipation.findUnique({
       where: { id: participationId },
-      data: { status: 'CONFIRMED' },
       include: {
         user: { select: USER_SELECT },
         event: { select: { id: true, title: true } },
+        slot: true,
       },
     });
-
-    const recipientId = updated.isGuest ? updated.addedByUserId : updated.userId;
-    if (recipientId) {
-      await this.notifyStatusChange(recipientId, updated.event.title, 'CONFIRMED', updated.eventId);
-    }
-
-    return updated;
   }
 
-  async reject(participationId: string, organizerUserId: string) {
+  /**
+   * Organizer releases a participant's slot (removes them from event).
+   */
+  async releaseSlotFromParticipant(participationId: string, organizerUserId: string) {
     const participation = await this.prisma.eventParticipation.findUnique({
       where: { id: participationId },
-      include: { event: true },
+      include: { event: true, slot: true },
     });
     if (!participation) {
       throw new NotFoundException('Zgłoszenie nie znalezione');
@@ -237,29 +298,54 @@ export class ParticipationService {
       throw new ForbiddenException('Nie jesteś organizatorem');
     }
 
-    const updated = await this.prisma.eventParticipation.update({
+    const hadSlot = !!participation.slot;
+
+    // Transaction: set wantsIn=false + release slot
+    await this.prisma.$transaction(async (tx) => {
+      await tx.eventParticipation.update({
+        where: { id: participationId },
+        data: { wantsIn: false, withdrawnBy: 'ORGANIZER' },
+      });
+      if (hadSlot) {
+        await this.slotService.releaseSlot(participationId, tx);
+      }
+    });
+
+    // Cleanup payment intents
+    await this.paymentsService.cleanupIntents(participationId, participation.event.organizerId);
+
+    const updated = await this.prisma.eventParticipation.findUnique({
       where: { id: participationId },
-      data: { status: 'REJECTED' },
       include: {
         user: { select: USER_SELECT },
         event: { select: { id: true, title: true } },
+        slot: true,
       },
     });
 
-    const recipientId = updated.isGuest ? updated.addedByUserId : updated.userId;
-    if (recipientId) {
-      await this.notifyStatusChange(recipientId, updated.event.title, 'REJECTED', updated.eventId);
+    // Notify removed user
+    if (updated) {
+      const recipientId = updated.isGuest ? updated.addedByUserId : updated.userId;
+      if (recipientId) {
+        await this.notifyRemoved(recipientId, updated.event.title, updated.eventId);
+      }
     }
 
-    this.promoteNextPending(updated.eventId, participation.event);
+    // Notify waiting participants about freed slot
+    if (hadSlot) {
+      this.notifyWaitingAboutFreeSlot(participation.eventId, participation.event.title);
+    }
 
     return updated;
   }
 
+  /**
+   * User leaves the event voluntarily.
+   */
   async leave(participationId: string, currentUserId: string) {
     const participation = await this.prisma.eventParticipation.findUnique({
       where: { id: participationId },
-      include: { event: true },
+      include: { event: true, slot: true },
     });
     if (!participation) {
       throw new NotFoundException('Nie uczestniczysz w tym wydarzeniu');
@@ -267,23 +353,35 @@ export class ParticipationService {
 
     this.assertCanActOnParticipation(participation, currentUserId);
 
-    if (participation.status === 'WITHDRAWN' || participation.status === 'REJECTED') {
-      throw new BadRequestException('To zgłoszenie jest już nieaktywne');
+    if (!participation.wantsIn) {
+      throw new BadRequestException('Już wypisałeś się z tego wydarzenia');
     }
 
-    await this.paymentsService.cleanupIntents(participation.id, participation.event.organizerId);
+    const hadSlot = !!participation.slot;
 
-    const result = await this.prisma.eventParticipation.update({
-      where: { id: participation.id },
-      data: { status: 'WITHDRAWN', organizerPicked: false },
+    // Transaction: set wantsIn=false + release slot
+    await this.prisma.$transaction(async (tx) => {
+      await tx.eventParticipation.update({
+        where: { id: participationId },
+        data: { wantsIn: false, withdrawnBy: 'USER' },
+      });
+      if (hadSlot) {
+        await this.slotService.releaseSlot(participationId, tx);
+      }
     });
 
-    const hadSlot = ['APPROVED', 'CONFIRMED'].includes(participation.status);
+    // Cleanup payment intents
+    await this.paymentsService.cleanupIntents(participationId, participation.event.organizerId);
+
+    // Notify waiting participants about freed slot
     if (hadSlot) {
-      this.promoteNextPending(participation.eventId, participation.event);
+      this.notifyWaitingAboutFreeSlot(participation.eventId, participation.event.title);
     }
 
-    return result;
+    return this.prisma.eventParticipation.findUnique({
+      where: { id: participationId },
+      include: { slot: true },
+    });
   }
 
   async getActiveGuestsForHost(eventId: string, hostUserId: string) {
@@ -292,40 +390,9 @@ export class ParticipationService {
         eventId,
         addedByUserId: hostUserId,
         isGuest: true,
-        status: { notIn: ['WITHDRAWN', 'REJECTED'] },
+        wantsIn: true,
       },
-      include: { user: { select: USER_SELECT } },
-    });
-  }
-
-  async setOrganizerPick(participationId: string, organizerUserId: string, picked: boolean) {
-    const participation = await this.prisma.eventParticipation.findUnique({
-      where: { id: participationId },
-      include: { event: true },
-    });
-    if (!participation) {
-      throw new NotFoundException('Zgłoszenie nie znalezione');
-    }
-    if (participation.event.organizerId !== organizerUserId) {
-      throw new ForbiddenException('Nie jesteś organizatorem');
-    }
-    if (participation.status !== 'PENDING') {
-      throw new BadRequestException('Pre-pick dostępny tylko dla zgłoszeń PENDING');
-    }
-
-    if (picked) {
-      const pickedCount = await this.prisma.eventParticipation.count({
-        where: { eventId: participation.eventId, organizerPicked: true },
-      });
-      if (pickedCount >= participation.event.maxParticipants) {
-        throw new BadRequestException('Wszystkie miejsca zostały już przydzielone');
-      }
-    }
-
-    return this.prisma.eventParticipation.update({
-      where: { id: participationId },
-      data: { organizerPicked: picked },
-      include: { user: { select: USER_SELECT } },
+      include: { user: { select: USER_SELECT }, slot: true },
     });
   }
 
@@ -335,7 +402,7 @@ export class ParticipationService {
   ): Promise<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
     const participation = await this.prisma.eventParticipation.findUnique({
       where: { id: participationId },
-      include: { event: true },
+      include: { event: true, slot: true },
     });
     if (!participation) {
       throw new NotFoundException('Zgłoszenie nie znalezione');
@@ -343,8 +410,11 @@ export class ParticipationService {
 
     this.assertCanActOnParticipation(participation, currentUserId);
 
-    if (participation.status !== 'APPROVED') {
-      throw new BadRequestException('Płatność dostępna tylko dla zatwierdzonych zgłoszeń');
+    // Must have a slot to pay
+    if (!participation.slot) {
+      throw new BadRequestException(
+        'Płatność dostępna tylko dla uczestników z przydzielonym miejscem',
+      );
     }
 
     const event = participation.event;
@@ -383,21 +453,20 @@ export class ParticipationService {
 
   // ─── Private helpers ──────────────────────────────────────────────────────
 
-  private async countOccupiedSlots(eventId: string): Promise<number> {
-    return this.prisma.eventParticipation.count({
-      where: { eventId, status: { in: ['APPROVED', 'CONFIRMED'] } },
-    });
-  }
-
-  private async createPending(
+  /**
+   * Create a waiting participation (no slot assigned).
+   * @param waitingReason - Why user didn't get automatic slot: NEW_USER, BANNED, NO_SLOTS, PRE_ENROLLMENT
+   */
+  private async createWaiting(
     eventId: string,
     userId: string,
     event: { organizerId: string; costPerPerson: { toNumber(): number }; title: string },
     isPaid: boolean,
+    waitingReason?: 'NEW_USER' | 'BANNED' | 'NO_SLOTS' | 'PRE_ENROLLMENT',
   ) {
     const participation = await this.prisma.eventParticipation.create({
-      data: { eventId, userId, status: 'PENDING' },
-      include: { user: { select: USER_SELECT } },
+      data: { eventId, userId, wantsIn: true },
+      include: { user: { select: USER_SELECT }, slot: true },
     });
 
     const organizer = await this.prisma.user.findUnique({
@@ -419,9 +488,17 @@ export class ParticipationService {
       );
     }
 
-    return { ...participation, isPaid, costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0 };
+    return {
+      ...withDerivedStatus(participation),
+      isPaid,
+      costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0,
+      waitingReason: waitingReason ?? null,
+    };
   }
 
+  /**
+   * Handle open enrollment join — assign slot if eligible and available.
+   */
   private async handleOpenEnrollmentJoin(
     eventId: string,
     userId: string,
@@ -438,32 +515,53 @@ export class ParticipationService {
     },
     isPaid: boolean,
   ) {
-    const eligible = await this.eligibility.isEligibleForOpenEnrollment(userId, event.organizerId);
+    const [isBanned, isNew] = await Promise.all([
+      this.eligibility.isBannedByOrganizer(userId, event.organizerId),
+      this.eligibility.isNewUser(userId, event.organizerId),
+    ]);
 
-    if (!eligible) {
-      return this.createPending(eventId, userId, event, isPaid);
+    // Banned users go to waiting list (organizer will reject)
+    if (isBanned) {
+      return this.createWaiting(eventId, userId, event, isPaid, 'BANNED');
     }
 
-    const slotsUsed = await this.countOccupiedSlots(eventId);
-    if (slotsUsed >= event.maxParticipants) {
-      return this.createPending(eventId, userId, event, isPaid);
+    // New users need organizer approval
+    if (isNew) {
+      return this.createWaiting(eventId, userId, event, isPaid, 'NEW_USER');
     }
 
-    if (isPaid) {
-      const participation = await this.prisma.eventParticipation.create({
-        data: { eventId, userId, status: 'APPROVED', approvedAt: new Date() },
+    const freeSlots = await this.slotService.getFreeSlotCount(eventId);
+    if (freeSlots === 0) {
+      return this.createWaiting(eventId, userId, event, isPaid, 'NO_SLOTS');
+    }
+
+    // Eligible + free slot → assign slot (confirmed=true for free events, false for paid)
+    return this.prisma.$transaction(async (tx) => {
+      const participation = await tx.eventParticipation.create({
+        data: { eventId, userId, wantsIn: true },
         include: { user: { select: USER_SELECT } },
       });
-      return { ...participation, isPaid, costPerPerson: event.costPerPerson.toNumber() };
-    }
 
-    const participation = await this.prisma.eventParticipation.create({
-      data: { eventId, userId, status: 'CONFIRMED', approvedAt: new Date() },
-      include: { user: { select: USER_SELECT } },
+      // For free events, auto-confirm. For paid, user must pay first.
+      const confirmed = !isPaid;
+      await this.slotService.assignSlot(eventId, participation.id, confirmed, tx);
+
+      const withSlot = await tx.eventParticipation.findUnique({
+        where: { id: participation.id },
+        include: { user: { select: USER_SELECT }, slot: true },
+      });
+
+      return {
+        ...withDerivedStatus(withSlot!),
+        isPaid,
+        costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0,
+      };
     });
-    return { ...participation, isPaid, costPerPerson: 0 };
   }
 
+  /**
+   * Handle rejoin after withdrawal.
+   */
   private async handleRejoin(
     participationId: string,
     event: {
@@ -481,41 +579,62 @@ export class ParticipationService {
     isPaid: boolean,
     phase: ReturnType<typeof getEnrollmentPhase>,
   ) {
+    // Reset to wanting-in state
     const updated = await this.prisma.eventParticipation.update({
       where: { id: participationId },
-      data: { status: 'PENDING', organizerPicked: false, approvedAt: null },
-      include: { user: { select: USER_SELECT } },
+      data: { wantsIn: true, withdrawnBy: null },
+      include: { user: { select: USER_SELECT }, slot: true },
     });
 
-    if (phase !== 'OPEN_ENROLLMENT') {
-      return { ...updated, isPaid, costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0 };
-    }
-
-    const eligible = await this.eligibility.isEligibleForOpenEnrollment(userId, event.organizerId);
-    if (!eligible) {
-      return { ...updated, isPaid, costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0 };
-    }
-
-    const slotsUsed = await this.countOccupiedSlots(event.id);
-    if (slotsUsed >= event.maxParticipants) {
-      return { ...updated, isPaid, costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0 };
-    }
-
-    if (isPaid) {
-      const approved = await this.prisma.eventParticipation.update({
+    // Organizer always gets auto-confirmed slot on rejoin
+    if (event.organizerId === userId) {
+      await this.slotService.assignSlot(event.id, participationId, true);
+      const withSlot = await this.prisma.eventParticipation.findUnique({
         where: { id: participationId },
-        data: { status: 'APPROVED', approvedAt: new Date() },
-        include: { user: { select: USER_SELECT } },
+        include: { user: { select: USER_SELECT }, slot: true },
       });
-      return { ...approved, isPaid, costPerPerson: event.costPerPerson.toNumber() };
+      return {
+        ...withDerivedStatus(withSlot!),
+        isPaid,
+        costPerPerson: event.costPerPerson.toNumber(),
+      };
     }
 
-    const confirmed = await this.prisma.eventParticipation.update({
+    // In pre-enrollment, stay as waiting
+    if (phase !== 'OPEN_ENROLLMENT') {
+      return {
+        ...withDerivedStatus(updated),
+        isPaid,
+        costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0,
+        waitingReason: 'PRE_ENROLLMENT' as const,
+      };
+    }
+
+    // Rejoin skips eligibility check — user was already accepted before
+    const freeSlots = await this.slotService.getFreeSlotCount(event.id);
+    if (freeSlots === 0) {
+      return {
+        ...withDerivedStatus(updated),
+        isPaid,
+        costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0,
+        waitingReason: 'NO_SLOTS' as const,
+      };
+    }
+
+    // Assign slot
+    const confirmed = !isPaid;
+    await this.slotService.assignSlot(event.id, participationId, confirmed);
+
+    const withSlot = await this.prisma.eventParticipation.findUnique({
       where: { id: participationId },
-      data: { status: 'CONFIRMED', approvedAt: new Date() },
-      include: { user: { select: USER_SELECT } },
+      include: { user: { select: USER_SELECT }, slot: true },
     });
-    return { ...confirmed, isPaid, costPerPerson: 0 };
+
+    return {
+      ...withDerivedStatus(withSlot!),
+      isPaid,
+      costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0,
+    };
   }
 
   private assertCanActOnParticipation(
@@ -530,69 +649,12 @@ export class ParticipationService {
     }
   }
 
-  private promoteNextPending(
-    eventId: string,
-    event: { costPerPerson: { toNumber(): number }; maxParticipants: number; title: string },
-  ): void {
-    setImmediate(async () => {
-      try {
-        const slotsUsed = await this.countOccupiedSlots(eventId);
-        if (slotsUsed >= event.maxParticipants) return;
-
-        const isPaid = event.costPerPerson.toNumber() > 0;
-        const nextStatus = isPaid ? 'APPROVED' : 'CONFIRMED';
-
-        const nextPending = await this.prisma.eventParticipation.findFirst({
-          where: { eventId, status: 'PENDING' },
-          orderBy: { createdAt: 'asc' },
-          include: { user: { select: USER_SELECT } },
-        });
-
-        if (nextPending) {
-          await this.prisma.eventParticipation.update({
-            where: { id: nextPending.id },
-            data: { status: nextStatus, approvedAt: new Date() },
-          });
-
-          const recipientId = nextPending.isGuest ? nextPending.addedByUserId : nextPending.userId;
-          if (recipientId) {
-            await this.notifyStatusChange(recipientId, event.title, nextStatus, eventId);
-          }
-          this.logger.log(
-            `Auto-promoted participation ${nextPending.id} to ${nextStatus} for event ${eventId}`,
-          );
-        }
-
-        // Notify remaining PENDING users about the freed spot
-        const remainingPending = await this.prisma.eventParticipation.findMany({
-          where: { eventId, status: 'PENDING', id: { not: nextPending?.id ?? '' } },
-          include: { user: { select: USER_SELECT } },
-        });
-        for (const p of remainingPending) {
-          const rid = p.isGuest ? p.addedByUserId : p.userId;
-          if (rid) {
-            try {
-              await this.pushService.notifyParticipationStatus(
-                rid,
-                event.title,
-                'SPOT_AVAILABLE',
-                eventId,
-              );
-            } catch {
-              // best-effort notification
-            }
-          }
-        }
-      } catch (err) {
-        this.logger.error(`Failed to auto-promote pending for event ${eventId}: ${err}`);
-      }
-    });
-  }
-
-  private async notifyStatusChange(
+  /**
+   * Notify user that they got a slot assigned.
+   */
+  private async notifySlotAssigned(
     recipientId: string,
     eventTitle: string,
-    status: string,
     eventId: string,
   ): Promise<void> {
     try {
@@ -603,15 +665,87 @@ export class ParticipationService {
       if (!user) {
         return;
       }
-      await this.pushService.notifyParticipationStatus(recipientId, eventTitle, status, eventId);
+      await this.pushService.notifyParticipationStatus(
+        recipientId,
+        eventTitle,
+        'SLOT_ASSIGNED',
+        eventId,
+      );
       await this.emailService.sendParticipationStatusEmail(
         user.email,
         user.displayName,
         eventTitle,
-        status,
+        'SLOT_ASSIGNED',
       );
     } catch (err) {
-      this.logger.error(`Failed to notify status change: ${err}`);
+      this.logger.error(`Failed to notify slot assigned: ${err}`);
     }
+  }
+
+  /**
+   * Notify user that they were removed from event.
+   */
+  private async notifyRemoved(
+    recipientId: string,
+    eventTitle: string,
+    eventId: string,
+  ): Promise<void> {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: recipientId },
+        select: { email: true, displayName: true },
+      });
+      if (!user) {
+        return;
+      }
+      await this.pushService.notifyParticipationStatus(recipientId, eventTitle, 'REMOVED', eventId);
+      await this.emailService.sendParticipationStatusEmail(
+        user.email,
+        user.displayName,
+        eventTitle,
+        'REMOVED',
+      );
+    } catch (err) {
+      this.logger.error(`Failed to notify removed: ${err}`);
+    }
+  }
+
+  /**
+   * Notify all waiting participants that a slot became available.
+   * Fire-and-forget, best effort.
+   */
+  private notifyWaitingAboutFreeSlot(eventId: string, eventTitle: string): void {
+    setImmediate(async () => {
+      try {
+        const waiting = await this.prisma.eventParticipation.findMany({
+          where: {
+            eventId,
+            wantsIn: true,
+            slot: null,
+          },
+          include: { user: { select: USER_SELECT } },
+        });
+
+        for (const p of waiting) {
+          const recipientId = p.isGuest ? p.addedByUserId : p.userId;
+          if (recipientId) {
+            try {
+              await this.pushService.notifyParticipationStatus(
+                recipientId,
+                eventTitle,
+                'SPOT_AVAILABLE',
+                eventId,
+              );
+            } catch {
+              // best-effort notification
+            }
+          }
+        }
+
+        this.logger.log(`Notified ${waiting.length} waiting participants about free slot`);
+      } catch (err) {
+        this.logger.error(`Failed to notify waiting about free slot: ${err}`);
+      }
+    });
   }
 }

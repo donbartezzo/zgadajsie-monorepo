@@ -19,6 +19,7 @@ import { VouchersModule } from '../modules/vouchers/vouchers.module';
 import { CoverImagesModule } from '../modules/cover-images/cover-images.module';
 import { AnnouncementsModule } from '../modules/announcements/announcements.module';
 import { CitySubscriptionsModule } from '../modules/city-subscriptions/city-subscriptions.module';
+import { SlotModule } from '../modules/slots/slot.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { CitySubscriptionsModule } from '../modules/city-subscriptions/city-subs
     CoverImagesModule,
     AnnouncementsModule,
     CitySubscriptionsModule,
+    SlotModule,
   ],
   controllers: [AppController],
   providers: [AppService],

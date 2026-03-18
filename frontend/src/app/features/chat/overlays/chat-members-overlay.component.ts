@@ -54,8 +54,7 @@ import { ChatMember } from '../../../shared/types';
  } @else {
  <span class="text-[10px] text-neutral-400">
  @switch (m.status) { @case ('ACCEPTED') { Zaakceptowany } @case ('APPLIED') {
- Zgłoszony } @case ('RESERVE') { Rezerwa } @case ('PENDING_PAYMENT') { Oczekuje na
- płatność } @default { {{ m.status }} } }
+ Zgłoszony } @case ('PENDING_PAYMENT') { Oczekuje na płatność } @default { {{ m.status }} } }
  </span>
  }
  </div>

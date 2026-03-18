@@ -26,6 +26,9 @@ module.exports = {
       },
     },
     extend: {
+      spacing: {
+        18: '4.5rem', // 72px - for xl avatar size
+      },
       maxWidth: {
         app: 'var(--app-max-width)',
       },

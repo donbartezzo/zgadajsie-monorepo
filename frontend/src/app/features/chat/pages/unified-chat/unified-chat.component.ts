@@ -72,36 +72,35 @@ export class UnifiedChatComponent extends BaseChatComponent implements OnInit {
     this.initBaseData();
     this.isPrivate = !!this.route.snapshot.data['isPrivate'];
 
-    this.eventService.getEvent(this.eventId).subscribe({
-      next: (e) => {
-        this.event.set(e);
-        this.organizerId.set(e.organizerId);
-        this.isOrganizer.set(e.organizerId === this.currentUserId);
+    // Event data comes from EventAreaService (loaded by parent EventAreaComponent)
+    const e = this.event();
+    if (e) {
+      this.organizerId.set(e.organizerId);
+      this.isOrganizer.set(e.organizerId === this.currentUserId);
+    }
 
-        if (this.isPrivate) {
-          const slug = e.city?.slug;
-          if (e.organizerId !== this.currentUserId) {
-            this.router.navigate(['/w', slug, this.eventId, 'host-chat']);
-            return;
-          }
+    if (this.isPrivate) {
+      const slug = this.eventArea.citySlug;
+      const organizerId = e?.organizerId;
 
-          this.otherUserId = this.route.snapshot.paramMap.get('userId') ?? '';
+      if (organizerId !== this.currentUserId) {
+        this.router.navigate(['/w', slug, this.eventId, 'host-chat']);
+        return;
+      }
 
-          if (!this.otherUserId || this.otherUserId === this.currentUserId) {
-            this.router.navigate(['/w', slug, this.eventId, 'host-chat']);
-            return;
-          }
+      this.otherUserId = this.route.snapshot.paramMap.get('userId') ?? '';
 
-          this.initPrivateChat();
-        }
-      },
-    });
+      if (!this.otherUserId || this.otherUserId === this.currentUserId) {
+        this.router.navigate(['/w', slug, this.eventId, 'host-chat']);
+        return;
+      }
 
-    this.loadMemberCount();
-
-    if (!this.isPrivate) {
+      this.initPrivateChat();
+    } else {
       this.initGroupChat();
     }
+
+    this.loadMemberCount();
   }
 
   send(content: string): void {

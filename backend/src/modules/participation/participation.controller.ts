@@ -25,19 +25,19 @@ export class ParticipationController {
     return this.participationService.joinGuest(eventId, user.id, dto.displayName);
   }
 
-  @Post('participations/:id/approve')
-  approve(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.approve(id, user.id);
+  @Post('participations/:id/assign-slot')
+  assignSlot(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.participationService.assignSlotToParticipant(id, user.id);
   }
 
-  @Post('participations/:id/confirm')
-  confirm(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.confirm(id, user.id);
+  @Post('participations/:id/confirm-slot')
+  confirmSlot(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.participationService.confirmSlot(id, user.id);
   }
 
-  @Post('participations/:id/reject')
-  reject(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.reject(id, user.id);
+  @Post('participations/:id/release-slot')
+  releaseSlot(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.participationService.releaseSlotFromParticipant(id, user.id);
   }
 
   @Post('participations/:id/leave')
@@ -48,15 +48,6 @@ export class ParticipationController {
   @Post('participations/:id/pay')
   pay(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.participationService.initiateEventPayment(id, user.id);
-  }
-
-  @Post('participations/:id/organizer-pick')
-  setOrganizerPick(
-    @Param('id') id: string,
-    @CurrentUser() user: AuthUser,
-    @Body('picked') picked: boolean,
-  ) {
-    return this.participationService.setOrganizerPick(id, user.id, picked);
   }
 
   @Get('events/:eventId/my-guests')

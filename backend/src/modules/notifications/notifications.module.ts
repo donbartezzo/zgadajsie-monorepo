@@ -8,9 +8,10 @@ import { PushService } from './push.service';
 import { EventReminderCron } from './event-reminder.cron';
 import { EnrollmentLotteryCron } from './enrollment-lottery.cron';
 import { ApprovalReminderCron } from './approval-reminder.cron';
+import { SlotModule } from '../slots/slot.module';
 
 @Module({
-  imports: [ScheduleModule.forRoot()],
+  imports: [ScheduleModule.forRoot(), SlotModule],
   controllers: [NotificationsController],
   providers: [
     NotificationsService,

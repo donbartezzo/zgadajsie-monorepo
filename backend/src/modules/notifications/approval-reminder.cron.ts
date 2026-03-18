@@ -20,13 +20,16 @@ export class ApprovalReminderCron {
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const twentyFourAndHalfHoursAgo = new Date(now.getTime() - 24.5 * 60 * 60 * 1000);
 
-    // Find APPROVED participations that were approved ~24h ago and not yet confirmed
+    // Find participations with slot assigned ~24h ago but not yet confirmed (pending payment)
     const participations = await this.prisma.eventParticipation.findMany({
       where: {
-        status: 'APPROVED',
-        approvedAt: {
-          gte: twentyFourAndHalfHoursAgo,
-          lt: twentyFourHoursAgo,
+        wantsIn: true,
+        slot: {
+          confirmed: false,
+          assignedAt: {
+            gte: twentyFourAndHalfHoursAgo,
+            lt: twentyFourHoursAgo,
+          },
         },
         event: { status: 'ACTIVE' },
       },

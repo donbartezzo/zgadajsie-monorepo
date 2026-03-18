@@ -88,31 +88,24 @@ export class EventService {
     );
   }
 
-  approveParticipation(participationId: string): Observable<Participation> {
+  assignSlot(participationId: string): Observable<Participation> {
     return this.http.post<Participation>(
-      `${environment.apiUrl}/participations/${participationId}/approve`,
+      `${environment.apiUrl}/participations/${participationId}/assign-slot`,
       {},
     );
   }
 
-  confirmParticipation(participationId: string): Observable<Participation> {
+  confirmSlot(participationId: string): Observable<Participation> {
     return this.http.post<Participation>(
-      `${environment.apiUrl}/participations/${participationId}/confirm`,
+      `${environment.apiUrl}/participations/${participationId}/confirm-slot`,
       {},
     );
   }
 
-  rejectParticipation(participationId: string): Observable<Participation> {
+  releaseSlot(participationId: string): Observable<Participation> {
     return this.http.post<Participation>(
-      `${environment.apiUrl}/participations/${participationId}/reject`,
+      `${environment.apiUrl}/participations/${participationId}/release-slot`,
       {},
-    );
-  }
-
-  setOrganizerPick(participationId: string, picked: boolean): Observable<Participation> {
-    return this.http.post<Participation>(
-      `${environment.apiUrl}/participations/${participationId}/organizer-pick`,
-      { picked },
     );
   }
 
@@ -125,9 +118,7 @@ export class EventService {
   }
 
   getParticipantsManage(eventId: string): Observable<ParticipantManageItem[]> {
-    return this.http.get<ParticipantManageItem[]>(
-      `${this.apiUrl}/${eventId}/participants/manage`,
-    );
+    return this.http.get<ParticipantManageItem[]>(`${this.apiUrl}/${eventId}/participants/manage`);
   }
 
   markAsPaid(eventId: string, participationId: string): Observable<ParticipantManageItem[]> {

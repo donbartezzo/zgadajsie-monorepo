@@ -7,17 +7,20 @@ export class EnrollmentEligibilityService {
 
   async isNewUser(userId: string, organizerId: string): Promise<boolean> {
     const trusted = await this.prisma.organizerUserRelation.findUnique({
-      where: { organizerUserId_targetUserId: { organizerUserId: organizerId, targetUserId: userId } },
+      where: {
+        organizerUserId_targetUserId: { organizerUserId: organizerId, targetUserId: userId },
+      },
       select: { isTrusted: true },
     });
     if (trusted?.isTrusted) {
       return false;
     }
 
+    // Count past participations with assigned slot (confirmed attendance)
     const pastParticipation = await this.prisma.eventParticipation.count({
       where: {
         userId,
-        status: { in: ['APPROVED', 'CONFIRMED'] },
+        slot: { isNot: null },
         event: {
           organizerId,
           status: { not: 'CANCELLED' },
@@ -31,7 +34,9 @@ export class EnrollmentEligibilityService {
 
   async isBannedByOrganizer(userId: string, organizerId: string): Promise<boolean> {
     const relation = await this.prisma.organizerUserRelation.findUnique({
-      where: { organizerUserId_targetUserId: { organizerUserId: organizerId, targetUserId: userId } },
+      where: {
+        organizerUserId_targetUserId: { organizerUserId: organizerId, targetUserId: userId },
+      },
       select: { isBanned: true },
     });
     return relation?.isBanned === true;
@@ -56,7 +61,7 @@ export class EnrollmentEligibilityService {
         eventId,
         addedByUserId,
         isGuest: true,
-        status: { notIn: ['WITHDRAWN', 'REJECTED'] },
+        wantsIn: true,
       },
     });
   }

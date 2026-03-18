@@ -24,7 +24,14 @@ import {
   Event,
   EventAnnouncement,
   ParticipantManageItem,
+  EnrollmentPhase,
 } from '../../../../shared/types';
+import { getEnrollmentPhase } from '../../../../shared/utils/enrollment-phase.util';
+import {
+  ParticipantSlotsGridComponent,
+  ParticipantItem,
+} from '../../../../shared/ui/participant-slots-grid/participant-slots-grid.component';
+import { ParticipantDetailOverlayComponent } from '../../../../shared/ui/participant-detail-overlay/participant-detail-overlay.component';
 import { EventStatus } from '@zgadajsie/shared';
 import {
   EventLifecycleBannerComponent,
@@ -48,6 +55,8 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
     FormsModule,
     EventLifecycleBannerComponent,
     EventAnnouncementsComponent,
+    ParticipantSlotsGridComponent,
+    ParticipantDetailOverlayComponent,
   ],
   template: `
     <div class="p-4">
@@ -118,8 +127,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
       </div>
       }
 
-      <!-- Uczestnicy (unified) -->
-      @if (activeList().length > 0) {
+      <!-- Uczestnicy (slot grid) -->
       <h2 class="text-sm font-semibold text-neutral-900 mb-3">Uczestnicy</h2>
 
       @if (isPaidEvent()) {
@@ -139,58 +147,14 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
       </div>
       }
 
-      <div class="space-y-2">
-        @for (p of activeList(); track p.id) {
-        <app-card>
-          <div class="p-3">
-            <div class="flex items-center gap-3">
-              <app-user-avatar
-                [avatarUrl]="p.user.avatarUrl"
-                [displayName]="p.user.displayName"
-                size="sm"
-              />
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-neutral-900 truncate">
-                  {{ p.user.displayName }}
-                </p>
-                @if (isPaidEvent()) {
-                <div class="flex items-center gap-2 mt-0.5">
-                  <span [class]="paymentStatusClass(p)">{{ paymentStatusLabel(p) }}</span>
-                  @if (p.payment) {
-                  <span class="text-xs text-neutral-400">
-                    {{ paymentMethodLabel(p.payment.method) }}
-                  </span>
-                  }
-                </div>
-                }
-              </div>
-              <div class="flex gap-1">
-                @if (isPaidEvent() && !p.payment && (p.status === 'APPROVED' || p.status ===
-                'CONFIRMED')) {
-                <app-button variant="primary" size="sm" (clicked)="onMarkPaid(p.id)">
-                  Oznacz jako opłacone
-                </app-button>
-                } @if (isPaidEvent() && p.payment?.status === 'COMPLETED') {
-                <app-button variant="outline" size="sm" (clicked)="openCancelOverlay(p)">
-                  <app-icon name="x" size="sm" />
-                </app-button>
-                }
-                <app-button variant="outline" size="sm" (clicked)="openChat(p.userId)">
-                  <app-icon name="message-circle" size="sm" />
-                </app-button>
-                <app-button variant="outline" size="sm" (clicked)="onReprimand(p.userId)">
-                  <app-icon name="flag" size="sm" />
-                </app-button>
-                <app-button variant="danger" size="sm" (clicked)="onBan(p.userId)">
-                  <app-icon name="shield-alert" size="sm" />
-                </app-button>
-              </div>
-            </div>
-          </div>
-        </app-card>
-        }
-      </div>
-      }
+      <app-participant-slots-grid
+        [participants]="manageParticipants()"
+        [maxSlots]="maxSlots()"
+        [enrollmentPhase]="enrollmentPhase()"
+        mode="organizer"
+        (participantClicked)="onParticipantClick($event)"
+        (emptySlotClicked)="onEmptySlotClick()"
+      />
 
       <!-- Komunikaty -->
       <div class="mt-6 border-t border-neutral-100 pt-4">
@@ -240,6 +204,21 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
       </div>
       }
     </div>
+
+    <app-participant-detail-overlay
+      [participant]="selectedParticipant()"
+      [open]="detailOverlayOpen()"
+      mode="organizer"
+      [isPaidEvent]="isPaidEvent()"
+      (closed)="closeDetailOverlay()"
+      (chatRequested)="onOverlayChat($event)"
+      (approveRequested)="onOverlayApprove($event)"
+      (rejectRequested)="onOverlayReject($event)"
+      (banRequested)="onOverlayBan($event)"
+      (reprimandRequested)="onOverlayReprimand($event)"
+      (markPaidRequested)="onOverlayMarkPaid($event)"
+      (cancelPaymentRequested)="onOverlayCancelPayment($event)"
+    />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -305,6 +284,17 @@ export class EventManageComponent implements OnInit {
     return total > 0 ? (this.paidCount() / total) * 100 : 0;
   });
 
+  readonly maxSlots = computed(() => this.eventData()?.maxParticipants ?? 0);
+
+  readonly enrollmentPhase = computed<EnrollmentPhase | null>(() => {
+    const e = this.eventData();
+    if (!e) return null;
+    return getEnrollmentPhase(e.startsAt, e.lotteryExecutedAt, e.status);
+  });
+
+  readonly selectedParticipant = signal<ParticipantItem | null>(null);
+  readonly detailOverlayOpen = signal(false);
+
   ngOnInit(): void {
     this.eventId = this.route.snapshot.paramMap.get('id') ?? '';
     this.eventService.getEvent(this.eventId).subscribe((e) => {
@@ -347,24 +337,26 @@ export class EventManageComponent implements OnInit {
   }
 
   onApprove(id: string): void {
-    this.eventService.approveParticipation(id).subscribe({
+    this.eventService.assignSlot(id).subscribe({
       next: () => {
         this.manageParticipants.update((prev) =>
           prev.map((p) => (p.id === id ? { ...p, status: 'APPROVED' } : p)),
         );
-        this.snackbar.success('Zatwierdzono');
+        this.snackbar.success('Przydzielono miejsce');
       },
+      error: (err) => this.snackbar.error(err?.error?.message || 'Brak wolnych miejsc'),
     });
   }
 
   onReject(id: string): void {
-    this.eventService.rejectParticipation(id).subscribe({
+    this.eventService.releaseSlot(id).subscribe({
       next: () => {
         this.manageParticipants.update((prev) =>
           prev.map((p) => (p.id === id ? { ...p, status: 'REJECTED' } : p)),
         );
         this.snackbar.info('Odrzucono');
       },
+      error: (err) => this.snackbar.error(err?.error?.message || 'Nie udało się odrzucić'),
     });
   }
 
@@ -432,6 +424,55 @@ export class EventManageComponent implements OnInit {
 
   openChat(userId: string): void {
     this.router.navigate(['/w', this.citySlug, this.eventId, 'host-chat', userId]);
+  }
+
+  onParticipantClick(participant: ParticipantItem): void {
+    this.selectedParticipant.set(participant);
+    this.detailOverlayOpen.set(true);
+  }
+
+  onEmptySlotClick(): void {
+    this.snackbar.info('Funkcja dodawania gościa będzie dostępna wkrótce');
+  }
+
+  closeDetailOverlay(): void {
+    this.detailOverlayOpen.set(false);
+    this.selectedParticipant.set(null);
+  }
+
+  onOverlayApprove(participationId: string): void {
+    this.onApprove(participationId);
+    this.closeDetailOverlay();
+  }
+
+  onOverlayReject(participationId: string): void {
+    this.onReject(participationId);
+    this.closeDetailOverlay();
+  }
+
+  onOverlayChat(userId: string): void {
+    this.closeDetailOverlay();
+    this.openChat(userId);
+  }
+
+  onOverlayReprimand(userId: string): void {
+    this.onReprimand(userId);
+    this.closeDetailOverlay();
+  }
+
+  onOverlayBan(userId: string): void {
+    this.onBan(userId);
+    this.closeDetailOverlay();
+  }
+
+  onOverlayMarkPaid(participationId: string): void {
+    this.onMarkPaid(participationId);
+    this.closeDetailOverlay();
+  }
+
+  onOverlayCancelPayment(participant: ParticipantManageItem): void {
+    this.closeDetailOverlay();
+    this.openCancelOverlay(participant);
   }
 
   paymentStatusLabel(p: ParticipantManageItem): string {

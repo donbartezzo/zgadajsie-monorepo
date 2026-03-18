@@ -9,10 +9,12 @@ export class ActivityRankService {
   async getUserRank(userId: string) {
     const thirtyDaysAgo = daysFromNow(-30);
 
+    // Count participations with assigned slot (active participants)
     const participationCount = await this.prisma.eventParticipation.count({
       where: {
         userId,
-        status: { in: ['APPROVED', 'CONFIRMED'] },
+        wantsIn: true,
+        slot: { isNot: null },
         createdAt: { gte: thirtyDaysAgo },
       },
     });

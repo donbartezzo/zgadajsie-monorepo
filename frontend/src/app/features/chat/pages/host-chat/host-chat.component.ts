@@ -122,31 +122,30 @@ export class HostChatComponent extends BaseChatComponent implements OnInit {
   ngOnInit(): void {
     this.initBaseData();
 
-    this.eventService.getEvent(this.eventId).subscribe({
-      next: (e) => {
-        this.event.set(e);
-        this.hostOrganizerId = e.organizerId;
-        this.organizerId.set(e.organizerId);
-        this.isOrganizer.set(e.organizerId === this.currentUserId);
+    // Event data comes from EventAreaService (loaded by parent EventAreaComponent)
+    const e = this.event();
+    if (e) {
+      this.hostOrganizerId = e.organizerId;
+      this.organizerId.set(e.organizerId);
+      this.isOrganizer.set(e.organizerId === this.currentUserId);
 
-        if (e.organizerId === this.currentUserId) {
-          this.isOrganizerMode.set(true);
-          this.loadConversations();
-        } else {
-          this.isOrganizerMode.set(false);
-          this.otherUserName.set(e.organizer?.displayName ?? 'Organizator');
-          this.initPrivateChat();
-        }
-      },
-      error: () => this.loading.set(false),
-    });
+      if (e.organizerId === this.currentUserId) {
+        this.isOrganizerMode.set(true);
+        this.loadConversations();
+      } else {
+        this.isOrganizerMode.set(false);
+        this.otherUserName.set(e.organizer?.displayName ?? 'Organizator');
+        this.initPrivateChat();
+      }
+    } else {
+      this.loading.set(false);
+    }
 
     this.loadMemberCount();
   }
 
   openChat(participantId: string): void {
-    const slug = this.event()?.city?.slug;
-    this.router.navigate(['/w', slug, this.eventId, 'host-chat', participantId]);
+    this.router.navigate(['/w', this.eventArea.citySlug, this.eventId, 'host-chat', participantId]);
   }
 
   send(content: string): void {

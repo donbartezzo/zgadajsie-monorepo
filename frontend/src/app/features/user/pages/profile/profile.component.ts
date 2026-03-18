@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
-import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
+import { UserProfileCardComponent } from '../../../../shared/ui/user-profile-card/user-profile-card.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { UserService } from '../../../../core/services/user.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
@@ -19,30 +19,22 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
     IconComponent,
     ButtonComponent,
     CardComponent,
-    UserAvatarComponent,
+    UserProfileCardComponent,
   ],
   template: `
     <div class="p-4 space-y-4">
       @if (auth.currentUser(); as user) {
-      <div class="text-center">
-        <app-user-avatar
-          [avatarUrl]="user.avatarUrl"
-          [displayName]="user.displayName"
-          size="lg"
-        ></app-user-avatar>
-        <h1 class="mt-3 text-xl font-bold text-neutral-900">
-          {{ user.displayName }}
-        </h1>
-        <p class="text-sm text-neutral-500">{{ user.email }}</p>
+      <!-- User profile card (wizytówka) -->
+      <app-user-profile-card [user]="user" context="profile" variant="default">
         @if (!user.isEmailVerified) {
-        <div class="mt-2 rounded-lg bg-warning-50 px-3 py-2 text-xs text-warning-400">
-          Email nie zweryfikowany.
-          <button (click)="resendActivation()" class="underline font-medium ml-1">
-            Wyślij link ponownie
-          </button>
-        </div>
+        <button
+          (click)="resendActivation()"
+          class="mt-2 text-xs text-primary-500 underline font-medium"
+        >
+          Wyślij link aktywacyjny ponownie
+        </button>
         }
-      </div>
+      </app-user-profile-card>
 
       <div class="grid grid-cols-2 gap-3">
         <a routerLink="/profile/events">

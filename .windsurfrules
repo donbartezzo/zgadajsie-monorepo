@@ -1,6 +1,0 @@
-Przy każdej implementacji kodu stosuj się do reguł zdefiniowanych w plikach:
-
-- **Frontend (Angular)**: `docs/styleguide-frontend.md`
-- **Backend (NestJS)**: `docs/styleguide-backend.md`
-
-Przed generowaniem kodu przeczytaj odpowiedni plik i zastosuj wszystkie zawarte w nim zasady.

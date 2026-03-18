@@ -11,6 +11,7 @@ import { PushService } from '../notifications/push.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CoverImagesService } from '../cover-images/cover-images.service';
 import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptions.service';
+import { SlotService } from '../slots/slot.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
@@ -31,6 +32,7 @@ export class EventsService {
     private notificationsService: NotificationsService,
     private coverImagesService: CoverImagesService,
     private citySubscriptionsService: CitySubscriptionsService,
+    private slotService: SlotService,
   ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
@@ -50,6 +52,9 @@ export class EventsService {
       },
       include: { discipline: true, facility: true, level: true, city: true, coverImage: true },
     });
+
+    // Create slots for the event
+    await this.slotService.createSlotsForEvent(event.id, dto.maxParticipants);
 
     this.notifyCitySubscribers(event.id, event.title, event.cityId, organizerId);
 
@@ -116,7 +121,7 @@ export class EventsService {
           organizer: { select: { id: true, displayName: true, avatarUrl: true } },
           _count: {
             select: {
-              participations: { where: { status: { notIn: ['WITHDRAWN', 'REJECTED'] } } },
+              participations: { where: { wantsIn: true } },
             },
           },
         },
@@ -140,6 +145,7 @@ export class EventsService {
         participations: {
           include: {
             user: { select: { id: true, displayName: true, avatarUrl: true } },
+            slot: true,
           },
         },
       },
@@ -167,15 +173,29 @@ export class EventsService {
       isBannedByOrganizer = relation?.isBanned === true;
     }
 
+    // Derive status from slot-based model
+    let derivedStatus: string | null = null;
+    if (participation) {
+      if (!participation.wantsIn) {
+        derivedStatus = participation.withdrawnBy === 'ORGANIZER' ? 'REJECTED' : 'WITHDRAWN';
+      } else if (participation.slot) {
+        derivedStatus = participation.slot.confirmed ? 'CONFIRMED' : 'APPROVED';
+      } else {
+        derivedStatus = 'PENDING';
+      }
+    }
+
     return {
       ...event,
       eventTimeStatus,
       enrollmentPhase,
       currentUserAccess: {
-        isParticipant: !!participation,
+        isParticipant: !!participation && participation.wantsIn,
         isOrganizer: event.organizerId === userId,
-        participationStatus: participation?.status ?? null,
+        participationStatus: derivedStatus,
         participationId: participation?.id ?? null,
+        hasSlot: !!participation?.slot,
+        slotConfirmed: participation?.slot?.confirmed ?? false,
         isBannedByOrganizer,
       },
     };
@@ -224,11 +244,11 @@ export class EventsService {
           data: { status: 'CANCELLED' },
         });
 
-        // Refund paid participants via vouchers
+        // Refund paid participants via vouchers (those with wantsIn=true and completed payment)
         const paidParticipations = await tx.eventParticipation.findMany({
           where: {
             eventId: id,
-            status: { in: ['PENDING', 'APPROVED', 'CONFIRMED'] },
+            wantsIn: true,
             payments: { some: { status: 'COMPLETED' } },
           },
           include: {
@@ -250,7 +270,12 @@ export class EventsService {
           });
           await tx.eventParticipation.update({
             where: { id: participation.id },
-            data: { status: 'WITHDRAWN' },
+            data: { wantsIn: false, withdrawnBy: 'ORGANIZER' },
+          });
+          // Release slot
+          await tx.eventSlot.updateMany({
+            where: { participationId: participation.id },
+            data: { participationId: null, confirmed: false, assignedAt: null },
           });
           await tx.organizerVoucher.create({
             data: {
@@ -267,12 +292,12 @@ export class EventsService {
         }
 
         // Cleanup pending payment intents (restore reserved vouchers)
-        const pendingParticipations = await tx.eventParticipation.findMany({
-          where: { eventId: id, status: { in: ['PENDING', 'APPROVED'] } },
+        const waitingParticipations = await tx.eventParticipation.findMany({
+          where: { eventId: id, wantsIn: true },
         });
 
         let cleanedIntents = 0;
-        for (const participation of pendingParticipations) {
+        for (const participation of waitingParticipations) {
           const intents = await tx.paymentIntent.findMany({
             where: { participationId: participation.id },
           });
@@ -295,7 +320,12 @@ export class EventsService {
           }
           await tx.eventParticipation.update({
             where: { id: participation.id },
-            data: { status: 'WITHDRAWN' },
+            data: { wantsIn: false, withdrawnBy: 'ORGANIZER' },
+          });
+          // Release slot
+          await tx.eventSlot.updateMany({
+            where: { participationId: participation.id },
+            data: { participationId: null, confirmed: false, assignedAt: null },
           });
         }
 
@@ -306,10 +336,7 @@ export class EventsService {
     // Notifications (fire-and-forget, outside transaction)
     const notificationErrors: string[] = [];
     const participants = await this.prisma.eventParticipation.findMany({
-      where: {
-        eventId: id,
-        status: { in: ['PENDING', 'APPROVED', 'CONFIRMED', 'WITHDRAWN'] },
-      },
+      where: { eventId: id },
       include: { user: { select: { id: true, email: true, displayName: true } } },
     });
 
@@ -388,12 +415,26 @@ export class EventsService {
   }
 
   async getParticipants(eventId: string) {
-    return this.prisma.eventParticipation.findMany({
-      where: { eventId, status: { notIn: ['WITHDRAWN', 'REJECTED'] } },
+    const participations = await this.prisma.eventParticipation.findMany({
+      where: { eventId },
       include: {
         user: { select: { id: true, displayName: true, avatarUrl: true } },
+        slot: true,
       },
       orderBy: { createdAt: 'asc' },
+    });
+
+    return participations.map((p) => {
+      // Derive status from slot-based model
+      let status: string;
+      if (!p.wantsIn) {
+        status = p.withdrawnBy === 'ORGANIZER' ? 'REJECTED' : 'WITHDRAWN';
+      } else if (p.slot) {
+        status = p.slot.confirmed ? 'CONFIRMED' : 'APPROVED';
+      } else {
+        status = 'PENDING';
+      }
+      return { ...p, status };
     });
   }
 
@@ -412,6 +453,7 @@ export class EventsService {
       where: { eventId },
       include: {
         user: { select: { id: true, displayName: true, avatarUrl: true, email: true } },
+        slot: true,
         payments: {
           orderBy: { createdAt: 'desc' },
           take: 1,
@@ -429,15 +471,30 @@ export class EventsService {
       orderBy: { createdAt: 'asc' },
     });
 
-    return participations.map((p) => ({
-      id: p.id,
-      userId: p.userId,
-      status: p.status,
-      isGuest: p.isGuest,
-      createdAt: p.createdAt,
-      user: p.user,
-      payment: p.payments[0] ?? null,
-    }));
+    return participations.map((p) => {
+      // Derive status from slot-based model
+      let derivedStatus: string;
+      if (!p.wantsIn) {
+        derivedStatus = p.withdrawnBy === 'ORGANIZER' ? 'REJECTED' : 'WITHDRAWN';
+      } else if (p.slot) {
+        derivedStatus = p.slot.confirmed ? 'CONFIRMED' : 'APPROVED';
+      } else {
+        derivedStatus = 'PENDING';
+      }
+
+      return {
+        id: p.id,
+        userId: p.userId,
+        status: derivedStatus,
+        wantsIn: p.wantsIn,
+        hasSlot: !!p.slot,
+        slotConfirmed: p.slot?.confirmed ?? false,
+        isGuest: p.isGuest,
+        createdAt: p.createdAt,
+        user: p.user,
+        payment: p.payments[0] ?? null,
+      };
+    });
   }
 
   async markPaid(eventId: string, participationId: string, organizerUserId: string) {
@@ -451,13 +508,15 @@ export class EventsService {
 
     const participation = await this.prisma.eventParticipation.findFirst({
       where: { id: participationId, eventId },
+      include: { slot: true },
     });
     if (!participation) {
       throw new NotFoundException('Uczestnictwo nie znalezione');
     }
-    if (!['APPROVED', 'CONFIRMED'].includes(participation.status)) {
+    // Must have a slot to mark as paid
+    if (!participation.slot) {
       throw new BadRequestException(
-        'Oznaczenie jako opłacone możliwe tylko dla zatwierdzonych/potwierdzonych uczestników',
+        'Oznaczenie jako opłacone możliwe tylko dla uczestników z przydzielonym miejscem',
       );
     }
 
@@ -538,9 +597,10 @@ export class EventsService {
         });
       }
 
-      await tx.eventParticipation.update({
-        where: { id: payment.participationId },
-        data: { status: 'APPROVED' },
+      // Slot stays assigned, but confirmed=false (user must re-confirm after re-paying)
+      await tx.eventSlot.updateMany({
+        where: { participationId: payment.participationId },
+        data: { confirmed: false },
       });
     });
 

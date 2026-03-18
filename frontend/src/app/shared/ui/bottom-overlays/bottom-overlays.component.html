@@ -21,11 +21,13 @@
   [event]="overlays.event()"
   [loading]="overlays.loading()"
   [participantStatus]="overlays.participantStatus()"
+  [waitingReason]="overlays.waitingReason()"
   (closed)="overlays.close()"
   (openChat)="overlays.handleOpenChat()"
   (payRequested)="overlays.handlePay()"
   (contactOrganizer)="overlays.handleContactOrganizer()"
   (leaveRequested)="overlays.handleLeaveRequested()"
+  (rejoinRequested)="overlays.handleRejoinRequested()"
 />
 } @case ('organizerActions') { @if (overlays.event(); as evt) {
 <app-organizer-actions-overlay

@@ -2,22 +2,25 @@ import { computed, Directive, inject, OnDestroy, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ChatService } from '../../../core/services/chat.service';
-import { EventService } from '../../../core/services/event.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
-import { Event as EventModel, PrivateChatMessage } from '../../../shared/types';
+import { PrivateChatMessage } from '../../../shared/types';
 import { ChatViewMessage } from '../../../shared/ui/chat-view/chat-view.component';
+import { EventAreaService } from '../../event/services/event-area.service';
 
 @Directive()
 export abstract class BaseChatComponent implements OnDestroy {
   protected readonly route = inject(ActivatedRoute);
   protected readonly router = inject(Router);
   protected readonly chatService = inject(ChatService);
-  protected readonly eventService = inject(EventService);
   protected readonly auth = inject(AuthService);
   protected readonly snackbar = inject(SnackbarService);
+  protected readonly eventArea = inject(EventAreaService);
 
-  readonly event = signal<EventModel | null>(null);
+  // Delegated from EventAreaService
+  readonly event = this.eventArea.event;
+
+  // Local chat state
   readonly privateMessages = signal<PrivateChatMessage[]>([]);
   readonly loading = signal(true);
   readonly typingUser = signal<string | null>(null);
@@ -28,7 +31,10 @@ export abstract class BaseChatComponent implements OnDestroy {
   readonly isOrganizer = signal(false);
   readonly organizerId = signal('');
 
-  eventId = '';
+  get eventId(): string {
+    return this.eventArea.eventId;
+  }
+
   currentUserId = '';
 
   protected msgSub!: Subscription;
@@ -73,7 +79,7 @@ export abstract class BaseChatComponent implements OnDestroy {
   }
 
   protected initBaseData(): void {
-    this.eventId = this.route.snapshot.paramMap.get('id') ?? '';
+    // eventId is now a getter from EventAreaService
     this.currentUserId = this.auth.currentUser()?.id ?? '';
   }
 

@@ -75,9 +75,10 @@ export class PaymentsService {
 
       await this.vouchersService.deductVoucher(userId, event.organizerId, amount);
 
-      await this.prisma.eventParticipation.update({
-        where: { id: participationId },
-        data: { status: 'CONFIRMED' },
+      // Confirm the slot after successful payment
+      await this.prisma.eventSlot.updateMany({
+        where: { participationId },
+        data: { confirmed: true },
       });
 
       return { paymentId: payment.id, paidByVoucher: true };
@@ -170,9 +171,10 @@ export class PaymentsService {
           },
         });
 
-        await tx.eventParticipation.update({
-          where: { id: intent.participationId },
-          data: { status: 'CONFIRMED' },
+        // Confirm the slot after successful payment
+        await tx.eventSlot.updateMany({
+          where: { participationId: intent.participationId },
+          data: { confirmed: true },
         });
       });
 
@@ -320,7 +322,7 @@ export class PaymentsService {
         event: {
           select: { id: true, title: true, organizerId: true, city: { select: { slug: true } } },
         },
-        participation: { select: { id: true, status: true } },
+        participation: { select: { id: true, wantsIn: true }, include: { slot: true } },
       },
     });
     if (!payment) {
@@ -365,9 +367,10 @@ export class PaymentsService {
         },
       });
 
-      await tx.eventParticipation.update({
-        where: { id: intent.participationId },
-        data: { status: 'CONFIRMED' },
+      // Confirm the slot after successful payment
+      await tx.eventSlot.updateMany({
+        where: { participationId: intent.participationId },
+        data: { confirmed: true },
       });
 
       return payment;

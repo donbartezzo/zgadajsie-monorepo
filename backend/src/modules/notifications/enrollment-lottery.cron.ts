@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from './email.service';
 import { PushService } from './push.service';
+import { SlotService } from '../slots/slot.service';
 import { PRE_ENROLLMENT_HOURS } from '@zgadajsie/shared';
 
 @Injectable()
@@ -13,6 +14,7 @@ export class EnrollmentLotteryCron {
     private prisma: PrismaService,
     private emailService: EmailService,
     private pushService: PushService,
+    private slotService: SlotService,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -54,20 +56,17 @@ export class EnrollmentLotteryCron {
         return null; // Already processed by another instance
       }
 
+      // Get all waiting participants (wantsIn=true, no slot)
       const pendingParticipations = await tx.eventParticipation.findMany({
-        where: { eventId: event.id, status: 'PENDING' },
+        where: { eventId: event.id, wantsIn: true, slot: null },
         include: {
           user: { select: { id: true, isActive: true } },
         },
       });
 
-      // Separate pre-picks (guaranteed)
-      const prePicks = pendingParticipations.filter((p) => p.organizerPicked);
-      const nonPicks = pendingParticipations.filter((p) => !p.organizerPicked);
-
-      // Check bans for non-picks
+      // Check bans
       const banMap = new Map<string, boolean>();
-      const uniqueUserIds = [...new Set(nonPicks.map((p) => p.userId))];
+      const uniqueUserIds = [...new Set(pendingParticipations.map((p) => p.userId))];
       if (uniqueUserIds.length > 0) {
         const bans = await tx.organizerUserRelation.findMany({
           where: {
@@ -82,7 +81,7 @@ export class EnrollmentLotteryCron {
         }
       }
 
-      const unbannedNonPicks = nonPicks.filter((p) => !banMap.get(p.userId));
+      const unbannedParticipations = pendingParticipations.filter((p) => !banMap.get(p.userId));
 
       // Check "new user" status for tier separation
       const newUserMap = new Map<string, boolean>();
@@ -103,10 +102,11 @@ export class EnrollmentLotteryCron {
           newUserMap.set(userId, false);
           continue;
         }
+        // Count past participations with slot (confirmed attendance)
         const pastCount = await tx.eventParticipation.count({
           where: {
             userId,
-            status: { in: ['APPROVED', 'CONFIRMED'] },
+            slot: { isNot: null },
             event: {
               organizerId: event.organizerId,
               status: { not: 'CANCELLED' },
@@ -118,15 +118,15 @@ export class EnrollmentLotteryCron {
       }
 
       // 3-tier split: veterans, guests, newcomers
-      const veterans = unbannedNonPicks.filter(
+      const veterans = unbannedParticipations.filter(
         (p) => !p.isGuest && newUserMap.get(p.userId) === false,
       );
-      const guests = unbannedNonPicks.filter((p) => p.isGuest);
-      const newcomers = unbannedNonPicks.filter(
+      const guests = unbannedParticipations.filter((p) => p.isGuest);
+      const newcomers = unbannedParticipations.filter(
         (p) => !p.isGuest && newUserMap.get(p.userId) === true,
       );
 
-      let remaining = event.maxParticipants - prePicks.length;
+      let remaining = event.maxParticipants;
       const selected: string[] = [];
 
       for (const tier of [veterans, guests, newcomers]) {
@@ -141,24 +141,31 @@ export class EnrollmentLotteryCron {
         }
       }
 
-      const allApprovedIds = [...prePicks.map((p) => p.id), ...selected];
-      const rejectedIds = pendingParticipations
-        .filter((p) => !allApprovedIds.includes(p.id))
+      const allSelectedIds = selected;
+      const notSelectedIds = pendingParticipations
+        .filter((p) => !allSelectedIds.includes(p.id))
         .map((p) => p.id);
 
-      const approvedAt = new Date();
-
-      if (allApprovedIds.length > 0) {
-        await tx.eventParticipation.updateMany({
-          where: { id: { in: allApprovedIds } },
-          data: { status: 'APPROVED', approvedAt },
+      // Assign slots to selected participants
+      const assignedIds: string[] = [];
+      for (const participationId of allSelectedIds) {
+        // Find a free slot
+        const freeSlot = await tx.eventSlot.findFirst({
+          where: { eventId: event.id, participationId: null },
         });
+        if (freeSlot) {
+          await tx.eventSlot.update({
+            where: { id: freeSlot.id },
+            data: { participationId, assignedAt: new Date() },
+          });
+          assignedIds.push(participationId);
+        }
       }
 
-      // Rejected stay PENDING - they can still join in open enrollment
-      // (we don't reject them, they just weren't selected)
+      // Not selected stay as waiting (wantsIn=true, no slot)
+      // They can still get a slot in open enrollment if one becomes free
 
-      return { allApprovedIds, rejectedIds, pendingParticipations };
+      return { assignedIds, notSelectedIds, pendingParticipations };
     });
 
     if (!result) {
@@ -166,18 +173,18 @@ export class EnrollmentLotteryCron {
     }
 
     // Notifications - fire-and-forget, AFTER successful commit
-    const { allApprovedIds, pendingParticipations } = result;
+    const { assignedIds, pendingParticipations } = result;
 
     for (const p of pendingParticipations) {
-      const isApproved = allApprovedIds.includes(p.id);
+      const gotSlot = assignedIds.includes(p.id);
       const recipientId = p.isGuest ? p.addedByUserId ?? p.userId : p.userId;
 
       try {
-        if (isApproved) {
+        if (gotSlot) {
           await this.pushService.notifyParticipationStatus(
             recipientId,
             event.title,
-            'APPROVED',
+            'SLOT_ASSIGNED',
             event.id,
           );
         } else {
@@ -196,8 +203,8 @@ export class EnrollmentLotteryCron {
     }
 
     this.logger.log(
-      `Lottery completed for event "${event.title}": ${allApprovedIds.length} approved, ` +
-        `${pendingParticipations.length - allApprovedIds.length} not selected`,
+      `Lottery completed for event "${event.title}": ${assignedIds.length} slots assigned, ` +
+        `${pendingParticipations.length - assignedIds.length} waiting`,
     );
   }
 }

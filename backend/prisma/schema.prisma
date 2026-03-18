@@ -163,6 +163,7 @@ model Event {
   parentEvent   Event?               @relation("RecurringEvents", fields: [parentEventId], references: [id])
   childEvents   Event[]              @relation("RecurringEvents")
   participations EventParticipation[]
+  slots         EventSlot[]
   chatMessages  ChatMessage[]
   privateChatMessages PrivateChatMessage[]
   reprimands    Reprimand[]
@@ -181,12 +182,11 @@ model EventParticipation {
   id            String   @id @default(uuid())
   eventId       String
   userId        String
-  status          String   @default("PENDING")
+  wantsIn         Boolean  @default(true)
   isChatBanned    Boolean  @default(false)
   addedByUserId   String?
   isGuest         Boolean  @default(false)
-  organizerPicked Boolean  @default(false)
-  approvedAt      DateTime?
+  withdrawnBy     String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -195,8 +195,25 @@ model EventParticipation {
   addedBy   User?    @relation("AddedByUser", fields: [addedByUserId], references: [id])
   payments       Payment[]
   paymentIntents PaymentIntent[]
+  slot           EventSlot?
 
   @@unique([eventId, userId])
+}
+
+// ─── Event Slots ────────────────────────────────────────────────────────────────
+
+model EventSlot {
+  id              String    @id @default(uuid())
+  eventId         String
+  participationId String?   @unique
+  confirmed       Boolean   @default(false)
+  assignedAt      DateTime?
+  createdAt       DateTime  @default(now())
+
+  event         Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  participation EventParticipation? @relation(fields: [participationId], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
 }
 
 // ─── Payment Intents (temporary, pre-payment) ──────────────────────────────

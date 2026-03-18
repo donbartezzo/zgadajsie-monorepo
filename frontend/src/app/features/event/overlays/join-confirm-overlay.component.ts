@@ -5,7 +5,7 @@ import {
   BottomOverlayComponent,
   OverlayIconVariant,
 } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
-import { Event as EventModel } from '../../../shared/types';
+import { Event as EventModel, WaitingReason } from '../../../shared/types';
 
 @Component({
   selector: 'app-join-confirm-overlay',
@@ -74,7 +74,37 @@ import { Event as EventModel } from '../../../shared/types';
         </div>
         }
 
-        <!-- Participant options -->
+        <!-- Rejoin CTA for withdrawn users -->
+        @if (isWithdrawnOrRejected() && canRejoin()) {
+        <div class="rounded-xl border-2 border-primary-200 bg-primary-50 p-4">
+          <div class="flex items-start gap-3">
+            <div
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100"
+            >
+              <app-icon name="user-plus" size="md" class="text-primary-500"></app-icon>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-primary-600">Chcesz wrócić?</p>
+              <p class="text-xs text-primary-500 mt-0.5">
+                Możesz ponownie dołączyć do tego wydarzenia.
+              </p>
+            </div>
+          </div>
+          <app-button
+            variant="primary"
+            [fullWidth]="true"
+            [loading]="loading()"
+            (clicked)="rejoinRequested.emit()"
+            class="block mt-3"
+          >
+            <app-icon name="user-plus" size="sm"></app-icon>
+            Dołącz ponownie
+          </app-button>
+        </div>
+        }
+
+        <!-- Participant options (hidden for withdrawn/rejected) -->
+        @if (!isWithdrawnOrRejected()) {
         <div>
           <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-2">
             Opcje uczestnika
@@ -137,6 +167,7 @@ import { Event as EventModel } from '../../../shared/types';
             </button>
           </div>
         </div>
+        }
       </div>
     </app-bottom-overlay>
   `,
@@ -147,17 +178,26 @@ export class JoinConfirmOverlayComponent {
   readonly event = input<EventModel | null>(null);
   readonly loading = input(false);
   readonly participantStatus = input<string | null>(null);
+  readonly waitingReason = input<WaitingReason | null>(null);
 
   readonly closed = output<void>();
   readonly openChat = output<void>();
   readonly payRequested = output<void>();
   readonly contactOrganizer = output<void>();
   readonly leaveRequested = output<void>();
+  readonly rejoinRequested = output<void>();
+
+  readonly isWithdrawnOrRejected = computed(() => {
+    const s = this.participantStatus();
+    return s === 'WITHDRAWN' || s === 'REJECTED';
+  });
 
   readonly headerIcon = computed<IconName>(() => {
     const s = this.participantStatus();
     if (s === 'PENDING') return 'clock';
     if (s === 'APPROVED') return 'check';
+    if (s === 'WITHDRAWN') return 'user-x';
+    if (s === 'REJECTED') return 'x';
     return 'check-circle';
   });
 
@@ -165,6 +205,8 @@ export class JoinConfirmOverlayComponent {
     const s = this.participantStatus();
     if (s === 'PENDING') return 'warning';
     if (s === 'APPROVED') return 'info';
+    if (s === 'WITHDRAWN') return 'info';
+    if (s === 'REJECTED') return 'danger';
     return 'success';
   });
 
@@ -173,16 +215,34 @@ export class JoinConfirmOverlayComponent {
     if (status === 'PENDING') return 'Zgłoszenie wysłane!';
     if (status === 'APPROVED') return 'Zatwierdzone - potwierdź udział!';
     if (status === 'CONFIRMED') return 'Jesteś potwierdzonym uczestnikiem!';
+    if (status === 'WITHDRAWN') return 'Wypisano z wydarzenia';
+    if (status === 'REJECTED') return 'Zgłoszenie odrzucone';
     return 'Zgłoszenie wysłane!';
   });
 
   readonly headerDescription = computed(() => {
     const status = this.participantStatus();
     if (status === 'PENDING') {
-      return 'Twoje zgłoszenie oczekuje na losowanie lub akceptację organizatora.';
+      const reason = this.waitingReason();
+      if (reason === 'NEW_USER') {
+        return 'To Twój pierwszy raz u tego organizatora. Oczekujesz na akceptację.';
+      }
+      if (reason === 'NO_SLOTS') {
+        return 'Wszystkie miejsca są zajęte. Oczekujesz na zwolnienie miejsca.';
+      }
+      if (reason === 'PRE_ENROLLMENT') {
+        return 'Trwa faza wstępnych zapisów. Miejsca zostaną przydzielone w losowaniu.';
+      }
+      return 'Twoje zgłoszenie oczekuje na akceptację organizatora.';
     }
     if (status === 'APPROVED') {
       return 'Twoje miejsce zostało przyznane. Potwierdź uczestnictwo.';
+    }
+    if (status === 'WITHDRAWN') {
+      return 'Nie jesteś już uczestnikiem tego wydarzenia.';
+    }
+    if (status === 'REJECTED') {
+      return 'Organizator odrzucił Twoje zgłoszenie.';
     }
     return 'Twój udział jest potwierdzony. Do zobaczenia!';
   });
@@ -211,5 +271,14 @@ export class JoinConfirmOverlayComponent {
     const e = this.event();
     if (!e) return '';
     return new Date(e.endsAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+  });
+
+  readonly canRejoin = computed(() => {
+    const e = this.event();
+    if (!e) return false;
+    // Can rejoin if event hasn't started yet and is not cancelled
+    const now = new Date();
+    const startsAt = new Date(e.startsAt);
+    return now < startsAt && e.status !== 'CANCELLED';
   });
 }

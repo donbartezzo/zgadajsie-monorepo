@@ -7,7 +7,7 @@ import { ChatGateway } from '../chat/chat.gateway';
 
 const CHUNK_SIZE = 50;
 
-const ACTIVE_PARTICIPANT_STATUSES = ['PENDING', 'APPROVED', 'CONFIRMED'];
+// Active participants: wantsIn=true (regardless of slot status)
 
 export interface DispatchResult {
   announcementId: string;
@@ -39,7 +39,7 @@ export class AnnouncementDispatcherService {
     });
 
     const participants = await this.prisma.eventParticipation.findMany({
-      where: { eventId, status: { in: ACTIVE_PARTICIPANT_STATUSES } },
+      where: { eventId, wantsIn: true },
       include: { user: { select: { id: true, email: true, displayName: true } } },
     });
 
@@ -128,9 +128,7 @@ export class AnnouncementDispatcherService {
     eventUrl: string,
   ): Promise<void> {
     const title =
-      priority === 'CRITICAL'
-        ? `[PILNE] Komunikat: ${eventTitle}`
-        : `Komunikat: ${eventTitle}`;
+      priority === 'CRITICAL' ? `[PILNE] Komunikat: ${eventTitle}` : `Komunikat: ${eventTitle}`;
 
     const results = await Promise.allSettled([
       this.pushService.notifyUser(user.id, 'ANNOUNCEMENT', title, message, undefined, eventUrl),
@@ -165,8 +163,8 @@ export class AnnouncementDispatcherService {
           priority === 'CRITICAL'
             ? '🔴 [PILNE]'
             : priority === 'ORGANIZATIONAL'
-              ? '🟡 [Organizacyjne]'
-              : 'ℹ️ [Info]';
+            ? '🟡 [Organizacyjne]'
+            : 'ℹ️ [Info]';
         const content = `${prefix} ${message}`;
 
         const chatMessage = await this.chatService.createSystemMessage(
