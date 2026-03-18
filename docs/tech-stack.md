@@ -1,50 +1,83 @@
-# Stack technologiczny:
+# Stack technologiczny
 
-- Angular 20 (PWA, SSR-ready)
-- NestJS (API, SSR, Web Push),
-- Nest CLI (Command Line Interface),
-- Nx monorepo (zarządzanie kodem, workspace)
-- PostgreSQL (baza danych)
-- Prisma (ORM, migracje)
-- Angular Material (UI)
-- Tailwind CSS + czysty SCSS (utility-first CSS + własne style)
-- Zod (walidacja modeli/DTO, współdzielone typy)
-- Swagger (OpenAPI, dokumentacja endpointów)
-- RxJS (reaktywność, Angular)
-- ESLint, Prettier (linting, formatowanie)
-- Husky + lint-staged (pre-commit hooks)
-- Commitizen + Conventional Commits (standaryzacja commitów)
-- Docker (opcjonalnie, dev/prod build)
-- Jest (testy jednostkowe backend i frontend)
-- Playwright (testy e2e, web/mobile)
-- pnpm (szybki menedżer pakietów, wsparcie monorepo)
+Ten dokument opisuje **faktycznie używany** stack projektu na podstawie aktualnego kodu, `package.json` i konfiguracji workspace.
 
-# Integracje i funkcje dodatkowe:
+## Monorepo i narzędzia bazowe
 
-- Web Push API (powiadomienia push, MVP)
-- Firebase Cloud Messaging (alternatywa, skalowalność)
-- Leaflet lub MapLibre (open-source mapy, do ustalenia)
-- Passport.js + OAuth2 (autoryzacja społecznościowa, integracje zewnętrzne)
-- Nx Cloud (opcjonalnie, CI/CD, cache buildów)
+- `Nx` - zarządzanie monorepo i taskami projektowymi
+- `pnpm` - menedżer pakietów
+- `TypeScript` - wspólny język implementacji dla frontendu i backendu
+- `ESLint` - linting w konfiguracji flat
+- `Prettier` - formatowanie kodu
 
-# Dalsze wytyczne techniczne:
+## Frontend
 
-- szablon HTML oparty na własnych komponentach w czystym SCSS + Tailwind CSS + Angular Material
-- obowiązkowe współdzielenie modeli/DTO między frontendem i backendem (np. przez workspace/libs/shared)
-- RWD (responsywność) + mobile-first
-- dokumentacja endpointów w Swagger
-- push notifications (Web Push API lub FCM)
-- ewentualna integracja z Ionic w dalszej przyszłości (w celu deployu na store)
+- `Angular 20`
+- standalone components
+- Angular Router
+- `Angular SSR` / server entry (`main.server.ts`, `app.routes.server.ts`)
+- `RxJS`
+- `Angular Material` i `CDK` - tylko zachowanie i a11y, nie warstwa wizualna
+- `Tailwind CSS 3`
+- `SCSS`
+- PWA przez `@angular/service-worker`
+- `Leaflet` do map
+- `socket.io-client` do komunikacji realtime
 
-# Uzasadnienia i zalecenia:
+## Backend
 
-- Nx zapewnia wydajny workflow, współdzielenie kodu i łatwą integrację Angular + NestJS + shared libs.
-- pnpm jest szybszy i lepiej wspiera monorepo niż npm/yarn.
-- Zod pozwala na typowanie i walidację modeli/DTO po obu stronach (TS-first, lepsza spójność).
-- Playwright umożliwia testy e2e na web i mobile (PWA).
-- Leaflet/MapLibre to otwarte, lekkie rozwiązania mapowe.
-- Web Push API jest natywny, FCM daje lepszą skalowalność (do wyboru na etapie wdrożenia powiadomień).
-- Passport.js/OAuth2 pozwala na szybkie wdrożenie autoryzacji społecznościowej.
-- Docker i Nx Cloud są opcjonalne na etapie MVP, ale warto je rozważyć przy produkcji.
-- Zaleca się użycie wyłącznie Jest do testów jednostkowych backendu i frontendu dla uproszczenia konfiguracji i spójności w monorepo.
-- Zaleca się użycie wyłącznie Playwright do testów e2e (web/mobile) – uproszczenie konfiguracji, nowoczesne API, szerokie wsparcie przeglądarek.
+- `NestJS 11`
+- `Prisma 5` jako ORM
+- `PostgreSQL`
+- `Socket.IO` / `@nestjs/websockets`
+- `@nestjs/config`
+- `class-validator` i `class-transformer`
+- `Passport` + strategie OAuth / JWT
+- `helmet`
+- `@nestjs/schedule`
+- `@nestjs/throttler`
+
+## Współdzielony kod
+
+- `libs/` jako miejsce na współdzielone enumy, typy, stałe i konfiguracje domenowe
+- przykłady: `enums/`, `constants/`, `config/discipline-schemas.ts`
+
+## Integracje domenowe i infrastrukturalne
+
+- `Tpay Open API` - płatności
+- `Cloudflare R2 / S3 SDK` - storage mediów
+- `Nodemailer` - e-mail
+- `web-push` - powiadomienia push
+- `Passport Google OAuth2`
+- `Passport Facebook`
+
+## Testy
+
+- `Jest` - testy jednostkowe
+- `Playwright` - testy e2e
+
+## Architektura UI i stylingu
+
+- projekt jest mobile-first
+- layout i wygląd budowane są przez `Tailwind`
+- semantyczne kolory pochodzą z `frontend/src/styles/_tokens.scss` i mapowania w `frontend/tailwind.config.js`
+- brak dark mode jako wspieranego systemu theme
+- ikony są realizowane przez inline SVG i `IconComponent`
+
+## Czego ten dokument celowo nie traktuje jako aktywnego stacku
+
+Poniższe elementy **nie powinny być traktowane przez AI jako aktywne filary projektu**, jeśli nie wynikają wprost z kodu:
+
+- `Swagger / OpenAPI` jako aktualne źródło dokumentacji endpointów
+- `Zod` jako główny mechanizm walidacji runtime w aplikacji
+- `FCM` jako wdrożona integracja push
+- `Nx Cloud`, `Docker`, `Husky`, `lint-staged`, `Commitizen` jako aktywnie skonfigurowane elementy workflow projektu
+
+## Źródła prawdy dla stacku
+
+- `package.json`
+- `frontend/angular.json`
+- `frontend/tailwind.config.js`
+- `backend/project.json`
+- `frontend/project.json`
+- `backend/prisma/schema.prisma`

@@ -68,7 +68,7 @@ Dla zadania „oprzyj się na pliku X.html” stosuj **zawsze tę samą sekwencj
 
    - Zamień `<i class="bi bi-..."></i>` lub inne font icons na użycie `IconComponent`:
      - Ustal semantyczną nazwę ikony (`"home"`, `"calendar"`, `"user"` itp.).
-     - Użyj: `<app-icon name="home" class="w-6 h-6 text-zinc-700" />` lub odpowiedniego aliasu `IconComponent`.
+     - Użyj: `<app-icon name="home" class="w-6 h-6 text-neutral-900" />` lub odpowiedniego aliasu `IconComponent`.
 
 5. **Interakcje i logika**
 
@@ -123,16 +123,17 @@ Gdy brak bezpośredniego odpowiednika, wybierz **najbliższą skalę Tailwind**.
 
 **Kolory - WYŁĄCZNIE z palety projektowej:**
 
-Projekt posiada **centralną paletę kolorów** zdefiniowaną jako statyczne hex values w `frontend/tailwind.config.js`. Brak CSS custom properties kolorów. Brak dark mode.
+Projekt korzysta z 3-warstwowej architektury kolorów: foundation palette w `frontend/tailwind.config.js`, semantic tokens w `frontend/src/styles/_tokens.scss` i mapowanie do klas Tailwind w `frontend/tailwind.config.js`. Brak dark mode.
 
 **Źródło definicji:**
 
-- **Jedyne źródło prawdy:** `frontend/tailwind.config.js` (`extend.colors`)
+- **Source of truth dla tokenów semantycznych:** `frontend/src/styles/_tokens.scss`
+- **Tailwind mapping:** `frontend/tailwind.config.js`
 - **Pełna dokumentacja:** `docs/design-tokens.md`
 - **Podgląd wizualny:** `/dev/design-system` (tylko dev mode)
 
 **Zasada migracji Bootstrap → Tailwind:**
-Przy migracji kolorów z Bootstrapa używaj **wyłącznie** palet z `tailwind.config.js`:
+Przy migracji kolorów z Bootstrapa używaj **wyłącznie** semantycznych palet projektowych:
 
 _Tekst i tła ogólne:_
 
@@ -165,7 +166,7 @@ _Focus ring:_
 
 - `:focus` / `.focus` → `focus:ring-2 focus:ring-primary-500 focus:outline-none`
 
-**ZABRONIONE:** domyślne kolory Tailwind (`gray-*`, `blue-*`, `slate-*`), arbitralne hexy (`bg-[#abc]`), prefixy `dark:`.
+**ZABRONIONE:** domyślne kolory Tailwind (`gray-*`, `blue-*`, `slate-*`, `zinc-*`), arbitralne hexy (`bg-[#abc]`), prefixy `dark:`.
 
 **Nigdy nie używaj** klas kolorów Bootstrapa. Zawsze dobieraj klasy z palety projektowej.
 
@@ -267,7 +268,7 @@ W projekcie docelowym:\*\*
 3. W HTML zamiast `<i>` wstaw coś w rodzaju:
 
 ```html
-<app-icon name="home" class="w-6 h-6 text-zinc-700" />
+<app-icon name="home" class="w-6 h-6 text-neutral-700" />
 ```
 
 4. Rozmiar (`w-* h-*`) i kolor (`text-*`) kontroluj klasami Tailwind.
@@ -279,7 +280,7 @@ Jeśli w zadaniu nie jest opisane skąd brać ikonę, **załóż użycie Heroico
 
 ## 7. Angular – szczegółowe wytyczne implementacyjne
 
-Przy tworzeniu komponentów na bazie szablonu **zawsze** stosuj zasady z `docs/styleguide-frontend.md`:
+Przy tworzeniu komponentów na bazie szablonu **zawsze** stosuj zasady z `docs/styleguide-common.md` oraz `docs/styleguide-frontend.md`:
 
 1. **Standalone components** – każdy nowy komponent jest standalone (domyślnie w Angular 20+).
 2. **ChangeDetectionStrategy.OnPush** – ustawiaj, o ile nie jest już domyślne.
@@ -337,7 +338,7 @@ Dla każdego zadania typu: „Stwórz stronę/komponent na podstawie pliku szabl
 4. Zbuduj layout, spacing, typografię i kolory za pomocą klas Tailwind.
 5. Zamień wszystkie ikony na `IconComponent` + inline SVG (Heroicons, `currentColor`).
 6. W razie potrzeby użyj Angular Material/CDK **tylko** dla zachowania i a11y, nie designu.
-7. Zastosuj zasady Angular z `docs/styleguide-frontend.md` (standalone, sygnały, OnPush, nowa składnia szablonów).
+7. Zastosuj zasady z `docs/styleguide-common.md` oraz Angular z `docs/styleguide-frontend.md` (standalone, sygnały, OnPush, nowa składnia szablonów).
 8. Tam, gdzie widzisz powtarzalne UI, wydziel headless komponent w `shared/ui`.
 
 Traktuj szablon Bootstrap **wyłącznie jako referencję struktury i UX**, a nie jako źródło kodu CSS/JS. Wszystkie decyzje o layoutcie i stylach podejmuj w oparciu o Tailwind i istniejące zasady projektu.

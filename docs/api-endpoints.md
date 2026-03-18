@@ -1,356 +1,199 @@
-# Dokumentacja API Zgadajsie
+# Dokumentacja API ZgadajSię
 
-Ten dokument zawiera opis dostępnych endpointów API w aplikacji Zgadajsie.
+Ten dokument jest **mapą aktywnych endpointów** i ich odpowiedzialności. Nie zastępuje kodu kontrolerów ani DTO.
+
+## Źródła prawdy
+
+W przypadku rozbieżności nadrzędne są:
+
+1. `backend/src/modules/**/**.controller.ts`
+2. `backend/src/modules/**/dto/**`
+3. `backend/src/main.ts` (global prefix `/api`)
+4. ten dokument
 
 ## Podstawowe informacje
 
-- Bazowy URL API: `/api`
-- Format danych: JSON
-- Autoryzacja: Bearer Token (JWT)
-- Obsługiwane metody: GET, POST, PUT, DELETE
-
-## Endpointy - Wydarzenia
-
-### Pobieranie listy wydarzeń
-
-```
-GET /api/events
-```
-
-Pobiera listę wszystkich wydarzeń z opcjonalną filtracją.
-
-**Parametry zapytania:**
-
-- `city` (opcjonalny) - filtrowanie po mieście
-- `date` (opcjonalny) - filtrowanie po dacie (format: YYYY-MM-DD)
-- `sportType` (opcjonalny) - filtrowanie po typie sportu
-- `status` (opcjonalny) - filtrowanie po statusie wydarzenia (public/private)
-
-**Odpowiedź:**
-
-```json
-{
-  "events": [
-    {
-      "id": "uuid",
-      "startTime": "2025-10-20T18:00:00Z",
-      "endTime": "2025-10-20T20:00:00Z",
-      "location": "ul. Przykładowa 123, Warszawa",
-      "coordinates": { "lat": 52.229676, "lng": 21.012229 },
-      "sportType": "football",
-      "facility": "orlik",
-      "costPerPerson": 15,
-      "status": "public",
-      "description": "Opis wydarzenia...",
-      "ageRange": { "min": 18, "max": 50 },
-      "gender": "any",
-      "level": "amateur"
-    }
-    // więcej wydarzeń...
-  ],
-  "total": 42,
-  "page": 1,
-  "limit": 10
-}
-```
-
-### Szczegóły wydarzenia
-
-```
-GET /api/events/{id}
-```
-
-Pobiera szczegóły konkretnego wydarzenia.
-
-**Parametry:**
-
-- `id` - identyfikator wydarzenia
-
-**Odpowiedź:**
-
-```json
-{
-  "id": "uuid",
-  "startTime": "2025-10-20T18:00:00Z",
-  "endTime": "2025-10-20T20:00:00Z",
-  "location": "ul. Przykładowa 123, Warszawa",
-  "coordinates": { "lat": 52.229676, "lng": 21.012229 },
-  "sportType": "football",
-  "facility": "orlik",
-  "costPerPerson": 15,
-  "status": "public",
-  "description": "Opis wydarzenia...",
-  "ageRange": { "min": 18, "max": 50 },
-  "gender": "any",
-  "level": "amateur",
-  "organizer": {
-    "id": "uuid",
-    "name": "Jan Kowalski"
-  },
-  "participants": [
-    {
-      "id": "uuid",
-      "name": "Adam Nowak"
-    }
-    // więcej uczestników...
-  ]
-}
-```
-
-### Tworzenie nowego wydarzenia
-
-```
-POST /api/events
-```
-
-Tworzy nowe wydarzenie.
-
-**Wymagana autoryzacja:** Tak
-
-**Dane wejściowe:**
-
-```json
-{
-  "startTime": "2025-10-20T18:00:00Z",
-  "endTime": "2025-10-20T20:00:00Z",
-  "location": "ul. Przykładowa 123, Warszawa",
-  "coordinates": { "lat": 52.229676, "lng": 21.012229 },
-  "sportType": "football",
-  "facility": "orlik",
-  "costPerPerson": 15,
-  "status": "public",
-  "description": "Opis wydarzenia...",
-  "ageRange": { "min": 18, "max": 50 },
-  "gender": "any",
-  "level": "amateur"
-}
-```
-
-**Odpowiedź:**
-
-```json
-{
-  "id": "uuid",
-  "startTime": "2025-10-20T18:00:00Z",
-  "endTime": "2025-10-20T20:00:00Z",
-  "location": "ul. Przykładowa 123, Warszawa",
-  "coordinates": { "lat": 52.229676, "lng": 21.012229 },
-  "sportType": "football",
-  "facility": "orlik",
-  "costPerPerson": 15,
-  "status": "public",
-  "description": "Opis wydarzenia...",
-  "ageRange": { "min": 18, "max": 50 },
-  "gender": "any",
-  "level": "amateur",
-  "createdAt": "2025-10-18T12:00:00Z"
-}
-```
+- Bazowy prefix API: `/api`
+- Format danych: JSON, z wyjątkiem webhooka Tpay zwracającego plain text `TRUE`
+- Główna autoryzacja: Bearer Token (JWT)
+- Globalna walidacja: `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true })`
 
-### Aktualizacja wydarzenia
+## Skróty guardów używane w tym dokumencie
 
-```
-PUT /api/events/{id}
-```
+- `auth` - `JwtAuthGuard`
+- `active` - `IsActiveGuard`
+- `optional-auth` - `OptionalJwtAuthGuard`
+- `admin` - `Roles('ADMIN')`
 
-Aktualizuje istniejące wydarzenie.
+## Auth (`/api/auth`)
 
-**Wymagana autoryzacja:** Tak (tylko organizator wydarzenia)
+### Publiczne
 
-**Parametry:**
+- `POST /auth/register`
+- `POST /auth/login`
+- `GET /auth/activate?token=...`
+- `POST /auth/resend-activation`
+- `POST /auth/forgot-password`
+- `POST /auth/reset-password`
+- `GET /auth/google`
+- `GET /auth/google/callback`
+- `GET /auth/facebook`
+- `GET /auth/facebook/callback`
 
-- `id` - identyfikator wydarzenia
+### Chronione
 
-**Dane wejściowe:**
-Takie same jak przy tworzeniu wydarzenia.
+- `POST /auth/refresh` - `auth` przez refresh guard
 
-**Odpowiedź:**
+## Users (`/api/users`)
 
-```json
-{
-  "id": "uuid",
-  "startTime": "2025-10-21T18:00:00Z", // zaktualizowane pole
-  "endTime": "2025-10-21T20:00:00Z", // zaktualizowane pole
-  "location": "ul. Przykładowa 123, Warszawa",
-  "coordinates": { "lat": 52.229676, "lng": 21.012229 },
-  "sportType": "football",
-  "facility": "orlik",
-  "costPerPerson": 15,
-  "status": "public",
-  "description": "Opis wydarzenia...",
-  "ageRange": { "min": 18, "max": 50 },
-  "gender": "any",
-  "level": "amateur",
-  "updatedAt": "2025-10-18T14:30:00Z"
-}
-```
+### Konto bieżącego użytkownika
 
-### Usunięcie wydarzenia
+- `GET /users/me` - `auth`
+- `PATCH /users/me` - `auth`
+- `GET /users/me/events` - `auth + active`
+- `GET /users/me/participations` - `auth + active`
+- `GET /users/me/reprimands` - `auth + active`
 
-```
-DELETE /api/events/{id}
-```
+### Administracja użytkownikami
 
-Usuwa wydarzenie.
+- `GET /users` - `auth + admin`
+- `GET /users/:id` - `auth + admin`
+- `PATCH /users/:id` - `auth + admin`
 
-**Wymagana autoryzacja:** Tak (tylko organizator wydarzenia)
+## Dictionaries (`/api/dictionaries`)
 
-**Parametry:**
+Publiczne endpointy słownikowe:
 
-- `id` - identyfikator wydarzenia
+- `GET /dictionaries/cities`
+- `GET /dictionaries/cities/:slug`
+- `GET /dictionaries/disciplines`
+- `GET /dictionaries/disciplines/:slug/schema`
+- `GET /dictionaries/facilities`
+- `GET /dictionaries/levels`
 
-**Odpowiedź:**
+## City subscriptions (`/api/cities`)
 
-```json
-{
-  "message": "Wydarzenie zostało usunięte"
-}
-```
+- `GET /cities/:cityId/subscription` - `auth`
+- `POST /cities/:cityId/subscribe` - `auth`
+- `DELETE /cities/:cityId/subscribe` - `auth`
 
-### Zgłoszenie chęci udziału w wydarzeniu
+## Events (`/api/events`)
 
-```
-POST /api/events/{id}/participate
-```
+### Publiczne / częściowo publiczne
 
-Rejestruje użytkownika jako uczestnika wydarzenia.
+- `GET /events`
+- `GET /events/:id` - `optional-auth`
+- `GET /events/:id/participants`
 
-**Wymagana autoryzacja:** Tak
+### Dla zalogowanego aktywnego użytkownika
 
-**Parametry:**
+- `POST /events`
+- `PATCH /events/:id`
+- `DELETE /events/:id`
+- `POST /events/:id/cancel`
+- `POST /events/:id/duplicate`
+- `GET /events/:id/participants/manage`
+- `POST /events/:id/mark-paid/:participationId`
+- `POST /events/:id/cancel-payment/:paymentId`
+- `POST /events/series`
+- `PATCH /events/:id/series`
 
-- `id` - identyfikator wydarzenia
+## Participation (`/api`)
 
-**Odpowiedź:**
+Kontroler participation nie ma własnego prefixu kontrolera - endpointy są wystawiane bezpośrednio pod `/api/...`.
 
-```json
-{
-  "message": "Zgłoszenie przyjęte",
-  "event": {
-    "id": "uuid",
-    "title": "Nazwa wydarzenia",
-    "startTime": "2025-10-20T18:00:00Z"
-  }
-}
-```
+- `POST /events/:eventId/join` - `auth + active`
+- `POST /events/:eventId/join-guest` - `auth + active`
+- `GET /events/:eventId/my-guests` - `auth + active`
+- `POST /participations/:id/assign-slot` - `auth + active`
+- `POST /participations/:id/confirm-slot` - `auth + active`
+- `POST /participations/:id/release-slot` - `auth + active`
+- `POST /participations/:id/leave` - `auth + active`
+- `POST /participations/:id/pay` - `auth + active`
 
-### Rezygnacja z udziału w wydarzeniu
+## Chat (`/api/events/:eventId/chat`)
 
-```
-DELETE /api/events/{id}/participate
-```
+- `GET /events/:eventId/chat/messages` - `auth + active`
+- `GET /events/:eventId/chat/members` - `auth + active`
+- `POST /events/:eventId/chat/ban/:userId` - `auth + active`
+- `DELETE /events/:eventId/chat/ban/:userId` - `auth + active`
+- `GET /events/:eventId/chat/private/conversations` - `auth + active`
+- `GET /events/:eventId/chat/private/:userId/messages` - `auth + active`
 
-Usuwa użytkownika z listy uczestników wydarzenia.
+### Realtime
 
-**Wymagana autoryzacja:** Tak
+- WebSocket namespace: `/chat`
 
-**Parametry:**
+## Announcements (`/api`)
 
-- `id` - identyfikator wydarzenia
+Kontroler announcement używa mieszanych ścieżek bez wspólnego prefixu kontrolera.
 
-**Odpowiedź:**
+- `POST /events/:eventId/announcements` - `auth`
+- `GET /events/:eventId/announcements` - `optional-auth`
+- `GET /announcements/confirm/:token` - publiczne
+- `POST /announcements/confirm-all/:eventId` - `auth`
+- `POST /announcements/:announcementId/confirm` - `auth`
+- `GET /announcements/:announcementId/stats` - `auth`
 
-```json
-{
-  "message": "Zrezygnowano z udziału w wydarzeniu"
-}
-```
+## Notifications (`/api/notifications`)
 
-## Endpointy - Użytkownicy
+- `GET /notifications` - `auth`
+- `GET /notifications/unread-count` - `auth`
+- `PATCH /notifications/:id/read` - `auth`
+- `PATCH /notifications/read-all` - `auth`
+- `POST /notifications/push/subscribe` - `auth`
+- `POST /notifications/push/unsubscribe` - `auth`
+- `POST /notifications/email/test-connection` - `auth`
+- `POST /notifications/email/send-test` - `auth`
 
-### Rejestracja
+## Moderation (`/api/moderation`)
 
-```
-POST /api/auth/register
-```
+- `POST /moderation/reprimands` - `auth + active`
+- `GET /moderation/reprimands/:userId` - `auth + active`
+- `POST /moderation/ban` - `auth + active`
+- `DELETE /moderation/ban/:targetUserId` - `auth + active`
+- `POST /moderation/trust/:targetUserId` - `auth + active`
+- `DELETE /moderation/trust/:targetUserId` - `auth + active`
+- `GET /moderation/relations` - `auth + active`
+- `GET /moderation/relation/:targetUserId` - `auth + active`
 
-Rejestruje nowego użytkownika.
+## Media (`/api/media`)
 
-**Dane wejściowe:**
+- `POST /media/upload` - `auth + active`
+- `GET /media/me` - `auth + active`
+- `DELETE /media/:id` - `auth + active`
 
-```json
-{
-  "email": "jan.kowalski@example.com",
-  "password": "silneHasło123!",
-  "name": "Jan Kowalski"
-}
-```
+## Cover images (`/api/cover-images`)
 
-**Odpowiedź:**
+- `GET /cover-images` - `auth + active`
+- `GET /cover-images/:id` - `auth + active`
+- `GET /cover-images/:id/usage` - `auth + active + admin`
+- `POST /cover-images` - `auth + active + admin`
+- `PUT /cover-images/:id/image` - `auth + active + admin`
+- `PUT /cover-images/:id/discipline` - `auth + active + admin`
+- `DELETE /cover-images/:id` - `auth + active + admin`
 
-```json
-{
-  "id": "uuid",
-  "email": "jan.kowalski@example.com",
-  "name": "Jan Kowalski",
-  "createdAt": "2025-10-18T10:00:00Z",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
+## Payments (`/api/payments`)
 
-### Logowanie
+- `POST /payments/tpay-webhook` - publiczny webhook
+- `POST /payments/simulate-success/:intentId` - `auth + admin`
+- `GET /payments/my-payments` - `auth + active`
+- `GET /payments/:id/status` - `auth + active`
+- `GET /payments/intent/:intentId/status` - `auth + active`
+- `GET /payments/admin/all` - `auth + admin`
+- `GET /payments/admin/:id` - `auth + admin`
 
-```
-POST /api/auth/login
-```
+## Vouchers (`/api/vouchers`)
 
-Loguje użytkownika.
+- `GET /vouchers/my` - `auth + active`
+- `GET /vouchers/balance/:organizerId` - `auth + active`
 
-**Dane wejściowe:**
+## Activity rank (`/api/activity-rank`)
 
-```json
-{
-  "email": "jan.kowalski@example.com",
-  "password": "silneHasło123!"
-}
-```
+- `GET /activity-rank/me` - `auth`
 
-**Odpowiedź:**
+## Uwaga dla AI
 
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": "uuid",
-    "email": "jan.kowalski@example.com",
-    "name": "Jan Kowalski"
-  }
-}
-```
-
-### Profil użytkownika
-
-```
-GET /api/users/me
-```
-
-Pobiera profil zalogowanego użytkownika.
-
-**Wymagana autoryzacja:** Tak
-
-**Odpowiedź:**
-
-```json
-{
-  "id": "uuid",
-  "email": "jan.kowalski@example.com",
-  "name": "Jan Kowalski",
-  "eventsOrganized": 5,
-  "eventsParticipated": 12,
-  "createdAt": "2025-09-01T12:00:00Z"
-}
-```
-
-## Kody błędów
-
-- `400 Bad Request` - nieprawidłowe dane wejściowe
-- `401 Unauthorized` - brak autoryzacji
-- `403 Forbidden` - brak uprawnień
-- `404 Not Found` - zasób nie znaleziony
-- `500 Internal Server Error` - wewnętrzny błąd serwera
-
-## Uwagi
-
-- Wszystkie daty są w formacie ISO 8601 (UTC)
-- API obsługuje paginację za pomocą parametrów `page` i `limit` dla endpointów zwracających listy
-- W przypadku błędu, API zwraca obiekt z polami `message` i opcjonalnie `details`
+- Nie zakładaj shape requestów i response’ów wyłącznie na podstawie tego dokumentu.
+- Przy implementacji nowych konsumentów API zawsze czytaj właściwy kontroler, DTO i serwis.
+- Jeśli zmieniasz kontrakt endpointu, oceń wpływ na frontend, `libs/`, dokumentację i testy.

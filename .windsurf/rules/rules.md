@@ -7,12 +7,26 @@ description: Globalne zasady pracy AI w tym projekcie
 
 Konwersację prowadźmy w języku polskim.
 
-Wszelką implementację ZAWSZE prowadź/wdrażaj według zasad opisanych w plikach:
+Wszelką implementację ZAWSZE prowadź lub wdrażaj według zasad opisanych w plikach:
 
-- jeśli dotyczy frontend'u to: `docs/styleguide-frontend.md`
-- jeśli dotyczy backend'u to: `docs/styleguide-backend.md`.
+1. zawsze: `docs/styleguide-common.md`
+2. jeśli zadanie dotyczy frontend'u: `docs/styleguide-frontend.md`
+3. jeśli zadanie dotyczy backend'u: `docs/styleguide-backend.md`
+4. jeśli zadanie jest full-stack: uwzględnij wszystkie trzy powyższe pliki
+5. jeśli zadanie dotyczy design systemu lub kolorów: dodatkowo `docs/design-tokens.md`
+6. jeśli zadanie dotyczy migracji z szablonu sticky mobile / Bootstrapa: dodatkowo `docs/ai-bootstrap-to-tailwind-migration.md`
 
-Jeśli coś trzeba doprecyzować to napisz to w punktach i czekaj na decyzję. Jeśli wszystko jest jasne to przejdź do implementacji/planowania/analizy (w zależności i zapotrzebowania) i postępuj zgodnie z best practices oraz priorytetowo zgodnie z powyższymi plikami - no chyba że zadanie wymaga tylko analizy/planowania i nie ma takiej potrzeby to nie uwzględniaj powyższych plików - nie ma sensu zapychać kontekstu.
+Jeśli coś trzeba doprecyzować, napisz to w punktach i czekaj na decyzję. Jeśli wszystko jest jasne, przejdź do implementacji, planowania lub analizy - zależnie od potrzeb.
+
+Jeśli zadanie dotyczy wyłącznie analizy, planowania lub przeglądu dokumentacji i nie wymaga implementacji, korzystaj z guide'ów selektywnie - nie ma sensu zapychać kontekstu.
+
+## Kolejność źródeł prawdy
+
+W przypadku rozbieżności stosuj następującą kolejność:
+
+1. rzeczywiste pliki konfiguracyjne i kod źródłowy
+2. `docs/styleguide-common.md` oraz odpowiedni guide stack-specific
+3. pozostała dokumentacja opisowa
 
 Głównym szablonem, na którym bazuje projekt jest: `ignored/themplates/sticky-mobile`, ale oparty jest on na Bootstrapie, natomiast ten projekt oparty jest na Tailwind, więc jeśli implementacja dotyczy wdrażania podstron/komponentów/elementów z tego szablonu to należy przeprowadzić migrację i ogólnie postępować według zasad opisanych w: `docs/ai-bootstrap-to-tailwind-migration.md`
 
@@ -20,6 +34,7 @@ Głównym szablonem, na którym bazuje projekt jest: `ignored/themplates/sticky-
 
 **WAŻNE:** Jeśli wprowadzasz zmiany związane z design systemem (np. nowy kolor do palety, nowy token, nowa ikona, zmiana w spacing, nowy komponent UI), **ZAWSZE** zaktualizuj również:
 
+- `docs/design-tokens.md` (jeśli zmiana dotyczy tokenów, kolorów lub zasad użycia)
 - `frontend/src/app/features/dev/pages/design-system/design-system.component.ts` (i `.html` jeśli potrzeba)
 - Dodaj nowy element do odpowiedniej sekcji (colors, typography, icons, spacing, components)
 - Upewnij się, że nowy token/element jest widoczny na stronie `/dev/design-system`
@@ -32,17 +47,12 @@ W odpowiedzi na każde polecenie/prompa napisz czy zostało wykonane zgodnie z z
 
 ## Formatowanie kodu
 
-- Cały generowany kod musi być zgodny z konfiguracją Prettier z pliku `.prettierrc` w projekcie.
-- Kod w JavaScript, TypeScript, HTML, CSS i innych obsługiwanych językach powinien być automatycznie sformatowany zgodnie z tymi zasadami.
-- Nigdy nie nadpisuj ustawień Prettier. Jeśli istnieje konflikt między stylami, zawsze przestrzegaj ustawień z `.prettierrc`.
-- Przykład stylu Prettier, którego należy przestrzegać:
-  - `singleQuote: true` – używaj pojedynczych cudzysłowów
-  - `trailingComma: "all"` – stosuj przecinek po ostatnim elemencie w obiektach/tablicach
-  - `printWidth: 100` – maksymalna długość linii 100 znaków
-  - `semi: true` – każda linia kończy się średnikiem
-- Jeśli AI generuje fragment kodu, upewnij się, że jego formatowanie odzwierciedla powyższe zasady, np. wcięcia, spacje, średniki i cudzysłowy.
+- Cały generowany kod musi być zgodny z konfiguracją Prettier z pliku `.prettierrc`.
+- Nigdy nie nadpisuj ustawień Prettier.
+- Jeśli istnieje konflikt między stylami, zawsze przestrzegaj ustawień z `.prettierrc`.
 
 ## Wskazówki dla AI
 
 - Zawsze staraj się, aby wygenerowany kod był gotowy do użycia z Prettier, nawet jeśli w projekcie zostanie uruchomione automatyczne formatowanie.
-- Jeśli nie masz pewności co do formatowania, generuj kod w formie zgodnej z przykładowym stylem powyżej.
+- Zanim zaczniesz implementację, ustal które pliki są źródłem prawdy dla danego obszaru.
+- Jeśli zmiana dotyczy kontraktów, typów, enumów lub statusów biznesowych, oceń wpływ na frontend, backend, `libs/` i dokumentację.
