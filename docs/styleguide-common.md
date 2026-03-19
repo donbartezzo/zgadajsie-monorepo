@@ -2,8 +2,8 @@
 
 > Ten dokument zawiera zasady wspólne dla całego monorepo. Dla implementacji stack-specific zawsze czytaj go razem z odpowiednim guide'em:
 >
->- frontend: `docs/styleguide-frontend.md`
->- backend: `docs/styleguide-backend.md`
+> - frontend: `docs/styleguide-frontend.md`
+> - backend: `docs/styleguide-backend.md`
 
 ## Kolejność źródeł prawdy
 
@@ -22,48 +22,23 @@ Przykłady plików nadrzędnych:
 - `package.json`
 - pliki konfiguracyjne frameworków i bibliotek
 
-## Zasady ogólne
+## Zasady operacyjne
 
-- Stosuj zasady czystego kodu.
-- Preferuj małe, spójne jednostki odpowiedzialności.
-- Zanim dodasz nowy kod, sprawdź czy podobna logika już istnieje.
+- Preferuj prosty, spójny kod i małe odpowiedzialności.
+- Zanim dodasz nową logikę, sprawdź czy podobna już istnieje.
 - Nie duplikuj logiki, typów, enumów ani kontraktów.
-- Stosuj DRY, KISS, YAGNI.
-- Komentarze dodawaj tylko tam, gdzie kod nie jest oczywisty.
-
-## TypeScript
-
-- Używaj TypeScript do całego developmentu.
-- Traktuj silne typowanie jako domyślny standard.
-- Unikaj `any`; jeśli typ nie jest znany, preferuj `unknown`.
-- Preferuj `interface` dla kształtu obiektów, a `type` dla unii i kompozycji typów.
-- Nie używaj `public` - to domyślna widoczność.
-- Preferuj `private` zamiast pól `#`.
-
-## Konwencje nazewnictwa
-
-- Klasy, interfejsy, DTO, serwisy, komponenty, guardy, interceptory: PascalCase.
-- Zmienne, funkcje, metody, sygnały i właściwości: camelCase.
-- Pliki i katalogi: kebab-case.
-- Nazwy powinny opisywać intencję, a nie implementacyjny detal.
-
-## Reużycie kodu i współdzielenie między stackami
-
-- Zanim dodasz nowy helper, utils, typ lub enum, sprawdź istniejące zasoby projektu.
-- Jeśli logika lub kontrakt są używane w więcej niż jednym miejscu, wydziel je do współdzielonego obszaru.
-- Jeśli typy, enumy lub stałe są współdzielone między frontendem i backendem, preferuj `libs/` jako miejsce docelowe.
-- Nie twórz lokalnych kopii tych samych kontraktów po obu stronach stacku.
+- Dla elementów współdzielonych między frontendem i backendem preferuj `libs/`.
+- Używaj TypeScript jako standardu; unikaj `any`, a gdy typ nie jest znany, preferuj `unknown`.
+- Preferuj `interface` dla kształtu obiektów, a `type` dla unii i kompozycji.
+- Nie używaj `public` - to domyślna widoczność. Preferuj `private` zamiast pól `#`.
+- Nazewnictwo: PascalCase dla klas/interfejsów/DTO/serwisów/komponentów, camelCase dla zmiennych/metod/właściwości, kebab-case dla plików i katalogów.
+- Komentarze dodawaj tylko wtedy, gdy kod nie jest oczywisty.
 
 ## Myślenie full-stack / monorepo
 
 Każda zmiana powinna być oceniona pod kątem wpływu na cały system.
 
-- Jeśli zmieniasz kontrakt API, payload DTO, enum, typ lub status biznesowy, oceń wpływ na:
-  - backend
-  - frontend
-  - `libs`
-  - dokumentację
-  - testy
+- Jeśli zmieniasz kontrakt API, payload DTO, enum, typ lub status biznesowy, oceń wpływ na backend, frontend, `libs`, dokumentację i testy.
 - Jeśli zmieniasz wspólny kontrakt, aktualizuj wszystkich konsumentów w ramach tego samego zadania, o ile zakres zadania nie mówi inaczej.
 - Nie traktuj implementacji frontendowej i backendowej jako niezależnych, jeśli łączy je wspólny model danych lub endpoint.
 
@@ -80,6 +55,21 @@ Najważniejsze ustawienia projektu:
 - `printWidth: 100`
 - `semi: true`
 - `tabWidth: 2`
+
+## Czytelność kodu ponad możliwości Prettier
+
+- Prettier daje format bazowy, ale nie zastępuje decyzji o czytelnej strukturze kodu.
+- Jeśli kilka form zapisu jest poprawnych, wybieraj układ bardziej hierarchiczny i pionowy, a nie najbardziej skondensowany.
+- Nie upychaj wielu deklaracji, aliasów lub instrukcji w jednym wierszu tylko dlatego, że mieszczą się w `printWidth`.
+- Unikaj zlepków typu `} } else {`; preferuj kaskadowy układ bloków.
+- Jeśli formatter pogarsza czytelność, najpierw uprość strukturę lub przenieś część logiki poza dany blok.
+- `prettier-ignore` stosuj tylko lokalnie i wyjątkowo.
+
+W praktyce dotyczy to szczególnie DSL-i i template'ów, których Prettier nie formatuje idealnie:
+
+- preferuj jedną lokalną deklarację lub alias na linię
+- unikaj inline'owych gałęzi warunkowych, jeśli zawierają więcej niż prosty tekst lub pojedyncze wyrażenie
+- jeśli template zaczyna być zdominowany przez warunki, aliasy i formatowanie, przenieś część logiki do kodu źródłowego
 
 ## Linting kodu (ESLint)
 
@@ -100,22 +90,14 @@ Wspólne reguły nieoczywiste dla AI:
 - Stosuj `===` / `!==`.
 - Stosuj jawne bloki `{}` dla instrukcji sterujących.
 
-## Testy
+## Testy i bezpieczeństwo
 
 - Testuj publiczne zachowanie, nie wewnętrzne detale implementacyjne.
-- Uwzględniaj co najmniej:
-  - happy path
-  - edge cases
-  - obsługę błędów
+- Uwzględniaj co najmniej happy path, edge cases i obsługę błędów.
 - W testach stosuj wzorzec Arrange-Act-Assert.
-- Szczegóły dla frameworków i typów testów są opisane w guide'ach stack-specific.
-
-## Konfiguracja i bezpieczeństwo
-
-- Konfigurację przechowuj w zmiennych środowiskowych lub oficjalnych mechanizmach konfiguracji projektu.
+- Konfigurację przechowuj w zmiennych środowiskowych lub oficjalnych mechanizmach projektu.
 - Nie umieszczaj wrażliwych danych bezpośrednio w kodzie źródłowym.
 - Przy dodawaniu nowej konfiguracji zachowuj jednoznaczne źródło prawdy.
-- Jeśli funkcjonalność zależy od sekretów lub kluczy API, zaznacz to jawnie w implementacji i dokumentacji.
 
 ## Zasady dla AI
 
