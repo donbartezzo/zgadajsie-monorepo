@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { PRE_ENROLLMENT_HOURS, MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from './email.service';
 import { PushService } from './push.service';
 import { SlotService } from '../slots/slot.service';
-import { PRE_ENROLLMENT_HOURS } from '@zgadajsie/shared';
 
 @Injectable()
 export class EnrollmentLotteryCron {
@@ -20,7 +20,7 @@ export class EnrollmentLotteryCron {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleLottery(): Promise<void> {
     const now = new Date();
-    const threshold48h = new Date(now.getTime() + PRE_ENROLLMENT_HOURS * 60 * 60 * 1000);
+    const threshold48h = new Date(now.getTime() + PRE_ENROLLMENT_HOURS * MILLISECONDS_PER_HOUR);
 
     const eligibleEvents = await this.prisma.event.findMany({
       where: {

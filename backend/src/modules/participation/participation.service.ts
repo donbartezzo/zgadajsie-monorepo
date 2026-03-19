@@ -167,16 +167,8 @@ export class ParticipationService {
       throw new BadRequestException('Trwa losowanie miejsc - spróbuj za chwilę');
     }
 
-    // Only non-new users can add guests (organizer always can)
-    if (addedByUserId !== event.organizerId) {
-      const canAdd = await this.eligibility.canAddGuests(addedByUserId, event.organizerId);
-      if (!canAdd) {
-        throw new BadRequestException(
-          'Jako nowy użytkownik nie możesz dodawać gości. ' +
-            'Weź udział w wydarzeniu tego organizatora, aby odblokować tę opcję.',
-        );
-      }
-    }
+    // Everyone can add guests now
+    // If the adder is a new user, the guest will automatically be put into pending status later
 
     const isOrganizer = addedByUserId === event.organizerId;
     if (!isOrganizer) {
@@ -198,29 +190,36 @@ export class ParticipationService {
     if (phase === 'OPEN_ENROLLMENT') {
       const freeSlots = await this.slotService.getFreeSlotCount(eventId);
       if (freeSlots > 0) {
-        return this.prisma.$transaction(async (tx) => {
-          const participation = await tx.eventParticipation.create({
-            data: {
-              eventId,
-              userId: guestUser.id,
-              addedByUserId,
-              isGuest: true,
-              wantsIn: true,
-            },
-            include: { user: { select: USER_SELECT } },
+        // If the user adding the guest is a new user, the guest should be pending approval
+        const isNewUser = await this.eligibility.isNewUser(addedByUserId, event.organizerId);
+
+        if (!isNewUser) {
+          return this.prisma.$transaction(async (tx) => {
+            const participation = await tx.eventParticipation.create({
+              data: {
+                eventId,
+                userId: guestUser.id,
+                addedByUserId,
+                isGuest: true,
+                wantsIn: true,
+              },
+              include: { user: { select: USER_SELECT } },
+            });
+            // confirmed=false because user (host) must confirm
+            await this.slotService.assignSlot(eventId, participation.id, false, tx);
+            const withSlot = await tx.eventParticipation.findUnique({
+              where: { id: participation.id },
+              include: { user: { select: USER_SELECT }, slot: true },
+            });
+            return withDerivedStatus(withSlot!);
           });
-          // confirmed=false because user (host) must confirm
-          await this.slotService.assignSlot(eventId, participation.id, false, tx);
-          const withSlot = await tx.eventParticipation.findUnique({
-            where: { id: participation.id },
-            include: { user: { select: USER_SELECT }, slot: true },
-          });
-          return withDerivedStatus(withSlot!);
-        });
+        }
       }
     }
 
-    // No free slots or pre-enrollment → waiting list
+    // No free slots, pre-enrollment, or added by a new user → waiting list
+    const isNewUser = await this.eligibility.isNewUser(addedByUserId, event.organizerId);
+
     const participation = await this.prisma.eventParticipation.create({
       data: {
         eventId,
@@ -228,17 +227,49 @@ export class ParticipationService {
         addedByUserId,
         isGuest: true,
         wantsIn: true,
+        waitingReason: isNewUser
+          ? 'NEW_USER'
+          : phase === 'PRE_ENROLLMENT'
+          ? 'PRE_ENROLLMENT'
+          : 'NO_SLOTS',
       },
       include: { user: { select: USER_SELECT }, slot: true },
     });
     return withDerivedStatus(participation);
   }
 
-  /**
-   * Organizer assigns a slot to a waiting participant.
-   * In PRE_ENROLLMENT: no notification (user learns after lottery).
-   * In OPEN_ENROLLMENT: notification sent.
-   */
+  async updateGuestName(participationId: string, addedByUserId: string, displayName: string) {
+    const participation = await this.prisma.eventParticipation.findUnique({
+      where: { id: participationId },
+      include: {
+        user: true,
+        event: true,
+      },
+    });
+
+    if (!participation) {
+      throw new NotFoundException('Uczestnictwo nie znalezione');
+    }
+
+    if (!participation.isGuest) {
+      throw new BadRequestException('Można edytować tylko dane gości');
+    }
+
+    if (participation.addedByUserId !== addedByUserId) {
+      throw new ForbiddenException('Możesz edytować tylko swoich gości');
+    }
+
+    // Update the guest user's displayName
+    const updatedUser = await this.prisma.user.update({
+      where: { id: participation.userId },
+      data: { displayName },
+    });
+
+    return {
+      id: participation.id,
+      displayName: updatedUser.displayName,
+    };
+  }
   async assignSlotToParticipant(participationId: string, organizerUserId: string) {
     const participation = await this.prisma.eventParticipation.findUnique({
       where: { id: participationId },

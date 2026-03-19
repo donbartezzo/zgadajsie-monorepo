@@ -36,7 +36,10 @@ export type AnnouncementMode = 'participant' | 'organizer';
       <div class="space-y-3">
         @for (a of sortedAnnouncements(); track a.id) {
         <div
-          [class]="'flex flex-col rounded-3xl border px-4 py-3 sm:px-5 sm:py-3.5 ' + getCardClasses(a.priority)"
+          [class]="
+            'flex flex-col rounded-3xl border px-4 py-3 sm:px-5 sm:py-3.5 ' +
+            getCardClasses(a.priority)
+          "
         >
           <!-- Top row: priority + date (left) | confirm status (right) -->
           <div class="flex items-start justify-between gap-2 min-h-[28px]">
@@ -48,7 +51,9 @@ export type AnnouncementMode = 'participant' | 'organizer';
                   size="xs"
                   [class]="getPriorityIconColor(a.priority)"
                 ></app-icon>
-                <span [class]="getPriorityIconColor(a.priority)">{{ getPriorityLabel(a.priority) }}</span>
+                <span [class]="getPriorityIconColor(a.priority)">{{
+                  getPriorityLabel(a.priority)
+                }}</span>
               </div>
 
               <!-- Date with clock icon -->
@@ -66,11 +71,18 @@ export type AnnouncementMode = 'participant' | 'organizer';
               Wysłane
             </span>
             } @else if (a.receipts && a.receipts.length > 0 && !a.receipts[0].confirmedAt) {
-            <app-button variant="outline" size="xs" (clicked)="confirm.emit(a.id)" class="shrink-0 self-start h-7">
+            <app-button
+              variant="outline"
+              size="xs"
+              (clicked)="confirm.emit(a.id)"
+              class="shrink-0 self-start h-7"
+            >
               Potwierdź
             </app-button>
             } @else if (a.receipts && a.receipts.length > 0 && a.receipts[0].confirmedAt) {
-            <span class="text-xs sm:text-xs text-success-600 flex items-center gap-1 whitespace-nowrap shrink-0">
+            <span
+              class="text-xs sm:text-xs text-success-600 flex items-center gap-1 whitespace-nowrap shrink-0"
+            >
               <app-icon name="check" size="xs" [class]="'text-success-600'"></app-icon>
               Potwierdzone
             </span>
@@ -127,9 +139,7 @@ export class EventAnnouncementsComponent {
       ).length,
   );
 
-  readonly showConfirmAll = computed(
-    () => this.unconfirmedCount() > 1,
-  );
+  readonly showConfirmAll = computed(() => this.unconfirmedCount() > 1);
 
   getCardClasses(priority: string): string {
     switch (priority) {

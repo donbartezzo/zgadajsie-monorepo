@@ -28,7 +28,9 @@
 <app-participant-detail-overlay
   [participant]="selectedParticipant()"
   [open]="detailOverlayOpen()"
-  mode="public"
+  [mode]="detailMode()"
   [isPaidEvent]="isPaidEvent()"
+  [currentUserId]="currentUserId()"
   (closed)="closeDetailOverlay()"
+  (removeGuestRequested)="onRemoveGuestRequested($event)"
 />

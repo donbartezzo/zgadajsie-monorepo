@@ -53,35 +53,28 @@ const VARIANT_STYLES: Record<
   selector: 'app-enrollment-status-banner',
   imports: [IconComponent],
   template: `
-    @if (config(); as c) {
-      @let _styles = variantStyles();
-      <button
-        type="button"
-        class="w-full text-left"
-        (click)="openDetails()"
-      >
-        <div [class]="'rounded-xl border p-3 ' + _styles.container" role="status">
-          <div class="flex items-start gap-3">
-            <div
-              [class]="
-                'flex shrink-0 items-center justify-center rounded-lg p-2 ' + _styles.iconBg
-              "
-            >
-              <app-icon [name]="c.icon" size="sm" [class]="_styles.icon" />
-            </div>
-            <div class="min-w-0 flex-1">
-              <p [class]="'text-sm font-semibold leading-tight ' + _styles.title">
-                {{ c.title }}
-              </p>
-              <p class="mt-0.5 text-xs leading-relaxed text-neutral-500">{{ c.subtitle }}</p>
-              <p class="mt-1 text-[10px] text-neutral-400 underline underline-offset-2">
-                Kliknij, aby poznać szczegóły
-              </p>
-            </div>
-            <app-icon name="chevron-right" size="sm" class="mt-1 shrink-0 text-neutral-300" />
+    @if (config(); as c) { @let _styles = variantStyles();
+    <button type="button" class="w-full text-left" (click)="openDetails()">
+      <div [class]="'rounded-xl border p-3 ' + _styles.container" role="status">
+        <div class="flex items-start gap-3">
+          <div
+            [class]="'flex shrink-0 items-center justify-center rounded-lg p-2 ' + _styles.iconBg"
+          >
+            <app-icon [name]="c.icon" size="sm" [class]="_styles.icon" />
           </div>
+          <div class="min-w-0 flex-1">
+            <p [class]="'text-sm font-semibold leading-tight ' + _styles.title">
+              {{ c.title }}
+            </p>
+            <p class="mt-0.5 text-xs leading-relaxed text-neutral-500">{{ c.subtitle }}</p>
+            <p class="mt-1 text-[10px] text-neutral-400 underline underline-offset-2">
+              Kliknij, aby poznać szczegóły
+            </p>
+          </div>
+          <app-icon name="chevron-right" size="sm" class="mt-1 shrink-0 text-neutral-300" />
         </div>
-      </button>
+      </div>
+    </button>
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -98,15 +91,30 @@ export class EnrollmentStatusBannerComponent {
   // ── Computed ──
   readonly config = computed<BannerConfig | null>(() => {
     if (this.isCancelled()) {
-      return { icon: 'x', variant: 'danger', title: 'Wydarzenie odwołane', subtitle: 'Zapisy zamknięte' };
+      return {
+        icon: 'x',
+        variant: 'danger',
+        title: 'Wydarzenie odwołane',
+        subtitle: 'Zapisy zamknięte',
+      };
     }
 
     const ts = this.eventTimeStatus();
     if (ts === 'ENDED') {
-      return { icon: 'clock', variant: 'neutral', title: 'Zakończone', subtitle: 'Wydarzenie już się odbyło' };
+      return {
+        icon: 'clock',
+        variant: 'neutral',
+        title: 'Zakończone',
+        subtitle: 'Wydarzenie już się odbyło',
+      };
     }
     if (ts === 'ONGOING') {
-      return { icon: 'clock', variant: 'success', title: 'W trakcie', subtitle: 'Nowe zapisy niemożliwe' };
+      return {
+        icon: 'clock',
+        variant: 'success',
+        title: 'W trakcie',
+        subtitle: 'Nowe zapisy niemożliwe',
+      };
     }
 
     const phase = this.enrollmentPhase();
@@ -121,10 +129,20 @@ export class EnrollmentStatusBannerComponent {
       };
     }
     if (phase === 'LOTTERY_PENDING') {
-      return { icon: 'loader', variant: 'warning', title: 'Trwa losowanie', subtitle: 'Wyniki wkrótce' };
+      return {
+        icon: 'loader',
+        variant: 'warning',
+        title: 'Trwa losowanie',
+        subtitle: 'Wyniki wkrótce',
+      };
     }
     if (phase === 'OPEN_ENROLLMENT') {
-      return { icon: 'check-circle', variant: 'success', title: 'Zapisy otwarte', subtitle: 'Dołącz teraz' };
+      return {
+        icon: 'check-circle',
+        variant: 'success',
+        title: 'Zapisy otwarte',
+        subtitle: 'Dołącz teraz',
+      };
     }
 
     return null;

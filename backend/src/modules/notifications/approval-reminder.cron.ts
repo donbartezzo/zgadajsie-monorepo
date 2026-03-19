@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_24_HOURS } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { PushService } from './push.service';
 import { EmailService } from './email.service';
@@ -17,8 +18,10 @@ export class ApprovalReminderCron {
   @Cron(CronExpression.EVERY_30_MINUTES)
   async handleApprovalReminders(): Promise<void> {
     const now = new Date();
-    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const twentyFourAndHalfHoursAgo = new Date(now.getTime() - 24.5 * 60 * 60 * 1000);
+    const twentyFourHoursAgo = new Date(now.getTime() - MILLISECONDS_PER_24_HOURS);
+    const twentyFourAndHalfHoursAgo = new Date(
+      now.getTime() - (MILLISECONDS_PER_24_HOURS + 0.5 * MILLISECONDS_PER_HOUR),
+    );
 
     // Find participations with slot assigned ~24h ago but not yet confirmed (pending payment)
     const participations = await this.prisma.eventParticipation.findMany({

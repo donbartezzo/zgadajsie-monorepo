@@ -5,7 +5,12 @@ import {
   BottomOverlayComponent,
   OverlayIconVariant,
 } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
-import { Event as EventModel, WaitingReason, ParticipationStatus } from '../../../shared/types';
+import {
+  Event as EventModel,
+  WaitingReason,
+  ParticipationStatus,
+  Participation,
+} from '../../../shared/types';
 import {
   getParticipationStatusDescription,
   ParticipationStatusOptions,
@@ -152,6 +157,54 @@ import {
               <app-icon name="chevron-right" size="sm" class="text-neutral-300"></app-icon>
             </button>
 
+            <!-- Guest Management Section -->
+            <div class="rounded-xl border border-secondary-200 bg-secondary-50 p-3">
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-sm font-semibold text-secondary-700">
+                  Zarządzanie osobami towarzyszącymi
+                </p>
+                <button
+                  type="button"
+                  class="text-xs text-secondary-600 hover:text-secondary-700 font-medium flex items-center gap-1"
+                  (click)="addGuestRequested.emit()"
+                >
+                  <app-icon name="plus" size="xs"></app-icon>
+                  Dodaj gościa
+                </button>
+              </div>
+
+              @if (hasGuests()) {
+              <div class="space-y-2">
+                <!-- Guest list will be rendered here -->
+                <div class="text-xs text-secondary-600">
+                  Masz {{ guestCount() }} {{ guestCount() === 1 ? 'gościa' : 'gości' }}
+                </div>
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    class="text-xs text-secondary-600 hover:text-secondary-700 font-medium"
+                    (click)="addGuestRequested.emit()"
+                  >
+                    Dodaj kolejnego
+                  </button>
+                  <span class="text-xs text-secondary-400">•</span>
+                  <button
+                    type="button"
+                    class="text-xs text-secondary-600 hover:text-secondary-700 font-medium"
+                    (click)="manageGuests.emit()"
+                  >
+                    Zarządzaj
+                  </button>
+                </div>
+              </div>
+              } @else {
+              <div class="text-xs text-secondary-600">
+                Nie dodałeś jeszcze osób towarzyszących. Kliknij "Dodaj gościa" aby zaprosić
+                znajomych.
+              </div>
+              }
+            </div>
+
             <!-- Leave -->
             <button
               type="button"
@@ -183,6 +236,7 @@ export class JoinConfirmOverlayComponent {
   readonly loading = input(false);
   readonly participantStatus = input<string | null>(null);
   readonly waitingReason = input<WaitingReason | null>(null);
+  readonly participants = input<Participation[]>([]);
 
   readonly closed = output<void>();
   readonly openChat = output<void>();
@@ -190,6 +244,8 @@ export class JoinConfirmOverlayComponent {
   readonly contactOrganizer = output<void>();
   readonly leaveRequested = output<void>();
   readonly rejoinRequested = output<void>();
+  readonly addGuestRequested = output<void>();
+  readonly manageGuests = output<void>();
 
   readonly isWithdrawnOrRejected = computed(() => {
     const s = this.participantStatus();
@@ -266,5 +322,17 @@ export class JoinConfirmOverlayComponent {
     const now = new Date();
     const startsAt = new Date(e.startsAt);
     return now < startsAt && e.status !== 'CANCELLED';
+  });
+
+  readonly hasGuests = computed(() => {
+    const participants = this.participants();
+
+    return participants.some((p) => p.isGuest && p.addedByUserId && p.wantsIn);
+  });
+
+  readonly guestCount = computed(() => {
+    const participants = this.participants();
+
+    return participants.filter((p) => p.isGuest && p.addedByUserId && p.wantsIn).length;
   });
 }

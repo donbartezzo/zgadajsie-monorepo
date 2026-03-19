@@ -1,15 +1,13 @@
-@let _showHeader = showHeader(); @let _showFooter = showFooter(); @let _heroHidden = heroHidden();
-@let _hasCover = hasCover(); @let _centerContent = centerContent(); @let _contentClass =
-contentClass(); @let _showBorder = showBorder(); @let _isReady = layoutConfig.isReady();
+@let _showHeader = showHeader(); @let _showFooter = showFooter(); @let _heroHidden = heroHidden(); @let _hasCover =
+hasCover(); @let _centerContent = centerContent(); @let _contentClass = contentClass(); @let _showBorder = showBorder();
+@let _isReady = layoutConfig.isReady();
 
 <!-- ═══════════════════════════════════════════════════
    PRELOADER (shown until layout is ready)
    ═══════════════════════════════════════════════════ -->
 @if (!_isReady) {
 <div class="flex flex-1 items-center justify-center">
-  <div
-    class="h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-500"
-  ></div>
+  <div class="h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-500"></div>
 </div>
 } @else {
 <div class="flex flex-1 flex-col animate-fade-in">
@@ -22,9 +20,7 @@ contentClass(); @let _showBorder = showBorder(); @let _isReady = layoutConfig.is
 
   <!-- Fixed sticky - top-right corner, always visible when header shown -->
   @if (hasSticky()) {
-  <div
-    class="fixed inset-x-0 top-2 z-[51] mx-auto flex max-w-app justify-end px-2 pointer-events-none"
-  >
+  <div class="fixed inset-x-0 top-2 z-[51] mx-auto flex max-w-app justify-end px-2 pointer-events-none">
     <div class="pointer-events-auto">
       <ng-container *ngTemplateOutlet="layoutConfig.stickyTpl()"></ng-container>
     </div>
@@ -35,9 +31,7 @@ contentClass(); @let _showBorder = showBorder(); @let _isReady = layoutConfig.is
   <div
     [ngClass]="[
       'fixed inset-x-0 top-0 mx-auto max-w-app',
-      _heroHidden
-        ? 'z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-neutral-200'
-        : 'z-0'
+      _heroHidden ? 'z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-neutral-200' : 'z-0'
     ]"
     [style.height]="_heroHidden ? 'auto' : 'var(--hero-h)'"
   >
@@ -58,9 +52,7 @@ contentClass(); @let _showBorder = showBorder(); @let _isReady = layoutConfig.is
           <span
             class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 [@media(hover:hover)]:group-hover/back:max-w-44 [@media(hover:hover)]:group-hover/back:pr-2.5 [@media(hover:hover)]:group-hover/back:opacity-100"
           >
-            <span class="block text-[10px] font-semibold leading-tight">{{
-              breadcrumb.parentLabel()
-            }}</span>
+            <span class="block text-[10px] font-semibold leading-tight">{{ breadcrumb.parentLabel() }}</span>
           </span>
         </button>
       </div>
@@ -101,9 +93,7 @@ contentClass(); @let _showBorder = showBorder(); @let _isReady = layoutConfig.is
         class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 [@media(hover:hover)]:group-hover/back:max-w-48 [@media(hover:hover)]:group-hover/back:pr-3 [@media(hover:hover)]:group-hover/back:opacity-100"
       >
         <!-- <span class="block text-[10px] font-normal leading-tight opacity-80">Wróć do</span> -->
-        <span class="block text-xs font-semibold leading-tight">{{
-          breadcrumb.parentLabel()
-        }}</span>
+        <span class="block text-xs font-semibold leading-tight">{{ breadcrumb.parentLabel() }}</span>
       </span>
     </button>
     }
@@ -134,11 +124,7 @@ contentClass(); @let _showBorder = showBorder(); @let _isReady = layoutConfig.is
             <span class="block text-xs font-semibold leading-tight"> Powiadomienia </span>
           </span>
           <span class="flex h-9 w-9 shrink-0 items-center justify-center leading-[0]">
-            <app-icon
-              [name]="bellState === 'off' ? 'bell-off' : 'bell'"
-              size="sm"
-              variant="default"
-            ></app-icon>
+            <app-icon [name]="bellState === 'off' ? 'bell-off' : 'bell'" size="sm" variant="default"></app-icon>
           </span>
         </button>
         }

@@ -141,9 +141,7 @@
           <app-icon name="check-circle" class="w-5 h-5 text-success-600" />
           <div>
             <span class="text-sm text-neutral-900">Success bar</span>
-            <p class="text-xs text-neutral-500">
-              bg-success-50 · border-success-200 · text-success-600
-            </p>
+            <p class="text-xs text-neutral-500">bg-success-50 · border-success-200 · text-success-600</p>
           </div>
         </div>
         <div class="flex items-center gap-3 bg-info-50 border border-info-200 rounded-xl p-3">
@@ -157,27 +155,21 @@
           <app-icon name="alert-triangle" class="w-5 h-5 text-warning-400" />
           <div>
             <span class="text-sm text-neutral-900">Warning bar</span>
-            <p class="text-xs text-neutral-500">
-              bg-warning-50 · border-warning-200 · text-warning-400
-            </p>
+            <p class="text-xs text-neutral-500">bg-warning-50 · border-warning-200 · text-warning-400</p>
           </div>
         </div>
         <div class="flex items-center gap-3 bg-danger-50 border border-danger-200 rounded-xl p-3">
           <app-icon name="shield-alert" class="w-5 h-5 text-danger-500" />
           <div>
             <span class="text-sm text-neutral-900">Danger bar</span>
-            <p class="text-xs text-neutral-500">
-              bg-danger-50 · border-danger-200 · text-danger-500
-            </p>
+            <p class="text-xs text-neutral-500">bg-danger-50 · border-danger-200 · text-danger-500</p>
           </div>
         </div>
         <div class="flex items-center gap-3 bg-magenta-50 border border-magenta-200 rounded-xl p-3">
           <app-icon name="help-circle" class="w-5 h-5 text-magenta-600" />
           <div>
             <span class="text-sm text-neutral-900">Magenta bar</span>
-            <p class="text-xs text-neutral-500">
-              bg-magenta-50 · border-magenta-200 · text-magenta-600
-            </p>
+            <p class="text-xs text-neutral-500">bg-magenta-50 · border-magenta-200 · text-magenta-600</p>
           </div>
         </div>
         <div class="flex items-center gap-3 bg-brown-50 border border-brown-200 rounded-xl p-3">
@@ -206,9 +198,7 @@
         </div>
         <div>
           <p class="text-xs text-neutral-500 mb-1">text-base (1rem)</p>
-          <p class="text-base text-neutral-900">
-            Szybki brązowy lis przeskoczył przez leniwego psa.
-          </p>
+          <p class="text-base text-neutral-900">Szybki brązowy lis przeskoczył przez leniwego psa.</p>
         </div>
         <div>
           <p class="text-xs text-neutral-500 mb-1">text-lg (1.125rem)</p>
@@ -220,9 +210,7 @@
         </div>
         <div>
           <p class="text-xs text-neutral-500 mb-1">text-2xl (1.5rem)</p>
-          <p class="text-2xl text-neutral-900">
-            Szybki brązowy lis przeskoczył przez leniwego psa.
-          </p>
+          <p class="text-2xl text-neutral-900">Szybki brązowy lis przeskoczył przez leniwego psa.</p>
         </div>
         <div>
           <p class="text-xs text-neutral-500 mb-1">text-3xl (1.875rem)</p>
@@ -237,9 +225,7 @@
         <p class="text-base font-light text-neutral-900">font-light (300) - Przykładowy tekst</p>
         <p class="text-base font-normal text-neutral-900">font-normal (400) - Przykładowy tekst</p>
         <p class="text-base font-medium text-neutral-900">font-medium (500) - Przykładowy tekst</p>
-        <p class="text-base font-semibold text-neutral-900">
-          font-semibold (600) - Przykładowy tekst
-        </p>
+        <p class="text-base font-semibold text-neutral-900">font-semibold (600) - Przykładowy tekst</p>
         <p class="text-base font-bold text-neutral-900">font-bold (700) - Przykładowy tekst</p>
       </div>
     </section>
@@ -262,17 +248,13 @@
     <!-- ══════════════ ICONS ══════════════ -->
     @if (activeSection() === 'icons') {
     <section>
-      <h2 class="text-lg font-semibold text-neutral-900 mb-2">
-        Wszystkie ikony ({{ allIcons.length }})
-      </h2>
+      <h2 class="text-lg font-semibold text-neutral-900 mb-2">Wszystkie ikony ({{ allIcons.length }})</h2>
       <p class="text-sm text-neutral-500 mb-4">
         Komponent: <code class="bg-white px-1 rounded">&lt;app-icon name="..." /&gt;</code>
       </p>
       <div class="grid grid-cols-4 gap-2">
         @for (icon of allIcons; track icon) {
-        <div
-          class="bg-white rounded-lg border border-neutral-200 p-3 flex flex-col items-center gap-2"
-        >
+        <div class="bg-white rounded-lg border border-neutral-200 p-3 flex flex-col items-center gap-2">
           <app-icon [name]="icon" class="w-6 h-6 text-neutral-900" />
           <span class="text-xs text-neutral-500 truncate w-full text-center">{{ icon }}</span>
         </div>
@@ -413,9 +395,7 @@
 
       <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-6">
         <div>
-          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
-            Warianty (size md)
-          </p>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Warianty (size md)</p>
           <div class="flex flex-wrap gap-2">
             <app-button variant="primary">Primary</app-button>
             <app-button variant="secondary">Secondary</app-button>
@@ -430,9 +410,7 @@
         </div>
 
         <div>
-          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
-            Rozmiary (primary)
-          </p>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Rozmiary (primary)</p>
           <div class="flex flex-wrap items-center gap-2">
             <app-button variant="primary" size="xs">XS</app-button>
             <app-button variant="primary" size="sm">SM</app-button>
@@ -463,8 +441,8 @@
     <section>
       <h2 class="text-lg font-semibold text-neutral-900 mb-4">Icon-Only Buttons</h2>
       <p class="text-sm text-neutral-500 mb-4">
-        Kwadratowe przyciski z ikoną (iconOnly). Styl "Colors 2.0 Upgrade" z szablonu sticky-mobile.
-        Pastelowe tło + ciemna ikona.
+        Kwadratowe przyciski z ikoną (iconOnly). Styl "Colors 2.0 Upgrade" z szablonu sticky-mobile. Pastelowe tło +
+        ciemna ikona.
       </p>
 
       <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-6">
@@ -483,9 +461,7 @@
         </div>
 
         <div>
-          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
-            Rozmiary (primary)
-          </p>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Rozmiary (primary)</p>
           <div class="flex flex-wrap items-center gap-2">
             <app-button variant="primary" icon="check" [iconOnly]="true" size="xs" />
             <app-button variant="primary" icon="check" [iconOnly]="true" size="sm" />
@@ -495,9 +471,7 @@
         </div>
 
         <div>
-          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
-            Disabled / Loading
-          </p>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Disabled / Loading</p>
           <div class="flex flex-wrap gap-2">
             <app-button variant="success" icon="check" [iconOnly]="true" [disabled]="true" />
             <app-button variant="primary" icon="check" [iconOnly]="true" [loading]="true" />
@@ -508,15 +482,11 @@
 
     <section>
       <h2 class="text-lg font-semibold text-neutral-900 mb-4">Buttons z ikoną + tekstem</h2>
-      <p class="text-sm text-neutral-500 mb-4">
-        Przyciski z ikoną po lewej lub prawej stronie tekstu.
-      </p>
+      <p class="text-sm text-neutral-500 mb-4">Przyciski z ikoną po lewej lub prawej stronie tekstu.</p>
 
       <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-6">
         <div>
-          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
-            Ikona po lewej (domyślnie)
-          </p>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Ikona po lewej (domyślnie)</p>
           <div class="flex flex-wrap gap-2">
             <app-button variant="primary" icon="check">Zapisz</app-button>
             <app-button variant="danger" icon="trash">Usuń</app-button>
@@ -525,14 +495,10 @@
         </div>
 
         <div>
-          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
-            Ikona po prawej
-          </p>
+          <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Ikona po prawej</p>
           <div class="flex flex-wrap gap-2">
             <app-button variant="primary" icon="arrow-right" iconPosition="right">Dalej</app-button>
-            <app-button variant="outline" icon="external-link" iconPosition="right"
-              >Otwórz</app-button
-            >
+            <app-button variant="outline" icon="external-link" iconPosition="right">Otwórz</app-button>
           </div>
         </div>
       </div>

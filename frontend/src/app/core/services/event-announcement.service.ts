@@ -2,10 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import {
-  EventAnnouncementsResponse,
-  AnnouncementReceiptStats,
-} from '../../shared/types';
+import { EventAnnouncementsResponse, AnnouncementReceiptStats } from '../../shared/types';
 
 @Injectable({ providedIn: 'root' })
 export class EventAnnouncementService {
@@ -42,9 +39,7 @@ export class EventAnnouncementService {
     );
   }
 
-  confirmAllForEvent(
-    eventId: string,
-  ): Observable<{ confirmed: number; confirmedAt: string }> {
+  confirmAllForEvent(eventId: string): Observable<{ confirmed: number; confirmedAt: string }> {
     return this.http.post<{ confirmed: number; confirmedAt: string }>(
       `${this.apiUrl}/announcements/confirm-all/${eventId}`,
       {},

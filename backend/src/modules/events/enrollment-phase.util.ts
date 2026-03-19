@@ -1,4 +1,4 @@
-import { PRE_ENROLLMENT_HOURS } from '@zgadajsie/shared';
+import { PRE_ENROLLMENT_HOURS, MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
 
 export type EnrollmentPhase = 'PRE_ENROLLMENT' | 'LOTTERY_PENDING' | 'OPEN_ENROLLMENT';
 
@@ -21,7 +21,7 @@ export function getEnrollmentPhase(
   }
 
   const lotteryThreshold = new Date(
-    event.startsAt.getTime() - PRE_ENROLLMENT_HOURS * 60 * 60 * 1000,
+    event.startsAt.getTime() - PRE_ENROLLMENT_HOURS * MILLISECONDS_PER_HOUR,
   );
 
   if (now < lotteryThreshold) {
@@ -44,7 +44,7 @@ export function isLotteryPending(event: EnrollmentPhaseable, now = new Date()): 
 }
 
 export function getLotteryThreshold(startsAt: Date): Date {
-  return new Date(startsAt.getTime() - PRE_ENROLLMENT_HOURS * 60 * 60 * 1000);
+  return new Date(startsAt.getTime() - PRE_ENROLLMENT_HOURS * MILLISECONDS_PER_HOUR);
 }
 
 export function shouldSkipPreEnrollment(startsAt: Date, now = new Date()): boolean {

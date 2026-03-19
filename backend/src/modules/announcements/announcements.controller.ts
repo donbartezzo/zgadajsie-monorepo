@@ -50,10 +50,7 @@ export class AnnouncementsController {
 
   @Get('events/:eventId/announcements')
   @UseGuards(OptionalJwtAuthGuard)
-  async getForEvent(
-    @Param('eventId') eventId: string,
-    @Request() req: { user?: { id: string } },
-  ) {
+  async getForEvent(@Param('eventId') eventId: string, @Request() req: { user?: { id: string } }) {
     return this.dispatcher.getAnnouncementsForEvent(eventId, req.user?.id);
   }
 
@@ -68,10 +65,7 @@ export class AnnouncementsController {
 
   @Post('announcements/confirm-all/:eventId')
   @UseGuards(JwtAuthGuard)
-  async confirmAll(
-    @Param('eventId') eventId: string,
-    @Request() req: { user: { id: string } },
-  ) {
+  async confirmAll(@Param('eventId') eventId: string, @Request() req: { user: { id: string } }) {
     return this.dispatcher.confirmAllForEvent(eventId, req.user.id);
   }
 

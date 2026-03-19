@@ -22,13 +22,11 @@ import { AuthService } from '../../../../../core/auth/auth.service';
       @switch (_state) {
       <!-- Not logged in -->
       @case ('NOT_LOGGED_IN') {
-      <div
-        class="notif-box-login flex items-center gap-2.5 rounded-lg border px-3 py-2"
-      >
+      <div class="notif-box-login flex items-center gap-2.5 rounded-lg border px-3 py-2">
         <app-icon name="bell" size="xs" class="notif-icon-login shrink-0"></app-icon>
         <p class="flex-1 text-[11px] text-neutral-600 leading-tight">
-          <span class="notif-accent-login">Zaloguj się</span>, żeby @if (_isCity) {
-          dostawać informacje o nowych wydarzeniach w mieście
+          <span class="notif-accent-login">Zaloguj się</span>, żeby @if (_isCity) { dostawać
+          informacje o nowych wydarzeniach w mieście
           <span class="font-semibold">{{ _label }}</span>
           } @else { nie przegapić ważnych informacji o tym wydarzeniu }
         </p>
@@ -45,18 +43,14 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 
       <!-- Off -->
       @case ('OFF') {
-      <div
-        class="notif-box-off flex items-center gap-2.5 rounded-lg border px-3 py-2"
-      >
+      <div class="notif-box-off flex items-center gap-2.5 rounded-lg border px-3 py-2">
         <app-icon name="bell" size="xs" class="notif-icon-off shrink-0"></app-icon>
         <p class="flex-1 text-[11px] text-neutral-600 leading-tight">
           @if (_isCity) { Bądź na bieżąco!
-          <span class="notif-accent-off">Włącz powiadomienia</span> o nowych
-          wydarzeniach w mieście
+          <span class="notif-accent-off">Włącz powiadomienia</span> o nowych wydarzeniach w mieście
           <span class="font-semibold">{{ _label }}</span>
           } @else { Nie przegap ważnych informacji!
-          <span class="notif-accent-off">Włącz powiadomienia</span> dla tego
-          wydarzenia }
+          <span class="notif-accent-off">Włącz powiadomienia</span> dla tego wydarzenia }
         </p>
         <button
           type="button"
@@ -71,13 +65,11 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 
       <!-- On but incomplete -->
       @case ('ON_INCOMPLETE') {
-      <div
-        class="notif-box-incomplete flex items-center gap-2.5 rounded-lg border px-3 py-2"
-      >
+      <div class="notif-box-incomplete flex items-center gap-2.5 rounded-lg border px-3 py-2">
         <app-icon name="bell" size="xs" class="notif-icon-incomplete shrink-0"></app-icon>
         <p class="flex-1 text-[11px] text-neutral-600 leading-tight">
-          <span class="notif-accent-incomplete">Włącz powiadomienia Push</span>, żeby nie
-          przegapić @if (_isCity) { nowych wydarzeń w mieście
+          <span class="notif-accent-incomplete">Włącz powiadomienia Push</span>, żeby nie przegapić
+          @if (_isCity) { nowych wydarzeń w mieście
           <span class="font-semibold">{{ _label }}</span>
           } @else { ważnych informacji o tym wydarzeniu }
         </p>

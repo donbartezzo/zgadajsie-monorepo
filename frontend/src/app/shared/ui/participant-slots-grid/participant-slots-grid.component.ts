@@ -65,6 +65,8 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
               'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-none ' +
               (isCurrentUser(p)
                 ? 'ring-2 ring-primary-400 bg-primary-50'
+                : isCurrentUserGuest(p)
+                ? 'ring-2 ring-secondary-300 bg-secondary-50'
                 : 'focus:ring-2 focus:ring-primary-200')
             "
             (click)="onParticipantClick(p)"
@@ -122,6 +124,8 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
           'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-none ' +
           (isCurrentUser(p)
             ? 'ring-2 ring-primary-400 bg-primary-50'
+            : isCurrentUserGuest(p)
+            ? 'ring-2 ring-secondary-300 bg-secondary-50'
             : 'focus:ring-2 focus:ring-primary-200')
         "
         (click)="onParticipantClick(p)"
@@ -185,6 +189,8 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
             'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-none ' +
             (isCurrentUser(p)
               ? 'ring-2 ring-primary-400 bg-primary-50'
+              : isCurrentUserGuest(p)
+              ? 'ring-2 ring-secondary-300 bg-secondary-50 opacity-80'
               : 'focus:ring-2 focus:ring-warning-200 opacity-80')
           "
           (click)="onParticipantClick(p)"
@@ -351,7 +357,11 @@ export class ParticipantSlotsGridComponent {
   }
 
   isCurrentUser(p: ParticipantItem): boolean {
-    const currentId = this.currentUserId();
-    return currentId !== null && p.userId === currentId;
+    return p.userId === this.currentUserId();
+  }
+
+  isCurrentUserGuest(p: ParticipantItem): boolean {
+    if (!p.isGuest || !this.currentUserId()) return false;
+    return p.addedByUserId === this.currentUserId();
   }
 }

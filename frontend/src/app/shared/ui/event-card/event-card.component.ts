@@ -16,6 +16,7 @@ import { EventStatusBadgeComponent } from '../event-status-badge/event-status-ba
 import { EventListItem } from '../../types';
 import { coverImageUrl } from '../../types/cover-image.interface';
 import { getEventCountdown, getRelativeDateLabel } from '../../utils/date.utils';
+import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-event-card',
@@ -261,7 +262,7 @@ export class EventCardComponent implements OnDestroy {
       const evt = this.event();
       const start = new Date(evt.startsAt).getTime();
       const nowMs = this.now().getTime();
-      const hoursUntil = (start - nowMs) / 3600000;
+      const hoursUntil = (start - nowMs) / MILLISECONDS_PER_HOUR;
 
       if (hoursUntil > 0 && hoursUntil <= 24) {
         this.startCountdown();

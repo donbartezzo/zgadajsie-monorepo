@@ -9,7 +9,8 @@ export interface WaitingReasonMessages {
 
 const MESSAGES: Record<WaitingReason, WaitingReasonMessages> = {
   NEW_USER: {
-    toast: 'Zgłoszenie wysłane! To Twój pierwszy raz u tego organizatora – oczekujesz na akceptację.',
+    toast:
+      'Zgłoszenie wysłane! To Twój pierwszy raz u tego organizatora – oczekujesz na akceptację.',
     barTitle: 'Oczekujesz na akceptację',
     barSubtitle: 'To Twój pierwszy raz u tego organizatora.',
     overlayDescription:

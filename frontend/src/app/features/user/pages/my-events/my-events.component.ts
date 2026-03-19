@@ -61,8 +61,8 @@ import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm
                 (e.status === 'CANCELLED'
                   ? 'bg-danger-50 text-danger-600'
                   : isUpcoming(e)
-                    ? 'bg-success-50 text-success-600'
-                    : 'bg-neutral-100 text-neutral-600')
+                  ? 'bg-success-50 text-success-600'
+                  : 'bg-neutral-100 text-neutral-600')
               "
               >{{ getStatusLabel(e) }}</span
             >

@@ -16,20 +16,23 @@ export class EnrollmentEligibilityService {
       return false;
     }
 
-    // Count past participations with assigned slot (confirmed attendance)
-    const pastParticipation = await this.prisma.eventParticipation.count({
+    // Check if user has any participations (current or past) with this organizer
+    const anyParticipation = await this.prisma.eventParticipation.count({
       where: {
         userId,
-        slot: { isNot: null },
         event: {
           organizerId,
           status: { not: 'CANCELLED' },
-          endsAt: { lt: new Date() },
         },
       },
     });
 
-    return pastParticipation === 0;
+    if (anyParticipation > 0) {
+      return false;
+    }
+
+    // This check is now redundant but kept for clarity
+    // Past participations with assigned slot are already included in anyParticipation
   }
 
   async isBannedByOrganizer(userId: string, organizerId: string): Promise<boolean> {

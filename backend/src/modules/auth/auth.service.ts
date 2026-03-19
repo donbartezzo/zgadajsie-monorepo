@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   BadRequestException,
 } from '@nestjs/common';
+import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
 import { hoursFromNow } from '../../common/utils/date.util';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -137,7 +138,7 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (user) {
       const passwordResetToken = uuidv4();
-      const passwordResetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
+      const passwordResetTokenExpiresAt = new Date(Date.now() + MILLISECONDS_PER_HOUR);
 
       await this.prisma.user.update({
         where: { id: user.id },

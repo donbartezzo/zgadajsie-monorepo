@@ -83,6 +83,16 @@ export class EventService {
     return this.http.post<Participation>(`${this.apiUrl}/${eventId}/join-guest`, { displayName });
   }
 
+  updateGuestName(
+    participationId: string,
+    displayName: string,
+  ): Observable<{ id: string; displayName: string }> {
+    return this.http.patch<{ id: string; displayName: string }>(
+      `${environment.apiUrl}/participations/${participationId}/update-guest`,
+      { displayName },
+    );
+  }
+
   leaveParticipation(participationId: string): Observable<void> {
     return this.http.post<void>(
       `${environment.apiUrl}/participations/${participationId}/leave`,

@@ -1,7 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { IconComponent } from '../../../core/icons/icon.component';
 
-type BadgeVariant = 'ongoing' | 'countdown-urgent' | 'countdown-soon' | 'date' | 'ended' | 'cancelled';
+type BadgeVariant =
+  | 'ongoing'
+  | 'countdown-urgent'
+  | 'countdown-soon'
+  | 'date'
+  | 'ended'
+  | 'cancelled';
 
 @Component({
   selector: 'app-event-status-badge',

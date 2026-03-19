@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User } from '../../shared/types';
 import { NotificationService } from '../services/notification.service';
+import { ProfileBroadcastService } from '../services/profile-broadcast.service';
 
 interface AuthTokens {
   accessToken: string;
@@ -20,12 +21,26 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly notificationService = inject(NotificationService);
+  private readonly profileBroadcast = inject(ProfileBroadcastService);
   private readonly apiUrl = environment.apiUrl + '/auth';
 
   currentUser = signal<User | null>(null);
   isLoggedIn = computed(() => !!this.currentUser());
   isAdmin = computed(() => this.currentUser()?.role === 'ADMIN');
   isActive = computed(() => this.currentUser()?.isActive ?? false);
+
+  constructor() {
+    // Subscribe to profile changes broadcast
+    this.profileBroadcast.changes$.subscribe((change) => {
+      if (change.type === 'user') {
+        const currentUser = this.currentUser();
+        if (currentUser && currentUser.id === change.userId) {
+          // Update current user with new data
+          this.currentUser.set({ ...currentUser, ...change.changes });
+        }
+      }
+    });
+  }
 
   getAccessToken(): string | null {
     return localStorage.getItem('accessToken');
@@ -127,5 +142,16 @@ export class AuthService {
         this.notificationService.initPushSubscription();
       }
     }
+  }
+
+  updateUser(userData: Partial<User>): void {
+    const currentUser = this.currentUser();
+    if (currentUser) {
+      this.currentUser.set({ ...currentUser, ...userData });
+    }
+  }
+
+  async refreshCurrentUser(): Promise<void> {
+    await this.fetchUser();
   }
 }

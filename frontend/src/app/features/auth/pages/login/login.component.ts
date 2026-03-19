@@ -9,12 +9,12 @@ import { LoginFormComponent } from '../../../../shared/auth/ui/login-form/login-
   imports: [LoginFormComponent],
   template: `
     <div class="p-6 max-w-md mx-auto">
-        <div class="text-center mb-6">
-          <h1 class="text-2xl font-bold text-neutral-900">Zaloguj się</h1>
-          <p class="mt-1 text-sm text-neutral-500">Witaj ponownie w ZgadajSię</p>
-        </div>
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold text-neutral-900">Zaloguj się</h1>
+        <p class="mt-1 text-sm text-neutral-500">Witaj ponownie w ZgadajSię</p>
+      </div>
 
-        <app-login-form (authenticated)="onAuthenticated()"></app-login-form>
+      <app-login-form (authenticated)="onAuthenticated()"></app-login-form>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

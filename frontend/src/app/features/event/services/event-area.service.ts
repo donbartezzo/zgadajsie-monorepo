@@ -7,6 +7,10 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 import { BottomOverlaysService } from '../../../shared/ui/bottom-overlays/bottom-overlays.service';
 import { ConfirmModalService } from '../../../shared/ui/confirm-modal/confirm-modal.service';
 import {
+  applyProfileChangeToList,
+  ProfileBroadcastService,
+} from '../../../core/services/profile-broadcast.service';
+import {
   Event as EventModel,
   Participation,
   EnrollmentPhase,
@@ -36,6 +40,7 @@ export class EventAreaService {
   private readonly snackbar = inject(SnackbarService);
   private readonly overlays = inject(BottomOverlaysService);
   private readonly confirmModal = inject(ConfirmModalService);
+  private readonly profileBroadcast = inject(ProfileBroadcastService);
 
   private refreshInterval: ReturnType<typeof setInterval> | null = null;
   private initialized = false;
@@ -93,6 +98,15 @@ export class EventAreaService {
     const p = this.currentUserParticipation();
     if (!p) return false;
     return p.status === 'PENDING' || p.status === 'APPROVED' || p.status === 'CONFIRMED';
+  });
+
+  readonly hasAnyParticipationWithOrganizer = computed(() => {
+    const userId = this.auth.currentUser()?.id;
+    const organizerId = this.event()?.organizerId;
+    if (!userId || !organizerId) return false;
+
+    // Check if user has any participation (current or past) with this organizer
+    return this.participants().some((p) => p.userId === userId);
   });
 
   readonly isOrganizer = computed(() => {
@@ -191,6 +205,15 @@ export class EventAreaService {
   // ── Overlay management ──
 
   constructor() {
+    // Subscribe to profile changes broadcast
+    this.profileBroadcast.changes$.subscribe((change) => {
+      const participants = this.participants();
+      const updated = applyProfileChangeToList(participants, change);
+      if (updated !== participants) {
+        this.participants.set(updated);
+      }
+    });
+
     // Setup overlay sync effects in injection context
     effect(
       () => {
@@ -210,19 +233,29 @@ export class EventAreaService {
       },
       { allowSignalWrites: true },
     );
+    effect(
+      () => {
+        this.overlays.setParticipants(this.participants());
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   private registerOverlayCallbacks(): void {
     this.overlays.onJoinConfirmed((roleKey?: string) => this.confirmJoin(roleKey));
+    this.overlays.onJoinGuestConfirmed((displayName: string) => this.confirmJoinGuest(displayName));
     this.overlays.onOpenChat(() => this.openChat());
     this.overlays.onPay(() => this.payEvent());
     this.overlays.onContactOrganizer(() => this.contactOrganizer());
     this.overlays.onLeaveRequested(() => this.requestLeave());
     this.overlays.onRejoinRequested(() => this.confirmJoin());
+    this.overlays.onAddGuestRequested(() => this.openAddGuest());
+    this.overlays.onManageGuests(() => this.openManageGuests());
   }
 
   openJoinConfirmOverlay(): void {
     this.overlays.setParticipantStatus(this.participantStatus(), this.waitingReason());
+    this.overlays.setParticipants(this.participants());
     this.overlays.open('joinConfirm');
   }
 
@@ -236,6 +269,29 @@ export class EventAreaService {
     } else {
       this.overlays.open('auth');
     }
+  }
+
+  openAddGuest(): void {
+    if (!this.auth.isLoggedIn()) {
+      this.overlays.open('auth');
+      return;
+    }
+
+    // User must have any participation with the organizer to add guests
+    if (!this.hasAnyParticipationWithOrganizer()) {
+      this.snackbar.info(
+        'Musisz najpierw wziąć udział w wydarzeniu tego organizatora, aby móc dodawać osoby towarzyszące.',
+      );
+      this.openJoinSheet();
+      return;
+    }
+
+    this.overlays.open('addGuest');
+  }
+
+  openManageGuests(): void {
+    this.overlays.close();
+    this.router.navigate(['/w', this._citySlug, this._eventId, 'participants']);
   }
 
   // ── Participant actions ──
@@ -304,6 +360,33 @@ export class EventAreaService {
       });
   }
 
+  confirmJoinGuest(displayName: string): void {
+    this.overlays.close();
+    this.joining.set(true);
+
+    this.eventService
+      .joinGuest(this._eventId, displayName)
+      .pipe(finalize(() => this.joining.set(false)))
+      .subscribe({
+        next: (p) => {
+          const toastMsg = this.getJoinSuccessMessage(p.status, p.waitingReason);
+          this.snackbar.success(`Dodano gościa: ${displayName}. ${toastMsg}`);
+
+          this.eventService.getParticipants(this._eventId).subscribe({
+            next: (participants) => {
+              this.participants.set(participants);
+              this.router.navigate(['/w', this._citySlug, this._eventId, 'participants'], {
+                queryParams: { newUserId: p.userId },
+              });
+            },
+          });
+        },
+        error: (err) => {
+          this.snackbar.error(err.error?.message || 'Nie udało się dodać gościa');
+        },
+      });
+  }
+
   payEvent(): void {
     const participationId = this.currentParticipationId();
     if (!participationId) return;
@@ -362,6 +445,8 @@ export class EventAreaService {
       borderClass: config.borderClass,
     };
   }
+
+  // Removed getGuestBarConfig - guest management is now handled within the participant overlay
 
   private getPendingBarConfig(reason: WaitingReason | null): NotificationBarConfig {
     const isPreEnroll = reason === 'PRE_ENROLLMENT';

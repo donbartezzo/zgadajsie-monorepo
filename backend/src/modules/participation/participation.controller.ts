@@ -1,7 +1,8 @@
-import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, UseGuards, Patch } from '@nestjs/common';
 import { ParticipationService } from './participation.service';
 import { JoinGuestDto } from './dto/join-guest.dto';
 import { JoinEventDto } from './dto/join-event.dto';
+import { UpdateGuestDto } from './dto/update-guest.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { IsActiveGuard } from '../auth/guards/is-active.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -28,6 +29,15 @@ export class ParticipationController {
     @Body() dto: JoinGuestDto,
   ) {
     return this.participationService.joinGuest(eventId, user.id, dto.displayName);
+  }
+
+  @Patch('participations/:id/update-guest')
+  updateGuest(
+    @Param('id') participationId: string,
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateGuestDto,
+  ) {
+    return this.participationService.updateGuestName(participationId, user.id, dto.displayName);
   }
 
   @Post('participations/:id/assign-slot')

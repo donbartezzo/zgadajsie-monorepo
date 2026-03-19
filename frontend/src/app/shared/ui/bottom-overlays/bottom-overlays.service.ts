@@ -20,6 +20,7 @@ export type OverlayType =
   | 'cancelPayment'
   | 'enrollmentDetails'
   | 'participantDetail'
+  | 'addGuest'
   | null;
 
 export type ParticipantDetailItem = Participation | ParticipantManageItem;
@@ -37,9 +38,11 @@ export class BottomOverlaysService {
   private readonly participantStatusSignal = signal<string | null>(null);
   private readonly waitingReasonSignal = signal<WaitingReason | null>(null);
   private readonly isOrganizerSignal = signal(false);
+  private readonly participantsSignal = signal<Participation[]>([]);
 
   // Callbacks for event-specific actions
   private joinCallback: ((roleKey?: string) => void) | null = null;
+  private joinGuestCallback: ((displayName: string) => void) | null = null;
   private authSuccessCallback: (() => void) | null = null;
   private openChatCallback: (() => void) | null = null;
   private payCallback: (() => void) | null = null;
@@ -47,9 +50,11 @@ export class BottomOverlaysService {
   private cancelEventCallback: (() => void) | null = null;
   private leaveCallback: (() => void) | null = null;
   private rejoinCallback: (() => void) | null = null;
+  private manageGuestsCallback: (() => void) | null = null;
   private cancelPaymentCallback:
     | ((options: { refundAsVoucher: boolean; notifyUser: boolean }) => void)
     | null = null;
+  private addGuestRequestedCallback: (() => void) | null = null;
 
   // Lottery countdown context (for enrollment details overlay)
   private readonly lotteryCountdownSignal = signal<EventCountdown | null>(null);
@@ -72,6 +77,7 @@ export class BottomOverlaysService {
   readonly participantStatus = this.participantStatusSignal.asReadonly();
   readonly waitingReason = this.waitingReasonSignal.asReadonly();
   readonly isOrganizer = this.isOrganizerSignal.asReadonly();
+  readonly participants = this.participantsSignal.asReadonly();
 
   open(type: OverlayType): void {
     this.activeSignal.set(type);
@@ -105,6 +111,10 @@ export class BottomOverlaysService {
     this.isOrganizerSignal.set(value);
   }
 
+  setParticipants(participants: Participation[]): void {
+    this.participantsSignal.set(participants);
+  }
+
   setLoading(loading: boolean): void {
     this.loadingSignal.set(loading);
   }
@@ -117,6 +127,10 @@ export class BottomOverlaysService {
 
   onJoinConfirmed(callback: (roleKey?: string) => void): void {
     this.joinCallback = callback;
+  }
+
+  onJoinGuestConfirmed(callback: (displayName: string) => void): void {
+    this.joinGuestCallback = callback;
   }
 
   onAuthSuccess(callback: () => void): void {
@@ -147,6 +161,14 @@ export class BottomOverlaysService {
     this.rejoinCallback = callback;
   }
 
+  onAddGuestRequested(callback: () => void): void {
+    this.addGuestRequestedCallback = callback;
+  }
+
+  onManageGuests(callback: () => void): void {
+    this.manageGuestsCallback = callback;
+  }
+
   onCancelPaymentConfirmed(
     callback: (options: { refundAsVoucher: boolean; notifyUser: boolean }) => void,
   ): void {
@@ -170,6 +192,10 @@ export class BottomOverlaysService {
 
   confirmJoin(roleKey?: string): void {
     this.joinCallback?.(roleKey);
+  }
+
+  confirmJoinGuest(displayName: string): void {
+    this.joinGuestCallback?.(displayName);
   }
 
   handleAuthSuccess(): void {
@@ -200,19 +226,29 @@ export class BottomOverlaysService {
     this.rejoinCallback?.();
   }
 
+  handleAddGuestRequested(): void {
+    this.addGuestRequestedCallback?.();
+  }
+
+  handleManageGuests(): void {
+    this.manageGuestsCallback?.();
+  }
+
   handleCancelPayment(options: { refundAsVoucher: boolean; notifyUser: boolean }): void {
     this.cancelPaymentCallback?.(options);
   }
 
   clearCallbacks(): void {
     this.joinCallback = null;
+    this.joinGuestCallback = null;
     this.authSuccessCallback = null;
-    this.openChatCallback = null;
     this.payCallback = null;
     this.contactOrganizerCallback = null;
     this.cancelEventCallback = null;
     this.leaveCallback = null;
     this.rejoinCallback = null;
+    this.addGuestRequestedCallback = null;
+    this.manageGuestsCallback = null;
     this.cancelPaymentCallback = null;
   }
 }

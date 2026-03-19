@@ -1,12 +1,20 @@
-/**
- * Oblicza różnicę w dniach między datą wydarzenia a dzisiejszą datą.
- * Wartość dodatnia = przyszłość, ujemna = przeszłość, 0 = dziś.
- */
-export function getDaysDiff(date: Date, now: Date = new Date()): number {
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const eventDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  return Math.round((eventDay.getTime() - todayStart.getTime()) / 86400000);
-}
+import {
+  MILLISECONDS_PER_SECOND,
+  MILLISECONDS_PER_MINUTE,
+  MILLISECONDS_PER_HOUR,
+  MILLISECONDS_PER_DAY,
+  getDaysDiff,
+} from '@zgadajsie/shared';
+
+export {
+  MILLISECONDS_PER_SECOND,
+  MILLISECONDS_PER_MINUTE,
+  MILLISECONDS_PER_HOUR,
+  MILLISECONDS_PER_DAY,
+  getDaysDiff,
+  subtractHours,
+  addHours,
+} from '@zgadajsie/shared';
 
 /**
  * Zwraca krótki label daty relatywnej w języku polskim.
@@ -61,14 +69,14 @@ export function getEventCountdown(
   if (end <= nowMs) return null;
 
   const msUntil = start - nowMs;
-  const hoursUntil = msUntil / 3_600_000;
+  const hoursUntil = msUntil / MILLISECONDS_PER_HOUR;
 
   if (hoursUntil > maxHours) return null;
 
-  const days = Math.floor(msUntil / 86_400_000);
-  const hours = Math.floor((msUntil % 86_400_000) / 3_600_000);
-  const minutes = Math.floor((msUntil % 3_600_000) / 60_000);
-  const seconds = Math.floor((msUntil % 60_000) / 1_000);
+  const days = Math.floor(msUntil / MILLISECONDS_PER_DAY);
+  const hours = Math.floor((msUntil % MILLISECONDS_PER_DAY) / MILLISECONDS_PER_HOUR);
+  const minutes = Math.floor((msUntil % MILLISECONDS_PER_HOUR) / MILLISECONDS_PER_MINUTE);
+  const seconds = Math.floor((msUntil % MILLISECONDS_PER_MINUTE) / MILLISECONDS_PER_SECOND);
 
   let label: string;
   if (days > 0) {

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
 import { createHash } from 'crypto';
 import { importX509, flattenedVerify } from 'jose';
 
@@ -56,7 +57,7 @@ export class TpayService {
 
   private jwsCertCache: { pem: string; fetchedAt: number } | null = null;
   private jwsCaCertCache: { pem: string; fetchedAt: number } | null = null;
-  private static readonly JWS_CERT_TTL_MS = 24 * 60 * 60 * 1000;
+  private static readonly JWS_CERT_TTL_MS = 24 * MILLISECONDS_PER_HOUR;
 
   constructor(private configService: ConfigService) {
     this.apiUrl = this.configService.getOrThrow<string>('TPAY_API_URL');

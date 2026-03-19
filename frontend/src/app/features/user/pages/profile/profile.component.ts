@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -116,7 +116,6 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
       }
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileComponent implements OnInit {
   readonly auth = inject(AuthService);
@@ -146,7 +145,9 @@ export class ProfileComponent implements OnInit {
     const data: { displayName: string; newPassword?: string } = { displayName: this.editName };
     if (this.newPassword) data.newPassword = this.newPassword;
     this.userService.updateProfile(data).subscribe({
-      next: () => {
+      next: (updatedUser) => {
+        // Update currentUser in AuthService to reflect changes immediately
+        this.auth.updateUser(updatedUser);
         this.snackbar.success('Profil zaktualizowany');
         this.saving.set(false);
         this.newPassword = '';

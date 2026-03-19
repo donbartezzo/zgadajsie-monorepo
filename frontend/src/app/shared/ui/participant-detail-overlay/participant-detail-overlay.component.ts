@@ -1,12 +1,28 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { BottomOverlayComponent } from '../bottom-overlays/bottom-overlay.component';
-import { UserProfileCardComponent } from '../user-profile-card/user-profile-card.component';
+import {
+  UserProfileCardComponent,
+  ProfileEditData,
+} from '../user-profile-card/user-profile-card.component';
 import { ButtonComponent } from '../button/button.component';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { Participation, ParticipantManageItem } from '../../types';
 import { ParticipationStatus } from '../../types/participation.interface';
+import { AuthService } from '../../../core/auth/auth.service';
+import { UserService } from '../../../core/services/user.service';
+import { SnackbarService } from '../snackbar/snackbar.service';
+import { EventService } from '../../../core/services/event.service';
+import { ProfileBroadcastService } from '../../../core/services/profile-broadcast.service';
 
-export type ParticipantDetailMode = 'public' | 'organizer';
+export type ParticipantDetailMode = 'public' | 'organizer' | 'guest-manager';
 
 type ParticipantItem = Participation | ParticipantManageItem;
 
@@ -30,7 +46,14 @@ function isManageItem(p: ParticipantItem): p is ParticipantManageItem {
         [participationStatus]="participationStatus()"
         [paymentInfo]="null"
         [isGuest]="p.isGuest"
+        [participationId]="p.id"
+        [currentUserId]="currentUserId()"
+        [isOrganizer]="_isOrganizer"
+        [loading]="loading()"
+        [addedByUserId]="p.addedByUserId ?? null"
         variant="overlay"
+        (profileUpdated)="onProfileUpdated($event)"
+        (guestUpdated)="onGuestUpdated($event)"
       >
         <!-- Payment info (inside card) -->
         @if (_isOrganizer && _paidEvent) {
@@ -94,20 +117,24 @@ function isManageItem(p: ParticipantItem): p is ParticipantManageItem {
         }
 
         <div class="grid grid-cols-2 gap-2 pt-2 border-t border-neutral-100">
-          <app-button
-            variant="outline"
-            [fullWidth]="true"
-            (clicked)="reprimandRequested.emit(p.userId)"
-          >
-            <app-icon name="flag" size="sm" class="mr-1" />
-            Reprymenda
-          </app-button>
           <app-button variant="danger" [fullWidth]="true" (clicked)="banRequested.emit(p.userId)">
             <app-icon name="shield-alert" size="sm" class="mr-1" />
             Zbanuj
           </app-button>
         </div>
-        } } @else {
+        } } @else if (mode() === 'guest-manager' && p.isGuest) {
+        <!-- Guest Manager actions -->
+        <div class="space-y-2">
+          <app-button
+            variant="danger"
+            [fullWidth]="true"
+            (clicked)="removeGuestRequested.emit(p.id)"
+          >
+            <app-icon name="user-x" size="sm" class="mr-1" />
+            Wypisz gościa z wydarzenia
+          </app-button>
+        </div>
+        } @else {
         <!-- Public mode - view only -->
         <div class="text-center text-sm text-neutral-400">
           @if (_isWithdrawn) {
@@ -128,6 +155,7 @@ export class ParticipantDetailOverlayComponent {
   readonly mode = input<ParticipantDetailMode>('public');
   readonly isPaidEvent = input(false);
   readonly open = input(false);
+  readonly currentUserId = input<string | null>(null);
 
   readonly closed = output<void>();
   readonly chatRequested = output<string>();
@@ -137,6 +165,17 @@ export class ParticipantDetailOverlayComponent {
   readonly reprimandRequested = output<string>();
   readonly markPaidRequested = output<string>();
   readonly cancelPaymentRequested = output<ParticipantManageItem>();
+  readonly removeGuestRequested = output<string>();
+
+  // Services
+  private readonly auth = inject(AuthService);
+  private readonly userService = inject(UserService);
+  private readonly snackbar = inject(SnackbarService);
+  private readonly eventService = inject(EventService);
+  private readonly profileBroadcast = inject(ProfileBroadcastService);
+
+  // Loading state
+  readonly loading = signal(false);
 
   readonly title = computed(() => {
     const p = this.participant();
@@ -293,5 +332,48 @@ export class ParticipantDetailOverlayComponent {
       return p;
     }
     throw new Error('Participant is not a ParticipantManageItem');
+  }
+
+  // Helper methods
+  // currentUserId is now provided as input from parent components
+
+  // Event handlers for profile updates
+  onProfileUpdated(data: ProfileEditData): void {
+    this.loading.set(true);
+    this.userService.updateProfile(data).subscribe({
+      next: (updatedUser) => {
+        // Broadcast profile changes to all consumers
+        this.profileBroadcast.notifyUserChange(updatedUser.id, {
+          displayName: updatedUser.displayName,
+          avatarUrl: updatedUser.avatarUrl,
+        });
+        this.snackbar.success('Profil zaktualizowany');
+        this.loading.set(false);
+      },
+      error: (err: any) => {
+        this.snackbar.error(err?.error?.message || 'Błąd aktualizacji profilu');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  onGuestUpdated(data: { participationId: string; displayName: string }): void {
+    this.loading.set(true);
+    this.eventService.updateGuestName(data.participationId, data.displayName).subscribe({
+      next: (updatedData) => {
+        // Broadcast guest name change to all consumers
+        this.profileBroadcast.notifyGuestChange(updatedData.id, {
+          displayName: updatedData.displayName,
+        });
+        this.snackbar.success('Nazwa gościa zaktualizowana');
+        this.loading.set(false);
+        // Close overlay
+        this.closed.emit();
+      },
+      error: (err: any) => {
+        this.snackbar.error(err?.error?.message || 'Błąd aktualizacji gościa');
+        this.loading.set(false);
+      },
+    });
   }
 }

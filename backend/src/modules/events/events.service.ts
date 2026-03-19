@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
+import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
@@ -467,6 +468,8 @@ export class EventsService {
         ...p,
         status,
         waitingReason: status === 'PENDING' ? p.waitingReason : null,
+        addedByUserId: p.addedByUserId,
+        isGuest: p.isGuest,
       };
     });
   }
@@ -523,6 +526,7 @@ export class EventsService {
         hasSlot: !!p.slot,
         slotConfirmed: p.slot?.confirmed ?? false,
         isGuest: p.isGuest,
+        addedByUserId: p.addedByUserId,
         createdAt: p.createdAt,
         user: p.user,
         payment: p.payments[0] ?? null,
@@ -799,7 +803,7 @@ export class EventsService {
     else if (rule === 'MONTHLY') intervalDays = 30;
 
     for (let i = 0; i < maxInstances; i++) {
-      const start = new Date(startsAt.getTime() + i * intervalDays * 24 * 60 * 60 * 1000);
+      const start = new Date(startsAt.getTime() + i * intervalDays * 24 * MILLISECONDS_PER_HOUR);
       const end = new Date(start.getTime() + duration);
       dates.push({ start, end });
     }

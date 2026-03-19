@@ -50,6 +50,7 @@ export interface ParticipantManageItem {
   userId: string;
   status: string;
   isGuest: boolean;
+  addedByUserId?: string;
   createdAt: string;
   user: { id: string; displayName: string; avatarUrl: string | null; email: string };
   payment: ParticipantPaymentInfo | null;

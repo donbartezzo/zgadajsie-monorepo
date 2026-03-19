@@ -6,7 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
@@ -20,7 +20,14 @@ import {
   EventNotificationBarsComponent,
   NotificationBarConfig,
 } from '../../ui/event-notification-bars/event-notification-bars.component';
+import { EventService } from '../../../../core/services/event.service';
+import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
+import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bottom-overlays.service';
 import { EventAreaService } from '../../services/event-area.service';
+import {
+  applyProfileChange,
+  ProfileBroadcastService,
+} from '../../../../core/services/profile-broadcast.service';
 
 @Component({
   selector: 'app-event-participants',
@@ -36,9 +43,14 @@ import { EventAreaService } from '../../services/event-area.service';
 })
 export class EventParticipantsComponent implements AfterViewInit {
   private readonly router = inject(Router);
-  readonly auth = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
   private readonly snackbar = inject(SnackbarService);
+  public readonly auth = inject(AuthService); // Changed from private to public for template access
   private readonly eventArea = inject(EventAreaService);
+  private readonly eventService = inject(EventService);
+  private readonly confirmModal = inject(ConfirmModalService);
+  private readonly overlays = inject(BottomOverlaysService);
+  private readonly profileBroadcast = inject(ProfileBroadcastService);
 
   // ── Delegated from EventAreaService ──
   readonly event = this.eventArea.event;
@@ -52,35 +64,67 @@ export class EventParticipantsComponent implements AfterViewInit {
   readonly participantStatus = this.eventArea.participantStatus;
   readonly waitingReason = this.eventArea.waitingReason;
 
+  readonly isOrganizer = this.eventArea.isOrganizer;
+
   // ── Local state ──
   readonly selectedParticipant = signal<ParticipantItem | null>(null);
   readonly detailOverlayOpen = signal(false);
 
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
 
+  readonly detailMode = computed(() => {
+    if (this.isOrganizer()) return 'organizer';
+
+    const p = this.selectedParticipant();
+    const currentUserId = this.currentUserId();
+
+    // Check if the selected participant is a guest added by the current user
+    if (p && p.isGuest && p.addedByUserId === currentUserId) {
+      return 'guest-manager';
+    }
+
+    return 'public';
+  });
+
   // Notification bars config - delegates to EventAreaService
   readonly notificationBars = computed<NotificationBarConfig[]>(() => {
     const bars: NotificationBarConfig[] = [];
     const status = this.participantStatus();
-    if (!status) return bars;
 
-    const config = this.eventArea.getParticipantBarConfig(status);
-    bars.push(config);
+    if (status) {
+      const config = this.eventArea.getParticipantBarConfig(status);
+      bars.push(config);
+    }
 
     return bars;
   });
 
   ngAfterViewInit(): void {
+    // Subscribe to profile changes broadcast
+    this.profileBroadcast.changes$.subscribe((change) => {
+      const selected = this.selectedParticipant();
+      if (selected) {
+        const next = applyProfileChange(selected, change);
+        if (next !== selected) {
+          this.selectedParticipant.set(next as ParticipantItem);
+        }
+      }
+    });
+
     // Scroll to current user after view init
     setTimeout(() => this.scrollToCurrentUser(), 100);
   }
 
   private scrollToCurrentUser(): void {
-    const userId = this.auth.currentUser()?.id;
+    const newUserId = this.route.snapshot.queryParamMap.get('newUserId');
+    const userId = newUserId || this.auth.currentUser()?.id;
     if (!userId) return;
-    const el = document.querySelector(`[data-user-id="${userId}"]`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // First try finding user's specific slot (data-user-id on slot element)
+    const slotEl = document.querySelector(`[data-user-id="${userId}"]`);
+    if (slotEl) {
+      slotEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
     }
   }
 
@@ -119,6 +163,34 @@ export class EventParticipantsComponent implements AfterViewInit {
   closeDetailOverlay(): void {
     this.detailOverlayOpen.set(false);
     this.selectedParticipant.set(null);
+  }
+
+  async onRemoveGuestRequested(participationId: string): Promise<void> {
+    const participant = this.selectedParticipant();
+    if (!participant) return;
+
+    this.confirmModal
+      .confirm({
+        title: 'Wypisanie gościa',
+        message: `Czy na pewno chcesz wypisać tego gościa z wydarzenia?\n\nGość: ${participant.user?.displayName}`,
+        confirmLabel: 'Wypisz',
+        cancelLabel: 'Anuluj',
+        variant: 'danger',
+      })
+      .then((confirmed) => {
+        if (confirmed) {
+          this.eventService.leaveParticipation(participationId).subscribe({
+            next: () => {
+              this.snackbar.success('Gość został wypisany z wydarzenia');
+              this.closeDetailOverlay();
+              this.eventArea.refreshParticipants();
+            },
+            error: (err) => {
+              this.snackbar.error(err.error?.message || 'Nie udało się wypisać gościa');
+            },
+          });
+        }
+      });
   }
 
   onBarAction(barId: string): void {

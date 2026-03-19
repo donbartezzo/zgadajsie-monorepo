@@ -15,10 +15,16 @@ import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avat
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EventService } from '../../../../core/services/event.service';
 import { EventAnnouncementService } from '../../../../core/services/event-announcement.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { FormsModule } from '@angular/forms';
 import { ModerationService } from '../../../../core/services/moderation.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
+import {
+  applyProfileChange,
+  applyProfileChangeToList,
+  ProfileBroadcastService,
+} from '../../../../core/services/profile-broadcast.service';
 import {
   AnnouncementReceiptStats,
   Event,
@@ -210,6 +216,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
       [open]="detailOverlayOpen()"
       mode="organizer"
       [isPaidEvent]="isPaidEvent()"
+      [currentUserId]="currentUserId()"
       (closed)="closeDetailOverlay()"
       (chatRequested)="onOverlayChat($event)"
       (approveRequested)="onOverlayApprove($event)"
@@ -232,6 +239,8 @@ export class EventManageComponent implements OnInit {
   private readonly breadcrumb = inject(BreadcrumbService);
   private readonly overlays = inject(BottomOverlaysService);
   private readonly confirmModal = inject(ConfirmModalService);
+  private readonly auth = inject(AuthService);
+  private readonly profileBroadcast = inject(ProfileBroadcastService);
 
   readonly manageParticipants = signal<ParticipantManageItem[]>([]);
   readonly announcements = signal<EventAnnouncement[]>([]);
@@ -260,6 +269,8 @@ export class EventManageComponent implements OnInit {
     const e = this.eventData();
     return e ? e.costPerPerson > 0 : false;
   });
+
+  readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
 
   readonly pendingList = computed(() =>
     this.manageParticipants().filter((p) => p.status === 'PENDING'),
@@ -296,14 +307,28 @@ export class EventManageComponent implements OnInit {
   readonly detailOverlayOpen = signal(false);
 
   ngOnInit(): void {
-    this.eventId = this.route.snapshot.paramMap.get('id') ?? '';
-    this.eventService.getEvent(this.eventId).subscribe((e) => {
-      this.eventData.set(e);
-      this.citySlug = e.city?.slug ?? '';
-      this.breadcrumb.setContext({ citySlug: this.citySlug });
-    });
+    this.eventId = this.route.snapshot.paramMap.get('id')!;
+    this.loadEvent();
     this.loadManageParticipants();
     this.loadAnnouncements();
+
+    // Subscribe to profile changes broadcast
+    this.profileBroadcast.changes$.subscribe((change) => {
+      const participants = this.manageParticipants();
+      const updatedParticipants = applyProfileChangeToList(participants, change);
+      if (updatedParticipants !== participants) {
+        this.manageParticipants.set(updatedParticipants);
+      }
+
+      // Also update selectedParticipant if it matches
+      const selected = this.selectedParticipant();
+      if (selected) {
+        const nextSelected = applyProfileChange(selected, change);
+        if (nextSelected !== selected) {
+          this.selectedParticipant.set(nextSelected as ParticipantManageItem);
+        }
+      }
+    });
 
     this.overlays.onCancelPaymentConfirmed((result) => {
       const payment = this.overlays.cancelPayment();
@@ -317,6 +342,15 @@ export class EventManageComponent implements OnInit {
         error: (err) =>
           this.snackbar.error(err?.error?.message || 'Nie udało się anulować płatności'),
       });
+    });
+  }
+
+  private loadEvent(): void {
+    this.eventService.getEvent(this.eventId).subscribe({
+      next: (event) => {
+        this.eventData.set(event);
+        this.breadcrumb.setContext({ eventTitle: event.title });
+      },
     });
   }
 

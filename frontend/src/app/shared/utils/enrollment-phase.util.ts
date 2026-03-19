@@ -1,4 +1,4 @@
-import { PRE_ENROLLMENT_HOURS } from '@zgadajsie/shared';
+import { PRE_ENROLLMENT_HOURS, subtractHours } from '@zgadajsie/shared';
 import { EnrollmentPhase } from '../types/event.interface';
 
 export function getEnrollmentPhase(
@@ -15,9 +15,7 @@ export function getEnrollmentPhase(
     return 'OPEN_ENROLLMENT';
   }
 
-  const threshold = new Date(
-    new Date(startsAt).getTime() - PRE_ENROLLMENT_HOURS * 60 * 60 * 1000,
-  );
+  const threshold = subtractHours(startsAt, PRE_ENROLLMENT_HOURS);
 
   if (now < threshold) {
     return 'PRE_ENROLLMENT';
@@ -27,5 +25,5 @@ export function getEnrollmentPhase(
 }
 
 export function getLotteryThreshold(startsAt: string): Date {
-  return new Date(new Date(startsAt).getTime() - PRE_ENROLLMENT_HOURS * 60 * 60 * 1000);
+  return subtractHours(startsAt, PRE_ENROLLMENT_HOURS);
 }

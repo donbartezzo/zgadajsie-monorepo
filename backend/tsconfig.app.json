@@ -11,5 +11,11 @@
     "declaration": true
   },
   "include": ["src/**/*.ts", "../libs/src/**/*.ts"],
-  "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts", "../libs/src/**/*.spec.ts", "../libs/src/**/*.test.ts"]
+  "exclude": [
+    "jest.config.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "../libs/src/**/*.spec.ts",
+    "../libs/src/**/*.test.ts"
+  ]
 }
