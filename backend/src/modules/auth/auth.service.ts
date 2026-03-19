@@ -193,6 +193,13 @@ export class AuthService {
     });
 
     if (socialAccount) {
+      // Refresh avatar URL if it has changed (e.g., expired or invalid)
+      if (profile.avatarUrl && socialAccount.user.avatarUrl !== profile.avatarUrl) {
+        await this.prisma.user.update({
+          where: { id: socialAccount.user.id },
+          data: { avatarUrl: profile.avatarUrl },
+        });
+      }
       return this.generateTokens(socialAccount.user.id, socialAccount.user.email);
     }
 

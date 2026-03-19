@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AvatarUrl } from '../../types';
 import { IconComponent, IconName } from '../../../core/icons/icon.component';
@@ -17,12 +17,13 @@ export type StatusIndicator = 'success' | 'warning' | 'danger' | 'info' | 'pendi
         class="relative inline-flex items-center justify-center overflow-hidden"
         [ngClass]="[sizeClass(), shapeClass()]"
       >
-        @if (hasAvatar()) {
+        @if (hasAvatar() && showImage()) {
         <img
           [src]="avatarUrl()"
           [alt]="displayName()"
           class="object-cover w-full h-full"
           [ngClass]="shapeClass()"
+          (error)="onImageError()"
         />
         } @else {
         <div
@@ -82,6 +83,8 @@ export class UserAvatarComponent {
     const url = this.avatarUrl();
     return url !== null && url !== undefined && url.trim() !== '';
   });
+
+  readonly showImage = signal(true);
 
   readonly initials = computed(() => {
     const name = this.displayName();
@@ -158,5 +161,9 @@ export class UserAvatarComponent {
 
   indicatorIconSize(): 'xs' | 'sm' {
     return 'xs';
+  }
+
+  onImageError(): void {
+    this.showImage.set(false);
   }
 }

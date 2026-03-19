@@ -3,12 +3,13 @@ import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
+import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
 import { VoucherService } from '../../../../core/services/voucher.service';
 import { OrganizerVoucherGroup } from '../../../../shared/types';
 
 @Component({
   selector: 'app-my-vouchers',
-  imports: [DecimalPipe, RouterLink, CardComponent, LoadingSpinnerComponent],
+  imports: [DecimalPipe, RouterLink, CardComponent, LoadingSpinnerComponent, UserAvatarComponent],
   template: `
     <div class="p-4 space-y-4">
       <h1 class="text-xl font-bold text-neutral-900">Moje vouchery</h1>
@@ -22,19 +23,11 @@ import { OrganizerVoucherGroup } from '../../../../shared/types';
       <app-card>
         <div class="space-y-3">
           <div class="flex items-center gap-3">
-            @if (group.organizer.avatarUrl) {
-            <img
-              [src]="group.organizer.avatarUrl"
-              [alt]="group.organizer.displayName"
-              class="w-10 h-10 rounded-full object-cover"
+            <app-user-avatar
+              [avatarUrl]="group.organizer.avatarUrl"
+              [displayName]="group.organizer.displayName"
+              size="md"
             />
-            } @else {
-            <div
-              class="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-sm font-bold text-neutral-500"
-            >
-              {{ group.organizer.displayName.charAt(0).toUpperCase() }}
-            </div>
-            }
             <div>
               <p class="text-sm font-medium text-neutral-900">
                 {{ group.organizer.displayName }}
