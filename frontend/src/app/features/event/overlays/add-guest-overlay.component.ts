@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
+import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { IconComponent } from '../../../core/icons/icon.component';
+import { IconComponent } from '../../../shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-add-guest-overlay',

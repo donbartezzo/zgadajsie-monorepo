@@ -8,9 +8,9 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IconComponent } from '../../../core/icons/icon.component';
+import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
+import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { Event as EventModel, EventRole } from '../../../shared/types';
 import { EventCriteriaDescriptionComponent } from '../ui/event-criteria-description/event-criteria-description.component';
 

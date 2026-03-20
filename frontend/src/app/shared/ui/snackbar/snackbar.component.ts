@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IconComponent } from '../../../core/icons/icon.component';
+import { IconComponent } from '../icon/icon.component';
 import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
 import { SnackbarService, SnackbarType } from './snackbar.service';
 

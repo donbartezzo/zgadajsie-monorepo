@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { IconComponent, IconName } from '../../../core/icons/icon.component';
-import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
+import { IconComponent, IconName } from '../../../shared/ui/icon/icon.component';
+import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({

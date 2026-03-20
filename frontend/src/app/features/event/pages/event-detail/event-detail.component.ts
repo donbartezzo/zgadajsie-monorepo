@@ -8,17 +8,17 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { IconName, IconComponent } from '../../../../core/icons/icon.component';
+import { IconName, IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
-import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
+import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EventService } from '../../../../core/services/event.service';
 import { EventAnnouncementService } from '../../../../core/services/event-announcement.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bottom-overlays.service';
+import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
 import { EventAnnouncement } from '../../../../shared/types';

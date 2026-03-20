@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IconComponent, IconName } from '../../../core/icons/icon.component';
+import { IconComponent, IconName } from '../../ui/icon/icon.component';
 import { ContactInfoComponent } from './contact-info.component';
 import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
 

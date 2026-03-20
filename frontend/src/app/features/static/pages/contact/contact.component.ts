@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { IconComponent } from '../../../../core/icons/icon.component';
+import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { StaticPageLayoutComponent } from '../../../../shared/layouts/static-page-layout/static-page-layout.component';
 import { environment } from '../../../../../environments/environment';

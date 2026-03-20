@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
-import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
+import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { PaginationComponent } from '../../../../shared/ui/pagination/pagination.component';
 import { AdminService } from '../../../../core/services/admin.service';

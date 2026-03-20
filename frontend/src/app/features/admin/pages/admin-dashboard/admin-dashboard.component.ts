@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { IconComponent } from '../../../../core/icons/icon.component';
+import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { AdminService } from '../../../../core/services/admin.service';
 

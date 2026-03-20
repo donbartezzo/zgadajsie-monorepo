@@ -9,13 +9,13 @@ import {
   signal,
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { IconComponent } from '../../../core/icons/icon.component';
-import { UserAvatarComponent } from '../user-avatar/user-avatar.component';
+import { IconComponent } from '../../../ui/icon/icon.component';
+import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.component';
 import { DateBadgeComponent } from '../date-badge/date-badge.component';
 import { EventStatusBadgeComponent } from '../event-status-badge/event-status-badge.component';
-import { EventListItem } from '../../types';
-import { coverImageUrl } from '../../types/cover-image.interface';
-import { getEventCountdown, getRelativeDateLabel } from '../../utils/date.utils';
+import { EventListItem } from '../../../types';
+import { coverImageUrl } from '../../../types/cover-image.interface';
+import { getEventCountdown, getRelativeDateLabel } from '../../../utils/date.utils';
 import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
 
 @Component({
@@ -36,7 +36,6 @@ import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
       "
       (click)="selected.emit(_event)"
     >
-      <!-- Cover hero -->
       <div class="relative h-44 overflow-hidden">
         @if (_event.coverImage?.filename) {
         <img
@@ -48,12 +47,10 @@ import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
         <div class="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-500"></div>
         }
 
-        <!-- Gradient overlay -->
         <div
           class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"
         ></div>
 
-        <!-- Status badge (top-left) -->
         <div class="absolute left-2 top-2 z-10">
           @if (isOngoing()) {
           <app-event-status-badge variant="ongoing" label="TRWA" />
@@ -67,7 +64,6 @@ import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
           }
         </div>
 
-        <!-- Mini calendar (top-right) -->
         <div class="absolute right-2 top-2">
           <app-date-badge
             [month]="eventMonth()"
@@ -77,7 +73,6 @@ import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
           />
         </div>
 
-        <!-- Title + badges (bottom-left) -->
         <div class="absolute inset-x-0 bottom-0 p-3">
           <h3 class="text-sm font-bold text-white line-clamp-2 drop-shadow-sm">
             {{ _event.title }}
@@ -103,7 +98,6 @@ import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
         </div>
       </div>
 
-      <!-- Content -->
       <div class="p-3 space-y-2">
         <div class="flex items-center gap-1 text-sm text-neutral-500">
           <app-icon name="map-pin" size="sm" color="neutral" muted="light" />

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { IconComponent } from '../../../core/icons/icon.component';
+import { IconComponent } from '../../ui/icon/icon.component';
 import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
 
 @Component({

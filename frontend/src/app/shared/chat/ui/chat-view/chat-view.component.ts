@@ -11,11 +11,11 @@ import {
 import { Router } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IconComponent } from '../../../core/icons/icon.component';
-import { ButtonComponent } from '../button/button.component';
-import { UserAvatarComponent } from '../user-avatar/user-avatar.component';
-import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.component';
-import { UserBrief } from '../../types';
+import { IconComponent } from '../../../ui/icon/icon.component';
+import { ButtonComponent } from '../../../ui/button/button.component';
+import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.component';
+import { LoadingSpinnerComponent } from '../../../ui/loading-spinner/loading-spinner.component';
+import { UserBrief } from '../../../types';
 
 export interface ChatViewMessage {
   id: string;

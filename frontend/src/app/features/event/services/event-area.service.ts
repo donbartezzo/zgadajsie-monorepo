@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { EventService } from '../../../core/services/event.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
-import { BottomOverlaysService } from '../../../shared/ui/bottom-overlays/bottom-overlays.service';
+import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { ConfirmModalService } from '../../../shared/ui/confirm-modal/confirm-modal.service';
 import {
   applyProfileChangeToList,
@@ -26,7 +26,7 @@ import {
 } from '../../../shared/utils/waiting-reason-messages.util';
 import { getParticipationStatusConfig, ParticipationStatusOptions } from '../../../shared/utils';
 import { NotificationBarConfig } from '../ui/event-notification-bars/event-notification-bars.component';
-import type { IconName } from '../../../core/icons/icon.component';
+import type { IconName } from '../../../shared/ui/icon/icon.component';
 
 const AUTO_REFRESH_INTERVAL = 30000; // 30 seconds
 

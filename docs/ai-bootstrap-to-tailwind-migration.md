@@ -16,7 +16,7 @@ Ten dokument opisuje **konkretne zasady i procedurę** dla Asystenta AI, który 
 3. **Technologie docelowe**:
    - layout, spacing, kolorystyka, typografia, responsywność → **Tailwind CSS**;
    - formularze, focus, dialogi, overlay, a11y → **Angular Material/CDK**, BEZ styli Material;
-   - ikony → **inline SVG przez `IconComponent` z `core/icons`**.
+   - ikony → **inline SVG przez `IconComponent` z `shared/ui/icon`**.
 4. **Zakaz**:
    - NIE używaj Bootstrapa (klas `row`, `col-*`, `btn-*`, `d-flex`, itp.).
    - NIE kopiuj `<link>`/`<script>` Bootstrapa do Angulara.
@@ -38,10 +38,13 @@ Przy zadaniach typu:
   - `frontend/src/app/features/home/` – np. `home.component.ts/html/css`.
   - `frontend/src/app/features/events/` – np. `events.component.ts/html/css`.
 - Wspólne komponenty layoutu: `frontend/src/app/layout/*`.
-- Komponenty wielokrotnego użytku (przyciski, inputy, listy, karty): `frontend/src/app/shared/ui/*`.
-- Ikony: zawsze przez `IconComponent` z `frontend/src/app/core/icons`.
+- Komponenty generyczne wielokrotnego użytku (przyciski, inputy, dialogi, proste wrappery): `frontend/src/app/shared/ui/*`.
+- Komponenty domenowe współdzielone między feature'ami: `frontend/src/app/shared/<domena>/ui/*`.
+- Ikony: zawsze przez `IconComponent` z `frontend/src/app/shared/ui/icon`.
 
-Jeśli fragment szablonu wygląda na **uniwersalny** (np. przycisk, karta wydarzenia, bottom nav), wyodrębnij go do `shared/ui` i użyj w feature.
+Jeśli fragment szablonu wygląda na **uniwersalny i niedomenowy** (np. przycisk, dialog, empty state), wyodrębnij go do `shared/ui` i użyj w feature.
+
+Jeśli fragment jest **domenowy, ale współdzielony** (np. karta wydarzenia, avatar użytkownika, overlay uczestnika, widok czatu), umieszczaj go w `shared/<domena>/ui`.
 
 ---
 
@@ -259,7 +262,7 @@ W szablonie Bootstrap 5 ikony często pochodzą z `Bootstrap Icons` i są dodawa
 W projekcie docelowym:\*\*
 
 - nie używaj font icons ani `i.bi`;
-- **każda ikona** musi być zrealizowana przez `IconComponent` z `core/icons`.
+- **każda ikona** musi być zrealizowana przez `IconComponent` z `shared/ui/icon`.
 
 ### Procedura migracji ikony
 
@@ -370,7 +373,7 @@ Załóżmy, że w pliku `.ignored/themplates/sticky-mobile-template/code/events.
 
 Asystent AI powinien podjąć następujące decyzje:
 
-1. To jest **powtarzalny wzorzec UI** → warto utworzyć headless komponent, np. `EventCardComponent` w `frontend/src/app/shared/ui/event-card/`.
+1. To jest **powtarzalny, ale domenowy wzorzec UI** → warto utworzyć headless komponent, np. `EventCardComponent` w `frontend/src/app/shared/event/ui/event-card/`.
 2. Wejście komponentu: `input.required<EventDto>() event`, gdzie `EventDto` pochodzi z `libs/src/lib/shared-types.ts` (lub innego wspólnego typu domenowego).
 3. Wyjście komponentu: `output<void>() detailsClicked` po kliknięciu przycisku.
 4. Ikony kalendarza i lokalizacji → użycie `IconComponent` (`name="calendar"`, `name="location"`).
@@ -381,7 +384,7 @@ Asystent AI powinien podjąć następujące decyzje:
 `event-card.component.ts` (koncepcja, bez pełnego kodu):
 
 - standalone component z OnPush;
-- importuje `IconComponent` z `core/icons` i wewnętrzny przycisk `UiButtonComponent` z `shared/ui`;
+- importuje `IconComponent` z `shared/ui/icon` i wewnętrzny przycisk z `shared/ui/button`;
 - definiuje:
   - `event = input.required<EventDto>();`
   - `detailsClicked = output<void>();`

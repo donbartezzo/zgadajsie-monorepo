@@ -3,7 +3,7 @@ import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
-import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
+import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
 import { VoucherService } from '../../../../core/services/voucher.service';
 import { OrganizerVoucherGroup } from '../../../../shared/types';
 

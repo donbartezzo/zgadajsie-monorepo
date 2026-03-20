@@ -7,21 +7,21 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { BottomOverlayComponent } from '../bottom-overlays/bottom-overlay.component';
+import { BottomOverlayComponent } from '../../../overlay/ui/bottom-overlays/bottom-overlay.component';
 import {
   UserProfileCardComponent,
   ProfileEditData,
-} from '../user-profile-card/user-profile-card.component';
-import { ButtonComponent } from '../button/button.component';
-import { IconComponent } from '../../../core/icons/icon.component';
-import { Participation, ParticipantManageItem } from '../../types';
-import { ParticipationStatus } from '../../types/participation.interface';
-import { SemanticColor } from '../../types/colors';
-import { AuthService } from '../../../core/auth/auth.service';
-import { UserService } from '../../../core/services/user.service';
-import { SnackbarService } from '../snackbar/snackbar.service';
-import { EventService } from '../../../core/services/event.service';
-import { ProfileBroadcastService } from '../../../core/services/profile-broadcast.service';
+} from '../../../user/ui/user-profile-card/user-profile-card.component';
+import { ButtonComponent } from '../../../ui/button/button.component';
+import { IconComponent } from '../../../ui/icon/icon.component';
+import { Participation, ParticipantManageItem } from '../../../types';
+import { ParticipationStatus } from '../../../types/participation.interface';
+import { SemanticColor } from '../../../types/colors';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { UserService } from '../../../../core/services/user.service';
+import { SnackbarService } from '../../../ui/snackbar/snackbar.service';
+import { EventService } from '../../../../core/services/event.service';
+import { ProfileBroadcastService } from '../../../../core/services/profile-broadcast.service';
 
 export type ParticipantDetailMode = 'public' | 'organizer' | 'guest-manager';
 

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IconComponent } from '../../../../../core/icons/icon.component';
-import { BottomOverlaysService } from '../../../../ui/bottom-overlays/bottom-overlays.service';
+import { IconComponent } from '../../../../ui/icon/icon.component';
+import { BottomOverlaysService } from '../../../../overlay/ui/bottom-overlays/bottom-overlays.service';
 import { NotificationStatusService } from '../../../../../core/services/notification-status.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 

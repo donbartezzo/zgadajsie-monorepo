@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { IconComponent } from '../../../core/icons/icon.component';
+import { IconComponent } from '../../../ui/icon/icon.component';
 
 type BadgeVariant =
   | 'ongoing'

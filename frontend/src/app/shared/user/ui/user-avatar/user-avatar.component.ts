@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AvatarUrl } from '../../types';
-import { IconComponent, IconName } from '../../../core/icons/icon.component';
-import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
+import { AvatarUrl } from '../../../types';
+import { IconComponent, IconName } from '../../../ui/icon/icon.component';
+import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../types/colors';
 
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 export type AvatarShape = 'circle' | 'rounded';

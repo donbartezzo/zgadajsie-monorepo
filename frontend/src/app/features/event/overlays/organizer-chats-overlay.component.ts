@@ -9,9 +9,9 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
-import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
-import { IconComponent } from '../../../core/icons/icon.component';
-import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
+import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
+import { IconComponent } from '../../../shared/ui/icon/icon.component';
+import { UserAvatarComponent } from '../../../shared/user/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../shared/ui/loading-spinner/loading-spinner.component';
 import { ChatService } from '../../../core/services/chat.service';
 import { OrganizerConversation } from '../../../shared/types';

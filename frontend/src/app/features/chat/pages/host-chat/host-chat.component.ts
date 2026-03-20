@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { IconComponent } from '../../../../core/icons/icon.component';
+import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { EventHeroSlotsComponent } from '../../../event/ui/event-hero-slots/event-hero-slots.component';
-import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
+import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
-import { ChatViewComponent } from '../../../../shared/ui/chat-view/chat-view.component';
+import { ChatViewComponent } from '../../../../shared/chat/ui/chat-view/chat-view.component';
 import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay.component';
 import { OrganizerConversation } from '../../../../shared/types';
 import { BaseChatComponent } from '../base-chat.component';

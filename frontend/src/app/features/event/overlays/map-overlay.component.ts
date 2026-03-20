@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { IconComponent } from '../../../core/icons/icon.component';
-import { MapComponent } from '../../../shared/ui/map/map.component';
-import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
+import { IconComponent } from '../../../shared/ui/icon/icon.component';
+import { MapComponent } from '../../../shared/event-form/ui/map/map.component';
+import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { Event as EventModel } from '../../../shared/types';
 
 @Component({

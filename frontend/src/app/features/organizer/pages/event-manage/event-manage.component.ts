@@ -8,10 +8,10 @@ import {
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IconComponent } from '../../../../core/icons/icon.component';
+import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
-import { UserAvatarComponent } from '../../../../shared/ui/user-avatar/user-avatar.component';
+import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EventService } from '../../../../core/services/event.service';
 import { EventAnnouncementService } from '../../../../core/services/event-announcement.service';
@@ -36,16 +36,16 @@ import { getEnrollmentPhase } from '../../../../shared/utils/enrollment-phase.ut
 import {
   ParticipantSlotsGridComponent,
   ParticipantItem,
-} from '../../../../shared/ui/participant-slots-grid/participant-slots-grid.component';
-import { ParticipantDetailOverlayComponent } from '../../../../shared/ui/participant-detail-overlay/participant-detail-overlay.component';
+} from '../../../../shared/participant/ui/participant-slots-grid/participant-slots-grid.component';
+import { ParticipantDetailOverlayComponent } from '../../../../shared/participant/ui/participant-detail-overlay/participant-detail-overlay.component';
 import { EventStatus } from '@zgadajsie/shared';
 import {
   EventLifecycleBannerComponent,
   LifecycleBannerVariant,
-} from '../../../../shared/ui/event-lifecycle-banner/event-lifecycle-banner.component';
+} from '../../../../shared/event/ui/event-lifecycle-banner/event-lifecycle-banner.component';
 import { getEventTimeStatus } from '../../../../shared/utils/event-time-status.util';
 import { paymentMethodLabel } from '../../../../shared/utils/payment.utils';
-import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bottom-overlays.service';
+import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { EventAnnouncementsComponent } from '../../../event/ui/event-announcements/event-announcements.component';
 

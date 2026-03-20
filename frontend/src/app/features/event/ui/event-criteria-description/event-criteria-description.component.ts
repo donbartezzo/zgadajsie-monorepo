@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { Event as EventModel } from '../../../../shared/types';
-import { IconComponent, IconName } from '../../../../core/icons/icon.component';
+import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.component';
 
 interface CriteriaItem {
   icon: IconName;

@@ -13,7 +13,7 @@ import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { NavigationEnd, NavigationStart, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
-import { IconComponent } from '../../../core/icons/icon.component';
+import { IconComponent } from '../../ui/icon/icon.component';
 import { LayoutConfigService } from './layout-config.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -21,7 +21,7 @@ import {
   NotificationState,
   NotificationStatusService,
 } from '../../../core/services/notification-status.service';
-import { BottomOverlaysService } from '../../ui/bottom-overlays/bottom-overlays.service';
+import { BottomOverlaysService } from '../../overlay/ui/bottom-overlays/bottom-overlays.service';
 import { NotificationAlertComponent } from './notification/notification-alert/notification-alert.component';
 import { NotificationOverlayComponent } from './notification/notification-overlay/notification-overlay.component';
 

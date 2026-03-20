@@ -5,8 +5,8 @@ import {
   Participation,
   ParticipantManageItem,
   WaitingReason,
-} from '../../types';
-import { EventCountdown } from '../../utils/date.utils';
+} from '../../../types';
+import { EventCountdown } from '../../../utils/date.utils';
 
 export type OverlayType =
   | 'share'
@@ -31,7 +31,6 @@ export type ParticipantDetailItem = Participation | ParticipantManageItem;
 export class BottomOverlaysService {
   private readonly activeSignal = signal<OverlayType>(null);
 
-  // Event-specific context
   private readonly eventSignal = signal<EventModel | null>(null);
   private readonly loadingSignal = signal(false);
   private readonly isParticipantSignal = signal(false);
@@ -40,7 +39,6 @@ export class BottomOverlaysService {
   private readonly isOrganizerSignal = signal(false);
   private readonly participantsSignal = signal<Participation[]>([]);
 
-  // Callbacks for event-specific actions
   private joinCallback: ((roleKey?: string) => void) | null = null;
   private joinGuestCallback: ((displayName: string) => void) | null = null;
   private authSuccessCallback: (() => void) | null = null;
@@ -56,17 +54,14 @@ export class BottomOverlaysService {
     | null = null;
   private addGuestRequestedCallback: (() => void) | null = null;
 
-  // Lottery countdown context (for enrollment details overlay)
   private readonly lotteryCountdownSignal = signal<EventCountdown | null>(null);
   readonly lotteryCountdown = this.lotteryCountdownSignal.asReadonly();
 
-  // Cancel payment context
   private readonly cancelPaymentSignal = signal<ParticipantPaymentInfo | null>(null);
   private readonly cancelPaymentUserNameSignal = signal('');
   readonly cancelPayment = this.cancelPaymentSignal.asReadonly();
   readonly cancelPaymentUserName = this.cancelPaymentUserNameSignal.asReadonly();
 
-  // Participant detail context
   private readonly selectedParticipantSignal = signal<ParticipantDetailItem | null>(null);
   readonly selectedParticipant = this.selectedParticipantSignal.asReadonly();
 
@@ -90,8 +85,6 @@ export class BottomOverlaysService {
   toggle(type: NonNullable<OverlayType>): void {
     this.activeSignal.set(this.activeSignal() === type ? null : type);
   }
-
-  // ── Event context management ──
 
   setEventContext(event: EventModel | null, isParticipant = false): void {
     this.eventSignal.set(event);
@@ -122,8 +115,6 @@ export class BottomOverlaysService {
   setLotteryCountdown(countdown: EventCountdown | null): void {
     this.lotteryCountdownSignal.set(countdown);
   }
-
-  // ── Callbacks ──
 
   onJoinConfirmed(callback: (roleKey?: string) => void): void {
     this.joinCallback = callback;

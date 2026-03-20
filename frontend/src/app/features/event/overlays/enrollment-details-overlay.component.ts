@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { PRE_ENROLLMENT_HOURS } from '@zgadajsie/shared';
-import { IconComponent } from '../../../core/icons/icon.component';
-import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
+import { IconComponent } from '../../../shared/ui/icon/icon.component';
+import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { SemanticColor } from '../../../shared/types/colors';
 import { EnrollmentPhase } from '../../../shared/types/event.interface';
 import { EventTimeStatus } from '../../../shared/utils/event-time-status.util';

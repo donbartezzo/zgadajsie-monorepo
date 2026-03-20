@@ -3,7 +3,7 @@ import { EventHeroSlotsComponent } from '../../../event/ui/event-hero-slots/even
 import {
   ChatViewComponent,
   ChatViewMessage,
-} from '../../../../shared/ui/chat-view/chat-view.component';
+} from '../../../../shared/chat/ui/chat-view/chat-view.component';
 import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay.component';
 import { ChatMessage, PrivateChatMessage } from '../../../../shared/types';
 import { BaseChatComponent } from '../base-chat.component';

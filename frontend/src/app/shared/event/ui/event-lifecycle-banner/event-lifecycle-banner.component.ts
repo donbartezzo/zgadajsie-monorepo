@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { IconComponent, IconName } from '../../../core/icons/icon.component';
+import { IconComponent, IconName } from '../../../ui/icon/icon.component';
 
 export type LifecycleBannerVariant = 'ended' | 'ongoing' | 'cancelled' | 'chat-closed' | 'no-edit';
 

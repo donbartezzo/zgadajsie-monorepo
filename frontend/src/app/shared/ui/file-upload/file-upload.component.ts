@@ -8,7 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IconComponent } from '../../../core/icons/icon.component';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-file-upload',

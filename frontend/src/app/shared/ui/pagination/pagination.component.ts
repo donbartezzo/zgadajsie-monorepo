@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IconComponent } from '../../../core/icons/icon.component';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-pagination',

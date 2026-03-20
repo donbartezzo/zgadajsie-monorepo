@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { BottomNavComponent } from './layout/footer/bottom-nav.component';
 import { SnackbarComponent } from './shared/ui/snackbar/snackbar.component';
-import { BottomOverlaysComponent } from './shared/ui/bottom-overlays/bottom-overlays.component';
+import { BottomOverlaysComponent } from './shared/overlay/ui/bottom-overlays/bottom-overlays.component';
 import { ConfirmModalComponent } from './shared/ui/confirm-modal/confirm-modal.component';
 import { PageLayoutComponent } from './shared/layouts/page-layout/page-layout.component';
 

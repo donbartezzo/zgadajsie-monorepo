@@ -1,11 +1,11 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { IconComponent } from '../../../../core/icons/icon.component';
+import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
-import { UserProfileCardComponent } from '../../../../shared/ui/user-profile-card/user-profile-card.component';
+import { UserProfileCardComponent } from '../../../../shared/user/ui/user-profile-card/user-profile-card.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { UserService } from '../../../../core/services/user.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
@@ -83,17 +83,27 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         <div class="space-y-4">
           <h3 class="text-sm font-semibold text-neutral-900">Edytuj profil</h3>
           <div>
-            <label class="block text-xs font-medium text-neutral-600 mb-1">Nazwa wyświetlana</label>
+            <label
+              for="profile-display-name"
+              class="block text-xs font-medium text-neutral-600 mb-1"
+            >
+              Nazwa wyświetlana
+            </label>
             <input
+              id="profile-display-name"
               [(ngModel)]="editName"
               class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
-            <label class="block text-xs font-medium text-neutral-600 mb-1"
-              >Nowe hasło (opcjonalne)</label
+            <label
+              for="profile-new-password"
+              class="block text-xs font-medium text-neutral-600 mb-1"
             >
+              Nowe hasło (opcjonalne)
+            </label>
             <input
+              id="profile-new-password"
               type="password"
               [(ngModel)]="newPassword"
               placeholder="Zostaw puste jeśli bez zmian"
@@ -121,6 +131,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
       }
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileComponent implements OnInit {
   readonly auth = inject(AuthService);

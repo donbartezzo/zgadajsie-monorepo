@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { Router } from '@angular/router';
-import { IconComponent } from '../../../core/icons/icon.component';
-import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
-import { BottomOverlaysService } from '../../../shared/ui/bottom-overlays/bottom-overlays.service';
+import { IconComponent } from '../../../shared/ui/icon/icon.component';
+import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
+import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 import { EventStatus } from '@zgadajsie/shared';
 import { isEventJoinable } from '../../../shared/utils/event-time-status.util';

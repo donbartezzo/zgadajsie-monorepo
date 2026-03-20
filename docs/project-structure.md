@@ -10,7 +10,7 @@ Projekt jest oparty o **Nx monorepo** i składa się z:
 - `backend/` - API i logika serwerowa w NestJS
 - `libs/` - współdzielone typy, enumy, konfiguracje i stałe
 - `docs/` - aktywna dokumentacja projektu
-- `.ai/` - pomocnicze materiały do pracy z AI
+- `.windsurf/` - reguły i workflowy używane przez środowisko AI
 
 ## Główne źródła prawdy dla struktury
 
@@ -41,9 +41,15 @@ frontend/
   │   │   │   └── services/      # globalne serwisy HTTP i integracje
   │   │   ├── shared/
   │   │   │   ├── auth/          # współdzielone helpery auth w UI
+  │   │   │   ├── chat/          # współdzielone komponenty domeny chat (`shared/chat/ui`)
+  │   │   │   ├── event/         # współdzielone komponenty domeny event (`shared/event/ui`)
+  │   │   │   ├── event-form/    # współdzielone komponenty domeny formularza wydarzenia
   │   │   │   ├── layouts/       # współdzielone layout helpers
+  │   │   │   ├── overlay/       # współdzielone prymitywy i orkiestracja overlayów
+  │   │   │   ├── participant/   # współdzielone komponenty domeny uczestników
   │   │   │   ├── types/         # interfejsy i typy frontendowe
-  │   │   │   ├── ui/            # wielokrotnego użytku komponenty UI
+  │   │   │   ├── ui/            # generyczne, niedomenowe komponenty UI (button, card, dialog...)
+  │   │   │   ├── user/          # współdzielone komponenty domeny użytkownika
   │   │   │   └── utils/         # helpery współdzielone
   │   │   ├── layout/            # header, footer, shell i elementy wspólnego layoutu
   │   │   └── features/
@@ -75,7 +81,9 @@ frontend/
 ### Zasady organizacyjne frontendu
 
 - `core/` zawiera singletony, guardy, auth i serwisy globalne.
-- `shared/` zawiera elementy wielokrotnego użytku, które nie należą do jednej domeny.
+- `shared/ui/` zawiera wyłącznie generyczne elementy wielokrotnego użytku, które nie należą do jednej domeny.
+- Domenowe komponenty współdzielone między feature'ami trafiają do `shared/<domena>/ui/`.
+- Aktualnie wydzielone domeny współdzielone to: `event`, `participant`, `user`, `chat`, `overlay`, `event-form`.
 - `layout/` zawiera komponenty ramy aplikacji.
 - `features/` grupuje funkcje domenowe i routowane widoki.
 - Routing jest zdefiniowany centralnie w `frontend/src/app/app.routes.ts`.
@@ -87,6 +95,7 @@ frontend/
 - `w/:citySlug/:id` - obszar pojedynczego wydarzenia
 - `o/w/new`, `o/w/:id/edit`, `o/w/:id/manage` - strefa organizatora
 - `auth/*` - autentykacja
+- `announcements/confirm/:token` - publiczne potwierdzenie odbioru komunikatu
 - `profile/*` - profil użytkownika
 - `payments`, `payment/status`, `vouchers` - płatności i vouchery
 - `admin/*` - panel administracyjny
@@ -163,5 +172,5 @@ libs/
 ## Dokumentacja i AI
 
 - aktywne dokumenty projektowe znajdują się w `docs/`
-- pomocnicze materiały AI znajdują się w `.ai/`
+- reguły i workflowy środowiska AI znajdują się w `.windsurf/`
 - archiwalia i stare plany powinny trafiać do katalogów `archive/`, a nie pozostawać w aktywnym obiegu

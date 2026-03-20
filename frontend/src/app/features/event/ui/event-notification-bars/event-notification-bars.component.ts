@@ -9,7 +9,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { IconComponent, IconName } from '../../../../core/icons/icon.component';
+import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 
 export interface NotificationBarConfig {

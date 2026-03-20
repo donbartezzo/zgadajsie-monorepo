@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { IconComponent, IconName } from '../../../../core/icons/icon.component';
+import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.component';
 import { SemanticColor } from '../../../../shared/types/colors';
 import { EnrollmentPhase } from '../../../../shared/types/event.interface';
 import { EventTimeStatus } from '../../../../shared/utils/event-time-status.util';
-import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bottom-overlays.service';
+import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 
 interface BannerConfig {
   icon: IconName;

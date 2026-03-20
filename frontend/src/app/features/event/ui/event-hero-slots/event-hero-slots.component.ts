@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input } from '@angular/core';
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
-import { DateBadgeComponent } from '../../../../shared/ui/date-badge/date-badge.component';
+import { DateBadgeComponent } from '../../../../shared/event/ui/date-badge/date-badge.component';
 import { Event as EventModel } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 

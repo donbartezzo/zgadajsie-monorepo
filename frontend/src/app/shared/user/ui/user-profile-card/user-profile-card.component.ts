@@ -2,13 +2,13 @@ import { ChangeDetectionStrategy, Component, computed, input, output, signal } f
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserAvatarComponent } from '../user-avatar/user-avatar.component';
-import { IconComponent } from '../../../core/icons/icon.component';
-import { ButtonComponent } from '../button/button.component';
-import { User } from '../../types/user.interface';
-import { UserBrief } from '../../types/common.interface';
-import { ParticipationStatus } from '../../types/participation.interface';
-import { Payment } from '../../types/payment.interface';
-import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
+import { IconComponent } from '../../../ui/icon/icon.component';
+import { ButtonComponent } from '../../../ui/button/button.component';
+import { User } from '../../../types/user.interface';
+import { UserBrief } from '../../../types/common.interface';
+import { ParticipationStatus } from '../../../types/participation.interface';
+import { Payment } from '../../../types/payment.interface';
+import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../types/colors';
 
 export interface UserProfileStats {
   label: string;
@@ -37,7 +37,6 @@ export interface ProfileEditData {
     @let _stats = stats(); @let _description = description();
 
     <div class="flex flex-col items-center text-center" [ngClass]="containerClass()">
-      <!-- Avatar (always rounded square) -->
       <div class="relative">
         <app-user-avatar
           [avatarUrl]="_editingMode ? _tempAvatarUrl : _avatarUrl"
@@ -57,7 +56,6 @@ export interface ProfileEditData {
         }
       </div>
 
-      <!-- Name -->
       <div class="mt-3 flex items-center gap-2" [ngClass]="nameClass()">
         @if (_editingMode) {
         <input
@@ -79,13 +77,9 @@ export interface ProfileEditData {
         }
       </div>
 
-      <!-- Subtitle / Role -->
       @if (_subtitle && !_editingMode) {
       <p class="text-xs text-primary-500 font-medium -mt-0.5">{{ _subtitle }}</p>
-      }
-
-      <!-- Status badge -->
-      @if (_statusBadge && !_editingMode) {
+      } @if (_statusBadge && !_editingMode) {
       <span
         class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium mt-1"
         [ngClass]="_statusBadgeClass"
@@ -95,10 +89,7 @@ export interface ProfileEditData {
         }
         {{ _statusBadge }}
       </span>
-      }
-
-      <!-- Edit mode actions -->
-      @if (_editingMode) {
+      } @if (_editingMode) {
       <div class="mt-4 flex gap-2">
         <app-button
           appearance="soft"
@@ -115,10 +106,7 @@ export interface ProfileEditData {
           Anuluj
         </app-button>
       </div>
-      }
-
-      <!-- Stats row (like in delivery-profile template) -->
-      @if (_stats.length > 0 && _variant !== 'compact' && !_editingMode) {
+      } @if (_stats.length > 0 && _variant !== 'compact' && !_editingMode) {
       <div class="flex items-center justify-center gap-6 mt-4 w-full">
         @for (stat of _stats; track stat.label) {
         <div class="flex flex-col items-center">
@@ -126,7 +114,7 @@ export interface ProfileEditData {
           <app-icon
             [name]="$any(stat.icon)"
             size="md"
-            [color]="stat.color ?? null"
+            [color]="stat.color ?? 'neutral'"
             [class]="stat.color ? '' : 'text-neutral-400'"
           />
           }
@@ -135,15 +123,9 @@ export interface ProfileEditData {
         </div>
         }
       </div>
-      }
-
-      <!-- Description -->
-      @if (_description && _variant !== 'compact' && !_editingMode) {
+      } @if (_description && _variant !== 'compact' && !_editingMode) {
       <p class="text-sm text-neutral-600 mt-3 line-clamp-3">{{ _description }}</p>
-      }
-
-      <!-- Content projection for actions (hidden in edit mode) -->
-      @if (!_editingMode) {
+      } @if (!_editingMode) {
       <ng-content></ng-content>
       }
     </div>
@@ -151,9 +133,6 @@ export interface ProfileEditData {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserProfileCardComponent {
-  // 1. Pola z inject() - brak w tym komponencie
-
-  // 2. Input signals
   readonly user = input.required<User | UserBrief>();
   readonly context = input<ProfileCardContext>('profile');
   readonly participationStatus = input<ParticipationStatus | null>(null);
@@ -168,23 +147,19 @@ export class UserProfileCardComponent {
   readonly loading = input(false);
   readonly addedByUserId = input<string | null>(null);
 
-  // 3. Output signals
   readonly profileUpdated = output<ProfileEditData>();
   readonly guestUpdated = output<{ participationId: string; displayName: string }>();
 
-  // 4. State signals
   readonly editingMode = signal(false);
   readonly tempDisplayName = signal('');
   readonly tempAvatarUrl = signal<string | null>(null);
 
-  // 5. Computed signals
   readonly avatarUrl = computed(() => this.user().avatarUrl ?? null);
   readonly displayName = computed(() => this.user().displayName);
   readonly subtitle = computed(() => {
     const user = this.user();
     switch (this.context()) {
       case 'profile':
-        // For profile context, user should be full User with email
         return 'email' in user ? user.email : null;
       case 'participant':
       case 'organizer':
@@ -194,7 +169,6 @@ export class UserProfileCardComponent {
     }
   });
   readonly statusBadge = computed(() => {
-    // Profile context - email verification status
     if (this.context() === 'profile') {
       const user = this.user();
       if ('isEmailVerified' in user) {
@@ -202,7 +176,6 @@ export class UserProfileCardComponent {
       }
       return null;
     }
-    // Participant context - participation status
     if (this.context() === 'participant' || this.context() === 'organizer') {
       const status = this.participationStatus();
       switch (status) {
@@ -269,7 +242,6 @@ export class UserProfileCardComponent {
     if (this.context() !== 'participant' && this.context() !== 'organizer') {
       return false;
     }
-    // Show warning if payment needed but not completed
     return this.participationStatus() === 'APPROVED' && !this.paymentInfo();
   });
   readonly showPending = computed(() => this.participationStatus() === 'PENDING');
@@ -306,37 +278,26 @@ export class UserProfileCardComponent {
     return `${SEMANTIC_COLOR_CLASSES.surface[color]} ${SEMANTIC_COLOR_CLASSES.textStrong[color]}`;
   });
 
-  // Edit mode computed properties
   readonly canEditName = computed(() => {
     const userId = this.currentUserId();
     const isGuest = this.isGuest();
     const participationId = this.participationId();
 
-    // User can edit their own name (both main users and guests)
     if (userId && this.user().id === userId) return true;
-
-    // Organizer can edit their own guests' names
     if (isGuest && participationId && this.isOwnGuest()) return true;
 
     return false;
   });
 
   readonly canEditAvatar = computed(() => {
-    // Avatar editing is disabled - only name can be edited
     return false;
   });
 
   readonly hasChanges = computed(() => {
-    // Only check for name changes since avatar editing is disabled
     const nameChanged = this.tempDisplayName().trim() !== this.displayName();
     return nameChanged;
   });
 
-  // 6. Stałe - brak w tym komponencie
-
-  // 7. Lifecycle - brak w tym komponencie
-
-  // 8. Metody publiczne
   readonly nameInputClass = computed(() => {
     const sizes: Record<ProfileCardVariant, string> = {
       compact: 'text-base',
@@ -346,7 +307,6 @@ export class UserProfileCardComponent {
     return sizes[this.variant()];
   });
 
-  // Helper methods
   isOwnGuest(): boolean {
     const currentUserId = this.currentUserId();
     const addedByUserId = this.addedByUserId();
@@ -355,14 +315,12 @@ export class UserProfileCardComponent {
     return isGuest && !!addedByUserId && addedByUserId === currentUserId;
   }
 
-  // Edit mode methods
   startEditing(): void {
     this.tempDisplayName.set(this.displayName());
     this.tempAvatarUrl.set(this.avatarUrl());
     this.editingMode.set(true);
   }
 
-  // 9. Metody prywatne
   cancelEditing(): void {
     this.editingMode.set(false);
     this.tempDisplayName.set('');
@@ -378,7 +336,6 @@ export class UserProfileCardComponent {
     const participationId = this.participationId();
 
     if (isGuest && participationId) {
-      // Guest update - only name changes, event-specific
       if (newDisplayName !== this.displayName()) {
         this.guestUpdated.emit({
           participationId,
@@ -386,7 +343,6 @@ export class UserProfileCardComponent {
         });
       }
     } else {
-      // Main user profile update - permanent changes
       const updateData: ProfileEditData = {};
 
       if (newDisplayName !== this.displayName()) {

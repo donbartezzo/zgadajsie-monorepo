@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IconComponent, IconName, IconSize } from '../../../core/icons/icon.component';
+import { IconComponent, IconName, IconSize } from '../icon/icon.component';
 import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
 
 export type ButtonVariant =

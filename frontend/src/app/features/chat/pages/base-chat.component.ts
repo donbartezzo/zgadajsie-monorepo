@@ -5,7 +5,7 @@ import { ChatService } from '../../../core/services/chat.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 import { PrivateChatMessage } from '../../../shared/types';
-import { ChatViewMessage } from '../../../shared/ui/chat-view/chat-view.component';
+import { ChatViewMessage } from '../../../shared/chat/ui/chat-view/chat-view.component';
 import { EventAreaService } from '../../event/services/event-area.service';
 
 @Directive()

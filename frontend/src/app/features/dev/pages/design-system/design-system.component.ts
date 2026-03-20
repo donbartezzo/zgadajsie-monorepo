@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { IconComponent, IconName } from '../../../../core/icons/icon.component';
+import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.component';
 import { ButtonAppearance, ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { SemanticColor } from '../../../../shared/types/colors';
 

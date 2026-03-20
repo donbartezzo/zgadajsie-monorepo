@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { IconComponent } from '../../../core/icons/icon.component';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-loading-spinner',

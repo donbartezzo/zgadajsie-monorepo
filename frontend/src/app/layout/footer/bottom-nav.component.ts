@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IconComponent } from '../../core/icons/icon.component';
-import { UserAvatarComponent } from '../../shared/ui/user-avatar/user-avatar.component';
+import { IconComponent } from '../../shared/ui/icon/icon.component';
+import { UserAvatarComponent } from '../../shared/user/ui/user-avatar/user-avatar.component';
 import { AuthService } from '../../core/auth/auth.service';
-import { BottomOverlaysService } from '../../shared/ui/bottom-overlays/bottom-overlays.service';
+import { BottomOverlaysService } from '../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 
 @Component({
   selector: 'app-bottom-nav',

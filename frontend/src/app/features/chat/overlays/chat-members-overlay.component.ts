@@ -7,8 +7,8 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
-import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
+import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
+import { UserAvatarComponent } from '../../../shared/user/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../shared/ui/loading-spinner/loading-spinner.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { ChatService } from '../../../core/services/chat.service';

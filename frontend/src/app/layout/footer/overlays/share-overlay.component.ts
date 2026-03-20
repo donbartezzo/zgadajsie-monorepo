@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { IconComponent, IconName } from '../../../core/icons/icon.component';
-import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
+import { IconComponent, IconName } from '../../../shared/ui/icon/icon.component';
+import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 
 interface ShareOption {

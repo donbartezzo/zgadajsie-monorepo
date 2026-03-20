@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
+import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { ParticipantPaymentInfo } from '../../../shared/types';
 import { paymentMethodLabel } from '../../../shared/utils/payment.utils';
 

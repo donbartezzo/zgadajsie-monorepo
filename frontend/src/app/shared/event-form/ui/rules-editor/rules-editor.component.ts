@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IconComponent } from '../../../core/icons/icon.component';
-import { ButtonComponent } from '../button/button.component';
+import { IconComponent } from '../../../ui/icon/icon.component';
+import { ButtonComponent } from '../../../ui/button/button.component';
 
 interface Rule {
   id: string;

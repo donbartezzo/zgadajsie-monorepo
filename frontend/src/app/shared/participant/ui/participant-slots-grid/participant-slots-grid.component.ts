@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { UserAvatarComponent } from '../user-avatar/user-avatar.component';
-import { IconComponent } from '../../../core/icons/icon.component';
-import { Participation, ParticipantManageItem, EventRoleConfig, EventRole } from '../../types';
-import { SemanticColor } from '../../types/colors';
-import { EnrollmentPhase } from '../../types/event.interface';
+import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.component';
+import { IconComponent } from '../../../ui/icon/icon.component';
+import { Participation, ParticipantManageItem, EventRoleConfig, EventRole } from '../../../types';
+import { SemanticColor } from '../../../types/colors';
+import { EnrollmentPhase } from '../../../types/event.interface';
 
 export type SlotMode = 'public' | 'organizer';
 

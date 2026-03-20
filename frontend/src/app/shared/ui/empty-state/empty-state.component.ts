@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { IconComponent, IconName } from '../../../core/icons/icon.component';
+import { IconComponent, IconName } from '../icon/icon.component';
 
 @Component({
   selector: 'app-empty-state',

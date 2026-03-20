@@ -9,10 +9,10 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EventCardComponent } from '../../../../shared/ui/event-card/event-card.component';
+import { EventCardComponent } from '../../../../shared/event/ui/event-card/event-card.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
-import { DateBadgeComponent } from '../../../../shared/ui/date-badge/date-badge.component';
+import { DateBadgeComponent } from '../../../../shared/event/ui/date-badge/date-badge.component';
 import { EventService } from '../../../../core/services/event.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { CitySubscriptionService } from '../../../../core/services/city-subscription.service';

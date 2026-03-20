@@ -14,15 +14,15 @@ import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-sl
 import {
   ParticipantSlotsGridComponent,
   ParticipantItem,
-} from '../../../../shared/ui/participant-slots-grid/participant-slots-grid.component';
-import { ParticipantDetailOverlayComponent } from '../../../../shared/ui/participant-detail-overlay/participant-detail-overlay.component';
+} from '../../../../shared/participant/ui/participant-slots-grid/participant-slots-grid.component';
+import { ParticipantDetailOverlayComponent } from '../../../../shared/participant/ui/participant-detail-overlay/participant-detail-overlay.component';
 import {
   EventNotificationBarsComponent,
   NotificationBarConfig,
 } from '../../ui/event-notification-bars/event-notification-bars.component';
 import { EventService } from '../../../../core/services/event.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
-import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bottom-overlays.service';
+import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { EventAreaService } from '../../services/event-area.service';
 import {
   applyProfileChange,
