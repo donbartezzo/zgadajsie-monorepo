@@ -69,8 +69,31 @@ export class EventParticipantsComponent implements AfterViewInit {
   // ── Local state ──
   readonly selectedParticipant = signal<ParticipantItem | null>(null);
   readonly detailOverlayOpen = signal(false);
+  readonly showOnlyMyParticipations = signal(false);
 
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
+
+  // Filtered participants based on "only my participations" toggle
+  readonly filteredParticipants = computed(() => {
+    const all = this.participants();
+    if (!this.showOnlyMyParticipations()) return all;
+
+    const userId = this.currentUserId();
+    if (!userId) return all;
+
+    // Filter to only participations where user is the participant OR added the guest
+    return all.filter((p) => p.userId === userId || p.addedByUserId === userId);
+  });
+
+  // Hide empty slots when filtering to "only mine"
+  readonly effectiveMaxSlots = computed(() => {
+    if (this.showOnlyMyParticipations()) {
+      return this.filteredParticipants().filter(
+        (p) => p.status === 'APPROVED' || p.status === 'CONFIRMED',
+      ).length;
+    }
+    return this.maxSlots();
+  });
 
   readonly detailMode = computed(() => {
     if (this.isOrganizer()) return 'organizer';
@@ -110,6 +133,12 @@ export class EventParticipantsComponent implements AfterViewInit {
         }
       }
     });
+
+    // Check for showOnlyMine route data
+    const showOnlyMine = this.route.snapshot.data['showOnlyMine'] as boolean;
+    if (showOnlyMine) {
+      this.showOnlyMyParticipations.set(true);
+    }
 
     // Scroll to current user after view init
     setTimeout(() => this.scrollToCurrentUser(), 100);
@@ -191,6 +220,20 @@ export class EventParticipantsComponent implements AfterViewInit {
           });
         }
       });
+  }
+
+  onToggleFilterMine(checked: boolean): void {
+    this.showOnlyMyParticipations.set(checked);
+
+    // Get citySlug and eventId from activated route params
+    const citySlug = this.route.snapshot.paramMap.get('citySlug');
+    const eventId = this.route.snapshot.paramMap.get('id');
+
+    if (checked) {
+      this.router.navigate(['/w', citySlug, eventId, 'participants', 'my']);
+    } else {
+      this.router.navigate(['/w', citySlug, eventId, 'participants']);
+    }
   }
 
   onBarAction(barId: string): void {

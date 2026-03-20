@@ -291,7 +291,7 @@ export class EventAreaService {
 
   openManageGuests(): void {
     this.overlays.close();
-    this.router.navigate(['/w', this._citySlug, this._eventId, 'participants']);
+    this.router.navigate(['/w', this._citySlug, this._eventId, 'participants', 'my']);
   }
 
   // ── Participant actions ──

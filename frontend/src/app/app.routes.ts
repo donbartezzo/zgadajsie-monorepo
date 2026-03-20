@@ -90,6 +90,22 @@ export const appRoutes: Route[] = [
           breadcrumb: BREADCRUMB_TO_EVENT,
         },
       },
+      // Participants list - only mine
+      {
+        path: 'participants/my',
+        loadComponent: () =>
+          import('./features/event/pages/event-participants/event-participants.component').then(
+            (m) => m.EventParticipantsComponent,
+          ),
+        canActivate: [verifiedUserGuard],
+        data: {
+          showFooter: false,
+          showBorder: false,
+          contentClass: 'bg-white',
+          breadcrumb: BREADCRUMB_TO_EVENT,
+          showOnlyMine: true,
+        },
+      },
       // Chat with organizer (participant view) / Conversation list (organizer view)
       {
         path: 'host-chat',

@@ -84,7 +84,8 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
               {{ getDisplayName(p) }}
             </span>
           </button>
-          } @for (i of getEmptySlotIndices(group.emptySlots); track i) {
+          } @if (group.emptySlots > 0) { @for (i of getEmptySlotIndices(group.emptySlots); track i)
+          {
           <button
             type="button"
             class="flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-200"
@@ -99,7 +100,7 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
               >Wolne</span
             >
           </button>
-          }
+          } }
         </div>
       </div>
       }
@@ -145,8 +146,8 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
       </button>
       }
 
-      <!-- Empty slots (always clickable) -->
-      @for (i of emptySlotIndices(); track i) {
+      <!-- Empty slots (only show when there are any) -->
+      @if (emptySlotCount() > 0) { @for (i of emptySlotIndices(); track i) {
       <button
         type="button"
         class="flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-200"
@@ -161,7 +162,7 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
           >Wolne</span
         >
       </button>
-      }
+      } }
     </div>
 
     <!-- Summary row -->
@@ -269,11 +270,17 @@ export class ParticipantSlotsGridComponent {
     return config?.roles && config.roles.length > 1;
   });
 
+  readonly shouldHideEmptySlots = computed(() => {
+    // Hide empty slots when maxSlots equals occupied slots (filtering mode)
+    return this.maxSlots() === this.slotParticipants().length;
+  });
+
   readonly roleGroups = computed<RoleGroup[]>(() => {
     const config = this.roleConfig();
     if (!config?.roles || config.roles.length <= 1) return [];
 
     const slotParticipants = this.slotParticipants();
+    const hideEmpty = this.shouldHideEmptySlots();
 
     return config.roles.map((role) => {
       const roleParticipants = slotParticipants.filter((p) => {
@@ -284,7 +291,7 @@ export class ParticipantSlotsGridComponent {
       return {
         role,
         participants: roleParticipants,
-        emptySlots: Math.max(0, role.slots - roleParticipants.length),
+        emptySlots: hideEmpty ? 0 : Math.max(0, role.slots - roleParticipants.length),
       };
     });
   });
