@@ -72,7 +72,8 @@ export type AnnouncementMode = 'participant' | 'organizer';
             </span>
             } @else if (a.receipts && a.receipts.length > 0 && !a.receipts[0].confirmedAt) {
             <app-button
-              variant="outline"
+              appearance="outline"
+              color="neutral"
               size="xs"
               (clicked)="confirm.emit(a.id)"
               class="shrink-0 self-start h-7"

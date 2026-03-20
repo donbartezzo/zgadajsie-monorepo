@@ -43,7 +43,8 @@ export interface NotificationBarConfig {
               </p>
             </div>
             <app-button
-              variant="outline"
+              appearance="outline"
+              color="neutral"
               size="sm"
               (clicked)="barAction.emit(bar.id)"
               class="shrink-0"
@@ -74,7 +75,8 @@ export interface NotificationBarConfig {
             </p>
           </div>
           <app-button
-            variant="outline"
+            appearance="outline"
+            color="neutral"
             size="xs"
             (clicked)="barAction.emit(bar.id)"
             class="shrink-0"

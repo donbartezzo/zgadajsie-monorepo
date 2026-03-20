@@ -1,22 +1,27 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { IconComponent, IconName } from '../../../../core/icons/icon.component';
+import { SemanticColor } from '../../../../shared/types/colors';
 import { EnrollmentPhase } from '../../../../shared/types/event.interface';
 import { EventTimeStatus } from '../../../../shared/utils/event-time-status.util';
 import { BottomOverlaysService } from '../../../../shared/ui/bottom-overlays/bottom-overlays.service';
 
-type BannerVariant = 'info' | 'warning' | 'success' | 'danger' | 'neutral';
-
 interface BannerConfig {
   icon: IconName;
-  variant: BannerVariant;
+  color: SemanticColor;
   title: string;
   subtitle: string;
 }
 
 const VARIANT_STYLES: Record<
-  BannerVariant,
+  SemanticColor,
   { container: string; iconBg: string; icon: string; title: string }
 > = {
+  primary: {
+    container: 'border-primary-200 bg-primary-50',
+    iconBg: 'bg-primary-100',
+    icon: 'text-primary-600',
+    title: 'text-primary-700',
+  },
   info: {
     container: 'border-info-200 bg-info-50',
     iconBg: 'bg-info-100',
@@ -93,7 +98,7 @@ export class EnrollmentStatusBannerComponent {
     if (this.isCancelled()) {
       return {
         icon: 'x',
-        variant: 'danger',
+        color: 'danger',
         title: 'Wydarzenie odwołane',
         subtitle: 'Zapisy zamknięte',
       };
@@ -103,7 +108,7 @@ export class EnrollmentStatusBannerComponent {
     if (ts === 'ENDED') {
       return {
         icon: 'clock',
-        variant: 'neutral',
+        color: 'neutral',
         title: 'Zakończone',
         subtitle: 'Wydarzenie już się odbyło',
       };
@@ -111,7 +116,7 @@ export class EnrollmentStatusBannerComponent {
     if (ts === 'ONGOING') {
       return {
         icon: 'clock',
-        variant: 'success',
+        color: 'success',
         title: 'W trakcie',
         subtitle: 'Nowe zapisy niemożliwe',
       };
@@ -123,7 +128,7 @@ export class EnrollmentStatusBannerComponent {
       const countLabel = count > 0 ? ` · ${count} zgłoszonych` : '';
       return {
         icon: 'users',
-        variant: 'info',
+        color: 'info',
         title: 'Wstępne zapisy',
         subtitle: 'Trwa faza wstępnych zgłoszeń' + countLabel,
       };
@@ -131,7 +136,7 @@ export class EnrollmentStatusBannerComponent {
     if (phase === 'LOTTERY_PENDING') {
       return {
         icon: 'loader',
-        variant: 'warning',
+        color: 'warning',
         title: 'Trwa losowanie',
         subtitle: 'Wyniki wkrótce',
       };
@@ -139,7 +144,7 @@ export class EnrollmentStatusBannerComponent {
     if (phase === 'OPEN_ENROLLMENT') {
       return {
         icon: 'check-circle',
-        variant: 'success',
+        color: 'success',
         title: 'Zapisy otwarte',
         subtitle: 'Dołącz teraz',
       };
@@ -149,7 +154,7 @@ export class EnrollmentStatusBannerComponent {
   });
 
   readonly variantStyles = computed(() => {
-    const v = this.config()?.variant ?? 'neutral';
+    const v = this.config()?.color ?? 'neutral';
     return VARIANT_STYLES[v];
   });
 

@@ -26,11 +26,18 @@ interface NotFoundState {
       <div class="mt-8 flex flex-col gap-3">
         @if (citySlug()) {
         <a [routerLink]="['/w', citySlug()]">
-          <app-button variant="primary" size="lg" class="w-full"> Wydarzenia w mieście </app-button>
+          <app-button appearance="soft" color="primary" size="lg" class="w-full">
+            Wydarzenia w mieście
+          </app-button>
         </a>
         }
         <a routerLink="/">
-          <app-button [variant]="citySlug() ? 'outline' : 'primary'" size="lg" class="w-full">
+          <app-button
+            [appearance]="citySlug() ? 'outline' : 'soft'"
+            [color]="citySlug() ? 'neutral' : 'primary'"
+            size="lg"
+            class="w-full"
+          >
             Strona główna
           </app-button>
         </a>

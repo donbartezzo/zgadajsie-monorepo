@@ -392,7 +392,8 @@ interface RoleSlotConfig {
         <div>
           <app-button
             type="submit"
-            variant="primary"
+            appearance="soft"
+            color="primary"
             [fullWidth]="true"
             [loading]="submitting()"
             [disabled]="form.invalid"

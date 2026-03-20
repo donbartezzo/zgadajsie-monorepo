@@ -1,11 +1,12 @@
 import { Injectable, signal } from '@angular/core';
+import { SemanticColor } from '../../types/colors';
 
 export interface ConfirmModalConfig {
   title: string;
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: 'danger' | 'warning' | 'info';
+  color?: SemanticColor;
 }
 
 interface ConfirmModalState extends ConfirmModalConfig {

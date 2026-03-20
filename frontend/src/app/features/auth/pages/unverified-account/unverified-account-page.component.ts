@@ -13,7 +13,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
       <div
         class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-warning-50"
       >
-        <app-icon name="mail" class="text-warning-400" size="lg"></app-icon>
+        <app-icon name="mail" color="warning" size="lg"></app-icon>
       </div>
 
       <h1 class="text-2xl font-bold text-neutral-900">Konto niezweryfikowane</h1>
@@ -25,7 +25,8 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 
       <div class="mt-8 flex flex-col gap-3">
         <app-button
-          variant="primary"
+          appearance="soft"
+          color="primary"
           size="lg"
           [loading]="sending()"
           (clicked)="resendActivation()"
@@ -35,7 +36,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         </app-button>
 
         <a routerLink="/profile">
-          <app-button variant="outline" size="lg" class="w-full">
+          <app-button appearance="outline" color="neutral" size="lg" class="w-full">
             <app-icon name="user" size="sm"></app-icon>
             Przejdź do profilu
           </app-button>

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { IconComponent, IconName } from '../../../../core/icons/icon.component';
-import { ButtonComponent } from '../../../../shared/ui/button/button.component';
+import { ButtonAppearance, ButtonComponent } from '../../../../shared/ui/button/button.component';
+import { SemanticColor } from '../../../../shared/types/colors';
 
 interface ColorSwatch {
   shade: string;
@@ -21,6 +22,15 @@ interface ColorPalette {
 })
 export class DesignSystemComponent {
   readonly activeSection = signal<string>('colors');
+  readonly semanticColors: SemanticColor[] = [
+    'primary',
+    'success',
+    'danger',
+    'warning',
+    'info',
+    'neutral',
+  ];
+  readonly buttonAppearances: ButtonAppearance[] = ['soft', 'outline', 'ghost', 'link'];
 
   readonly sections = [
     { id: 'colors', label: 'Kolory' },

@@ -21,13 +21,13 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         <div
           class="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-50"
         >
-          <app-icon name="mail" size="lg" variant="primary"></app-icon>
+          <app-icon name="mail" size="lg" color="primary"></app-icon>
         </div>
         <p class="text-sm text-neutral-600 mb-4">
           Link do resetowania hasła został wysłany na podany adres email.
         </p>
         <a routerLink="/auth/login">
-          <app-button variant="outline">Wróć do logowania</app-button>
+          <app-button appearance="outline" color="neutral">Wróć do logowania</app-button>
         </a>
       </div>
       } @else {
@@ -45,7 +45,13 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
           />
         </div>
         <div class="mt-4">
-          <app-button type="submit" variant="primary" [fullWidth]="true" [loading]="loading()">
+          <app-button
+            type="submit"
+            appearance="soft"
+            color="primary"
+            [fullWidth]="true"
+            [loading]="loading()"
+          >
             <app-icon name="send" size="sm"></app-icon>
             Wyślij link
           </app-button>

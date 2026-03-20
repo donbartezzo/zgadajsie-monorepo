@@ -10,16 +10,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent, IconName } from '../../../core/icons/icon.component';
-
-export type OverlayIconVariant = 'success' | 'warning' | 'danger' | 'info' | 'primary';
-
-const ICON_VARIANT_MAP: Record<OverlayIconVariant, { bg: string; text: string }> = {
-  success: { bg: 'bg-success-50', text: 'text-success-400' },
-  warning: { bg: 'bg-warning-50', text: 'text-warning-400' },
-  danger: { bg: 'bg-danger-50', text: 'text-danger-300' },
-  info: { bg: 'bg-info-50', text: 'text-info-400' },
-  primary: { bg: 'bg-primary-50', text: 'text-primary-400' },
-};
+import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
 
 @Component({
   selector: 'app-bottom-overlay',
@@ -28,10 +19,20 @@ const ICON_VARIANT_MAP: Record<OverlayIconVariant, { bg: string; text: string }>
     @if (open()) {
     <div class="fixed inset-x-0 top-0 bottom-16 z-[60] flex flex-col max-w-app mx-auto">
       <!-- Backdrop -->
-      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="closed.emit()"></div>
+      <button
+        type="button"
+        class="absolute inset-0 m-0 border-0 bg-black/50 p-0 backdrop-blur-sm"
+        (click)="closed.emit()"
+        aria-label="Zamknij overlay"
+      ></button>
 
       <!-- Spacer - pushes sheet down when content is small, collapses when content is large -->
-      <div class="relative z-10 flex-1 min-h-0" (click)="closed.emit()"></div>
+      <button
+        type="button"
+        class="relative z-10 m-0 min-h-0 flex-1 border-0 bg-transparent p-0"
+        (click)="closed.emit()"
+        aria-label="Zamknij overlay"
+      ></button>
 
       <!-- Sheet -->
       <div
@@ -100,11 +101,11 @@ export class BottomOverlayComponent {
   readonly title = input('');
   readonly description = input('');
   readonly icon = input<IconName | null>(null);
-  readonly iconVariant = input<OverlayIconVariant>('info');
+  readonly iconColor = input<SemanticColor>('info');
   readonly closed = output<void>();
 
-  protected readonly iconBgClass = computed(() => ICON_VARIANT_MAP[this.iconVariant()].bg);
-  protected readonly iconTextClass = computed(() => ICON_VARIANT_MAP[this.iconVariant()].text);
+  protected readonly iconBgClass = computed(() => SEMANTIC_COLOR_CLASSES.surface[this.iconColor()]);
+  protected readonly iconTextClass = computed(() => SEMANTIC_COLOR_CLASSES.text[this.iconColor()]);
 
   constructor() {
     // Prevent body scroll when overlay is open - @TODO?

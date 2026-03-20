@@ -17,6 +17,7 @@ export const SEMANTIC_COLOR_CLASSES = {
     info: 'from-info-400 to-info-600',
     neutral: 'from-neutral-400 to-neutral-600',
   },
+
   // Tekst/ikony (akcenty)
   text: {
     primary: 'text-primary-500',
@@ -26,6 +27,57 @@ export const SEMANTIC_COLOR_CLASSES = {
     info: 'text-info-400',
     neutral: 'text-neutral-500',
   },
+
+  // Mocniejszy tekst/ikony na pastelowych surface'ach
+  textStrong: {
+    primary: 'text-primary-600',
+    success: 'text-success-600',
+    danger: 'text-danger-600',
+    warning: 'text-warning-600',
+    info: 'text-info-600',
+    neutral: 'text-neutral-700',
+  },
+
+  // Delikatne tła surface / badge / icon background
+  surface: {
+    primary: 'bg-primary-50',
+    success: 'bg-success-50',
+    danger: 'bg-danger-50',
+    warning: 'bg-warning-50',
+    info: 'bg-info-50',
+    neutral: 'bg-neutral-100',
+  },
+
+  // Mocniejsze pastelowe tło pod ikonę lub aktywny state
+  surfaceStrong: {
+    primary: 'bg-primary-100',
+    success: 'bg-success-100',
+    danger: 'bg-danger-100',
+    warning: 'bg-warning-100',
+    info: 'bg-info-100',
+    neutral: 'bg-neutral-100',
+  },
+
+  // Border w kolorze semantycznym
+  border: {
+    primary: 'border-primary-300',
+    success: 'border-success-200',
+    danger: 'border-danger-200',
+    warning: 'border-warning-200',
+    info: 'border-info-200',
+    neutral: 'border-neutral-200',
+  },
+
+  // Focus ring w kolorze semantycznym
+  focusRing: {
+    primary: 'focus:ring-primary-300',
+    success: 'focus:ring-success-300',
+    danger: 'focus:ring-danger-300',
+    warning: 'focus:ring-warning-300',
+    info: 'focus:ring-info-300',
+    neutral: 'focus:ring-neutral-300',
+  },
+
   // Przyciski (solidne tło)
   button: {
     primary: 'bg-primary-500 hover:bg-primary-600 text-white',

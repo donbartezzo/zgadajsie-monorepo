@@ -40,7 +40,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         <a routerLink="/profile/events">
           <app-card>
             <div class="flex items-center gap-2">
-              <app-icon name="calendar" size="sm" variant="primary"></app-icon>
+              <app-icon name="calendar" size="sm" color="primary"></app-icon>
               <span class="text-sm font-medium text-neutral-700">Moje wydarzenia</span>
             </div>
           </app-card>
@@ -48,7 +48,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         <a routerLink="/profile/participations">
           <app-card>
             <div class="flex items-center gap-2">
-              <app-icon name="users" size="sm" variant="primary"></app-icon>
+              <app-icon name="users" size="sm" color="primary"></app-icon>
               <span class="text-sm font-medium text-neutral-700">Uczestnictwa</span>
             </div>
           </app-card>
@@ -56,7 +56,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         <a routerLink="/profile/gallery">
           <app-card>
             <div class="flex items-center gap-2">
-              <app-icon name="image" size="sm" variant="primary"></app-icon>
+              <app-icon name="image" size="sm" color="primary"></app-icon>
               <span class="text-sm font-medium text-neutral-700">Galeria</span>
             </div>
           </app-card>
@@ -64,7 +64,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         <a routerLink="/payments">
           <app-card>
             <div class="flex items-center gap-2">
-              <app-icon name="credit-card" size="sm" variant="primary"></app-icon>
+              <app-icon name="credit-card" size="sm" color="primary"></app-icon>
               <span class="text-sm font-medium text-neutral-700">Moje płatności</span>
             </div>
           </app-card>
@@ -72,7 +72,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         <a routerLink="/vouchers">
           <app-card>
             <div class="flex items-center gap-2">
-              <app-icon name="wallet" size="sm" variant="primary"></app-icon>
+              <app-icon name="wallet" size="sm" color="primary"></app-icon>
               <span class="text-sm font-medium text-neutral-700">Moje vouchery</span>
             </div>
           </app-card>
@@ -101,7 +101,12 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
             />
           </div>
           <div class="flex justify-end gap-3">
-            <app-button variant="primary" [loading]="saving()" (clicked)="saveProfile()">
+            <app-button
+              appearance="soft"
+              color="primary"
+              [loading]="saving()"
+              (clicked)="saveProfile()"
+            >
               <app-icon name="check" size="sm"></app-icon> Zapisz
             </app-button>
           </div>
@@ -109,7 +114,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
       </app-card>
 
       <div class="w-full">
-        <app-button variant="secondary" (clicked)="logout()">
+        <app-button appearance="soft" color="neutral" (clicked)="logout()">
           <app-icon name="log-out" size="sm"></app-icon> Wyloguj się
         </app-button>
       </div>

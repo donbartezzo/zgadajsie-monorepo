@@ -1,10 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { IconComponent, IconName } from '../../../core/icons/icon.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import {
-  BottomOverlayComponent,
-  OverlayIconVariant,
-} from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
+import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
+import { SemanticColor } from '../../../shared/types/colors';
 import {
   Event as EventModel,
   WaitingReason,
@@ -23,7 +21,7 @@ import {
     <app-bottom-overlay
       [open]="open()"
       [icon]="headerIcon()"
-      [iconVariant]="headerIconVariant()"
+      [iconColor]="headerIconColor()"
       [title]="headerTitle()"
       [description]="headerDescription()"
       (closed)="closed.emit()"
@@ -34,19 +32,19 @@ import {
         <div class="rounded-xl border border-neutral-100 bg-neutral-50 p-3">
           <div class="flex justify-center gap-5 text-center">
             <div>
-              <app-icon name="calendar" size="sm" variant="primary"></app-icon>
+              <app-icon name="calendar" size="sm" color="primary"></app-icon>
               <p class="mt-1 text-xs font-semibold text-neutral-900">
                 {{ startDateFormatted() }}
               </p>
             </div>
             <div>
-              <app-icon name="clock" size="sm" variant="muted"></app-icon>
+              <app-icon name="clock" size="sm" color="neutral" muted="light"></app-icon>
               <p class="mt-1 text-xs font-semibold text-neutral-900">
                 {{ startTimeFormatted() }}–{{ endTimeFormatted() }}
               </p>
             </div>
             <div>
-              <app-icon name="map-pin" size="sm" variant="danger"></app-icon>
+              <app-icon name="map-pin" size="sm" color="danger"></app-icon>
               <p class="mt-1 text-xs font-semibold text-neutral-900 max-w-[100px] truncate">
                 {{ address() || 'Brak' }}
               </p>
@@ -71,7 +69,8 @@ import {
             </div>
           </div>
           <app-button
-            variant="primary"
+            appearance="soft"
+            color="primary"
             [fullWidth]="true"
             [loading]="loading()"
             (clicked)="payRequested.emit()"
@@ -100,7 +99,8 @@ import {
             </div>
           </div>
           <app-button
-            variant="primary"
+            appearance="soft"
+            color="primary"
             [fullWidth]="true"
             [loading]="loading()"
             (clicked)="rejoinRequested.emit()"
@@ -111,7 +111,6 @@ import {
           </app-button>
         </div>
         }
-
         <!-- Participant options (hidden for withdrawn/rejected) -->
         @if (!isWithdrawnOrRejected()) {
         <div>
@@ -120,108 +119,122 @@ import {
           </p>
           <div class="space-y-2">
             <!-- Event chat -->
-            <button
-              type="button"
-              class="flex w-full items-center gap-3 rounded-xl border border-neutral-100 bg-white p-3 text-left transition-colors hover:bg-neutral-50"
-              (click)="openChat.emit()"
-            >
-              <div
-                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-info-50"
+            <div class="mb-3">
+              <app-button
+                appearance="outline"
+                color="neutral"
+                [fullWidth]="true"
+                alignment="start"
+                icon="message-circle"
+                [iconBackground]="true"
+                (clicked)="openChat.emit()"
               >
-                <app-icon name="message-circle" size="sm" class="text-info-400"></app-icon>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-neutral-900">Czat wydarzenia</p>
-                <p class="text-xs text-neutral-400">Porozmawiaj z uczestnikami</p>
-              </div>
-              <app-icon name="chevron-right" size="sm" class="text-neutral-300"></app-icon>
-            </button>
-
-            <!-- Contact organizer -->
-            <button
-              type="button"
-              class="flex w-full items-center gap-3 rounded-xl border border-neutral-100 bg-white p-3 text-left transition-colors hover:bg-neutral-50"
-              (click)="contactOrganizer.emit()"
-            >
-              <div
-                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-info-50"
-              >
-                <app-icon name="user" size="sm" class="text-info-300"></app-icon>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-neutral-900">Napisz do organizatora</p>
-                <p class="text-xs text-neutral-400">
-                  {{ _event?.organizer?.displayName || 'Organizator' }}
-                </p>
-              </div>
-              <app-icon name="chevron-right" size="sm" class="text-neutral-300"></app-icon>
-            </button>
-
-            <!-- Guest Management Section -->
-            <div class="rounded-xl border border-secondary-200 bg-secondary-50 p-3">
-              <div class="flex items-center justify-between mb-3">
-                <p class="text-sm font-semibold text-secondary-700">
-                  Zarządzanie osobami towarzyszącymi
-                </p>
-                <button
-                  type="button"
-                  class="text-xs text-secondary-600 hover:text-secondary-700 font-medium flex items-center gap-1"
-                  (click)="addGuestRequested.emit()"
-                >
-                  <app-icon name="plus" size="xs"></app-icon>
-                  Dodaj gościa
-                </button>
-              </div>
-
-              @if (hasGuests()) {
-              <div class="space-y-2">
-                <!-- Guest list will be rendered here -->
-                <div class="text-xs text-secondary-600">
-                  Masz {{ guestCount() }} {{ guestCount() === 1 ? 'gościa' : 'gości' }}
+                <div class="text-left">
+                  <p class="text-sm font-semibold text-neutral-900">Czat grupowy</p>
+                  <p class="text-xs text-neutral-400">Porozmawiaj z uczestnikami wydarzenia</p>
                 </div>
-                <div class="flex gap-2">
-                  <button
-                    type="button"
-                    class="text-xs text-secondary-600 hover:text-secondary-700 font-medium"
-                    (click)="addGuestRequested.emit()"
-                  >
-                    Dodaj kolejnego
-                  </button>
-                  <span class="text-xs text-secondary-400">•</span>
-                  <button
-                    type="button"
-                    class="text-xs text-secondary-600 hover:text-secondary-700 font-medium"
-                    (click)="manageGuests.emit()"
-                  >
-                    Zarządzaj
-                  </button>
-                </div>
-              </div>
-              } @else {
-              <div class="text-xs text-secondary-600">
-                Nie dodałeś jeszcze osób towarzyszących. Kliknij "Dodaj gościa" aby zaprosić
-                znajomych.
-              </div>
-              }
+              </app-button>
             </div>
 
-            <!-- Leave -->
-            <button
-              type="button"
-              class="flex w-full items-center gap-3 rounded-xl border border-danger-50 bg-white p-3 text-left transition-colors hover:bg-danger-500"
-              (click)="leaveRequested.emit()"
-            >
-              <div
-                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-danger-50"
+            <!-- Contact organizer -->
+            <div class="mb-3">
+              <app-button
+                appearance="outline"
+                color="neutral"
+                [fullWidth]="true"
+                alignment="start"
+                icon="user"
+                [iconBackground]="true"
+                (clicked)="contactOrganizer.emit()"
               >
-                <app-icon name="user-x" size="sm" class="text-danger-300"></app-icon>
+                <div class="text-left">
+                  <p class="text-sm font-semibold text-neutral-900">
+                    Czat prywatny z organizatorem
+                  </p>
+                  <p class="text-xs text-neutral-400">
+                    Porozmawiaj z:
+                    {{ _event?.organizer?.displayName || 'organizatorem wydarzenia' }}
+                  </p>
+                </div>
+              </app-button>
+            </div>
+
+            <!-- Guest Management Section -->
+            @if (!hasGuests()) {
+            <!-- No guests yet - single full-width button -->
+            <div class="mb-3">
+              <app-button
+                appearance="soft"
+                color="success"
+                [fullWidth]="true"
+                alignment="start"
+                icon="user-plus"
+                [iconBackground]="true"
+                (clicked)="addGuestRequested.emit()"
+              >
+                <div class="text-left">
+                  <p class="text-sm font-semibold text-neutral-900">Dodaj osobę towarzyszącą</p>
+                  <p class="text-xs text-neutral-400">Zgłoś do wydarzenia także swego znajomego</p>
+                </div>
+              </app-button>
+            </div>
+            } @else {
+            <!-- Has guests - two buttons in one row -->
+            <div class="flex gap-2">
+              <div class="mb-3 flex justify-start">
+                <app-button
+                  appearance="outline"
+                  color="neutral"
+                  class="flex-[2]"
+                  alignment="start"
+                  icon="users"
+                  [iconBackground]="true"
+                  (clicked)="manageGuests.emit()"
+                >
+                  <div class="text-left">
+                    <p class="text-sm font-semibold text-neutral-900">
+                      Zarządzaj osobami towarzyszącymi
+                    </p>
+                    <p class="text-xs text-neutral-400">Przeglądaj i edytuj gości</p>
+                  </div>
+                </app-button>
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-danger-400">Wypisz się z wydarzenia</p>
-                <p class="text-xs text-neutral-400">Stracisz swoje miejsce</p>
+              <div class="mb-3 flex justify-start">
+                <app-button
+                  appearance="outline"
+                  color="neutral"
+                  class="flex-[1]"
+                  alignment="start"
+                  icon="user-plus"
+                  [iconBackground]="true"
+                  (clicked)="addGuestRequested.emit()"
+                >
+                  <div class="text-left">
+                    <p class="text-sm font-semibold text-neutral-900">Dodaj kolejną</p>
+                    <p class="text-xs text-neutral-400">Zaproś dodatkową osobę</p>
+                  </div>
+                </app-button>
               </div>
-              <app-icon name="chevron-right" size="sm" class="text-neutral-300"></app-icon>
-            </button>
+            </div>
+            }
+
+            <!-- Leave -->
+            <div class="mb-3">
+              <app-button
+                appearance="soft"
+                color="danger"
+                [fullWidth]="true"
+                alignment="start"
+                icon="user-x"
+                [iconBackground]="true"
+                (clicked)="leaveRequested.emit()"
+              >
+                <div class="text-left">
+                  <p class="text-sm font-semibold text-danger-400">Wypisz się z wydarzenia</p>
+                  <p class="text-xs text-neutral-400">Stracisz swoje miejsce</p>
+                </div>
+              </app-button>
+            </div>
           </div>
         </div>
         }
@@ -261,11 +274,11 @@ export class JoinConfirmOverlayComponent {
     return 'check-circle';
   });
 
-  readonly headerIconVariant = computed<OverlayIconVariant>(() => {
+  readonly headerIconColor = computed<SemanticColor>(() => {
     const s = this.participantStatus();
     if (s === 'PENDING') return 'warning';
     if (s === 'APPROVED') return 'info';
-    if (s === 'WITHDRAWN') return 'info';
+    if (s === 'WITHDRAWN') return 'neutral';
     if (s === 'REJECTED') return 'danger';
     return 'success';
   });

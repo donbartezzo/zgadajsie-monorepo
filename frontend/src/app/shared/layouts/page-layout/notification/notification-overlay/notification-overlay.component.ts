@@ -109,7 +109,8 @@ import { NotificationStatusService } from '../../../../../core/services/notifica
               <span class="text-sm text-neutral-700">Push - nieaktywny</span>
             </div>
             <app-button
-              variant="primary"
+              appearance="soft"
+              color="primary"
               size="xs"
               [loading]="_requesting"
               (clicked)="enablePush()"
@@ -136,11 +137,17 @@ import { NotificationStatusService } from '../../../../../core/services/notifica
         <!-- Actions -->
         <div class="mt-3 text-center">
           @switch (_state) { @case ('OFF') { @if (_cfg.canToggle) {
-          <app-button variant="primary" size="sm" mx-auto (clicked)="subscribe()">
+          <app-button appearance="soft" color="primary" size="sm" mx-auto (clicked)="subscribe()">
             Włącz powiadomienia
           </app-button>
           } } @case ('ON_COMPLETE') { @if (_cfg.canToggle) {
-          <app-button variant="outline" size="sm" mx-auto (clicked)="unsubscribe()">
+          <app-button
+            appearance="outline"
+            color="neutral"
+            size="sm"
+            mx-auto
+            (clicked)="unsubscribe()"
+          >
             Wyłącz powiadomienia
           </app-button>
           } @else {
@@ -148,7 +155,14 @@ import { NotificationStatusService } from '../../../../../core/services/notifica
             Powiadomienia wyłączysz po wypisaniu się z wydarzenia.
           </p>
           } } @case ('ON_INCOMPLETE') { @if (_cfg.canToggle) {
-          <app-button variant="outline" size="sm" mx-auto (clicked)="unsubscribe()" class="mb-2">
+          <app-button
+            appearance="outline"
+            color="neutral"
+            size="sm"
+            mx-auto
+            (clicked)="unsubscribe()"
+            class="mb-2"
+          >
             Wyłącz powiadomienia
           </app-button>
           } @else {
@@ -156,7 +170,7 @@ import { NotificationStatusService } from '../../../../../core/services/notifica
             Powiadomienia wyłączysz po wypisaniu się z wydarzenia.
           </p>
           } @if (_perm !== 'granted' && _perm !== 'denied') {
-          <app-button variant="primary" size="sm" mx-auto (clicked)="enablePush()">
+          <app-button appearance="soft" color="primary" size="sm" mx-auto (clicked)="enablePush()">
             Włącz powiadomienia Push
           </app-button>
           } } }

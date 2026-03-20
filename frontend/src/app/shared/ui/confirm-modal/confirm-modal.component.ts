@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent, IconName } from '../../../core/icons/icon.component';
+import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
 import { ConfirmModalService } from './confirm-modal.service';
 
 @Component({
@@ -87,45 +88,31 @@ export class ConfirmModalComponent {
   private readonly confirmModal = inject(ConfirmModalService);
 
   readonly state = this.confirmModal.state;
+  readonly resolvedColor = computed<SemanticColor>(() => this.state()?.color ?? 'info');
 
   readonly iconName = computed<IconName>(() => {
-    const variant = this.state()?.variant ?? 'info';
-    const map: Record<string, IconName> = {
+    const color = this.resolvedColor();
+    const map: Record<SemanticColor, IconName> = {
+      primary: 'help-circle',
+      success: 'check-circle',
       danger: 'alert-triangle',
       warning: 'alert-triangle',
       info: 'help-circle',
+      neutral: 'help-circle',
     };
-    return map[variant] ?? 'help-circle';
+    return map[color];
   });
 
   readonly iconBgClass = computed(() => {
-    const variant = this.state()?.variant ?? 'info';
-    const map: Record<string, string> = {
-      danger: 'bg-danger-50',
-      warning: 'bg-warning-50',
-      info: 'bg-info-50',
-    };
-    return map[variant] ?? map['info'];
+    return SEMANTIC_COLOR_CLASSES.surface[this.resolvedColor()];
   });
 
   readonly iconColorClass = computed(() => {
-    const variant = this.state()?.variant ?? 'info';
-    const map: Record<string, string> = {
-      danger: 'text-danger-300',
-      warning: 'text-warning-400',
-      info: 'text-info-400',
-    };
-    return map[variant] ?? map['info'];
+    return SEMANTIC_COLOR_CLASSES.textStrong[this.resolvedColor()];
   });
 
   readonly confirmBtnClass = computed(() => {
-    const variant = this.state()?.variant ?? 'info';
-    const map: Record<string, string> = {
-      danger: 'bg-danger-400 hover:bg-danger-500',
-      warning: 'bg-warning-400 hover:bg-warning-50',
-      info: 'bg-primary-500 hover:bg-primary-600',
-    };
-    return map[variant] ?? map['info'];
+    return SEMANTIC_COLOR_CLASSES.button[this.resolvedColor()];
   });
 
   onConfirm(): void {

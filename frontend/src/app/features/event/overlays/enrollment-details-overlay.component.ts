@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { PRE_ENROLLMENT_HOURS } from '@zgadajsie/shared';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { BottomOverlayComponent } from '../../../shared/ui/bottom-overlays/bottom-overlay.component';
+import { SemanticColor } from '../../../shared/types/colors';
 import { EnrollmentPhase } from '../../../shared/types/event.interface';
 import { EventTimeStatus } from '../../../shared/utils/event-time-status.util';
 import { getLotteryThreshold } from '../../../shared/utils/enrollment-phase.util';
@@ -22,7 +23,7 @@ interface StepConfig {
     <app-bottom-overlay
       [open]="open()"
       [icon]="headerIcon()"
-      [iconVariant]="headerIconVariant()"
+      [iconColor]="headerIconColor()"
       [title]="headerTitle()"
       [description]="headerDescription()"
       (closed)="closed.emit()"
@@ -202,7 +203,7 @@ export class EnrollmentDetailsOverlayComponent {
     return 'check-circle';
   });
 
-  readonly headerIconVariant = computed(() => {
+  readonly headerIconColor = computed<SemanticColor>(() => {
     if (this.isCancelled()) return 'danger' as const;
     const ts = this.eventTimeStatus();
     if (ts === 'ENDED') return 'info' as const;

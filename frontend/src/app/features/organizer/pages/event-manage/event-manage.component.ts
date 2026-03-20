@@ -117,13 +117,18 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
               </p>
             </div>
             <div class="flex gap-1">
-              <app-button variant="outline" size="sm" (clicked)="openChat(p.userId)">
+              <app-button
+                appearance="outline"
+                color="neutral"
+                size="sm"
+                (clicked)="openChat(p.userId)"
+              >
                 <app-icon name="message-circle" size="sm" />
               </app-button>
-              <app-button variant="primary" size="sm" (clicked)="onApprove(p.id)">
+              <app-button appearance="soft" color="primary" size="sm" (clicked)="onApprove(p.id)">
                 <app-icon name="check" size="sm" />
               </app-button>
-              <app-button variant="danger" size="sm" (clicked)="onReject(p.id)">
+              <app-button appearance="soft" color="danger" size="sm" (clicked)="onReject(p.id)">
                 <app-icon name="x" size="sm" />
               </app-button>
             </div>
@@ -184,7 +189,8 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
             <option value="CRITICAL">Krytyczny</option>
           </select>
           <app-button
-            variant="primary"
+            appearance="soft"
+            color="primary"
             size="sm"
             [loading]="sendingAnnouncement()"
             (clicked)="sendAnnouncement()"
@@ -415,7 +421,7 @@ export class EventManageComponent implements OnInit {
       title: 'Oznaczenie jako opłacone',
       message: 'Czy na pewno chcesz oznaczyć tego uczestnika jako opłaconego (gotówka)?',
       confirmLabel: 'Tak, oznacz',
-      variant: 'info',
+      color: 'info',
     });
     if (!confirmed) return;
     this.eventService.markAsPaid(this.eventId, participationId).subscribe({

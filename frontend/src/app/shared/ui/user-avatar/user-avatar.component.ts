@@ -2,10 +2,12 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
 import { CommonModule } from '@angular/common';
 import { AvatarUrl } from '../../types';
 import { IconComponent, IconName } from '../../../core/icons/icon.component';
+import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
 
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 export type AvatarShape = 'circle' | 'rounded';
-export type StatusIndicator = 'success' | 'warning' | 'danger' | 'info' | 'pending' | null;
+
+type AvatarIndicatorType = SemanticColor | 'pending';
 
 @Component({
   selector: 'app-user-avatar',
@@ -44,7 +46,11 @@ export type StatusIndicator = 'success' | 'warning' | 'danger' | 'info' | 'pendi
           [ngClass]="indicatorClass(indicator.type)"
           [title]="indicator.tooltip"
         >
-          <app-icon [name]="$any(indicator.icon)" [size]="indicatorIconSize()" />
+          <app-icon
+            [name]="$any(indicator.icon)"
+            [size]="indicatorIconSize()"
+            [color]="indicator.type === 'pending' ? 'neutral' : indicator.type"
+          />
         </span>
         }
       </div>
@@ -75,7 +81,7 @@ export class UserAvatarComponent {
   readonly shape = input<AvatarShape>('rounded');
   readonly rank = input<string | null>(null);
   readonly isNew = input(false);
-  readonly status = input<StatusIndicator>(null);
+  readonly status = input<SemanticColor | null>(null);
   readonly showPaymentWarning = input(false);
   readonly showPending = input(false);
 
@@ -128,7 +134,7 @@ export class UserAvatarComponent {
   });
 
   readonly statusIndicators = computed(() => {
-    const indicators: { type: StatusIndicator; icon: IconName; tooltip: string }[] = [];
+    const indicators: { type: AvatarIndicatorType; icon: IconName; tooltip: string }[] = [];
 
     if (this.showPaymentWarning()) {
       indicators.push({ type: 'warning', icon: 'credit-card', tooltip: 'Oczekuje na płatność' });
@@ -146,17 +152,13 @@ export class UserAvatarComponent {
     return indicators;
   });
 
-  indicatorClass(type: StatusIndicator): string {
-    // Styled like app-button icon variant (pastel bg + darker icon)
+  indicatorClass(type: AvatarIndicatorType): string {
     const base = 'w-5 h-5 border border-white';
-    const colors: Record<string, string> = {
-      success: `${base} bg-success-50 text-success-600`,
-      warning: `${base} bg-warning-50 text-warning-600`,
-      danger: `${base} bg-danger-50 text-danger-600`,
-      info: `${base} bg-info-50 text-info-600`,
-      pending: `${base} bg-neutral-100 text-neutral-600`,
-    };
-    return colors[type ?? 'info'] ?? colors['info'];
+    if (type === 'pending') {
+      return `${base} ${SEMANTIC_COLOR_CLASSES.surface.neutral}`;
+    }
+
+    return `${base} ${SEMANTIC_COLOR_CLASSES.surface[type]}`;
   }
 
   indicatorIconSize(): 'xs' | 'sm' {

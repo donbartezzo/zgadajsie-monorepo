@@ -14,7 +14,7 @@ import { AdminService } from '../../../../core/services/admin.service';
       <div class="grid grid-cols-2 gap-4 mb-6">
         <app-card
           ><div class="text-center">
-            <app-icon name="users" size="lg" variant="primary"></app-icon>
+            <app-icon name="users" size="lg" color="primary"></app-icon>
             <p class="text-2xl font-bold text-neutral-900 mt-2">
               {{ stats().users }}
             </p>
@@ -23,7 +23,7 @@ import { AdminService } from '../../../../core/services/admin.service';
         >
         <app-card
           ><div class="text-center">
-            <app-icon name="calendar" size="lg" variant="primary"></app-icon>
+            <app-icon name="calendar" size="lg" color="primary"></app-icon>
             <p class="text-2xl font-bold text-neutral-900 mt-2">
               {{ stats().events }}
             </p>

@@ -348,12 +348,12 @@ export class EventDetailComponent implements OnInit, OnDestroy {
 
   async cancelEvent(): Promise<void> {
     const confirmed = await this.confirmModal.confirm({
-      title: 'Odwołaj wydarzenie',
+      title: 'Odwołać wydarzenie?',
       message:
         'Czy na pewno chcesz odwołać to wydarzenie? Uczestnicy z opłaconymi zgłoszeniami otrzymają zwrot w formie vouchera.',
       confirmLabel: 'Odwołaj',
       cancelLabel: 'Anuluj',
-      variant: 'danger',
+      color: 'danger',
     });
     if (!confirmed) return;
 

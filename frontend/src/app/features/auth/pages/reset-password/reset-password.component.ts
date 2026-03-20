@@ -48,7 +48,13 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         </div>
 
         <div class="mt-3">
-          <app-button type="submit" variant="primary" [fullWidth]="true" [loading]="loading()">
+          <app-button
+            type="submit"
+            appearance="soft"
+            color="primary"
+            [fullWidth]="true"
+            [loading]="loading()"
+          >
             <app-icon name="lock" size="sm"></app-icon>
             Zmień hasło
           </app-button>

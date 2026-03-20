@@ -14,7 +14,7 @@ import { isEventJoinable } from '../../../shared/utils/event-time-status.util';
     <app-bottom-overlay
       [open]="open()"
       icon="shield"
-      iconVariant="info"
+      iconColor="info"
       title="Jesteś organizatorem"
       description="Zarządzaj swoim wydarzeniem, edytuj szczegóły lub sprawdź konwersacje z uczestnikami."
       (closed)="closed.emit()"

@@ -119,7 +119,7 @@ export interface ChatViewMessage {
           placeholder="Napisz wiadomość..."
           class="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
-        <app-button variant="primary" (clicked)="send()">
+        <app-button appearance="soft" color="primary" (clicked)="send()">
           <app-icon name="send" size="sm"></app-icon>
         </app-button>
       </div>

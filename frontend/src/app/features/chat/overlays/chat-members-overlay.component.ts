@@ -61,9 +61,9 @@ import { ChatMember } from '../../../shared/types';
  @if (isOrganizer() && m.user.id !== organizerId()) {
  <div class="flex-shrink-0">
  @if (m.isBanned) {
- <app-button variant="outline" size="xs" (clicked)="onUnban(m)">Odbanuj</app-button>
+ <app-button appearance="outline" color="neutral" size="xs" (clicked)="onUnban(m)">Odbanuj</app-button>
  } @else if (m.isActive) {
- <app-button variant="danger" size="xs" (clicked)="onBan(m)">Banuj</app-button>
+ <app-button appearance="soft" color="danger" size="xs" (clicked)="onBan(m)">Banuj</app-button>
  }
  </div>
  }

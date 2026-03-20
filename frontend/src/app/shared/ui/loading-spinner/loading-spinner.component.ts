@@ -6,7 +6,7 @@ import { IconComponent } from '../../../core/icons/icon.component';
   imports: [IconComponent],
   template: `
     <div class="flex items-center justify-center py-8">
-      <app-icon name="loader" [size]="size()" variant="primary" class="animate-spin" />
+      <app-icon name="loader" [size]="size()" color="primary" class="animate-spin" />
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

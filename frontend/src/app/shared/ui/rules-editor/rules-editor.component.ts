@@ -16,7 +16,7 @@ interface Rule {
   template: `
     <div class="space-y-2">
       <h3 class="block text-sm font-medium text-neutral-700">Zasady wydarzenia (opcjonalne)</h3>
-      <app-button variant="secondary" size="sm" (click)="addRule()" class="text-xs">
+      <app-button appearance="soft" color="neutral" size="sm" (click)="addRule()" class="text-xs">
         <app-icon name="plus" size="xs"></app-icon>
         Dodaj zasadę
       </app-button>
@@ -42,7 +42,8 @@ interface Rule {
 
             <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <app-button
-                variant="ghost"
+                appearance="ghost"
+                color="neutral"
                 size="xs"
                 (click)="indentRule(rule.id)"
                 title="Zwiększ wcięcie"
@@ -51,7 +52,8 @@ interface Rule {
               </app-button>
 
               <app-button
-                variant="ghost"
+                appearance="ghost"
+                color="neutral"
                 size="xs"
                 (click)="unindentRule(rule.id)"
                 title="Zmniejsz wcięcie"
@@ -60,7 +62,8 @@ interface Rule {
               </app-button>
 
               <app-button
-                variant="ghost"
+                appearance="ghost"
+                color="neutral"
                 size="xs"
                 (click)="deleteRule(rule.id)"
                 title="Usuń zasadę"

@@ -200,11 +200,11 @@ export class EventParticipantsComponent implements AfterViewInit {
 
     this.confirmModal
       .confirm({
-        title: 'Wypisanie gościa',
+        title: 'Wypisz gościa?',
         message: `Czy na pewno chcesz wypisać tego gościa z wydarzenia?\n\nGość: ${participant.user?.displayName}`,
         confirmLabel: 'Wypisz',
         cancelLabel: 'Anuluj',
-        variant: 'danger',
+        color: 'danger',
       })
       .then((confirmed) => {
         if (confirmed) {

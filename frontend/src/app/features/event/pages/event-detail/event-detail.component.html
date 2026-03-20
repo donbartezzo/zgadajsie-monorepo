@@ -25,7 +25,7 @@ ctaLabelShort();
       class="flex items-center gap-1.5 pb-2 text-[11px] text-neutral-400 hover:text-primary-500 transition-colors sm:pb-0"
       (click)="overlays.open('map')"
     >
-      <app-icon name="map-pin" size="sm" variant="muted"></app-icon>
+      <app-icon name="map-pin" size="sm" color="neutral" muted="light"></app-icon>
       <span>{{ _fullAddress }}</span>
     </button>
     }
@@ -239,7 +239,7 @@ ctaLabelShort();
   <div class="mt-3 mb-4 grid grid-cols-3 gap-y-3 gap-x-2">
     @for (a of amenities; track a.label) {
     <div class="flex items-center gap-1.5">
-      <app-icon [name]="a.icon" size="sm" variant="primary"></app-icon>
+      <app-icon [name]="a.icon" size="sm" color="primary"></app-icon>
       <span class="text-xs text-neutral-500">{{ a.label }}</span>
     </div>
     }
@@ -302,7 +302,7 @@ ctaLabelShort();
   <!-- Join / Login button (only when not participant, not banned, and event is joinable) -->
   @if (!_isParticipant && !_isBanned && _canJoin) {
   <div class="mt-4">
-    <app-button variant="primary" [fullWidth]="true" [loading]="_joining" (clicked)="openJoinSheet()">
+    <app-button appearance="soft" color="primary" [fullWidth]="true" [loading]="_joining" (clicked)="openJoinSheet()">
       {{ _ctaLabel }}
     </app-button>
   </div>
@@ -344,7 +344,7 @@ ctaLabelShort();
     </div>
     @if (_isOrganizer) {
     <div class="flex items-center gap-2 shrink-0">
-      <app-button variant="outline-primary" size="xs" (clicked)="openOrganizerChats()">
+      <app-button appearance="outline" color="primary" size="xs" (clicked)="openOrganizerChats()">
         <app-icon name="message-circle" size="xs"></app-icon>
         Konwersacje
       </app-button>
@@ -352,12 +352,12 @@ ctaLabelShort();
     } @else {
     <div class="flex items-center gap-2 shrink-0">
       @if (_auth) {
-      <app-button variant="outline-primary" size="xs" (clicked)="contactOrganizer()">
+      <app-button appearance="outline" color="primary" size="xs" (clicked)="contactOrganizer()">
         <app-icon name="message-circle" size="xs"></app-icon>
         Napisz
       </app-button>
       }
-      <app-button variant="primary" size="xs" (clicked)="onFollow()"> Obserwuj </app-button>
+      <app-button appearance="soft" color="primary" size="xs" (clicked)="onFollow()"> Obserwuj </app-button>
     </div>
     }
   </div>
@@ -371,7 +371,8 @@ ctaLabelShort();
 >
   <div class="flex justify-end pointer-events-auto">
     <app-button
-      variant="primary"
+      appearance="soft"
+      color="primary"
       size="md"
       [loading]="_joining"
       (clicked)="openJoinSheet()"

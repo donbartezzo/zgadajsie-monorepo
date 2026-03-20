@@ -63,7 +63,7 @@ interface PaymentListItem {
             placeholder="Nazwa"
             class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm text-neutral-900"
           />
-          <app-button variant="primary" [loading]="saving()" (clicked)="saveUser()"
+          <app-button appearance="soft" color="primary" [loading]="saving()" (clicked)="saveUser()"
             >Zapisz</app-button
           >
         </div>

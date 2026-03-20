@@ -159,27 +159,25 @@ border-neutral-200
 <!-- standardowy border -->
 
 <!-- Przyciski -->
-bg-primary-500 hover:bg-primary-600 text-white
-<!-- primary - główna akcja -->
-bg-neutral-100 hover:bg-neutral-200 text-neutral-900
-<!-- secondary - akcja alternatywna -->
-border border-neutral-200 text-neutral-700 hover:bg-neutral-50
-<!-- outline - subtelny wariant -->
-border border-primary-500 text-primary-500 hover:bg-primary-50
-<!-- outline-primary - outline w kolorze brand -->
-bg-danger-400 hover:bg-danger-500 text-white
-<!-- danger - usuwanie / destrukcja -->
-bg-success-400 hover:bg-success-500 text-white
-<!-- success - potwierdzenie / akceptacja -->
-bg-warning-400 hover:bg-warning-500 text-white
-<!-- warning - akcje wymagające uwagi -->
+bg-primary-100 text-primary-600 hover:bg-primary-200
+<!-- soft + primary -->
+border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50
+<!-- outline + neutral -->
+border border-primary-300 bg-white text-primary-600 hover:bg-primary-50
+<!-- outline + primary -->
+bg-danger-50 text-danger-500 hover:bg-danger-100
+<!-- soft + danger -->
+bg-success-50 text-success-600 hover:bg-success-100
+<!-- soft + success -->
+bg-warning-50 text-warning-600 hover:bg-warning-100
+<!-- soft + warning -->
 text-neutral-600 hover:bg-neutral-100
-<!-- ghost - akcje pomocnicze -->
+<!-- ghost + neutral -->
 text-primary-500 underline hover:text-primary-600
-<!-- link - styl linkowy -->
+<!-- link + primary -->
 
 <!-- Focus ring -->
-focus:ring-2 focus:ring-primary-500
+focus:ring-2 focus:ring-primary-300
 
 <!-- Linki -->
 text-primary-500 hover:text-primary-600
@@ -208,6 +206,64 @@ bg-danger-400 text-white
 from-primary-400 to-primary-500
 <!-- cover image fallback -->
 ```
+
+## Kontrakty komponentów oparte o `SemanticColor`
+
+Kolory semantyczne nie powinny żyć jako lokalne unie typu `'success' | 'warning' | ...` w wielu komponentach.
+
+**Source of Truth dla osi koloru komponentów:**
+
+- `frontend/src/app/shared/types/colors.ts`
+- typ: `SemanticColor = 'primary' | 'success' | 'danger' | 'warning' | 'info' | 'neutral'`
+- mapy klas: `SEMANTIC_COLOR_CLASSES`
+
+### `app-button`
+
+Preferowane API:
+
+```html
+<app-button appearance="soft" color="primary">Zapisz</app-button>
+<app-button appearance="outline" color="neutral">Anuluj</app-button>
+<app-button appearance="ghost" color="danger">Usuń</app-button>
+<app-button appearance="link" color="info">Dowiedz się więcej</app-button>
+```
+
+- `appearance` opisuje **krój / styl przycisku**
+- `color` opisuje **semantykę koloru** i zawsze powinien bazować na `SemanticColor`
+- legacy `variant` jest dopuszczony tylko jako warstwa kompatybilności podczas migracji
+
+Dozwolone appearance:
+
+- `soft`
+- `outline`
+- `ghost`
+- `link`
+
+### `app-icon`
+
+Preferowane API:
+
+```html
+<app-icon name="star" color="primary" /> <app-icon name="alert-triangle" color="warning" />
+```
+
+- `color` korzysta z `SemanticColor`
+- `variant="default"` i `variant="muted"` pozostają jako neutralne presety prezentacyjne
+- nie tworzymy nowych lokalnych typów kolorów dla ikon
+
+### `app-bottom-overlay`
+
+Nagłówkowa ikona overlayu używa:
+
+```html
+<app-bottom-overlay icon="shield" iconColor="info" />
+```
+
+### Inne komponenty
+
+- `UserProfileStats.color` powinno używać `SemanticColor`
+- badge/statusy, jeśli opisują **kolor prezentacji**, powinny używać `SemanticColor`
+- jeśli typ opisuje **rodzaj komunikatu lub stan domenowy** (np. `SnackbarType`), zachowujemy typ domenowy i mapujemy go do `SemanticColor`, zamiast zastępować go kolorem 1:1
 
 ## Reguły
 

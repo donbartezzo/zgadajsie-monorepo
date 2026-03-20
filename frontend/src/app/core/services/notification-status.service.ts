@@ -93,7 +93,7 @@ export class NotificationStatusService {
       title: 'Wyłączyć powiadomienia?',
       message: `Nie będziesz otrzymywać powiadomień dotyczących: ${cfg.resourceLabel}.`,
       confirmLabel: 'Wyłącz',
-      variant: 'warning',
+      color: 'warning',
     });
     if (!confirmed) return;
     cfg.onUnsubscribe();

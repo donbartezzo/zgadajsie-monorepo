@@ -13,7 +13,7 @@ import { Event as EventModel } from '../../../shared/types';
       <div class="max-w-lg mx-auto">
         <app-map [lat]="e.lat" [lng]="e.lng" [interactive]="true" [height]="300"></app-map>
         <p class="mt-3 flex items-center gap-2 text-sm text-neutral-700">
-          <app-icon name="map-pin" size="sm" variant="danger"></app-icon>
+          <app-icon name="map-pin" size="sm" color="danger"></app-icon>
           {{ e.address }}
         </p>
       </div>

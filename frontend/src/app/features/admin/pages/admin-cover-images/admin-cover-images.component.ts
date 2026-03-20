@@ -51,7 +51,8 @@ import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
             </div>
           </div>
           <app-button
-            variant="primary"
+            appearance="soft"
+            color="primary"
             [disabled]="!uploadDisciplineId || !uploadFile || uploading()"
             [loading]="uploading()"
             (clicked)="onUpload()"
@@ -85,7 +86,7 @@ import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
       </div>
       } @else if (covers().length === 0) {
       <div class="text-center py-8 text-neutral-400">
-        <app-icon name="image" size="lg" variant="muted" />
+        <app-icon name="image" size="lg" color="neutral" muted="light" />
         <p class="mt-2 text-sm">Brak cover images</p>
       </div>
       } @else {

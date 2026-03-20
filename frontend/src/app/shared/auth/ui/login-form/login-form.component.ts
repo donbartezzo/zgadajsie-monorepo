@@ -57,7 +57,8 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
             <app-icon
               [name]="showPassword() ? 'eye-off' : 'eye'"
               size="sm"
-              variant="muted"
+              color="neutral"
+              muted="light"
             ></app-icon>
           </button>
         </div>
@@ -69,7 +70,13 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         >
       </div>
 
-      <app-button type="submit" variant="primary" [fullWidth]="true" [loading]="loading()">
+      <app-button
+        type="submit"
+        appearance="soft"
+        color="primary"
+        [fullWidth]="true"
+        [loading]="loading()"
+      >
         <app-icon name="log-in" size="sm"></app-icon>
         Zaloguj się
       </app-button>

@@ -18,7 +18,7 @@ export interface CancelPaymentResult {
       [open]="true"
       title="Anulowanie płatności"
       icon="x"
-      iconVariant="danger"
+      iconColor="danger"
       (closed)="close()"
     >
       <p class="mb-4 text-sm text-neutral-500 text-center">
@@ -46,7 +46,13 @@ export interface CancelPaymentResult {
         Powiadom uczestnika o anulowaniu
       </label>
 
-      <app-button variant="danger" size="md" [fullWidth]="true" (clicked)="confirm()">
+      <app-button
+        appearance="soft"
+        color="danger"
+        size="md"
+        [fullWidth]="true"
+        (clicked)="confirm()"
+      >
         Potwierdź anulowanie
       </app-button>
     </app-bottom-overlay>

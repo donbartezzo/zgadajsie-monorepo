@@ -45,10 +45,10 @@ import { EventStatus } from '@zgadajsie/shared';
             </div>
             <div class="flex gap-1">
               <a [routerLink]="['/o', 'w', e.id, 'edit']"
-                ><app-button variant="outline" size="sm"
+                ><app-button appearance="outline" color="neutral" size="sm"
                   ><app-icon name="edit" size="sm"></app-icon></app-button
               ></a>
-              <app-button variant="danger" size="sm" (clicked)="onCancel(e.id)"
+              <app-button appearance="soft" color="danger" size="sm" (clicked)="onCancel(e.id)"
                 ><app-icon name="x" size="sm"></app-icon
               ></app-button>
             </div>

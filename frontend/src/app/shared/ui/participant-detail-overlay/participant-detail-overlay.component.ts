@@ -16,6 +16,7 @@ import { ButtonComponent } from '../button/button.component';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { Participation, ParticipantManageItem } from '../../types';
 import { ParticipationStatus } from '../../types/participation.interface';
+import { SemanticColor } from '../../types/colors';
 import { AuthService } from '../../../core/auth/auth.service';
 import { UserService } from '../../../core/services/user.service';
 import { SnackbarService } from '../snackbar/snackbar.service';
@@ -28,6 +29,22 @@ type ParticipantItem = Participation | ParticipantManageItem;
 
 function isManageItem(p: ParticipantItem): p is ParticipantManageItem {
   return 'payment' in p;
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'error' in error &&
+    typeof error.error === 'object' &&
+    error.error !== null &&
+    'message' in error.error &&
+    typeof error.error.message === 'string'
+  ) {
+    return error.error.message;
+  }
+
+  return fallback;
 }
 
 @Component({
@@ -81,18 +98,29 @@ function isManageItem(p: ParticipantItem): p is ParticipantManageItem {
         <!-- Organizer actions -->
         @if (p.status === 'PENDING') {
         <div class="grid grid-cols-2 gap-2">
-          <app-button variant="primary" [fullWidth]="true" (clicked)="approveRequested.emit(p.id)">
+          <app-button
+            appearance="soft"
+            color="primary"
+            [fullWidth]="true"
+            (clicked)="approveRequested.emit(p.id)"
+          >
             <app-icon name="check" size="sm" class="mr-1" />
             Zatwierdź
           </app-button>
-          <app-button variant="danger" [fullWidth]="true" (clicked)="rejectRequested.emit(p.id)">
+          <app-button
+            appearance="soft"
+            color="danger"
+            [fullWidth]="true"
+            (clicked)="rejectRequested.emit(p.id)"
+          >
             <app-icon name="x" size="sm" class="mr-1" />
             Odrzuć
           </app-button>
         </div>
         } @if (_isActive) {
         <app-button
-          variant="outline-primary"
+          appearance="outline"
+          color="primary"
           [fullWidth]="true"
           (clicked)="chatRequested.emit(p.userId)"
         >
@@ -101,13 +129,19 @@ function isManageItem(p: ParticipantItem): p is ParticipantManageItem {
         </app-button>
 
         @if (_paidEvent && !_payment && p.status === 'APPROVED') {
-        <app-button variant="primary" [fullWidth]="true" (clicked)="markPaidRequested.emit(p.id)">
+        <app-button
+          appearance="soft"
+          color="primary"
+          [fullWidth]="true"
+          (clicked)="markPaidRequested.emit(p.id)"
+        >
           <app-icon name="dollar-sign" size="sm" class="mr-1" />
           Oznacz jako opłacone
         </app-button>
         } @if (_paidEvent && _payment?.status === 'COMPLETED') {
         <app-button
-          variant="outline"
+          appearance="outline"
+          color="neutral"
           [fullWidth]="true"
           (clicked)="cancelPaymentRequested.emit(asManageItem())"
         >
@@ -117,7 +151,12 @@ function isManageItem(p: ParticipantItem): p is ParticipantManageItem {
         }
 
         <div class="grid grid-cols-2 gap-2 pt-2 border-t border-neutral-100">
-          <app-button variant="danger" [fullWidth]="true" (clicked)="banRequested.emit(p.userId)">
+          <app-button
+            appearance="soft"
+            color="danger"
+            [fullWidth]="true"
+            (clicked)="banRequested.emit(p.userId)"
+          >
             <app-icon name="shield-alert" size="sm" class="mr-1" />
             Zbanuj
           </app-button>
@@ -126,7 +165,8 @@ function isManageItem(p: ParticipantItem): p is ParticipantManageItem {
         <!-- Guest Manager actions -->
         <div class="space-y-2">
           <app-button
-            variant="danger"
+            appearance="soft"
+            color="danger"
             [fullWidth]="true"
             (clicked)="removeGuestRequested.emit(p.id)"
           >
@@ -241,23 +281,21 @@ export class ParticipantDetailOverlayComponent {
     }
   });
 
-  readonly statusBadgeVariant = computed<'success' | 'warning' | 'danger' | 'info' | 'neutral'>(
-    () => {
-      const status = this.participant()?.status;
-      switch (status) {
-        case 'CONFIRMED':
-          return 'success';
-        case 'APPROVED':
-          return 'info';
-        case 'PENDING':
-          return 'warning';
-        case 'REJECTED':
-          return 'danger';
-        default:
-          return 'neutral';
-      }
-    },
-  );
+  readonly statusBadgeColor = computed<SemanticColor>(() => {
+    const status = this.participant()?.status;
+    switch (status) {
+      case 'CONFIRMED':
+        return 'success';
+      case 'APPROVED':
+        return 'info';
+      case 'PENDING':
+        return 'warning';
+      case 'REJECTED':
+        return 'danger';
+      default:
+        return 'neutral';
+    }
+  });
 
   readonly statusBadgeIcon = computed<string | null>(() => {
     const status = this.participant()?.status;
@@ -350,8 +388,8 @@ export class ParticipantDetailOverlayComponent {
         this.snackbar.success('Profil zaktualizowany');
         this.loading.set(false);
       },
-      error: (err: any) => {
-        this.snackbar.error(err?.error?.message || 'Błąd aktualizacji profilu');
+      error: (err: unknown) => {
+        this.snackbar.error(getErrorMessage(err, 'Błąd aktualizacji profilu'));
         this.loading.set(false);
       },
     });
@@ -370,8 +408,8 @@ export class ParticipantDetailOverlayComponent {
         // Close overlay
         this.closed.emit();
       },
-      error: (err: any) => {
-        this.snackbar.error(err?.error?.message || 'Błąd aktualizacji gościa');
+      error: (err: unknown) => {
+        this.snackbar.error(getErrorMessage(err, 'Błąd aktualizacji gościa'));
         this.loading.set(false);
       },
     });

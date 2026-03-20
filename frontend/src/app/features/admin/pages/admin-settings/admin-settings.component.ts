@@ -42,7 +42,7 @@ interface Setting {
               [(ngModel)]="s.value"
               class="flex-1 rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-900"
             />
-            <app-button variant="outline" size="sm" (clicked)="saveSetting(s)"
+            <app-button appearance="outline" color="neutral" size="sm" (clicked)="saveSetting(s)"
               ><app-icon name="check" size="sm"></app-icon
             ></app-button>
           </div>
@@ -62,7 +62,8 @@ interface Setting {
             <div class="flex items-center gap-2 text-sm">
               <span class="flex-1 text-neutral-700">{{ item.name }}</span>
               <app-button
-                variant="danger"
+                appearance="soft"
+                color="danger"
                 size="sm"
                 (clicked)="deleteDict(dict.type, item.id, dict.items)"
                 ><app-icon name="trash" size="sm"></app-icon
@@ -76,7 +77,7 @@ interface Setting {
               placeholder="Nowa pozycja"
               class="flex-1 rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-900"
             />
-            <app-button variant="primary" size="sm" (clicked)="addDict(dict)"
+            <app-button appearance="soft" color="primary" size="sm" (clicked)="addDict(dict)"
               ><app-icon name="plus" size="sm"></app-icon
             ></app-button>
           </div>

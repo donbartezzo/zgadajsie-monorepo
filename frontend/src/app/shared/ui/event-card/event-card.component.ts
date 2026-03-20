@@ -106,17 +106,17 @@ import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
       <!-- Content -->
       <div class="p-3 space-y-2">
         <div class="flex items-center gap-1 text-sm text-neutral-500">
-          <app-icon name="map-pin" size="sm" variant="muted" />
+          <app-icon name="map-pin" size="sm" color="neutral" muted="light" />
           <span class="truncate">{{ _event.address }}</span>
         </div>
 
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
           <span class="flex items-center gap-1">
-            <app-icon name="clock" size="xs" variant="muted" />
+            <app-icon name="clock" size="xs" color="neutral" muted="light" />
             {{ eventStartTime() }}–{{ eventEndTime() }} ({{ duration() }})
           </span>
           <span class="flex items-center gap-1">
-            <app-icon name="users" size="xs" variant="muted" />
+            <app-icon name="users" size="xs" color="neutral" muted="light" />
             {{ genderLabel() }}
           </span>
         </div>
@@ -124,7 +124,7 @@ import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
         @if (rulesList().length > 0) {
         <div class="text-sm">
           <div class="flex items-center gap-1 text-neutral-900 font-medium mb-1">
-            <app-icon name="check-circle" size="sm" variant="muted" />
+            <app-icon name="check-circle" size="sm" color="neutral" muted="light" />
             Zasady
           </div>
           <div class="text-neutral-500 text-xs space-y-0.5 ml-5">
@@ -151,7 +151,7 @@ import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
           <div class="flex items-center gap-3 text-sm">
             @if (_event._count) {
             <span class="flex items-center gap-1 text-neutral-500">
-              <app-icon name="users" size="sm" variant="muted" />
+              <app-icon name="users" size="sm" color="neutral" muted="light" />
               {{ _event._count!.participations }}@if (_event.maxParticipants) {/{{
                 _event.maxParticipants
               }}}

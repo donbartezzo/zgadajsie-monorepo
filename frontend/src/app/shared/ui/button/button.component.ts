@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent, IconName, IconSize } from '../../../core/icons/icon.component';
+import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
 
 export type ButtonVariant =
   | 'primary'
@@ -14,8 +15,10 @@ export type ButtonVariant =
   | 'neutral'
   | 'ghost'
   | 'link';
+export type ButtonAppearance = 'soft' | 'outline' | 'ghost' | 'link';
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
 export type IconPosition = 'left' | 'right';
+export type ButtonAlignment = 'start' | 'center' | 'end';
 
 @Component({
   selector: 'app-button',
@@ -30,28 +33,46 @@ export type IconPosition = 'left' | 'right';
     >
       @if (loading()) {
       <app-icon name="loader" [size]="iconSizeValue()" class="animate-spin" />
-      } @else { @if (icon() && iconPosition() === 'left') {
-      <app-icon [name]="icon()!" [size]="iconSizeValue()" />
-      }
-      <ng-content />
-      @if (icon() && iconPosition() === 'right') {
+      } @else { @if (icon() && iconPosition() === 'left') { @if (iconBackground()) {
+      <div
+        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+        [ngClass]="iconBackgroundClass()"
+      >
+        <app-icon [name]="icon()!" [size]="iconSizeValue()" [class]="iconColorClass()" />
+      </div>
+      } @else {
       <app-icon [name]="icon()!" [size]="iconSizeValue()" />
       } }
+      <ng-content />
+      @if (icon() && iconPosition() === 'right') { @if (iconBackground()) {
+      <div
+        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+        [ngClass]="iconBackgroundClass()"
+      >
+        <app-icon [name]="icon()!" [size]="iconSizeValue()" [class]="iconColorClass()" />
+      </div>
+      } @else {
+      <app-icon [name]="icon()!" [size]="iconSizeValue()" />
+      } } }
     </button>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ButtonComponent {
-  readonly variant = input<ButtonVariant>('primary');
+  readonly appearance = input<ButtonAppearance | null>(null);
+  readonly color = input<SemanticColor | null>(null);
+  readonly variant = input<ButtonVariant | null>(null);
   readonly size = input<ButtonSize>('md');
   readonly icon = input<IconName>();
   readonly iconPosition = input<IconPosition>('left');
+  readonly alignment = input<ButtonAlignment>('center');
   readonly iconOnly = input(false);
   readonly disabled = input(false);
   readonly loading = input(false);
   readonly fullWidth = input(false);
   readonly type = input<'button' | 'submit' | 'reset'>('button');
   readonly ariaLabel = input<string>('');
+  readonly iconBackground = input(false);
 
   readonly clicked = output<MouseEvent>();
 
@@ -65,10 +86,77 @@ export class ButtonComponent {
     return sizeMap[this.size()];
   });
 
+  readonly resolvedAppearance = computed<ButtonAppearance>(() => {
+    const appearance = this.appearance();
+    if (appearance) {
+      return appearance;
+    }
+
+    switch (this.variant()) {
+      case 'outline':
+      case 'outline-primary':
+        return 'outline';
+      case 'ghost':
+        return 'ghost';
+      case 'link':
+        return 'link';
+      default:
+        return 'soft';
+    }
+  });
+
+  readonly resolvedColor = computed<SemanticColor>(() => {
+    const color = this.color();
+    if (color) {
+      return color;
+    }
+
+    switch (this.variant()) {
+      case 'secondary':
+      case 'outline':
+      case 'ghost':
+        return 'neutral';
+      case 'outline-primary':
+      case 'link':
+      case 'primary':
+        return 'primary';
+      case 'success':
+        return 'success';
+      case 'warning':
+        return 'warning';
+      case 'danger':
+        return 'danger';
+      case 'info':
+        return 'info';
+      case 'neutral':
+        return 'neutral';
+      default:
+        return 'primary';
+    }
+  });
+
+  readonly iconBackgroundClass = computed(() => {
+    const color = this.resolvedColor();
+    if (this.resolvedAppearance() === 'soft') {
+      return SEMANTIC_COLOR_CLASSES.surfaceStrong[color];
+    }
+
+    return SEMANTIC_COLOR_CLASSES.surface[color];
+  });
+
+  readonly iconColorClass = computed(() => {
+    return SEMANTIC_COLOR_CLASSES.textStrong[this.resolvedColor()];
+  });
+
   readonly classes = computed(() => {
     const isIconOnly = this.iconOnly() || (this.icon() && !this.hasContent());
-    const base =
-      'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed';
+    const alignmentMap: Record<ButtonAlignment, string> = {
+      start: 'justify-start',
+      center: 'justify-center',
+      end: 'justify-end',
+    };
+    const justifyClass = isIconOnly ? 'justify-center' : alignmentMap[this.alignment()];
+    const base = `flex items-center ${justifyClass} font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed`;
 
     // Kwadratowe rozmiary dla icon-only, prostokątne dla tekstu
     const sizeClasses: Record<ButtonSize, string> = isIconOnly
@@ -85,26 +173,59 @@ export class ButtonComponent {
           lg: 'px-5 py-3 text-base gap-2',
         };
 
-    // Pastelowe tło + ciemna ikona/tekst (styl sticky-mobile "Colors 2.0 Upgrade")
-    const variantClasses: Record<ButtonVariant, string> = {
+    const softClasses: Record<SemanticColor, string> = {
       primary: 'bg-primary-100 text-primary-600 hover:bg-primary-200 focus:ring-primary-300',
-      secondary: 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 focus:ring-neutral-300',
-      outline:
-        'border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 focus:ring-neutral-300',
-      'outline-primary':
-        'border border-primary-300 bg-white text-primary-600 hover:bg-primary-50 focus:ring-primary-300',
-      danger: 'bg-danger-50 text-danger-500 hover:bg-danger-100 focus:ring-danger-300',
       success: 'bg-success-50 text-success-600 hover:bg-success-100 focus:ring-success-300',
+      danger: 'bg-danger-50 text-danger-500 hover:bg-danger-100 focus:ring-danger-300',
       warning: 'bg-warning-50 text-warning-600 hover:bg-warning-100 focus:ring-warning-300',
       info: 'bg-info-50 text-info-600 hover:bg-info-100 focus:ring-info-300',
-      neutral: 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 focus:ring-neutral-300',
-      ghost: 'bg-transparent text-neutral-600 hover:bg-neutral-100 focus:ring-neutral-300',
-      link: 'bg-transparent text-primary-600 underline hover:text-primary-700 focus:ring-primary-300',
+      neutral: 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 focus:ring-neutral-300',
+    };
+
+    const outlineClasses: Record<SemanticColor, string> = {
+      primary:
+        'border border-primary-300 bg-white text-primary-600 hover:bg-primary-50 focus:ring-primary-300',
+      success:
+        'border border-success-200 bg-white text-success-600 hover:bg-success-50 focus:ring-success-300',
+      danger:
+        'border border-danger-200 bg-white text-danger-500 hover:bg-danger-50 focus:ring-danger-300',
+      warning:
+        'border border-warning-200 bg-white text-warning-600 hover:bg-warning-50 focus:ring-warning-300',
+      info: 'border border-info-200 bg-white text-info-600 hover:bg-info-50 focus:ring-info-300',
+      neutral:
+        'border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 focus:ring-neutral-300',
+    };
+
+    const ghostClasses: Record<SemanticColor, string> = {
+      primary: 'bg-transparent text-primary-600 hover:bg-primary-50 focus:ring-primary-300',
+      success: 'bg-transparent text-success-600 hover:bg-success-50 focus:ring-success-300',
+      danger: 'bg-transparent text-danger-500 hover:bg-danger-50 focus:ring-danger-300',
+      warning: 'bg-transparent text-warning-600 hover:bg-warning-50 focus:ring-warning-300',
+      info: 'bg-transparent text-info-600 hover:bg-info-50 focus:ring-info-300',
+      neutral: 'bg-transparent text-neutral-600 hover:bg-neutral-100 focus:ring-neutral-300',
+    };
+
+    const linkClasses: Record<SemanticColor, string> = {
+      primary: 'bg-transparent text-primary-600 underline hover:opacity-80 focus:ring-primary-300',
+      success: 'bg-transparent text-success-600 underline hover:opacity-80 focus:ring-success-300',
+      danger: 'bg-transparent text-danger-500 underline hover:opacity-80 focus:ring-danger-300',
+      warning: 'bg-transparent text-warning-600 underline hover:opacity-80 focus:ring-warning-300',
+      info: 'bg-transparent text-info-600 underline hover:opacity-80 focus:ring-info-300',
+      neutral: 'bg-transparent text-neutral-600 underline hover:opacity-80 focus:ring-neutral-300',
+    };
+
+    const appearanceClasses: Record<ButtonAppearance, Record<SemanticColor, string>> = {
+      soft: softClasses,
+      outline: outlineClasses,
+      ghost: ghostClasses,
+      link: linkClasses,
     };
 
     const widthClass = this.fullWidth() ? 'w-full' : '';
+    const appearance = this.resolvedAppearance();
+    const color = this.resolvedColor();
 
-    return [base, sizeClasses[this.size()], variantClasses[this.variant()], widthClass]
+    return [base, sizeClasses[this.size()], appearanceClasses[appearance][color], widthClass]
       .filter(Boolean)
       .join(' ');
   });

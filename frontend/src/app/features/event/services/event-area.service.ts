@@ -308,11 +308,11 @@ export class EventAreaService {
 
   async requestLeave(): Promise<void> {
     const confirmed = await this.confirmModal.confirm({
-      title: 'Wypisanie z wydarzenia',
+      title: 'Wypisać się z wydarzenia?',
       message: 'Czy na pewno chcesz wypisać się z tego wydarzenia? Stracisz swoje miejsce.',
       confirmLabel: 'Tak, wypisz mnie',
       cancelLabel: 'Anuluj',
-      variant: 'danger',
+      color: 'danger',
     });
     if (!confirmed) return;
 

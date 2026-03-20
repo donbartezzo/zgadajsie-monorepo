@@ -11,7 +11,7 @@ import { IconComponent } from '../../../core/icons/icon.component';
     <app-bottom-overlay
       [open]="open()"
       icon="user-plus"
-      iconVariant="success"
+      iconColor="success"
       title="Dodaj osobę towarzyszącą"
       description="Podaj nazwę, pod którą Twój znajomy będzie widoczny na liście uczestników."
       (closed)="closed.emit()"
@@ -63,7 +63,8 @@ import { IconComponent } from '../../../core/icons/icon.component';
         </div>
 
         <app-button
-          variant="primary"
+          appearance="soft"
+          color="primary"
           [fullWidth]="true"
           [loading]="loading()"
           [disabled]="!isValid()"

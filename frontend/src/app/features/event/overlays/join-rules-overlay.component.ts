@@ -27,7 +27,7 @@ import { EventCriteriaDescriptionComponent } from '../ui/event-criteria-descript
     <app-bottom-overlay
       [open]="open()"
       icon="list"
-      iconVariant="info"
+      iconColor="info"
       title="Chcesz dołączyć?"
       description="Zapoznaj się z poniższymi danymi i organizacją tego wydarzenia."
       (closed)="closed.emit()"
@@ -133,7 +133,8 @@ import { EventCriteriaDescriptionComponent } from '../ui/event-criteria-descript
         <!-- Action -->
         <div class="mt-3 max-w-lg mx-auto">
           <app-button
-            variant="primary"
+            appearance="soft"
+            color="primary"
             [fullWidth]="true"
             [loading]="loading()"
             [disabled]="!canJoin()"

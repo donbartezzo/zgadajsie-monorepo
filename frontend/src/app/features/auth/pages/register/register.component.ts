@@ -78,7 +78,13 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         </div>
 
         <div class="mt-4">
-          <app-button type="submit" variant="primary" [fullWidth]="true" [loading]="loading()">
+          <app-button
+            type="submit"
+            appearance="soft"
+            color="primary"
+            [fullWidth]="true"
+            [loading]="loading()"
+          >
             <app-icon name="user-plus" size="sm"></app-icon>
             Utwórz konto
           </app-button>

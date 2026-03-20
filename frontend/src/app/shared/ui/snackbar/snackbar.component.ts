@@ -1,7 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../core/icons/icon.component';
+import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
 import { SnackbarService, SnackbarType } from './snackbar.service';
+
+const SNACKBAR_COLOR_MAP: Record<SnackbarType, SemanticColor> = {
+  success: 'success',
+  error: 'danger',
+  info: 'info',
+  warning: 'warning',
+};
 
 @Component({
   selector: 'app-snackbar',
@@ -48,13 +56,7 @@ export class SnackbarComponent {
   readonly messages = computed(() => this.snackbar.messages());
 
   typeClass(type: SnackbarType): string {
-    const classes: Record<SnackbarType, string> = {
-      success: 'bg-success-400 text-white',
-      error: 'bg-danger-400 text-white',
-      info: 'bg-info-400 text-white',
-      warning: 'bg-warning-400 text-warning-400',
-    };
-    return classes[type];
+    return SEMANTIC_COLOR_CLASSES.button[SNACKBAR_COLOR_MAP[type]];
   }
 
   typeIcon(type: SnackbarType): 'check' | 'x' | 'bell' | 'shield-alert' {

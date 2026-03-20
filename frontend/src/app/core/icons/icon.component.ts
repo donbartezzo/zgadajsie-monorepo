@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../shared/types/colors';
 
 export type IconName =
   | 'menu'
@@ -68,7 +69,7 @@ export type IconName =
   | 'list';
 
 export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
-export type IconVariant = 'default' | 'muted' | 'primary' | 'danger';
+export type IconMuted = 'light' | 'heavy';
 
 @Component({
   selector: 'app-icon',
@@ -360,7 +361,8 @@ export type IconVariant = 'default' | 'muted' | 'primary' | 'danger';
 export class IconComponent {
   readonly name = input.required<IconName>();
   readonly size = input<IconSize>('md');
-  readonly variant = input<IconVariant>('default');
+  readonly color = input<SemanticColor>('neutral');
+  readonly muted = input<IconMuted | null>(null);
   readonly class = input<string>('');
 
   readonly sizePx = computed(() => {
@@ -383,17 +385,17 @@ export class IconComponent {
       return customClass;
     }
 
-    switch (this.variant()) {
-      case 'muted':
-        return 'text-neutral-400';
-      case 'primary':
-        return 'text-primary-500';
-      case 'danger':
-        return 'text-danger-400';
-      case 'default':
-      default:
-        return 'text-neutral-700';
+    const baseClass = SEMANTIC_COLOR_CLASSES.text[this.color()];
+    const mutedValue = this.muted();
+
+    if (mutedValue === 'light') {
+      return `${baseClass} opacity-50`;
     }
+    if (mutedValue === 'heavy') {
+      return `${baseClass} opacity-30`;
+    }
+
+    return baseClass;
   });
 
   readonly sizePxSignal = computed(() => this.sizePx());

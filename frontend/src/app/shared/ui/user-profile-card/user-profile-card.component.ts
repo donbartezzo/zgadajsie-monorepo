@@ -8,12 +8,13 @@ import { User } from '../../types/user.interface';
 import { UserBrief } from '../../types/common.interface';
 import { ParticipationStatus } from '../../types/participation.interface';
 import { Payment } from '../../types/payment.interface';
+import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
 
 export interface UserProfileStats {
   label: string;
   value: string | number;
   icon?: string;
-  color?: string;
+  color?: SemanticColor;
 }
 
 export type ProfileCardVariant = 'default' | 'compact' | 'overlay';
@@ -99,11 +100,17 @@ export interface ProfileEditData {
       <!-- Edit mode actions -->
       @if (_editingMode) {
       <div class="mt-4 flex gap-2">
-        <app-button variant="primary" size="sm" [disabled]="!_hasChanges" (clicked)="saveChanges()">
+        <app-button
+          appearance="soft"
+          color="primary"
+          size="sm"
+          [disabled]="!_hasChanges"
+          (clicked)="saveChanges()"
+        >
           <app-icon name="check" size="xs" class="mr-1" />
           Zapisz
         </app-button>
-        <app-button variant="outline" size="sm" (clicked)="cancelEditing()">
+        <app-button appearance="outline" color="neutral" size="sm" (clicked)="cancelEditing()">
           <app-icon name="x" size="xs" class="mr-1" />
           Anuluj
         </app-button>
@@ -116,7 +123,12 @@ export interface ProfileEditData {
         @for (stat of _stats; track stat.label) {
         <div class="flex flex-col items-center">
           @if (stat.icon) {
-          <app-icon [name]="$any(stat.icon)" size="md" [class]="stat.color ?? 'text-neutral-400'" />
+          <app-icon
+            [name]="$any(stat.icon)"
+            size="md"
+            [color]="stat.color ?? null"
+            [class]="stat.color ? '' : 'text-neutral-400'"
+          />
           }
           <span class="text-lg font-bold text-neutral-900">{{ stat.value }}</span>
           <span class="text-[10px] text-neutral-500 -mt-1">{{ stat.label }}</span>
@@ -210,35 +222,33 @@ export class UserProfileCardComponent {
     }
     return null;
   });
-  readonly statusBadgeVariant = computed<'success' | 'warning' | 'danger' | 'info' | 'neutral'>(
-    () => {
-      // Profile context
-      if (this.context() === 'profile') {
-        const user = this.user();
-        if ('isEmailVerified' in user) {
-          return user.isEmailVerified ? 'success' : 'warning';
-        }
-        return 'neutral';
-      }
-      // Participant context
-      if (this.context() === 'participant' || this.context() === 'organizer') {
-        const status = this.participationStatus();
-        switch (status) {
-          case 'CONFIRMED':
-            return 'success';
-          case 'APPROVED':
-            return 'info';
-          case 'PENDING':
-            return 'warning';
-          case 'REJECTED':
-            return 'danger';
-          default:
-            return 'neutral';
-        }
+  readonly statusBadgeColor = computed<SemanticColor>(() => {
+    if (this.context() === 'profile') {
+      const user = this.user();
+      if ('isEmailVerified' in user) {
+        return user.isEmailVerified ? 'success' : 'warning';
       }
       return 'neutral';
-    },
-  );
+    }
+
+    if (this.context() === 'participant' || this.context() === 'organizer') {
+      const status = this.participationStatus();
+      switch (status) {
+        case 'CONFIRMED':
+          return 'success';
+        case 'APPROVED':
+          return 'info';
+        case 'PENDING':
+          return 'warning';
+        case 'REJECTED':
+          return 'danger';
+        default:
+          return 'neutral';
+      }
+    }
+
+    return 'neutral';
+  });
   readonly statusBadgeIcon = computed<string | null>(() => {
     if (this.context() === 'profile') {
       return null;
@@ -292,14 +302,8 @@ export class UserProfileCardComponent {
   });
 
   readonly statusBadgeClass = computed(() => {
-    const colors: Record<string, string> = {
-      success: 'bg-success-50 text-success-600',
-      warning: 'bg-warning-50 text-warning-600',
-      danger: 'bg-danger-50 text-danger-600',
-      info: 'bg-info-50 text-info-600',
-      neutral: 'bg-neutral-100 text-neutral-600',
-    };
-    return colors[this.statusBadgeVariant()];
+    const color = this.statusBadgeColor();
+    return `${SEMANTIC_COLOR_CLASSES.surface[color]} ${SEMANTIC_COLOR_CLASSES.textStrong[color]}`;
   });
 
   // Edit mode computed properties

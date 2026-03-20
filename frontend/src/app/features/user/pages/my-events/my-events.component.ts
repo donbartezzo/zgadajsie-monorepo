@@ -31,7 +31,7 @@ import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm
       <div class="flex items-center justify-between mb-4">
         <h1 class="text-xl font-bold text-neutral-900">Moje wydarzenia</h1>
         <a routerLink="/o/w/new">
-          <app-button variant="primary" size="sm">
+          <app-button appearance="soft" color="primary" size="sm">
             <app-icon name="plus" size="sm"></app-icon> Nowe
           </app-button>
         </a>
@@ -72,32 +72,35 @@ import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm
           </p>
           <div class="flex gap-2">
             <a [routerLink]="['/o', 'w', e.id, 'manage']">
-              <app-button variant="outline" size="sm"
+              <app-button appearance="outline" color="neutral" size="sm"
                 ><app-icon name="settings" size="sm"></app-icon
               ></app-button>
             </a>
             <app-button
-              variant="outline"
+              appearance="outline"
+              color="neutral"
               size="sm"
               [disabled]="!isUpcoming(e)"
               (clicked)="handleEdit(e)"
               ><app-icon name="edit" size="sm"></app-icon
             ></app-button>
             <app-button
-              variant="outline"
+              appearance="outline"
+              color="neutral"
               size="sm"
               [disabled]="e.status === 'CANCELLED'"
               (clicked)="handleCancel(e)"
               ><app-icon name="x" size="sm"></app-icon
             ></app-button>
             <app-button
-              variant="danger"
+              appearance="soft"
+              color="danger"
               size="sm"
               [disabled]="!isUpcoming(e)"
               (clicked)="handleDelete(e)"
               ><app-icon name="trash" size="sm"></app-icon
             ></app-button>
-            <app-button variant="outline" size="sm" (clicked)="onDuplicate(e.id)"
+            <app-button appearance="outline" color="neutral" size="sm" (clicked)="onDuplicate(e.id)"
               ><app-icon name="copy" size="sm"></app-icon
             ></app-button>
           </div>
@@ -172,7 +175,7 @@ export class MyEventsComponent implements OnInit {
       message: 'Czy na pewno chcesz usunąć to wydarzenie? Ta operacja jest nieodwracalna.',
       confirmLabel: 'Usuń',
       cancelLabel: 'Anuluj',
-      variant: 'danger',
+      color: 'danger',
     });
     if (!confirmed) return;
 

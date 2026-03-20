@@ -56,11 +56,11 @@ type PaymentStatusState =
               <p class="text-xs text-neutral-500 mt-1">Kwota: {{ _payment?.amount }} PLN</p>
             </div>
             <a [routerLink]="['/w', event.city?.slug, event.id]">
-              <app-button variant="primary">Przejdź do wydarzenia</app-button>
+              <app-button appearance="soft" color="primary">Przejdź do wydarzenia</app-button>
             </a>
             } @else {
             <a routerLink="/profile/participations">
-              <app-button variant="primary">Moje uczestnictwa</app-button>
+              <app-button appearance="soft" color="primary">Moje uczestnictwa</app-button>
             </a>
             }
           </div>
@@ -80,14 +80,16 @@ type PaymentStatusState =
               <p class="text-xs text-neutral-500 mt-1">Kwota: {{ _payment?.amount }} PLN</p>
             </div>
             }
-            <app-button (click)="checkStatus()" variant="outline">Sprawdź ponownie</app-button>
+            <app-button appearance="outline" color="neutral" (click)="checkStatus()">
+              Sprawdź ponownie
+            </app-button>
             @if (_payment?.event; as event) {
             <a [routerLink]="['/w', event.city?.slug, event.id]">
-              <app-button variant="primary">Przejdź do wydarzenia</app-button>
+              <app-button appearance="soft" color="primary">Przejdź do wydarzenia</app-button>
             </a>
             } @else {
             <a routerLink="/profile/participations">
-              <app-button variant="primary">Moje uczestnictwa</app-button>
+              <app-button appearance="soft" color="primary">Moje uczestnictwa</app-button>
             </a>
             }
           </div>
@@ -104,11 +106,11 @@ type PaymentStatusState =
             </p>
             @if (_payment?.event; as event) {
             <a [routerLink]="['/w', event.city?.slug, event.id]">
-              <app-button variant="outline">Wróć do wydarzenia</app-button>
+              <app-button appearance="outline" color="neutral">Wróć do wydarzenia</app-button>
             </a>
             }
             <a routerLink="/profile/participations">
-              <app-button variant="primary">Moje uczestnictwa</app-button>
+              <app-button appearance="soft" color="primary">Moje uczestnictwa</app-button>
             </a>
           </div>
           } @case ('pending') {
@@ -122,9 +124,11 @@ type PaymentStatusState =
             <p class="text-sm text-neutral-500">
               Twoja płatność jest przetwarzana. Status może zaktualizować się za kilka chwil.
             </p>
-            <app-button (click)="checkStatus()" variant="outline">Sprawdź ponownie</app-button>
+            <app-button appearance="outline" color="neutral" (click)="checkStatus()">
+              Sprawdź ponownie
+            </app-button>
             <a routerLink="/profile/participations">
-              <app-button variant="primary">Moje uczestnictwa</app-button>
+              <app-button appearance="soft" color="primary">Moje uczestnictwa</app-button>
             </a>
           </div>
           } @case ('not_found') {
@@ -139,7 +143,7 @@ type PaymentStatusState =
               Nie znaleziono płatności o podanym identyfikatorze.
             </p>
             <a routerLink="/profile/participations">
-              <app-button variant="primary">Moje uczestnictwa</app-button>
+              <app-button appearance="soft" color="primary">Moje uczestnictwa</app-button>
             </a>
           </div>
           } @case ('invalid') {
@@ -152,7 +156,7 @@ type PaymentStatusState =
             <h1 class="text-xl font-bold text-neutral-900">Nieprawidłowy identyfikator</h1>
             <p class="text-sm text-neutral-500">Identyfikator płatności jest nieprawidłowy.</p>
             <a routerLink="/profile/participations">
-              <app-button variant="primary">Moje uczestnictwa</app-button>
+              <app-button appearance="soft" color="primary">Moje uczestnictwa</app-button>
             </a>
           </div>
           } }

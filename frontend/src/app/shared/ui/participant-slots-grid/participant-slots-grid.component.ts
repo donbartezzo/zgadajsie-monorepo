@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 import { UserAvatarComponent } from '../user-avatar/user-avatar.component';
 import { IconComponent } from '../../../core/icons/icon.component';
 import { Participation, ParticipantManageItem, EventRoleConfig, EventRole } from '../../types';
+import { SemanticColor } from '../../types/colors';
 import { EnrollmentPhase } from '../../types/event.interface';
 
 export type SlotMode = 'public' | 'organizer';
@@ -354,7 +355,7 @@ export class ParticipantSlotsGridComponent {
     return p.status === 'PENDING';
   }
 
-  getStatusIndicator(p: ParticipantItem): 'success' | 'warning' | 'danger' | 'info' | null {
+  getStatusIndicator(p: ParticipantItem): SemanticColor | null {
     if (p.status === 'CONFIRMED') return 'success';
     return null;
   }

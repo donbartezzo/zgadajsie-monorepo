@@ -66,7 +66,7 @@ import { Participation } from '../../../../shared/types';
               </span>
             </div>
             @if (p.status === 'PENDING' || p.status === 'APPROVED' || p.status === 'CONFIRMED') {
-            <app-button variant="outline" size="sm" (clicked)="onLeave(p.id)">
+            <app-button appearance="outline" color="neutral" size="sm" (clicked)="onLeave(p.id)">
               <app-icon name="user-x" size="sm"></app-icon>
             </app-button>
             }
