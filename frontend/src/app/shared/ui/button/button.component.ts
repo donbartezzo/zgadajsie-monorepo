@@ -17,7 +17,6 @@ export type ButtonVariant =
   | 'link';
 export type ButtonAppearance = 'soft' | 'outline' | 'ghost' | 'link';
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
-export type IconPosition = 'left' | 'right';
 export type ButtonAlignment = 'start' | 'center' | 'end';
 
 @Component({
@@ -31,28 +30,32 @@ export type ButtonAlignment = 'start' | 'center' | 'end';
       [attr.aria-label]="ariaLabel() || null"
       (click)="clicked.emit($event)"
     >
-      @if (loading()) {
-      <app-icon name="loader" [size]="iconSizeValue()" class="animate-spin" />
-      } @else { @if (icon() && iconPosition() === 'left') { @if (iconBackground()) {
+      @let _iconSize = iconSizeValue(); @let _showLeft = showLeftIcon(); @let _showRight =
+      showRightIcon(); @let _iconLeftBg = iconLeftBackground(); @let _iconRightBg =
+      iconRightBackground(); @if (loading()) {
+      <app-icon name="loader" [size]="_iconSize" class="animate-spin" />
+      } @else { @if (_showLeft) { @if (_iconLeftBg) {
       <div
         class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-        [ngClass]="iconBackgroundClass()"
+        [ngClass]="iconLeftBackgroundClass()"
       >
-        <app-icon [name]="icon()!" [size]="iconSizeValue()" [class]="iconColorClass()" />
+        <app-icon [name]="iconLeft()!" [size]="_iconSize" [class]="iconLeftColorClass()" />
       </div>
       } @else {
-      <app-icon [name]="icon()!" [size]="iconSizeValue()" />
+      <app-icon [name]="iconLeft()!" [size]="_iconSize" />
       } }
+
       <ng-content />
-      @if (icon() && iconPosition() === 'right') { @if (iconBackground()) {
+
+      @if (_showRight) { @if (_iconRightBg) {
       <div
-        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-        [ngClass]="iconBackgroundClass()"
+        class="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+        [ngClass]="iconRightBackgroundClass()"
       >
-        <app-icon [name]="icon()!" [size]="iconSizeValue()" [class]="iconColorClass()" />
+        <app-icon [name]="iconRight()!" [size]="_iconSize" [class]="iconRightColorClass()" />
       </div>
       } @else {
-      <app-icon [name]="icon()!" [size]="iconSizeValue()" />
+      <app-icon [name]="iconRight()!" [size]="_iconSize" class="ml-auto" />
       } } }
     </button>
   `,
@@ -63,8 +66,10 @@ export class ButtonComponent {
   readonly color = input<SemanticColor | null>(null);
   readonly variant = input<ButtonVariant | null>(null);
   readonly size = input<ButtonSize>('md');
-  readonly icon = input<IconName>();
-  readonly iconPosition = input<IconPosition>('left');
+  readonly iconLeft = input<IconName>();
+  readonly iconLeftBackground = input(false);
+  readonly iconRight = input<IconName>();
+  readonly iconRightBackground = input(false);
   readonly alignment = input<ButtonAlignment>('center');
   readonly iconOnly = input(false);
   readonly disabled = input(false);
@@ -72,9 +77,12 @@ export class ButtonComponent {
   readonly fullWidth = input(false);
   readonly type = input<'button' | 'submit' | 'reset'>('button');
   readonly ariaLabel = input<string>('');
-  readonly iconBackground = input(false);
 
   readonly clicked = output<MouseEvent>();
+
+  readonly showLeftIcon = computed(() => !this.loading() && !!this.iconLeft());
+
+  readonly showRightIcon = computed(() => !this.loading() && !!this.iconRight());
 
   readonly iconSizeValue = computed((): IconSize => {
     const sizeMap: Record<ButtonSize, IconSize> = {
@@ -135,7 +143,7 @@ export class ButtonComponent {
     }
   });
 
-  readonly iconBackgroundClass = computed(() => {
+  readonly iconLeftBackgroundClass = computed(() => {
     const color = this.resolvedColor();
     if (this.resolvedAppearance() === 'soft') {
       return SEMANTIC_COLOR_CLASSES.surfaceStrong[color];
@@ -144,12 +152,26 @@ export class ButtonComponent {
     return SEMANTIC_COLOR_CLASSES.surface[color];
   });
 
-  readonly iconColorClass = computed(() => {
+  readonly iconLeftColorClass = computed(() => {
+    return SEMANTIC_COLOR_CLASSES.textStrong[this.resolvedColor()];
+  });
+
+  readonly iconRightBackgroundClass = computed(() => {
+    const color = this.resolvedColor();
+    if (this.resolvedAppearance() === 'soft') {
+      return SEMANTIC_COLOR_CLASSES.surfaceStrong[color];
+    }
+
+    return SEMANTIC_COLOR_CLASSES.surface[color];
+  });
+
+  readonly iconRightColorClass = computed(() => {
     return SEMANTIC_COLOR_CLASSES.textStrong[this.resolvedColor()];
   });
 
   readonly classes = computed(() => {
-    const isIconOnly = this.iconOnly() || (this.icon() && !this.hasContent());
+    const isIconOnly =
+      this.iconOnly() || ((this.iconLeft() || this.iconRight()) && !this.hasContent());
     const alignmentMap: Record<ButtonAlignment, string> = {
       start: 'justify-start',
       center: 'justify-center',

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { IconComponent, IconName } from '../../../shared/ui/icon/icon.component';
-import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
+import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { SemanticColor } from '../../../shared/types/colors';
 import {
   Event as EventModel,
@@ -16,7 +16,7 @@ import {
 
 @Component({
   selector: 'app-join-confirm-overlay',
-  imports: [IconComponent, ButtonComponent, BottomOverlayComponent],
+  imports: [IconComponent, BottomOverlayComponent, LinkListComponent],
   template: `
     <app-bottom-overlay
       [open]="open()"
@@ -68,17 +68,9 @@ import {
               </p>
             </div>
           </div>
-          <app-button
-            appearance="soft"
-            color="primary"
-            [fullWidth]="true"
-            [loading]="loading()"
-            (clicked)="payRequested.emit()"
-            class="block mt-3"
-          >
-            <app-icon name="dollar-sign" size="sm"></app-icon>
-            Opłać udział
-          </app-button>
+          <div class="mt-3">
+            <app-link-list [items]="paymentLinks()" (itemClicked)="payRequested.emit()" />
+          </div>
         </div>
         }
 
@@ -98,17 +90,9 @@ import {
               </p>
             </div>
           </div>
-          <app-button
-            appearance="soft"
-            color="primary"
-            [fullWidth]="true"
-            [loading]="loading()"
-            (clicked)="rejoinRequested.emit()"
-            class="block mt-3"
-          >
-            <app-icon name="user-plus" size="sm"></app-icon>
-            Dołącz ponownie
-          </app-button>
+          <div class="mt-3">
+            <app-link-list [items]="rejoinLinks()" (itemClicked)="rejoinRequested.emit()" />
+          </div>
         </div>
         }
         <!-- Participant options (hidden for withdrawn/rejected) -->
@@ -117,125 +101,10 @@ import {
           <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-2">
             Opcje uczestnika
           </p>
-          <div class="space-y-2">
-            <!-- Event chat -->
-            <div class="mb-3">
-              <app-button
-                appearance="outline"
-                color="neutral"
-                [fullWidth]="true"
-                alignment="start"
-                icon="message-circle"
-                [iconBackground]="true"
-                (clicked)="openChat.emit()"
-              >
-                <div class="text-left">
-                  <p class="text-sm font-semibold text-neutral-900">Czat grupowy</p>
-                  <p class="text-xs text-neutral-400">Porozmawiaj z uczestnikami wydarzenia</p>
-                </div>
-              </app-button>
-            </div>
-
-            <!-- Contact organizer -->
-            <div class="mb-3">
-              <app-button
-                appearance="outline"
-                color="neutral"
-                [fullWidth]="true"
-                alignment="start"
-                icon="user"
-                [iconBackground]="true"
-                (clicked)="contactOrganizer.emit()"
-              >
-                <div class="text-left">
-                  <p class="text-sm font-semibold text-neutral-900">
-                    Czat prywatny z organizatorem
-                  </p>
-                  <p class="text-xs text-neutral-400">
-                    Porozmawiaj z:
-                    {{ _event?.organizer?.displayName || 'organizatorem wydarzenia' }}
-                  </p>
-                </div>
-              </app-button>
-            </div>
-
-            <!-- Guest Management Section -->
-            @if (!hasGuests()) {
-            <!-- No guests yet - single full-width button -->
-            <div class="mb-3">
-              <app-button
-                appearance="soft"
-                color="success"
-                [fullWidth]="true"
-                alignment="start"
-                icon="user-plus"
-                [iconBackground]="true"
-                (clicked)="addGuestRequested.emit()"
-              >
-                <div class="text-left">
-                  <p class="text-sm font-semibold text-neutral-900">Dodaj osobę towarzyszącą</p>
-                  <p class="text-xs text-neutral-400">Zgłoś do wydarzenia także swego znajomego</p>
-                </div>
-              </app-button>
-            </div>
-            } @else {
-            <!-- Has guests - two buttons in one row -->
-            <div class="flex gap-2">
-              <div class="mb-3 flex justify-start">
-                <app-button
-                  appearance="outline"
-                  color="neutral"
-                  class="flex-[2]"
-                  alignment="start"
-                  icon="users"
-                  [iconBackground]="true"
-                  (clicked)="manageGuests.emit()"
-                >
-                  <div class="text-left">
-                    <p class="text-sm font-semibold text-neutral-900">
-                      Zarządzaj osobami towarzyszącymi
-                    </p>
-                    <p class="text-xs text-neutral-400">Przeglądaj i edytuj gości</p>
-                  </div>
-                </app-button>
-              </div>
-              <div class="mb-3 flex justify-start">
-                <app-button
-                  appearance="outline"
-                  color="neutral"
-                  class="flex-[1]"
-                  alignment="start"
-                  icon="user-plus"
-                  [iconBackground]="true"
-                  (clicked)="addGuestRequested.emit()"
-                >
-                  <div class="text-left">
-                    <p class="text-sm font-semibold text-neutral-900">Dodaj kolejną</p>
-                    <p class="text-xs text-neutral-400">Zaproś dodatkową osobę</p>
-                  </div>
-                </app-button>
-              </div>
-            </div>
-            }
-
-            <!-- Leave -->
-            <div class="mb-3">
-              <app-button
-                appearance="soft"
-                color="danger"
-                [fullWidth]="true"
-                alignment="start"
-                icon="user-x"
-                [iconBackground]="true"
-                (clicked)="leaveRequested.emit()"
-              >
-                <div class="text-left">
-                  <p class="text-sm font-semibold text-danger-400">Wypisz się z wydarzenia</p>
-                  <p class="text-xs text-neutral-400">Stracisz swoje miejsce</p>
-                </div>
-              </app-button>
-            </div>
-          </div>
+          <app-link-list
+            [items]="participantLinks()"
+            (itemClicked)="handleParticipantOption($event)"
+          />
         </div>
         }
       </div>
@@ -348,4 +217,111 @@ export class JoinConfirmOverlayComponent {
 
     return participants.filter((p) => p.isGuest && p.addedByUserId && p.wantsIn).length;
   });
+
+  readonly paymentLinks = computed<LinkListItem[]>(() => [
+    {
+      label: 'Opłać udział',
+      icon: 'dollar-sign',
+      value: 'pay',
+      color: 'primary',
+      iconColor: 'primary',
+      iconBackground: true,
+      loading: this.loading(),
+    },
+  ]);
+
+  readonly rejoinLinks = computed<LinkListItem[]>(() => [
+    {
+      label: 'Dołącz ponownie',
+      icon: 'user-plus',
+      value: 'rejoin',
+      color: 'primary',
+      iconColor: 'primary',
+      iconBackground: true,
+      loading: this.loading(),
+    },
+  ]);
+
+  readonly participantLinks = computed<LinkListItem[]>(() => {
+    const organizerName = this.event()?.organizer?.displayName || 'organizatorem wydarzenia';
+    const guestCount = this.guestCount();
+
+    const links: LinkListItem[] = [
+      {
+        label: 'Czat grupowy',
+        description: 'Porozmawiaj z uczestnikami wydarzenia',
+        icon: 'message-circle',
+        value: 'group-chat',
+        iconColor: 'info',
+        iconBackground: true,
+      },
+      {
+        label: 'Czat prywatny z organizatorem',
+        description: `Porozmawiaj z: ${organizerName}`,
+        icon: 'user',
+        value: 'organizer-chat',
+        iconColor: 'neutral',
+        iconBackground: true,
+      },
+    ];
+
+    if (this.hasGuests()) {
+      links.push({
+        label: `Osoby towarzyszące (${guestCount})`,
+        description: 'Przeglądaj i zarządzaj dodanymi gośćmi',
+        icon: 'users',
+        value: 'manage-guests',
+        iconColor: 'neutral',
+        iconBackground: true,
+      });
+    }
+
+    links.push({
+      label: this.hasGuests() ? 'Dodaj kolejną osobę towarzyszącą' : 'Dodaj osobę towarzyszącą',
+      description: 'Zgłoś do wydarzenia także swego znajomego',
+      icon: 'user-plus',
+      value: 'add-guest',
+      color: 'success',
+      iconColor: 'success',
+      iconBackground: true,
+    });
+
+    links.push({
+      label: 'Wypisz się z wydarzenia',
+      description: 'Stracisz swoje miejsce',
+      icon: 'user-x',
+      value: 'leave',
+      color: 'danger',
+      iconColor: 'danger',
+      iconBackground: true,
+    });
+
+    return links;
+  });
+
+  handleParticipantOption(item: LinkListItem): void {
+    if (item.value === 'group-chat') {
+      this.openChat.emit();
+      return;
+    }
+
+    if (item.value === 'organizer-chat') {
+      this.contactOrganizer.emit();
+      return;
+    }
+
+    if (item.value === 'manage-guests') {
+      this.manageGuests.emit();
+      return;
+    }
+
+    if (item.value === 'add-guest') {
+      this.addGuestRequested.emit();
+      return;
+    }
+
+    if (item.value === 'leave') {
+      this.leaveRequested.emit();
+    }
+  }
 }

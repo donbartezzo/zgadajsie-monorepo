@@ -1,19 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { IconComponent, IconName } from '../../../shared/ui/icon/icon.component';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
+import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
-
-interface ShareOption {
-  name: string;
-  icon: IconName;
-  iconColor: string;
-  action: () => void;
-}
 
 @Component({
   selector: 'app-share-overlay',
-  imports: [CommonModule, IconComponent, BottomOverlayComponent],
+  imports: [CommonModule, BottomOverlayComponent, LinkListComponent],
   template: `
     <app-bottom-overlay [open]="true" title="Udostępnij" (closed)="closed.emit()">
       <div class="space-y-3 max-w-lg mx-auto">
@@ -21,29 +14,7 @@ interface ShareOption {
           Przekaż informację o wydarzeniu znajomym jednym kliknięciem.
         </p>
 
-        <div
-          class="overflow-hidden rounded-2xl border border-neutral-200 divide-y divide-neutral-200"
-        >
-          @for (option of shareOptions; track option.name) {
-          <button
-            type="button"
-            (click)="option.action()"
-            class="group flex w-full items-center justify-between px-3 py-2.5 text-left transition-colors hover:bg-neutral-700"
-          >
-            <div class="flex items-center gap-3">
-              <app-icon [name]="option.icon" size="md" [ngClass]="option.iconColor" />
-              <span class="text-sm font-medium text-neutral-900">
-                {{ option.name }}
-              </span>
-            </div>
-            <app-icon
-              name="chevron-right"
-              size="sm"
-              class="text-neutral-400 transition-transform group-hover:translate-x-1"
-            />
-          </button>
-          }
-        </div>
+        <app-link-list [items]="shareLinks" (itemClicked)="handleShareClick($event)" />
       </div>
     </app-bottom-overlay>
   `,
@@ -55,38 +26,33 @@ export class ShareOverlayComponent {
 
   readonly closed = output<void>();
 
-  readonly shareOptions: ShareOption[] = [
-    {
-      name: 'Facebook',
-      icon: 'facebook',
-      iconColor: 'text-info-400',
-      action: () => this.shareToFacebook(),
-    },
-    {
-      name: 'X (Twitter)',
-      icon: 'x-twitter',
-      iconColor: 'text-neutral-900',
-      action: () => this.shareToTwitter(),
-    },
-    {
-      name: 'WhatsApp',
-      icon: 'whatsapp',
-      iconColor: 'text-success-400',
-      action: () => this.shareToWhatsApp(),
-    },
-    {
-      name: 'Email',
-      icon: 'mail',
-      iconColor: 'text-danger-300',
-      action: () => this.shareToEmail(),
-    },
-    {
-      name: 'Kopiuj link',
-      icon: 'copy',
-      iconColor: 'text-neutral-500',
-      action: () => this.copyLink(),
-    },
+  readonly shareLinks: LinkListItem[] = [
+    { label: 'Facebook', icon: 'facebook', value: 'facebook', iconColor: 'info' },
+    { label: 'X (Twitter)', icon: 'x-twitter', value: 'twitter', iconColor: 'neutral' },
+    { label: 'WhatsApp', icon: 'whatsapp', value: 'whatsapp', iconColor: 'success' },
+    { label: 'Email', icon: 'mail', value: 'email', iconColor: 'danger' },
+    { label: 'Kopiuj link', icon: 'copy', value: 'copy', iconColor: 'neutral' },
   ];
+
+  handleShareClick(item: LinkListItem): void {
+    switch (item.value) {
+      case 'facebook':
+        this.shareToFacebook();
+        break;
+      case 'twitter':
+        this.shareToTwitter();
+        break;
+      case 'whatsapp':
+        this.shareToWhatsApp();
+        break;
+      case 'email':
+        this.shareToEmail();
+        break;
+      case 'copy':
+        this.copyLink();
+        break;
+    }
+  }
 
   private getCurrentUrl(): string {
     return this.document.location.href;

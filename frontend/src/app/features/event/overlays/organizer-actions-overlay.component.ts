@@ -1,15 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { Router } from '@angular/router';
-import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
+import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 import { EventStatus } from '@zgadajsie/shared';
 import { isEventJoinable } from '../../../shared/utils/event-time-status.util';
 
 @Component({
   selector: 'app-organizer-actions-overlay',
-  imports: [IconComponent, BottomOverlayComponent],
+  imports: [BottomOverlayComponent, LinkListComponent],
   template: `
     <app-bottom-overlay
       [open]="open()"
@@ -20,94 +20,11 @@ import { isEventJoinable } from '../../../shared/utils/event-time-status.util';
       (closed)="closed.emit()"
     >
       <div class="space-y-4 max-w-lg mx-auto">
-        <!-- Organizer options -->
         <div>
           <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-2">
             Opcje organizatora
           </p>
-          <div class="space-y-2">
-            <!-- Manage event -->
-            <button
-              type="button"
-              class="flex w-full items-center gap-3 rounded-xl border border-neutral-100 bg-white p-3 text-left transition-colors hover:bg-neutral-50"
-              (click)="navigateManage()"
-            >
-              <div
-                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-100"
-              >
-                <app-icon name="settings" size="sm" class="text-primary-500"></app-icon>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-neutral-900">Zarządzaj wydarzeniem</p>
-                <p class="text-xs text-neutral-400">Uczestnicy, zarobki, moderacja</p>
-              </div>
-              <app-icon name="chevron-right" size="sm" class="text-neutral-300"></app-icon>
-            </button>
-
-            <!-- Edit event (always visible, disabled when not upcoming) -->
-            <button
-              type="button"
-              [class]="
-                'flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors ' +
-                (isUpcoming()
-                  ? 'border-neutral-100 bg-white hover:bg-neutral-50'
-                  : 'border-neutral-100 bg-neutral-50 opacity-50 cursor-not-allowed')
-              "
-              (click)="handleEdit()"
-            >
-              <div
-                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warning-50"
-              >
-                <app-icon name="edit" size="sm" class="text-warning-400"></app-icon>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-neutral-900">Edytuj wydarzenie</p>
-                <p class="text-xs text-neutral-400">Zmień tytuł, opis, datę i inne</p>
-              </div>
-              <app-icon name="chevron-right" size="sm" class="text-neutral-300"></app-icon>
-            </button>
-
-            <!-- Cancel event (always visible, disabled when already cancelled) -->
-            <button
-              type="button"
-              [class]="
-                'flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors ' +
-                (isCancelled()
-                  ? 'border-neutral-100 bg-neutral-50 opacity-50 cursor-not-allowed'
-                  : 'border-danger-100 bg-white hover:bg-danger-50')
-              "
-              (click)="handleCancel()"
-            >
-              <div
-                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-danger-50"
-              >
-                <app-icon name="x" size="sm" class="text-danger-400"></app-icon>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-neutral-900">Odwołaj wydarzenie</p>
-                <p class="text-xs text-neutral-400">Uczestnicy otrzymają zwrot</p>
-              </div>
-              <app-icon name="chevron-right" size="sm" class="text-neutral-300"></app-icon>
-            </button>
-
-            <!-- Conversations -->
-            <button
-              type="button"
-              class="flex w-full items-center gap-3 rounded-xl border border-neutral-100 bg-white p-3 text-left transition-colors hover:bg-neutral-50"
-              (click)="navigateConversations()"
-            >
-              <div
-                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-info-50"
-              >
-                <app-icon name="message-circle" size="sm" class="text-info-300"></app-icon>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-neutral-900">Konwersacje prywatne</p>
-                <p class="text-xs text-neutral-400">Wiadomości od uczestników</p>
-              </div>
-              <app-icon name="chevron-right" size="sm" class="text-neutral-300"></app-icon>
-            </button>
-          </div>
+          <app-link-list [items]="organizerLinks()" (itemClicked)="handleOrganizerAction($event)" />
         </div>
       </div>
     </app-bottom-overlay>
@@ -131,6 +48,65 @@ export class OrganizerActionsOverlayComponent {
   readonly isUpcoming = computed(() => isEventJoinable(this.eventStartsAt(), this.eventStatus()));
 
   readonly isCancelled = computed(() => this.eventStatus() === EventStatus.CANCELLED);
+
+  readonly organizerLinks = computed<LinkListItem[]>(() => [
+    {
+      label: 'Zarządzaj wydarzeniem',
+      description: 'Uczestnicy, zarobki, moderacja',
+      icon: 'settings',
+      value: 'manage',
+      iconColor: 'primary',
+      iconBackground: true,
+    },
+    {
+      label: 'Edytuj wydarzenie',
+      description: 'Zmień tytuł, opis, datę i inne',
+      icon: 'edit',
+      value: 'edit',
+      iconColor: 'warning',
+      iconBackground: true,
+      disabled: !this.isUpcoming(),
+    },
+    {
+      label: 'Odwołaj wydarzenie',
+      description: 'Uczestnicy otrzymają zwrot',
+      icon: 'x',
+      value: 'cancel',
+      color: 'danger',
+      iconColor: 'danger',
+      iconBackground: true,
+      disabled: this.isCancelled(),
+    },
+    {
+      label: 'Konwersacje prywatne',
+      description: 'Wiadomości od uczestników',
+      icon: 'message-circle',
+      value: 'conversations',
+      iconColor: 'info',
+      iconBackground: true,
+    },
+  ]);
+
+  handleOrganizerAction(item: LinkListItem): void {
+    if (item.value === 'manage') {
+      this.navigateManage();
+      return;
+    }
+
+    if (item.value === 'edit') {
+      this.handleEdit();
+      return;
+    }
+
+    if (item.value === 'cancel') {
+      this.handleCancel();
+      return;
+    }
+
+    if (item.value === 'conversations') {
+      this.navigateConversations();
+    }
+  }
 
   navigateManage(): void {
     this.overlays.close();
