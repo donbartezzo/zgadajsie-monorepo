@@ -64,12 +64,13 @@ Najważniejsze ustawienia projektu:
 - Unikaj zlepków typu `} } else {`; preferuj kaskadowy układ bloków.
 - Jeśli formatter pogarsza czytelność, najpierw uprość strukturę lub przenieś część logiki poza dany blok.
 - `prettier-ignore` stosuj tylko lokalnie i wyjątkowo.
+- Nie traktuj inline template DSL-i jako miejsca do „upakowania” logiki tylko dlatego, że technicznie mieszczą się w stringu lub template literal.
 
 W praktyce dotyczy to szczególnie DSL-i i template'ów, których Prettier nie formatuje idealnie:
 
 - preferuj jedną lokalną deklarację lub alias na linię
-- unikaj inline'owych gałęzi warunkowych, jeśli zawierają więcej niż prosty tekst lub pojedyncze wyrażenie
-- jeśli template zaczyna być zdominowany przez warunki, aliasy i formatowanie, przenieś część logiki do kodu źródłowego
+- Jeśli kod staje się nieczytelny po automatycznym formatowaniu (np. zbyt długie linie, skondensowane bloki), to sygnał, że należy uprościć strukturę lub wydzielić fragment do osobnej funkcji/komponentu.
+- Unikaj skondensowanych, jednoliniowych zapisów tam, gdzie pionowy układ poprawia czytelność (np. długie listy argumentów, zagnieżdżone warunki).
 
 ## Linting kodu (ESLint)
 

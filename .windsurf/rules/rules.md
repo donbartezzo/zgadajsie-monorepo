@@ -56,3 +56,4 @@ W odpowiedzi na każde polecenie/prompa napisz czy zostało wykonane zgodnie z z
 - Zawsze staraj się, aby wygenerowany kod był gotowy do użycia z Prettier, nawet jeśli w projekcie zostanie uruchomione automatyczne formatowanie.
 - Zanim zaczniesz implementację, ustal które pliki są źródłem prawdy dla danego obszaru.
 - Jeśli zmiana dotyczy kontraktów, typów, enumów lub statusów biznesowych, oceń wpływ na frontend, backend, `libs/` i dokumentację.
+- W Angularze nie trzymaj złożonych template'ów inline w `.ts`: jeśli szablon ma wiele `@let`, zagnieżdżone `@if` / `@else` / `@switch` albo formatter pogarsza czytelność, użyj `templateUrl` i osobnego `.html`.

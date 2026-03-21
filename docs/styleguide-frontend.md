@@ -36,6 +36,32 @@ W przypadku implementacji frontendowej priorytetowo uwzględniaj:
 - Unikaj głębokiego zagnieżdżania warunków - wydzielaj komponenty lub computed signals.
 - Jeśli w szablonie wielokrotnie używasz tego samego sygnału, najpierw przypisz go do zmiennej lokalnej, np. `@let _event = event();`.
 
+### Inline template (`template`) vs osobny plik (`templateUrl`)
+
+`template` w `.ts` jest dozwolony tylko wtedy, gdy template pozostaje mały i czytelny bez walki z formatterem.
+
+Preferuj pozostawienie template w `.ts`, gdy:
+
+- komponent jest mały i prezentacyjny
+- template ma najwyżej 1-2 proste warunki
+- liczba lokalnych aliasów `@let` jest mała (zwykle 0-2)
+- struktura nie wymaga wielopoziomowego `@if` / `@else` / `@switch`
+
+Preferuj `templateUrl` i osobny plik `.html`, gdy występuje którekolwiek z poniższych:
+
+- więcej niż kilka aliasów `@let`
+- zagnieżdżone bloki `@if` / `@else` / `@case`
+- sekcje z `@switch` albo rozbudowany `@for`
+- template przestaje być czytelny po formatowaniu Prettierem
+- trzeba ręcznie walczyć z łamaniem linii lub pionowym układem klamer
+
+Praktyczne reguły dla Angular control flow:
+
+- każda instrukcja `@let` ma być w osobnej linii
+- po bloku `@if` lub `@else` preferuj układ pionowy, nie jednoliniowy
+- nie trzymaj złożonego template inline tylko dlatego, że komponent ma mało kodu TypeScript
+- jeśli logika template dominuje nad klasą komponentu, przenieś template do `.html`
+
 ## Inputy, outputy i DI
 
 - Używaj `input()` i `input.required()` zamiast `@Input()`.

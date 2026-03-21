@@ -1,4 +1,5 @@
 import nx from '@nx/eslint-plugin';
+import angular from 'angular-eslint';
 import baseConfig from '../eslint.config.mjs';
 
 export default [
@@ -10,6 +11,7 @@ export default [
   },
   {
     files: ['**/*.ts'],
+    processor: angular.processInlineTemplates,
     rules: {
       '@angular-eslint/directive-selector': [
         'error',
