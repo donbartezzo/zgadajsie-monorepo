@@ -16,10 +16,10 @@ import { AuthService } from '../../../core/auth/auth.service';
         </p>
 
         @if (auth.isLoggedIn()) {
-        <section class="space-y-1.5">
-          <p class="px-1 text-xs font-semibold uppercase tracking-wide text-neutral-400">Konto</p>
-          <app-link-list [items]="accountLinks()" (itemClicked)="handleAccountClick($event)" />
-        </section>
+          <section class="space-y-1.5">
+            <p class="px-1 text-xs font-semibold uppercase tracking-wide text-neutral-400">Konto</p>
+            <app-link-list [items]="accountLinks()" (itemClicked)="handleAccountClick($event)" />
+          </section>
         }
 
         <section class="space-y-1.5">
@@ -45,6 +45,7 @@ export class SettingsOverlayComponent {
   ]);
 
   readonly infoLinks: LinkListItem[] = [
+    { label: 'Dołącz do nas', icon: 'users', value: '/join-us', iconColor: 'primary' },
     { label: 'FAQ', icon: 'search', value: '/faq', iconColor: 'info' },
     { label: 'Kontakt', icon: 'mail', value: '/contact', iconColor: 'warning' },
     { label: 'Polityka prywatności', icon: 'shield', value: '/privacy', iconColor: 'success' },

@@ -1,31 +1,29 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { StaticPageLayoutComponent } from '../../../../shared/layouts/static-page-layout/static-page-layout.component';
 
 @Component({
   selector: 'app-privacy',
-  imports: [CommonModule, StaticPageLayoutComponent],
+  imports: [CommonModule],
   template: `
-    <app-static-page-layout
-      variant="success"
-      heroIcon="shield"
-      title="Polityka Prywatności"
-      subtitle="Twoja prywatność jest naszym priorytetem. Dowiedz się jak chronimy Twoje dane."
-    >
-      <!-- Privacy Header -->
-      <div class="max-w-2xl mx-auto py-8">
-        <div class="bg-white rounded-2xl shadow-sm p-6">
-          <h2 class="text-xl font-bold text-neutral-900 mb-2">Polityka Prywatności</h2>
-          <p class="text-xs text-success-400 mb-6">Ostatnia aktualizacja: 15 lutego 2026</p>
-          <p class="text-sm text-neutral-600">
-            Niniejsza Polityka Prywatności opisuje, jak aplikacja"zgadajsie" zbiera, używa, chroni i
-            udostępnia Twoje dane osobowe w związku z korzystaniem z naszej platformy wydarzeń.
-          </p>
-        </div>
+    <div class="page-content">
+      <!-- Page Header -->
+      <div class="px-4 pt-6 pb-4">
+        <h1 class="text-2xl font-bold text-neutral-900 mb-2">Polityka Prywatności</h1>
+        <p class="text-sm text-neutral-600">
+          Twoja prywatność jest naszym priorytetem. Dowiedz się jak chronimy Twoje dane.
+        </p>
       </div>
 
-      <!-- Privacy Content - Full Display -->
-      <div class="max-w-2xl mx-auto pb-8">
+      <!-- Privacy Content -->
+      <div class="px-4 pb-8">
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+          <p class="text-xs text-success-400 mb-4">Ostatnia aktualizacja: 15 lutego 2026</p>
+          <p class="text-sm text-neutral-600">
+            Niniejsza Polityka Prywatności opisuje, jak aplikacja "zgadajsie" zbiera, używa, chroni
+            i udostępnia Twoje dane osobowe w związku z korzystaniem z naszej platformy wydarzeń.
+          </p>
+        </div>
+
         <div class="bg-white rounded-2xl shadow-sm p-6">
           <h2 class="text-xl font-bold mb-0">1. Administrator danych</h2>
           <p class="text-xs text-success-400 mb-6">Ostatnia aktualizacja: 15 lutego 2026</p>
@@ -172,7 +170,7 @@ import { StaticPageLayoutComponent } from '../../../../shared/layouts/static-pag
           </p>
         </div>
       </div>
-    </app-static-page-layout>
+    </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

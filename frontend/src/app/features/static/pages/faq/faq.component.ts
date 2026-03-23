@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
-import { StaticPageLayoutComponent } from '../../../../shared/layouts/static-page-layout/static-page-layout.component';
 
 interface FaqItem {
   question: string;
@@ -11,19 +10,22 @@ interface FaqItem {
 
 @Component({
   selector: 'app-faq',
-  imports: [CommonModule, FormsModule, IconComponent, StaticPageLayoutComponent],
+  imports: [CommonModule, FormsModule, IconComponent],
   template: `
-    <app-static-page-layout
-      variant="primary"
-      heroIcon="search"
-      title="Baza Wiedzy"
-      subtitle="Wyszukaj wszystko czego potrzebujesz na jednej stronie."
-    >
+    <div class="page-content">
       @let _searchQuery = searchQuery();
 
-      <!-- Search Box in Hero -->
-      <div heroContent class="max-w-md mx-auto">
-        <div class="relative bg-white rounded-lg shadow-lg">
+      <!-- Page Header -->
+      <div class="px-4 pt-6 pb-4">
+        <h1 class="text-2xl font-bold text-neutral-900 mb-2">Baza Wiedzy</h1>
+        <p class="text-sm text-neutral-600">
+          Wyszukaj wszystko czego potrzebujesz na jednej stronie.
+        </p>
+      </div>
+
+      <!-- Search Box -->
+      <div class="px-4 pb-4">
+        <div class="relative bg-white rounded-lg shadow-sm border border-neutral-200">
           <app-icon
             name="search"
             size="sm"
@@ -34,34 +36,33 @@ interface FaqItem {
             [(ngModel)]="searchQuery"
             (input)="filterItems()"
             placeholder="Szukaj tutaj..."
-            class="w-full pl-10 pr-10 py-3 border-0 rounded-lg text-neutral-900 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-info-400"
+            class="w-full pl-10 pr-10 py-3 border-0 rounded-lg text-neutral-900 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-400"
           />
           @if (_searchQuery) {
-          <button
-            (click)="clearSearch()"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-danger-300 hover:text-danger-500"
-          >
-            <app-icon name="x" size="sm" />
-          </button>
+            <button
+              (click)="clearSearch()"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-danger-400 hover:text-danger-500"
+            >
+              <app-icon name="x" size="sm" />
+            </button>
           }
         </div>
       </div>
 
       <!-- Search Results -->
       @if (filteredItems().length === 0 && _searchQuery) {
-      <div class="max-w-2xl mx-auto py-8">
-        <div class="text-center text-neutral-500">
-          <app-icon name="search" size="lg" class="mb-2 mx-auto text-neutral-400" />
-          <p>Brak wyników dla zapytania"{{ _searchQuery }}"</p>
+        <div class="px-4 py-8">
+          <div class="text-center text-neutral-500">
+            <app-icon name="search" size="lg" class="mb-2 mx-auto text-neutral-400" />
+            <p>Brak wyników dla zapytania "{{ _searchQuery }}"</p>
+          </div>
         </div>
-      </div>
       }
 
       <!-- FAQ Section -->
-      <div class="max-w-2xl mx-auto py-8">
+      <div class="px-4 pb-8">
         <div class="bg-white rounded-2xl shadow-sm p-6">
           <h2 class="text-xl font-bold text-neutral-900 mb-2">Często zadawane pytania</h2>
-          <p class="text-xs text-info-400 mb-6">Naprawdę, często pytamy o to.</p>
           <p class="text-sm text-neutral-600 mb-6">
             Otrzymujemy te pytania często, więc stworzyliśmy tę małą sekcję, aby pomóc Ci szybciej
             zidentyfikować to, czego potrzebujesz.
@@ -69,29 +70,29 @@ interface FaqItem {
 
           <div class="space-y-4">
             @for (item of filteredItems(); track item.question; let i = $index) {
-            <div class="border-t border-neutral-200 pt-4 first:border-0 first:pt-0">
-              <button
-                (click)="toggle(i)"
-                class="w-full flex items-center justify-between text-left font-semibold text-neutral-900 hover:text-info-400 transition-colors"
-              >
-                <span class="pr-2">{{ item.question }}</span>
-                <app-icon
-                  [name]="openIndex() === i ? 'chevron-up' : 'chevron-down'"
-                  size="sm"
-                  class="opacity-50 flex-shrink-0"
-                />
-              </button>
-              @if (openIndex() === i) {
-              <div class="mt-3 pb-3 text-sm text-neutral-600">
-                {{ item.answer }}
+              <div class="border-t border-neutral-200 pt-4 first:border-0 first:pt-0">
+                <button
+                  (click)="toggle(i)"
+                  class="w-full flex items-center justify-between text-left font-semibold text-neutral-900 hover:text-primary-500 transition-colors"
+                >
+                  <span class="pr-2">{{ item.question }}</span>
+                  <app-icon
+                    [name]="openIndex() === i ? 'chevron-up' : 'chevron-down'"
+                    size="sm"
+                    class="opacity-50 flex-shrink-0"
+                  />
+                </button>
+                @if (openIndex() === i) {
+                  <div class="mt-3 pb-3 text-sm text-neutral-600">
+                    {{ item.answer }}
+                  </div>
+                }
               </div>
-              }
-            </div>
             }
           </div>
         </div>
       </div>
-    </app-static-page-layout>
+    </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

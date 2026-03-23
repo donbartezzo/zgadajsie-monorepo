@@ -1,13 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-home',
-  imports: [RouterModule, ButtonComponent, IconComponent],
+  imports: [RouterModule, IconComponent],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css'],
+  styleUrls: ['./home.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent {}

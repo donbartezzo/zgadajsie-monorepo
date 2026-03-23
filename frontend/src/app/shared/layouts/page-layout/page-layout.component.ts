@@ -10,7 +10,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
-import { NavigationEnd, NavigationStart, Router, RouterLink } from '@angular/router';
+import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { IconComponent } from '../../ui/icon/icon.component';
@@ -24,6 +24,7 @@ import {
 import { BottomOverlaysService } from '../../overlay/ui/bottom-overlays/bottom-overlays.service';
 import { NotificationAlertComponent } from './notification/notification-alert/notification-alert.component';
 import { NotificationOverlayComponent } from './notification/notification-overlay/notification-overlay.component';
+import { FooterComponent } from '../../../layout/footer/footer.component';
 
 export interface RouteLayoutData {
   showHeader?: boolean;
@@ -31,17 +32,27 @@ export interface RouteLayoutData {
   showBorder?: boolean;
   centerContent?: boolean;
   contentClass?: string;
+  fullscreen?: boolean;
 }
+
+const DEFAULT_ROUTE_DATA: RouteLayoutData = {
+  showHeader: false,
+  showFooter: true,
+  showBorder: false,
+  centerContent: false,
+  contentClass: '',
+  fullscreen: false,
+};
 
 @Component({
   selector: 'app-page-layout',
   imports: [
     CommonModule,
-    RouterLink,
     IconComponent,
     NgTemplateOutlet,
     NotificationAlertComponent,
     NotificationOverlayComponent,
+    FooterComponent,
   ],
   templateUrl: './page-layout.component.html',
   host: { class: 'flex-1 flex flex-col' },
@@ -87,10 +98,10 @@ export class PageLayoutComponent {
       map(() => {
         let route = this.router.routerState.root;
         while (route.firstChild) route = route.firstChild;
-        return route.snapshot.data as RouteLayoutData;
+        return { ...DEFAULT_ROUTE_DATA, ...route.snapshot.data } as RouteLayoutData;
       }),
     ),
-    { initialValue: {} as RouteLayoutData },
+    { initialValue: DEFAULT_ROUTE_DATA },
   );
 
   @HostBinding('class')
@@ -100,8 +111,8 @@ export class PageLayoutComponent {
 
   private static readonly DEFAULT_COVER = 'assets/images/default-cover.png';
 
-  readonly showHeader = computed(() => this.routeData().showHeader !== false);
-  readonly showFooter = computed(() => this.routeData().showFooter !== false);
+  readonly showHeader = computed(() => this.routeData().showHeader === true);
+  readonly showFooter = computed(() => this.routeData().showFooter === true);
   readonly showBackButton = computed(() => !!this.breadcrumb.parentUrl());
 
   readonly notifBellState = computed<'off' | 'complete' | 'incomplete' | null>(() => {
@@ -121,7 +132,8 @@ export class PageLayoutComponent {
   });
   readonly centerContent = computed(() => this.routeData().centerContent === true);
   readonly contentClass = computed(() => this.routeData().contentClass || '');
-  readonly showBorder = computed(() => this.routeData().showBorder !== false);
+  readonly showBorder = computed(() => this.routeData().showBorder === true);
+  readonly isFullscreen = computed(() => this.routeData().fullscreen === true);
 
   // ── Derived from LayoutConfigService ──
   readonly hasCover = computed(() => true);

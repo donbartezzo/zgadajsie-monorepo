@@ -1,31 +1,29 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { StaticPageLayoutComponent } from '../../../../shared/layouts/static-page-layout/static-page-layout.component';
 
 @Component({
   selector: 'app-terms',
-  imports: [CommonModule, StaticPageLayoutComponent],
+  imports: [CommonModule],
   template: `
-    <app-static-page-layout
-      variant="info"
-      heroIcon="edit"
-      title="Regulamin Serwisu"
-      subtitle="Zasady korzystania z platformy ZgadajSię. Poznaj swoje prawa i obowiązki."
-    >
-      <!-- Terms Header -->
-      <div class="max-w-2xl mx-auto py-8">
-        <div class="bg-white rounded-2xl shadow-sm p-6">
-          <h2 class="text-xl font-bold text-neutral-900 mb-2">Regulamin Serwisu ZgadajSię</h2>
-          <p class="text-xs text-info-400 mb-6">Ostatnia aktualizacja: 15 lutego 2026</p>
+    <div class="page-content">
+      <!-- Page Header -->
+      <div class="px-4 pt-6 pb-4">
+        <h1 class="text-2xl font-bold text-neutral-900 mb-2">Regulamin Serwisu</h1>
+        <p class="text-sm text-neutral-600">
+          Zasady korzystania z platformy ZgadajSię. Poznaj swoje prawa i obowiązki.
+        </p>
+      </div>
+
+      <!-- Terms Content -->
+      <div class="px-4 pb-8">
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+          <p class="text-xs text-primary-400 mb-4">Ostatnia aktualizacja: 15 lutego 2026</p>
           <p class="text-sm text-neutral-600">
             Niniejszy regulamin określa zasady korzystania z platformy ZgadajSię, służącej do
             organizowania i uczestniczenia w lokalnych wydarzeniach sportowych.
           </p>
         </div>
-      </div>
 
-      <!-- Terms Content - Full Display -->
-      <div class="max-w-2xl mx-auto pb-8">
         <div class="bg-white rounded-2xl shadow-sm p-6">
           <h3 class="text-lg font-semibold mb-3">1. Postanowienia ogólne</h3>
           <p class="text-sm text-neutral-600 mb-6">
@@ -157,7 +155,7 @@ import { StaticPageLayoutComponent } from '../../../../shared/layouts/static-pag
           </p>
         </div>
       </div>
-    </app-static-page-layout>
+    </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
