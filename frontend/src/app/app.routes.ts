@@ -34,7 +34,7 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/home/pages/home/home.component').then((m) => m.HomeComponent),
     canActivate: [paymentRedirectGuard],
-    data: { title: '', centerContent: true, showFooter: false },
+    data: { title: 'Strona główna', centerContent: true, showFooter: false },
   },
 
   // ── Public: event list per city ──
@@ -43,7 +43,6 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/events/pages/events/events.component').then((m) => m.EventsComponent),
     data: {
-      title: 'Wydarzenia',
       breadcrumb: BREADCRUMB_TO_HOME,
       showBorder: true,
       showHeader: true,
@@ -59,7 +58,6 @@ export const appRoutes: Route[] = [
         (m) => m.EventAreaComponent,
       ),
     data: {
-      title: 'Wydarzenie',
       breadcrumb: { parent: '/w/:citySlug/:id', label: 'Wydarzenie' },
       showBorder: true,
       showHeader: true,
@@ -75,7 +73,6 @@ export const appRoutes: Route[] = [
             (m) => m.EventDetailComponent,
           ),
         data: {
-          title: 'Wydarzenie',
           breadcrumb: { parent: '/w/:citySlug', label: 'Lista wydarzeń' }, // Nadpisuje domyślne z parenta!
         },
       },
@@ -406,7 +403,12 @@ export const appRoutes: Route[] = [
     path: 'faq',
     loadComponent: () =>
       import('./features/static/pages/faq/faq.component').then((m) => m.FaqComponent),
-    data: { title: 'FAQ', breadcrumb: BREADCRUMB_TO_HOME, showHeader: true },
+    data: {
+      title: 'Baza Wiedzy',
+      subtitle: 'Często zadawane pytania. Jeśli nie znajdziesz odpowiedzi, skontaktuj się z nami.',
+      breadcrumb: BREADCRUMB_TO_HOME,
+      showHeader: true,
+    },
   },
   {
     path: 'join-us',
@@ -414,6 +416,7 @@ export const appRoutes: Route[] = [
       import('./features/static/pages/join-us/join-us.component').then((m) => m.JoinUsComponent),
     data: {
       title: 'Dołącz do nas',
+      subtitle: 'Szukamy osób do współpracy',
       breadcrumb: BREADCRUMB_TO_HOME,
       showHeader: true,
     },
@@ -422,14 +425,20 @@ export const appRoutes: Route[] = [
     path: 'contact',
     loadComponent: () =>
       import('./features/static/pages/contact/contact.component').then((m) => m.ContactComponent),
-    data: { title: 'Kontakt', breadcrumb: BREADCRUMB_TO_HOME, showHeader: true },
+    data: {
+      title: 'Skontaktuj się z nami',
+      subtitle: 'Zazwyczaj odpowiadamy w ciągu kilku godzin',
+      breadcrumb: BREADCRUMB_TO_HOME,
+      showHeader: true,
+    },
   },
   {
     path: 'privacy',
     loadComponent: () =>
       import('./features/static/pages/privacy/privacy.component').then((m) => m.PrivacyComponent),
     data: {
-      title: 'Polityka prywatności',
+      title: 'Polityka Prywatności',
+      subtitle: 'Twoja prywatność jest naszym priorytetem. Dowiedz się jak chronimy Twoje dane.',
       breadcrumb: BREADCRUMB_TO_HOME,
       showHeader: true,
     },
@@ -438,7 +447,12 @@ export const appRoutes: Route[] = [
     path: 'terms',
     loadComponent: () =>
       import('./features/static/pages/terms/terms.component').then((m) => m.TermsComponent),
-    data: { title: 'Regulamin', breadcrumb: BREADCRUMB_TO_HOME, showHeader: true },
+    data: {
+      title: 'Regulamin Serwisu',
+      subtitle: 'Zasady korzystania z platformy. Poznaj swoje prawa i obowiązki.',
+      breadcrumb: BREADCRUMB_TO_HOME,
+      showHeader: true,
+    },
   },
 
   // ── Dev-only: Design System ──

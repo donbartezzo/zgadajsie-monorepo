@@ -1,17 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  inject,
-  OnDestroy,
-  signal,
-  TemplateRef,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
-import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 
 interface FaqItem {
   question: string;
@@ -22,10 +12,6 @@ interface FaqItem {
   selector: 'app-faq',
   imports: [CommonModule, FormsModule, IconComponent],
   template: `
-    <ng-template #extraContent>
-      Często zadawane pytania. Jeśli nie znajdziesz odpowiedzi, skontaktuj się z nami.
-    </ng-template>
-
     <div class="p-4">
       @let _searchQuery = searchQuery();
 
@@ -102,11 +88,7 @@ interface FaqItem {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FaqComponent implements OnDestroy {
-  private readonly layoutConfig = inject(LayoutConfigService);
-
-  @ViewChild('extraContent', { static: true }) extraContent!: TemplateRef<unknown>;
-
+export class FaqComponent {
   readonly openIndex = signal<number | null>(null);
   readonly searchQuery = signal('');
   readonly filteredItems = signal<FaqItem[]>([]);
@@ -146,15 +128,6 @@ export class FaqComponent implements OnDestroy {
 
   constructor() {
     this.filteredItems.set(this.items);
-
-    effect(() => {
-      this.layoutConfig.titleText.set('Baza Wiedzy');
-      this.layoutConfig.extraTpl.set(this.extraContent);
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.layoutConfig.reset();
   }
 
   toggle(index: number): void {

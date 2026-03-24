@@ -34,6 +34,8 @@ export interface RouteLayoutData {
   centerContent?: boolean;
   contentClass?: string;
   heroVariant?: HeroVariant;
+  title?: string;
+  subtitle?: string;
 }
 
 const DEFAULT_ROUTE_DATA: RouteLayoutData = {
@@ -43,6 +45,8 @@ const DEFAULT_ROUTE_DATA: RouteLayoutData = {
   centerContent: false,
   contentClass: '',
   heroVariant: 'compact',
+  title: '',
+  subtitle: '',
 };
 
 @Component({
@@ -89,6 +93,8 @@ export class PageLayoutComponent {
     effect(() => {
       const data = this.routeData();
       this.layoutConfig.heroVariant.set(data.heroVariant || 'compact');
+      this.layoutConfig.title.set(data.title ?? '');
+      this.layoutConfig.subtitle.set(data.subtitle ?? '');
     });
 
     this.router.events.pipe(takeUntilDestroyed()).subscribe((e) => {
@@ -148,9 +154,11 @@ export class PageLayoutComponent {
   // ── Derived from LayoutConfigService ──
   readonly coverUrl = computed(() => this.layoutConfig.coverImageUrl());
   readonly heroHeight = computed(() => `var(--hero-${this.layoutConfig.heroVariant()}-h)`);
-  readonly hasTitle = computed(() => !!this.layoutConfig.titleText());
-  readonly hasExtra = computed(() => !!this.layoutConfig.extraTpl());
-  readonly hasSticky = computed(() => !!this.layoutConfig.stickyTpl());
+  readonly hasTitle = computed(() => !!this.layoutConfig.title());
+  readonly hasSubtitle = computed(
+    () => !!this.layoutConfig.subtitleTemplate() || !!this.layoutConfig.subtitle(),
+  );
+  readonly hasSticky = computed(() => !!this.layoutConfig.stickyTemplate());
 
   // ── Internal state ──
   readonly heroHidden = signal(false);

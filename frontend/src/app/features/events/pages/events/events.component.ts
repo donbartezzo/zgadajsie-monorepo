@@ -178,7 +178,7 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.citySlug = this.route.snapshot.paramMap.get('citySlug') ?? '';
-    this.layoutConfig.titleText.set('Wydarzenia');
+
     if (this.citySlug) {
       this.layoutConfig.coverImageUrl.set(`assets/covers/cities/${this.citySlug}.webp`);
     }
@@ -193,12 +193,16 @@ export class EventsComponent implements OnInit, OnDestroy {
         next: (res) => {
           this.events.update((prev) => [...prev, ...res.data]);
           if (!this.cityName() && res.data.length > 0) {
-            const name = res.data[0].city?.name || '';
-            const id = res.data[0].city?.id || '';
-            this.cityName.set(name);
-            this.cityId.set(id);
-            this.layoutConfig.titleText.set(name || 'Wydarzenia');
-            this.loadCitySubscription(id);
+            const city = res.data[0].city;
+
+            if (city) {
+              const name = city.name || '';
+              const id = city.id || '';
+              this.cityName.set(name);
+              this.cityId.set(id);
+              this.layoutConfig.title.set(name);
+              this.loadCitySubscription(id);
+            }
           }
           this.hasMore = res.data.length === 20;
           this.page++;

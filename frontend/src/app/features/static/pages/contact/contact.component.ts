@@ -1,27 +1,15 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  inject,
-  OnDestroy,
-  signal,
-  TemplateRef,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { environment } from '../../../../../environments/environment';
-import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 
 @Component({
   selector: 'app-contact',
   imports: [CommonModule, ReactiveFormsModule, IconComponent],
   template: `
-    <ng-template #extraContent>Zazwyczaj odpowiadamy w ciągu kilku godzin</ng-template>
-
     <div class="p-4">
       <!-- Success Message -->
       @if (formSent()) {
@@ -132,13 +120,10 @@ import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layo
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ContactComponent implements OnDestroy {
+export class ContactComponent {
   private readonly fb = inject(FormBuilder);
   private readonly http = inject(HttpClient);
   private readonly snackbar = inject(SnackbarService);
-  private readonly layoutConfig = inject(LayoutConfigService);
-
-  @ViewChild('extraContent', { static: true }) extraContent!: TemplateRef<unknown>;
 
   readonly isSubmitting = signal(false);
   readonly formSent = signal(false);
@@ -148,17 +133,6 @@ export class ContactComponent implements OnDestroy {
     email: ['', [Validators.required, Validators.email]],
     message: ['', [Validators.required]],
   });
-
-  constructor() {
-    effect(() => {
-      this.layoutConfig.titleText.set('Skontaktuj się z nami');
-      this.layoutConfig.extraTpl.set(this.extraContent);
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.layoutConfig.reset();
-  }
 
   onSubmit(): void {
     if (this.contactForm.invalid) {

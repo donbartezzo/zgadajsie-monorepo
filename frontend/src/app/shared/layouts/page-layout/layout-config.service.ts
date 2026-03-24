@@ -6,9 +6,10 @@ export interface LayoutConfig {
   coverImageUrl: string;
   heroVariant: HeroVariant;
   contentClass: string;
-  titleText: string;
-  extraTpl: TemplateRef<unknown> | null;
-  stickyTpl: TemplateRef<unknown> | null;
+  title: string;
+  subtitle: string;
+  subtitleTemplate: TemplateRef<unknown> | null;
+  stickyTemplate: TemplateRef<unknown> | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -18,9 +19,10 @@ export class LayoutConfigService {
   readonly coverImageUrl = signal('');
   readonly heroVariant = signal<HeroVariant>('compact');
   readonly contentClass = signal(LayoutConfigService.DEFAULT_CONTENT);
-  readonly titleText = signal('');
-  readonly extraTpl = signal<TemplateRef<unknown> | null>(null);
-  readonly stickyTpl = signal<TemplateRef<unknown> | null>(null);
+  readonly title = signal('');
+  readonly subtitle = signal('');
+  readonly subtitleTemplate = signal<TemplateRef<unknown> | null>(null);
+  readonly stickyTemplate = signal<TemplateRef<unknown> | null>(null);
   readonly isReady = signal(false);
 
   reset(): void {
@@ -28,9 +30,10 @@ export class LayoutConfigService {
     this.coverImageUrl.set('');
     this.heroVariant.set('compact');
     this.contentClass.set(LayoutConfigService.DEFAULT_CONTENT);
-    this.titleText.set('');
-    this.extraTpl.set(null);
-    this.stickyTpl.set(null);
+    this.title.set('');
+    this.subtitle.set('');
+    this.subtitleTemplate.set(null);
+    this.stickyTemplate.set(null);
   }
 
   markReady(): void {

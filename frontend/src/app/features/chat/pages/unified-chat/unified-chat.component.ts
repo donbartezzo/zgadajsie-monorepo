@@ -31,16 +31,16 @@ import { BaseChatComponent } from '../base-chat.component';
     </div>
 
     @if (showMembers()) {
-    <app-chat-members-overlay
-      [eventId]="eventId"
-      [isOrganizer]="isOrganizer()"
-      [organizerId]="organizerId()"
-      [otherUserId]="isPrivate ? otherUserId : ''"
-      [currentUserId]="currentUserId"
-      (closed)="showMembers.set(false)"
-      (memberBanned)="onMemberBanned($event)"
-      (memberUnbanned)="onMemberUnbanned($event)"
-    ></app-chat-members-overlay>
+      <app-chat-members-overlay
+        [eventId]="eventId"
+        [isOrganizer]="isOrganizer()"
+        [organizerId]="organizerId()"
+        [otherUserId]="isPrivate ? otherUserId : ''"
+        [currentUserId]="currentUserId"
+        (closed)="showMembers.set(false)"
+        (memberBanned)="onMemberBanned($event)"
+        (memberUnbanned)="onMemberUnbanned($event)"
+      ></app-chat-members-overlay>
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

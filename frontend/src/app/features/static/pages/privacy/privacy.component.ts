@@ -1,23 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  inject,
-  OnDestroy,
-  TemplateRef,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 
 @Component({
   selector: 'app-privacy',
   imports: [CommonModule],
   template: `
-    <ng-template #extraContent>
-      Twoja prywatność jest naszym priorytetem. Dowiedz się jak chronimy Twoje dane.
-    </ng-template>
-
     <div class="p-4">
       <!-- Privacy Content -->
       <div>
@@ -179,19 +166,4 @@ import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layo
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PrivacyComponent implements OnDestroy {
-  private readonly layoutConfig = inject(LayoutConfigService);
-
-  @ViewChild('extraContent', { static: true }) extraContent!: TemplateRef<unknown>;
-
-  constructor() {
-    effect(() => {
-      this.layoutConfig.titleText.set('Polityka Prywatności');
-      this.layoutConfig.extraTpl.set(this.extraContent);
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.layoutConfig.reset();
-  }
-}
+export class PrivacyComponent {}

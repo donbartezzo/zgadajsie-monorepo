@@ -50,7 +50,7 @@
       @if (hasSticky()) {
         <div class="fixed inset-x-0 top-2 z-[51] mx-auto flex max-w-app justify-end px-2 pointer-events-none">
           <div class="pointer-events-auto">
-            <ng-container *ngTemplateOutlet="layoutConfig.stickyTpl()"></ng-container>
+            <ng-container *ngTemplateOutlet="layoutConfig.stickyTemplate()"></ng-container>
           </div>
         </div>
       }
@@ -69,12 +69,16 @@
             <div class="flex-1 min-w-0 ml-10">
               @if (hasTitle()) {
                 <h1 class="text-sm font-bold text-neutral-900 truncate leading-tight">
-                  {{ layoutConfig.titleText() }}
+                  {{ layoutConfig.title() }}
                 </h1>
               }
-              @if (hasExtra()) {
+              @if (hasSubtitle()) {
                 <div class="m-0 mt-1 p-0 truncate text-[10px] text-neutral-500">
-                  <ng-container *ngTemplateOutlet="layoutConfig.extraTpl()"></ng-container>
+                  @if (layoutConfig.subtitleTemplate(); as subtitleTemplate) {
+                    <ng-container *ngTemplateOutlet="subtitleTemplate"></ng-container>
+                  } @else {
+                    {{ layoutConfig.subtitle() }}
+                  }
                 </div>
               }
             </div>
@@ -99,11 +103,15 @@
                 <div class="flex items-end gap-2">
                   <div class="flex-1 min-w-0">
                     @if (hasTitle()) {
-                      <h1 class="text-lg font-extrabold leading-tight">{{ layoutConfig.titleText() }}</h1>
+                      <h1 class="text-lg font-extrabold leading-tight">{{ layoutConfig.title() }}</h1>
                     }
-                    @if (hasExtra()) {
+                    @if (hasSubtitle()) {
                       <div class="mt-1">
-                        <ng-container *ngTemplateOutlet="layoutConfig.extraTpl()"></ng-container>
+                        @if (layoutConfig.subtitleTemplate(); as subtitleTemplate) {
+                          <ng-container *ngTemplateOutlet="subtitleTemplate"></ng-container>
+                        } @else {
+                          {{ layoutConfig.subtitle() }}
+                        }
                       </div>
                     }
                   </div>
@@ -142,12 +150,16 @@
                     <h1
                       class="ml-6 mr-6 text-xl font-extrabold flex items-center justify-center leading-none break-words min-h-[36px]"
                     >
-                      {{ layoutConfig.titleText() }}
+                      {{ layoutConfig.title() }}
                     </h1>
                   }
-                  @if (hasExtra()) {
+                  @if (hasSubtitle()) {
                     <div class="mt-2 text-sm text-white/90 leading-snug">
-                      <ng-container *ngTemplateOutlet="layoutConfig.extraTpl()"></ng-container>
+                      @if (layoutConfig.subtitleTemplate(); as subtitleTemplate) {
+                        <ng-container *ngTemplateOutlet="subtitleTemplate"></ng-container>
+                      } @else {
+                        {{ layoutConfig.subtitle() }}
+                      }
                     </div>
                   }
                 </div>
