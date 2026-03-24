@@ -1,7 +1,6 @@
 @let _showHeader = showHeader();
 @let _showFooter = showFooter();
 @let _heroHidden = heroHidden();
-@let _hasCover = hasCover();
 @let _centerContent = centerContent();
 @let _contentClass = contentClass();
 @let _showBorder = showBorder();
@@ -20,9 +19,32 @@
     <!-- ═══════════════════════════════════════════════════
    PAGE HEADER (hero area)
    ═══════════════════════════════════════════════════ -->
-    @if (_showHeader && _hasCover) {
+    @if (_showHeader) {
       <!-- Sentinel: always in DOM so IntersectionObserver works without infinite loop -->
       <div #heroSentinel class="relative w-full shrink-0" [style.height]="_heroHeight"></div>
+
+      <!-- Fixed back button - top-left corner, always visible when header shown -->
+      @if (showBackButton()) {
+        <div class="fixed inset-x-0 top-2 z-[51] mx-auto flex max-w-app justify-start px-2 pointer-events-none">
+          <div class="pointer-events-auto">
+            <button
+              type="button"
+              class="group/back inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-sm backdrop-blur-sm transition-all [@media(hover:hover)]:hover:bg-primary-500 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:shadow-md"
+              (click)="goBack()"
+              aria-label="Wróć"
+            >
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center leading-[0]">
+                <app-icon name="arrow-left" size="sm" color="neutral"></app-icon>
+              </span>
+              <span
+                class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 [@media(hover:hover)]:group-hover/back:max-w-48 [@media(hover:hover)]:group-hover/back:pr-3 [@media(hover:hover)]:group-hover/back:opacity-100"
+              >
+                <span class="block text-xs font-semibold leading-tight">{{ breadcrumb.parentLabel() }}</span>
+              </span>
+            </button>
+          </div>
+        </div>
+      }
 
       <!-- Fixed sticky - top-right corner, always visible when header shown -->
       @if (hasSticky()) {
@@ -37,18 +59,13 @@
       <div
         [ngClass]="[
           'fixed inset-x-0 top-0 mx-auto max-w-app',
-          _heroHidden ? 'z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-neutral-200' : 'z-0',
+          _heroHidden ? 'z-50 bg-white/95 backdrop-blur-md shadow-xl border-b border-neutral-200' : 'z-0',
         ]"
         [style.min-height]="_heroHidden ? 'auto' : _heroHeight"
       >
         @if (_heroHidden) {
           <!-- Mini-bar content (after scroll) -->
-          <div class="flex items-center gap-2 px-3 py-1">
-            @if (showBackButton()) {
-              <ng-container
-                *ngTemplateOutlet="backButtonTpl; context: { $implicit: breadcrumb.parentLabel() }"
-              ></ng-container>
-            }
+          <div class="flex items-center gap-2 px-3 min-h-[52px]">
             <div class="flex-1 min-w-0 ml-10">
               @if (hasTitle()) {
                 <h1 class="text-sm font-bold text-neutral-900 truncate leading-tight">
@@ -56,7 +73,7 @@
                 </h1>
               }
               @if (hasExtra()) {
-                <div class="m-0 p-0 truncate text-[10px] text-neutral-500">
+                <div class="m-0 mt-1 p-0 truncate text-[10px] text-neutral-500">
                   <ng-container *ngTemplateOutlet="layoutConfig.extraTpl()"></ng-container>
                 </div>
               }
@@ -64,17 +81,15 @@
           </div>
         } @else {
           <!-- Full hero content (before scroll) -->
-          <!-- Back button on hero -->
-          @if (showBackButton()) {
-            <ng-container
-              *ngTemplateOutlet="backButtonTpl; context: { $implicit: breadcrumb.parentLabel() }"
-            ></ng-container>
-          }
 
-          @switch (heroVariant()) {
+          @switch (layoutConfig.heroVariant()) {
             @case ('extended') {
               <!-- Cover image -->
-              <img [src]="coverUrl()" alt="" class="absolute inset-0 h-full w-full object-cover" />
+              @if (coverImageValid()) {
+                <img [src]="coverUrl()" alt="" class="absolute inset-0 h-full w-full object-cover" />
+              } @else {
+                <ng-container *ngTemplateOutlet="fallbackBackground"></ng-container>
+              }
 
               <!-- Dark gradient overlay -->
               <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
@@ -118,21 +133,20 @@
               </div>
             }
             @default {
-              <div class="absolute inset-0 h-full w-full bg-primary-600"></div>
+              <ng-container *ngTemplateOutlet="fallbackBackground"></ng-container>
 
               <!-- Bottom title + extra content on hero -->
-              <div
-                class="relative flex flex-col items-center p-4 text-white text-center"
-                [style.min-height]="_heroHeight"
-              >
+              <div class="relative flex flex-col p-2 text-white text-center" [style.min-height]="_heroHeight">
                 <div class="w-full max-w-full">
                   @if (hasTitle()) {
-                    <h1 class="ml-6 mr-6 text-xl font-extrabold leading-tight break-words min-h-[24px]">
+                    <h1
+                      class="ml-6 mr-6 text-xl font-extrabold flex items-center justify-center leading-none break-words min-h-[36px]"
+                    >
                       {{ layoutConfig.titleText() }}
                     </h1>
                   }
                   @if (hasExtra()) {
-                    <div class="mt-2 mb-2 text-sm text-white/90">
+                    <div class="mt-2 text-sm text-white/90 leading-snug">
                       <ng-container *ngTemplateOutlet="layoutConfig.extraTpl()"></ng-container>
                     </div>
                   }
@@ -193,20 +207,6 @@
 <!-- ═══════════════════════════════════════════════════
    BACK BUTTON TEMPLATE (reused in mini-bar and hero)
    ═══════════════════════════════════════════════════ -->
-<ng-template #backButtonTpl let-label>
-  <button
-    type="button"
-    class="group/back absolute left-2 top-2 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-sm backdrop-blur-sm transition-all [@media(hover:hover)]:hover:bg-primary-500 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:shadow-md"
-    (click)="goBack()"
-    aria-label="Wróć"
-  >
-    <span class="flex h-9 w-9 shrink-0 items-center justify-center leading-[0]">
-      <app-icon name="arrow-left" size="sm" color="neutral"></app-icon>
-    </span>
-    <span
-      class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 [@media(hover:hover)]:group-hover/back:max-w-48 [@media(hover:hover)]:group-hover/back:pr-3 [@media(hover:hover)]:group-hover/back:opacity-100"
-    >
-      <span class="block text-xs font-semibold leading-tight">{{ label }}</span>
-    </span>
-  </button>
+<ng-template #fallbackBackground>
+  <div class="absolute inset-0 h-full w-full bg-primary-600"></div>
 </ng-template>

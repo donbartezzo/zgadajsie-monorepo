@@ -33,7 +33,6 @@ export interface RouteLayoutData {
   showBorder?: boolean;
   centerContent?: boolean;
   contentClass?: string;
-  fullscreen?: boolean;
   heroVariant?: HeroVariant;
 }
 
@@ -43,7 +42,6 @@ const DEFAULT_ROUTE_DATA: RouteLayoutData = {
   showBorder: false,
   centerContent: false,
   contentClass: '',
-  fullscreen: false,
   heroVariant: 'compact',
 };
 
@@ -93,24 +91,30 @@ export class PageLayoutComponent {
       this.layoutConfig.heroVariant.set(data.heroVariant || 'compact');
     });
 
-    this.router.events
-      .pipe(
-        filter((e) => e instanceof NavigationStart),
-        takeUntilDestroyed(),
-      )
-      .subscribe(() => {
+    this.router.events.pipe(takeUntilDestroyed()).subscribe((e) => {
+      if (e instanceof NavigationStart) {
         this.layoutConfig.reset();
-      });
-
-    this.router.events
-      .pipe(
-        filter((e) => e instanceof NavigationEnd),
-        takeUntilDestroyed(),
-      )
-      .subscribe(() => {
+      }
+      if (e instanceof NavigationEnd) {
         // setTimeout ensures Angular CD completes first → child effects configure layout
         setTimeout(() => this.layoutConfig.markReady());
-      });
+      }
+    });
+
+    // ── Validate cover image URL ──
+    effect(() => {
+      const url = this.coverUrl();
+      if (!url) {
+        this.coverImageValid.set(false);
+        return;
+      }
+
+      // Test if image exists by trying to load it
+      const img = new Image();
+      img.onload = () => this.coverImageValid.set(true);
+      img.onerror = () => this.coverImageValid.set(false);
+      img.src = url;
+    });
   }
 
   @HostBinding('class')
@@ -140,19 +144,17 @@ export class PageLayoutComponent {
   readonly centerContent = computed(() => this.routeData().centerContent === true);
   readonly contentClass = computed(() => this.routeData().contentClass || '');
   readonly showBorder = computed(() => this.routeData().showBorder === true);
-  readonly isFullscreen = computed(() => this.routeData().fullscreen === true);
 
   // ── Derived from LayoutConfigService ──
-  readonly hasCover = computed(() => true);
-  readonly coverUrl = computed(() => !!this.layoutConfig.coverImageUrl());
-  readonly heroVariant = computed(() => this.layoutConfig.heroVariant());
-  readonly heroHeight = computed(() => `var(--hero-${this.heroVariant()}-h)`); // `var(--hero-compact-h)`
+  readonly coverUrl = computed(() => this.layoutConfig.coverImageUrl());
+  readonly heroHeight = computed(() => `var(--hero-${this.layoutConfig.heroVariant()}-h)`);
   readonly hasTitle = computed(() => !!this.layoutConfig.titleText());
   readonly hasExtra = computed(() => !!this.layoutConfig.extraTpl());
   readonly hasSticky = computed(() => !!this.layoutConfig.stickyTpl());
 
   // ── Internal state ──
   readonly heroHidden = signal(false);
+  readonly coverImageValid = signal(false);
   readonly currentYear = new Date().getFullYear();
 
   private observer: IntersectionObserver | null = null;
