@@ -5,6 +5,7 @@ import {
   DestroyRef,
   ElementRef,
   HostBinding,
+  effect,
   inject,
   signal,
   ViewChild,
@@ -14,7 +15,7 @@ import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { IconComponent } from '../../ui/icon/icon.component';
-import { LayoutConfigService } from './layout-config.service';
+import { LayoutConfigService, HeroVariant } from './layout-config.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import {
@@ -33,6 +34,7 @@ export interface RouteLayoutData {
   centerContent?: boolean;
   contentClass?: string;
   fullscreen?: boolean;
+  heroVariant?: HeroVariant;
 }
 
 const DEFAULT_ROUTE_DATA: RouteLayoutData = {
@@ -42,6 +44,7 @@ const DEFAULT_ROUTE_DATA: RouteLayoutData = {
   centerContent: false,
   contentClass: '',
   fullscreen: false,
+  heroVariant: 'compact',
 };
 
 @Component({
@@ -67,8 +70,28 @@ export class PageLayoutComponent {
   readonly layoutConfig = inject(LayoutConfigService);
   readonly breadcrumb = inject(BreadcrumbService);
 
+  // ── Route data → layout flags ──
+  private readonly routeData = toSignal(
+    this.router.events.pipe(
+      filter((e) => e instanceof NavigationEnd),
+      startWith(undefined),
+      map(() => {
+        let route = this.router.routerState.root;
+        while (route.firstChild) route = route.firstChild;
+        return { ...DEFAULT_ROUTE_DATA, ...route.snapshot.data } as RouteLayoutData;
+      }),
+    ),
+    { initialValue: DEFAULT_ROUTE_DATA },
+  );
+
   constructor() {
     this.destroyRef.onDestroy(() => this.observer?.disconnect());
+
+    // ── Sync route data to LayoutConfigService ──
+    effect(() => {
+      const data = this.routeData();
+      this.layoutConfig.heroVariant.set(data.heroVariant || 'compact');
+    });
 
     this.router.events
       .pipe(
@@ -90,26 +113,10 @@ export class PageLayoutComponent {
       });
   }
 
-  // ── Route data → layout flags ──
-  private readonly routeData = toSignal(
-    this.router.events.pipe(
-      filter((e) => e instanceof NavigationEnd),
-      startWith(undefined),
-      map(() => {
-        let route = this.router.routerState.root;
-        while (route.firstChild) route = route.firstChild;
-        return { ...DEFAULT_ROUTE_DATA, ...route.snapshot.data } as RouteLayoutData;
-      }),
-    ),
-    { initialValue: DEFAULT_ROUTE_DATA },
-  );
-
   @HostBinding('class')
   get dynamicClass(): string {
     return this.contentClass();
   }
-
-  private static readonly DEFAULT_COVER = 'assets/images/default-cover.png';
 
   readonly showHeader = computed(() => this.routeData().showHeader === true);
   readonly showFooter = computed(() => this.routeData().showFooter === true);
@@ -137,9 +144,9 @@ export class PageLayoutComponent {
 
   // ── Derived from LayoutConfigService ──
   readonly hasCover = computed(() => true);
-  readonly coverUrl = computed(
-    () => this.layoutConfig.coverImageUrl() || PageLayoutComponent.DEFAULT_COVER,
-  );
+  readonly coverUrl = computed(() => !!this.layoutConfig.coverImageUrl());
+  readonly heroVariant = computed(() => this.layoutConfig.heroVariant());
+  readonly heroHeight = computed(() => `var(--hero-${this.heroVariant()}-h)`); // `var(--hero-compact-h)`
   readonly hasTitle = computed(() => !!this.layoutConfig.titleText());
   readonly hasExtra = computed(() => !!this.layoutConfig.extraTpl());
   readonly hasSticky = computed(() => !!this.layoutConfig.stickyTpl());

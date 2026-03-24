@@ -47,6 +47,7 @@ export const appRoutes: Route[] = [
       breadcrumb: BREADCRUMB_TO_HOME,
       showBorder: true,
       showHeader: true,
+      heroVariant: 'extended',
     },
   },
 
@@ -62,6 +63,7 @@ export const appRoutes: Route[] = [
       breadcrumb: { parent: '/w/:citySlug/:id', label: 'Wydarzenie' },
       showBorder: true,
       showHeader: true,
+      heroVariant: 'extended',
     },
     resolve: { event: eventResolver },
     children: [
@@ -404,7 +406,7 @@ export const appRoutes: Route[] = [
     path: 'faq',
     loadComponent: () =>
       import('./features/static/pages/faq/faq.component').then((m) => m.FaqComponent),
-    data: { title: 'FAQ', breadcrumb: BREADCRUMB_TO_HOME },
+    data: { title: 'FAQ', breadcrumb: BREADCRUMB_TO_HOME, showHeader: true },
   },
   {
     path: 'join-us',
@@ -413,13 +415,14 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Dołącz do nas',
       breadcrumb: BREADCRUMB_TO_HOME,
+      showHeader: true,
     },
   },
   {
     path: 'contact',
     loadComponent: () =>
       import('./features/static/pages/contact/contact.component').then((m) => m.ContactComponent),
-    data: { title: 'Kontakt', breadcrumb: BREADCRUMB_TO_HOME },
+    data: { title: 'Kontakt', breadcrumb: BREADCRUMB_TO_HOME, showHeader: true },
   },
   {
     path: 'privacy',
@@ -428,13 +431,14 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Polityka prywatności',
       breadcrumb: BREADCRUMB_TO_HOME,
+      showHeader: true,
     },
   },
   {
     path: 'terms',
     loadComponent: () =>
       import('./features/static/pages/terms/terms.component').then((m) => m.TermsComponent),
-    data: { title: 'Regulamin', breadcrumb: BREADCRUMB_TO_HOME },
+    data: { title: 'Regulamin', breadcrumb: BREADCRUMB_TO_HOME, showHeader: true },
   },
 
   // ── Dev-only: Design System ──

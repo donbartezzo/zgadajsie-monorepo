@@ -5,6 +5,7 @@
 @let _centerContent = centerContent();
 @let _contentClass = contentClass();
 @let _showBorder = showBorder();
+@let _heroHeight = heroHeight();
 @let _isReady = layoutConfig.isReady();
 
 <!-- ═══════════════════════════════════════════════════
@@ -21,7 +22,7 @@
    ═══════════════════════════════════════════════════ -->
     @if (_showHeader && _hasCover) {
       <!-- Sentinel: always in DOM so IntersectionObserver works without infinite loop -->
-      <div #heroSentinel class="relative w-full shrink-0" style="height: var(--hero-h)"></div>
+      <div #heroSentinel class="relative w-full shrink-0" [style.height]="_heroHeight"></div>
 
       <!-- Fixed sticky - top-right corner, always visible when header shown -->
       @if (hasSticky()) {
@@ -38,38 +39,24 @@
           'fixed inset-x-0 top-0 mx-auto max-w-app',
           _heroHidden ? 'z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-neutral-200' : 'z-0',
         ]"
-        [style.height]="_heroHidden ? 'auto' : 'var(--hero-h)'"
+        [style.min-height]="_heroHidden ? 'auto' : _heroHeight"
       >
         @if (_heroHidden) {
           <!-- Mini-bar content (after scroll) -->
           <div class="flex items-center gap-2 px-3 py-1">
             @if (showBackButton()) {
-              <div class="relative h-7 w-7 shrink-0">
-                <button
-                  type="button"
-                  class="group/back absolute left-0 top-0 z-10 inline-flex h-7 shrink-0 items-center rounded-full bg-neutral-100 text-neutral-700 transition-all [@media(hover:hover)]:hover:bg-primary-500 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:shadow-md"
-                  (click)="goBack()"
-                  aria-label="Wróć"
-                >
-                  <span class="flex h-7 w-7 shrink-0 items-center justify-center leading-[0]">
-                    <app-icon name="arrow-left" size="xs" color="neutral"></app-icon>
-                  </span>
-                  <span
-                    class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 [@media(hover:hover)]:group-hover/back:max-w-44 [@media(hover:hover)]:group-hover/back:pr-2.5 [@media(hover:hover)]:group-hover/back:opacity-100"
-                  >
-                    <span class="block text-[10px] font-semibold leading-tight">{{ breadcrumb.parentLabel() }}</span>
-                  </span>
-                </button>
-              </div>
+              <ng-container
+                *ngTemplateOutlet="backButtonTpl; context: { $implicit: breadcrumb.parentLabel() }"
+              ></ng-container>
             }
-            <div class="flex-1 min-w-0">
+            <div class="flex-1 min-w-0 ml-10">
               @if (hasTitle()) {
                 <h1 class="text-sm font-bold text-neutral-900 truncate leading-tight">
                   {{ layoutConfig.titleText() }}
                 </h1>
               }
               @if (hasExtra()) {
-                <div class="text-[10px] text-neutral-500 mt-0.5 truncate">
+                <div class="m-0 p-0 truncate text-[10px] text-neutral-500">
                   <ng-container *ngTemplateOutlet="layoutConfig.extraTpl()"></ng-container>
                 </div>
               }
@@ -77,66 +64,82 @@
           </div>
         } @else {
           <!-- Full hero content (before scroll) -->
-
-          <!-- Cover image -->
-          <img [src]="coverUrl()" alt="" class="absolute inset-0 h-full w-full object-cover" />
-
-          <!-- Dark gradient overlay -->
-          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
-
           <!-- Back button on hero -->
           @if (showBackButton()) {
-            <button
-              type="button"
-              class="group/back absolute left-3 top-3 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-sm backdrop-blur-sm transition-all [@media(hover:hover)]:hover:bg-primary-500 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:shadow-md"
-              (click)="goBack()"
-              aria-label="Wróć"
-            >
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center leading-[0]">
-                <app-icon name="arrow-left" size="sm" color="neutral"></app-icon>
-              </span>
-              <span
-                class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 [@media(hover:hover)]:group-hover/back:max-w-48 [@media(hover:hover)]:group-hover/back:pr-3 [@media(hover:hover)]:group-hover/back:opacity-100"
-              >
-                <!-- <span class="block text-[10px] font-normal leading-tight opacity-80">Wróć do</span> -->
-                <span class="block text-xs font-semibold leading-tight">{{ breadcrumb.parentLabel() }}</span>
-              </span>
-            </button>
+            <ng-container
+              *ngTemplateOutlet="backButtonTpl; context: { $implicit: breadcrumb.parentLabel() }"
+            ></ng-container>
           }
 
-          <!-- Bottom title + extra content on hero -->
-          <div class="absolute inset-x-0 bottom-0 p-4 mb-6 text-white">
-            <div class="flex items-end gap-2">
-              <div class="flex-1 min-w-0">
-                @if (hasTitle()) {
-                  <h1 class="text-lg font-extrabold leading-tight">{{ layoutConfig.titleText() }}</h1>
-                }
-                @if (hasExtra()) {
-                  <div class="mt-1">
-                    <ng-container *ngTemplateOutlet="layoutConfig.extraTpl()"></ng-container>
-                  </div>
-                }
-              </div>
+          @switch (heroVariant()) {
+            @case ('extended') {
+              <!-- Cover image -->
+              <img [src]="coverUrl()" alt="" class="absolute inset-0 h-full w-full object-cover" />
 
-              @if (notifBellState(); as bellState) {
-                <button
-                  type="button"
-                  class="group/notif absolute right-3 bottom-3 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-sm backdrop-blur-sm transition-all [@media(hover:hover)]:hover:bg-primary-500 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:shadow-md"
-                  (click)="onNotifBellClick()"
-                  aria-label="Powiadomienia"
-                >
-                  <span
-                    class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 [@media(hover:hover)]:group-hover/notif:max-w-48 [@media(hover:hover)]:group-hover/notif:pl-3 [@media(hover:hover)]:group-hover/notif:opacity-100"
-                  >
-                    <span class="block text-xs font-semibold leading-tight"> Powiadomienia </span>
-                  </span>
-                  <span class="flex h-9 w-9 shrink-0 items-center justify-center leading-[0]">
-                    <app-icon [name]="bellState === 'off' ? 'bell-off' : 'bell'" size="sm" color="neutral"></app-icon>
-                  </span>
-                </button>
-              }
-            </div>
-          </div>
+              <!-- Dark gradient overlay -->
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
+
+              <!-- Bottom title + extra content on hero -->
+              <div class="absolute inset-x-0 bottom-0 p-4 mb-6 text-white">
+                <div class="flex items-end gap-2">
+                  <div class="flex-1 min-w-0">
+                    @if (hasTitle()) {
+                      <h1 class="text-lg font-extrabold leading-tight">{{ layoutConfig.titleText() }}</h1>
+                    }
+                    @if (hasExtra()) {
+                      <div class="mt-1">
+                        <ng-container *ngTemplateOutlet="layoutConfig.extraTpl()"></ng-container>
+                      </div>
+                    }
+                  </div>
+
+                  @if (notifBellState(); as bellState) {
+                    <button
+                      type="button"
+                      class="group/notif absolute right-3 bottom-3 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-sm backdrop-blur-sm transition-all [@media(hover:hover)]:hover:bg-primary-500 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:shadow-md"
+                      (click)="onNotifBellClick()"
+                      aria-label="Powiadomienia"
+                    >
+                      <span
+                        class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 [@media(hover:hover)]:group-hover/notif:max-w-48 [@media(hover:hover)]:group-hover/notif:pl-3 [@media(hover:hover)]:group-hover/notif:opacity-100"
+                      >
+                        <span class="block text-xs font-semibold leading-tight"> Powiadomienia </span>
+                      </span>
+                      <span class="flex h-9 w-9 shrink-0 items-center justify-center leading-[0]">
+                        <app-icon
+                          [name]="bellState === 'off' ? 'bell-off' : 'bell'"
+                          size="sm"
+                          color="neutral"
+                        ></app-icon>
+                      </span>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+            @default {
+              <div class="absolute inset-0 h-full w-full bg-primary-600"></div>
+
+              <!-- Bottom title + extra content on hero -->
+              <div
+                class="relative flex flex-col items-center p-4 text-white text-center"
+                [style.min-height]="_heroHeight"
+              >
+                <div class="w-full max-w-full">
+                  @if (hasTitle()) {
+                    <h1 class="ml-6 mr-6 text-xl font-extrabold leading-tight break-words min-h-[24px]">
+                      {{ layoutConfig.titleText() }}
+                    </h1>
+                  }
+                  @if (hasExtra()) {
+                    <div class="mt-2 mb-2 text-sm text-white/90">
+                      <ng-container *ngTemplateOutlet="layoutConfig.extraTpl()"></ng-container>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          }
         }
       </div>
     }
@@ -186,3 +189,24 @@
     }
   </div>
 }
+
+<!-- ═══════════════════════════════════════════════════
+   BACK BUTTON TEMPLATE (reused in mini-bar and hero)
+   ═══════════════════════════════════════════════════ -->
+<ng-template #backButtonTpl let-label>
+  <button
+    type="button"
+    class="group/back absolute left-2 top-2 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-sm backdrop-blur-sm transition-all [@media(hover:hover)]:hover:bg-primary-500 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:shadow-md"
+    (click)="goBack()"
+    aria-label="Wróć"
+  >
+    <span class="flex h-9 w-9 shrink-0 items-center justify-center leading-[0]">
+      <app-icon name="arrow-left" size="sm" color="neutral"></app-icon>
+    </span>
+    <span
+      class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 [@media(hover:hover)]:group-hover/back:max-w-48 [@media(hover:hover)]:group-hover/back:pr-3 [@media(hover:hover)]:group-hover/back:opacity-100"
+    >
+      <span class="block text-xs font-semibold leading-tight">{{ label }}</span>
+    </span>
+  </button>
+</ng-template>

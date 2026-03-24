@@ -1,25 +1,30 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  OnDestroy,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 
 @Component({
   selector: 'app-terms',
   imports: [CommonModule],
   template: `
-    <div class="page-content">
-      <!-- Page Header -->
-      <div class="px-4 pt-6 pb-4">
-        <h1 class="text-2xl font-bold text-neutral-900 mb-2">Regulamin Serwisu</h1>
-        <p class="text-sm text-neutral-600">
-          Zasady korzystania z platformy ZgadajSię. Poznaj swoje prawa i obowiązki.
-        </p>
-      </div>
+    <ng-template #extraContent>
+      Zasady korzystania z platformy. Poznaj swoje prawa i obowiązki.
+    </ng-template>
 
+    <div class="p-4">
       <!-- Terms Content -->
-      <div class="px-4 pb-8">
+      <div>
         <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
           <p class="text-xs text-primary-400 mb-4">Ostatnia aktualizacja: 15 lutego 2026</p>
           <p class="text-sm text-neutral-600">
-            Niniejszy regulamin określa zasady korzystania z platformy ZgadajSię, służącej do
+            Niniejszy regulamin określa zasady korzystania z platformy ZgadajSie.pl, służącej do
             organizowania i uczestniczenia w lokalnych wydarzeniach sportowych.
           </p>
         </div>
@@ -27,7 +32,7 @@ import { CommonModule } from '@angular/common';
         <div class="bg-white rounded-2xl shadow-sm p-6">
           <h3 class="text-lg font-semibold mb-3">1. Postanowienia ogólne</h3>
           <p class="text-sm text-neutral-600 mb-6">
-            Niniejszy regulamin określa zasady korzystania z platformy ZgadajSię, służącej do
+            Niniejszy regulamin określa zasady korzystania z platformy ZgadajSie.pl, służącej do
             organizowania i uczestniczenia w lokalnych wydarzeniach sportowych. Korzystanie z
             platformy jest równoznaczne z akceptacją postanowień regulaminu.
           </p>
@@ -41,7 +46,7 @@ import { CommonModule } from '@angular/common';
 
             <strong>2.2. Bezpieczeństwo konta</strong><br />
             Użytkownik jest odpowiedzialny za utrzymanie bezpieczeństwa swojego konta, w tym za
-            ochronę hasła przed dostępem osób trzecich. ZgadajSię nie ponosi odpowiedzialności za
+            ochronę hasła przed dostępem osób trzecich. ZgadajSie.pl nie ponosi odpowiedzialności za
             szkody wynikające z nieautoryzowanego dostępu do konta użytkownika.<br /><br />
 
             <strong>2.3. Zawartość profilu</strong><br />
@@ -122,7 +127,7 @@ import { CommonModule } from '@angular/common';
           <h3 class="text-lg font-semibold mb-3">7. Odpowiedzialność</h3>
           <p class="text-sm text-neutral-600 mb-6">
             <strong>7.1. Odpowiedzialność platformy</strong><br />
-            ZgadajSię nie ponosi odpowiedzialności za przebieg wydarzeń organizowanych przez
+            ZgadajSie.pl nie ponosi odpowiedzialności za przebieg wydarzeń organizowanych przez
             użytkowników. Platforma pełni jedynie rolę pośrednika technicznego.<br /><br />
 
             <strong>7.2. Odpowiedzialność użytkowników</strong><br />
@@ -130,14 +135,15 @@ import { CommonModule } from '@angular/common';
             wydarzeń.<br /><br />
 
             <strong>7.3. Wyłączenie odpowiedzialności</strong><br />
-            ZgadajSię nie ponosi odpowiedzialności za szkody wynikające z siły wyższej, działań osób
-            trzecich lub technicznych awarii systemu.
+            ZgadajSie.pl nie ponosi odpowiedzialności za szkody wynikające z siły wyższej, działań
+            osób trzecich lub technicznych awarii systemu.
           </p>
 
           <h3 class="text-lg font-semibold mb-3">8. Prawa autorskie i własność intelektualna</h3>
           <p class="text-sm text-neutral-600 mb-6">
-            Wszelkie prawa autorskie do platformy ZgadajSię należą do jej właściciela. Użytkownicy
-            nabywają jedynie prawo do korzystania z platformy w ramach określonych w regulaminie.
+            Wszelkie prawa autorskie do platformy ZgadajSie.pl należą do jej właściciela.
+            Użytkownicy nabywają jedynie prawo do korzystania z platformy w ramach określonych w
+            regulaminie.
           </p>
 
           <h3 class="text-lg font-semibold mb-3">9. Reklamacje</h3>
@@ -149,9 +155,9 @@ import { CommonModule } from '@angular/common';
 
           <h3 class="text-lg font-semibold mb-3">10. Zmiany w regulaminie</h3>
           <p class="text-sm text-neutral-600 mb-6">
-            ZgadajSię zastrzega sobie prawo do zmiany niniejszego regulaminu. O wszelkich zmianach
-            użytkownicy zostaną poinformowani z co najmniej 7-dniowym wyprzedzeniem. Kontynuowanie
-            korzystania z platformy po zmianach jest równoznaczne z ich akceptacją.
+            ZgadajSie.pl zastrzega sobie prawo do zmiany niniejszego regulaminu. O wszelkich
+            zmianach użytkownicy zostaną poinformowani z co najmniej 7-dniowym wyprzedzeniem.
+            Kontynuowanie korzystania z platformy po zmianach jest równoznaczne z ich akceptacją.
           </p>
         </div>
       </div>
@@ -159,4 +165,19 @@ import { CommonModule } from '@angular/common';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TermsComponent {}
+export class TermsComponent implements OnDestroy {
+  private readonly layoutConfig = inject(LayoutConfigService);
+
+  @ViewChild('extraContent', { static: true }) extraContent!: TemplateRef<unknown>;
+
+  constructor() {
+    effect(() => {
+      this.layoutConfig.titleText.set('Regulamin Serwisu');
+      this.layoutConfig.extraTpl.set(this.extraContent);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.layoutConfig.reset();
+  }
+}

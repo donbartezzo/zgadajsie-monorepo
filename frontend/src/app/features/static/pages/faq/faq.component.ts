@@ -1,7 +1,17 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  OnDestroy,
+  signal,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
+import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 
 interface FaqItem {
   question: string;
@@ -12,19 +22,15 @@ interface FaqItem {
   selector: 'app-faq',
   imports: [CommonModule, FormsModule, IconComponent],
   template: `
-    <div class="page-content">
+    <ng-template #extraContent>
+      Często zadawane pytania. Jeśli nie znajdziesz odpowiedzi, skontaktuj się z nami.
+    </ng-template>
+
+    <div class="p-4">
       @let _searchQuery = searchQuery();
 
-      <!-- Page Header -->
-      <div class="px-4 pt-6 pb-4">
-        <h1 class="text-2xl font-bold text-neutral-900 mb-2">Baza Wiedzy</h1>
-        <p class="text-sm text-neutral-600">
-          Wyszukaj wszystko czego potrzebujesz na jednej stronie.
-        </p>
-      </div>
-
       <!-- Search Box -->
-      <div class="px-4 pb-4">
+      <div class="mb-4">
         <div class="relative bg-white rounded-lg shadow-sm border border-neutral-200">
           <app-icon
             name="search"
@@ -60,7 +66,7 @@ interface FaqItem {
       }
 
       <!-- FAQ Section -->
-      <div class="px-4 pb-8">
+      <div>
         <div class="bg-white rounded-2xl shadow-sm p-6">
           <h2 class="text-xl font-bold text-neutral-900 mb-2">Często zadawane pytania</h2>
           <p class="text-sm text-neutral-600 mb-6">
@@ -96,7 +102,11 @@ interface FaqItem {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FaqComponent {
+export class FaqComponent implements OnDestroy {
+  private readonly layoutConfig = inject(LayoutConfigService);
+
+  @ViewChild('extraContent', { static: true }) extraContent!: TemplateRef<unknown>;
+
   readonly openIndex = signal<number | null>(null);
   readonly searchQuery = signal('');
   readonly filteredItems = signal<FaqItem[]>([]);
@@ -136,6 +146,15 @@ export class FaqComponent {
 
   constructor() {
     this.filteredItems.set(this.items);
+
+    effect(() => {
+      this.layoutConfig.titleText.set('Baza Wiedzy');
+      this.layoutConfig.extraTpl.set(this.extraContent);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.layoutConfig.reset();
   }
 
   toggle(index: number): void {

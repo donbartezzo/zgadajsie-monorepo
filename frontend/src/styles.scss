@@ -20,7 +20,8 @@ body {
 
 // ── App shell: single source of truth for app max-width ──
 $app-max-width: 700px;
-$cover-image-height: 250px;
+$hero-extended-height: 250px;
+$hero-compact-height: 117px;
 
 // ────────────────────────────────────────────────────────────
 // Layout vars - jedyne CSS custom properties w projekcie (poza kolorami).
@@ -35,7 +36,8 @@ $app-bg-color: rgb(var(--color-neutral-100));
 :root {
   --app-max-width: #{$app-max-width};
   --footer-height: 70px;
-  --hero-h: #{$cover-image-height};
+  --hero-extended-h: #{$hero-extended-height};
+  --hero-compact-h: #{$hero-compact-height};
 }
 
 .app {
@@ -85,7 +87,9 @@ $app-bg-color: rgb(var(--color-neutral-100));
       overflow: hidden;
       border-radius: 1rem;
       background-color: $app-bg-color;
-      box-shadow: 8px 0 24px -4px rgba(0, 0, 0, 0.15), -8px 0 24px -4px rgba(0, 0, 0, 0.15);
+      box-shadow:
+        8px 0 24px -4px rgba(0, 0, 0, 0.15),
+        -8px 0 24px -4px rgba(0, 0, 0, 0.15);
     }
   }
 }

@@ -1,7 +1,10 @@
 import { Injectable, signal, TemplateRef } from '@angular/core';
 
+export type HeroVariant = 'compact' | 'extended';
+
 export interface LayoutConfig {
   coverImageUrl: string;
+  heroVariant: HeroVariant;
   contentClass: string;
   titleText: string;
   extraTpl: TemplateRef<unknown> | null;
@@ -13,6 +16,7 @@ export class LayoutConfigService {
   static readonly DEFAULT_CONTENT = 'bg-neutral-100';
 
   readonly coverImageUrl = signal('');
+  readonly heroVariant = signal<HeroVariant>('compact');
   readonly contentClass = signal(LayoutConfigService.DEFAULT_CONTENT);
   readonly titleText = signal('');
   readonly extraTpl = signal<TemplateRef<unknown> | null>(null);
@@ -22,6 +26,7 @@ export class LayoutConfigService {
   reset(): void {
     this.isReady.set(false);
     this.coverImageUrl.set('');
+    this.heroVariant.set('compact');
     this.contentClass.set(LayoutConfigService.DEFAULT_CONTENT);
     this.titleText.set('');
     this.extraTpl.set(null);
