@@ -5,6 +5,7 @@ import { activeGuard } from './core/auth/active.guard';
 import { adminGuard } from './core/auth/admin.guard';
 import { paymentRedirectGuard } from './features/payments/guards/payment-redirect.guard';
 import { eventResolver } from './core/guards/event.resolver';
+import { setEventResolvedTitle } from './core/guards/event-seo-title.resolver';
 import { verifiedUserGuard } from './core/guards/verified-user.guard';
 import { participantGuard } from './core/guards/participant.guard';
 import { organizerGuard } from './core/guards/organizer.guard';
@@ -72,6 +73,7 @@ export const appRoutes: Route[] = [
           import('./features/event/pages/event-detail/event-detail.component').then(
             (m) => m.EventDetailComponent,
           ),
+        resolve: setEventResolvedTitle('Szczegóły wydarzenia'),
         data: {
           breadcrumb: { parent: '/w/:citySlug', label: 'Lista wydarzeń' }, // Nadpisuje domyślne z parenta!
         },
@@ -84,6 +86,7 @@ export const appRoutes: Route[] = [
             (m) => m.EventParticipantsComponent,
           ),
         canActivate: [verifiedUserGuard],
+        resolve: setEventResolvedTitle('Lista uczestników wydarzenia'),
         data: {
           showFooter: false,
           showBorder: false,
@@ -102,6 +105,7 @@ export const appRoutes: Route[] = [
           showFooter: false,
           showBorder: false,
           contentClass: 'bg-white',
+          showOnlyMine: true,
         },
       },
       // Chat with organizer (participant view) / Conversation list (organizer view)
@@ -112,6 +116,7 @@ export const appRoutes: Route[] = [
             (m) => m.HostChatComponent,
           ),
         canActivate: [verifiedUserGuard],
+        resolve: setEventResolvedTitle('Czat z organizatorem'),
         data: {
           showFooter: false,
           showBorder: false,
@@ -141,6 +146,7 @@ export const appRoutes: Route[] = [
             (m) => m.UnifiedChatComponent,
           ),
         canActivate: [verifiedUserGuard, participantGuard],
+        resolve: setEventResolvedTitle('Czat grupowy'),
         data: {
           showFooter: false,
           showBorder: false,
@@ -197,7 +203,10 @@ export const appRoutes: Route[] = [
       import('./features/announcements/pages/confirm-announcement/confirm-announcement.component').then(
         (m) => m.ConfirmAnnouncementComponent,
       ),
-    data: { title: 'Potwierdzenie komunikatu', ...BARE_LAYOUT },
+    data: {
+      title: 'Potwierdzenie komunikatu',
+      ...BARE_LAYOUT,
+    },
   },
 
   // ── Utility (internal, skipLocationChange) ──
@@ -207,7 +216,11 @@ export const appRoutes: Route[] = [
       import('./features/error/pages/not-found/not-found-page.component').then(
         (m) => m.NotFoundPageComponent,
       ),
-    data: { title: 'Nie znaleziono', breadcrumb: BREADCRUMB_TO_HOME, ...BARE_LAYOUT },
+    data: {
+      title: 'Nie znaleziono',
+      breadcrumb: BREADCRUMB_TO_HOME,
+      ...BARE_LAYOUT,
+    },
   },
   {
     path: 'unverified',
@@ -350,7 +363,10 @@ export const appRoutes: Route[] = [
         (m) => m.AdminUsersComponent,
       ),
     canActivate: [adminGuard],
-    data: { title: 'Użytkownicy', breadcrumb: { parent: '/admin', label: 'Panel admina' } },
+    data: {
+      title: 'Użytkownicy',
+      breadcrumb: { parent: '/admin', label: 'Panel admina' },
+    },
   },
   {
     path: 'admin/users/:id',
@@ -395,7 +411,10 @@ export const appRoutes: Route[] = [
         (m) => m.AdminSettingsComponent,
       ),
     canActivate: [adminGuard],
-    data: { title: 'Ustawienia', breadcrumb: { parent: '/admin', label: 'Panel admina' } },
+    data: {
+      title: 'Ustawienia',
+      breadcrumb: { parent: '/admin', label: 'Panel admina' },
+    },
   },
 
   // ── Static ──
@@ -404,7 +423,7 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/static/pages/faq/faq.component').then((m) => m.FaqComponent),
     data: {
-      title: 'Baza Wiedzy',
+      title: 'Baza wiedzy',
       subtitle: 'Często zadawane pytania. Jeśli nie znajdziesz odpowiedzi, skontaktuj się z nami.',
       breadcrumb: BREADCRUMB_TO_HOME,
       showHeader: true,
@@ -426,8 +445,8 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/static/pages/contact/contact.component').then((m) => m.ContactComponent),
     data: {
-      title: 'Skontaktuj się z nami',
-      subtitle: 'Zazwyczaj odpowiadamy w ciągu kilku godzin',
+      title: 'Kontakt',
+      subtitle: 'Skontaktuj się z nami',
       breadcrumb: BREADCRUMB_TO_HOME,
       showHeader: true,
     },
@@ -437,7 +456,7 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/static/pages/privacy/privacy.component').then((m) => m.PrivacyComponent),
     data: {
-      title: 'Polityka Prywatności',
+      title: 'Polityka prywatności',
       subtitle: 'Twoja prywatność jest naszym priorytetem. Dowiedz się jak chronimy Twoje dane.',
       breadcrumb: BREADCRUMB_TO_HOME,
       showHeader: true,
@@ -448,7 +467,7 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/static/pages/terms/terms.component').then((m) => m.TermsComponent),
     data: {
-      title: 'Regulamin Serwisu',
+      title: 'Regulamin serwisu',
       subtitle: 'Zasady korzystania z platformy. Poznaj swoje prawa i obowiązki.',
       breadcrumb: BREADCRUMB_TO_HOME,
       showHeader: true,
@@ -464,7 +483,12 @@ export const appRoutes: Route[] = [
             import('./features/dev/pages/design-system/design-system.component').then(
               (m) => m.DesignSystemComponent,
             ),
-          data: { title: 'Design System', showBorder: false, showFooter: false, showHeader: false },
+          data: {
+            title: 'Design System',
+            showBorder: false,
+            showFooter: false,
+            showHeader: false,
+          },
         },
       ]
     : []),

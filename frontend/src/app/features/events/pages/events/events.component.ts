@@ -13,6 +13,7 @@ import { EventCardComponent } from '../../../../shared/event/ui/event-card/event
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
 import { DateBadgeComponent } from '../../../../shared/event/ui/date-badge/date-badge.component';
+import { AppTitleService } from '../../../../core/services/app-title.service';
 import { EventService } from '../../../../core/services/event.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { CitySubscriptionService } from '../../../../core/services/city-subscription.service';
@@ -64,6 +65,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   private readonly citySubscriptionService = inject(CitySubscriptionService);
   private readonly snackbar = inject(SnackbarService);
   private readonly notifStatus = inject(NotificationStatusService);
+  private readonly appTitle = inject(AppTitleService);
 
   readonly events = signal<EventListItem[]>([]);
   readonly isLoading = signal(true);
@@ -201,6 +203,7 @@ export class EventsComponent implements OnInit, OnDestroy {
               this.cityName.set(name);
               this.cityId.set(id);
               this.layoutConfig.title.set(name);
+              this.appTitle.setResolvedTitle('Lista wydarzeń', name);
               this.loadCitySubscription(id);
             }
           }
