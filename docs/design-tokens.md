@@ -222,7 +222,8 @@ Kolory semantyczne nie powinny żyć jako lokalne unie typu `'success' | 'warnin
 Preferowane API:
 
 ```html
-<app-button appearance="soft" color="primary">Zapisz</app-button>
+<app-button appearance="solid" color="primary">Zapisz</app-button>
+<app-button appearance="soft" color="primary">Opcjonalna akcja</app-button>
 <app-button appearance="outline" color="neutral">Anuluj</app-button>
 <app-button appearance="ghost" color="danger">Usuń</app-button>
 <app-button appearance="link" color="info">Dowiedz się więcej</app-button>
@@ -234,6 +235,7 @@ Preferowane API:
 
 Dozwolone appearance:
 
+- `solid` (domyślny)
 - `soft`
 - `outline`
 - `ghost`

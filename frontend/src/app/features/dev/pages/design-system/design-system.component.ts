@@ -30,7 +30,7 @@ export class DesignSystemComponent {
     'info',
     'neutral',
   ];
-  readonly buttonAppearances: ButtonAppearance[] = ['soft', 'outline', 'ghost', 'link'];
+  readonly buttonAppearances: ButtonAppearance[] = ['solid', 'soft', 'outline', 'ghost', 'link'];
 
   readonly sections = [
     { id: 'colors', label: 'Kolory' },

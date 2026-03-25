@@ -25,7 +25,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 
       <div class="mt-8 flex flex-col gap-3">
         <app-button
-          appearance="soft"
+          appearance="solid"
           color="primary"
           size="lg"
           [loading]="sending()"

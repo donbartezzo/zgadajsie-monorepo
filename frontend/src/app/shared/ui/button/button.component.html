@@ -1,6 +1,8 @@
+@let _isLoading = loading();
+
 <button
   [type]="type()"
-  [disabled]="disabled() || loading()"
+  [disabled]="disabled() || _isLoading"
   [ngClass]="classes()"
   [attr.aria-label]="ariaLabel() || null"
   (click)="clicked.emit($event)"
@@ -10,8 +12,11 @@
   @let _showRight = showRightIcon();
   @let _iconLeftBg = iconLeftBackground();
   @let _iconRightBg = iconRightBackground();
+  @let _iconLeftColorClass = iconLeftColorClass();
+  @let _iconRightBgClass = iconRightBackgroundClass();
+  @let _iconRightColorClass = iconRightColorClass();
 
-  @if (loading()) {
+  @if (_isLoading) {
     <app-icon name="loader" [size]="_iconSize" class="animate-spin" />
   } @else {
     @if (_showLeft) {
@@ -20,10 +25,10 @@
           class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
           [ngClass]="iconLeftBackgroundClass()"
         >
-          <app-icon [name]="iconLeft()!" [size]="_iconSize" [class]="iconLeftColorClass()" />
+          <app-icon [name]="iconLeft()!" [size]="_iconSize" [class]="_iconLeftColorClass" />
         </div>
       } @else {
-        <app-icon [name]="iconLeft()!" [size]="_iconSize" />
+        <app-icon [name]="iconLeft()!" [size]="_iconSize" [class]="_iconLeftColorClass" />
       }
     }
 
@@ -33,12 +38,12 @@
       @if (_iconRightBg) {
         <div
           class="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-          [ngClass]="iconRightBackgroundClass()"
+          [ngClass]="_iconRightBgClass"
         >
-          <app-icon [name]="iconRight()!" [size]="_iconSize" [class]="iconRightColorClass()" />
+          <app-icon [name]="iconRight()!" [size]="_iconSize" [class]="_iconRightColorClass" />
         </div>
       } @else {
-        <app-icon [name]="iconRight()!" [size]="_iconSize" class="ml-auto" />
+        <app-icon [name]="iconRight()!" [size]="_iconSize" [class]="_iconRightColorClass + ' ml-auto'" />
       }
     }
   }

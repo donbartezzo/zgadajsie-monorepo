@@ -50,7 +50,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         <div class="mt-3">
           <app-button
             type="submit"
-            appearance="soft"
+            appearance="solid"
             color="primary"
             [fullWidth]="true"
             [loading]="loading()"

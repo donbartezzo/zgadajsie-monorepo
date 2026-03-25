@@ -15,7 +15,7 @@ export type ButtonVariant =
   | 'neutral'
   | 'ghost'
   | 'link';
-export type ButtonAppearance = 'soft' | 'outline' | 'ghost' | 'link';
+export type ButtonAppearance = 'solid' | 'soft' | 'outline' | 'ghost' | 'link';
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
 export type ButtonAlignment = 'start' | 'center' | 'end';
 
@@ -73,7 +73,7 @@ export class ButtonComponent {
       case 'link':
         return 'link';
       default:
-        return 'soft';
+        return 'solid';
     }
   });
 
@@ -109,27 +109,45 @@ export class ButtonComponent {
 
   readonly iconLeftBackgroundClass = computed(() => {
     const color = this.resolvedColor();
-    if (this.resolvedAppearance() === 'soft') {
+    const appearance = this.resolvedAppearance();
+
+    if (appearance === 'soft') {
       return SEMANTIC_COLOR_CLASSES.surfaceStrong[color];
+    }
+
+    if (appearance === 'solid') {
+      return `bg-white/20`;
     }
 
     return SEMANTIC_COLOR_CLASSES.surface[color];
   });
 
   readonly iconLeftColorClass = computed(() => {
+    if (this.resolvedAppearance() === 'solid') {
+      return 'text-white';
+    }
     return SEMANTIC_COLOR_CLASSES.textStrong[this.resolvedColor()];
   });
 
   readonly iconRightBackgroundClass = computed(() => {
     const color = this.resolvedColor();
-    if (this.resolvedAppearance() === 'soft') {
+    const appearance = this.resolvedAppearance();
+
+    if (appearance === 'soft') {
       return SEMANTIC_COLOR_CLASSES.surfaceStrong[color];
+    }
+
+    if (appearance === 'solid') {
+      return `bg-white/20`;
     }
 
     return SEMANTIC_COLOR_CLASSES.surface[color];
   });
 
   readonly iconRightColorClass = computed(() => {
+    if (this.resolvedAppearance() === 'solid') {
+      return 'text-white';
+    }
     return SEMANTIC_COLOR_CLASSES.textStrong[this.resolvedColor()];
   });
 
@@ -158,6 +176,20 @@ export class ButtonComponent {
           md: 'px-4 py-2.5 text-sm gap-2',
           lg: 'px-5 py-3 text-base gap-2',
         };
+
+    const solidClasses: Record<SemanticColor, string> = {
+      primary:
+        'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-300 shadow-sm hover:shadow',
+      success:
+        'bg-success-400 text-white hover:bg-success-500 focus:ring-success-300 shadow-sm hover:shadow',
+      danger:
+        'bg-danger-400 text-white hover:bg-danger-500 focus:ring-danger-300 shadow-sm hover:shadow',
+      warning:
+        'bg-warning-400 text-white hover:bg-warning-500 focus:ring-warning-300 shadow-sm hover:shadow',
+      info: 'bg-info-400 text-white hover:bg-info-500 focus:ring-info-300 shadow-sm hover:shadow',
+      neutral:
+        'bg-neutral-500 text-white hover:bg-neutral-600 focus:ring-neutral-300 shadow-sm hover:shadow',
+    };
 
     const softClasses: Record<SemanticColor, string> = {
       primary: 'bg-primary-100 text-primary-600 hover:bg-primary-200 focus:ring-primary-300',
@@ -201,6 +233,7 @@ export class ButtonComponent {
     };
 
     const appearanceClasses: Record<ButtonAppearance, Record<SemanticColor, string>> = {
+      solid: solidClasses,
       soft: softClasses,
       outline: outlineClasses,
       ghost: ghostClasses,

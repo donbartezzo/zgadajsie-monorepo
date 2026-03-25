@@ -83,7 +83,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
         <div class="mt-4">
           <app-button
             type="submit"
-            appearance="soft"
+            appearance="solid"
             color="primary"
             [fullWidth]="true"
             [loading]="loading()"
