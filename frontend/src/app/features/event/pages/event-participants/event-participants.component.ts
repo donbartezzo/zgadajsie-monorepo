@@ -16,10 +16,7 @@ import {
   ParticipantItem,
 } from '../../../../shared/participant/ui/participant-slots-grid/participant-slots-grid.component';
 import { ParticipantDetailOverlayComponent } from '../../../../shared/participant/ui/participant-detail-overlay/participant-detail-overlay.component';
-import {
-  EventNotificationBarsComponent,
-  NotificationBarConfig,
-} from '../../ui/event-notification-bars/event-notification-bars.component';
+import { EventStickyNotificationBarComponent } from '../../ui/event-sticky-notification-bar/event-sticky-notification-bar.component';
 import { EventService } from '../../../../core/services/event.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
@@ -36,7 +33,7 @@ import {
     EventHeroSlotsComponent,
     ParticipantSlotsGridComponent,
     ParticipantDetailOverlayComponent,
-    EventNotificationBarsComponent,
+    EventStickyNotificationBarComponent,
   ],
   templateUrl: './event-participants.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -46,7 +43,7 @@ export class EventParticipantsComponent implements AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly snackbar = inject(SnackbarService);
   public readonly auth = inject(AuthService); // Changed from private to public for template access
-  private readonly eventArea = inject(EventAreaService);
+  protected readonly eventArea = inject(EventAreaService);
   private readonly eventService = inject(EventService);
   private readonly confirmModal = inject(ConfirmModalService);
   private readonly overlays = inject(BottomOverlaysService);
@@ -63,6 +60,7 @@ export class EventParticipantsComponent implements AfterViewInit {
   readonly isParticipant = this.eventArea.isParticipant;
   readonly participantStatus = this.eventArea.participantStatus;
   readonly waitingReason = this.eventArea.waitingReason;
+  readonly notificationBars = this.eventArea.notificationBars;
 
   readonly isOrganizer = this.eventArea.isOrganizer;
 
@@ -107,19 +105,6 @@ export class EventParticipantsComponent implements AfterViewInit {
     }
 
     return 'public';
-  });
-
-  // Notification bars config - delegates to EventAreaService
-  readonly notificationBars = computed<NotificationBarConfig[]>(() => {
-    const bars: NotificationBarConfig[] = [];
-    const status = this.participantStatus();
-
-    if (status) {
-      const config = this.eventArea.getParticipantBarConfig(status);
-      bars.push(config);
-    }
-
-    return bars;
   });
 
   ngAfterViewInit(): void {
@@ -233,12 +218,6 @@ export class EventParticipantsComponent implements AfterViewInit {
       this.router.navigate(['/w', citySlug, eventId, 'participants', 'my']);
     } else {
       this.router.navigate(['/w', citySlug, eventId, 'participants']);
-    }
-  }
-
-  onBarAction(barId: string): void {
-    if (barId === 'participant') {
-      this.eventArea.openJoinConfirmOverlay();
     }
   }
 }

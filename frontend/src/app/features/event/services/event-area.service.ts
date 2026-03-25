@@ -25,7 +25,7 @@ import {
   getWaitingReasonBarSubtitle,
 } from '../../../shared/utils/waiting-reason-messages.util';
 import { getParticipationStatusConfig, ParticipationStatusOptions } from '../../../shared/utils';
-import { NotificationBarConfig } from '../ui/event-notification-bars/event-notification-bars.component';
+import { NotificationBarConfig } from '../ui/event-inline-notification-bars/event-inline-notification-bars.component';
 import type { IconName } from '../../../shared/ui/icon/icon.component';
 
 const AUTO_REFRESH_INTERVAL = 30000; // 30 seconds
@@ -76,6 +76,10 @@ export class EventAreaService {
 
   readonly isCancelled = computed(() => this.event()?.status === 'CANCELLED');
 
+  readonly isBannedByOrganizer = computed(
+    () => this.event()?.currentUserAccess?.isBannedByOrganizer === true,
+  );
+
   readonly currentUserParticipation = computed<Participation | null>(() => {
     const userId = this.auth.currentUser()?.id;
     if (!userId) return null;
@@ -122,6 +126,19 @@ export class EventAreaService {
     return phase === 'PRE_ENROLLMENT' || phase === 'OPEN_ENROLLMENT';
   });
 
+  readonly ctaLabel = computed(() => {
+    if (!this.auth.isLoggedIn()) return 'Zaloguj się, aby dołączyć';
+    const phase = this.enrollmentPhase();
+    if (phase === 'PRE_ENROLLMENT') return 'Zgłoś się wstępnie';
+    return 'Dołącz do wydarzenia';
+  });
+
+  readonly ctaLabelShort = computed(() => {
+    const phase = this.enrollmentPhase();
+    if (phase === 'PRE_ENROLLMENT') return 'Zgłoś się';
+    return 'Dołącz';
+  });
+
   readonly isPaidEvent = computed(() => {
     const e = this.event();
     return e ? e.costPerPerson > 0 : false;
@@ -130,6 +147,49 @@ export class EventAreaService {
   readonly maxSlots = computed(() => this.event()?.maxParticipants ?? 0);
 
   readonly participantCount = computed(() => this.participants().length);
+
+  readonly notificationBars = computed<NotificationBarConfig[]>(() => {
+    const bars: NotificationBarConfig[] = [];
+    const status = this.participantStatus();
+    const isEnded = this.eventTimeStatus() === 'ENDED' || this.isCancelled();
+
+    if (this.isParticipant()) {
+      bars.push(this.getParticipantBarConfig(status, isEnded));
+    }
+
+    if (this.isOrganizer()) {
+      bars.push({
+        id: 'organizer',
+        icon: 'shield',
+        iconColorClass: 'text-info-600',
+        title: 'Jesteś organizatorem',
+        subtitle: 'Zarządzaj tym wydarzeniem.',
+        buttonLabel: 'Opcje',
+        bgClass: 'bg-info-50',
+        borderClass: 'border-t border-b border-info-200',
+      });
+    }
+
+    if (!this.isParticipant() && !this.isBannedByOrganizer() && this.canJoin()) {
+      const phase = this.enrollmentPhase();
+      bars.push({
+        id: 'join',
+        icon: 'user-plus',
+        iconColorClass: 'text-white',
+        title: this.ctaLabel(),
+        subtitle: phase === 'PRE_ENROLLMENT' ? 'Zapisz się na listę wstępną' : 'Zgłoś chęć udziału',
+        buttonLabel: this.ctaLabelShort(),
+        bgClass: 'bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg',
+        borderClass: 'border-t border-b border-primary-400',
+        titleColorClass: 'text-white',
+        subtitleColorClass: 'text-white/90',
+        buttonAppearance: 'soft',
+        buttonColor: 'primary',
+      });
+    }
+
+    return bars;
+  });
 
   // ── Lifecycle ──
 
@@ -292,6 +352,17 @@ export class EventAreaService {
   openManageGuests(): void {
     this.overlays.close();
     this.router.navigate(['/w', this._citySlug, this._eventId, 'participants', 'my']);
+  }
+
+  handleNotificationBarAction(barId: string): void {
+    if (barId === 'participant' || barId === 'join') {
+      this.openJoinSheet();
+      return;
+    }
+
+    if (barId === 'organizer') {
+      this.overlays.open('organizerActions');
+    }
   }
 
   // ── Participant actions ──
@@ -458,17 +529,17 @@ export class EventAreaService {
       iconColorClass: isPreEnroll
         ? 'text-info-600'
         : isBanned
-        ? 'text-danger-600'
-        : 'text-warning-600',
+          ? 'text-danger-600'
+          : 'text-warning-600',
       title: getWaitingReasonBarTitle(reason),
       subtitle: getWaitingReasonBarSubtitle(reason),
       buttonLabel: 'Szczegóły',
       bgClass: isPreEnroll ? 'bg-info-50' : isBanned ? 'bg-danger-50' : 'bg-warning-50',
       borderClass: isPreEnroll
-        ? 'border border-info-200'
+        ? 'border-t border-b border-info-200'
         : isBanned
-        ? 'border border-danger-200'
-        : 'border border-warning-200',
+          ? 'border-t border-b border-danger-200'
+          : 'border-t border-b border-warning-200',
     };
   }
 }

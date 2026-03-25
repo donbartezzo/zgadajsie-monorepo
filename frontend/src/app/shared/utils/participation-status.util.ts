@@ -40,10 +40,10 @@ const STATUS_CONFIGS: Record<
       iconColorClass: isPreEnroll
         ? 'text-info-600'
         : isBanned
-        ? 'text-danger-600'
-        : 'text-warning-600',
+          ? 'text-danger-600'
+          : 'text-warning-600',
       bgClass: 'bg-warning-50',
-      borderClass: 'border border-warning-200',
+      borderClass: 'border-t border-b border-warning-200',
       buttonLabel: 'Szczegóły',
       needsAction: false,
     };
@@ -55,7 +55,7 @@ const STATUS_CONFIGS: Record<
     icon: 'check',
     iconColorClass: 'text-info-600',
     bgClass: 'bg-info-50',
-    borderClass: 'border border-info-200',
+    borderClass: 'border-t border-b border-info-200',
     buttonLabel: 'Potwierdź',
     needsAction: true,
   }),
@@ -70,7 +70,7 @@ const STATUS_CONFIGS: Record<
     icon: 'check',
     iconColorClass: 'text-success-600',
     bgClass: 'bg-success-50',
-    borderClass: 'border border-success-200',
+    borderClass: 'border-t border-b border-success-200',
     buttonLabel: 'Szczegóły',
     needsAction: false,
   }),
@@ -81,7 +81,7 @@ const STATUS_CONFIGS: Record<
     icon: 'user-x',
     iconColorClass: 'text-neutral-500',
     bgClass: 'bg-neutral-100',
-    borderClass: 'border border-neutral-200',
+    borderClass: 'border-t border-b border-neutral-200',
     buttonLabel: 'Szczegóły',
     needsAction: false,
   }),
@@ -92,7 +92,7 @@ const STATUS_CONFIGS: Record<
     icon: 'x',
     iconColorClass: 'text-danger-500',
     bgClass: 'bg-danger-50',
-    borderClass: 'border border-danger-200',
+    borderClass: 'border-t border-b border-danger-200',
     buttonLabel: 'Szczegóły',
     needsAction: false,
   }),
@@ -106,7 +106,7 @@ const DEFAULT_CONFIG: ParticipationStatusConfig = {
   icon: 'check',
   iconColorClass: 'text-success-600',
   bgClass: 'bg-success-50',
-  borderClass: 'border border-success-200',
+  borderClass: 'border-t border-b border-success-200',
   buttonLabel: 'Szczegóły',
   needsAction: false,
 };

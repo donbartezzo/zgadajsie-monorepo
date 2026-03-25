@@ -26,10 +26,7 @@ import { getEventCountdown, EventCountdown } from '../../../../shared/utils/date
 import { EventStatus } from '@zgadajsie/shared';
 import { EnrollmentStatusBannerComponent } from '../../ui/enrollment-status-banner/enrollment-status-banner.component';
 import { getLotteryThreshold } from '../../../../shared/utils/enrollment-phase.util';
-import {
-  EventNotificationBarsComponent,
-  NotificationBarConfig,
-} from '../../ui/event-notification-bars/event-notification-bars.component';
+import { EventInlineNotificationBarsComponent } from '../../ui/event-inline-notification-bars/event-inline-notification-bars.component';
 import { EventAnnouncementsComponent } from '../../ui/event-announcements/event-announcements.component';
 import { NotificationStatusService } from '../../../../core/services/notification-status.service';
 import { EventAreaService } from '../../services/event-area.service';
@@ -45,7 +42,7 @@ import { EventAreaService } from '../../services/event-area.service';
     ButtonComponent,
     UserAvatarComponent,
     LoadingSpinnerComponent,
-    EventNotificationBarsComponent,
+    EventInlineNotificationBarsComponent,
     EventAnnouncementsComponent,
     EnrollmentStatusBannerComponent,
     EventHeroSlotsComponent,
@@ -64,7 +61,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly overlays = inject(BottomOverlaysService);
   private readonly confirmModal = inject(ConfirmModalService);
   private readonly notifStatus = inject(NotificationStatusService);
-  private readonly eventArea = inject(EventAreaService);
+  protected readonly eventArea = inject(EventAreaService);
 
   // ── Delegated from EventAreaService ──
   readonly event = this.eventArea.event;
@@ -79,6 +76,8 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly canJoin = this.eventArea.canJoin;
   readonly isCancelled = this.eventArea.isCancelled;
   readonly participantCount = this.eventArea.participantCount;
+  readonly isBannedByOrganizer = this.eventArea.isBannedByOrganizer;
+  readonly notificationBars = this.eventArea.notificationBars;
 
   // ── Local state ──
   readonly announcements = signal<EventAnnouncement[]>([]);
@@ -125,55 +124,12 @@ export class EventDetailComponent implements OnInit, OnDestroy {
 
   readonly isPreEnrollment = computed(() => this.enrollmentPhase() === 'PRE_ENROLLMENT');
 
-  readonly ctaLabel = computed(() => {
-    if (!this.auth.isLoggedIn()) return 'Zaloguj się, aby dołączyć';
-    const phase = this.enrollmentPhase();
-    if (phase === 'PRE_ENROLLMENT') return 'Zgłoś się wstępnie';
-    return 'Dołącz do wydarzenia';
-  });
-
-  readonly ctaLabelShort = computed(() => {
-    const phase = this.enrollmentPhase();
-    if (phase === 'PRE_ENROLLMENT') return 'Zgłoś się';
-    return 'Dołącz';
-  });
-
-  readonly isBannedByOrganizer = computed(
-    () => this.event()?.currentUserAccess?.isBannedByOrganizer === true,
-  );
-
   readonly lifecycleBannerVariant = computed(() => {
     if (this.isCancelled()) return 'cancelled' as const;
     const ts = this.eventTimeStatus();
     if (ts === 'ONGOING') return 'ongoing' as const;
     if (ts === 'ENDED') return 'ended' as const;
     return null;
-  });
-
-  readonly notificationBars = computed<NotificationBarConfig[]>(() => {
-    const bars: NotificationBarConfig[] = [];
-    const status = this.participantStatus();
-    const isEnded = this.eventTimeStatus() === 'ENDED' || this.isCancelled();
-
-    if (this.isParticipant()) {
-      const config = this.eventArea.getParticipantBarConfig(status, isEnded);
-      bars.push(config);
-    }
-
-    if (this.isOrganizer()) {
-      bars.push({
-        id: 'organizer',
-        icon: 'shield',
-        iconColorClass: 'text-info-600',
-        title: 'Jesteś organizatorem',
-        subtitle: 'Zarządzaj tym wydarzeniem.',
-        buttonLabel: 'Opcje',
-        bgClass: 'bg-info-50',
-        borderClass: 'border border-info-200',
-      });
-    }
-
-    return bars;
   });
 
   constructor() {
@@ -272,10 +228,6 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     this.countdownInterval = setInterval(update, 1000);
   }
 
-  openJoinSheet(): void {
-    this.eventArea.openJoinSheet();
-  }
-
   onAuthSuccess(): void {
     this.overlays.open('joinRules');
   }
@@ -295,18 +247,6 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   openOrganizerChats(): void {
     this.overlays.close();
     this.router.navigate(['/w', this.eventArea.citySlug, this.eventArea.eventId, 'host-chat']);
-  }
-
-  openOrganizerActionsSheet(): void {
-    this.overlays.open('organizerActions');
-  }
-
-  handleBarAction(barId: string): void {
-    if (barId === 'participant') {
-      this.openJoinSheet();
-    } else if (barId === 'organizer') {
-      this.openOrganizerActionsSheet();
-    }
   }
 
   confirmAnnouncement(announcementId: string): void {

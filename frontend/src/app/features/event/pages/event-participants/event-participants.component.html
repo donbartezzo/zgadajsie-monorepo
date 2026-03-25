@@ -1,43 +1,46 @@
 <app-event-hero-slots [event]="event()" />
 
 @if (loading()) {
-<app-loading-spinner></app-loading-spinner>
+  <app-loading-spinner></app-loading-spinner>
 } @else {
-<div class="px-4 py-4">
-  <!-- Current user status banner - reuses EventNotificationBarsComponent -->
-  @if (auth.isLoggedIn() && notificationBars().length > 0) {
-  <div class="mb-4">
-    <app-event-notification-bars [bars]="notificationBars()" (barAction)="onBarAction($event)" />
-  </div>
-  }
+  <div class="px-4 py-4">
+    <!-- Current user status banner (sticky) -->
+    @if (auth.isLoggedIn() && notificationBars().length > 0) {
+      <div class="mb-4">
+        <app-event-sticky-notification-bar
+          [bars]="notificationBars()"
+          (barAction)="eventArea.handleNotificationBarAction($event)"
+        />
+      </div>
+    }
 
-  <!-- Filter checkbox (only for logged-in users) -->
-  @if (auth.isLoggedIn()) {
-  <div class="mb-3 flex justify-end">
-    <label class="flex items-center gap-2 text-xs text-neutral-500 cursor-pointer">
-      <input
-        type="checkbox"
-        [checked]="showOnlyMyParticipations()"
-        (change)="$event.stopPropagation(); onToggleFilterMine($any($event.target).checked)"
-        class="w-3.5 h-3.5 rounded border-neutral-300 text-primary-500 focus:ring-2 focus:ring-primary-200"
-      />
-      <span>Tylko moje zgłoszenia</span>
-    </label>
-  </div>
-  }
+    <!-- Filter checkbox (only for logged-in users) -->
+    @if (auth.isLoggedIn()) {
+      <div class="mb-3 flex justify-end">
+        <label class="flex items-center gap-2 text-xs text-neutral-500 cursor-pointer">
+          <input
+            type="checkbox"
+            [checked]="showOnlyMyParticipations()"
+            (change)="$event.stopPropagation(); onToggleFilterMine($any($event.target).checked)"
+            class="w-3.5 h-3.5 rounded border-neutral-300 text-primary-500 focus:ring-2 focus:ring-primary-200"
+          />
+          <span>Tylko moje zgłoszenia</span>
+        </label>
+      </div>
+    }
 
-  <app-participant-slots-grid
-    [participants]="filteredParticipants()"
-    [maxSlots]="effectiveMaxSlots()"
-    [enrollmentPhase]="enrollmentPhase()"
-    [isPaidEvent]="isPaidEvent()"
-    [currentUserId]="currentUserId()"
-    [roleConfig]="event()?.roleConfig ?? null"
-    mode="public"
-    (participantClicked)="onParticipantClick($event)"
-    (emptySlotClicked)="onEmptySlotClick()"
-  />
-</div>
+    <app-participant-slots-grid
+      [participants]="filteredParticipants()"
+      [maxSlots]="effectiveMaxSlots()"
+      [enrollmentPhase]="enrollmentPhase()"
+      [isPaidEvent]="isPaidEvent()"
+      [currentUserId]="currentUserId()"
+      [roleConfig]="event()?.roleConfig ?? null"
+      mode="public"
+      (participantClicked)="onParticipantClick($event)"
+      (emptySlotClicked)="onEmptySlotClick()"
+    />
+  </div>
 }
 
 <app-participant-detail-overlay
