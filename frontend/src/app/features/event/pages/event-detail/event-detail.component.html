@@ -1,385 +1,418 @@
 <app-event-hero-slots [event]="event()" />
 
 @if (isLoading()) {
-<app-loading-spinner></app-loading-spinner>
-} @else if (event(); as e) { @let _auth = auth.isLoggedIn(); @let _isParticipant = isParticipant(); @let _isOrganizer =
-isOrganizer(); @let _isBanned = isBannedByOrganizer(); @let _canJoin = canJoin(); @let _participants = participants();
-@let _participantCount = participantCount(); @let _phase = enrollmentPhase(); @let _isPreEnrollment = _phase ===
-'PRE_ENROLLMENT'; @let _visibleAvatars = visibleAvatars(); @let _remainingCount = remainingCount(); @let _fullAddress =
-fullAddress(); @let _genderLabel = genderLabel(); @let _ageRange = ageRange(); @let _countdown = countdown(); @let
-_notificationBars = notificationBars(); @let _joining = joining(); @let _ctaLabel = ctaLabel(); @let _ctaLabelShort =
-ctaLabelShort();
+  <app-loading-spinner></app-loading-spinner>
+} @else if (event(); as e) {
+  @let _auth = auth.isLoggedIn();
+  @let _isParticipant = isParticipant();
+  @let _isOrganizer = isOrganizer();
+  @let _isBanned = isBannedByOrganizer();
+  @let _canJoin = canJoin();
+  @let _participants = participants();
+  @let _participantCount = participantCount();
+  @let _phase = enrollmentPhase();
+  @let _isPreEnrollment = _phase === 'PRE_ENROLLMENT';
+  @let _visibleAvatars = visibleAvatars();
+  @let _remainingCount = remainingCount();
+  @let _fullAddress = fullAddress();
+  @let _genderLabel = genderLabel();
+  @let _ageRange = ageRange();
+  @let _countdown = countdown();
+  @let _notificationBars = notificationBars();
+  @let _joining = joining();
+  @let _ctaLabel = ctaLabel();
+  @let _ctaLabelShort = ctaLabelShort();
 
-<div class="px-4 pt-3 pb-5">
-  <!-- Date and location row -->
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
-    <!-- Date label -->
-    <span class="text-[10px] font-light uppercase tracking-wide text-primary-500">
-      {{ e.startsAt | date : 'd MMMM yyyy - HH:mm' }}
-    </span>
+  <div class="px-4 pt-3 pb-5">
+    <!-- Date and location row -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
+      <!-- Date label -->
+      <span class="text-[10px] font-light uppercase tracking-wide text-primary-500">
+        {{ e.startsAt | date: 'd MMMM yyyy - HH:mm' }}
+      </span>
 
-    <!-- Location (clickable → opens map sheet) -->
-    @if (_fullAddress) {
-    <button
-      type="button"
-      class="flex items-center gap-1.5 pb-2 text-[11px] text-neutral-400 hover:text-primary-500 transition-colors sm:pb-0"
-      (click)="overlays.open('map')"
-    >
-      <app-icon name="map-pin" size="sm" color="neutral" muted="light"></app-icon>
-      <span>{{ _fullAddress }}</span>
-    </button>
-    }
-  </div>
-
-  <!-- Enrollment status banner -->
-  <div class="mt-2">
-    <app-enrollment-status-banner
-      [enrollmentPhase]="enrollmentPhase()"
-      [eventTimeStatus]="eventTimeStatus()"
-      [isCancelled]="isCancelled()"
-      [participantCount]="participantCount()"
-    />
-  </div>
-
-  <!-- Description -->
-  @if (e.description) {
-  <p class="mt-2 text-sm leading-relaxed text-neutral-600 whitespace-pre-line">
-    {{ e.description }}
-  </p>
-  }
-
-  <!-- Participants section -->
-  @if (_isPreEnrollment) {
-  <!-- Pre-enrollment: only show count, no avatar list, no link -->
-  @if (_participantCount > 0) {
-  <div class="mb-4 flex items-center gap-2">
-    <app-icon name="users" size="sm" class="text-info-400"></app-icon>
-    <span class="text-xs text-neutral-500">
-      {{ _participantCount }}
-      {{ _participantCount === 1 ? 'osoba zgłoszona' : 'osób zgłoszonych' }}
-    </span>
-  </div>
-  } } @else if (_participants.length > 0) {
-  <!-- Normal: clickable avatars → participants page -->
-  <a [routerLink]="['/w', e.city?.slug, e.id, 'participants']" class="flex items-center mb-4">
-    <div class="flex items-center -space-x-3">
-      @for (p of _visibleAvatars; track p.id; let i = $index) {
-      <div class="relative h-7 w-7 shrink-0 rounded-full ring-2 ring-white" [style.z-index]="6 - i">
-        <app-user-avatar
-          [avatarUrl]="p.user?.avatarUrl"
-          [displayName]="p.user?.displayName || ''"
-          size="sm"
-        ></app-user-avatar>
-      </div>
-      }
-    </div>
-    <span class="pl-4 text-[10px] text-neutral-400">
-      @if (_remainingCount > 0) { +{{ _remainingCount }} uczestników } @else {
-      {{ _participants.length }}
-      {{ _participants.length === 1 ? 'uczestnik' : 'uczestników' }}
-      }
-    </span>
-  </a>
-  }
-
-  <!-- Organizer announcements -->
-  @if (hasAnnouncements()) {
-  <app-event-announcements
-    [announcements]="announcements()"
-    [hasAnnouncements]="hasAnnouncements()"
-    [isLoggedIn]="_auth"
-    [loginQueryParams]="loginQueryParams"
-    (confirm)="confirmAnnouncement($event)"
-    (confirmAll)="confirmAllAnnouncements()"
-  ></app-event-announcements>
-  }
-
-  <!-- Divider -->
-  <div class="border-t border-neutral-100"></div>
-
-  <!-- Full Event Information -->
-  <h3 class="mt-4 text-base font-bold text-neutral-900">Szczegóły wydarzenia</h3>
-  <p class="mt-1 mb-4 text-sm text-neutral-500">Pełne informacje o tym wydarzeniu.</p>
-
-  <!-- Details grid -->
-  <div class="grid grid-cols-2 gap-y-4 gap-x-3 mb-3">
-    <!-- Date -->
-    <div class="flex items-start gap-2.5">
-      <app-icon name="calendar" size="md" class="text-primary-600 mt-0.5 shrink-0"></app-icon>
-      <div>
-        <span class="block text-[10px] text-neutral-400">Data</span>
-        <strong class="block text-xs font-semibold text-neutral-900">{{ e.startsAt | date : 'EEE, d MMM' }}</strong>
-      </div>
-    </div>
-
-    <!-- Time range -->
-    <div class="flex items-start gap-2.5">
-      <app-icon name="clock" size="md" class="text-danger-300 mt-0.5 shrink-0"></app-icon>
-      <div>
-        <span class="block text-[10px] text-neutral-400">Godziny</span>
-        <strong class="block text-xs font-semibold text-neutral-900"
-          >{{ e.startsAt | date : 'HH:mm' }} – {{ e.endsAt | date : 'HH:mm' }}</strong
-        >
-      </div>
-    </div>
-
-    <!-- spacer row -->
-    <div class="col-span-2"></div>
-
-    <!-- Place (clickable → opens map sheet) -->
-    <div class="flex items-start gap-2.5">
-      <app-icon name="map-pin" size="md" class="text-warning-400 mt-0.5 shrink-0"></app-icon>
-      <div class="min-w-0">
-        <span class="block text-[10px] text-neutral-400">Miejsce</span>
-        <strong
-          class="block text-xs font-semibold text-neutral-900 cursor-pointer hover:text-primary-500 transition-colors"
+      <!-- Location (clickable → opens map sheet) -->
+      @if (_fullAddress) {
+        <button
+          type="button"
+          class="flex items-center gap-1.5 pb-2 text-[11px] text-neutral-400 hover:text-primary-500 transition-colors sm:pb-0"
           (click)="overlays.open('map')"
         >
-          {{ _fullAddress }}
-        </strong>
-      </div>
+          <app-icon name="map-pin" size="sm" color="neutral" muted="light"></app-icon>
+          <span>{{ _fullAddress }}</span>
+        </button>
+      }
     </div>
 
-    <!-- Cost -->
-    <div class="flex items-start gap-2.5">
-      <app-icon name="dollar-sign" size="md" class="text-success-400 mt-0.5 shrink-0"></app-icon>
-      <div>
-        <span class="block text-[10px] text-neutral-400">Koszt</span>
-        <strong class="block text-xs font-semibold text-neutral-900">
-          @if (e.costPerPerson > 0) {
-          {{ e.costPerPerson | number : '1.0-2' }} zł } @else { Bezpłatne }
-        </strong>
-      </div>
+    <!-- Enrollment status banner -->
+    <div class="mt-2">
+      <app-enrollment-status-banner
+        [enrollmentPhase]="enrollmentPhase()"
+        [eventTimeStatus]="eventTimeStatus()"
+        [isCancelled]="isCancelled()"
+        [participantCount]="participantCount()"
+      />
     </div>
 
-    <!-- spacer row -->
-    <div class="col-span-2"></div>
-
-    <!-- Max participants -->
-    @if (e.maxParticipants) {
-    <div class="flex items-start gap-2.5">
-      <app-icon name="users" size="md" class="text-info-400 mt-0.5 shrink-0"></app-icon>
-      <div>
-        <span class="block text-[10px] text-neutral-400">Maks. uczestników</span>
-        <strong class="block text-xs font-semibold text-neutral-900">{{ e.maxParticipants }}</strong>
-      </div>
-    </div>
+    <!-- Description -->
+    @if (e.description) {
+      <p class="mt-2 text-sm leading-relaxed text-neutral-600 whitespace-pre-line">
+        {{ e.description }}
+      </p>
     }
 
-    <!-- Roles info -->
-    @if (e.roleConfig?.roles; as roles) { @if (roles.length > 1) {
-    <div class="flex items-start gap-2.5 col-span-2">
-      <app-icon name="users" size="md" class="text-accent-400 mt-0.5 shrink-0"></app-icon>
-      <div class="flex-1">
-        <span class="block text-[10px] text-neutral-400">Role uczestników</span>
-        <div class="mt-1 flex flex-wrap gap-1.5">
-          @for (role of roles; track role.key) {
-          <span
-            class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
-            [ngClass]="role.isDefault ? 'bg-primary-100 text-primary-700' : 'bg-neutral-100 text-neutral-600'"
-          >
-            {{ role.title }}
-            <span class="text-[10px] opacity-70">({{ role.slots }})</span>
+    <!-- Participants section -->
+    @if (_isPreEnrollment) {
+      <!-- Pre-enrollment: only show count, no avatar list, no link -->
+      @if (_participantCount > 0) {
+        <div class="mb-4 flex items-center gap-2">
+          <app-icon name="users" size="sm" class="text-info-400"></app-icon>
+          <span class="text-xs text-neutral-500">
+            {{ _participantCount }}
+            {{ _participantCount === 1 ? 'osoba zgłoszona' : 'osób zgłoszonych' }}
           </span>
+        </div>
+      }
+    } @else if (_participants.length > 0) {
+      <!-- Normal: clickable avatars → participants page -->
+      <a [routerLink]="['/w', e.city?.slug, e.id, 'participants']" class="flex items-center mb-4">
+        <div class="flex items-center -space-x-3">
+          @for (p of _visibleAvatars; track p.id; let i = $index) {
+            <div class="relative h-7 w-7 shrink-0 rounded-full ring-2 ring-white" [style.z-index]="6 - i">
+              <app-user-avatar
+                [avatarUrl]="p.user?.avatarUrl"
+                [displayName]="p.user?.displayName || ''"
+                size="sm"
+              ></app-user-avatar>
+            </div>
           }
         </div>
-      </div>
-    </div>
-    } }
-
-    <!-- Gender -->
-    <div class="flex items-start gap-2.5">
-      <app-icon name="user" size="md" class="text-primary-400 mt-0.5 shrink-0"></app-icon>
-      <div>
-        <span class="block text-[10px] text-neutral-400">Płeć</span>
-        <strong class="block text-xs font-semibold text-neutral-900">{{ _genderLabel }}</strong>
-      </div>
-    </div>
-
-    <!-- Age range -->
-    @if (_ageRange) {
-    <div class="flex items-start gap-2.5">
-      <app-icon name="shield" size="md" class="text-warning-300 mt-0.5 shrink-0"></app-icon>
-      <div>
-        <span class="block text-[10px] text-neutral-400">Wiek</span>
-        <strong class="block text-xs font-semibold text-neutral-900">{{ _ageRange }}</strong>
-      </div>
-    </div>
+        <span class="pl-4 text-[10px] text-neutral-400">
+          @if (_remainingCount > 0) {
+            +{{ _remainingCount }} uczestników
+          } @else {
+            {{ _participants.length }}
+            {{ _participants.length === 1 ? 'uczestnik' : 'uczestników' }}
+          }
+        </span>
+      </a>
     }
 
-    <!-- Enrollment phase -->
-    @if (_phase) {
-    <div class="flex items-start gap-2.5">
-      <app-icon name="users" size="md" class="text-primary-400 mt-0.5 shrink-0"></app-icon>
-      <div>
-        <span class="block text-[10px] text-neutral-400">Zapisy</span>
-        <strong class="block text-xs font-semibold text-neutral-900">
-          @if (_phase === 'PRE_ENROLLMENT') { Wstępne zapisy } @else if (_phase === 'LOTTERY_PENDING') { Losowanie w
-          toku } @else { Otwarte zapisy }
-        </strong>
-      </div>
-    </div>
+    <!-- Organizer announcements -->
+    @if (hasAnnouncements()) {
+      <app-event-announcements
+        [announcements]="announcements()"
+        [hasAnnouncements]="hasAnnouncements()"
+        [isLoggedIn]="_auth"
+        [loginQueryParams]="loginQueryParams"
+        (confirm)="confirmAnnouncement($event)"
+        (confirmAll)="confirmAllAnnouncements()"
+      ></app-event-announcements>
     }
 
-    <!-- City -->
-    @if (e.city) {
-    <div class="flex items-start gap-2.5">
-      <app-icon name="home" size="md" class="text-primary-400 mt-0.5 shrink-0"></app-icon>
-      <div>
-        <span class="block text-[10px] text-neutral-400">Miasto</span>
-        <strong class="block text-xs font-semibold text-neutral-900">{{ e.city!.name }}</strong>
+    <!-- Divider -->
+    <div class="border-t border-neutral-100"></div>
+
+    <!-- Full Event Information -->
+    <h3 class="mt-4 text-base font-bold text-neutral-900">Szczegóły wydarzenia</h3>
+    <p class="mt-1 mb-4 text-sm text-neutral-500">Pełne informacje o tym wydarzeniu.</p>
+
+    <!-- Details grid -->
+    <div class="grid grid-cols-2 gap-y-4 gap-x-3 mb-3">
+      <!-- Date -->
+      <div class="flex items-start gap-2.5">
+        <app-icon name="calendar" size="md" class="text-primary-600 mt-0.5 shrink-0"></app-icon>
+        <div>
+          <span class="block text-[10px] text-neutral-400">Data</span>
+          <strong class="block text-xs font-semibold text-neutral-900">{{ e.startsAt | date: 'EEE, d MMM' }}</strong>
+        </div>
       </div>
-    </div>
-    }
-  </div>
 
-  <!-- Amenities / Features - 3-column icon grid -->
-  @if (amenities.length > 0) {
-  <h3 class="mt-4 text-base font-bold text-neutral-900">Udogodnienia</h3>
-  <div class="mt-3 mb-4 grid grid-cols-3 gap-y-3 gap-x-2">
-    @for (a of amenities; track a.label) {
-    <div class="flex items-center gap-1.5">
-      <app-icon [name]="a.icon" size="sm" color="primary"></app-icon>
-      <span class="text-xs text-neutral-500">{{ a.label }}</span>
-    </div>
-    }
-  </div>
-  }
-
-  <!-- Countdown - always to event start -->
-  @if (_countdown; as cd) {
-  <div class="border-t border-neutral-100"></div>
-  <div class="mb-4 mt-4">
-    <h3 class="text-base font-bold text-neutral-900">Wydarzenie za:</h3>
-    <p class="mt-1 mb-3 text-sm text-neutral-500">Dołącz zanim będzie za późno.</p>
-    <div class="grid grid-cols-4 gap-2 text-center">
-      <div>
-        <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.days }}</span>
-        <span class="block text-[11px] text-neutral-400">dni</span>
+      <!-- Time range -->
+      <div class="flex items-start gap-2.5">
+        <app-icon name="clock" size="md" class="text-danger-300 mt-0.5 shrink-0"></app-icon>
+        <div>
+          <span class="block text-[10px] text-neutral-400">Godziny</span>
+          <strong class="block text-xs font-semibold text-neutral-900"
+            >{{ e.startsAt | date: 'HH:mm' }} – {{ e.endsAt | date: 'HH:mm' }}</strong
+          >
+        </div>
       </div>
-      <div>
-        <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.hours }}</span>
-        <span class="block text-[11px] text-neutral-400">godzin</span>
+
+      <!-- spacer row -->
+      <div class="col-span-2"></div>
+
+      <!-- Place (clickable → opens map sheet) -->
+      <div class="flex items-start gap-2.5">
+        <app-icon name="map-pin" size="md" class="text-warning-400 mt-0.5 shrink-0"></app-icon>
+        <div class="min-w-0">
+          <span class="block text-[10px] text-neutral-400">Miejsce</span>
+          <strong
+            class="block text-xs font-semibold text-neutral-900 cursor-pointer hover:text-primary-500 transition-colors"
+            (click)="overlays.open('map')"
+          >
+            {{ _fullAddress }}
+          </strong>
+        </div>
       </div>
-      <div>
-        <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.minutes }}</span>
-        <span class="block text-[11px] text-neutral-400">minut</span>
+
+      <!-- Cost -->
+      <div class="flex items-start gap-2.5">
+        <app-icon name="dollar-sign" size="md" class="text-success-400 mt-0.5 shrink-0"></app-icon>
+        <div>
+          <span class="block text-[10px] text-neutral-400">Koszt</span>
+          <strong class="block text-xs font-semibold text-neutral-900">
+            @if (e.costPerPerson > 0) {
+              {{ e.costPerPerson | number: '1.0-2' }} zł
+            } @else {
+              Bezpłatne
+            }
+          </strong>
+        </div>
       </div>
-      <div>
-        <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.seconds }}</span>
-        <span class="block text-[11px] text-neutral-400">sekund</span>
-      </div>
-    </div>
-  </div>
-  }
 
-  <!-- Notification bars (participant, organizer, etc.) -->
-  @if (_notificationBars.length > 0) {
-  <div class="mt-4">
-    <app-event-notification-bars
-      [bars]="_notificationBars"
-      (barAction)="handleBarAction($event)"
-    ></app-event-notification-bars>
-  </div>
-  }
+      <!-- spacer row -->
+      <div class="col-span-2"></div>
 
-  <!-- Ban banner -->
-  @if (_isBanned) {
-  <div class="mt-4 rounded-xl border border-danger-200 bg-danger-50 p-4">
-    <div class="flex items-start gap-3">
-      <app-icon name="shield-alert" size="sm" class="text-danger-400 mt-0.5 shrink-0"></app-icon>
-      <div>
-        <p class="text-sm font-semibold text-danger-600">Nie możesz dołączyć do wydarzeń tego organizatora</p>
-        <p class="mt-1 text-xs text-danger-500">
-          Organizator zablokował Ci możliwość zapisu na swoje wydarzenia. Jeśli uważasz, że to pomyłka, skontaktuj się
-          bezpośrednio z organizatorem.
-        </p>
-      </div>
-    </div>
-  </div>
-  }
-
-  <!-- Join / Login button (only when not participant, not banned, and event is joinable) -->
-  @if (!_isParticipant && !_isBanned && _canJoin) {
-  <div class="mt-4">
-    <app-button appearance="soft" color="primary" [fullWidth]="true" [loading]="_joining" (clicked)="openJoinSheet()">
-      {{ _ctaLabel }}
-    </app-button>
-  </div>
-  }
-
-  <!-- Group chat button - visible for participants and organizer -->
-  @if (_isParticipant || _isOrganizer) {
-  <div class="mt-3">
-    <button
-      type="button"
-      class="flex w-full items-center gap-3 rounded-xl border border-neutral-100 bg-neutral-50 px-4 py-3 text-left transition-colors hover:bg-neutral-100"
-      (click)="openChat()"
-    >
-      <app-icon name="message-circle" size="sm" class="text-primary-500"></app-icon>
-      <div class="flex-1 min-w-0">
-        <p class="text-sm font-semibold text-neutral-900">Czat grupowy</p>
-        <p class="text-[10px] text-neutral-400">Porozmawiaj z uczestnikami</p>
-      </div>
-      <app-icon name="chevron-right" size="sm" class="text-neutral-300"></app-icon>
-    </button>
-  </div>
-  }
-
-  <!-- Organizer row with Follow button -->
-  @if (e.organizer) {
-  <div class="mt-3 border-t border-neutral-100"></div>
-
-  <div class="mt-4 flex items-center gap-3 pb-4">
-    <app-user-avatar
-      [avatarUrl]="e.organizer!.avatarUrl"
-      [displayName]="e.organizer!.displayName"
-      size="md"
-    ></app-user-avatar>
-    <div class="flex-1 min-w-0">
-      <p class="text-base font-semibold text-neutral-900 truncate">
-        {{ e.organizer!.displayName }}
-      </p>
-      <span class="text-xs text-neutral-400">Organizator</span>
-    </div>
-    @if (_isOrganizer) {
-    <div class="flex items-center gap-2 shrink-0">
-      <app-button appearance="outline" color="primary" size="xs" (clicked)="openOrganizerChats()">
-        <app-icon name="message-circle" size="xs"></app-icon>
-        Konwersacje
-      </app-button>
-    </div>
-    } @else {
-    <div class="flex items-center gap-2 shrink-0">
-      @if (_auth) {
-      <app-button appearance="outline" color="primary" size="xs" (clicked)="contactOrganizer()">
-        <app-icon name="message-circle" size="xs"></app-icon>
-        Napisz
-      </app-button>
+      <!-- Max participants -->
+      @if (e.maxParticipants) {
+        <div class="flex items-start gap-2.5">
+          <app-icon name="users" size="md" class="text-info-400 mt-0.5 shrink-0"></app-icon>
+          <div>
+            <span class="block text-[10px] text-neutral-400">Maks. uczestników</span>
+            <strong class="block text-xs font-semibold text-neutral-900">{{ e.maxParticipants }}</strong>
+          </div>
+        </div>
       }
-      <app-button appearance="soft" color="primary" size="xs" (clicked)="onFollow()"> Obserwuj </app-button>
+
+      <!-- Roles info -->
+      @if (e.roleConfig?.roles; as roles) {
+        @if (roles.length > 1) {
+          <div class="flex items-start gap-2.5 col-span-2">
+            <app-icon name="users" size="md" class="text-accent-400 mt-0.5 shrink-0"></app-icon>
+            <div class="flex-1">
+              <span class="block text-[10px] text-neutral-400">Role uczestników</span>
+              <div class="mt-1 flex flex-wrap gap-1.5">
+                @for (role of roles; track role.key) {
+                  <span
+                    class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
+                    [ngClass]="role.isDefault ? 'bg-primary-100 text-primary-700' : 'bg-neutral-100 text-neutral-600'"
+                  >
+                    {{ role.title }}
+                    <span class="text-[10px] opacity-70">({{ role.slots }})</span>
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      }
+
+      <!-- Gender -->
+      <div class="flex items-start gap-2.5">
+        <app-icon name="user" size="md" class="text-primary-400 mt-0.5 shrink-0"></app-icon>
+        <div>
+          <span class="block text-[10px] text-neutral-400">Płeć</span>
+          <strong class="block text-xs font-semibold text-neutral-900">{{ _genderLabel }}</strong>
+        </div>
+      </div>
+
+      <!-- Age range -->
+      @if (_ageRange) {
+        <div class="flex items-start gap-2.5">
+          <app-icon name="shield" size="md" class="text-warning-300 mt-0.5 shrink-0"></app-icon>
+          <div>
+            <span class="block text-[10px] text-neutral-400">Wiek</span>
+            <strong class="block text-xs font-semibold text-neutral-900">{{ _ageRange }}</strong>
+          </div>
+        </div>
+      }
+
+      <!-- Enrollment phase -->
+      @if (_phase) {
+        <div class="flex items-start gap-2.5">
+          <app-icon name="users" size="md" class="text-primary-400 mt-0.5 shrink-0"></app-icon>
+          <div>
+            <span class="block text-[10px] text-neutral-400">Zapisy</span>
+            <strong class="block text-xs font-semibold text-neutral-900">
+              @if (_phase === 'PRE_ENROLLMENT') {
+                Wstępne zapisy
+              } @else if (_phase === 'LOTTERY_PENDING') {
+                Losowanie w toku
+              } @else {
+                Otwarte zapisy
+              }
+            </strong>
+          </div>
+        </div>
+      }
+
+      <!-- City -->
+      @if (e.city) {
+        <div class="flex items-start gap-2.5">
+          <app-icon name="home" size="md" class="text-primary-400 mt-0.5 shrink-0"></app-icon>
+          <div>
+            <span class="block text-[10px] text-neutral-400">Miasto</span>
+            <strong class="block text-xs font-semibold text-neutral-900">{{ e.city!.name }}</strong>
+          </div>
+        </div>
+      }
     </div>
+
+    <!-- Amenities / Features - 3-column icon grid -->
+    @if (amenities.length > 0) {
+      <h3 class="mt-4 text-base font-bold text-neutral-900">Udogodnienia</h3>
+      <div class="mt-3 mb-4 grid grid-cols-3 gap-y-3 gap-x-2">
+        @for (a of amenities; track a.label) {
+          <div class="flex items-center gap-1.5">
+            <app-icon [name]="a.icon" size="sm" color="primary"></app-icon>
+            <span class="text-xs text-neutral-500">{{ a.label }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Countdown - always to event start -->
+    @if (_countdown; as cd) {
+      <div class="border-t border-neutral-100"></div>
+      <div class="mb-4 mt-4">
+        <h3 class="text-base font-bold text-neutral-900">Wydarzenie za:</h3>
+        <p class="mt-1 mb-3 text-sm text-neutral-500">Dołącz zanim będzie za późno.</p>
+        <div class="grid grid-cols-4 gap-2 text-center">
+          <div>
+            <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.days }}</span>
+            <span class="block text-[11px] text-neutral-400">dni</span>
+          </div>
+          <div>
+            <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.hours }}</span>
+            <span class="block text-[11px] text-neutral-400">godzin</span>
+          </div>
+          <div>
+            <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.minutes }}</span>
+            <span class="block text-[11px] text-neutral-400">minut</span>
+          </div>
+          <div>
+            <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.seconds }}</span>
+            <span class="block text-[11px] text-neutral-400">sekund</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Notification bars (participant, organizer, etc.) -->
+    @if (_notificationBars.length > 0) {
+      <div class="mt-4">
+        <app-event-notification-bars
+          [bars]="_notificationBars"
+          (barAction)="handleBarAction($event)"
+        ></app-event-notification-bars>
+      </div>
+    }
+
+    <!-- Ban banner -->
+    @if (_isBanned) {
+      <div class="mt-4 rounded-xl border border-danger-200 bg-danger-50 p-4">
+        <div class="flex items-start gap-3">
+          <app-icon name="shield-alert" size="sm" class="text-danger-400 mt-0.5 shrink-0"></app-icon>
+          <div>
+            <p class="text-sm font-semibold text-danger-600">Nie możesz dołączyć do wydarzeń tego organizatora</p>
+            <p class="mt-1 text-xs text-danger-500">
+              Organizator zablokował Ci możliwość zapisu na swoje wydarzenia. Jeśli uważasz, że to pomyłka, skontaktuj
+              się bezpośrednio z organizatorem.
+            </p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Join / Login button (only when not participant, not banned, and event is joinable) -->
+    @if (!_isParticipant && !_isBanned && _canJoin) {
+      <div class="mt-4">
+        <app-button
+          appearance="soft"
+          color="primary"
+          [fullWidth]="true"
+          [loading]="_joining"
+          (clicked)="openJoinSheet()"
+        >
+          {{ _ctaLabel }}
+        </app-button>
+      </div>
+    }
+
+    <!-- Group chat button - visible for participants and organizer -->
+    @if (_isParticipant || _isOrganizer) {
+      <div class="mt-3">
+        <button
+          type="button"
+          class="flex w-full items-center gap-3 rounded-xl border border-neutral-100 bg-neutral-50 px-4 py-3 text-left transition-colors hover:bg-neutral-100"
+          (click)="openChat()"
+        >
+          <app-icon name="message-circle" size="sm" class="text-primary-500"></app-icon>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-neutral-900">Czat grupowy</p>
+            <p class="text-[10px] text-neutral-400">Porozmawiaj z uczestnikami</p>
+          </div>
+          <app-icon name="chevron-right" size="sm" class="text-neutral-300"></app-icon>
+        </button>
+      </div>
+    }
+
+    <!-- Organizer row with Follow button -->
+    @if (e.organizer) {
+      <div class="mt-3 border-t border-neutral-100"></div>
+
+      <div class="mt-4 flex items-center gap-3 pb-4">
+        <app-user-avatar
+          [avatarUrl]="e.organizer!.avatarUrl"
+          [displayName]="e.organizer!.displayName"
+          size="md"
+        ></app-user-avatar>
+        <div class="flex-1 min-w-0">
+          <p class="text-base font-semibold text-neutral-900 truncate">
+            {{ e.organizer!.displayName }}
+          </p>
+          <span class="text-xs text-neutral-400">Organizator</span>
+        </div>
+        @if (_isOrganizer) {
+          <div class="flex items-center gap-2 shrink-0">
+            <app-button appearance="outline" color="primary" size="xs" (clicked)="openOrganizerChats()">
+              <app-icon name="message-circle" size="xs"></app-icon>
+              Konwersacje
+            </app-button>
+          </div>
+        } @else {
+          <div class="flex items-center gap-2 shrink-0">
+            @if (_auth) {
+              <app-button appearance="outline" color="primary" size="xs" (clicked)="contactOrganizer()">
+                <app-icon name="message-circle" size="xs"></app-icon>
+                Napisz
+              </app-button>
+            }
+            <app-button appearance="soft" color="primary" size="xs" (clicked)="onFollow()"> Obserwuj </app-button>
+          </div>
+        }
+      </div>
     }
   </div>
-  }
-</div>
 
-<!-- Fixed bottom CTA -->
-@if (!_isParticipant && !_isBanned && _canJoin) {
-<div
-  class="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-app pointer-events-none pb-[calc(env(safe-area-inset-bottom)+4.5rem)] px-4"
->
-  <div class="flex justify-end pointer-events-auto">
-    <app-button
-      appearance="soft"
-      color="primary"
-      size="md"
-      [loading]="_joining"
-      (clicked)="openJoinSheet()"
-      class="shadow-lg uppercase font-bold"
+  <!-- Fixed bottom CTA -->
+  @if (!_isParticipant && !_isBanned && _canJoin) {
+    <div
+      class="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-app pointer-events-none pb-[calc(env(safe-area-inset-bottom)+4.5rem)] px-4"
     >
-      {{ _ctaLabelShort }}
-    </app-button>
-  </div>
-</div>
-} }
+      <div class="flex justify-end pointer-events-auto">
+        <app-button
+          appearance="soft"
+          color="primary"
+          size="md"
+          [loading]="_joining"
+          (clicked)="openJoinSheet()"
+          class="shadow-lg uppercase font-bold"
+        >
+          {{ _ctaLabelShort }}
+        </app-button>
+      </div>
+    </div>
+  }
+}
