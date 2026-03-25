@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
+import { APP_BRAND } from '@zgadajsie/shared';
 
 @Injectable()
 export class EmailTestService {
@@ -44,10 +45,10 @@ export class EmailTestService {
       await transporter.sendMail({
         from: this.configService.get<string>('SMTP_FROM'),
         to,
-        subject: 'Test SMTP – ZgadajSię',
+        subject: `Test SMTP – ${APP_BRAND.NAME}`,
         html: `
           <h2>Test połączenia SMTP</h2>
-          <p>To jest testowa wiadomość z serwera ZgadajSię.</p>
+          <p>To jest testowa wiadomość z serwera ${APP_BRAND.NAME}.</p>
           <p>Jeśli otrzymasz ten email, konfiguracja SMTP działa poprawnie!</p>
         `,
       });

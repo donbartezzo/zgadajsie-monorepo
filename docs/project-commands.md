@@ -1,6 +1,6 @@
-# Komendy projektu ZgadajSię
+# Komendy projektu ZgadajSie.pl
 
-Ten dokument opisuje wszystkie dostępne komendy w projekcie ZgadajSię po migracji do wspólnego package.json.
+Ten dokument opisuje wszystkie dostępne komendy w projekcie ZgadajSie.pl po migracji do wspólnego package.json.
 
 ## Komendy ogólne
 

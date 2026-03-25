@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { APP_BRAND } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-terms',
@@ -11,7 +12,7 @@ import { CommonModule } from '@angular/common';
         <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
           <p class="text-xs text-primary-400 mb-4">Ostatnia aktualizacja: 15 lutego 2026</p>
           <p class="text-sm text-neutral-600">
-            Niniejszy regulamin określa zasady korzystania z platformy ZgadajSie.pl, służącej do
+            Niniejszy regulamin określa zasady korzystania z platformy {{ brandName }}, służącej do
             organizowania i uczestniczenia w lokalnych wydarzeniach sportowych.
           </p>
         </div>
@@ -19,7 +20,7 @@ import { CommonModule } from '@angular/common';
         <div class="bg-white rounded-2xl shadow-sm p-6">
           <h3 class="text-lg font-semibold mb-3">1. Postanowienia ogólne</h3>
           <p class="text-sm text-neutral-600 mb-6">
-            Niniejszy regulamin określa zasady korzystania z platformy ZgadajSie.pl, służącej do
+            Niniejszy regulamin określa zasady korzystania z platformy {{ brandName }}, służącej do
             organizowania i uczestniczenia w lokalnych wydarzeniach sportowych. Korzystanie z
             platformy jest równoznaczne z akceptacją postanowień regulaminu.
           </p>
@@ -33,8 +34,8 @@ import { CommonModule } from '@angular/common';
 
             <strong>2.2. Bezpieczeństwo konta</strong><br />
             Użytkownik jest odpowiedzialny za utrzymanie bezpieczeństwa swojego konta, w tym za
-            ochronę hasła przed dostępem osób trzecich. ZgadajSie.pl nie ponosi odpowiedzialności za
-            szkody wynikające z nieautoryzowanego dostępu do konta użytkownika.<br /><br />
+            ochronę hasła przed dostępem osób trzecich. {{ brandName }} nie ponosi odpowiedzialności
+            za szkody wynikające z nieautoryzowanego dostępu do konta użytkownika.<br /><br />
 
             <strong>2.3. Zawartość profilu</strong><br />
             Zdjęcie profilowe i inne dane w profilu użytkownika nie mogą naruszać dobrych obyczajów
@@ -114,7 +115,7 @@ import { CommonModule } from '@angular/common';
           <h3 class="text-lg font-semibold mb-3">7. Odpowiedzialność</h3>
           <p class="text-sm text-neutral-600 mb-6">
             <strong>7.1. Odpowiedzialność platformy</strong><br />
-            ZgadajSie.pl nie ponosi odpowiedzialności za przebieg wydarzeń organizowanych przez
+            {{ brandName }} nie ponosi odpowiedzialności za przebieg wydarzeń organizowanych przez
             użytkowników. Platforma pełni jedynie rolę pośrednika technicznego.<br /><br />
 
             <strong>7.2. Odpowiedzialność użytkowników</strong><br />
@@ -122,13 +123,13 @@ import { CommonModule } from '@angular/common';
             wydarzeń.<br /><br />
 
             <strong>7.3. Wyłączenie odpowiedzialności</strong><br />
-            ZgadajSie.pl nie ponosi odpowiedzialności za szkody wynikające z siły wyższej, działań
-            osób trzecich lub technicznych awarii systemu.
+            {{ brandName }} nie ponosi odpowiedzialności za szkody wynikające z siły wyższej,
+            działań osób trzecich lub technicznych awarii systemu.
           </p>
 
           <h3 class="text-lg font-semibold mb-3">8. Prawa autorskie i własność intelektualna</h3>
           <p class="text-sm text-neutral-600 mb-6">
-            Wszelkie prawa autorskie do platformy ZgadajSie.pl należą do jej właściciela.
+            Wszelkie prawa autorskie do platformy {{ brandName }} należą do jej właściciela.
             Użytkownicy nabywają jedynie prawo do korzystania z platformy w ramach określonych w
             regulaminie.
           </p>
@@ -136,13 +137,13 @@ import { CommonModule } from '@angular/common';
           <h3 class="text-lg font-semibold mb-3">9. Reklamacje</h3>
           <p class="text-sm text-neutral-600 mb-6">
             Reklamacje dotyczące funkcjonowania platformy należy składać na adres
-            kontakt@zgadajsie.pl w terminie 14 dni od wystąpienia zdarzenia. Reklamacje rozpatrywane
-            są w ciągu 30 dni od ich otrzymania.
+            {{ APP_BRAND.CONTACT_EMAIL }} w terminie 14 dni od wystąpienia zdarzenia. Reklamacje
+            rozpatrywane są w ciągu 30 dni od ich otrzymania.
           </p>
 
           <h3 class="text-lg font-semibold mb-3">10. Zmiany w regulaminie</h3>
           <p class="text-sm text-neutral-600 mb-6">
-            ZgadajSie.pl zastrzega sobie prawo do zmiany niniejszego regulaminu. O wszelkich
+            {{ brandName }} zastrzega sobie prawo do zmiany niniejszego regulaminu. O wszelkich
             zmianach użytkownicy zostaną poinformowani z co najmniej 7-dniowym wyprzedzeniem.
             Kontynuowanie korzystania z platformy po zmianach jest równoznaczne z ich akceptacją.
           </p>
@@ -152,4 +153,7 @@ import { CommonModule } from '@angular/common';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TermsComponent {}
+export class TermsComponent {
+  protected readonly APP_BRAND = APP_BRAND;
+  readonly brandName = APP_BRAND.NAME;
+}

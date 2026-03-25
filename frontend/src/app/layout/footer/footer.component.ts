@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { APP_BRAND } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-footer',
@@ -9,5 +10,6 @@ import { RouterLink } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FooterComponent {
+  protected readonly APP_BRAND = APP_BRAND;
   readonly currentYear = new Date().getFullYear();
 }

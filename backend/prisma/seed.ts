@@ -1,5 +1,12 @@
 import { PrismaClient } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
+
+// Brand constants (synchronized with libs/src/lib/constants/brand.constants.ts)
+const APP_BRAND = {
+  NAME: 'ZgadajSie.pl',
+  CONTACT_EMAIL: 'kontakt@zgadajsie.pl',
+  NOREPLY_EMAIL: 'noreply@zgadajsie.pl',
+} as const;
 
 const prisma = new PrismaClient();
 
@@ -87,7 +94,7 @@ async function main() {
   const passwordHash = await bcrypt.hash('Admin123!', 10);
   const admin = await prisma.user.create({
     data: {
-      email: 'admin@zgadajsie.pl',
+      email: APP_BRAND.CONTACT_EMAIL,
       passwordHash,
       displayName: 'Administrator',
       role: 'ADMIN',
@@ -683,7 +690,9 @@ async function main() {
   console.log('Seed zakończony sukcesem!');
   console.log('');
   console.log('=== Podsumowanie ===');
-  console.log('Użytkownicy: admin@zgadajsie.pl (Admin123!), jan.kowalski@example.com (Test1234!)');
+  console.log(
+    `Użytkownicy: ${APP_BRAND.CONTACT_EMAIL} (Admin123!), jan.kowalski@example.com (Test1234!)`,
+  );
   console.log('             anna.nowak@example.com, marek.wisniewski@example.com,');
   console.log(
     '             kasia.zielinska@example.com, tomek.lewandowski@example.com (Test1234!)',

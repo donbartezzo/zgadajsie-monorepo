@@ -3,6 +3,7 @@ import { CommonModule, DOCUMENT } from '@angular/common';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
+import { APP_BRAND } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-share-overlay',
@@ -66,19 +67,19 @@ export class ShareOverlayComponent {
 
   private shareToTwitter(): void {
     const url = encodeURIComponent(this.getCurrentUrl());
-    const text = encodeURIComponent('Sprawdź to na ZgadajSię!');
+    const text = encodeURIComponent(`Sprawdź to na ${APP_BRAND.NAME}!`);
     window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
     this.closed.emit();
   }
 
   private shareToWhatsApp(): void {
-    const text = encodeURIComponent(`Sprawdź to na ZgadajSię! ${this.getCurrentUrl()}`);
+    const text = encodeURIComponent(`Sprawdź to na ${APP_BRAND.NAME}! ${this.getCurrentUrl()}`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
     this.closed.emit();
   }
 
   private shareToEmail(): void {
-    const subject = encodeURIComponent('Sprawdź to na ZgadajSię!');
+    const subject = encodeURIComponent(`Sprawdź to na ${APP_BRAND.NAME}!`);
     const body = encodeURIComponent(
       `Pomyślałem, że może Cię to zainteresować:\n\n${this.getCurrentUrl()}`,
     );

@@ -1,14 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { Transporter, createTransport } from 'nodemailer';
+import { APP_BRAND } from '@zgadajsie/shared';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter;
+  private transporter: Transporter;
 
   constructor(private configService: ConfigService) {
-    this.transporter = nodemailer.createTransport({
+    this.transporter = createTransport({
       host: this.configService.get<string>('SMTP_HOST', 'localhost'),
       port: this.configService.get<number>('SMTP_PORT', 587),
       secure: this.configService.get<string>('SMTP_SECURE', 'false') === 'true',
@@ -20,7 +21,7 @@ export class EmailService {
   }
 
   private get fromAddress(): string {
-    return this.configService.get<string>('SMTP_FROM', 'noreply@zgadajsie.pl');
+    return this.configService.get<string>('SMTP_FROM', APP_BRAND.NOREPLY_EMAIL);
   }
 
   private get frontendUrl(): string {
@@ -31,10 +32,10 @@ export class EmailService {
     const link = `${this.frontendUrl}/auth/activate?token=${token}`;
     await this.send(
       email,
-      'Aktywacja konta – ZgadajSię',
+      `Aktywacja konta – ${APP_BRAND.NAME}`,
       `
       <h2>Witaj ${displayName}!</h2>
-      <p>Dziękujemy za rejestrację w ZgadajSię.</p>
+      <p>Dziękujemy za rejestrację w ${APP_BRAND.NAME}.</p>
       <p><a href="${link}" style="display:inline-block;padding:12px 24px;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;">Aktywuj konto</a></p>
       <p>Link wygasa po 24 godzinach.</p>
     `,
@@ -45,7 +46,7 @@ export class EmailService {
     const link = `${this.frontendUrl}/auth/reset-password?token=${token}`;
     await this.send(
       email,
-      'Reset hasła – ZgadajSię',
+      `Reset hasła – ${APP_BRAND.NAME}`,
       `
       <h2>Reset hasła</h2>
       <p>Kliknij poniższy link, aby ustawić nowe hasło:</p>
@@ -65,8 +66,8 @@ export class EmailService {
       status === 'APPROVED'
         ? 'zatwierdzone - potwierdź uczestnictwo'
         : status === 'CONFIRMED'
-        ? 'potwierdzone'
-        : 'odrzucone';
+          ? 'potwierdzone'
+          : 'odrzucone';
     await this.send(
       email,
       `Zmiana statusu uczestnictwa – ${eventTitle}`,
@@ -152,7 +153,7 @@ export class EmailService {
   ): Promise<void> {
     await this.send(
       email,
-      'Reprymenda – ZgadajSię',
+      `Reprymenda – ${APP_BRAND.NAME}`,
       `
       <h2>Hej ${displayName}!</h2>
       <p>Otrzymałeś reprymendę za zachowanie na wydarzeniu <strong>${eventTitle}</strong>.</p>
@@ -174,8 +175,8 @@ export class EmailService {
       priority === 'CRITICAL'
         ? '🔴 Krytyczny'
         : priority === 'ORGANIZATIONAL'
-        ? '🟡 Organizacyjny'
-        : 'ℹ️ Informacyjny';
+          ? '🟡 Organizacyjny'
+          : 'ℹ️ Informacyjny';
     await this.send(
       email,
       `${priority === 'CRITICAL' ? '[PILNE] ' : ''}Komunikat organizatora – ${eventTitle}`,
@@ -224,6 +225,6 @@ export class EmailService {
   }
 
   private wrapHtml(body: string): string {
-    return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">${body}<hr style="margin-top:32px;border:none;border-top:1px solid #e5e7eb;"/><p style="font-size:12px;color:#9ca3af;">ZgadajSię – Twoja lokalna platforma sportowa</p></body></html>`;
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">${body}<hr style="margin-top:32px;border:none;border-top:1px solid #e5e7eb;"/><p style="font-size:12px;color:#9ca3af;">${APP_BRAND.NAME} – ${APP_BRAND.TAGLINE}</p></body></html>`;
   }
 }

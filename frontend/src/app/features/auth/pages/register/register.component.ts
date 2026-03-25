@@ -6,6 +6,7 @@ import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { APP_BRAND } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-register',
@@ -14,7 +15,9 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
     <div class="p-6 max-w-md mx-auto">
       <div class="text-center mb-6">
         <h1 class="text-2xl font-bold text-neutral-900">Utwórz konto</h1>
-        <p class="mt-1 text-sm text-neutral-500">Dołącz do społeczności ZgadajSię</p>
+        <p class="mt-1 text-sm text-neutral-500">
+          Dołącz do społeczności {{ APP_BRAND.SHORT_NAME }}
+        </p>
       </div>
 
       <form (ngSubmit)="onSubmit()" class="space-y-4">
@@ -102,6 +105,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegisterComponent {
+  protected readonly APP_BRAND = APP_BRAND;
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly snackbar = inject(SnackbarService);

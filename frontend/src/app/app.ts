@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { APP_BRAND } from '@zgadajsie/shared';
 import { BottomNavComponent } from './layout/footer/bottom-nav.component';
 import { SnackbarComponent } from './shared/ui/snackbar/snackbar.component';
 import { BottomOverlaysComponent } from './shared/overlay/ui/bottom-overlays/bottom-overlays.component';
@@ -20,5 +21,5 @@ import { PageLayoutComponent } from './shared/layouts/page-layout/page-layout.co
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
-  protected title = 'ZgadajSię';
+  protected title = APP_BRAND.NAME;
 }

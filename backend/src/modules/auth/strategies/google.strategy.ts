@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
@@ -7,11 +7,25 @@ import { MemoryStateStore } from './memory-state-store';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
+  private readonly logger = new Logger(GoogleStrategy.name);
+
   constructor(configService: ConfigService) {
+    const clientID = configService.get<string>('GOOGLE_CLIENT_ID') || 'disabled';
+    const clientSecret = configService.get<string>('GOOGLE_CLIENT_SECRET') || 'disabled';
+    const callbackURL =
+      configService.get<string>('GOOGLE_CALLBACK_URL') ||
+      'http://localhost:3000/api/auth/google/callback';
+
+    if (clientID === 'disabled' || clientSecret === 'disabled') {
+      new Logger(GoogleStrategy.name).warn(
+        'Google OAuth2 credentials not configured - Google login disabled',
+      );
+    }
+
     super({
-      clientID: configService.get<string>('GOOGLE_CLIENT_ID'),
-      clientSecret: configService.get<string>('GOOGLE_CLIENT_SECRET'),
-      callbackURL: configService.get<string>('GOOGLE_CALLBACK_URL'),
+      clientID,
+      clientSecret,
+      callbackURL,
       scope: ['email', 'profile'],
       passReqToCallback: true,
       store: MemoryStateStore.getInstance(),

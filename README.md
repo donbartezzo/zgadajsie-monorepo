@@ -1,8 +1,8 @@
-# ZgadajsieMonorepo
+# ZgadajSie.pl - Monorepo
 
 ## Opis projektu
 
-Monorepo z frontendem (Angular) i backendem (NestJS) zarządzanym przez Nx.
+Monorepo z frontendem (Angular) i backendem (NestJS) zarządzanym przez Nx dla platformy ZgadajSie.pl.
 
 - **Frontend** – aplikacja Angular (katalog `frontend/`)
 - **Backend** – NestJS + Prisma + PostgreSQL (katalog `backend/`)

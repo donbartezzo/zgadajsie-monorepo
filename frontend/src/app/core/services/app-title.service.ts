@@ -1,10 +1,11 @@
 import { inject, Injectable } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { APP_BRAND } from '@zgadajsie/shared';
 
 @Injectable({ providedIn: 'root' })
 export class AppTitleService {
   private readonly title = inject(Title);
-  private static readonly APP_NAME = 'ZgadajSie.pl';
+  private static readonly APP_NAME = APP_BRAND.NAME;
   private static readonly RESOLVED_TITLE_SEPARATOR = ' | ';
 
   setResolvedTitle(...parts: Array<string | null | undefined>): void {

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import * as webPush from 'web-push';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from './notifications.service';
+import { APP_BRAND } from '@zgadajsie/shared';
 
 @Injectable()
 export class PushService {
@@ -17,7 +18,7 @@ export class PushService {
     const vapidPrivate = this.configService.get<string>('VAPID_PRIVATE_KEY', '');
     const vapidSubject = this.configService.get<string>(
       'VAPID_SUBJECT',
-      'mailto:kontakt@zgadajsie.pl',
+      `mailto:${APP_BRAND.CONTACT_EMAIL}`,
     );
 
     if (
@@ -127,8 +128,8 @@ export class PushService {
       status === 'APPROVED'
         ? 'zatwierdzone - potwierdź uczestnictwo'
         : status === 'CONFIRMED'
-        ? 'potwierdzone'
-        : 'odrzucone';
+          ? 'potwierdzone'
+          : 'odrzucone';
     const url = await this.getEventUrl(eventId);
     await this.notifyUser(
       userId,

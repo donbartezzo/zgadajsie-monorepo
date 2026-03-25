@@ -1,4 +1,4 @@
-# Struktura projektu ZgadajSię
+# Struktura projektu ZgadajSie.pl
 
 Ten dokument opisuje **aktualną** organizację kodu w monorepo. W przypadku rozbieżności nadrzędne są rzeczywiste katalogi i pliki źródłowe.
 

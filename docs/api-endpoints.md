@@ -1,4 +1,4 @@
-# Dokumentacja API ZgadajSię
+# Dokumentacja API ZgadajSie.pl
 
 Ten dokument jest **mapą aktywnych endpointów** i ich odpowiedzialności. Nie zastępuje kodu kontrolerów ani DTO.
 
