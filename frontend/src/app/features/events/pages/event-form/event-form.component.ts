@@ -21,6 +21,7 @@ import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { MapComponent } from '../../../../shared/event-form/ui/map/map.component';
 import { RulesEditorComponent } from '../../../../shared/event-form/ui/rules-editor/rules-editor.component';
+import { DateTimeInputComponent } from '../../../../shared/ui/date-time-input/date-time-input.component';
 import { EventService } from '../../../../core/services/event.service';
 import { CoverImageService } from '../../../../core/services/cover-image.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
@@ -88,6 +89,7 @@ class EventValidators {
     CardComponent,
     MapComponent,
     RulesEditorComponent,
+    DateTimeInputComponent,
   ],
   template: `
     <div class="p-4">
@@ -182,19 +184,11 @@ class EventValidators {
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1">Początek</label>
-                <input
-                  type="datetime-local"
-                  formControlName="startsAt"
-                  class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
-                />
+                <app-date-time-input formControlName="startsAt" />
               </div>
               <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1">Koniec</label>
-                <input
-                  type="datetime-local"
-                  formControlName="endsAt"
-                  class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
-                />
+                <app-date-time-input formControlName="endsAt" />
               </div>
             </div>
 
