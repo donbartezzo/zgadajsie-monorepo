@@ -117,6 +117,13 @@ export class EventsService {
 
   async findAll(query: EventQueryDto) {
     const { page = 1, limit = 20, citySlug, disciplineSlug, sortBy } = query;
+    // If citySlug is provided, ensure the city exists — otherwise return 404
+    if (citySlug) {
+      const city = await this.prisma.city.findUnique({ where: { slug: citySlug } });
+      if (!city) {
+        throw new NotFoundException('Miejscowość nie znaleziona');
+      }
+    }
     const now = new Date();
     const dateFrom = daysFromNow(-7, now);
     const dateTo = daysFromNow(7, now);

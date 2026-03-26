@@ -9,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { EventCardComponent } from '../../../../shared/event/ui/event-card/event-card.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
@@ -211,7 +212,14 @@ export class EventsComponent implements OnInit, OnDestroy {
           this.page++;
           this.isLoading.set(false);
         },
-        error: () => {
+        error: (err) => {
+          if (err instanceof HttpErrorResponse && err.status === 404) {
+            this.router.navigateByUrl('/not-found', {
+              state: { reason: 'city-not-found' },
+              skipLocationChange: true,
+            });
+            return;
+          }
           this.error.set('Nie udało się pobrać wydarzeń');
           this.isLoading.set(false);
         },

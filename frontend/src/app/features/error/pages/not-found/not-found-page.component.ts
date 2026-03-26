@@ -12,35 +12,37 @@ interface NotFoundState {
   selector: 'app-not-found-page',
   imports: [RouterLink, ButtonComponent, IconComponent],
   template: `
-    <div class="text-center">
-      <div
-        class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-neutral-100"
-      >
-        <app-icon name="search" class="text-neutral-400" size="lg"></app-icon>
-      </div>
+    <div class="flex min-h-screen items-center justify-center">
+      <div class="text-center">
+        <div
+          class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-neutral-100"
+        >
+          <app-icon name="search" class="text-neutral-400" size="lg"></app-icon>
+        </div>
 
-      <h1 class="text-2xl font-bold text-neutral-900">{{ title() }}</h1>
+        <h1 class="text-2xl font-bold text-neutral-900">{{ title() }}</h1>
 
-      <p class="mt-2 text-sm text-neutral-500">{{ description() }}</p>
+        <p class="mt-2 text-sm text-neutral-500">{{ description() }}</p>
 
-      <div class="mt-8 flex flex-col gap-3">
-        @if (citySlug()) {
-        <a [routerLink]="['/w', citySlug()]">
-          <app-button appearance="soft" color="primary" size="lg" class="w-full">
-            Wydarzenia w mieście
-          </app-button>
-        </a>
-        }
-        <a routerLink="/">
-          <app-button
-            [appearance]="citySlug() ? 'outline' : 'soft'"
-            [color]="citySlug() ? 'neutral' : 'primary'"
-            size="lg"
-            class="w-full"
-          >
-            Strona główna
-          </app-button>
-        </a>
+        <div class="mt-8 flex flex-col gap-3 max-w-sm mx-auto items-center justify-center">
+          @if (citySlug()) {
+            <a [routerLink]="['/w', citySlug()]">
+              <app-button appearance="soft" color="primary" size="lg" class="w-full">
+                Wydarzenia w mieście
+              </app-button>
+            </a>
+          }
+          <a routerLink="/">
+            <app-button
+              [appearance]="citySlug() ? 'outline' : 'soft'"
+              [color]="citySlug() ? 'neutral' : 'primary'"
+              size="lg"
+              class="w-full"
+            >
+              Przejdź na stronę główną
+            </app-button>
+          </a>
+        </div>
       </div>
     </div>
   `,
