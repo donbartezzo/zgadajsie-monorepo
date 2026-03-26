@@ -30,6 +30,11 @@ import { EventInlineNotificationBarsComponent } from '../../ui/event-inline-noti
 import { EventAnnouncementsComponent } from '../../ui/event-announcements/event-announcements.component';
 import { NotificationStatusService } from '../../../../core/services/notification-status.service';
 import { EventAreaService } from '../../services/event-area.service';
+import {
+  formatEventGender,
+  formatEventAgeRange,
+  formatEventAddress,
+} from '../../../../shared/utils/event-format.utils';
 
 @Component({
   selector: 'app-event-detail',
@@ -78,6 +83,9 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly participantCount = this.eventArea.participantCount;
   readonly isBannedByOrganizer = this.eventArea.isBannedByOrganizer;
   readonly notificationBars = this.eventArea.notificationBars;
+  readonly visibleAvatars = this.eventArea.visibleAvatars;
+  readonly remainingCount = this.eventArea.remainingCount;
+  readonly lifecycleBannerVariant = this.eventArea.lifecycleBannerVariant;
 
   // ── Local state ──
   readonly announcements = signal<EventAnnouncement[]>([]);
@@ -86,30 +94,11 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly lotteryCountdown = signal<EventCountdown | null>(null);
   readonly loginQueryParams = { returnUrl: inject(Router).url };
 
-  readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
-  readonly remainingCount = computed(() => Math.max(0, this.participants().length - 6));
-
-  readonly fullAddress = computed(() => {
-    const e = this.event();
-    if (!e) return '';
-    return e.address;
-  });
-
-  readonly genderLabel = computed(() => {
-    const g = this.event()?.gender;
-    if (!g || g === 'ANY') return 'Wszyscy';
-    if (g === 'MALE') return 'Mężczyźni';
-    if (g === 'FEMALE') return 'Kobiety';
-    return g;
-  });
-
+  readonly fullAddress = computed(() => formatEventAddress(this.event()?.address));
+  readonly genderLabel = computed(() => formatEventGender(this.event()?.gender));
   readonly ageRange = computed(() => {
     const e = this.event();
-    if (!e) return null;
-    if (e.ageMin && e.ageMax) return `${e.ageMin}–${e.ageMax} lat`;
-    if (e.ageMin) return `od ${e.ageMin} lat`;
-    if (e.ageMax) return `do ${e.ageMax} lat`;
-    return null;
+    return formatEventAgeRange(e?.ageMin, e?.ageMax);
   });
 
   // @TODO: Replace hardcoded amenities with data from backend (event edit form)
@@ -123,14 +112,6 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   ];
 
   readonly isPreEnrollment = computed(() => this.enrollmentPhase() === 'PRE_ENROLLMENT');
-
-  readonly lifecycleBannerVariant = computed(() => {
-    if (this.isCancelled()) return 'cancelled' as const;
-    const ts = this.eventTimeStatus();
-    if (ts === 'ONGOING') return 'ongoing' as const;
-    if (ts === 'ENDED') return 'ended' as const;
-    return null;
-  });
 
   constructor() {
     // Sync lottery countdown to overlay service
@@ -242,11 +223,6 @@ export class EventDetailComponent implements OnInit, OnDestroy {
 
   contactOrganizer(): void {
     this.eventArea.contactOrganizer();
-  }
-
-  openOrganizerChats(): void {
-    this.overlays.close();
-    this.router.navigate(['/w', this.eventArea.citySlug, this.eventArea.eventId, 'host-chat']);
   }
 
   confirmAnnouncement(announcementId: string): void {

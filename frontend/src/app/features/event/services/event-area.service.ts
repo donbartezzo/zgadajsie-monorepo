@@ -148,6 +148,18 @@ export class EventAreaService {
 
   readonly participantCount = computed(() => this.participants().length);
 
+  readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
+
+  readonly remainingCount = computed(() => Math.max(0, this.participants().length - 6));
+
+  readonly lifecycleBannerVariant = computed(() => {
+    if (this.isCancelled()) return 'cancelled' as const;
+    const ts = this.eventTimeStatus();
+    if (ts === 'ONGOING') return 'ongoing' as const;
+    if (ts === 'ENDED') return 'ended' as const;
+    return null;
+  });
+
   readonly notificationBars = computed<NotificationBarConfig[]>(() => {
     const bars: NotificationBarConfig[] = [];
     const status = this.participantStatus();
@@ -373,6 +385,11 @@ export class EventAreaService {
   }
 
   contactOrganizer(): void {
+    this.overlays.close();
+    this.router.navigate(['/w', this._citySlug, this._eventId, 'host-chat']);
+  }
+
+  openOrganizerChats(): void {
     this.overlays.close();
     this.router.navigate(['/w', this._citySlug, this._eventId, 'host-chat']);
   }
