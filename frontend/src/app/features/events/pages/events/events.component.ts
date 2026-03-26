@@ -21,7 +21,8 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 import { EventListItem } from '../../../../shared/types';
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
-import { getDaysDiff, getRelativeDateLabel } from '../../../../shared/utils/date.utils';
+import { getRelativeDateLabel } from '../../../../shared/utils/date.utils';
+import { formatMonthShort, getDayOfMonth, formatDateLong, getDaysDiffTz } from '@zgadajsie/shared';
 import { NotificationStatusService } from '../../../../core/services/notification-status.service';
 
 interface EventGroup {
@@ -77,19 +78,18 @@ export class EventsComponent implements OnInit, OnDestroy {
   readonly isLoggedIn = computed(() => this.auth.isLoggedIn());
 
   readonly dateRangeFrom = computed(() => {
-    const d = new Date();
+    const now = new Date();
     return {
-      day: d.getDate(),
-      month: d.toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase(),
+      day: getDayOfMonth(now).toString(),
+      month: formatMonthShort(now),
     };
   });
 
   readonly dateRangeTo = computed(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 7);
+    const d = new Date(Date.now() + 7 * 86_400_000);
     return {
-      day: d.getDate(),
-      month: d.toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase(),
+      day: getDayOfMonth(d).toString(),
+      month: formatMonthShort(d),
     };
   });
 
@@ -274,14 +274,10 @@ export class EventsComponent implements OnInit, OnDestroy {
       const d = new Date(event.startsAt);
       const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
       const isToday = key === todayKey;
-      const diffDays = getDaysDiff(d, todayStart);
+      const diffDays = getDaysDiffTz(d, todayStart);
       const shortLabel = getRelativeDateLabel(d, todayStart);
 
-      const dateStr = d.toLocaleDateString('pl-PL', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-      });
+      const dateStr = formatDateLong(d);
       const sub = `<span class="opacity-60 font-normal ml-1">· ${dateStr}</span>`;
       const label = diffDays === 0 ? shortLabel : `${shortLabel} ${sub}`;
 

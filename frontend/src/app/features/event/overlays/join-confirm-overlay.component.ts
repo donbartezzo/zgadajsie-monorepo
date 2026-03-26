@@ -13,6 +13,7 @@ import {
   getParticipationStatusDescription,
   ParticipationStatusOptions,
 } from '../../../shared/utils';
+import { formatTime, formatDateFull } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-join-confirm-overlay',
@@ -54,58 +55,58 @@ import {
 
         <!-- Payment CTA (highlighted) -->
         @if (needsPayment()) {
-        <div class="rounded-xl border-2 border-warning-200 bg-warning-50 p-4">
-          <div class="flex items-start gap-3">
-            <div
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning-50"
-            >
-              <app-icon name="dollar-sign" size="md" class="text-warning-400"></app-icon>
+          <div class="rounded-xl border-2 border-warning-200 bg-warning-50 p-4">
+            <div class="flex items-start gap-3">
+              <div
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning-50"
+              >
+                <app-icon name="dollar-sign" size="md" class="text-warning-400"></app-icon>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-warning-400">Wymagana płatność</p>
+                <p class="text-xs text-warning-400 mt-0.5">
+                  Opłać {{ _event?.costPerPerson }} zł, aby potwierdzić swój udział.
+                </p>
+              </div>
             </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-bold text-warning-400">Wymagana płatność</p>
-              <p class="text-xs text-warning-400 mt-0.5">
-                Opłać {{ _event?.costPerPerson }} zł, aby potwierdzić swój udział.
-              </p>
+            <div class="mt-3">
+              <app-link-list [items]="paymentLinks()" (itemClicked)="payRequested.emit()" />
             </div>
           </div>
-          <div class="mt-3">
-            <app-link-list [items]="paymentLinks()" (itemClicked)="payRequested.emit()" />
-          </div>
-        </div>
         }
 
         <!-- Rejoin CTA for withdrawn users -->
         @if (isWithdrawnOrRejected() && canRejoin()) {
-        <div class="rounded-xl border-2 border-primary-200 bg-primary-50 p-4">
-          <div class="flex items-start gap-3">
-            <div
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100"
-            >
-              <app-icon name="user-plus" size="md" class="text-primary-500"></app-icon>
+          <div class="rounded-xl border-2 border-primary-200 bg-primary-50 p-4">
+            <div class="flex items-start gap-3">
+              <div
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100"
+              >
+                <app-icon name="user-plus" size="md" class="text-primary-500"></app-icon>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-primary-600">Chcesz wrócić?</p>
+                <p class="text-xs text-primary-500 mt-0.5">
+                  Możesz ponownie dołączyć do tego wydarzenia.
+                </p>
+              </div>
             </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-bold text-primary-600">Chcesz wrócić?</p>
-              <p class="text-xs text-primary-500 mt-0.5">
-                Możesz ponownie dołączyć do tego wydarzenia.
-              </p>
+            <div class="mt-3">
+              <app-link-list [items]="rejoinLinks()" (itemClicked)="rejoinRequested.emit()" />
             </div>
           </div>
-          <div class="mt-3">
-            <app-link-list [items]="rejoinLinks()" (itemClicked)="rejoinRequested.emit()" />
-          </div>
-        </div>
         }
         <!-- Participant options (hidden for withdrawn/rejected) -->
         @if (!isWithdrawnOrRejected()) {
-        <div>
-          <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-2">
-            Opcje uczestnika
-          </p>
-          <app-link-list
-            [items]="participantLinks()"
-            (itemClicked)="handleParticipantOption($event)"
-          />
-        </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-2">
+              Opcje uczestnika
+            </p>
+            <app-link-list
+              [items]="participantLinks()"
+              (itemClicked)="handleParticipantOption($event)"
+            />
+          </div>
         }
       </div>
     </app-bottom-overlay>
@@ -182,19 +183,19 @@ export class JoinConfirmOverlayComponent {
   readonly startDateFormatted = computed(() => {
     const e = this.event();
     if (!e) return '';
-    return new Date(e.startsAt).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long' });
+    return formatDateFull(e.startsAt);
   });
 
   readonly startTimeFormatted = computed(() => {
     const e = this.event();
     if (!e) return '';
-    return new Date(e.startsAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+    return formatTime(e.startsAt);
   });
 
   readonly endTimeFormatted = computed(() => {
     const e = this.event();
     if (!e) return '';
-    return new Date(e.endsAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+    return formatTime(e.endsAt);
   });
 
   readonly canRejoin = computed(() => {

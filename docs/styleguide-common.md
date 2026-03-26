@@ -91,6 +91,38 @@ Wspólne reguły nieoczywiste dla AI:
 - Stosuj `===` / `!==`.
 - Stosuj jawne bloki `{}` dla instrukcji sterujących.
 
+## Obsługa dat i stref czasowych
+
+Projekt używa **Luxon** (`DateTime`) jako jedynej biblioteki do obsługi dat.
+
+### Zasady architektoniczne
+
+- **Baza danych i API zawsze UTC** — Prisma `DateTime` przechowuje UTC, transfer frontend ↔ backend w ISO 8601 UTC.
+- **Konwersja do strefy lokalnej tylko na UI** lub w specyficznych wyjściach backendowych (emaile, powiadomienia).
+- **Nie używaj `new Date()` do formatowania** — `toLocaleDateString`, `toLocaleTimeString`, `toLocaleString` są zależne od strefy serwera/przeglądarki. Używaj Luxon.
+- **`new Date()` dozwolone wyłącznie** do porównań UTC (`getTime()`) lub tworzenia timestamp `new Date().toISOString()`.
+
+### Stałe i utilities
+
+- `APP_DEFAULT_TIMEZONE = 'Europe/Warsaw'` — w `libs/src/lib/constants/timezone.constants.ts`
+- `APP_LOCALE = 'pl'` — locale do formatowania dat
+- Wszystkie timezone-aware utility w `libs/src/lib/utils/luxon.utils.ts`:
+  - `toZonedDateTime`, `nowInZone`, `createDateInZone` — core
+  - `formatDateTime`, `formatDateFull`, `formatDateLong`, `formatMonthShort`, `formatDayOfWeek`, `formatTime`, `getDayOfMonth` — formatowanie
+  - `isSameDay`, `getDaysDiffTz` — porównania
+  - `toLocalInputValue`, `fromLocalInputValue` — HTML `<input type="datetime-local">`
+
+### Frontend
+
+- `DATE_PIPE_DEFAULT_OPTIONS` z `timezone: APP_DEFAULT_TIMEZONE` ustawiony globalnie w `app.config.ts`.
+- Do `datetime-local` inputów: `toLocalInputValue()` (UTC → input) i `fromLocalInputValue()` (input → UTC).
+- Do wyświetlania dat: `formatTime()`, `formatDateFull()`, `formatMonthShort()`, `getDayOfMonth()` itp.
+
+### Backend
+
+- Do formatowania dat w emailach/powiadomieniach: `formatDateTime()` z `@zgadajsie/shared`.
+- Re-eksporty w `backend/src/common/utils/date.util.ts`.
+
 ## Testy i bezpieczeństwo
 
 - Testuj publiczne zachowanie, nie wewnętrzne detale implementacyjne.

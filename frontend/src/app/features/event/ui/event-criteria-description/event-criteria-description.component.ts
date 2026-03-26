@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { Event as EventModel } from '../../../../shared/types';
 import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.component';
+import { formatTime, formatDateFull, formatDayOfWeek, isSameDay } from '@zgadajsie/shared';
 
 interface CriteriaItem {
   icon: IconName;
@@ -14,19 +15,19 @@ interface CriteriaItem {
   template: `
     <div class="space-y-3">
       @for (item of criteria(); track item.text) {
-      <div class="flex items-center gap-3">
-        <app-icon
-          [name]="item.icon"
-          size="sm"
-          [class]="item.iconColor + ' shrink-0'"
-          style="font-size: 14px; vertical-align: middle;"
-        ></app-icon>
-        <p
-          class="text-sm text-neutral-700 leading-relaxed"
-          style="font-size: 14px; vertical-align: middle; margin: 0;"
-          [innerHTML]="item.text"
-        ></p>
-      </div>
+        <div class="flex items-center gap-3">
+          <app-icon
+            [name]="item.icon"
+            size="sm"
+            [class]="item.iconColor + ' shrink-0'"
+            style="font-size: 14px; vertical-align: middle;"
+          ></app-icon>
+          <p
+            class="text-sm text-neutral-700 leading-relaxed"
+            style="font-size: 14px; vertical-align: middle; margin: 0;"
+            [innerHTML]="item.text"
+          ></p>
+        </div>
       }
     </div>
   `,
@@ -148,23 +149,21 @@ export class EventCriteriaDescriptionComponent {
       return '';
     }
 
-    const start = new Date(e.startsAt);
-    const dayName = this.getDayOfWeek(start);
-    const dateStr = this.formatDate(start);
-    const startTime = this.formatTime(start);
+    const dayName = this.getDayOfWeekAccusative(e.startsAt);
+    const dateStr = formatDateFull(e.startsAt);
+    const startTime = formatTime(e.startsAt);
 
     let text = `Rozpoczyna się o godz. <strong>${startTime}</strong> w <u>${dayName}</u> <strong>${dateStr}</strong>`;
 
     if (e.endsAt) {
-      const end = new Date(e.endsAt);
-      const endTime = this.formatTime(end);
-      const isSameDay = start.toDateString() === end.toDateString();
+      const endTime = formatTime(e.endsAt);
+      const sameDay = isSameDay(e.startsAt, e.endsAt);
 
-      if (isSameDay) {
+      if (sameDay) {
         text += ` i trwa do godz. <strong>${endTime}</strong>.`;
       } else {
-        const endDayName = this.getDayOfWeek(end);
-        const endDateStr = this.formatDate(end);
+        const endDayName = this.getDayOfWeekAccusative(e.endsAt);
+        const endDateStr = formatDateFull(e.endsAt);
         text += ` i trwa do godz. <strong>${endTime}</strong> w <strong>${endDayName}</strong> <strong>${endDateStr}</strong>.`;
       }
     } else {
@@ -296,33 +295,17 @@ export class EventCriteriaDescriptionComponent {
     return 'osób';
   }
 
-  private getDayOfWeek(date: Date): string {
-    const days = ['niedzielę', 'poniedziałek', 'wtorek', 'środę', 'czwartek', 'piątek', 'sobotę'];
-    return days[date.getDay()];
-  }
-
-  private formatDate(date: Date): string {
-    const day = date.getDate();
-    const months = [
-      'stycznia',
-      'lutego',
-      'marca',
-      'kwietnia',
-      'maja',
-      'czerwca',
-      'lipca',
-      'sierpnia',
-      'września',
-      'października',
-      'listopada',
-      'grudnia',
-    ];
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-    return `${day} ${month} ${year}`;
-  }
-
-  private formatTime(date: Date): string {
-    return date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+  private getDayOfWeekAccusative(date: string | Date): string {
+    const dayName = formatDayOfWeek(date);
+    const accusativeMap: Record<string, string> = {
+      niedziela: 'niedzielę',
+      poniedziałek: 'poniedziałek',
+      wtorek: 'wtorek',
+      środa: 'środę',
+      czwartek: 'czwartek',
+      piątek: 'piątek',
+      sobota: 'sobotę',
+    };
+    return accusativeMap[dayName] || dayName;
   }
 }

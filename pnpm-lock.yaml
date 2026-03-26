@@ -98,6 +98,9 @@ importers:
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4
+      luxon:
+        specifier: ^3.7.2
+        version: 3.7.2
       multer:
         specifier: ^2.0.2
         version: 2.0.2
@@ -222,6 +225,9 @@ importers:
       '@types/leaflet':
         specifier: ^1.9.21
         version: 1.9.21
+      '@types/luxon':
+        specifier: ^3.7.1
+        version: 3.7.1
       '@types/multer':
         specifier: ^2.0.0
         version: 2.0.0

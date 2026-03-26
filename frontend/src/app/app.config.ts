@@ -6,6 +6,8 @@ import {
   inject,
   isDevMode,
 } from '@angular/core';
+import { DATE_PIPE_DEFAULT_OPTIONS } from '@angular/common';
+import { APP_DEFAULT_TIMEZONE } from '@zgadajsie/shared';
 import {
   provideRouter,
   TitleStrategy,
@@ -41,5 +43,9 @@ export const appConfig: ApplicationConfig = {
       const authService = inject(AuthService);
       return authService.initOnAppStart();
     }),
+    {
+      provide: DATE_PIPE_DEFAULT_OPTIONS,
+      useValue: { timezone: APP_DEFAULT_TIMEZONE },
+    },
   ],
 };

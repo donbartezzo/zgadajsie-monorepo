@@ -13,7 +13,6 @@ import {
   Validators,
   AbstractControl,
   ValidationErrors,
-  ValidatorFn,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -29,7 +28,15 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
 import { DictionaryItem, City, Event, CoverImage, EventRoleConfig } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
-import { EventStatus, getDisciplineSchema, DisciplineParticipantRoles } from '@zgadajsie/shared';
+import {
+  EventStatus,
+  getDisciplineSchema,
+  DisciplineParticipantRoles,
+  nowInZone,
+  createDateInZone,
+  toLocalInputValue,
+  fromLocalInputValue,
+} from '@zgadajsie/shared';
 import { isEventJoinable } from '../../../../shared/utils/event-time-status.util';
 
 interface RoleSlotConfig {
@@ -49,10 +56,10 @@ class EventValidators {
   static startDateInFuture(control: AbstractControl): ValidationErrors | null {
     if (!control.value) return null;
 
-    const startDate = new Date(control.value);
-    const now = new Date();
+    const startUtc = fromLocalInputValue(control.value);
+    const nowUtc = new Date().toISOString();
 
-    return startDate <= now ? { startDateInPast: true } : null;
+    return startUtc <= nowUtc ? { startDateInPast: true } : null;
   }
 
   static endDateAfterStart(control: AbstractControl): ValidationErrors | null {
@@ -64,10 +71,10 @@ class EventValidators {
     const startDateStr = form.get('startsAt')?.value;
     if (!startDateStr) return null;
 
-    const startDate = new Date(startDateStr);
-    const endDate = new Date(control.value);
+    const startUtc = fromLocalInputValue(startDateStr);
+    const endUtc = fromLocalInputValue(control.value);
 
-    return endDate <= startDate ? { endDateBeforeStart: true } : null;
+    return endUtc <= startUtc ? { endDateBeforeStart: true } : null;
   }
 }
 
@@ -696,16 +703,16 @@ export class EventFormComponent implements OnInit {
       return;
     }
 
-    const startDate = new Date(val.startsAt);
-    const endDate = new Date(val.endsAt);
-    const now = new Date();
+    const startUtc = fromLocalInputValue(val.startsAt);
+    const endUtc = fromLocalInputValue(val.endsAt);
+    const nowUtc = new Date().toISOString();
 
-    if (startDate <= now) {
+    if (startUtc <= nowUtc) {
       this.snackbar.error('Data rozpoczęcia musi być w przyszłości.');
       return;
     }
 
-    if (endDate <= startDate) {
+    if (endUtc <= startUtc) {
       this.snackbar.error('Data zakończenia musi być późniejsza niż data rozpoczęcia.');
       return;
     }
@@ -731,8 +738,8 @@ export class EventFormComponent implements OnInit {
       facilityId: val.facilityId || undefined,
       levelId: val.levelId || undefined,
       cityId: val.cityId || undefined,
-      startsAt: val.startsAt ? new Date(val.startsAt).toISOString() : undefined,
-      endsAt: val.endsAt ? new Date(val.endsAt).toISOString() : undefined,
+      startsAt: val.startsAt ? fromLocalInputValue(val.startsAt) : undefined,
+      endsAt: val.endsAt ? fromLocalInputValue(val.endsAt) : undefined,
       costPerPerson: val.costPerPerson || undefined,
       minParticipants: val.minParticipants || undefined,
       maxParticipants: val.maxParticipants || undefined,
@@ -920,8 +927,8 @@ export class EventFormComponent implements OnInit {
       facilityId: event.facilityId,
       levelId: event.levelId,
       cityId: event.cityId,
-      startsAt: event.startsAt.substring(0, 16), // format dla datetime-local
-      endsAt: event.endsAt.substring(0, 16), // format dla datetime-local
+      startsAt: toLocalInputValue(event.startsAt),
+      endsAt: toLocalInputValue(event.endsAt),
       costPerPerson: event.costPerPerson,
       minParticipants: event.minParticipants || 2,
       maxParticipants: event.maxParticipants || 10,
@@ -964,25 +971,15 @@ export class EventFormComponent implements OnInit {
     // Ustaw domyślny poziom na "Zróżnicowany"
     // (zostanie zaktualizowany po załadowaniu słowników)
 
-    // Ustaw domyślne czasy
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    // Ustaw na jutro 19:00
-    const startsAt = new Date(tomorrow);
-    startsAt.setHours(19, 0, 0, 0);
-
-    // Ustaw na jutro 21:00
-    const endsAt = new Date(tomorrow);
-    endsAt.setHours(21, 0, 0, 0);
-
-    // Format dla datetime-local (YYYY-MM-DDTHH:mm)
-    const startsAtStr = startsAt.toISOString().slice(0, 16);
-    const endsAtStr = endsAt.toISOString().slice(0, 16);
+    // Ustaw domyślne czasy — jutro 19:00–21:00 w polskiej strefie
+    const now = nowInZone();
+    const tomorrow = now.plus({ days: 1 });
+    const startsAt = createDateInZone(tomorrow.year, tomorrow.month, tomorrow.day, 19, 0);
+    const endsAt = createDateInZone(tomorrow.year, tomorrow.month, tomorrow.day, 21, 0);
 
     this.form.patchValue({
-      startsAt: startsAtStr,
-      endsAt: endsAtStr,
+      startsAt: startsAt.toFormat("yyyy-MM-dd'T'HH:mm"),
+      endsAt: endsAt.toFormat("yyyy-MM-dd'T'HH:mm"),
     });
   }
 }

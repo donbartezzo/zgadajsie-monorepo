@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Transporter, createTransport } from 'nodemailer';
-import { APP_BRAND } from '@zgadajsie/shared';
+import { APP_BRAND, formatDateTime } from '@zgadajsie/shared';
 
 @Injectable()
 export class EmailService {
@@ -199,7 +199,7 @@ export class EmailService {
     eventTitle: string,
     startsAt: Date,
   ): Promise<void> {
-    const timeStr = startsAt.toLocaleString('pl-PL', { dateStyle: 'medium', timeStyle: 'short' });
+    const timeStr = formatDateTime(startsAt);
     await this.send(
       email,
       `Przypomnienie – ${eventTitle}`,

@@ -3,7 +3,7 @@ import {
   MILLISECONDS_PER_MINUTE,
   MILLISECONDS_PER_HOUR,
   MILLISECONDS_PER_DAY,
-  getDaysDiff,
+  getDaysDiffTz,
 } from '@zgadajsie/shared';
 
 export {
@@ -11,7 +11,7 @@ export {
   MILLISECONDS_PER_MINUTE,
   MILLISECONDS_PER_HOUR,
   MILLISECONDS_PER_DAY,
-  getDaysDiff,
+  getDaysDiffTz,
   subtractHours,
   addHours,
 } from '@zgadajsie/shared';
@@ -20,8 +20,8 @@ export {
  * Zwraca krótki label daty relatywnej w języku polskim.
  * Np."Dziś","Jutro","Pojutrze","Za 5 dni","Wczoraj","Przedwczoraj","3 dni temu".
  */
-export function getRelativeDateLabel(date: Date, now: Date = new Date()): string {
-  const diff = getDaysDiff(date, now);
+export function getRelativeDateLabel(date: string | Date, now: string | Date = new Date()): string {
+  const diff = getDaysDiffTz(date, now);
 
   if (diff === 0) return 'Dziś';
   if (diff === 1) return 'Jutro';

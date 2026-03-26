@@ -16,7 +16,12 @@ import { EventStatusBadgeComponent } from '../event-status-badge/event-status-ba
 import { EventListItem } from '../../../types';
 import { coverImageUrl } from '../../../types/cover-image.interface';
 import { getEventCountdown, getRelativeDateLabel } from '../../../utils/date.utils';
-import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
+import {
+  MILLISECONDS_PER_HOUR,
+  formatMonthShort,
+  getDayOfMonth,
+  formatTime,
+} from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-event-card',
@@ -38,13 +43,13 @@ import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
     >
       <div class="relative h-44 overflow-hidden">
         @if (_event.coverImage?.filename) {
-        <img
-          [src]="coverUrl()"
-          [alt]="_event.title"
-          class="absolute inset-0 h-full w-full object-cover"
-        />
+          <img
+            [src]="coverUrl()"
+            [alt]="_event.title"
+            class="absolute inset-0 h-full w-full object-cover"
+          />
         } @else {
-        <div class="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-500"></div>
+          <div class="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-500"></div>
         }
 
         <div
@@ -53,14 +58,14 @@ import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
 
         <div class="absolute left-2 top-2 z-10">
           @if (isOngoing()) {
-          <app-event-status-badge variant="ongoing" label="TRWA" />
+            <app-event-status-badge variant="ongoing" label="TRWA" />
           } @else if (_countdown) {
-          <app-event-status-badge
-            [variant]="_countdown.isUrgent ? 'countdown-urgent' : 'countdown-soon'"
-            [label]="_countdown.label"
-          />
+            <app-event-status-badge
+              [variant]="_countdown.isUrgent ? 'countdown-urgent' : 'countdown-soon'"
+              [label]="_countdown.label"
+            />
           } @else {
-          <app-event-status-badge variant="date" [label]="badgeLabel()" />
+            <app-event-status-badge variant="date" [label]="badgeLabel()" />
           }
         </div>
 
@@ -79,20 +84,22 @@ import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
           </h3>
           <div class="mt-1 flex flex-wrap gap-1">
             @if (_event.discipline) {
-            <span
-              class="rounded-sm bg-primary-500 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white"
-              >{{ _event.discipline!.name }}</span
-            >
-            } @if (_event.level) {
-            <span
-              class="rounded-sm bg-warning-300 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white"
-              >{{ _event.level!.name }}</span
-            >
-            } @if (_event.facility) {
-            <span
-              class="rounded-sm bg-black/25 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white backdrop-blur-sm"
-              >{{ _event.facility!.name }}</span
-            >
+              <span
+                class="rounded-sm bg-primary-500 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white"
+                >{{ _event.discipline!.name }}</span
+              >
+            }
+            @if (_event.level) {
+              <span
+                class="rounded-sm bg-warning-300 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white"
+                >{{ _event.level!.name }}</span
+              >
+            }
+            @if (_event.facility) {
+              <span
+                class="rounded-sm bg-black/25 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white backdrop-blur-sm"
+                >{{ _event.facility!.name }}</span
+              >
             }
           </div>
         </div>
@@ -116,46 +123,49 @@ import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
         </div>
 
         @if (rulesList().length > 0) {
-        <div class="text-sm">
-          <div class="flex items-center gap-1 text-neutral-900 font-medium mb-1">
-            <app-icon name="check-circle" size="sm" color="neutral" muted="light" />
-            Zasady
+          <div class="text-sm">
+            <div class="flex items-center gap-1 text-neutral-900 font-medium mb-1">
+              <app-icon name="check-circle" size="sm" color="neutral" muted="light" />
+              Zasady
+            </div>
+            <div class="text-neutral-500 text-xs space-y-0.5 ml-5">
+              @for (rule of rulesList().slice(0, 3); track $index) {
+                <div class="truncate">{{ rule }}</div>
+              }
+              @if (rulesList().length > 3) {
+                <div class="text-neutral-500">...</div>
+              }
+            </div>
           </div>
-          <div class="text-neutral-500 text-xs space-y-0.5 ml-5">
-            @for (rule of rulesList().slice(0, 3); track $index) {
-            <div class="truncate">{{ rule }}</div>
-            } @if (rulesList().length > 3) {
-            <div class="text-neutral-500">...</div>
-            }
-          </div>
-        </div>
         }
 
         <div class="flex items-center justify-between pt-2 border-t border-neutral-200">
           <div class="flex items-center gap-2">
             @if (_event.organizer) {
-            <app-user-avatar
-              [avatarUrl]="_event.organizer!.avatarUrl"
-              [displayName]="_event.organizer!.displayName"
-              size="sm"
-            />
-            <span class="text-sm text-neutral-900">{{ _event.organizer!.displayName }}</span>
+              <app-user-avatar
+                [avatarUrl]="_event.organizer!.avatarUrl"
+                [displayName]="_event.organizer!.displayName"
+                size="sm"
+              />
+              <span class="text-sm text-neutral-900">{{ _event.organizer!.displayName }}</span>
             }
           </div>
           <div class="flex items-center gap-3 text-sm">
             @if (_event._count) {
-            <span class="flex items-center gap-1 text-neutral-500">
-              <app-icon name="users" size="sm" color="neutral" muted="light" />
-              {{ _event._count!.participations }}@if (_event.maxParticipants) {/{{
-                _event.maxParticipants
-              }}}
-            </span>
-            } @if (_event.costPerPerson > 0) {
-            <span class="font-semibold text-success-400"
-              >{{ _event.costPerPerson | number : '1.0-2' }} zł</span
-            >
+              <span class="flex items-center gap-1 text-neutral-500">
+                <app-icon name="users" size="sm" color="neutral" muted="light" />
+                {{ _event._count!.participations }}
+                @if (_event.maxParticipants) {
+                  /{{ _event.maxParticipants }}
+                }
+              </span>
+            }
+            @if (_event.costPerPerson > 0) {
+              <span class="font-semibold text-success-400"
+                >{{ _event.costPerPerson | number: '1.0-2' }} zł</span
+              >
             } @else {
-            <span class="font-semibold text-success-400">Bezpłatne</span>
+              <span class="font-semibold text-success-400">Bezpłatne</span>
             }
           </div>
         </div>
@@ -201,25 +211,13 @@ export class EventCardComponent implements OnDestroy {
     return 'border-neutral-200';
   });
 
-  readonly eventMonth = computed(() =>
-    new Date(this.event().startsAt).toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase(),
-  );
+  readonly eventMonth = computed(() => formatMonthShort(this.event().startsAt));
 
-  readonly eventDay = computed(() => new Date(this.event().startsAt).getDate().toString());
+  readonly eventDay = computed(() => getDayOfMonth(this.event().startsAt).toString());
 
-  readonly eventStartTime = computed(() =>
-    new Date(this.event().startsAt).toLocaleTimeString('pl-PL', {
-      hour: '2-digit',
-      minute: '2-digit',
-    }),
-  );
+  readonly eventStartTime = computed(() => formatTime(this.event().startsAt));
 
-  readonly eventEndTime = computed(() =>
-    new Date(this.event().endsAt).toLocaleTimeString('pl-PL', {
-      hour: '2-digit',
-      minute: '2-digit',
-    }),
-  );
+  readonly eventEndTime = computed(() => formatTime(this.event().endsAt));
 
   readonly duration = computed(() => {
     const start = new Date(this.event().startsAt).getTime();
