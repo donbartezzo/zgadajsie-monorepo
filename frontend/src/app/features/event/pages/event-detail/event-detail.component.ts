@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { IconName, IconComponent } from '../../../../shared/ui/icon/icon.component';
-import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
@@ -25,23 +25,19 @@ import { EventAnnouncement } from '../../../../shared/types';
 import { getEventCountdown, EventCountdown } from '../../../../shared/utils/date.utils';
 import { EventStatus } from '@zgadajsie/shared';
 import { EnrollmentStatusBannerComponent } from '../../ui/enrollment-status-banner/enrollment-status-banner.component';
+import { EventInfoGridComponent } from '../../../../shared/ui/event-info-grid/event-info-grid.component';
 import { getLotteryThreshold } from '../../../../shared/utils/enrollment-phase.util';
 import { EventInlineNotificationBarsComponent } from '../../ui/event-inline-notification-bars/event-inline-notification-bars.component';
 import { EventAnnouncementsComponent } from '../../ui/event-announcements/event-announcements.component';
 import { NotificationStatusService } from '../../../../core/services/notification-status.service';
 import { EventAreaService } from '../../services/event-area.service';
-import {
-  formatEventGender,
-  formatEventAgeRange,
-  formatEventAddress,
-} from '../../../../shared/utils/event-format.utils';
+import { formatEventAddress } from '../../../../shared/utils/event-format.utils';
 
 @Component({
   selector: 'app-event-detail',
   imports: [
     CommonModule,
     DatePipe,
-    DecimalPipe,
     RouterLink,
     IconComponent,
     ButtonComponent,
@@ -51,6 +47,7 @@ import {
     EventAnnouncementsComponent,
     EnrollmentStatusBannerComponent,
     EventHeroSlotsComponent,
+    EventInfoGridComponent,
   ],
   templateUrl: './event-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -93,13 +90,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly countdown = signal<EventCountdown | null>(null);
   readonly lotteryCountdown = signal<EventCountdown | null>(null);
   readonly loginQueryParams = { returnUrl: inject(Router).url };
-
   readonly fullAddress = computed(() => formatEventAddress(this.event()?.address));
-  readonly genderLabel = computed(() => formatEventGender(this.event()?.gender));
-  readonly ageRange = computed(() => {
-    const e = this.event();
-    return formatEventAgeRange(e?.ageMin, e?.ageMax);
-  });
 
   // @TODO: Replace hardcoded amenities with data from backend (event edit form)
   readonly amenities: { icon: IconName; label: string }[] = [
@@ -211,10 +202,6 @@ export class EventDetailComponent implements OnInit, OnDestroy {
 
   onAuthSuccess(): void {
     this.overlays.open('joinRules');
-  }
-
-  onFollow(): void {
-    this.snackbar.info('Funkcja obserwowania będzie dostępna wkrótce');
   }
 
   openChat(): void {

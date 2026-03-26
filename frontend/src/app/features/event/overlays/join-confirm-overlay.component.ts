@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { IconComponent, IconName } from '../../../shared/ui/icon/icon.component';
+import { EventInfoGridComponent } from '../../../shared/ui/event-info-grid/event-info-grid.component';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { SemanticColor } from '../../../shared/types/colors';
@@ -13,11 +14,10 @@ import {
   getParticipationStatusDescription,
   ParticipationStatusOptions,
 } from '../../../shared/utils';
-import { formatTime, formatDateFull } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-join-confirm-overlay',
-  imports: [IconComponent, BottomOverlayComponent, LinkListComponent],
+  imports: [IconComponent, BottomOverlayComponent, LinkListComponent, EventInfoGridComponent],
   template: `
     <app-bottom-overlay
       [open]="open()"
@@ -28,86 +28,82 @@ import { formatTime, formatDateFull } from '@zgadajsie/shared';
       (closed)="closed.emit()"
     >
       @let _event = event();
-      <div class="space-y-4 max-w-lg mx-auto">
-        <!-- Event info row -->
-        <div class="rounded-xl border border-neutral-100 bg-neutral-50 p-3">
-          <div class="flex justify-center gap-5 text-center">
-            <div>
-              <app-icon name="calendar" size="sm" color="primary"></app-icon>
-              <p class="mt-1 text-xs font-semibold text-neutral-900">
-                {{ startDateFormatted() }}
-              </p>
+      <div class="space-y-4 mx-auto">
+        <!-- Event info grid (compact selection via show config) -->
+        @if (_event) {
+          <app-event-info-grid
+            [event]="_event"
+            [show]="{
+              cost: false,
+              maxParticipants: false,
+              gender: false,
+              age: false,
+              enrollment: false,
+              city: false,
+              roles: false,
+              duration: false,
+            }"
+            [showHeader]="false"
+          />
+        }
+
+        <div class="mx-auto max-w-lg">
+          <!-- Payment CTA (highlighted) -->
+          @if (needsPayment()) {
+            <div class="rounded-xl border-2 border-warning-200 bg-warning-50 p-4">
+              <div class="flex items-start gap-3">
+                <div
+                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning-50"
+                >
+                  <app-icon name="dollar-sign" size="md" class="text-warning-400"></app-icon>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-bold text-warning-400">Wymagana płatność</p>
+                  <p class="text-xs text-warning-400 mt-0.5">
+                    Opłać {{ _event?.costPerPerson }} zł, aby potwierdzić swój udział.
+                  </p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <app-link-list [items]="paymentLinks()" (itemClicked)="payRequested.emit()" />
+              </div>
             </div>
-            <div>
-              <app-icon name="clock" size="sm" color="neutral" muted="light"></app-icon>
-              <p class="mt-1 text-xs font-semibold text-neutral-900">
-                {{ startTimeFormatted() }}–{{ endTimeFormatted() }}
-              </p>
+          }
+
+          <!-- Rejoin CTA for withdrawn users -->
+          @if (isWithdrawnOrRejected() && canRejoin()) {
+            <div class="rounded-xl border-2 border-primary-200 bg-primary-50 p-4">
+              <div class="flex items-start gap-3">
+                <div
+                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100"
+                >
+                  <app-icon name="user-plus" size="md" class="text-primary-500"></app-icon>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-bold text-primary-600">Chcesz wrócić?</p>
+                  <p class="text-xs text-primary-500 mt-0.5">
+                    Możesz ponownie dołączyć do tego wydarzenia.
+                  </p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <app-link-list [items]="rejoinLinks()" (itemClicked)="rejoinRequested.emit()" />
+              </div>
             </div>
+          }
+          <!-- Participant options (hidden for withdrawn/rejected) -->
+          @if (!isWithdrawnOrRejected()) {
             <div>
-              <app-icon name="map-pin" size="sm" color="danger"></app-icon>
-              <p class="mt-1 text-xs font-semibold text-neutral-900 max-w-[100px] truncate">
-                {{ address() || 'Brak' }}
+              <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-2">
+                Opcje uczestnika
               </p>
+              <app-link-list
+                [items]="participantLinks()"
+                (itemClicked)="handleParticipantOption($event)"
+              />
             </div>
-          </div>
+          }
         </div>
-
-        <!-- Payment CTA (highlighted) -->
-        @if (needsPayment()) {
-          <div class="rounded-xl border-2 border-warning-200 bg-warning-50 p-4">
-            <div class="flex items-start gap-3">
-              <div
-                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning-50"
-              >
-                <app-icon name="dollar-sign" size="md" class="text-warning-400"></app-icon>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-bold text-warning-400">Wymagana płatność</p>
-                <p class="text-xs text-warning-400 mt-0.5">
-                  Opłać {{ _event?.costPerPerson }} zł, aby potwierdzić swój udział.
-                </p>
-              </div>
-            </div>
-            <div class="mt-3">
-              <app-link-list [items]="paymentLinks()" (itemClicked)="payRequested.emit()" />
-            </div>
-          </div>
-        }
-
-        <!-- Rejoin CTA for withdrawn users -->
-        @if (isWithdrawnOrRejected() && canRejoin()) {
-          <div class="rounded-xl border-2 border-primary-200 bg-primary-50 p-4">
-            <div class="flex items-start gap-3">
-              <div
-                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100"
-              >
-                <app-icon name="user-plus" size="md" class="text-primary-500"></app-icon>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-bold text-primary-600">Chcesz wrócić?</p>
-                <p class="text-xs text-primary-500 mt-0.5">
-                  Możesz ponownie dołączyć do tego wydarzenia.
-                </p>
-              </div>
-            </div>
-            <div class="mt-3">
-              <app-link-list [items]="rejoinLinks()" (itemClicked)="rejoinRequested.emit()" />
-            </div>
-          </div>
-        }
-        <!-- Participant options (hidden for withdrawn/rejected) -->
-        @if (!isWithdrawnOrRejected()) {
-          <div>
-            <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-2">
-              Opcje uczestnika
-            </p>
-            <app-link-list
-              [items]="participantLinks()"
-              (itemClicked)="handleParticipantOption($event)"
-            />
-          </div>
-        }
       </div>
     </app-bottom-overlay>
   `,
@@ -172,30 +168,10 @@ export class JoinConfirmOverlayComponent {
     return getParticipationStatusDescription(status as ParticipationStatus | null, options);
   });
 
-  readonly address = computed(() => this.event()?.address || '');
-
   readonly needsPayment = computed(() => {
     const status = this.participantStatus();
     const cost = this.event()?.costPerPerson ?? 0;
     return status === 'APPROVED' && cost > 0;
-  });
-
-  readonly startDateFormatted = computed(() => {
-    const e = this.event();
-    if (!e) return '';
-    return formatDateFull(e.startsAt);
-  });
-
-  readonly startTimeFormatted = computed(() => {
-    const e = this.event();
-    if (!e) return '';
-    return formatTime(e.startsAt);
-  });
-
-  readonly endTimeFormatted = computed(() => {
-    const e = this.event();
-    if (!e) return '';
-    return formatTime(e.endsAt);
   });
 
   readonly canRejoin = computed(() => {

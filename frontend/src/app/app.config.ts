@@ -5,6 +5,7 @@ import {
   provideAppInitializer,
   inject,
   isDevMode,
+  LOCALE_ID,
 } from '@angular/core';
 import { DATE_PIPE_DEFAULT_OPTIONS } from '@angular/common';
 import { APP_DEFAULT_TIMEZONE } from '@zgadajsie/shared';
@@ -46,6 +47,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: DATE_PIPE_DEFAULT_OPTIONS,
       useValue: { timezone: APP_DEFAULT_TIMEZONE },
+    },
+    {
+      provide: LOCALE_ID,
+      useValue: 'pl-PL',
     },
   ],
 };
