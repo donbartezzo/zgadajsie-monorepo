@@ -64,6 +64,13 @@ export class CoverImagesController {
     return this.coverImagesService.create(disciplineId, file);
   }
 
+  @Post('sync')
+  @UseGuards(JwtAuthGuard, IsActiveGuard, RolesGuard)
+  @Roles('ADMIN')
+  async syncFromFilesystem() {
+    return this.coverImagesService.syncFromFilesystem();
+  }
+
   @Put(':id/image')
   @UseGuards(JwtAuthGuard, IsActiveGuard, RolesGuard)
   @Roles('ADMIN')

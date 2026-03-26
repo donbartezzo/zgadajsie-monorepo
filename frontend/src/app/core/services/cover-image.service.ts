@@ -4,6 +4,33 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CoverImage } from '../../shared/types';
 
+export interface CoverImagesSyncReport {
+  summary: {
+    totalFolders: number;
+    totalFiles: number;
+    added: number;
+    existing: number;
+    missingFilesInDb: number;
+  };
+  byDiscipline: Array<{
+    slug: string;
+    disciplineId?: string;
+    files: Array<{
+      filename: string;
+      existed: boolean;
+      added: boolean;
+      fileExists: boolean;
+      coverId?: string;
+    }>;
+  }>;
+  dbWithMissingFiles: Array<{
+    id: string;
+    filename: string;
+    disciplineId: string;
+    disciplineSlug?: string;
+  }>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CoverImageService {
   private readonly http = inject(HttpClient);
@@ -44,5 +71,9 @@ export class CoverImageService {
 
   remove(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  syncFromFilesystem(): Observable<CoverImagesSyncReport> {
+    return this.http.post<CoverImagesSyncReport>(`${this.apiUrl}/sync`, {});
   }
 }

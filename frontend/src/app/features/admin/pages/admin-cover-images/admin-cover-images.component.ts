@@ -5,7 +5,10 @@ import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
-import { CoverImageService } from '../../../../core/services/cover-image.service';
+import {
+  CoverImageService,
+  CoverImagesSyncReport,
+} from '../../../../core/services/cover-image.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { CoverImage, DictionaryItem } from '../../../../shared/types';
@@ -23,26 +26,147 @@ import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
         <h1 class="text-xl font-bold text-neutral-900">Galeria cover images</h1>
       </div>
 
+      <!-- Importer / Synchronizator -->
+      <app-card class="mb-4">
+        <div class="space-y-3">
+          <h3 class="text-sm font-semibold text-neutral-900">Synchronizator z katalogu</h3>
+          <p class="text-xs text-neutral-600">
+            Skanuje katalog <code>frontend/public/assets/covers/events/</code>, dodaje brakujące
+            wpisy w bazie (bez usuwania ani modyfikacji istniejących) i wyświetla raport.
+          </p>
+          <app-button
+            appearance="soft"
+            color="neutral"
+            (clicked)="onSync()"
+            [loading]="syncLoading()"
+          >
+            <app-icon name="loader" size="sm" />
+            Synchronizuj z katalogu
+          </app-button>
+
+          @if (syncReport()) {
+            <div class="mt-3 space-y-4">
+              <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+                <div class="p-2 rounded-lg bg-neutral-100">
+                  Foldery: <b>{{ syncReport()!.summary.totalFolders }}</b>
+                </div>
+                <div class="p-2 rounded-lg bg-neutral-100">
+                  Pliki: <b>{{ syncReport()!.summary.totalFiles }}</b>
+                </div>
+                <div
+                  class="p-2 rounded-lg bg-success-50 text-success-600 border border-success-200"
+                >
+                  Dodane: <b>{{ syncReport()!.summary.added }}</b>
+                </div>
+                <div class="p-2 rounded-lg bg-neutral-100">
+                  Istniejące: <b>{{ syncReport()!.summary.existing }}</b>
+                </div>
+                <div class="p-2 rounded-lg bg-danger-50 text-danger-600 border border-danger-200">
+                  Brak pliku dla wpisu w DB: <b>{{ syncReport()!.summary.missingFilesInDb }}</b>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="text-sm font-semibold text-neutral-900 mb-2">Zawartość wg dyscypliny</h4>
+                <div class="space-y-3">
+                  @for (b of syncReport()!.byDiscipline; track b.slug) {
+                    <div class="rounded-xl border border-neutral-200">
+                      <div
+                        class="px-3 py-2 flex items-center justify-between text-xs bg-neutral-50 rounded-t-xl"
+                      >
+                        <div>
+                          <span class="font-medium text-neutral-900">/{{ b.slug }}</span>
+                          <span class="ml-2 text-neutral-500"
+                            >(ID dyscypliny: {{ b.disciplineId || 'brak' }})</span
+                          >
+                        </div>
+                        <div class="text-neutral-500">Plików: {{ b.files.length }}</div>
+                      </div>
+                      <div class="divide-y divide-neutral-100">
+                        @for (f of b.files; track f.filename) {
+                          <div class="px-3 py-2 text-xs flex items-center justify-between">
+                            <span class="truncate mr-2">{{ f.filename }}</span>
+                            <div class="flex items-center gap-2">
+                              @if (f.added) {
+                                <span
+                                  class="px-1.5 py-0.5 rounded bg-success-50 text-success-600 border border-success-200"
+                                  >dodany</span
+                                >
+                              } @else if (f.existed) {
+                                <span class="px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-700"
+                                  >istniał</span
+                                >
+                              } @else {
+                                <span
+                                  class="px-1.5 py-0.5 rounded bg-warning-50 text-warning-600 border border-warning-200"
+                                  >pominięty (brak dyscypliny)</span
+                                >
+                              }
+                              @if (!f.fileExists) {
+                                <span
+                                  class="px-1.5 py-0.5 rounded bg-danger-50 text-danger-600 border border-danger-200"
+                                  >BRAK PLIKU</span
+                                >
+                              }
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              @if (syncReport()!.dbWithMissingFiles.length > 0) {
+                <div>
+                  <h4 class="text-sm font-semibold text-danger-600 mb-1">
+                    Wpisy w DB bez fizycznego pliku
+                  </h4>
+                  <div class="rounded-xl border border-danger-200 overflow-hidden">
+                    @for (m of syncReport()!.dbWithMissingFiles; track m.id) {
+                      <div
+                        class="px-3 py-2 text-xs bg-danger-50 text-danger-700 border-b border-danger-100"
+                      >
+                        <span class="font-mono">{{ m.filename }}</span>
+                        <span class="ml-2"
+                          >(discipline: {{ m.disciplineSlug || m.disciplineId }})</span
+                        >
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </app-card>
+
       <!-- Upload new -->
       <app-card>
         <div class="space-y-3">
           <h3 class="text-sm font-semibold text-neutral-900">Dodaj nowy cover</h3>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-medium text-neutral-600 mb-1">Dyscyplina</label>
+              <label for="uploadDiscipline" class="block text-xs font-medium text-neutral-600 mb-1"
+                >Dyscyplina</label
+              >
               <select
+                id="uploadDiscipline"
                 [(ngModel)]="uploadDisciplineId"
                 class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
               >
                 <option value="">Wybierz...</option>
                 @for (d of disciplines(); track d.id) {
-                <option [value]="d.id">{{ d.name }}</option>
+                  <option [value]="d.id">{{ d.name }}</option>
                 }
               </select>
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-600 mb-1">Plik graficzny</label>
+              <label for="uploadFile" class="block text-xs font-medium text-neutral-600 mb-1"
+                >Plik graficzny</label
+              >
               <input
+                id="uploadFile"
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/gif"
                 (change)="onFileChange($event)"
@@ -72,75 +196,75 @@ import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
         >
           <option value="">Wszystkie dyscypliny</option>
           @for (d of disciplines(); track d.id) {
-          <option [value]="d.id">{{ d.name }}</option>
+            <option [value]="d.id">{{ d.name }}</option>
           }
         </select>
       </div>
 
       <!-- Cover list -->
       @if (loading()) {
-      <div class="flex items-center justify-center py-8">
-        <div
-          class="h-8 w-8 animate-spin rounded-full border-2 border-highlight border-t-transparent"
-        ></div>
-      </div>
+        <div class="flex items-center justify-center py-8">
+          <div
+            class="h-8 w-8 animate-spin rounded-full border-2 border-highlight border-t-transparent"
+          ></div>
+        </div>
       } @else if (covers().length === 0) {
-      <div class="text-center py-8 text-neutral-400">
-        <app-icon name="image" size="lg" color="neutral" muted="light" />
-        <p class="mt-2 text-sm">Brak cover images</p>
-      </div>
+        <div class="text-center py-8 text-neutral-400">
+          <app-icon name="image" size="lg" color="neutral" muted="light" />
+          <p class="mt-2 text-sm">Brak cover images</p>
+        </div>
       } @else {
-      <div class="space-y-3">
-        @for (cover of covers(); track cover.id) {
-        <app-card>
-          <div class="overflow-hidden rounded-xl">
-            <img
-              [src]="getCoverUrl(cover)"
-              [alt]="cover.originalName"
-              class="w-full aspect-[700/250] object-cover"
-            />
-            <div class="p-3 space-y-2">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-xs font-medium text-neutral-900">
-                    {{ cover.originalName }}
-                  </p>
-                  @if (cover.discipline) {
-                  <span
-                    class="text-[10px] bg-primary-500-50 text-primary-500 px-1.5 py-0.5 rounded-full"
-                    >{{ cover.discipline.name }}</span
-                  >
-                  }
+        <div class="space-y-3">
+          @for (cover of covers(); track cover.id) {
+            <app-card>
+              <div class="overflow-hidden rounded-xl">
+                <img
+                  [src]="getCoverUrl(cover)"
+                  [alt]="cover.originalName"
+                  class="w-full aspect-[700/250] object-cover"
+                />
+                <div class="p-3 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-xs font-medium text-neutral-900">
+                        {{ cover.originalName }}
+                      </p>
+                      @if (cover.discipline) {
+                        <span
+                          class="text-[10px] bg-primary-500-50 text-primary-500 px-1.5 py-0.5 rounded-full"
+                          >{{ cover.discipline.name }}</span
+                        >
+                      }
+                    </div>
+                    <span class="text-[10px] text-neutral-400">{{
+                      cover.createdAt | date: 'd MMM yyyy'
+                    }}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label
+                      class="flex-1 relative cursor-pointer rounded-lg border border-dashed border-neutral-300 px-3 py-1.5 text-center text-xs text-neutral-500 hover:border-highlight hover:text-primary-500 transition-colors"
+                    >
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        class="hidden"
+                        (change)="onReplace(cover.id, $event)"
+                      />
+                      Zamień grafikę
+                    </label>
+                    <button
+                      type="button"
+                      class="rounded-lg border border-danger-200 px-3 py-1.5 text-xs text-danger-400 hover:bg-danger-500 transition-colors"
+                      (click)="onDelete(cover.id)"
+                    >
+                      Usuń
+                    </button>
+                  </div>
                 </div>
-                <span class="text-[10px] text-neutral-400">{{
-                  cover.createdAt | date : 'd MMM yyyy'
-                }}</span>
               </div>
-              <div class="flex items-center gap-2">
-                <label
-                  class="flex-1 relative cursor-pointer rounded-lg border border-dashed border-neutral-300 px-3 py-1.5 text-center text-xs text-neutral-500 hover:border-highlight hover:text-primary-500 transition-colors"
-                >
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                    class="hidden"
-                    (change)="onReplace(cover.id, $event)"
-                  />
-                  Zamień grafikę
-                </label>
-                <button
-                  type="button"
-                  class="rounded-lg border border-danger-200 px-3 py-1.5 text-xs text-danger-400 hover:bg-danger-500 transition-colors"
-                  (click)="onDelete(cover.id)"
-                >
-                  Usuń
-                </button>
-              </div>
-            </div>
-          </div>
-        </app-card>
-        }
-      </div>
+            </app-card>
+          }
+        </div>
       }
     </div>
   `,
@@ -155,6 +279,8 @@ export class AdminCoverImagesComponent implements OnInit {
   readonly covers = signal<CoverImage[]>([]);
   readonly loading = signal(false);
   readonly uploading = signal(false);
+  readonly syncLoading = signal(false);
+  readonly syncReport = signal<CoverImagesSyncReport | null>(null);
 
   uploadDisciplineId = '';
   uploadFile: File | null = null;
@@ -180,6 +306,22 @@ export class AdminCoverImagesComponent implements OnInit {
       error: () => {
         this.covers.set([]);
         this.loading.set(false);
+      },
+    });
+  }
+
+  onSync(): void {
+    this.syncLoading.set(true);
+    this.coverImageService.syncFromFilesystem().subscribe({
+      next: (report) => {
+        this.syncReport.set(report);
+        this.syncLoading.set(false);
+        this.snackbar.success('Synchronizacja zakończona');
+        this.loadCovers();
+      },
+      error: (err) => {
+        this.syncLoading.set(false);
+        this.snackbar.error(err?.error?.message || 'Synchronizacja nie powiodła się');
       },
     });
   }

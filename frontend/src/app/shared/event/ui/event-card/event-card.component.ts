@@ -33,7 +33,10 @@ import {
     EventStatusBadgeComponent,
   ],
   template: `
-    @let _event = event(); @let _countdown = countdown();
+    @let _event = event();
+    @let _countdown = countdown();
+    @let _coverUrl = coverUrl();
+
     <div
       [class]="
         'rounded-2xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 bg-white border-2 ' +
@@ -42,9 +45,9 @@ import {
       (click)="selected.emit(_event)"
     >
       <div class="relative h-44 overflow-hidden">
-        @if (_event.coverImage?.filename) {
+        @if (_coverUrl) {
           <img
-            [src]="coverUrl()"
+            [src]="_coverUrl"
             [alt]="_event.title"
             class="absolute inset-0 h-full w-full object-cover"
           />
