@@ -81,11 +81,12 @@ async function main() {
   console.log('Tworzę poziomy...');
   const levels = await Promise.all(
     [
+      { name: 'Zróżnicowany', slug: 'zroznicowany' },
       { name: 'Rekreacyjny', slug: 'rekreacyjny' },
       { name: 'Amatorski', slug: 'amatorski' },
-      { name: 'Półzaawansowany', slug: 'polzaawansowany' },
+      { name: 'Średniozaawansowany', slug: 'sredniozaawansowany' },
       { name: 'Zaawansowany', slug: 'zaawansowany' },
-      { name: 'Półzawodowy', slug: 'polzawodowy' },
+      { name: 'Zawodowy', slug: 'zawodowy' },
     ].map((l) => prisma.eventLevel.create({ data: l })),
   );
 

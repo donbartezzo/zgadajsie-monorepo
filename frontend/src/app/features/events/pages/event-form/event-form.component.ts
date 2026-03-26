@@ -7,7 +7,14 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
@@ -31,6 +38,37 @@ interface RoleSlotConfig {
   desc: string;
   slots: number;
   isDefault: boolean;
+}
+
+interface DuplicateQueryParams {
+  duplicateId?: string;
+}
+
+// Custom walidatory
+class EventValidators {
+  static startDateInFuture(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null;
+
+    const startDate = new Date(control.value);
+    const now = new Date();
+
+    return startDate <= now ? { startDateInPast: true } : null;
+  }
+
+  static endDateAfterStart(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null;
+
+    const form = control.parent;
+    if (!form) return null;
+
+    const startDateStr = form.get('startsAt')?.value;
+    if (!startDateStr) return null;
+
+    const startDate = new Date(startDateStr);
+    const endDate = new Date(control.value);
+
+    return endDate <= startDate ? { endDateBeforeStart: true } : null;
+  }
 }
 
 @Component({
@@ -85,7 +123,7 @@ interface RoleSlotConfig {
                 >
                   <option value="">Wybierz...</option>
                   @for (d of disciplines(); track d.id) {
-                  <option [value]="d.id">{{ d.name }}</option>
+                    <option [value]="d.id">{{ d.name }}</option>
                   }
                 </select>
               </div>
@@ -97,7 +135,7 @@ interface RoleSlotConfig {
                 >
                   <option value="">Wybierz...</option>
                   @for (f of facilities(); track f.id) {
-                  <option [value]="f.id">{{ f.name }}</option>
+                    <option [value]="f.id">{{ f.name }}</option>
                   }
                 </select>
               </div>
@@ -109,7 +147,7 @@ interface RoleSlotConfig {
                 >
                   <option value="">Wybierz...</option>
                   @for (l of levels(); track l.id) {
-                  <option [value]="l.id">{{ l.name }}</option>
+                    <option [value]="l.id">{{ l.name }}</option>
                   }
                 </select>
               </div>
@@ -121,7 +159,7 @@ interface RoleSlotConfig {
                 >
                   <option value="">Wybierz...</option>
                   @for (c of cities(); track c.id) {
-                  <option [value]="c.id">{{ c.name }}</option>
+                    <option [value]="c.id">{{ c.name }}</option>
                   }
                 </select>
               </div>
@@ -253,65 +291,66 @@ interface RoleSlotConfig {
         </app-card>
 
         @if (rolesEnabled()) {
-        <app-card>
-          <div class="p-4 space-y-4">
-            <h3 class="text-sm font-semibold text-neutral-900">Role uczestników</h3>
-            <p class="text-xs text-neutral-500">
-              Określ liczbę miejsc dla każdej roli. Suma musi być równa maksymalnej liczbie
-              uczestników ({{ form.get('maxParticipants')?.value }}).
-            </p>
+          <app-card>
+            <div class="p-4 space-y-4">
+              <h3 class="text-sm font-semibold text-neutral-900">Role uczestników</h3>
+              <p class="text-xs text-neutral-500">
+                Określ liczbę miejsc dla każdej roli. Suma musi być równa maksymalnej liczbie
+                uczestników ({{ form.get('maxParticipants')?.value }}).
+              </p>
 
-            <div class="space-y-3">
-              @for (role of roleSlots(); track role.key) {
-              <div
-                class="flex items-center justify-between p-3 rounded-xl border"
-                [ngClass]="
-                  role.isDefault
-                    ? 'border-primary-200 bg-primary-50'
-                    : 'border-neutral-200 bg-white'
-                "
-              >
-                <div class="flex-1">
-                  <div class="flex items-center gap-2">
-                    <span class="text-sm font-medium text-neutral-900">{{ role.title }}</span>
-                    @if (role.isDefault) {
-                    <span class="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700"
-                      >domyślna</span
-                    >
-                    }
+              <div class="space-y-3">
+                @for (role of roleSlots(); track role.key) {
+                  <div
+                    class="flex items-center justify-between p-3 rounded-xl border"
+                    [ngClass]="
+                      role.isDefault
+                        ? 'border-primary-200 bg-primary-50'
+                        : 'border-neutral-200 bg-white'
+                    "
+                  >
+                    <div class="flex-1">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-neutral-900">{{ role.title }}</span>
+                        @if (role.isDefault) {
+                          <span
+                            class="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700"
+                            >domyślna</span
+                          >
+                        }
+                      </div>
+                      <p class="text-xs text-neutral-500 mt-0.5">{{ role.desc }}</p>
+                    </div>
+                    <div class="flex items-center gap-2 ml-4">
+                      @if (role.isDefault) {
+                        <span class="text-sm font-medium text-neutral-700 w-12 text-center">{{
+                          role.slots
+                        }}</span>
+                      } @else {
+                        <input
+                          type="number"
+                          [value]="role.slots"
+                          min="0"
+                          [max]="form.get('maxParticipants')?.value"
+                          (change)="updateRoleSlots(role.key, +$any($event.target).value)"
+                          class="w-16 rounded-lg border border-neutral-300 bg-white px-2 py-1 text-sm text-center text-neutral-900"
+                        />
+                      }
+                    </div>
                   </div>
-                  <p class="text-xs text-neutral-500 mt-0.5">{{ role.desc }}</p>
-                </div>
-                <div class="flex items-center gap-2 ml-4">
-                  @if (role.isDefault) {
-                  <span class="text-sm font-medium text-neutral-700 w-12 text-center">{{
-                    role.slots
-                  }}</span>
-                  } @else {
-                  <input
-                    type="number"
-                    [value]="role.slots"
-                    min="0"
-                    [max]="form.get('maxParticipants')?.value"
-                    (change)="updateRoleSlots(role.key, +$any($event.target).value)"
-                    class="w-16 rounded-lg border border-neutral-300 bg-white px-2 py-1 text-sm text-center text-neutral-900"
-                  />
-                  }
-                </div>
+                }
               </div>
+
+              @if (roleSlotsSum() !== form.get('maxParticipants')?.value) {
+                <div class="text-xs text-danger-600 flex items-center gap-1">
+                  <app-icon name="alert-triangle" size="xs" />
+                  Suma slotów ({{ roleSlotsSum() }}) nie zgadza się z liczbą uczestników ({{
+                    form.get('maxParticipants')?.value
+                  }})
+                </div>
               }
             </div>
-
-            @if (roleSlotsSum() !== form.get('maxParticipants')?.value) {
-            <div class="text-xs text-danger-600 flex items-center gap-1">
-              <app-icon name="alert-triangle" size="xs" />
-              Suma slotów ({{ roleSlotsSum() }}) nie zgadza się z liczbą uczestników ({{
-                form.get('maxParticipants')?.value
-              }})
-            </div>
-            }
-          </div>
-        </app-card>
+          </app-card>
         }
 
         <app-card>
@@ -346,45 +385,49 @@ interface RoleSlotConfig {
           <div class="p-4 space-y-3">
             <h3 class="text-sm font-semibold text-neutral-900">Grafika wydarzenia</h3>
             @if (!form.get('disciplineId')?.value) {
-            <p class="text-xs text-neutral-400">
-              Najpierw wybierz dyscyplinę, aby zobaczyć dostępne grafiki.
-            </p>
+              <p class="text-xs text-neutral-400">
+                Najpierw wybierz dyscyplinę, aby zobaczyć dostępne grafiki.
+              </p>
             } @else if (coverImagesLoading()) {
-            <div class="flex items-center justify-center py-6">
-              <div
-                class="h-6 w-6 animate-spin rounded-full border-2 border-highlight border-t-transparent"
-              ></div>
-            </div>
+              <div class="flex items-center justify-center py-6">
+                <div
+                  class="h-6 w-6 animate-spin rounded-full border-2 border-highlight border-t-transparent"
+                ></div>
+              </div>
             } @else if (coverImages().length === 0) {
-            <p class="text-xs text-neutral-400">Brak dostępnych grafik dla wybranej dyscypliny.</p>
+              <p class="text-xs text-neutral-400">
+                Brak dostępnych grafik dla wybranej dyscypliny.
+              </p>
             } @else {
-            <div class="grid grid-cols-2 gap-2">
-              @for (cover of coverImages(); track cover.id) {
-              <button
-                type="button"
-                [class]="
-                  'relative overflow-hidden rounded-xl border-2 transition-all ' +
-                  (selectedCoverImageId() === cover.id
-                    ? 'border-highlight ring-2 ring-primary-500/30'
-                    : 'border-neutral-200 hover:border-neutral-400')
-                "
-                (click)="selectCoverImage(cover)"
-              >
-                <img
-                  [src]="coverUrl(cover)"
-                  [alt]="cover.originalName"
-                  class="w-full aspect-[700/250] object-cover"
-                />
-                @if (selectedCoverImageId() === cover.id) {
-                <div class="absolute inset-0 bg-primary-500/20 flex items-center justify-center">
-                  <div class="rounded-full bg-primary-500 p-1">
-                    <app-icon name="check" size="sm" class="text-white" />
-                  </div>
-                </div>
+              <div class="grid grid-cols-2 gap-2">
+                @for (cover of coverImages(); track cover.id) {
+                  <button
+                    type="button"
+                    [class]="
+                      'relative overflow-hidden rounded-xl border-2 transition-all ' +
+                      (selectedCoverImageId() === cover.id
+                        ? 'border-highlight ring-2 ring-primary-500/30'
+                        : 'border-neutral-200 hover:border-neutral-400')
+                    "
+                    (click)="selectCoverImage(cover)"
+                  >
+                    <img
+                      [src]="coverUrl(cover)"
+                      [alt]="cover.originalName"
+                      class="w-full aspect-[700/250] object-cover"
+                    />
+                    @if (selectedCoverImageId() === cover.id) {
+                      <div
+                        class="absolute inset-0 bg-primary-500/20 flex items-center justify-center"
+                      >
+                        <div class="rounded-full bg-primary-500 p-1">
+                          <app-icon name="check" size="sm" class="text-white" />
+                        </div>
+                      </div>
+                    }
+                  </button>
                 }
-              </button>
-              }
-            </div>
+              </div>
             }
           </div>
         </app-card>
@@ -446,8 +489,8 @@ export class EventFormComponent implements OnInit {
     facilityId: ['', Validators.required],
     levelId: ['', Validators.required],
     cityId: ['', Validators.required],
-    startsAt: ['', Validators.required],
-    endsAt: ['', Validators.required],
+    startsAt: ['', [Validators.required, EventValidators.startDateInFuture]],
+    endsAt: ['', [Validators.required, EventValidators.endDateAfterStart]],
     costPerPerson: [0],
     minParticipants: [2],
     maxParticipants: [10],
@@ -460,6 +503,11 @@ export class EventFormComponent implements OnInit {
     lng: [15.506],
   });
 
+  constructor() {
+    // Ustaw domyślne wartości po utworzeniu formularza
+    this.setDefaultValues();
+  }
+
   ngOnInit(): void {
     forkJoin({
       disciplines: this.dictService.getDisciplines(),
@@ -471,6 +519,20 @@ export class EventFormComponent implements OnInit {
       this.facilities.set(facilities);
       this.levels.set(levels);
       this.cities.set(cities);
+
+      // Ustaw domyślny poziom na "Zróżnicowany" (pierwszy na liście)
+      if (levels.length > 0 && !this.form.get('levelId')?.value) {
+        const zroznicowanyLevel = levels.find((l) => l.slug === 'zroznicowany');
+        if (zroznicowanyLevel) {
+          this.form.patchValue({ levelId: zroznicowanyLevel.id });
+        } else {
+          // Fallback do pierwszego poziomu jeśli nie znaleziono
+          this.form.patchValue({ levelId: levels[0].id });
+        }
+      }
+
+      // Po załadowaniu słowników, sprawdzamy czy to duplikacja
+      this.handleDuplicateIfPresent();
     });
 
     // Watch discipline changes to load cover images and role schema
@@ -582,10 +644,86 @@ export class EventFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      // Zaznacz pola z błędami
+      this.markFormGroupTouched(this.form);
+      this.snackbar.error('Formularz zawiera błędy. Popraw wszystkie wymagane pola.');
+      return;
+    }
+
+    // Dodatkowa walidacja kompletności danych
+    const val = this.form.getRawValue();
+
+    // Sprawdź podstawowe dane
+    if (!val.title?.trim()) {
+      this.snackbar.error('Tytuł jest wymagany.');
+      return;
+    }
+
+    if (!val.disciplineId) {
+      this.snackbar.error('Dyscyplina jest wymagana.');
+      return;
+    }
+
+    if (!val.facilityId) {
+      this.snackbar.error('Obiekt jest wymagany.');
+      return;
+    }
+
+    if (!val.levelId) {
+      this.snackbar.error('Poziom jest wymagany.');
+      return;
+    }
+
+    if (!val.cityId) {
+      this.snackbar.error('Miasto jest wymagane.');
+      return;
+    }
+
+    if (!val.address?.trim()) {
+      this.snackbar.error('Adres jest wymagany.');
+      return;
+    }
+
+    // Sprawdź daty
+    if (!val.startsAt) {
+      this.snackbar.error('Data rozpoczęcia jest wymagana.');
+      return;
+    }
+
+    if (!val.endsAt) {
+      this.snackbar.error('Data zakończenia jest wymagana.');
+      return;
+    }
+
+    const startDate = new Date(val.startsAt);
+    const endDate = new Date(val.endsAt);
+    const now = new Date();
+
+    if (startDate <= now) {
+      this.snackbar.error('Data rozpoczęcia musi być w przyszłości.');
+      return;
+    }
+
+    if (endDate <= startDate) {
+      this.snackbar.error('Data zakończenia musi być późniejsza niż data rozpoczęcia.');
+      return;
+    }
+
+    // Sprawdź liczbę uczestników
+    if (val.maxParticipants && val.minParticipants && val.maxParticipants < val.minParticipants) {
+      this.snackbar.error('Maksymalna liczba uczestników musi być większa lub równa minimalnej.');
+      return;
+    }
+
+    // Sprawdź przedział wiekowy
+    if (val.ageMin && val.ageMax && val.ageMax < val.ageMin) {
+      this.snackbar.error('Maksymalny wiek musi być większy lub równy minimalnemu wiekowi.');
+      return;
+    }
+
     this.submitting.set(true);
 
-    const val = this.form.getRawValue();
     const payload: Partial<Event> & { roleConfig?: EventRoleConfig } = {
       title: val.title || undefined,
       description: val.description || undefined,
@@ -740,5 +878,111 @@ export class EventFormComponent implements OnInit {
         isDefault: r.isDefault,
       })),
     };
+  }
+
+  private handleDuplicateIfPresent(): void {
+    const queryParams = this.route.snapshot.queryParams as DuplicateQueryParams;
+
+    // Sprawdzamy czy to jest duplikacja
+    if (queryParams.duplicateId) {
+      // Pobierz dane wydarzenia do duplikacji z weryfikacją uprawnień
+      this.eventService.getEventForDuplication(queryParams.duplicateId).subscribe({
+        next: (event) => {
+          // Wypełnij formularz danymi z pobranego wydarzenia
+          this.populateFormFromEvent(event);
+          this.snackbar.info('Formularz wypełniony danymi z duplikowanego wydarzenia');
+        },
+        error: (err) => {
+          const notFound = 'Wydarzenie nie zostało znalezione lub nie masz do niego dostępu';
+
+          if (err?.status === 403) {
+            // Wydarzenie nie należy do tego użytkownika, więc nie może go duplikować
+            this.snackbar.error(notFound);
+            // Przekieruj do bezpiecznej strony bez duplicateId
+            this.router.navigate(['/o/w/new']);
+          } else if (err?.status === 404) {
+            this.snackbar.error(notFound);
+            this.router.navigate(['/o/w/new']);
+          } else {
+            this.snackbar.error('Nie udało się pobrać danych wydarzenia do duplikacji');
+          }
+        },
+      });
+    }
+  }
+
+  private populateFormFromEvent(event: Event): void {
+    // Wypełnij formularz danymi z wydarzenia
+    (this.form.patchValue as any)({
+      title: event.title,
+      description: event.description || '',
+      disciplineId: event.disciplineId,
+      facilityId: event.facilityId,
+      levelId: event.levelId,
+      cityId: event.cityId,
+      startsAt: event.startsAt.substring(0, 16), // format dla datetime-local
+      endsAt: event.endsAt.substring(0, 16), // format dla datetime-local
+      costPerPerson: event.costPerPerson,
+      minParticipants: event.minParticipants || 2,
+      maxParticipants: event.maxParticipants || 10,
+      ageMin: event.ageMin,
+      ageMax: event.ageMax,
+      gender: event.gender,
+      visibility: event.visibility,
+      address: event.address,
+      lat: event.lat,
+      lng: event.lng,
+    });
+
+    // Ustaw reguły jeśli są
+    if (event.rules) {
+      this.eventRules.set(this.parseRules(event.rules));
+    }
+
+    // Ustaw mapę jeśli są współrzędne
+    if (event.lat && event.lng) {
+      this.mapLat.set(event.lat);
+      this.mapLng.set(event.lng);
+    }
+
+    // Ustaw cover image jeśli jest
+    if (event.coverImageId) {
+      this.selectedCoverImageId.set(event.coverImageId);
+    }
+  }
+
+  private markFormGroupTouched(formGroup: any): void {
+    Object.values(formGroup.controls).forEach((control: any) => {
+      control.markAsTouched();
+      if (control.controls) {
+        this.markFormGroupTouched(control);
+      }
+    });
+  }
+
+  private setDefaultValues(): void {
+    // Ustaw domyślny poziom na "Zróżnicowany"
+    // (zostanie zaktualizowany po załadowaniu słowników)
+
+    // Ustaw domyślne czasy
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Ustaw na jutro 19:00
+    const startsAt = new Date(tomorrow);
+    startsAt.setHours(19, 0, 0, 0);
+
+    // Ustaw na jutro 21:00
+    const endsAt = new Date(tomorrow);
+    endsAt.setHours(21, 0, 0, 0);
+
+    // Format dla datetime-local (YYYY-MM-DDTHH:mm)
+    const startsAtStr = startsAt.toISOString().slice(0, 16);
+    const endsAtStr = endsAt.toISOString().slice(0, 16);
+
+    this.form.patchValue({
+      startsAt: startsAtStr,
+      endsAt: endsAtStr,
+    });
   }
 }

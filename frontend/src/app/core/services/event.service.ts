@@ -39,6 +39,11 @@ export class EventService {
     return this.http.get<Event>(`${this.apiUrl}/${id}`);
   }
 
+  getEventForDuplication(id: string): Observable<Event> {
+    // Specjalny endpoint który weryfikuje, czy użytkownik jest właścicielem wydarzenia
+    return this.http.get<Event>(`${this.apiUrl}/${id}/duplicate`);
+  }
+
   createEvent(data: Partial<Event>): Observable<Event> {
     return this.http.post<Event>(this.apiUrl, data);
   }

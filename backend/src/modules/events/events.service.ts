@@ -231,6 +231,30 @@ export class EventsService {
     };
   }
 
+  async getEventForDuplication(id: string, userId: string) {
+    const event = await this.prisma.event.findUnique({
+      where: { id },
+      include: {
+        discipline: true,
+        facility: true,
+        level: true,
+        city: true,
+        coverImage: true,
+        organizer: { select: { id: true, displayName: true, avatarUrl: true } },
+      },
+    });
+
+    if (!event) {
+      throw new NotFoundException('Wydarzenie nie zostało znalezione');
+    }
+
+    if (event.organizerId !== userId) {
+      throw new ForbiddenException('Nie możesz duplikować tego wydarzenia');
+    }
+
+    return event;
+  }
+
   async update(id: string, userId: string, dto: UpdateEventDto) {
     const event = await this.prisma.event.findUnique({ where: { id } });
     if (!event) throw new NotFoundException('Wydarzenie nie znalezione');

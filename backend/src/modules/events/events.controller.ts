@@ -55,6 +55,12 @@ export class EventsController {
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
+  @Get(':id/duplicate')
+  getEventForDuplication(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.eventsService.getEventForDuplication(id, user.id);
+  }
+
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Post(':id/duplicate')
   duplicate(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.eventsService.duplicate(id, user.id);
