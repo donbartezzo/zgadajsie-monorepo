@@ -536,6 +536,79 @@
       </section>
 
       <section>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-4">Badge (app-badge)</h2>
+        <p class="text-sm text-neutral-500 mb-4">
+          Małe, zaokrąglone tagi do wyświetlania statusów, kategorii i metadanych.
+        </p>
+
+        <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-6">
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+              Variant × SemanticColor (size sm)
+            </p>
+            <div class="space-y-3">
+              @for (variant of badgeVariants; track variant) {
+                <div>
+                  <p class="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-400">
+                    {{ variant }}
+                  </p>
+                  <div class="flex flex-wrap gap-2">
+                    @for (color of semanticColors; track color) {
+                      <app-badge [variant]="variant" [color]="color">
+                        {{ color }}
+                      </app-badge>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+              Rozmiary (variant=soft, color=primary)
+            </p>
+            <div class="flex flex-wrap items-center gap-2">
+              <app-badge variant="soft" color="primary" size="xs">XS</app-badge>
+              <app-badge variant="soft" color="primary" size="sm">SM</app-badge>
+              <app-badge variant="soft" color="primary" size="md">MD</app-badge>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Przykłady użycia</p>
+            <div class="flex flex-wrap gap-2">
+              <app-badge variant="soft" color="success">Aktywny</app-badge>
+              <app-badge variant="soft" color="warning">Oczekuje</app-badge>
+              <app-badge variant="soft" color="danger">Błąd</app-badge>
+              <app-badge variant="outline" color="neutral">Wersja beta</app-badge>
+              <app-badge variant="solid" color="primary">Nowość</app-badge>
+              <app-badge variant="ghost" color="info">Info</app-badge>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Muted (wyciszenie)</p>
+            <div class="space-y-2">
+              <p class="text-xs text-neutral-400 mb-2">Normal vs Light vs Heavy:</p>
+              <div class="flex flex-wrap gap-2">
+                <app-badge variant="soft" color="primary">Normal</app-badge>
+                <app-badge variant="soft" color="primary" muted="light">Light</app-badge>
+                <app-badge variant="soft" color="primary" muted="heavy">Heavy</app-badge>
+              </div>
+              <p class="text-xs text-neutral-400 mb-2 mt-3">Różne kolory z light muted:</p>
+              <div class="flex flex-wrap gap-2">
+                <app-badge variant="soft" color="success" muted="light">Sukces</app-badge>
+                <app-badge variant="soft" color="warning" muted="light">Ostrzeżenie</app-badge>
+                <app-badge variant="soft" color="danger" muted="light">Błąd</app-badge>
+                <app-badge variant="outline" color="neutral" muted="light">Neutral</app-badge>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
         <h2 class="text-lg font-semibold text-neutral-900 mb-4">Karta (Surface)</h2>
         <div class="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4">
           <h3 class="text-base font-semibold text-neutral-900">Przykładowa karta</h3>

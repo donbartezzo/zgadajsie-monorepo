@@ -12,6 +12,7 @@ import { IconName, IconComponent } from '../../../../shared/ui/icon/icon.compone
 import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
+import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
 import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EventService } from '../../../../core/services/event.service';
@@ -41,6 +42,7 @@ import { formatEventAddress } from '../../../../shared/utils/event-format.utils'
     RouterLink,
     IconComponent,
     ButtonComponent,
+    BadgeComponent,
     UserAvatarComponent,
     LoadingSpinnerComponent,
     EventInlineNotificationBarsComponent,
@@ -100,6 +102,10 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     { icon: 'sun', label: 'Oświetlenie' },
     { icon: 'shield', label: 'Parking' },
     { icon: 'star', label: 'Plastrony' },
+    { icon: 'hanger', label: 'Szatnia' },
+    { icon: 'toilet', label: 'Toaleta' },
+    { icon: 'ball', label: 'Piłki' },
+    { icon: 'bookmark', label: 'Własna rezerwacja' },
   ];
 
   readonly isPreEnrollment = computed(() => this.enrollmentPhase() === 'PRE_ENROLLMENT');

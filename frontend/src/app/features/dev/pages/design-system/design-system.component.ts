@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.component';
 import { ButtonAppearance, ButtonComponent } from '../../../../shared/ui/button/button.component';
+import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
 import { SemanticColor } from '../../../../shared/types/colors';
 
 interface ColorSwatch {
@@ -16,7 +17,7 @@ interface ColorPalette {
 
 @Component({
   selector: 'app-design-system',
-  imports: [IconComponent, ButtonComponent],
+  imports: [IconComponent, ButtonComponent, BadgeComponent],
   templateUrl: './design-system.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -31,6 +32,7 @@ export class DesignSystemComponent {
     'neutral',
   ];
   readonly buttonAppearances: ButtonAppearance[] = ['solid', 'soft', 'outline', 'ghost', 'link'];
+  readonly badgeVariants = ['solid', 'soft', 'outline', 'ghost'] as const;
 
   readonly sections = [
     { id: 'colors', label: 'Kolory' },

@@ -50,7 +50,7 @@
 
     <!-- Description -->
     @if (e.description) {
-      <p class="mt-2 text-sm leading-relaxed text-neutral-600 whitespace-pre-line">
+      <p class="my-2 py-2 text-sm leading-relaxed text-neutral-600 whitespace-pre-line">
         {{ e.description }}
       </p>
     }
@@ -112,15 +112,14 @@
       <app-event-info-grid [event]="e" (addressClicked)="overlays.open('map')" />
     </div>
 
-    <!-- Amenities / Features - 3-column icon grid -->
+    <!-- Amenities / Features - responsive grid -->
     @if (amenities.length > 0) {
       <h3 class="mt-4 text-base font-bold text-neutral-900">Udogodnienia</h3>
-      <div class="mt-3 mb-4 grid grid-cols-3 gap-y-3 gap-x-2">
+      <div class="mt-3 mb-4 flex flex-wrap gap-2">
         @for (a of amenities; track a.label) {
-          <div class="flex items-center gap-1.5">
-            <app-icon [name]="a.icon" size="sm" color="primary"></app-icon>
-            <span class="text-xs text-neutral-500">{{ a.label }}</span>
-          </div>
+          <app-badge variant="outline" color="neutral" muted="light" size="sm">
+            {{ a.label }}
+          </app-badge>
         }
       </div>
     }

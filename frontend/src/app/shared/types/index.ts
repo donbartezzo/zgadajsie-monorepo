@@ -1,4 +1,6 @@
 export * from './common.interface';
+export * from './colors';
+export * from './common';
 export * from './user.interface';
 export * from './event.interface';
 export * from './event-list-item.interface';
@@ -10,4 +12,3 @@ export * from './notification.interface';
 export * from './dictionary.interface';
 export * from './cover-image.interface';
 export * from './event-announcement.interface';
-export * from './colors';
