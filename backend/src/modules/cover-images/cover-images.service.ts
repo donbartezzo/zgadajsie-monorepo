@@ -16,9 +16,9 @@ const COVERS_DIR = path.join(process.cwd(), 'frontend/public/assets/covers/event
 export class CoverImagesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(disciplineId?: string) {
+  async findAll(disciplineSlug?: string) {
     return this.prisma.coverImage.findMany({
-      where: disciplineId ? { disciplineId } : undefined,
+      where: disciplineSlug ? { discipline: { slug: disciplineSlug } } : undefined,
       orderBy: { createdAt: 'desc' },
       include: { discipline: true },
     });
@@ -35,9 +35,9 @@ export class CoverImagesService {
     return cover;
   }
 
-  async findRandomByDiscipline(disciplineId: string) {
+  async findRandomByDiscipline(disciplineSlug: string) {
     const covers = await this.prisma.coverImage.findMany({
-      where: { disciplineId },
+      where: { discipline: { slug: disciplineSlug } },
     });
     if (covers.length === 0) {
       return null;
@@ -45,21 +45,19 @@ export class CoverImagesService {
     return covers[Math.floor(Math.random() * covers.length)];
   }
 
-  async create(disciplineId: string, file: Express.Multer.File) {
-    const discipline = await this.validateDisciplineExists(disciplineId);
+  async create(disciplineSlug: string, file: Express.Multer.File) {
+    await this.validateDisciplineExistsBySlug(disciplineSlug);
 
     const buffer = await this.processImage(file.buffer);
     const filenameOnly = `${uuidv4()}.${COVER_IMAGE_FORMAT}`;
-    const subdir = path.join(COVERS_DIR, discipline.slug);
+    const subdir = path.join(COVERS_DIR, disciplineSlug);
     await this.ensureDir(subdir);
-    const fullFilename = path.join(discipline.slug, filenameOnly);
-    await fs.writeFile(path.join(COVERS_DIR, fullFilename), buffer);
+    await fs.writeFile(path.join(subdir, filenameOnly), buffer);
 
     return this.prisma.coverImage.create({
       data: {
-        disciplineId,
-        filename: fullFilename,
-        originalName: file.originalname,
+        filename: filenameOnly,
+        discipline: { connect: { slug: disciplineSlug } },
       },
       include: { discipline: true },
     });
@@ -70,33 +68,36 @@ export class CoverImagesService {
 
     const buffer = await this.processImage(file.buffer);
 
-    await this.deleteLocalFile(existing.filename);
+    // delete old physical file (joined with slug because filename is basename)
+    {
+      const slug = existing.discipline?.slug || (existing as any).disciplineSlug;
+      if (slug) {
+        await this.deleteLocalFile(path.join(slug, existing.filename));
+      }
+    }
 
-    const disciplineSlug =
-      existing.discipline?.slug || (await this.getDisciplineSlugById(existing.disciplineId));
+    const disciplineSlug = existing.discipline?.slug || (existing as any).disciplineSlug;
     const filenameOnly = `${uuidv4()}.${COVER_IMAGE_FORMAT}`;
     const subdir = path.join(COVERS_DIR, disciplineSlug);
     await this.ensureDir(subdir);
-    const fullFilename = path.join(disciplineSlug, filenameOnly);
-    await fs.writeFile(path.join(COVERS_DIR, fullFilename), buffer);
+    await fs.writeFile(path.join(subdir, filenameOnly), buffer);
 
     return this.prisma.coverImage.update({
       where: { id },
       data: {
-        filename: fullFilename,
-        originalName: file.originalname,
+        filename: filenameOnly,
       },
       include: { discipline: true },
     });
   }
 
-  async updateDiscipline(id: string, disciplineId: string) {
+  async updateDiscipline(id: string, disciplineSlug: string) {
     await this.findOne(id);
-    await this.validateDisciplineExists(disciplineId);
+    await this.validateDisciplineExistsBySlug(disciplineSlug);
 
     return this.prisma.coverImage.update({
       where: { id },
-      data: { disciplineId },
+      data: { discipline: { connect: { slug: disciplineSlug } } },
       include: { discipline: true },
     });
   }
@@ -114,7 +115,12 @@ export class CoverImagesService {
       );
     }
 
-    await this.deleteLocalFile(existing.filename);
+    await this.deleteLocalFile(
+      path.join(
+        existing.discipline?.slug || (existing as any).disciplineSlug || '',
+        existing.filename,
+      ),
+    );
 
     return this.prisma.coverImage.delete({ where: { id } });
   }
@@ -149,9 +155,9 @@ export class CoverImagesService {
     }
   }
 
-  private async validateDisciplineExists(disciplineId: string) {
+  private async validateDisciplineExistsBySlug(disciplineSlug: string) {
     const discipline = await this.prisma.eventDiscipline.findUnique({
-      where: { id: disciplineId },
+      where: { slug: disciplineSlug },
     });
     if (!discipline) {
       throw new BadRequestException('Dyscyplina nie istnieje');
@@ -159,21 +165,19 @@ export class CoverImagesService {
     return discipline;
   }
 
-  private async getDisciplineSlugById(disciplineId: string): Promise<string> {
-    const d = await this.prisma.eventDiscipline.findUnique({ where: { id: disciplineId } });
-    if (!d) throw new BadRequestException('Dyscyplina nie istnieje');
-    return d.slug;
-  }
-
   async syncFromFilesystem() {
     // Build DB index of existing filenames for quick lookup
     const existing = await this.prisma.coverImage.findMany({ include: { discipline: true } });
-    const existingByFilename = new Map(existing.map((c) => [c.filename, c]));
+    const existingKey = (slug: string, basename: string) => `${slug}/${basename}`;
+    const existingByKey = new Map(
+      existing.map((c) => [
+        existingKey((c as any).disciplineSlug || c.discipline?.slug || '', c.filename),
+        c,
+      ]),
+    );
 
     // Map discipline slug -> { id, slug }
-    const disciplines = await this.prisma.eventDiscipline.findMany({
-      select: { id: true, slug: true },
-    });
+    const disciplines = await this.prisma.eventDiscipline.findMany({ select: { slug: true } });
     const discBySlug = new Map(disciplines.map((d) => [d.slug, d]));
 
     // Scan filesystem
@@ -224,7 +228,7 @@ export class CoverImagesService {
 
       const bucket = {
         slug,
-        disciplineId: disc?.id,
+        disciplineId: undefined as string | undefined,
         files: [] as Array<{
           filename: string;
           existed: boolean;
@@ -236,12 +240,12 @@ export class CoverImagesService {
       report.byDiscipline.push(bucket);
 
       for (const f of files) {
-        const relFilename = path.join(slug, f.name);
+        const basename = f.name;
         report.summary.totalFiles += 1;
-        const found = existingByFilename.get(relFilename);
+        const found = existingByKey.get(existingKey(slug, basename));
         if (found) {
           bucket.files.push({
-            filename: relFilename,
+            filename: path.join(slug, basename),
             existed: true,
             added: false,
             fileExists: true,
@@ -253,7 +257,7 @@ export class CoverImagesService {
         if (!disc) {
           // No matching discipline for this folder — skip DB create but report as missing mapping
           bucket.files.push({
-            filename: relFilename,
+            filename: path.join(slug, basename),
             existed: false,
             added: false,
             fileExists: true,
@@ -262,11 +266,11 @@ export class CoverImagesService {
         }
         // Create DB record for missing file (non-destructive)
         const created = await this.prisma.coverImage.create({
-          data: { disciplineId: disc.id, filename: relFilename, originalName: f.name },
+          data: { filename: basename, discipline: { connect: { slug } } },
           include: { discipline: true },
         });
         bucket.files.push({
-          filename: relFilename,
+          filename: path.join(slug, basename),
           existed: false,
           added: true,
           fileExists: true,
@@ -278,14 +282,18 @@ export class CoverImagesService {
 
     // Now, find DB records whose physical file is missing
     for (const c of existing) {
-      const filePath = path.join(COVERS_DIR, c.filename);
+      const filePath = path.join(
+        COVERS_DIR,
+        (c as any).disciplineSlug || c.discipline?.slug || '',
+        c.filename,
+      );
       try {
         await fs.access(filePath);
       } catch {
         report.dbWithMissingFiles.push({
           id: c.id,
-          filename: c.filename,
-          disciplineId: c.disciplineId,
+          filename: path.join((c as any).disciplineSlug || c.discipline?.slug || '', c.filename),
+          disciplineId: ((c as any).disciplineSlug || c.discipline?.slug) as string,
           disciplineSlug: c.discipline?.slug,
         });
         report.summary.missingFilesInDb += 1;

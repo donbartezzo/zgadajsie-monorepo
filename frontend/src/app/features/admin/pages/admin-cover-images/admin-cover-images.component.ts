@@ -220,14 +220,14 @@ import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
               <div class="overflow-hidden rounded-xl">
                 <img
                   [src]="getCoverUrl(cover)"
-                  [alt]="cover.originalName"
+                  [alt]="cover.filename"
                   class="w-full aspect-[700/250] object-cover"
                 />
                 <div class="p-3 space-y-2">
                   <div class="flex items-center justify-between">
                     <div>
                       <p class="text-xs font-medium text-neutral-900">
-                        {{ cover.originalName }}
+                        {{ cover.filename }}
                       </p>
                       @if (cover.discipline) {
                         <span
@@ -287,7 +287,7 @@ export class AdminCoverImagesComponent implements OnInit {
   filterDisciplineId = '';
 
   getCoverUrl(cover: CoverImage): string {
-    return coverImageUrl(cover.filename);
+    return coverImageUrl(cover.disciplineSlug, cover.filename);
   }
 
   ngOnInit(): void {

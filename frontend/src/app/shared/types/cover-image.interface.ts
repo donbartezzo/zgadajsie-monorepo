@@ -2,15 +2,14 @@ import { DictionaryItem } from './dictionary.interface';
 
 export const COVER_EVENTS_PATH = 'assets/covers/events';
 
-export function coverImageUrl(filename: string): string {
-  return `${COVER_EVENTS_PATH}/${filename}`;
+export function coverImageUrl(disciplineSlug: string, filename: string): string {
+  return `${COVER_EVENTS_PATH}/${disciplineSlug}/${filename}`;
 }
 
 export interface CoverImage {
   id: string;
-  disciplineId: string;
+  disciplineSlug: string;
   filename: string;
-  originalName: string;
   createdAt: string;
   discipline?: DictionaryItem;
 }

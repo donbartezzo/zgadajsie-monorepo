@@ -37,7 +37,7 @@ export class EventsService {
   ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
-    const coverImageId = await this.resolveCoverImageId(dto.coverImageId, dto.disciplineId);
+    const coverImageId = await this.resolveCoverImageId(dto.coverImageId, dto.disciplineSlug);
 
     const startsAt = new Date(dto.startsAt);
     const lotteryExecutedAt = shouldSkipPreEnrollment(startsAt) ? new Date() : null;
@@ -52,13 +52,29 @@ export class EventsService {
 
     const event = await this.prisma.event.create({
       data: {
-        ...restDto,
+        title: dto.title,
+        description: dto.description,
         startsAt,
         endsAt: new Date(dto.endsAt),
-        organizerId,
-        coverImageId,
+        organizer: { connect: { id: organizerId } },
+        coverImage: coverImageId ? { connect: { id: coverImageId } } : undefined,
         lotteryExecutedAt,
         roleConfig: dto.roleConfig ? JSON.parse(JSON.stringify(dto.roleConfig)) : undefined,
+        discipline: { connect: { slug: dto.disciplineSlug } },
+        facility: { connect: { slug: dto.facilitySlug } },
+        level: { connect: { slug: dto.levelSlug } },
+        city: { connect: { slug: dto.citySlug } },
+        costPerPerson: dto.costPerPerson,
+        minParticipants: dto.minParticipants,
+        maxParticipants: dto.maxParticipants,
+        ageMin: dto.ageMin,
+        ageMax: dto.ageMax,
+        gender: dto.gender,
+        visibility: dto.visibility,
+        address: dto.address,
+        lat: dto.lat,
+        lng: dto.lng,
+        rules: dto.rules,
       },
       include: { discipline: true, facility: true, level: true, city: true, coverImage: true },
     });
@@ -66,7 +82,7 @@ export class EventsService {
     // Create slots for the event (with role assignment if roleConfig provided)
     await this.slotService.createSlotsForEvent(event.id, dto.maxParticipants, dto.roleConfig);
 
-    this.notifyCitySubscribers(event.id, event.title, event.cityId, organizerId);
+    this.notifyCitySubscribers(event.id, event.title, event.citySlug, organizerId);
 
     return event;
   }
@@ -712,10 +728,10 @@ export class EventsService {
       data: {
         title: dto.title,
         description: dto.description,
-        disciplineId: dto.disciplineId,
-        facilityId: dto.facilityId,
-        levelId: dto.levelId,
-        cityId: dto.cityId,
+        discipline: { connect: { slug: dto.disciplineSlug } },
+        facility: { connect: { slug: dto.facilitySlug } },
+        level: { connect: { slug: dto.levelSlug } },
+        city: { connect: { slug: dto.citySlug } },
         startsAt: parentStartsAt,
         endsAt: new Date(dto.endsAt),
         costPerPerson: dto.costPerPerson,
@@ -728,9 +744,9 @@ export class EventsService {
         address: dto.address,
         lat: dto.lat,
         lng: dto.lng,
-        coverImageId: dto.coverImageId,
+        coverImage: dto.coverImageId ? { connect: { id: dto.coverImageId } } : undefined,
         rules: dto.rules,
-        organizerId,
+        organizer: { connect: { id: organizerId } },
         isRecurring: true,
         recurringRule: dto.recurringRule,
         lotteryExecutedAt: parentLotteryExecutedAt,
@@ -749,10 +765,10 @@ export class EventsService {
         data: {
           title: dto.title,
           description: dto.description,
-          disciplineId: dto.disciplineId,
-          facilityId: dto.facilityId,
-          levelId: dto.levelId,
-          cityId: dto.cityId,
+          discipline: { connect: { slug: dto.disciplineSlug } },
+          facility: { connect: { slug: dto.facilitySlug } },
+          level: { connect: { slug: dto.levelSlug } },
+          city: { connect: { slug: dto.citySlug } },
           startsAt: start,
           endsAt: end,
           costPerPerson: dto.costPerPerson,
@@ -765,14 +781,15 @@ export class EventsService {
           address: dto.address,
           lat: dto.lat,
           lng: dto.lng,
-          coverImageId: dto.coverImageId,
-          organizerId,
+          coverImage: dto.coverImageId ? { connect: { id: dto.coverImageId } } : undefined,
+          organizer: { connect: { id: organizerId } },
           isRecurring: true,
           recurringRule: dto.recurringRule,
-          parentEventId: parent.id,
+          parentEvent: { connect: { id: parent.id } },
           lotteryExecutedAt: childLotteryExecutedAt,
           roleConfig: roleConfigJson,
         },
+        include: { discipline: true, facility: true, level: true, city: true },
       });
       // Create slots for child event
       await this.slotService.createSlotsForEvent(child.id, dto.maxParticipants, dto.roleConfig);
@@ -788,10 +805,18 @@ export class EventsService {
     const data: Record<string, unknown> = {};
     if (dto.title !== undefined) data.title = dto.title;
     if (dto.description !== undefined) data.description = dto.description;
-    if (dto.disciplineId !== undefined) data.disciplineId = dto.disciplineId;
-    if (dto.facilityId !== undefined) data.facilityId = dto.facilityId;
-    if (dto.levelId !== undefined) data.levelId = dto.levelId;
-    if (dto.cityId !== undefined) data.cityId = dto.cityId;
+    if (dto.disciplineSlug !== undefined) {
+      data.discipline = { connect: { slug: dto.disciplineSlug } };
+    }
+    if (dto.facilitySlug !== undefined) {
+      data.facility = { connect: { slug: dto.facilitySlug } };
+    }
+    if (dto.levelSlug !== undefined) {
+      data.level = { connect: { slug: dto.levelSlug } };
+    }
+    if (dto.citySlug !== undefined) {
+      data.city = { connect: { slug: dto.citySlug } };
+    }
     if (dto.costPerPerson !== undefined) data.costPerPerson = dto.costPerPerson;
     if (dto.maxParticipants !== undefined) data.maxParticipants = dto.maxParticipants;
     if (dto.address !== undefined) data.address = dto.address;
@@ -810,12 +835,12 @@ export class EventsService {
 
   private async resolveCoverImageId(
     coverImageId: string | undefined,
-    disciplineId: string,
+    disciplineSlug: string,
   ): Promise<string | undefined> {
     if (coverImageId) {
       return coverImageId;
     }
-    const random = await this.coverImagesService.findRandomByDiscipline(disciplineId);
+    const random = await this.coverImagesService.findRandomByDiscipline(disciplineSlug);
     return random?.id;
   }
 

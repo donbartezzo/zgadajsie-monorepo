@@ -28,8 +28,8 @@ export class CoverImagesController {
 
   @Get()
   @UseGuards(JwtAuthGuard, IsActiveGuard)
-  findAll(@Query('disciplineId') disciplineId?: string) {
-    return this.coverImagesService.findAll(disciplineId);
+  findAll(@Query('disciplineSlug') disciplineSlug?: string) {
+    return this.coverImagesService.findAll(disciplineSlug);
   }
 
   @Get(':id')
@@ -50,7 +50,7 @@ export class CoverImagesController {
   @Roles('ADMIN')
   @UseInterceptors(FileInterceptor('file'))
   create(
-    @Body('disciplineId') disciplineId: string,
+    @Body('disciplineSlug') disciplineSlug: string,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -61,7 +61,7 @@ export class CoverImagesController {
     )
     file: Express.Multer.File,
   ) {
-    return this.coverImagesService.create(disciplineId, file);
+    return this.coverImagesService.create(disciplineSlug, file);
   }
 
   @Post('sync')
@@ -93,8 +93,8 @@ export class CoverImagesController {
   @Put(':id/discipline')
   @UseGuards(JwtAuthGuard, IsActiveGuard, RolesGuard)
   @Roles('ADMIN')
-  updateDiscipline(@Param('id') id: string, @Body('disciplineId') disciplineId: string) {
-    return this.coverImagesService.updateDiscipline(id, disciplineId);
+  updateDiscipline(@Param('id') id: string, @Body('disciplineSlug') disciplineSlug: string) {
+    return this.coverImagesService.updateDiscipline(id, disciplineSlug);
   }
 
   @Delete(':id')

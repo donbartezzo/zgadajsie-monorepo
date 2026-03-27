@@ -50,16 +50,16 @@ export class CreateEventDto {
   description?: string;
 
   @IsString()
-  disciplineId: string;
+  disciplineSlug: string;
 
   @IsString()
-  facilityId: string;
+  facilitySlug: string;
 
   @IsString()
-  levelId: string;
+  levelSlug: string;
 
   @IsString()
-  cityId: string;
+  citySlug: string;
 
   @IsDateString()
   startsAt: string;

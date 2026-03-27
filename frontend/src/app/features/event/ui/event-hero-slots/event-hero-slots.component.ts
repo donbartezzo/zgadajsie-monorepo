@@ -69,8 +69,10 @@ export class EventHeroSlotsComponent {
   constructor() {
     effect(() => {
       const e = this.event();
-      if (e?.coverImage?.filename) {
-        this.layoutConfig.coverImageUrl.set(coverImageUrl(e.coverImage.filename));
+      if (e?.coverImage?.filename && e?.coverImage?.disciplineSlug) {
+        this.layoutConfig.coverImageUrl.set(
+          coverImageUrl(e.coverImage.disciplineSlug, e.coverImage.filename),
+        );
       } else {
         this.layoutConfig.coverImageUrl.set('');
       }

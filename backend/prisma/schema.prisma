@@ -68,36 +68,32 @@ model City {
 }
 
 model EventDiscipline {
-  id          String       @id @default(uuid())
+  slug        String       @id
   name        String
-  slug        String       @unique
   coverImages CoverImage[]
   events      Event[]
 }
 
 model CoverImage {
-  id           String          @id @default(uuid())
-  disciplineId String
-  filename     String
-  originalName String
-  createdAt    DateTime        @default(now())
-  discipline   EventDiscipline @relation(fields: [disciplineId], references: [id])
-  events       Event[]
+  id              String          @id @default(uuid())
+  disciplineSlug  String
+  filename        String
+  createdAt       DateTime        @default(now())
+  discipline      EventDiscipline @relation(fields: [disciplineSlug], references: [slug])
+  events          Event[]
 
-  @@index([disciplineId])
+  @@index([disciplineSlug])
 }
 
 model EventFacility {
-  id     String  @id @default(uuid())
+  slug   String  @id
   name   String
-  slug   String  @unique
   events Event[]
 }
 
 model EventLevel {
-  id     String  @id @default(uuid())
+  slug   String  @id
   name   String
-  slug   String  @unique
   events Event[]
 }
 
@@ -105,10 +101,10 @@ model Event {
   id                  String               @id @default(uuid())
   title               String
   description         String?
-  disciplineId        String
-  facilityId          String
-  levelId             String
-  cityId              String
+  disciplineSlug      String
+  facilitySlug        String
+  levelSlug           String
+  citySlug            String
   organizerId         String
   startsAt            DateTime
   endsAt              DateTime
@@ -133,11 +129,11 @@ model Event {
   lotteryExecutedAt   DateTime?
   roleConfig          Json?
   chatMessages        ChatMessage[]
-  city                City                 @relation(fields: [cityId], references: [id])
+  city                City                 @relation(fields: [citySlug], references: [slug])
   coverImage          CoverImage?          @relation(fields: [coverImageId], references: [id])
-  discipline          EventDiscipline      @relation(fields: [disciplineId], references: [id])
-  facility            EventFacility        @relation(fields: [facilityId], references: [id])
-  level               EventLevel           @relation(fields: [levelId], references: [id])
+  discipline          EventDiscipline      @relation(fields: [disciplineSlug], references: [slug])
+  facility            EventFacility        @relation(fields: [facilitySlug], references: [slug])
+  level               EventLevel           @relation(fields: [levelSlug], references: [slug])
   organizer           User                 @relation("OrganizerEvents", fields: [organizerId], references: [id])
   parentEvent         Event?               @relation("RecurringEvents", fields: [parentEventId], references: [id])
   childEvents         Event[]              @relation("RecurringEvents")
@@ -151,7 +147,7 @@ model Event {
   privateChatMessages PrivateChatMessage[]
   reprimands          Reprimand[]
 
-  @@index([cityId, status, startsAt])
+  @@index([citySlug, status, startsAt])
 }
 
 model EventParticipation {

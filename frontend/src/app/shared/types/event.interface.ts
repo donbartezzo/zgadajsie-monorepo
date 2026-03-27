@@ -38,16 +38,17 @@ export interface EventRoleConfig {
  * - minParticipants, ageMin, ageMax: opcjonalne
  */
 export interface Event
-  extends Required<Pick<EventDefaultableFields, 'maxParticipants' | 'gender'>>,
+  extends
+    Required<Pick<EventDefaultableFields, 'maxParticipants' | 'gender'>>,
     Pick<EventDefaultableFields, 'minParticipants' | 'ageMin' | 'ageMax'> {
   id: string;
   title: string;
   description?: string;
   coverImageId?: string;
-  disciplineId: string;
-  facilityId: string;
-  levelId: string;
-  cityId: string;
+  disciplineSlug: string;
+  facilitySlug: string;
+  levelSlug: string;
+  citySlug: string;
   organizerId: string;
   startsAt: string;
   endsAt: string;

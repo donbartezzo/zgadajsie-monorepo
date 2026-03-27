@@ -187,8 +187,10 @@ export class EventCardComponent implements OnDestroy {
   private intervalId?: number;
 
   readonly coverUrl = computed(() => {
-    const filename = this.event().coverImage?.filename;
-    return filename ? coverImageUrl(filename) : '';
+    const coverImage = this.event().coverImage;
+    return coverImage?.filename && coverImage?.disciplineSlug
+      ? coverImageUrl(coverImage.disciplineSlug, coverImage.filename)
+      : '';
   });
 
   readonly isToday = computed(() => {

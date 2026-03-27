@@ -127,7 +127,7 @@ class EventValidators {
               <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1">Dyscyplina</label>
                 <select
-                  formControlName="disciplineId"
+                  formControlName="disciplineSlug"
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 >
                   <option value="">Wybierz...</option>
@@ -139,7 +139,7 @@ class EventValidators {
               <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1">Obiekt</label>
                 <select
-                  formControlName="facilityId"
+                  formControlName="facilitySlug"
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 >
                   <option value="">Wybierz...</option>
@@ -151,7 +151,7 @@ class EventValidators {
               <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1">Poziom</label>
                 <select
-                  formControlName="levelId"
+                  formControlName="levelSlug"
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 >
                   <option value="">Wybierz...</option>
@@ -163,7 +163,7 @@ class EventValidators {
               <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1">Miasto</label>
                 <select
-                  formControlName="cityId"
+                  formControlName="citySlug"
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 >
                   <option value="">Wybierz...</option>
@@ -385,7 +385,7 @@ class EventValidators {
         <app-card>
           <div class="p-4 space-y-3">
             <h3 class="text-sm font-semibold text-neutral-900">Grafika wydarzenia</h3>
-            @if (!form.get('disciplineId')?.value) {
+            @if (!form.get('disciplineSlug')?.value) {
               <p class="text-xs text-neutral-400">
                 Najpierw wybierz dyscyplinę, aby zobaczyć dostępne grafiki.
               </p>
@@ -414,7 +414,7 @@ class EventValidators {
                   >
                     <img
                       [src]="coverUrl(cover)"
-                      [alt]="cover.originalName"
+                      [alt]="cover.filename"
                       class="w-full aspect-[700/250] object-cover"
                     />
                     @if (selectedCoverImageId() === cover.id) {
@@ -486,10 +486,10 @@ export class EventFormComponent implements OnInit {
   readonly form = this.fb.group({
     title: ['', Validators.required],
     description: [''],
-    disciplineId: ['', Validators.required],
-    facilityId: ['', Validators.required],
-    levelId: ['', Validators.required],
-    cityId: ['', Validators.required],
+    disciplineSlug: ['', Validators.required],
+    facilitySlug: ['', Validators.required],
+    levelSlug: ['', Validators.required],
+    citySlug: ['', Validators.required],
     startsAt: ['', [Validators.required, EventValidators.startDateInFuture]],
     endsAt: ['', [Validators.required, EventValidators.endDateAfterStart]],
     costPerPerson: [0],
@@ -522,13 +522,13 @@ export class EventFormComponent implements OnInit {
       this.cities.set(cities);
 
       // Ustaw domyślny poziom na "Zróżnicowany" (pierwszy na liście)
-      if (levels.length > 0 && !this.form.get('levelId')?.value) {
+      if (levels.length > 0 && !this.form.get('levelSlug')?.value) {
         const zroznicowanyLevel = levels.find((l) => l.slug === 'zroznicowany');
         if (zroznicowanyLevel) {
-          this.form.patchValue({ levelId: zroznicowanyLevel.id });
+          this.form.patchValue({ levelSlug: zroznicowanyLevel.id });
         } else {
           // Fallback do pierwszego poziomu jeśli nie znaleziono
-          this.form.patchValue({ levelId: levels[0].id });
+          this.form.patchValue({ levelSlug: levels[0].id });
         }
       }
 
@@ -537,10 +537,10 @@ export class EventFormComponent implements OnInit {
     });
 
     // Watch discipline changes to load cover images and role schema
-    this.form.get('disciplineId')?.valueChanges.subscribe((disciplineId) => {
-      if (disciplineId) {
-        this.loadCoverImages(disciplineId);
-        this.loadDisciplineRoles(disciplineId);
+    this.form.get('disciplineSlug')?.valueChanges.subscribe((disciplineSlug) => {
+      if (disciplineSlug) {
+        this.loadCoverImages(disciplineSlug);
+        this.loadDisciplineRoles(disciplineSlug);
       } else {
         this.coverImages.set([]);
         this.selectedCoverImageId.set(null);
@@ -574,10 +574,10 @@ export class EventFormComponent implements OnInit {
         this.form.patchValue({
           title: e.title,
           description: e.description || '',
-          disciplineId: e.disciplineId,
-          facilityId: e.facilityId,
-          levelId: e.levelId,
-          cityId: e.cityId,
+          disciplineSlug: e.disciplineSlug,
+          facilitySlug: e.facilitySlug,
+          levelSlug: e.levelSlug,
+          citySlug: e.citySlug,
           startsAt: e.startsAt.substring(0, 16),
           endsAt: e.endsAt.substring(0, 16),
           costPerPerson: e.costPerPerson,
@@ -607,7 +607,7 @@ export class EventFormComponent implements OnInit {
   }
 
   coverUrl(cover: CoverImage): string {
-    return coverImageUrl(cover.filename);
+    return coverImageUrl(cover.disciplineSlug, cover.filename);
   }
 
   selectCoverImage(cover: CoverImage): void {
@@ -661,22 +661,22 @@ export class EventFormComponent implements OnInit {
       return;
     }
 
-    if (!val.disciplineId) {
+    if (!val.disciplineSlug) {
       this.snackbar.error('Dyscyplina jest wymagana.');
       return;
     }
 
-    if (!val.facilityId) {
+    if (!val.facilitySlug) {
       this.snackbar.error('Obiekt jest wymagany.');
       return;
     }
 
-    if (!val.levelId) {
+    if (!val.levelSlug) {
       this.snackbar.error('Poziom jest wymagany.');
       return;
     }
 
-    if (!val.cityId) {
+    if (!val.citySlug) {
       this.snackbar.error('Miasto jest wymagane.');
       return;
     }
@@ -728,10 +728,10 @@ export class EventFormComponent implements OnInit {
     const payload: Partial<Event> & { roleConfig?: EventRoleConfig } = {
       title: val.title || undefined,
       description: val.description || undefined,
-      disciplineId: val.disciplineId || undefined,
-      facilityId: val.facilityId || undefined,
-      levelId: val.levelId || undefined,
-      cityId: val.cityId || undefined,
+      disciplineSlug: val.disciplineSlug || undefined,
+      facilitySlug: val.facilitySlug || undefined,
+      levelSlug: val.levelSlug || undefined,
+      citySlug: val.citySlug || undefined,
       startsAt: val.startsAt ? fromLocalInputValue(val.startsAt) : undefined,
       endsAt: val.endsAt ? fromLocalInputValue(val.endsAt) : undefined,
       costPerPerson: val.costPerPerson || undefined,
@@ -786,8 +786,8 @@ export class EventFormComponent implements OnInit {
     });
   }
 
-  private loadDisciplineRoles(disciplineId: string): void {
-    const discipline = this.disciplines().find((d) => d.id === disciplineId);
+  private loadDisciplineRoles(disciplineSlug: string): void {
+    const discipline = this.disciplines().find((d) => d.id === disciplineSlug);
     if (!discipline?.slug) {
       this.disciplineRoles.set(null);
       this.roleSlots.set([]);
@@ -865,7 +865,7 @@ export class EventFormComponent implements OnInit {
     }
 
     const discipline = this.disciplines().find(
-      (d) => d.id === this.form.get('disciplineId')?.value,
+      (d) => d.id === this.form.get('disciplineSlug')?.value,
     );
     if (!discipline?.slug) return undefined;
 
@@ -917,10 +917,10 @@ export class EventFormComponent implements OnInit {
     (this.form.patchValue as any)({
       title: event.title,
       description: event.description || '',
-      disciplineId: event.disciplineId,
-      facilityId: event.facilityId,
-      levelId: event.levelId,
-      cityId: event.cityId,
+      disciplineSlug: event.disciplineSlug,
+      facilitySlug: event.facilitySlug,
+      levelSlug: event.levelSlug,
+      citySlug: event.citySlug,
       startsAt: toLocalInputValue(event.startsAt),
       endsAt: toLocalInputValue(event.endsAt),
       costPerPerson: event.costPerPerson,
