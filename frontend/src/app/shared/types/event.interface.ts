@@ -1,8 +1,7 @@
-import { EventDefaultableFields, EventStatus } from '@zgadajsie/shared';
+import { EventDefaultableFields, EventStatus, EventTimeStatus } from '@zgadajsie/shared';
 import { DictionaryItem, City } from './dictionary.interface';
 import { UserBrief } from './common.interface';
 import { CoverImage } from './cover-image.interface';
-import { EventTimeStatus } from '../utils/event-time-status.util';
 
 export type EnrollmentPhase = 'PRE_ENROLLMENT' | 'LOTTERY_PENDING' | 'OPEN_ENROLLMENT';
 

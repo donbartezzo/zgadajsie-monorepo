@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.component';
 import { SemanticColor } from '../../../../shared/types/colors';
 import { EnrollmentPhase } from '../../../../shared/types/event.interface';
-import { EventTimeStatus } from '../../../../shared/utils/event-time-status.util';
+import { EventTimeStatus } from '@zgadajsie/shared';
 import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 
 interface BannerConfig {
@@ -58,28 +58,29 @@ const VARIANT_STYLES: Record<
   selector: 'app-enrollment-status-banner',
   imports: [IconComponent],
   template: `
-    @if (config(); as c) { @let _styles = variantStyles();
-    <button type="button" class="w-full text-left" (click)="openDetails()">
-      <div [class]="'rounded-xl border p-3 ' + _styles.container" role="status">
-        <div class="flex items-start gap-3">
-          <div
-            [class]="'flex shrink-0 items-center justify-center rounded-lg p-2 ' + _styles.iconBg"
-          >
-            <app-icon [name]="c.icon" size="sm" [class]="_styles.icon" />
+    @if (config(); as c) {
+      @let _styles = variantStyles();
+      <button type="button" class="w-full text-left" (click)="openDetails()">
+        <div [class]="'rounded-xl border p-3 ' + _styles.container" role="status">
+          <div class="flex items-start gap-3">
+            <div
+              [class]="'flex shrink-0 items-center justify-center rounded-lg p-2 ' + _styles.iconBg"
+            >
+              <app-icon [name]="c.icon" size="sm" [class]="_styles.icon" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <p [class]="'text-sm font-semibold leading-tight ' + _styles.title">
+                {{ c.title }}
+              </p>
+              <p class="mt-0.5 text-xs leading-relaxed text-neutral-500">{{ c.subtitle }}</p>
+              <p class="mt-1 text-[10px] text-neutral-400 underline underline-offset-2">
+                Kliknij, aby poznać szczegóły
+              </p>
+            </div>
+            <app-icon name="chevron-right" size="sm" class="mt-1 shrink-0 text-neutral-300" />
           </div>
-          <div class="min-w-0 flex-1">
-            <p [class]="'text-sm font-semibold leading-tight ' + _styles.title">
-              {{ c.title }}
-            </p>
-            <p class="mt-0.5 text-xs leading-relaxed text-neutral-500">{{ c.subtitle }}</p>
-            <p class="mt-1 text-[10px] text-neutral-400 underline underline-offset-2">
-              Kliknij, aby poznać szczegóły
-            </p>
-          </div>
-          <app-icon name="chevron-right" size="sm" class="mt-1 shrink-0 text-neutral-300" />
         </div>
-      </div>
-    </button>
+      </button>
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

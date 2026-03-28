@@ -1,11 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { PRE_ENROLLMENT_HOURS } from '@zgadajsie/shared';
+import { PRE_ENROLLMENT_HOURS, EventTimeStatus } from '@zgadajsie/shared';
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { SemanticColor } from '../../../shared/types/colors';
 import { EnrollmentPhase } from '../../../shared/types/event.interface';
-import { EventTimeStatus } from '../../../shared/utils/event-time-status.util';
 import { getLotteryThreshold } from '../../../shared/utils/enrollment-phase.util';
 import { EventCountdown } from '../../../shared/utils/date.utils';
 
@@ -38,116 +37,122 @@ interface StepConfig {
             {{ statusDescription() }}
           </p>
           @if (showLotteryDate()) {
-          <p class="mt-2 text-xs font-medium text-info-600">
-            Zapisy wstępne kończą się:
-            <strong>{{ lotteryDate() | date : "dd.MM.yyyy 'o godz.' HH:mm" }}</strong>
-          </p>
-          } @if (showParticipantCount()) {
-          <p class="mt-1 text-xs font-medium text-neutral-600">
-            Zgłoszonych: {{ participantCount() }}
-          </p>
+            <p class="mt-2 text-xs font-medium text-info-600">
+              Zapisy wstępne kończą się:
+              <strong>{{ lotteryDate() | date: "dd.MM.yyyy 'o godz.' HH:mm" }}</strong>
+            </p>
+          }
+          @if (showParticipantCount()) {
+            <p class="mt-1 text-xs font-medium text-neutral-600">
+              Zgłoszonych: {{ participantCount() }}
+            </p>
           }
 
           <!-- Lottery countdown (only in PRE_ENROLLMENT) -->
           @if (lotteryCountdown(); as lcd) {
-          <div class="grid grid-cols-4 gap-2 text-center mt-3">
-            <div>
-              <span class="block text-2xl font-extrabold text-info-600">{{ lcd.days }}</span>
-              <span class="block text-[10px] text-neutral-400">dni</span>
+            <div class="grid grid-cols-4 gap-2 text-center mt-3">
+              <div>
+                <span class="block text-2xl font-extrabold text-info-600">{{ lcd.days }}</span>
+                <span class="block text-[10px] text-neutral-400">dni</span>
+              </div>
+              <div>
+                <span class="block text-2xl font-extrabold text-info-600">{{ lcd.hours }}</span>
+                <span class="block text-[10px] text-neutral-400">godzin</span>
+              </div>
+              <div>
+                <span class="block text-2xl font-extrabold text-info-600">{{ lcd.minutes }}</span>
+                <span class="block text-[10px] text-neutral-400">minut</span>
+              </div>
+              <div>
+                <span class="block text-2xl font-extrabold text-info-600">{{ lcd.seconds }}</span>
+                <span class="block text-[10px] text-neutral-400">sekund</span>
+              </div>
             </div>
-            <div>
-              <span class="block text-2xl font-extrabold text-info-600">{{ lcd.hours }}</span>
-              <span class="block text-[10px] text-neutral-400">godzin</span>
-            </div>
-            <div>
-              <span class="block text-2xl font-extrabold text-info-600">{{ lcd.minutes }}</span>
-              <span class="block text-[10px] text-neutral-400">minut</span>
-            </div>
-            <div>
-              <span class="block text-2xl font-extrabold text-info-600">{{ lcd.seconds }}</span>
-              <span class="block text-[10px] text-neutral-400">sekund</span>
-            </div>
-          </div>
           }
         </div>
 
         <!-- How enrollment works - step-by-step -->
         @if (showSteps()) {
-        <div>
-          <h3 class="text-sm font-bold text-neutral-900 mb-3">Jak przebiegają zapisy?</h3>
-          <ol class="relative ml-3 border-l-2 border-neutral-200 space-y-4">
-            @for (step of steps(); track $index) {
-            <li class="ml-4">
-              <span
-                [class]="
-                  'absolute -left-[11px] flex h-5 w-5 items-center justify-center rounded-full ring-2 ring-white ' +
-                  (step.done ? 'bg-success-400' : step.active ? 'bg-primary-500' : 'bg-neutral-200')
-                "
-              >
-                @if (step.done) {
-                <app-icon name="check" size="xs" class="text-white" />
-                } @else {
-                <span
-                  [class]="
-                    'text-[9px] font-bold ' + (step.active ? 'text-white' : 'text-neutral-400')
-                  "
-                >
-                  {{ $index + 1 }}
-                </span>
-                }
-              </span>
-              <p
-                [class]="
-                  'text-sm ' +
-                  (step.active
-                    ? 'font-semibold text-neutral-900'
-                    : step.done
-                    ? 'text-neutral-400 line-through'
-                    : 'text-neutral-500')
-                "
-              >
-                {{ step.label }}
-              </p>
-            </li>
-            }
-          </ol>
-        </div>
+          <div>
+            <h3 class="text-sm font-bold text-neutral-900 mb-3">Jak przebiegają zapisy?</h3>
+            <ol class="relative ml-3 border-l-2 border-neutral-200 space-y-4">
+              @for (step of steps(); track $index) {
+                <li class="ml-4">
+                  <span
+                    [class]="
+                      'absolute -left-[11px] flex h-5 w-5 items-center justify-center rounded-full ring-2 ring-white ' +
+                      (step.done
+                        ? 'bg-success-400'
+                        : step.active
+                          ? 'bg-primary-500'
+                          : 'bg-neutral-200')
+                    "
+                  >
+                    @if (step.done) {
+                      <app-icon name="check" size="xs" class="text-white" />
+                    } @else {
+                      <span
+                        [class]="
+                          'text-[9px] font-bold ' +
+                          (step.active ? 'text-white' : 'text-neutral-400')
+                        "
+                      >
+                        {{ $index + 1 }}
+                      </span>
+                    }
+                  </span>
+                  <p
+                    [class]="
+                      'text-sm ' +
+                      (step.active
+                        ? 'font-semibold text-neutral-900'
+                        : step.done
+                          ? 'text-neutral-400 line-through'
+                          : 'text-neutral-500')
+                    "
+                  >
+                    {{ step.label }}
+                  </p>
+                </li>
+              }
+            </ol>
+          </div>
         }
 
         <!-- How to join - instructions -->
         @if (joinInstructions().length > 0) {
-        <div>
-          <h3 class="text-sm font-bold text-neutral-900 mb-2">Jak dołączyć?</h3>
-          <ul class="space-y-2">
-            @for (instr of joinInstructions(); track $index) {
-            <li class="flex items-start gap-2.5">
-              <span
-                class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-50 text-[10px] font-bold text-primary-500"
-              >
-                {{ $index + 1 }}
-              </span>
-              <span class="text-xs leading-relaxed text-neutral-600">{{ instr }}</span>
-            </li>
-            }
-          </ul>
-        </div>
+          <div>
+            <h3 class="text-sm font-bold text-neutral-900 mb-2">Jak dołączyć?</h3>
+            <ul class="space-y-2">
+              @for (instr of joinInstructions(); track $index) {
+                <li class="flex items-start gap-2.5">
+                  <span
+                    class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-50 text-[10px] font-bold text-primary-500"
+                  >
+                    {{ $index + 1 }}
+                  </span>
+                  <span class="text-xs leading-relaxed text-neutral-600">{{ instr }}</span>
+                </li>
+              }
+            </ul>
+          </div>
         }
 
         <!-- Important notes -->
         @if (importantNotes().length > 0) {
-        <div class="rounded-lg border border-warning-200 bg-warning-50 p-3">
-          <div class="flex items-start gap-2">
-            <app-icon name="alert-triangle" size="sm" class="text-warning-500 mt-0.5 shrink-0" />
-            <div>
-              <p class="text-xs font-semibold text-warning-700">Ważne informacje</p>
-              <ul class="mt-1 space-y-1">
-                @for (note of importantNotes(); track $index) {
-                <li class="text-xs leading-relaxed text-neutral-600">{{ note }}</li>
-                }
-              </ul>
+          <div class="rounded-lg border border-warning-200 bg-warning-50 p-3">
+            <div class="flex items-start gap-2">
+              <app-icon name="alert-triangle" size="sm" class="text-warning-500 mt-0.5 shrink-0" />
+              <div>
+                <p class="text-xs font-semibold text-warning-700">Ważne informacje</p>
+                <ul class="mt-1 space-y-1">
+                  @for (note of importantNotes(); track $index) {
+                    <li class="text-xs leading-relaxed text-neutral-600">{{ note }}</li>
+                  }
+                </ul>
+              </div>
             </div>
           </div>
-        </div>
         }
       </div>
     </app-bottom-overlay>

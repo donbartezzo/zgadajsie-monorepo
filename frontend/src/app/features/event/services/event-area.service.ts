@@ -18,7 +18,8 @@ import {
   WaitingReason,
 } from '../../../shared/types';
 import { getEnrollmentPhase } from '../../../shared/utils/enrollment-phase.util';
-import { isEventJoinable, EventTimeStatus } from '../../../shared/utils/event-time-status.util';
+import { isEventJoinable } from '../../../shared/utils/event-time-status.util';
+import { EventTimeStatus } from '@zgadajsie/shared';
 import {
   getWaitingReasonToast,
   getWaitingReasonBarTitle,
