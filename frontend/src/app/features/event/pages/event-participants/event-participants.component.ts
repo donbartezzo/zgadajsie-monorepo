@@ -150,7 +150,7 @@ export class EventParticipantsComponent implements AfterViewInit {
   onEmptySlotClick(): void {
     // Always handle click - redirect to login if not logged in
     if (!this.auth.isLoggedIn()) {
-      const returnUrl = `/w/${this.eventArea.citySlug}/${this.eventArea.eventId}?openJoin=true`;
+      const returnUrl = `/w/${this.eventArea.citySlug}/${this.eventArea.eventId}/participants`;
       this.router.navigate(['/auth/login'], {
         queryParams: { returnUrl },
       });
@@ -168,10 +168,12 @@ export class EventParticipantsComponent implements AfterViewInit {
       return;
     }
 
-    // Navigate to event page with openJoin param to trigger join overlay
-    this.router.navigate(['/w', this.eventArea.citySlug, this.eventArea.eventId], {
-      queryParams: { openJoin: true },
-    });
+    // Open join rules overlay directly from participants page
+    if (this.isParticipant()) {
+      this.eventArea.openJoinConfirmOverlay();
+    } else {
+      this.overlays.open('joinRules');
+    }
   }
 
   closeDetailOverlay(): void {

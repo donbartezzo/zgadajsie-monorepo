@@ -153,7 +153,7 @@ export class JoinConfirmOverlayComponent {
     const status = this.participantStatus();
     if (status === 'PENDING') return 'Zgłoszenie wysłane!';
     if (status === 'APPROVED') return 'Zatwierdzone - potwierdź udział!';
-    if (status === 'CONFIRMED') return 'Jesteś potwierdzonym uczestnikiem!';
+    if (status === 'CONFIRMED') return 'Jesteś już potwierdzonym uczestnikiem!';
     if (status === 'WITHDRAWN') return 'Wypisano z wydarzenia';
     if (status === 'REJECTED') return 'Zgłoszenie odrzucone';
     return 'Zgłoszenie wysłane!';

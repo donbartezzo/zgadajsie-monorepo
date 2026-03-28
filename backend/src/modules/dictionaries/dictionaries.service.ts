@@ -18,7 +18,12 @@ export class DictionariesService {
   }
 
   getLevels() {
-    return this.prisma.eventLevel.findMany({ orderBy: { slug: 'asc' } });
+    return this.prisma.eventLevel.findMany({
+      orderBy: [
+        { weight: 'asc' }, // NULL values come first (default level)
+        { slug: 'asc' },
+      ],
+    });
   }
 
   async getCityBySlug(slug: string) {

@@ -60,7 +60,7 @@ const STATUS_CONFIGS: Record<
     needsAction: true,
   }),
   CONFIRMED: (options) => ({
-    title: options?.isEnded ? 'Byłeś(aś) uczestnikiem' : 'Jesteś potwierdzonym uczestnikiem!',
+    title: options?.isEnded ? 'Byłeś(aś) uczestnikiem' : 'Jesteś już potwierdzonym uczestnikiem!',
     subtitle: options?.isEnded
       ? 'To wydarzenie już się zakończyło.'
       : 'Twój udział jest potwierdzony.',
