@@ -51,15 +51,15 @@ async function main() {
   console.log('Tworzę dyscypliny...');
   const disciplines = await Promise.all(
     [
-      { name: 'Piłka nożna', slug: 'pilka-nozna' },
-      { name: 'Siatkówka', slug: 'siatkowka' },
-      { name: 'Koszykówka', slug: 'koszykowka' },
-      { name: 'Tenis', slug: 'tenis' },
-      { name: 'Badminton', slug: 'badminton' },
-      { name: 'Squash', slug: 'squash' },
-      { name: 'Bieganie', slug: 'bieganie' },
-      { name: 'Kolarstwo', slug: 'kolarstwo' },
-      { name: 'Pływanie', slug: 'plywanie' },
+      { slug: 'pilka-nozna', name: 'Piłka nożna' },
+      { slug: 'siatkowka', name: 'Siatkówka' },
+      { slug: 'koszykowka', name: 'Koszykówka' },
+      { slug: 'tenis', name: 'Tenis' },
+      { slug: 'badminton', name: 'Badminton' },
+      { slug: 'squash', name: 'Squash' },
+      { slug: 'bieganie', name: 'Bieganie' },
+      { slug: 'kolarstwo', name: 'Kolarstwo' },
+      { slug: 'plywanie', name: 'Pływanie' },
     ].map((d) => prisma.eventDiscipline.create({ data: d })),
   );
 
@@ -67,13 +67,13 @@ async function main() {
   console.log('Tworzę obiekty...');
   const facilities = await Promise.all(
     [
-      { name: 'Orlik', slug: 'orlik' },
-      { name: 'Hala sportowa', slug: 'hala-sportowa' },
-      { name: 'Balon', slug: 'balon' },
-      { name: 'Boisko syntetyczne', slug: 'boisko-syntetyczne' },
-      { name: 'Boisko trawiaste', slug: 'boisko-trawiaste' },
-      { name: 'Kort', slug: 'kort' },
-      { name: 'Stadion', slug: 'stadion' },
+      { slug: 'orlik', name: 'Orlik' },
+      { slug: 'hala-sportowa', name: 'Hala sportowa' },
+      { slug: 'balon', name: 'Balon' },
+      { slug: 'boisko-syntetyczne', name: 'Boisko syntetyczne' },
+      { slug: 'boisko-trawiaste', name: 'Boisko trawiaste' },
+      { slug: 'kort', name: 'Kort' },
+      { slug: 'stadion', name: 'Stadion' },
     ].map((f) => prisma.eventFacility.create({ data: f })),
   );
 
@@ -81,12 +81,13 @@ async function main() {
   console.log('Tworzę poziomy...');
   const levels = await Promise.all(
     [
-      { name: 'Zróżnicowany', slug: 'zroznicowany' },
-      { name: 'Rekreacyjny', slug: 'rekreacyjny' },
-      { name: 'Amatorski', slug: 'amatorski' },
-      { name: 'Średniozaawansowany', slug: 'sredniozaawansowany' },
-      { name: 'Zaawansowany', slug: 'zaawansowany' },
-      { name: 'Zawodowy', slug: 'zawodowy' },
+      { slug: 'mieszany-open', name: 'Mieszany (open)', weight: null }, // NULL/0 - dla każdego
+      { slug: 'poczatkujacy', name: 'Początkujący', weight: 1 }, // 1 - początkujący
+      { slug: 'rekreacyjny', name: 'Rekreacyjny', weight: 2 }, // 2 - rekreacyjny
+      { slug: 'regularny', name: 'Regularny', weight: 3 }, // 3 - regularny
+      { slug: 'solidny', name: 'Solidny', weight: 4 }, // 4 - solidny
+      { slug: 'zaawansowany', name: 'Zaawansowany', weight: 5 }, // 5 - zaawansowany
+      { slug: 'zawodowy', name: 'Zawodowy', weight: 6 }, // 6 - zawodowy
     ].map((l) => prisma.eventLevel.create({ data: l })),
   );
 
@@ -259,7 +260,7 @@ async function main() {
     description: 'Rekreacyjna piłka nożna w Zielonej Górze - zakończone z powodzeniem!',
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[0].slug,
-    levelSlug: levels[0].slug,
+    levelSlug: levels[2].slug, // Rekreacyjny
     citySlug: city.slug,
     organizerId: jan.id,
     startsAt: hoursFromNow(-26),
@@ -285,7 +286,7 @@ async function main() {
     description: 'Spotkanie siatkarskie dla amatorów - super atmosfera!',
     disciplineSlug: disciplines[1].slug,
     facilitySlug: facilities[1].slug,
-    levelSlug: levels[1].slug,
+    levelSlug: levels[2].slug, // Rekreacyjny
     citySlug: city.slug,
     organizerId: admin.id,
     startsAt: hoursFromNow(-50),

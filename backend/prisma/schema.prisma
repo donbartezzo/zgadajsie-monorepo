@@ -94,6 +94,7 @@ model EventFacility {
 model EventLevel {
   slug   String  @id
   name   String
+  weight Int?    // NULL dla "Mieszany (open)", 1-6 dla poziomów hierarchicznych
   events Event[]
 }
 
