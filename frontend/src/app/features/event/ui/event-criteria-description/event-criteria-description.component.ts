@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { Event as EventModel } from '../../../../shared/types';
 import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.component';
 import { formatTime, formatDateFull, formatDayOfWeek, isSameDay } from '@zgadajsie/shared';
+import { TranslocoService } from '@jsverse/transloco';
 
 interface CriteriaItem {
   icon: IconName;
@@ -34,6 +35,8 @@ interface CriteriaItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventCriteriaDescriptionComponent {
+  private readonly transloco = inject(TranslocoService);
+
   readonly event = input.required<EventModel>();
 
   readonly criteria = computed<CriteriaItem[]>(() => {
@@ -115,33 +118,13 @@ export class EventCriteriaDescriptionComponent {
     return text;
   }
 
-  private getFacilityPhrase(facility?: { name: string; slug: string }): string {
+  private getFacilityPhrase(facility?: { slug: string }): string {
     if (!facility) {
       return '';
     }
-
-    const slug = facility.slug;
-    const facilityMap: Record<string, string> = {
-      orlik: 'na Orliku',
-      'hala-sportowa': 'w hali sportowej',
-      balon: 'pod balonem',
-      'boisko-syntetyczne': 'na boisku syntetycznym',
-      'boisko-trawiaste': 'na boisku trawiastym',
-      kort: 'na korcie',
-      stadion: 'na stadionie',
-      silownia: 'na siłowni',
-      basen: 'na basenie',
-      plywania: 'na pływalni',
-      lodowisko: 'na lodowisku',
-      skatepark: 'na skateparku',
-      'sala-gimnastyczna': 'w sali gimnastycznej',
-      'sciana-wspinaczkowa': 'na ścianie wspinaczkowej',
-      tor: 'na torze',
-      ring: 'na ringu',
-      plaza: 'na plaży',
-    };
-
-    return facilityMap[slug] || `na obiekcie „<strong>${facility.name}</strong>"`;
+    const key = `dict.facility-phrase.${facility.slug}`;
+    const translated = this.transloco.translate(key);
+    return translated !== key ? translated : `na obiekcie „<strong>${facility.slug}</strong>"`;
   }
 
   private buildDateText(e: EventModel): string {
@@ -174,16 +157,15 @@ export class EventCriteriaDescriptionComponent {
   }
 
   private buildDisciplineText(e: EventModel): string {
-    const discipline = e.discipline?.name;
-    const level = e.level?.name;
-
-    if (!discipline) {
+    if (!e.discipline?.slug) {
       return '';
     }
 
+    const discipline = this.transloco.translate(`dict.discipline.${e.discipline.slug}`);
     let text = `Dotyczy dyscypliny „<u>${discipline}</u>"`;
 
-    if (level) {
+    if (e.level?.slug) {
+      const level = this.transloco.translate(`dict.level.${e.level.slug}`);
       text += ` i oczekuje się uczestnictwa na poziomie co najmniej „<strong>${level.toLowerCase()}</strong>".`;
     } else {
       text += '.';

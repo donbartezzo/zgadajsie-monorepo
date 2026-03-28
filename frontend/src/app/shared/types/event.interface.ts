@@ -1,7 +1,8 @@
 import { EventDefaultableFields, EventStatus } from '@zgadajsie/shared';
-import { DictionaryItem } from './dictionary.interface';
+import { DictionaryItem, City } from './dictionary.interface';
 import { UserBrief } from './common.interface';
 import { CoverImage } from './cover-image.interface';
+import { EventTimeStatus } from '../utils/event-time-status.util';
 
 export type EnrollmentPhase = 'PRE_ENROLLMENT' | 'LOTTERY_PENDING' | 'OPEN_ENROLLMENT';
 
@@ -71,11 +72,11 @@ export interface Event
   discipline?: DictionaryItem;
   facility?: DictionaryItem;
   level?: DictionaryItem;
-  city?: DictionaryItem;
+  city?: City;
   organizer?: UserBrief;
   coverImage?: CoverImage;
   _count?: { participations: number };
   currentUserAccess?: CurrentUserAccess;
-  eventTimeStatus?: 'UPCOMING' | 'ONGOING' | 'ENDED';
+  eventTimeStatus?: EventTimeStatus;
   enrollmentPhase?: EnrollmentPhase | null;
 }

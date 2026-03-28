@@ -1,5 +1,6 @@
 export * from './role.enum';
 export * from './event-status.enum';
+export * from './event-time-status.enum';
 export * from './event-visibility.enum';
 export * from './event-gender.enum';
 export * from './participation-status.enum';

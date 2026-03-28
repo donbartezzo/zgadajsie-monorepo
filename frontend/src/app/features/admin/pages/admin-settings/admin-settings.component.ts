@@ -9,6 +9,7 @@ import { AdminService } from '../../../../core/services/admin.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { DictionaryItem } from '../../../../shared/types';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 interface Setting {
   key: string;
@@ -24,6 +25,7 @@ interface Setting {
     ButtonComponent,
     CardComponent,
     LoadingSpinnerComponent,
+    TranslocoPipe,
   ],
   template: `
     <div class="p-4">
@@ -58,14 +60,15 @@ interface Setting {
             {{ dict.label }}
           </h3>
           <div class="space-y-1">
-            @for (item of dict.items(); track item.id) {
+            @for (item of dict.items(); track item.slug) {
             <div class="flex items-center gap-2 text-sm">
-              <span class="flex-1 text-neutral-700">{{ item.name }}</span>
+              <span class="flex-1 text-neutral-700">{{ dict.translateKey + '.' + item.slug | transloco }}</span>
+              <span class="text-[11px] text-neutral-400 font-mono">{{ item.slug }}</span>
               <app-button
                 appearance="soft"
                 color="danger"
                 size="sm"
-                (clicked)="deleteDict(dict.type, item.id, dict.items)"
+                (clicked)="deleteDict(dict.type, item.slug, dict.items)"
                 ><app-icon name="trash" size="sm"></app-icon
               ></app-button>
             </div>
@@ -73,8 +76,8 @@ interface Setting {
           </div>
           <div class="flex gap-2 mt-2">
             <input
-              [(ngModel)]="dict.newName"
-              placeholder="Nowa pozycja"
+              [(ngModel)]="dict.newSlug"
+              placeholder="Nowy slug (np. volleyball)"
               class="flex-1 rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-900"
             />
             <app-button appearance="soft" color="primary" size="sm" (clicked)="addDict(dict)"
@@ -99,12 +102,31 @@ export class AdminSettingsComponent implements OnInit {
   readonly dictTypes: {
     type: string;
     label: string;
+    translateKey: string;
     items: ReturnType<typeof signal<DictionaryItem[]>>;
-    newName: string;
+    newSlug: string;
   }[] = [
-    { type: 'disciplines', label: 'Dyscypliny', items: signal<DictionaryItem[]>([]), newName: '' },
-    { type: 'facilities', label: 'Obiekty', items: signal<DictionaryItem[]>([]), newName: '' },
-    { type: 'levels', label: 'Poziomy', items: signal<DictionaryItem[]>([]), newName: '' },
+    {
+      type: 'disciplines',
+      label: 'Dyscypliny',
+      translateKey: 'dict.discipline',
+      items: signal<DictionaryItem[]>([]),
+      newSlug: '',
+    },
+    {
+      type: 'facilities',
+      label: 'Obiekty',
+      translateKey: 'dict.facility',
+      items: signal<DictionaryItem[]>([]),
+      newSlug: '',
+    },
+    {
+      type: 'levels',
+      label: 'Poziomy',
+      translateKey: 'dict.level',
+      items: signal<DictionaryItem[]>([]),
+      newSlug: '',
+    },
   ];
 
   ngOnInit(): void {
@@ -128,22 +150,26 @@ export class AdminSettingsComponent implements OnInit {
   }
 
   addDict(dict: (typeof this.dictTypes)[0]): void {
-    if (!dict.newName.trim()) return;
-    const slug = dict.newName.trim().toLowerCase().replace(/\s+/g, '-');
-    this.adminService.createDictionary(dict.type, { name: dict.newName.trim(), slug }).subscribe({
+    const slug = dict.newSlug.trim().toLowerCase().replace(/\s+/g, '-');
+    if (!slug) return;
+    this.adminService.createDictionary(dict.type, { slug }).subscribe({
       next: (item) => {
         dict.items.update((prev) => [...prev, item]);
-        dict.newName = '';
+        dict.newSlug = '';
         this.snackbar.success('Dodano');
       },
       error: () => this.snackbar.error('Błąd'),
     });
   }
 
-  deleteDict(type: string, id: string, items: ReturnType<typeof signal<DictionaryItem[]>>): void {
-    this.adminService.deleteDictionary(type, id).subscribe({
+  deleteDict(
+    type: string,
+    slug: string,
+    items: ReturnType<typeof signal<DictionaryItem[]>>,
+  ): void {
+    this.adminService.deleteDictionary(type, slug).subscribe({
       next: () => {
-        items.update((prev) => prev.filter((i) => i.id !== id));
+        items.update((prev) => prev.filter((i) => i.slug !== slug));
         this.snackbar.info('Usunięto');
       },
       error: () => this.snackbar.error('Błąd'),

@@ -22,6 +22,7 @@ import {
   getDayOfMonth,
   formatTime,
 } from '@zgadajsie/shared';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-event-card',
@@ -31,6 +32,7 @@ import {
     UserAvatarComponent,
     DateBadgeComponent,
     EventStatusBadgeComponent,
+    TranslocoPipe,
   ],
   template: `
     @let _event = event();
@@ -89,19 +91,19 @@ import {
             @if (_event.discipline) {
               <span
                 class="rounded-sm bg-primary-500 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white"
-                >{{ _event.discipline!.name }}</span
+                >{{ 'dict.discipline.' + _event.discipline!.slug | transloco }}</span
               >
             }
             @if (_event.level) {
               <span
                 class="rounded-sm bg-warning-300 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white"
-                >{{ _event.level!.name }}</span
+                >{{ 'dict.level.' + _event.level!.slug | transloco }}</span
               >
             }
             @if (_event.facility) {
               <span
                 class="rounded-sm bg-black/25 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white backdrop-blur-sm"
-                >{{ _event.facility!.name }}</span
+                >{{ 'dict.facility.' + _event.facility!.slug | transloco }}</span
               >
             }
           </div>

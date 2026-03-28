@@ -4,10 +4,11 @@ import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layo
 import { DateBadgeComponent } from '../../../../shared/event/ui/date-badge/date-badge.component';
 import { Event as EventModel } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-event-hero-slots',
-  imports: [LayoutSlotDirective, DateBadgeComponent],
+  imports: [LayoutSlotDirective, DateBadgeComponent, TranslocoPipe],
   template: `
     @if (event(); as e) {
       <ng-template appLayoutSlot="subtitleTemplate">
@@ -15,19 +16,19 @@ import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
           @if (e.discipline) {
             <span
               class="rounded-sm bg-primary-500 px-2 py-0.5 text-[10px] font-semibold uppercase text-white"
-              >{{ e.discipline.name }}</span
+              >{{ 'dict.discipline.' + e.discipline.slug | transloco }}</span
             >
           }
           @if (e.level) {
             <span
               class="rounded-sm bg-warning-300 px-2 py-0.5 text-[10px] font-semibold uppercase text-white"
-              >{{ e.level.name }}</span
+              >{{ 'dict.level.' + e.level.slug | transloco }}</span
             >
           }
           @if (e.facility) {
             <span
               class="rounded-sm bg-black/20 px-2 py-0.5 text-[10px] font-semibold uppercase backdrop-blur-sm"
-              >{{ e.facility.name }}</span
+              >{{ 'dict.facility.' + e.facility.slug | transloco }}</span
             >
           }
         </div>

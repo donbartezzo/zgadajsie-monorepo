@@ -1,6 +1,4 @@
-import { EventStatus } from '@zgadajsie/shared';
-
-export type EventTimeStatus = 'UPCOMING' | 'ONGOING' | 'ENDED';
+import { EventStatus, EventTimeStatus } from '@zgadajsie/shared';
 
 export function getEventTimeStatus(
   startsAt: string,
@@ -8,12 +6,12 @@ export function getEventTimeStatus(
   status: string,
   now = new Date(),
 ): EventTimeStatus {
-  if (status === EventStatus.CANCELLED) return 'ENDED';
+  if (status === EventStatus.CANCELLED) return EventTimeStatus.ENDED;
   const start = new Date(startsAt);
   const end = new Date(endsAt);
-  if (now < start) return 'UPCOMING';
-  if (now >= start && now < end) return 'ONGOING';
-  return 'ENDED';
+  if (now < start) return EventTimeStatus.UPCOMING;
+  if (now >= start && now < end) return EventTimeStatus.ONGOING;
+  return EventTimeStatus.ENDED;
 }
 
 export function isEventJoinable(startsAt: string, status: string, now = new Date()): boolean {

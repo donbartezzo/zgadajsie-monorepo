@@ -1,9 +1,9 @@
 export interface DictionaryItem {
-  id: string;
-  name: string;
   slug: string;
 }
 
-export interface City extends DictionaryItem {
+export interface City {
+  slug: string;
+  name: string;
   isActive: boolean;
 }

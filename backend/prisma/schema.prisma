@@ -146,7 +146,6 @@ model City {
 
 model EventDiscipline {
   slug        String       @id
-  name        String
   coverImages CoverImage[]
   events      Event[]
 }
@@ -164,14 +163,12 @@ model CoverImage {
 
 model EventFacility {
   slug   String  @id
-  name   String
   events Event[]
 }
 
 model EventLevel {
   slug   String  @id
-  name   String
-  weight Int? // NULL dla "Mieszany (open)", 1-6 dla poziomów hierarchicznych
+  weight Int? // NULL for "mixed-open", 1-6 for hierarchical levels
   events Event[]
 }
 

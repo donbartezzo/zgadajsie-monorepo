@@ -13,10 +13,19 @@ import { DictionaryService } from '../../../../core/services/dictionary.service'
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { CoverImage, DictionaryItem } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-admin-cover-images',
-  imports: [CommonModule, FormsModule, RouterLink, IconComponent, CardComponent, ButtonComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    IconComponent,
+    CardComponent,
+    ButtonComponent,
+    TranslocoPipe,
+  ],
   template: `
     <div class="p-4">
       <div class="flex items-center gap-3 mb-4">
@@ -156,8 +165,8 @@ import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
                 class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
               >
                 <option value="">Wybierz...</option>
-                @for (d of disciplines(); track d.id) {
-                  <option [value]="d.id">{{ d.name }}</option>
+                @for (d of disciplines(); track d.slug) {
+                  <option [value]="d.slug">{{ 'dict.discipline.' + d.slug | transloco }}</option>
                 }
               </select>
             </div>
@@ -195,8 +204,8 @@ import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
           class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
         >
           <option value="">Wszystkie dyscypliny</option>
-          @for (d of disciplines(); track d.id) {
-            <option [value]="d.id">{{ d.name }}</option>
+          @for (d of disciplines(); track d.slug) {
+            <option [value]="d.slug">{{ 'dict.discipline.' + d.slug | transloco }}</option>
           }
         </select>
       </div>
@@ -232,7 +241,7 @@ import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
                       @if (cover.discipline) {
                         <span
                           class="text-[10px] bg-primary-500-50 text-primary-500 px-1.5 py-0.5 rounded-full"
-                          >{{ cover.discipline.name }}</span
+                          >{{ 'dict.discipline.' + cover.discipline.slug | transloco }}</span
                         >
                       }
                     </div>

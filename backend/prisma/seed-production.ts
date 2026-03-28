@@ -19,50 +19,50 @@ async function main() {
   console.log('Tworzę dyscypliny...');
   const disciplines = await Promise.all(
     [
-      { name: 'Piłka nożna', slug: 'pilka-nozna' },
-      { name: 'Siatkówka', slug: 'siatkowka' },
-      { name: 'Koszykówka', slug: 'koszykowka' },
-      { name: 'Tenis', slug: 'tenis' },
-      { name: 'Badminton', slug: 'badminton' },
-      { name: 'Squash', slug: 'squash' },
-      { name: 'Bieganie', slug: 'bieganie' },
-      { name: 'Kolarstwo', slug: 'kolarstwo' },
-      { name: 'Pływanie', slug: 'plywanie' },
-      { name: 'Rzutki', slug: 'rzutki' },
-      { name: 'Szachy', slug: 'szachy' },
-      { name: 'Tenis stołowy', slug: 'tenis-stolowy' },
-    ].map((d) => prisma.eventDiscipline.create({ data: d })),
+      'football',
+      'volleyball',
+      'basketball',
+      'tennis',
+      'badminton',
+      'squash',
+      'running',
+      'cycling',
+      'swimming',
+      'darts',
+      'chess',
+      'table-tennis',
+    ].map((slug) => prisma.eventDiscipline.create({ data: { slug } })),
   );
 
   // ─── Obiekty ─────────────────────────────────────────────────────────────
   console.log('Tworzę obiekty...');
   const facilities = await Promise.all(
     [
-      { name: 'Orlik', slug: 'orlik' },
-      { name: 'Hala sportowa', slug: 'hala-sportowa' },
-      { name: 'Balon', slug: 'balon' },
-      { name: 'Boisko syntetyczne', slug: 'boisko-syntetyczne' },
-      { name: 'Boisko trawiaste', slug: 'boisko-trawiaste' },
-      { name: 'Kort', slug: 'kort' },
-      { name: 'Stadion', slug: 'stadion' },
-      { name: 'Siłownia', slug: 'silownia' },
-      { name: 'Basen', slug: 'basen' },
-      { name: 'Park', slug: 'park' },
-      { name: 'Plaża', slug: 'plaza' },
-    ].map((f) => prisma.eventFacility.create({ data: f })),
+      'orlik',
+      'sports-hall',
+      'balloon',
+      'synthetic-pitch',
+      'grass-pitch',
+      'court',
+      'stadium',
+      'gym',
+      'pool',
+      'park',
+      'beach',
+    ].map((slug) => prisma.eventFacility.create({ data: { slug } })),
   );
 
   // ─── Poziomy ─────────────────────────────────────────────────────────────
   console.log('Tworzę poziomy...');
   const levels = await Promise.all(
     [
-      { name: 'Mieszany (open)', slug: 'mieszany-open', weight: null }, // NULL/0 - dla każdego
-      { name: 'Początkujący', slug: 'poczatkujacy', weight: 1 }, // 1 - początkujący
-      { name: 'Rekreacyjny', slug: 'rekreacyjny', weight: 2 }, // 2 - rekreacyjny
-      { name: 'Regularny', slug: 'regularny', weight: 3 }, // 3 - regularny
-      { name: 'Solidny', slug: 'solidny', weight: 4 }, // 4 - solidny
-      { name: 'Zaawansowany', slug: 'zaawansowany', weight: 5 }, // 5 - zaawansowany
-      { name: 'Zawodowy', slug: 'zawodowy', weight: 6 }, // 6 - zawodowy
+      { slug: 'mixed-open', weight: null },
+      { slug: 'beginner', weight: 1 },
+      { slug: 'recreational', weight: 2 },
+      { slug: 'regular', weight: 3 },
+      { slug: 'solid', weight: 4 },
+      { slug: 'advanced', weight: 5 },
+      { slug: 'professional', weight: 6 },
     ].map((l) => prisma.eventLevel.create({ data: l })),
   );
 

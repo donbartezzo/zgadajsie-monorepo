@@ -49,43 +49,50 @@ async function main() {
   console.log('Tworzę dyscypliny...');
   const disciplines = await Promise.all(
     [
-      { slug: 'pilka-nozna', name: 'Piłka nożna' },
-      { slug: 'siatkowka', name: 'Siatkówka' },
-      { slug: 'koszykowka', name: 'Koszykówka' },
-      { slug: 'tenis', name: 'Tenis' },
-      { slug: 'badminton', name: 'Badminton' },
-      { slug: 'squash', name: 'Squash' },
-      { slug: 'bieganie', name: 'Bieganie' },
-      { slug: 'kolarstwo', name: 'Kolarstwo' },
-      { slug: 'plywanie', name: 'Pływanie' },
-    ].map((d) => prisma.eventDiscipline.create({ data: d })),
+      'football',
+      'volleyball',
+      'basketball',
+      'tennis',
+      'badminton',
+      'squash',
+      'running',
+      'cycling',
+      'swimming',
+      'darts',
+      'chess',
+      'table-tennis',
+    ].map((slug) => prisma.eventDiscipline.create({ data: { slug } })),
   );
 
   // ─── Obiekty ─────────────────────────────────────────────────────────────
   console.log('Tworzę obiekty...');
   const facilities = await Promise.all(
     [
-      { slug: 'orlik', name: 'Orlik' },
-      { slug: 'hala-sportowa', name: 'Hala sportowa' },
-      { slug: 'balon', name: 'Balon' },
-      { slug: 'boisko-syntetyczne', name: 'Boisko syntetyczne' },
-      { slug: 'boisko-trawiaste', name: 'Boisko trawiaste' },
-      { slug: 'kort', name: 'Kort' },
-      { slug: 'stadion', name: 'Stadion' },
-    ].map((f) => prisma.eventFacility.create({ data: f })),
+      'orlik',
+      'sports-hall',
+      'balloon',
+      'synthetic-pitch',
+      'grass-pitch',
+      'court',
+      'stadium',
+      'gym',
+      'pool',
+      'park',
+      'beach',
+    ].map((slug) => prisma.eventFacility.create({ data: { slug } })),
   );
 
   // ─── Poziomy ─────────────────────────────────────────────────────────────
   console.log('Tworzę poziomy...');
   const levels = await Promise.all(
     [
-      { slug: 'mieszany-open', name: 'Mieszany (open)', weight: null }, // NULL/0 - dla każdego
-      { slug: 'poczatkujacy', name: 'Początkujący', weight: 1 }, // 1 - początkujący
-      { slug: 'rekreacyjny', name: 'Rekreacyjny', weight: 2 }, // 2 - rekreacyjny
-      { slug: 'regularny', name: 'Regularny', weight: 3 }, // 3 - regularny
-      { slug: 'solidny', name: 'Solidny', weight: 4 }, // 4 - solidny
-      { slug: 'zaawansowany', name: 'Zaawansowany', weight: 5 }, // 5 - zaawansowany
-      { slug: 'zawodowy', name: 'Zawodowy', weight: 6 }, // 6 - zawodowy
+      { slug: 'mixed-open', weight: null },
+      { slug: 'beginner', weight: 1 },
+      { slug: 'recreational', weight: 2 },
+      { slug: 'regular', weight: 3 },
+      { slug: 'solid', weight: 4 },
+      { slug: 'advanced', weight: 5 },
+      { slug: 'professional', weight: 6 },
     ].map((l) => prisma.eventLevel.create({ data: l })),
   );
 

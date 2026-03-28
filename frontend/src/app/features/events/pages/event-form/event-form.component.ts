@@ -39,6 +39,7 @@ import {
   fromLocalInputValue,
 } from '@zgadajsie/shared';
 import { isEventJoinable } from '../../../../shared/utils/event-time-status.util';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 interface RoleSlotConfig {
   key: string;
@@ -90,6 +91,7 @@ class EventValidators {
     MapComponent,
     RulesEditorComponent,
     DateTimeInputComponent,
+    TranslocoPipe,
   ],
   template: `
     <div class="p-4">
@@ -131,8 +133,8 @@ class EventValidators {
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 >
                   <option value="">Wybierz...</option>
-                  @for (d of disciplines(); track d.id) {
-                    <option [value]="d.id">{{ d.name }}</option>
+                  @for (d of disciplines(); track d.slug) {
+                    <option [value]="d.slug">{{ 'dict.discipline.' + d.slug | transloco }}</option>
                   }
                 </select>
               </div>
@@ -143,8 +145,8 @@ class EventValidators {
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 >
                   <option value="">Wybierz...</option>
-                  @for (f of facilities(); track f.id) {
-                    <option [value]="f.id">{{ f.name }}</option>
+                  @for (f of facilities(); track f.slug) {
+                    <option [value]="f.slug">{{ 'dict.facility.' + f.slug | transloco }}</option>
                   }
                 </select>
               </div>
@@ -155,8 +157,8 @@ class EventValidators {
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 >
                   <option value="">Wybierz...</option>
-                  @for (l of levels(); track l.id) {
-                    <option [value]="l.id">{{ l.name }}</option>
+                  @for (l of levels(); track l.slug) {
+                    <option [value]="l.slug">{{ 'dict.level.' + l.slug | transloco }}</option>
                   }
                 </select>
               </div>
@@ -167,8 +169,8 @@ class EventValidators {
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 >
                   <option value="">Wybierz...</option>
-                  @for (c of cities(); track c.id) {
-                    <option [value]="c.id">{{ c.name }}</option>
+                  @for (c of cities(); track c.slug) {
+                    <option [value]="c.slug">{{ c.name }}</option>
                   }
                 </select>
               </div>
@@ -521,15 +523,10 @@ export class EventFormComponent implements OnInit {
       this.levels.set(levels);
       this.cities.set(cities);
 
-      // Ustaw domyślny poziom na "Zróżnicowany" (pierwszy na liście)
+      // Ustaw domyślny poziom na "Mieszany (open)"
       if (levels.length > 0 && !this.form.get('levelSlug')?.value) {
-        const zroznicowanyLevel = levels.find((l) => l.slug === 'zroznicowany');
-        if (zroznicowanyLevel) {
-          this.form.patchValue({ levelSlug: zroznicowanyLevel.id });
-        } else {
-          // Fallback do pierwszego poziomu jeśli nie znaleziono
-          this.form.patchValue({ levelSlug: levels[0].id });
-        }
+        const defaultLevel = levels.find((l) => l.slug === 'mixed-open') ?? levels[0];
+        this.form.patchValue({ levelSlug: defaultLevel.slug });
       }
 
       // Po załadowaniu słowników, sprawdzamy czy to duplikacja
@@ -787,7 +784,7 @@ export class EventFormComponent implements OnInit {
   }
 
   private loadDisciplineRoles(disciplineSlug: string): void {
-    const discipline = this.disciplines().find((d) => d.id === disciplineSlug);
+    const discipline = this.disciplines().find((d) => d.slug === disciplineSlug);
     if (!discipline?.slug) {
       this.disciplineRoles.set(null);
       this.roleSlots.set([]);
@@ -865,7 +862,7 @@ export class EventFormComponent implements OnInit {
     }
 
     const discipline = this.disciplines().find(
-      (d) => d.id === this.form.get('disciplineSlug')?.value,
+      (d) => d.slug === this.form.get('disciplineSlug')?.value,
     );
     if (!discipline?.slug) return undefined;
 

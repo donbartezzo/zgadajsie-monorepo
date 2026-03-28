@@ -1,5 +1,5 @@
 import { EventStatus } from '@zgadajsie/shared';
-import { DictionaryItem } from './dictionary.interface';
+import { DictionaryItem, City } from './dictionary.interface';
 import { UserBrief } from './common.interface';
 import { CoverImage } from './cover-image.interface';
 
@@ -21,7 +21,7 @@ export interface EventListItem {
   discipline?: DictionaryItem;
   facility?: DictionaryItem;
   level?: DictionaryItem;
-  city?: DictionaryItem;
+  city?: City;
   organizer?: UserBrief;
   coverImage?: CoverImage;
   _count?: { participations: number };

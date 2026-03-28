@@ -22,6 +22,8 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { AuthService } from './core/auth/auth.service';
 import { AppTitleStrategy } from './core/services/app-title.strategy';
+import { provideTransloco } from '@jsverse/transloco';
+import { TranslocoInlineLoader } from './core/i18n/transloco-loader';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -52,5 +54,14 @@ export const appConfig: ApplicationConfig = {
       provide: LOCALE_ID,
       useValue: 'pl-PL',
     },
+    provideTransloco({
+      config: {
+        availableLangs: ['pl'],
+        defaultLang: 'pl',
+        reRenderOnLangChange: false,
+        prodMode: !isDevMode(),
+      },
+      loader: TranslocoInlineLoader,
+    }),
   ],
 };

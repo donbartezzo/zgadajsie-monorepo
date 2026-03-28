@@ -200,7 +200,7 @@ export class EventsComponent implements OnInit, OnDestroy {
 
             if (city) {
               const name = city.name || '';
-              const id = city.id || '';
+              const id = city.slug || '';
               this.cityName.set(name);
               this.cityId.set(id);
               this.layoutConfig.title.set(name);
