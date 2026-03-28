@@ -43,6 +43,10 @@ Głównym szablonem wizualnym jest `ignored/themplates/sticky-mobile` (Bootstrap
 
 Strona `/dev/design-system` to **single source of truth** dla wizualnego podglądu wszystkich elementów design systemu.
 
+## Autonomia operacyjna
+
+Przy rutynowych zadaniach (czytanie, edycja, tworzenie plików w projekcie, uruchamianie skryptów z `docs/project-commands.md`) działaj od razu bez proszenia o potwierdzenie — chyba że operacja jest nieodwracalna (usunięcie pliku, reset bazy danych) lub wykracza poza katalog projektu.
+
 ## Formatowanie kodu
 
 Generowany kod musi być zgodny z `.prettierrc`. Nigdy nie nadpisuj ustawień Prettier.
