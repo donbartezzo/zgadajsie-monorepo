@@ -1,4 +1,4 @@
-export enum NotificationTrigger {
+export enum AnnouncementTrigger {
   SYSTEM = 'SYSTEM',
   MANUAL = 'MANUAL',
 }

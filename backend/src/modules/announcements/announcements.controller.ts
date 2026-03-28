@@ -12,6 +12,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { PrismaService } from '../prisma/prisma.service';
+import { AnnouncementPriority, AnnouncementTrigger } from '@zgadajsie/shared';
 import { AnnouncementDispatcherService } from './announcement-dispatcher.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 
@@ -41,8 +42,8 @@ export class AnnouncementsController {
       eventId,
       req.user.id,
       dto.message,
-      dto.priority ?? 'INFORMATIONAL',
-      'MANUAL',
+      (dto.priority as AnnouncementPriority) ?? AnnouncementPriority.INFORMATIONAL,
+      AnnouncementTrigger.MANUAL,
     );
 
     return result;

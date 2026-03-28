@@ -5,30 +5,30 @@ import { PrismaService } from '../prisma/prisma.service';
 export class CitySubscriptionsService {
   constructor(private prisma: PrismaService) {}
 
-  async subscribe(userId: string, cityId: string) {
+  async subscribe(userId: string, citySlug: string) {
     return this.prisma.citySubscription.upsert({
-      where: { userId_cityId: { userId, cityId } },
+      where: { userId_citySlug: { userId, citySlug } },
       update: {},
-      create: { userId, cityId },
+      create: { userId, citySlug },
     });
   }
 
-  async unsubscribe(userId: string, cityId: string) {
+  async unsubscribe(userId: string, citySlug: string) {
     return this.prisma.citySubscription.deleteMany({
-      where: { userId, cityId },
+      where: { userId, citySlug },
     });
   }
 
-  async isSubscribed(userId: string, cityId: string): Promise<boolean> {
+  async isSubscribed(userId: string, citySlug: string): Promise<boolean> {
     const sub = await this.prisma.citySubscription.findUnique({
-      where: { userId_cityId: { userId, cityId } },
+      where: { userId_citySlug: { userId, citySlug } },
     });
     return !!sub;
   }
 
-  async getSubscriberIds(cityId: string): Promise<string[]> {
+  async getSubscriberIds(citySlug: string): Promise<string[]> {
     const subs = await this.prisma.citySubscription.findMany({
-      where: { cityId },
+      where: { citySlug },
       select: { userId: true },
     });
     return subs.map((s) => s.userId);

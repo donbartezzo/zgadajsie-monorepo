@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
   BadRequestException,
 } from '@nestjs/common';
-import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
+import { MILLISECONDS_PER_HOUR, SocialProvider } from '@zgadajsie/shared';
 import { hoursFromNow } from '../../common/utils/date.util';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -180,12 +180,12 @@ export class AuthService {
     email: string;
     displayName: string;
     avatarUrl?: string;
-    provider: string;
+    provider: SocialProvider;
   }) {
     const socialAccount = await this.prisma.socialAccount.findUnique({
       where: {
         provider_providerUserId: {
-          provider: profile.provider,
+          provider: profile.provider as SocialProvider,
           providerUserId: profile.providerUserId,
         },
       },
@@ -222,7 +222,7 @@ export class AuthService {
     await this.prisma.socialAccount.create({
       data: {
         userId: user.id,
-        provider: profile.provider,
+        provider: profile.provider as SocialProvider,
         providerUserId: profile.providerUserId,
       },
     });

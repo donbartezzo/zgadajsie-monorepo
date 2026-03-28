@@ -13,14 +13,14 @@ export class ChatService {
 
   async getMessages(eventId: string, page = 1, limit = 50) {
     const [messages, total] = await Promise.all([
-      this.prisma.chatMessage.findMany({
+      this.prisma.eventGroupMessage.findMany({
         where: { eventId },
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: { user: { select: USER_SELECT } },
       }),
-      this.prisma.chatMessage.count({ where: { eventId } }),
+      this.prisma.eventGroupMessage.count({ where: { eventId } }),
     ]);
     return { data: messages.reverse(), total, page, limit };
   }
@@ -31,14 +31,14 @@ export class ChatService {
       throw new ForbiddenException('Brak dostępu do czatu grupowego');
     }
 
-    return this.prisma.chatMessage.create({
+    return this.prisma.eventGroupMessage.create({
       data: { eventId, userId, content },
       include: { user: { select: USER_SELECT } },
     });
   }
 
   async createSystemMessage(eventId: string, userId: string, content: string) {
-    return this.prisma.chatMessage.create({
+    return this.prisma.eventGroupMessage.create({
       data: { eventId, userId, content },
       include: { user: { select: USER_SELECT } },
     });

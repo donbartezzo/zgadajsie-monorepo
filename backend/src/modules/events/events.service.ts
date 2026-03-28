@@ -5,7 +5,13 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
+import {
+  MILLISECONDS_PER_HOUR,
+  EventGender,
+  EventVisibility,
+  PaymentStatus,
+  NotificationKind,
+} from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
@@ -69,8 +75,8 @@ export class EventsService {
         maxParticipants: dto.maxParticipants,
         ageMin: dto.ageMin,
         ageMax: dto.ageMax,
-        gender: dto.gender,
-        visibility: dto.visibility,
+        gender: dto.gender as EventGender,
+        visibility: dto.visibility as EventVisibility,
         address: dto.address,
         lat: dto.lat,
         lng: dto.lng,
@@ -110,12 +116,12 @@ export class EventsService {
   private notifyCitySubscribers(
     eventId: string,
     eventTitle: string,
-    cityId: string,
+    citySlug: string,
     organizerId: string,
   ): void {
     setImmediate(async () => {
       try {
-        const subscriberIds = await this.citySubscriptionsService.getSubscriberIds(cityId);
+        const subscriberIds = await this.citySubscriptionsService.getSubscriberIds(citySlug);
         const filtered = subscriberIds.filter((id) => id !== organizerId);
         for (const userId of filtered) {
           await this.pushService.notifyNewEventInCity(userId, eventTitle, eventId);
@@ -516,7 +522,7 @@ export class EventsService {
         status,
         waitingReason: status === 'PENDING' ? p.waitingReason : null,
         addedByUserId: p.addedByUserId,
-        isGuest: p.isGuest,
+        isGuest: p.addedByUserId !== null,
       };
     });
   }
@@ -572,7 +578,7 @@ export class EventsService {
         wantsIn: p.wantsIn,
         hasSlot: !!p.slot,
         slotConfirmed: p.slot?.confirmed ?? false,
-        isGuest: p.isGuest,
+        isGuest: p.addedByUserId !== null,
         addedByUserId: p.addedByUserId,
         createdAt: p.createdAt,
         user: p.user,
@@ -677,7 +683,7 @@ export class EventsService {
       } else {
         await tx.payment.update({
           where: { id: paymentId },
-          data: { status: 'CANCELLED', refundedAt: new Date() },
+          data: { status: 'CANCELLED' as any, refundedAt: new Date() },
         });
       }
 
@@ -691,7 +697,7 @@ export class EventsService {
     if (notifyUser) {
       await this.notificationsService.create(
         payment.userId,
-        'PAYMENT_CANCELLED',
+        'PAYMENT_CANCELLED' as NotificationKind,
         'Płatność anulowana',
         `Twoja płatność za wydarzenie "${event.title}" została anulowana.${
           refundAsVoucher ? ' Kwota została zwrócona na voucher organizatora.' : ''
@@ -739,8 +745,8 @@ export class EventsService {
         maxParticipants: dto.maxParticipants,
         ageMin: dto.ageMin,
         ageMax: dto.ageMax,
-        gender: dto.gender,
-        visibility: dto.visibility,
+        gender: dto.gender as EventGender,
+        visibility: dto.visibility as EventVisibility,
         address: dto.address,
         lat: dto.lat,
         lng: dto.lng,
@@ -776,8 +782,8 @@ export class EventsService {
           maxParticipants: dto.maxParticipants,
           ageMin: dto.ageMin,
           ageMax: dto.ageMax,
-          gender: dto.gender,
-          visibility: dto.visibility,
+          gender: dto.gender as EventGender,
+          visibility: dto.visibility as EventVisibility,
           address: dto.address,
           lat: dto.lat,
           lng: dto.lng,

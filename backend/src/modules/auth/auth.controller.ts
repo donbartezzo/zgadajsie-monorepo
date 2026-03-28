@@ -10,18 +10,22 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { MemoryStateStore } from './strategies/memory-state-store';
+import { SocialProvider } from '@zgadajsie/shared';
 
 interface SocialUser {
   providerUserId: string;
   email: string;
   displayName: string;
   avatarUrl?: string;
-  provider: string;
+  provider: SocialProvider;
 }
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService, private configService: ConfigService) {}
+  constructor(
+    private authService: AuthService,
+    private configService: ConfigService,
+  ) {}
 
   @Post('register')
   register(@Body() dto: RegisterDto) {
@@ -68,7 +72,10 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleCallback(@Req() req: Request, @Res() res: Response) {
-    const tokens = await this.authService.validateSocialUser(req.user as SocialUser);
+    const tokens = await this.authService.validateSocialUser({
+      ...(req.user as SocialUser),
+      provider: (req.user as SocialUser).provider as SocialProvider,
+    });
     const returnUrl = MemoryStateStore.getInstance().getReturnUrl(req.query['state'] as string);
     res.redirect(this.buildSocialRedirectUrl(tokens, returnUrl));
   }
@@ -82,7 +89,10 @@ export class AuthController {
   @Get('facebook/callback')
   @UseGuards(AuthGuard('facebook'))
   async facebookCallback(@Req() req: Request, @Res() res: Response) {
-    const tokens = await this.authService.validateSocialUser(req.user as SocialUser);
+    const tokens = await this.authService.validateSocialUser({
+      ...(req.user as SocialUser),
+      provider: (req.user as SocialUser).provider as SocialProvider,
+    });
     const returnUrl = MemoryStateStore.getInstance().getReturnUrl(req.query['state'] as string);
     res.redirect(this.buildSocialRedirectUrl(tokens, returnUrl));
   }

@@ -66,17 +66,6 @@ async function main() {
     ].map((l) => prisma.eventLevel.create({ data: l })),
   );
 
-  // ─── Ustawienia systemowe ────────────────────────────────────────────────
-  console.log('Tworzę ustawienia systemowe...');
-  await prisma.systemSetting.createMany({
-    data: [
-      { key: 'event_creation_fee', value: '0' },
-      { key: 'default_active_event_limit', value: '1' },
-      { key: 'PLATFORM_FEE_PERCENT', value: '1' },
-    ],
-    skipDuplicates: true,
-  });
-
   console.log('✅ Dane słownikowe zostały pomyślnie zainicjalizowane');
   console.log('');
   console.log('=== Podsumowanie ===');
@@ -84,7 +73,6 @@ async function main() {
   console.log(`Dyscypliny: ${disciplines.length}`);
   console.log(`Obiekty: ${facilities.length}`);
   console.log(`Poziomy: ${levels.length}`);
-  console.log('Ustawienia systemowe: 3');
 }
 
 main()

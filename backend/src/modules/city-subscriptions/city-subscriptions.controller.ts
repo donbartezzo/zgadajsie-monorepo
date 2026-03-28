@@ -9,21 +9,21 @@ import { AuthUser } from '../auth/interfaces/auth-user.interface';
 export class CitySubscriptionsController {
   constructor(private citySubscriptionsService: CitySubscriptionsService) {}
 
-  @Get(':cityId/subscription')
-  async getSubscription(@Param('cityId') cityId: string, @CurrentUser() user: AuthUser) {
-    const subscribed = await this.citySubscriptionsService.isSubscribed(user.id, cityId);
+  @Get(':citySlug/subscription')
+  async getSubscription(@Param('citySlug') citySlug: string, @CurrentUser() user: AuthUser) {
+    const subscribed = await this.citySubscriptionsService.isSubscribed(user.id, citySlug);
     return { subscribed };
   }
 
-  @Post(':cityId/subscribe')
-  async subscribe(@Param('cityId') cityId: string, @CurrentUser() user: AuthUser) {
-    await this.citySubscriptionsService.subscribe(user.id, cityId);
+  @Post(':citySlug/subscribe')
+  async subscribe(@Param('citySlug') citySlug: string, @CurrentUser() user: AuthUser) {
+    await this.citySubscriptionsService.subscribe(user.id, citySlug);
     return { subscribed: true };
   }
 
-  @Delete(':cityId/subscribe')
-  async unsubscribe(@Param('cityId') cityId: string, @CurrentUser() user: AuthUser) {
-    await this.citySubscriptionsService.unsubscribe(user.id, cityId);
+  @Delete(':citySlug/subscribe')
+  async unsubscribe(@Param('citySlug') citySlug: string, @CurrentUser() user: AuthUser) {
+    await this.citySubscriptionsService.unsubscribe(user.id, citySlug);
     return { subscribed: false };
   }
 }

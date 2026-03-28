@@ -1,4 +1,4 @@
-import { IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class AdminUpdateUserDto {
   @IsOptional()
@@ -13,8 +13,4 @@ export class AdminUpdateUserDto {
   @IsBoolean()
   isActive?: boolean;
 
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  maxActiveEvents?: number;
 }

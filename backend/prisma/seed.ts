@@ -18,7 +18,7 @@ async function main() {
   await prisma.announcementReceipt.deleteMany({});
   await prisma.eventAnnouncement.deleteMany({});
   await prisma.privateChatMessage.deleteMany({});
-  await prisma.chatMessage.deleteMany({});
+  await prisma.eventGroupMessage.deleteMany({});
   await prisma.paymentIntent.deleteMany({});
   await prisma.payment.deleteMany({});
   await prisma.organizerVoucher.deleteMany({});
@@ -33,13 +33,11 @@ async function main() {
   await prisma.coverImage.deleteMany({});
   await prisma.event.deleteMany({});
   await prisma.socialAccount.deleteMany({});
-  await prisma.userEventLimit.deleteMany({});
   await prisma.user.deleteMany({});
   await prisma.eventDiscipline.deleteMany({});
   await prisma.eventFacility.deleteMany({});
   await prisma.eventLevel.deleteMany({});
   await prisma.city.deleteMany({});
-  await prisma.systemSetting.deleteMany({});
 
   // ─── Miasta ──────────────────────────────────────────────────────────────
   console.log('Tworzę miasta...');
@@ -105,16 +103,6 @@ async function main() {
     },
   });
   console.log(`Admin: ${admin.email} (${admin.id})`);
-
-  // ─── Ustawienia systemowe ────────────────────────────────────────────────
-  console.log('Tworzę ustawienia systemowe...');
-  await prisma.systemSetting.createMany({
-    data: [
-      { key: 'event_creation_fee', value: '0' },
-      { key: 'default_active_event_limit', value: '1' },
-      { key: 'PLATFORM_FEE_PERCENT', value: '1' },
-    ],
-  });
 
   // ─── Użytkownicy testowi ───────────────────────────────────────────────
   console.log('Tworzę użytkowników testowych...');

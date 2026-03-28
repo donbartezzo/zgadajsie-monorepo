@@ -139,14 +139,6 @@ export class UsersService {
 
     const user = await this.prisma.user.update({ where: { id }, data });
 
-    if (dto.maxActiveEvents !== undefined) {
-      await this.prisma.userEventLimit.upsert({
-        where: { userId: id },
-        update: { maxActiveEvents: dto.maxActiveEvents },
-        create: { userId: id, maxActiveEvents: dto.maxActiveEvents },
-      });
-    }
-
     return user;
   }
 }

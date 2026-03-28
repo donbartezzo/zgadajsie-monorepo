@@ -41,7 +41,7 @@ export class NotificationsService {
 
   async create(userId: string, type: string, title: string, body: string, relatedEventId?: string) {
     return this.prisma.notification.create({
-      data: { userId, type, title, body, relatedEventId },
+      data: { userId, type: type as any, title, body, relatedEventId },
     });
   }
 

@@ -200,7 +200,6 @@ export class ParticipationService {
                 eventId,
                 userId: guestUser.id,
                 addedByUserId,
-                isGuest: true,
                 wantsIn: true,
               },
               include: { user: { select: USER_SELECT } },
@@ -225,7 +224,6 @@ export class ParticipationService {
         eventId,
         userId: guestUser.id,
         addedByUserId,
-        isGuest: true,
         wantsIn: true,
         waitingReason: isNewUser
           ? 'NEW_USER'
@@ -251,7 +249,7 @@ export class ParticipationService {
       throw new NotFoundException('Uczestnictwo nie znalezione');
     }
 
-    if (!participation.isGuest) {
+    if (participation.addedByUserId === null) {
       throw new BadRequestException('Można edytować tylko dane gości');
     }
 
@@ -310,10 +308,8 @@ export class ParticipationService {
 
     // Notify only in OPEN_ENROLLMENT (not during pre-enrollment)
     if (phase === 'OPEN_ENROLLMENT' && updated) {
-      const recipientId = updated.isGuest ? updated.addedByUserId : updated.userId;
-      if (recipientId) {
-        await this.notifySlotAssigned(recipientId, updated.event.title, updated.eventId);
-      }
+      const recipientId = updated.addedByUserId ?? updated.userId;
+      await this.notifySlotAssigned(recipientId, updated.event.title, updated.eventId);
     }
 
     return updated;
@@ -397,10 +393,8 @@ export class ParticipationService {
 
     // Notify removed user
     if (updated) {
-      const recipientId = updated.isGuest ? updated.addedByUserId : updated.userId;
-      if (recipientId) {
-        await this.notifyRemoved(recipientId, updated.event.title, updated.eventId);
-      }
+      const recipientId = updated.addedByUserId ?? updated.userId;
+      await this.notifyRemoved(recipientId, updated.event.title, updated.eventId);
     }
 
     // Notify waiting participants about freed slot
@@ -461,7 +455,6 @@ export class ParticipationService {
       where: {
         eventId,
         addedByUserId: hostUserId,
-        isGuest: true,
         wantsIn: true,
       },
       include: { user: { select: USER_SELECT }, slot: true },
@@ -497,9 +490,7 @@ export class ParticipationService {
       throw new BadRequestException('To wydarzenie jest bezpłatne');
     }
 
-    const payingUserId = participation.isGuest
-      ? participation.addedByUserId ?? participation.userId
-      : participation.userId;
+    const payingUserId = participation.addedByUserId ?? participation.userId;
     const user = await this.prisma.user.findUnique({
       where: { id: payingUserId },
       select: { id: true, email: true, displayName: true },
@@ -860,7 +851,7 @@ export class ParticipationService {
         });
 
         for (const p of waiting) {
-          const recipientId = p.isGuest ? p.addedByUserId : p.userId;
+          const recipientId = p.addedByUserId ?? p.userId;
           if (recipientId) {
             try {
               await this.pushService.notifyParticipationStatus(

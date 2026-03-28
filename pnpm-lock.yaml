@@ -20,6 +20,9 @@ importers:
       '@angular/core':
         specifier: ~20.3.4
         version: 20.3.6(@angular/compiler@20.3.6)(rxjs@7.8.2)(zone.js@0.15.1)
+      '@angular/forms':
+        specifier: ~20.3.4
+        version: 20.3.6(@angular/common@20.3.6(@angular/core@20.3.6(@angular/compiler@20.3.6)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.3.6(@angular/compiler@20.3.6)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@20.3.6(@angular/animations@20.3.6(@angular/core@20.3.6(@angular/compiler@20.3.6)(rxjs@7.8.2)(zone.js@0.15.1)))(@angular/common@20.3.6(@angular/core@20.3.6(@angular/compiler@20.3.6)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.3.6(@angular/compiler@20.3.6)(rxjs@7.8.2)(zone.js@0.15.1)))(rxjs@7.8.2)
       '@angular/material':
         specifier: ^20.2.8
         version: 20.2.9(2a95e28ac5632fb7b160d9783a0bce26)

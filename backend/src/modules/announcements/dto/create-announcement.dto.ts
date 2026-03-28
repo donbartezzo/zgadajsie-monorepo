@@ -1,4 +1,5 @@
 import { IsString, IsNotEmpty, IsOptional, IsIn } from 'class-validator';
+import { AnnouncementPriority } from '@zgadajsie/shared';
 
 export class CreateAnnouncementDto {
   @IsString()
@@ -8,5 +9,5 @@ export class CreateAnnouncementDto {
   @IsOptional()
   @IsString()
   @IsIn(['CRITICAL', 'ORGANIZATIONAL', 'INFORMATIONAL'])
-  priority?: string;
+  priority?: AnnouncementPriority;
 }

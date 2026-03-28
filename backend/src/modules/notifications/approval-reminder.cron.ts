@@ -45,8 +45,8 @@ export class ApprovalReminderCron {
 
     for (const p of participations) {
       // Route notification to host for guests, to user for self
-      const recipient = p.isGuest && p.addedBy ? p.addedBy : p.user;
-      const guestLabel = p.isGuest ? ` (gość: ${p.user.displayName})` : '';
+      const recipient = p.addedByUserId !== null && p.addedBy ? p.addedBy : p.user;
+      const guestLabel = p.addedByUserId !== null ? ` (gość: ${p.user.displayName})` : '';
 
       try {
         await this.pushService.notifyParticipationStatus(

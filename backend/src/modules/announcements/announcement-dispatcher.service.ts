@@ -4,6 +4,7 @@ import { PushService } from '../notifications/push.service';
 import { EmailService } from '../notifications/email.service';
 import { ChatService } from '../chat/chat.service';
 import { ChatGateway } from '../chat/chat.gateway';
+import { AnnouncementPriority, AnnouncementTrigger } from '@zgadajsie/shared';
 
 const CHUNK_SIZE = 50;
 
@@ -30,8 +31,8 @@ export class AnnouncementDispatcherService {
     eventId: string,
     organizerId: string,
     message: string,
-    priority: string,
-    trigger: string,
+    priority: AnnouncementPriority,
+    trigger: AnnouncementTrigger,
   ): Promise<DispatchResult> {
     const event = await this.prisma.event.findUniqueOrThrow({
       where: { id: eventId },
@@ -163,8 +164,8 @@ export class AnnouncementDispatcherService {
           priority === 'CRITICAL'
             ? '🔴 [PILNE]'
             : priority === 'ORGANIZATIONAL'
-            ? '🟡 [Organizacyjne]'
-            : 'ℹ️ [Info]';
+              ? '🟡 [Organizacyjne]'
+              : 'ℹ️ [Info]';
         const content = `${prefix} ${message}`;
 
         const chatMessage = await this.chatService.createSystemMessage(

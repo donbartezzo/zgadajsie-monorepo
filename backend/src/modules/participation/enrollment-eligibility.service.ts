@@ -63,7 +63,6 @@ export class EnrollmentEligibilityService {
       where: {
         eventId,
         addedByUserId,
-        isGuest: true,
         wantsIn: true,
       },
     });

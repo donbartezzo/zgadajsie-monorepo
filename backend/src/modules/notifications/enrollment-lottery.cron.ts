@@ -119,11 +119,11 @@ export class EnrollmentLotteryCron {
 
       // 3-tier split: veterans, guests, newcomers
       const veterans = unbannedParticipations.filter(
-        (p) => !p.isGuest && newUserMap.get(p.userId) === false,
+        (p) => p.addedByUserId === null && newUserMap.get(p.userId) === false,
       );
-      const guests = unbannedParticipations.filter((p) => p.isGuest);
+      const guests = unbannedParticipations.filter((p) => p.addedByUserId !== null);
       const newcomers = unbannedParticipations.filter(
-        (p) => !p.isGuest && newUserMap.get(p.userId) === true,
+        (p) => p.addedByUserId === null && newUserMap.get(p.userId) === true,
       );
 
       let remaining = event.maxParticipants;
@@ -177,7 +177,7 @@ export class EnrollmentLotteryCron {
 
     for (const p of pendingParticipations) {
       const gotSlot = assignedIds.includes(p.id);
-      const recipientId = p.isGuest ? p.addedByUserId ?? p.userId : p.userId;
+      const recipientId = p.addedByUserId ?? p.userId;
 
       try {
         if (gotSlot) {

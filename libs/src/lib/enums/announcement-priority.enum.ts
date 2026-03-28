@@ -1,4 +1,4 @@
-export enum NotificationPriority {
+export enum AnnouncementPriority {
   CRITICAL = 'CRITICAL',
   ORGANIZATIONAL = 'ORGANIZATIONAL',
   INFORMATIONAL = 'INFORMATIONAL',

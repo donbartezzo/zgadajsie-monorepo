@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { VoucherSource, VoucherStatus } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { Decimal } from '@prisma/client/runtime/library';
 
@@ -11,7 +12,7 @@ export class VouchersService {
       where: {
         recipientUserId: userId,
         organizerUserId: organizerId,
-        status: 'ACTIVE',
+        status: VoucherStatus.ACTIVE,
       },
       _sum: { remainingAmount: true },
     });
@@ -20,7 +21,7 @@ export class VouchersService {
 
   async getUserVouchers(userId: string) {
     const vouchers = await this.prisma.organizerVoucher.findMany({
-      where: { recipientUserId: userId, status: 'ACTIVE' },
+      where: { recipientUserId: userId, status: VoucherStatus.ACTIVE },
       orderBy: { createdAt: 'asc' },
       include: {
         organizer: { select: { id: true, displayName: true, avatarUrl: true } },
@@ -61,7 +62,7 @@ export class VouchersService {
       where: {
         recipientUserId: userId,
         organizerUserId: organizerId,
-        status: 'ACTIVE',
+        status: VoucherStatus.ACTIVE,
         remainingAmount: { gt: 0 },
       },
       orderBy: { createdAt: 'asc' },
@@ -82,7 +83,7 @@ export class VouchersService {
         where: { id: voucher.id },
         data: {
           remainingAmount: new Decimal(newRemaining),
-          status: newRemaining <= 0 ? 'FULLY_USED' : 'ACTIVE',
+          status: newRemaining <= 0 ? VoucherStatus.FULLY_USED : VoucherStatus.ACTIVE,
         },
       });
 
@@ -102,8 +103,8 @@ export class VouchersService {
         organizerUserId: organizerId,
         amount: new Decimal(amount),
         remainingAmount: new Decimal(amount),
-        source: 'MANUAL_REFUND',
-        status: 'ACTIVE',
+        source: VoucherSource.MANUAL_REFUND,
+        status: VoucherStatus.ACTIVE,
       },
     });
   }
@@ -113,7 +114,7 @@ export class VouchersService {
     organizerUserId: string,
     eventId: string | null,
     amount: number,
-    source: string,
+    source: VoucherSource,
   ) {
     return this.prisma.organizerVoucher.create({
       data: {
@@ -122,8 +123,8 @@ export class VouchersService {
         eventId,
         amount: new Decimal(amount),
         remainingAmount: new Decimal(amount),
-        source,
-        status: 'ACTIVE',
+        source: source as VoucherSource,
+        status: VoucherStatus.ACTIVE,
       },
     });
   }
@@ -190,8 +191,8 @@ export class VouchersService {
             sourcePaymentId: payment.id,
             amount: new Decimal(refundAmount),
             remainingAmount: new Decimal(refundAmount),
-            source: 'EVENT_CANCELLATION',
-            status: 'ACTIVE',
+            source: VoucherSource.EVENT_CANCELLATION,
+            status: VoucherStatus.ACTIVE,
           },
         });
       }
