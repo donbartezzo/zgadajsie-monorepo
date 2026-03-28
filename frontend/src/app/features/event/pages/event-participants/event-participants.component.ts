@@ -18,6 +18,7 @@ import {
 import { ParticipantDetailOverlayComponent } from '../../../../shared/participant/ui/participant-detail-overlay/participant-detail-overlay.component';
 import { EventStickyNotificationBarComponent } from '../../ui/event-sticky-notification-bar/event-sticky-notification-bar.component';
 import { EventService } from '../../../../core/services/event.service';
+import { ModerationService } from '../../../../core/services/moderation.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { EventAreaService } from '../../services/event-area.service';
@@ -48,6 +49,7 @@ export class EventParticipantsComponent implements AfterViewInit {
   private readonly confirmModal = inject(ConfirmModalService);
   private readonly overlays = inject(BottomOverlaysService);
   private readonly profileBroadcast = inject(ProfileBroadcastService);
+  private readonly moderation = inject(ModerationService);
 
   // ── Delegated from EventAreaService ──
   readonly event = this.eventArea.event;
@@ -203,6 +205,56 @@ export class EventParticipantsComponent implements AfterViewInit {
             },
             error: (err) => {
               this.snackbar.error(err.error?.message || 'Nie udało się wypisać gościa');
+            },
+          });
+        }
+      });
+  }
+
+  onBanRequested(userId: string): void {
+    this.confirmModal
+      .confirm({
+        title: 'Zbanować uczestnika?',
+        message: 'Użytkownik zostanie zbanowany we wszystkich Twoich wydarzeniach i nie będzie mógł zajmować slotów.',
+        confirmLabel: 'Zbanuj',
+        cancelLabel: 'Anuluj',
+        color: 'danger',
+      })
+      .then((confirmed) => {
+        if (confirmed) {
+          this.moderation.banUser(userId, 'Ban z listy uczestników').subscribe({
+            next: () => {
+              this.snackbar.success('Użytkownik został zbanowany');
+              this.closeDetailOverlay();
+              this.eventArea.refreshParticipants();
+            },
+            error: (err) => {
+              this.snackbar.error(err.error?.message || 'Nie udało się zbanować użytkownika');
+            },
+          });
+        }
+      });
+  }
+
+  onUnbanRequested(userId: string): void {
+    this.confirmModal
+      .confirm({
+        title: 'Zdjąć bana?',
+        message: 'Użytkownik odzyska możliwość zajmowania slotów w Twoich wydarzeniach.',
+        confirmLabel: 'Zdejmij bana',
+        cancelLabel: 'Anuluj',
+        color: 'primary',
+      })
+      .then((confirmed) => {
+        if (confirmed) {
+          this.moderation.unbanUser(userId).subscribe({
+            next: () => {
+              this.snackbar.success('Ban został zdjęty');
+              this.closeDetailOverlay();
+              this.eventArea.refreshParticipants();
+            },
+            error: (err) => {
+              this.snackbar.error(err.error?.message || 'Nie udało się zdjąć bana');
             },
           });
         }

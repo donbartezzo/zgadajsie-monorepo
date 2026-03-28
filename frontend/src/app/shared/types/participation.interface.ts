@@ -39,7 +39,6 @@ export interface Participation {
   userId: string;
   wantsIn: boolean;
   withdrawnBy?: string | null;
-  isChatBanned: boolean;
   addedByUserId?: string;
   isGuest: boolean;
   roleKey?: string | null;

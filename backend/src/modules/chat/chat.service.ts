@@ -1,7 +1,7 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
-// Chat access: wantsIn=true AND NOT isChatBanned
+// Chat access: wantsIn=true
 
 const USER_SELECT = { id: true, displayName: true, avatarUrl: true } as const;
 
@@ -195,18 +195,10 @@ export class ChatService {
     });
 
     const members = participations.map((p) => {
-      const isBanned = p.isChatBanned;
       const isWithdrawn = !p.wantsIn;
-      const isActive = p.wantsIn && !isBanned;
+      const isActive = p.wantsIn;
+      const inactiveReason: string | null = isWithdrawn ? 'Wypisany z wydarzenia' : null;
 
-      let inactiveReason: string | null = null;
-      if (isBanned) {
-        inactiveReason = 'Zbanowany na czacie';
-      } else if (isWithdrawn) {
-        inactiveReason = 'Wypisany z wydarzenia';
-      }
-
-      // Derive status for display
       let derivedStatus: string;
       if (!p.wantsIn) {
         derivedStatus = p.withdrawnBy === 'ORGANIZER' ? 'REJECTED' : 'WITHDRAWN';
@@ -220,7 +212,6 @@ export class ChatService {
         user: p.user,
         status: derivedStatus,
         isActive,
-        isBanned,
         isWithdrawn,
         inactiveReason,
       };
@@ -230,34 +221,6 @@ export class ChatService {
       organizer: { ...event.organizer, isOrganizer: true as const },
       members,
     };
-  }
-
-  // ─── Chat Ban ─────────────────────────────────────────────────────────────
-
-  async banUser(eventId: string, userId: string, _bannedByUserId: string) {
-    const event = await this.prisma.event.findUnique({
-      where: { id: eventId },
-      select: { organizerId: true },
-    });
-
-    if (!event) {
-      throw new NotFoundException('Wydarzenie nie istnieje');
-    }
-    if (event.organizerId === userId) {
-      throw new ForbiddenException('Nie można zbanować organizatora');
-    }
-
-    return this.prisma.eventParticipation.update({
-      where: { eventId_userId: { eventId, userId } },
-      data: { isChatBanned: true },
-    });
-  }
-
-  async unbanUser(eventId: string, userId: string) {
-    return this.prisma.eventParticipation.update({
-      where: { eventId_userId: { eventId, userId } },
-      data: { isChatBanned: false },
-    });
   }
 
   // ─── Access checks ─────────────────────────────────────────────────────────
@@ -274,7 +237,6 @@ export class ChatService {
     });
 
     if (!participation) return false;
-    if (participation.isChatBanned) return false;
     if (!participation.wantsIn) return false;
 
     return true;
@@ -330,12 +292,8 @@ export class ChatService {
       throw new ForbiddenException('Użytkownik nie jest uczestnikiem tego wydarzenia');
     }
 
-    // Banned participant can always chat with organizer
-    // Only check wantsIn for non-banned participants
-    if (!participation.isChatBanned) {
-      if (!participation.wantsIn) {
-        throw new ForbiddenException('Użytkownik nie jest uczestnikiem tego wydarzenia');
-      }
+    if (!participation.wantsIn) {
+      throw new ForbiddenException('Użytkownik nie jest uczestnikiem tego wydarzenia');
     }
   }
 }

@@ -10,13 +10,12 @@ import {
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { UserAvatarComponent } from '../../../shared/user/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../shared/ui/loading-spinner/loading-spinner.component';
-import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { ChatService } from '../../../core/services/chat.service';
 import { ChatMember } from '../../../shared/types';
 
 @Component({
   selector: 'app-chat-members-overlay',
-  imports: [BottomOverlayComponent, UserAvatarComponent, LoadingSpinnerComponent, ButtonComponent],
+  imports: [BottomOverlayComponent, UserAvatarComponent, LoadingSpinnerComponent],
   template: `
  <app-bottom-overlay [open]="true" title="Uczestnicy czatu" (closed)="closed.emit()">
  @if (loading()) {
@@ -47,8 +46,8 @@ import { ChatMember } from '../../../shared/types';
  </p>
  @if (m.user.id === organizerId()) {
  <span class="text-[10px] text-primary-500 font-semibold uppercase">Organizator</span>
- } @else if (!m.isActive && m.inactiveReason) {
- <span class="text-[10px] text-danger-300">
+ } @else if (m.inactiveReason) {
+ <span class="text-[10px] text-neutral-400">
  {{ m.inactiveReason }}
  </span>
  } @else {
@@ -58,15 +57,6 @@ import { ChatMember } from '../../../shared/types';
  </span>
  }
  </div>
- @if (isOrganizer() && m.user.id !== organizerId()) {
- <div class="flex-shrink-0">
- @if (m.isBanned) {
- <app-button appearance="outline" color="neutral" size="xs" (clicked)="onUnban(m)">Odbanuj</app-button>
- } @else if (m.isActive) {
- <app-button appearance="soft" color="danger" size="xs" (clicked)="onBan(m)">Banuj</app-button>
- }
- </div>
- }
  </div>
  }
  </div>
@@ -85,8 +75,6 @@ export class ChatMembersOverlayComponent implements OnInit {
   readonly otherUserId = input('');
   readonly currentUserId = input.required<string>();
   readonly closed = output<void>();
-  readonly memberBanned = output<string>();
-  readonly memberUnbanned = output<string>();
 
   readonly members = signal<ChatMember[]>([]);
   readonly loading = signal(true);
@@ -131,7 +119,6 @@ export class ChatMembersOverlayComponent implements OnInit {
               user: res.organizer,
               status: 'ORGANIZER',
               isActive: true,
-              isBanned: false,
               isWithdrawn: false,
               inactiveReason: null,
             } as ChatMember,
@@ -148,42 +135,4 @@ export class ChatMembersOverlayComponent implements OnInit {
     });
   }
 
-  onBan(member: ChatMember): void {
-    this.chatService.banUser(this.eventId(), member.user.id).subscribe({
-      next: () => {
-        this.members.update((prev) =>
-          prev.map((m) =>
-            m.user.id === member.user.id
-              ? { ...m, isBanned: true, isActive: false, inactiveReason: 'Zbanowany na czacie' }
-              : m,
-          ),
-        );
-        this.activeCount.update((c) => c - 1);
-        this.memberBanned.emit(member.user.id);
-      },
-    });
-  }
-
-  onUnban(member: ChatMember): void {
-    this.chatService.unbanUser(this.eventId(), member.user.id).subscribe({
-      next: () => {
-        this.members.update((prev) =>
-          prev.map((m) =>
-            m.user.id === member.user.id
-              ? {
-                  ...m,
-                  isBanned: false,
-                  isActive: !m.isWithdrawn,
-                  inactiveReason: m.isWithdrawn ? 'Wypisany z wydarzenia' : null,
-                }
-              : m,
-          ),
-        );
-        if (!member.isWithdrawn) {
-          this.activeCount.update((c) => c + 1);
-        }
-        this.memberUnbanned.emit(member.user.id);
-      },
-    });
-  }
 }

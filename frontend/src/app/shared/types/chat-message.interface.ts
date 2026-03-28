@@ -40,7 +40,6 @@ export interface ChatMember {
   user: UserBrief;
   status: string;
   isActive: boolean;
-  isBanned: boolean;
   isWithdrawn: boolean;
   inactiveReason: string | null;
 }

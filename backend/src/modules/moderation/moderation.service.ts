@@ -19,28 +19,39 @@ export class ModerationService {
       data: {
         fromUserId,
         toUserId: dto.toUserId,
-        eventId: dto.eventId,
+        eventId: dto.eventId ?? null,
         reason: dto.reason,
+        type: dto.type ?? 'REPRIMAND',
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : daysFromNow(30),
       },
     });
 
-    // Notify reprimanded user
-    const [user, event] = await Promise.all([
-      this.prisma.user.findUnique({
-        where: { id: dto.toUserId },
-        select: { email: true, displayName: true },
-      }),
-      this.prisma.event.findUnique({ where: { id: dto.eventId }, select: { title: true } }),
-    ]);
-    if (user && event) {
-      await this.pushService.notifyReprimand(dto.toUserId, event.title, dto.reason, dto.eventId);
-      await this.emailService.sendReprimandEmail(
-        user.email,
-        user.displayName,
-        event.title,
+    const eventTitle = dto.eventId
+      ? await this.prisma.event
+          .findUnique({ where: { id: dto.eventId }, select: { title: true } })
+          .then((e) => e?.title ?? '')
+      : '';
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: dto.toUserId },
+      select: { email: true, displayName: true },
+    });
+
+    if (user) {
+      await this.pushService.notifyReprimand(
+        dto.toUserId,
+        eventTitle,
         dto.reason,
+        dto.eventId ?? '',
       );
+      if (dto.eventId) {
+        await this.emailService.sendReprimandEmail(
+          user.email,
+          user.displayName,
+          eventTitle,
+          dto.reason,
+        );
+      }
     }
 
     return reprimand;
@@ -69,7 +80,20 @@ export class ModerationService {
   }
 
   async banUser(organizerUserId: string, dto: CreateBanDto) {
-    return this.prisma.organizerUserRelation.upsert({
+    // 1. Record the ban as a Reprimand of type BAN
+    await this.prisma.reprimand.create({
+      data: {
+        fromUserId: organizerUserId,
+        toUserId: dto.userId,
+        eventId: null,
+        reason: dto.reason,
+        type: 'BAN',
+        expiresAt: null,
+      },
+    });
+
+    // 2. Set isBanned flag in OrganizerUserRelation
+    await this.prisma.organizerUserRelation.upsert({
       where: {
         organizerUserId_targetUserId: {
           organizerUserId,
@@ -87,6 +111,38 @@ export class ModerationService {
         note: dto.reason,
       },
     });
+
+    // 3. Find all organizer's events where this user has an active slot, release them
+    const activeParticipations = await this.prisma.eventParticipation.findMany({
+      where: {
+        userId: dto.userId,
+        wantsIn: true,
+        event: { organizerId: organizerUserId, status: 'ACTIVE' },
+      },
+      include: { slot: true },
+    });
+
+    for (const participation of activeParticipations) {
+      if (participation.slot) {
+        // Release the slot
+        await this.prisma.eventSlot.update({
+          where: { id: participation.slot.id },
+          data: { participationId: null, assignedAt: null, confirmed: false },
+        });
+      }
+      // Mark as BANNED in waitingReason
+      await this.prisma.eventParticipation.update({
+        where: { id: participation.id },
+        data: { waitingReason: 'BANNED' },
+      });
+    }
+
+    // 4. Notify user
+    await this.pushService
+      .notifyReprimand(dto.userId, '', dto.reason, '')
+      .catch(() => undefined);
+
+    return { success: true };
   }
 
   async unbanUser(organizerUserId: string, targetUserId: string) {
@@ -98,10 +154,25 @@ export class ModerationService {
     if (!relation) {
       throw new NotFoundException('Relacja nie znaleziona');
     }
-    return this.prisma.organizerUserRelation.update({
+
+    // 1. Clear isBanned flag
+    await this.prisma.organizerUserRelation.update({
       where: { id: relation.id },
       data: { isBanned: false },
     });
+
+    // 2. Clear waitingReason=BANNED from active participations with this organizer
+    await this.prisma.eventParticipation.updateMany({
+      where: {
+        userId: targetUserId,
+        wantsIn: true,
+        waitingReason: 'BANNED',
+        event: { organizerId: organizerUserId, status: 'ACTIVE' },
+      },
+      data: { waitingReason: null },
+    });
+
+    return { success: true };
   }
 
   async trustUser(organizerUserId: string, targetUserId: string) {

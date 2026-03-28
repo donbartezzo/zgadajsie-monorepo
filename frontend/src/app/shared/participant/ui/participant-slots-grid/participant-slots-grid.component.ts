@@ -1,7 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
-import { Participation, ParticipantManageItem, EventRoleConfig, EventRole } from '../../../types';
+import {
+  Participation,
+  ParticipantManageItem,
+  EventRoleConfig,
+  EventRole,
+} from '../../../types';
 import { SemanticColor } from '../../../types/colors';
 import { EnrollmentPhase } from '../../../types/event.interface';
 
@@ -197,14 +202,27 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
           "
           (click)="onParticipantClick(p)"
         >
-          <app-user-avatar
-            [avatarUrl]="getAvatarUrl(p)"
-            [displayName]="getDisplayName(p)"
-            size="lg"
-            [showPending]="true"
-          />
+          <div class="relative">
+            <app-user-avatar
+              [avatarUrl]="getAvatarUrl(p)"
+              [displayName]="getDisplayName(p)"
+              size="lg"
+              [showPending]="!isBanned(p)"
+            />
+            @if (isBanned(p)) {
+            <span
+              class="absolute -bottom-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full bg-danger-500 ring-2 ring-white"
+              title="Zbanowany"
+            >
+              <app-icon name="shield-alert" size="xs" class="text-white" />
+            </span>
+            }
+          </div>
           <span
-            class="text-[11px] text-warning-600 text-center leading-tight mt-1 w-full line-clamp-2 min-h-[2.5em]"
+            [class]="
+              'text-[11px] text-center leading-tight mt-1 w-full line-clamp-2 min-h-[2.5em] ' +
+              (isBanned(p) ? 'text-danger-500' : 'text-warning-600')
+            "
           >
             {{ getDisplayName(p) }}
           </span>
@@ -371,5 +389,9 @@ export class ParticipantSlotsGridComponent {
   isCurrentUserGuest(p: ParticipantItem): boolean {
     if (!p.isGuest || !this.currentUserId()) return false;
     return p.addedByUserId === this.currentUserId();
+  }
+
+  isBanned(p: ParticipantItem): boolean {
+    return (p as Participation).waitingReason === 'BANNED';
   }
 }

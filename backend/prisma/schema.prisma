@@ -84,6 +84,11 @@ enum WithdrawnBy {
   ORGANIZER
 }
 
+enum ReprimandType {
+  REPRIMAND
+  BAN
+}
+
 // ─── Models ──────────────────────────────────────────────────────────────────
 
 model User {
@@ -232,7 +237,6 @@ model EventParticipation {
   addedByUserId String?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
-  isChatBanned  Boolean      @default(false)
   wantsIn       Boolean      @default(true)
   withdrawnBy   WithdrawnBy?
   roleKey       String?
@@ -367,16 +371,17 @@ model PrivateChatMessage {
 }
 
 model Reprimand {
-  id         String   @id @default(uuid())
+  id         String        @id @default(uuid())
+  type       ReprimandType @default(REPRIMAND)
   fromUserId String
   toUserId   String
-  eventId    String
+  eventId    String?
   reason     String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  event      Event    @relation(fields: [eventId], references: [id])
-  fromUser   User     @relation("ReprimandFrom", fields: [fromUserId], references: [id])
-  toUser     User     @relation("ReprimandTo", fields: [toUserId], references: [id])
+  expiresAt  DateTime?
+  createdAt  DateTime      @default(now())
+  event      Event?        @relation(fields: [eventId], references: [id])
+  fromUser   User          @relation("ReprimandFrom", fields: [fromUserId], references: [id])
+  toUser     User          @relation("ReprimandTo", fields: [toUserId], references: [id])
 }
 
 model OrganizerUserRelation {

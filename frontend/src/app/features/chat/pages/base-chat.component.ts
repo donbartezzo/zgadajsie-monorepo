@@ -40,7 +40,6 @@ export abstract class BaseChatComponent implements OnDestroy {
   protected msgSub!: Subscription;
   protected typingSub!: Subscription;
   protected errorSub!: Subscription;
-  protected bannedSub!: Subscription;
   protected typingTimeout: ReturnType<typeof setTimeout> | undefined;
 
   readonly privateChatViewMessages = computed<ChatViewMessage[]>(() =>
@@ -64,18 +63,9 @@ export abstract class BaseChatComponent implements OnDestroy {
     this.msgSub?.unsubscribe();
     this.typingSub?.unsubscribe();
     this.errorSub?.unsubscribe();
-    this.bannedSub?.unsubscribe();
     if (this.typingTimeout) {
       clearTimeout(this.typingTimeout);
     }
-  }
-
-  onMemberBanned(_userId: string): void {
-    this.loadMemberCount();
-  }
-
-  onMemberUnbanned(_userId: string): void {
-    this.loadMemberCount();
   }
 
   protected initBaseData(): void {
@@ -92,9 +82,7 @@ export abstract class BaseChatComponent implements OnDestroy {
 
           const inactiveMap = new Map<string, 'banned' | 'withdrawn'>();
           res.members.forEach((m) => {
-            if (m.isBanned) {
-              inactiveMap.set(m.user.id, 'banned');
-            } else if (m.isWithdrawn) {
+            if (m.isWithdrawn) {
               inactiveMap.set(m.user.id, 'withdrawn');
             }
           });

@@ -15,7 +15,7 @@ import {
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { Participation, ParticipantManageItem } from '../../../types';
-import { ParticipationStatus } from '../../../types/participation.interface';
+import { ParticipationStatus, WaitingReason } from '../../../types/participation.interface';
 import { SemanticColor } from '../../../types/colors';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { UserService } from '../../../../core/services/user.service';
@@ -54,7 +54,7 @@ function getErrorMessage(error: unknown, fallback: string): string {
     <app-bottom-overlay [open]="open()" [title]="title()" (closed)="closed.emit()">
       @if (participant(); as p) { @let _isOrganizer = mode() === 'organizer'; @let _isActive =
       isActiveStatus(); @let _paidEvent = isPaidEvent(); @let _payment = paymentInfo(); @let
-      _isWithdrawn = isWithdrawnStatus();
+      _isWithdrawn = isWithdrawnStatus(); @let _isBanned = isBannedParticipant();
 
       <!-- User profile card (wizytówka) -->
       <app-user-profile-card
@@ -96,7 +96,7 @@ function getErrorMessage(error: unknown, fallback: string): string {
       <div class="mt-6 space-y-2">
         @if (_isOrganizer) {
         <!-- Organizer actions -->
-        @if (p.status === 'PENDING') {
+        @if (p.status === 'PENDING' && !_isBanned) {
         <div class="grid grid-cols-2 gap-2">
           <app-button
             appearance="soft"
@@ -149,8 +149,22 @@ function getErrorMessage(error: unknown, fallback: string): string {
           Anuluj płatność
         </app-button>
         }
+        }
 
-        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-neutral-100">
+        <!-- Ban / Unban (always visible for organizer, for non-withdrawn participants) -->
+        @if (!_isWithdrawn) {
+        <div class="pt-2 border-t border-neutral-100">
+          @if (_isBanned) {
+          <app-button
+            appearance="soft"
+            color="neutral"
+            [fullWidth]="true"
+            (clicked)="unbanRequested.emit(p.userId)"
+          >
+            <app-icon name="shield" size="sm" class="mr-1" />
+            Zdejmij bana
+          </app-button>
+          } @else {
           <app-button
             appearance="soft"
             color="danger"
@@ -158,8 +172,9 @@ function getErrorMessage(error: unknown, fallback: string): string {
             (clicked)="banRequested.emit(p.userId)"
           >
             <app-icon name="shield-alert" size="sm" class="mr-1" />
-            Zbanuj
+            Zbanuj uczestnika
           </app-button>
+          }
         </div>
         } } @else if (mode() === 'guest-manager' && p.isGuest) {
         <!-- Guest Manager actions -->
@@ -179,6 +194,11 @@ function getErrorMessage(error: unknown, fallback: string): string {
         <div class="text-center text-sm text-neutral-400">
           @if (_isWithdrawn) {
           <p class="text-neutral-500">{{ withdrawnReasonLabel() }}</p>
+          } @else if (_isBanned) {
+          <div class="flex items-center justify-center gap-2 text-danger-500">
+            <app-icon name="shield-alert" size="sm" />
+            <p>Uczestnik jest zbanowany przez organizatora</p>
+          </div>
           } @else {
           <p>Uczestnik wydarzenia</p>
           }
@@ -202,6 +222,7 @@ export class ParticipantDetailOverlayComponent {
   readonly approveRequested = output<string>();
   readonly rejectRequested = output<string>();
   readonly banRequested = output<string>();
+  readonly unbanRequested = output<string>();
   readonly reprimandRequested = output<string>();
   readonly markPaidRequested = output<string>();
   readonly cancelPaymentRequested = output<ParticipantManageItem>();
@@ -351,6 +372,11 @@ export class ParticipantDetailOverlayComponent {
   readonly isWithdrawnStatus = computed(() => {
     const status = this.participant()?.status;
     return status === 'WITHDRAWN' || status === 'REJECTED';
+  });
+
+  readonly isBannedParticipant = computed(() => {
+    const p = this.participant();
+    return (p as Participation)?.waitingReason === ('BANNED' as WaitingReason);
   });
 
   readonly withdrawnReasonLabel = computed(() => {

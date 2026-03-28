@@ -24,7 +24,6 @@ export class ChatService {
   private privateMessageSubject = new Subject<PrivateChatMessage>();
   private privateTypingSubject = new Subject<{ userId: string; displayName: string }>();
   private errorMessageSubject = new Subject<{ type: string; message: string }>();
-  private chatBannedSubject = new Subject<boolean>();
 
   // ─── Group Chat ─────────────────────────────────────────────────────────────
 
@@ -146,7 +145,7 @@ export class ChatService {
     );
   }
 
-  // ─── Members & Bans ────────────────────────────────────────────────────────
+  // ─── Members ───────────────────────────────────────────────────────────────
 
   getMembers(eventId: string): Observable<ChatMembersResponse> {
     return this.http.get<ChatMembersResponse>(
@@ -154,22 +153,10 @@ export class ChatService {
     );
   }
 
-  banUser(eventId: string, userId: string): Observable<unknown> {
-    return this.http.post(`${environment.apiUrl}/events/${eventId}/chat/ban/${userId}`, {});
-  }
-
-  unbanUser(eventId: string, userId: string): Observable<unknown> {
-    return this.http.delete(`${environment.apiUrl}/events/${eventId}/chat/ban/${userId}`);
-  }
-
   // ─── Shared ─────────────────────────────────────────────────────────────────
 
   onErrorMessage(): Observable<{ type: string; message: string }> {
     return this.errorMessageSubject.asObservable();
-  }
-
-  onChatBanned(): Observable<boolean> {
-    return this.chatBannedSubject.asObservable();
   }
 
   disconnect(): void {
@@ -185,14 +172,6 @@ export class ChatService {
         token: this.authService.getAccessToken(),
         userId: this.authService.currentUser()?.id,
       },
-    });
-
-    // Handle connection errors (e.g., banned user trying to join)
-    socket.on('connect_error', (error: unknown) => {
-      const err = error as { message?: string };
-      if (err.message?.includes('Brak dostępu do czatu grupowego')) {
-        this.chatBannedSubject.next(true);
-      }
     });
 
     return socket;

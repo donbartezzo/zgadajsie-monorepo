@@ -38,9 +38,7 @@ import { BaseChatComponent } from '../base-chat.component';
         [otherUserId]="isPrivate ? otherUserId : ''"
         [currentUserId]="currentUserId"
         (closed)="showMembers.set(false)"
-        (memberBanned)="onMemberBanned($event)"
-        (memberUnbanned)="onMemberUnbanned($event)"
-      ></app-chat-members-overlay>
+        ></app-chat-members-overlay>
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,7 +46,6 @@ import { BaseChatComponent } from '../base-chat.component';
 export class UnifiedChatComponent extends BaseChatComponent implements OnInit {
   readonly groupMessages = signal<ChatMessage[]>([]);
   readonly otherUserName = signal('');
-  readonly chatBanned = signal(false);
 
   otherUserId = '';
   isPrivate = false;
@@ -132,21 +129,11 @@ export class UnifiedChatComponent extends BaseChatComponent implements OnInit {
         if (res?.members) {
           const inactiveMap = new Map<string, 'banned' | 'withdrawn'>();
           res.members.forEach((m) => {
-            if (m.isBanned) {
-              inactiveMap.set(m.user.id, 'banned');
-            } else if (m.isWithdrawn) {
+            if (m.isWithdrawn) {
               inactiveMap.set(m.user.id, 'withdrawn');
             }
           });
           this.inactiveUsers.set(inactiveMap);
-
-          const currentUserBanned = res.members.some(
-            (m) => m.user.id === this.currentUserId && m.isBanned,
-          );
-          if (currentUserBanned && !this.isPrivate) {
-            this.chatBanned.set(true);
-            this.chatDisabled.set(true);
-          }
         }
       },
     });
@@ -164,15 +151,9 @@ export class UnifiedChatComponent extends BaseChatComponent implements OnInit {
         this.groupMessages.set(res.data);
         this.loading.set(false);
       },
-      error: (err) => {
+      error: () => {
         this.loading.set(false);
-        if (err?.error?.message?.includes('Brak dostępu do czatu grupowego')) {
-          this.chatBanned.set(true);
-          this.chatDisabled.set(true);
-          this.snackbar.error('Jesteś zbanowany na czacie tego wydarzenia');
-        } else {
-          this.snackbar.error('Nie udało się załadować czatu');
-        }
+        this.snackbar.error('Nie udało się załadować czatu');
       },
     });
 
@@ -189,21 +170,8 @@ export class UnifiedChatComponent extends BaseChatComponent implements OnInit {
     });
 
     this.errorSub = this.chatService.onErrorMessage().subscribe((data) => {
-      if (
-        data.type === 'sendMessage' &&
-        data.message?.includes('Brak dostępu do czatu grupowego')
-      ) {
-        this.snackbar.error('Jesteś zbanowany na czacie tego wydarzenia');
-      } else if (data.message) {
+      if (data.message) {
         this.snackbar.error(data.message);
-      }
-    });
-
-    this.bannedSub = this.chatService.onChatBanned().subscribe((banned) => {
-      if (banned) {
-        this.chatBanned.set(true);
-        this.chatDisabled.set(true);
-        this.snackbar.error('Jesteś zbanowany na czacie tego wydarzenia');
       }
     });
   }

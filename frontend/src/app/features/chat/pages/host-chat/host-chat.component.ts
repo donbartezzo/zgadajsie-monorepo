@@ -111,8 +111,6 @@ import { BaseChatComponent } from '../base-chat.component';
         [organizerId]="organizerId()"
         [currentUserId]="currentUserId"
         (closed)="showMembers.set(false)"
-        (memberBanned)="onMemberBanned($event)"
-        (memberUnbanned)="onMemberUnbanned($event)"
       ></app-chat-members-overlay>
     }
   `,
