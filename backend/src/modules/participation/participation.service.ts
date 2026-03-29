@@ -11,6 +11,7 @@ import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
 import { PaymentsService } from '../payments/payments.service';
 import { SlotService } from '../slots/slot.service';
+import { SystemSettingsService } from '../system-settings/system-settings.service';
 import { EnrollmentEligibilityService } from './enrollment-eligibility.service';
 import { isEventJoinable } from '../events/event-time-status.util';
 import { getEnrollmentPhase } from '../events/enrollment-phase.util';
@@ -51,6 +52,7 @@ export class ParticipationService {
     private paymentsService: PaymentsService,
     private slotService: SlotService,
     private eligibility: EnrollmentEligibilityService,
+    private systemSettingsService: SystemSettingsService,
   ) {}
 
   async join(eventId: string, userId: string, roleKey?: string) {
@@ -228,8 +230,8 @@ export class ParticipationService {
         waitingReason: isNewUser
           ? 'NEW_USER'
           : phase === 'PRE_ENROLLMENT'
-          ? 'PRE_ENROLLMENT'
-          : 'NO_SLOTS',
+            ? 'PRE_ENROLLMENT'
+            : 'NO_SLOTS',
       },
       include: { user: { select: USER_SELECT }, slot: true },
     });
@@ -465,6 +467,14 @@ export class ParticipationService {
     participationId: string,
     currentUserId: string,
   ): Promise<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
+    // Check if online payments are disabled
+    const settings = await this.systemSettingsService.getSettings();
+    if (settings.onlinePaymentsDisabled) {
+      throw new ForbiddenException(
+        'Płatności online są w tej chwili niedostępne. Skontaktuj się z organizatorem w celu dokonania płatności.',
+      );
+    }
+
     const participation = await this.prisma.eventParticipation.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },

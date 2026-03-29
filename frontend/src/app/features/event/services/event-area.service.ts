@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { ConfirmModalService } from '../../../shared/ui/confirm-modal/confirm-modal.service';
+import { GlobalInfoPageService } from '../../../shared/layouts/page-layout/global-info-page.service';
 import {
   applyProfileChangeToList,
   ProfileBroadcastService,
@@ -42,6 +43,7 @@ export class EventAreaService {
   private readonly overlays = inject(BottomOverlaysService);
   private readonly confirmModal = inject(ConfirmModalService);
   private readonly profileBroadcast = inject(ProfileBroadcastService);
+  private readonly globalInfoPage = inject(GlobalInfoPageService);
 
   private refreshInterval: ReturnType<typeof setInterval> | null = null;
   private initialized = false;
@@ -497,6 +499,17 @@ export class EventAreaService {
       },
       error: (err) => {
         this.joining.set(false);
+        if (err?.error?.code === 'ONLINE_PAYMENTS_DISABLED') {
+          this.globalInfoPage.show({
+            title: 'Płatności online są wyłączone',
+            description:
+              'Dla tego wydarzenia lub organizatora płatności online są obecnie wyłączone. Skontaktuj się z organizatorem, aby ustalić alternatywną formę płatności.',
+            icon: 'credit-card',
+            buttonLabel: 'Skontaktuj się z organizatorem',
+            buttonLink: '/contact',
+          });
+          return;
+        }
         this.snackbar.error(err.error?.message || 'Nie udało się zainicjować płatności');
       },
     });

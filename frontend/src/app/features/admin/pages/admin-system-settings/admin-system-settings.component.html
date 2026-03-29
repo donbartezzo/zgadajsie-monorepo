@@ -1,0 +1,112 @@
+<div class="admin-system-settings">
+  <div class="page-header">
+    <h1>Ustawienia systemowe</h1>
+    <p>Zarządzaj globalnymi ustawieniami aplikacji</p>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">
+      <app-icon name="loader" class="animate-spin"></app-icon>
+      <span>Ładowanie ustawień...</span>
+    </div>
+  } @else {
+    <div class="settings-grid">
+      <!-- Event Creation Restriction -->
+      <app-card class="setting-card">
+        <div class="setting-content">
+          <div class="setting-info">
+            <h3>Ograniczenie tworzenia wydarzeń</h3>
+            <p>
+              Gdy włączone, tylko wyznaczeni organizatorzy mogą tworzyć nowe wydarzenia. Zwykli użytkownicy zobaczą
+              komunikat z informacją o ograniczeniu.
+            </p>
+          </div>
+          <div class="setting-control">
+            <input
+              type="checkbox"
+              [checked]="eventCreationRestricted()"
+              (change)="updateEventCreationRestricted($event.target.checked)"
+              [disabled]="updating()"
+            />
+          </div>
+        </div>
+      </app-card>
+
+      <!-- Online Payments Disabled -->
+      <app-card class="setting-card">
+        <div class="setting-content">
+          <div class="setting-info">
+            <h3>Wyłączenie płatności online</h3>
+            <p>
+              Gdy włączone, płatności online są całkowicie wyłączone dla wszystkich użytkowników. Dotyczy to wszystkich
+              wydarzeń w systemie.
+            </p>
+          </div>
+          <div class="setting-control">
+            <input
+              type="checkbox"
+              [checked]="onlinePaymentsDisabled()"
+              (change)="updateOnlinePaymentsDisabled($event.target.checked)"
+              [disabled]="updating()"
+            />
+          </div>
+        </div>
+      </app-card>
+
+      <!-- Authorized Organizers -->
+      <app-card class="setting-card organizers-card">
+        <div class="organizers-header">
+          <div class="organizers-info">
+            <h3>Uprawnieni organizatorzy</h3>
+            <p>Lista użytkowników uprawnionych do tworzenia wydarzeń gdy ograniczenie jest włączone.</p>
+          </div>
+          <app-button appearance="solid" color="primary" (click)="openAddOrganizerModal()" [disabled]="updating()">
+            <app-icon name="plus" size="sm"></app-icon>
+            Dodaj organizatora
+          </app-button>
+        </div>
+
+        @if (authorizedOrganizers().length === 0) {
+          <div class="empty-state">
+            <app-icon name="users" size="lg" class="text-neutral-400"></app-icon>
+            <p>Brak uprawnionych organizatorów</p>
+            <small>Dodaj pierwszego organizatora, aby mógł tworzyć wydarzenia</small>
+          </div>
+        } @else {
+          <div class="organizers-list">
+            @for (organizer of authorizedOrganizers(); track organizer.id) {
+              <div class="organizer-item">
+                <div class="organizer-info">
+                  <div class="organizer-name">{{ organizer.user.displayName }}</div>
+                  <div class="organizer-email">{{ organizer.user.email }}</div>
+                  <div class="organizer-city">{{ getCityDisplayName(organizer) }}</div>
+                </div>
+                <app-button
+                  appearance="solid"
+                  color="danger"
+                  size="sm"
+                  (click)="removeAuthorizedOrganizer(organizer)"
+                  [disabled]="updating()"
+                >
+                  <app-icon name="trash" size="sm"></app-icon>
+                  Usuń
+                </app-button>
+              </div>
+            }
+          </div>
+        }
+      </app-card>
+    </div>
+  }
+
+  @if (updating()) {
+    <div class="updating-overlay">
+      <app-icon name="loader" class="animate-spin"></app-icon>
+      <span>Aktualizowanie...</span>
+    </div>
+  }
+
+  @if (showAddOrganizerModal()) {
+    <app-add-authorized-organizer-modal (closed)="closeAddOrganizerModal()" (success)="handleAddOrganizerSuccess()" />
+  }
+</div>

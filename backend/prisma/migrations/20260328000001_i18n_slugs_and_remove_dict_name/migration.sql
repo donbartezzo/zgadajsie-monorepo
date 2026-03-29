@@ -44,8 +44,8 @@ UPDATE "EventDiscipline" SET "slug" = 'darts'         WHERE "slug" = 'rzutki';
 UPDATE "EventDiscipline" SET "slug" = 'chess'         WHERE "slug" = 'szachy';
 UPDATE "EventDiscipline" SET "slug" = 'table-tennis'  WHERE "slug" = 'tenis-stolowy';
 -- Add missing disciplines (may already exist or not)
-INSERT INTO "EventDiscipline" ("slug") VALUES ('badminton')    ON CONFLICT DO NOTHING;
-INSERT INTO "EventDiscipline" ("slug") VALUES ('squash')       ON CONFLICT DO NOTHING;
+INSERT INTO "EventDiscipline" ("slug", "name") VALUES ('badminton', 'Badminton')    ON CONFLICT DO NOTHING;
+INSERT INTO "EventDiscipline" ("slug", "name") VALUES ('squash', 'Squash')       ON CONFLICT DO NOTHING;
 
 -- ─── EventFacility slugs ─────────────────────────────────────────────────────
 -- Update FK references in Event
@@ -68,10 +68,10 @@ UPDATE "EventFacility" SET "slug" = 'gym'               WHERE "slug" = 'silownia
 UPDATE "EventFacility" SET "slug" = 'pool'              WHERE "slug" = 'basen';
 UPDATE "EventFacility" SET "slug" = 'beach'             WHERE "slug" = 'plaza';
 -- Add missing facilities
-INSERT INTO "EventFacility" ("slug") VALUES ('gym')    ON CONFLICT DO NOTHING;
-INSERT INTO "EventFacility" ("slug") VALUES ('pool')   ON CONFLICT DO NOTHING;
-INSERT INTO "EventFacility" ("slug") VALUES ('park')   ON CONFLICT DO NOTHING;
-INSERT INTO "EventFacility" ("slug") VALUES ('beach')  ON CONFLICT DO NOTHING;
+INSERT INTO "EventFacility" ("slug", "name") VALUES ('gym', 'Gym')    ON CONFLICT DO NOTHING;
+INSERT INTO "EventFacility" ("slug", "name") VALUES ('pool', 'Pool')   ON CONFLICT DO NOTHING;
+INSERT INTO "EventFacility" ("slug", "name") VALUES ('park', 'Park')   ON CONFLICT DO NOTHING;
+INSERT INTO "EventFacility" ("slug", "name") VALUES ('beach', 'Beach')  ON CONFLICT DO NOTHING;
 
 -- ─── EventLevel slugs ────────────────────────────────────────────────────────
 -- Update FK references in Event

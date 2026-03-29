@@ -6,6 +6,7 @@ import { VouchersModule } from '../vouchers/vouchers.module';
 import { CoverImagesModule } from '../cover-images/cover-images.module';
 import { CitySubscriptionsModule } from '../city-subscriptions/city-subscriptions.module';
 import { SlotModule } from '../slots/slot.module';
+import { SystemSettingsModule } from '../system-settings/system-settings.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { SlotModule } from '../slots/slot.module';
     CoverImagesModule,
     CitySubscriptionsModule,
     SlotModule,
+    SystemSettingsModule,
   ],
   controllers: [EventsController],
   providers: [EventsService],

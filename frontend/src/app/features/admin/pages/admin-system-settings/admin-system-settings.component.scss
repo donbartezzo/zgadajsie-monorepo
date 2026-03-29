@@ -1,0 +1,103 @@
+.admin-system-settings {
+  @apply max-w-4xl mx-auto p-6;
+
+  .page-header {
+    @apply mb-8;
+
+    h1 {
+      @apply text-2xl font-bold text-neutral-900 mb-2;
+    }
+
+    p {
+      @apply text-neutral-600;
+    }
+  }
+
+  .loading {
+    @apply flex items-center justify-center py-12 gap-3 text-neutral-600;
+  }
+
+  .settings-grid {
+    @apply space-y-6;
+  }
+
+  .setting-card {
+    .setting-content {
+      @apply flex items-start justify-between gap-6;
+
+      .setting-info {
+        @apply flex-1;
+
+        h3 {
+          @apply text-lg font-semibold text-neutral-900 mb-2;
+        }
+
+        p {
+          @apply text-neutral-600 text-sm leading-relaxed;
+        }
+      }
+
+      .setting-control {
+        @apply flex-shrink-0 pt-1;
+      }
+    }
+  }
+
+  .organizers-card {
+    .organizers-header {
+      @apply flex items-start justify-between gap-4 mb-6;
+
+      .organizers-info {
+        @apply flex-1;
+
+        h3 {
+          @apply text-lg font-semibold text-neutral-900 mb-2;
+        }
+
+        p {
+          @apply text-neutral-600 text-sm leading-relaxed;
+        }
+      }
+    }
+
+    .empty-state {
+      @apply text-center py-8;
+
+      p {
+        @apply text-neutral-600 font-medium mb-2;
+      }
+
+      small {
+        @apply text-neutral-500;
+      }
+    }
+
+    .organizers-list {
+      @apply space-y-3;
+    }
+
+    .organizer-item {
+      @apply flex items-center justify-between p-4 bg-neutral-50 rounded-lg border border-neutral-200;
+
+      .organizer-info {
+        @apply flex-1;
+
+        .organizer-name {
+          @apply font-medium text-neutral-900;
+        }
+
+        .organizer-email {
+          @apply text-sm text-neutral-600;
+        }
+
+        .organizer-city {
+          @apply text-xs text-neutral-500 mt-1;
+        }
+      }
+    }
+  }
+
+  .updating-overlay {
+    @apply fixed inset-0 bg-white/80 flex items-center justify-center z-50 gap-3 text-neutral-600;
+  }
+}

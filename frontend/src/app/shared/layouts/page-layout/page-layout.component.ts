@@ -16,6 +16,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { LayoutConfigService, HeroVariant } from './layout-config.service';
+import { GlobalInfoPageService } from './global-info-page.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { nowInZone } from '@zgadajsie/shared';
@@ -27,6 +28,7 @@ import { BottomOverlaysService } from '../../overlay/ui/bottom-overlays/bottom-o
 import { NotificationAlertComponent } from './notification/notification-alert/notification-alert.component';
 import { NotificationOverlayComponent } from './notification/notification-overlay/notification-overlay.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
+import { InfoPageComponent } from '../../../features/info/pages/info-page/info-page.component';
 
 export interface RouteLayoutData {
   showHeader?: boolean;
@@ -56,6 +58,7 @@ const DEFAULT_ROUTE_DATA: RouteLayoutData = {
     CommonModule,
     IconComponent,
     NgTemplateOutlet,
+    InfoPageComponent,
     NotificationAlertComponent,
     NotificationOverlayComponent,
     FooterComponent,
@@ -71,6 +74,7 @@ export class PageLayoutComponent {
   private readonly overlays = inject(BottomOverlaysService);
   readonly notifStatus = inject(NotificationStatusService);
   readonly layoutConfig = inject(LayoutConfigService);
+  readonly globalInfoPage = inject(GlobalInfoPageService);
   readonly breadcrumb = inject(BreadcrumbService);
 
   // ── Route data → layout flags ──
@@ -98,9 +102,17 @@ export class PageLayoutComponent {
       this.layoutConfig.subtitle.set(data.subtitle ?? '');
     });
 
+    // ── Auto-hide info page on navigation ──
+    effect(() => {
+      // This effect runs whenever routeData changes (navigation)
+      this.routeData();
+      this.globalInfoPage.hide();
+    });
+
     this.router.events.pipe(takeUntilDestroyed()).subscribe((e) => {
       if (e instanceof NavigationStart) {
         this.layoutConfig.reset();
+        this.globalInfoPage.hide();
       }
       if (e instanceof NavigationEnd) {
         // setTimeout ensures Angular CD completes first → child effects configure layout

@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Event, EventListItem, Participation, ParticipantManageItem } from '../../shared/types';
+import { SystemSettingsService } from './system-settings.service';
 
 interface PaginatedEvents {
   data: EventListItem[];
@@ -22,6 +23,7 @@ interface EventQueryParams {
 @Injectable({ providedIn: 'root' })
 export class EventService {
   private readonly http = inject(HttpClient);
+  private readonly systemSettingsService = inject(SystemSettingsService);
   private readonly apiUrl = environment.apiUrl + '/events';
 
   getEvents(params?: EventQueryParams): Observable<PaginatedEvents> {
@@ -78,10 +80,37 @@ export class EventService {
   payParticipation(
     participationId: string,
   ): Observable<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
-    return this.http.post<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }>(
-      `${environment.apiUrl}/participations/${participationId}/pay`,
-      {},
-    );
+    return new Observable((observer) => {
+      this.systemSettingsService.getSettings().subscribe({
+        next: (settings) => {
+          if (settings.onlinePaymentsDisabled) {
+            observer.error({
+              status: 403,
+              code: 'ONLINE_PAYMENTS_DISABLED',
+              message:
+                'Płatności online są w tej chwili niedostępne. Skontaktuj się z organizatorem w celu dokonania płatności.',
+            });
+            return;
+          }
+
+          // If payments are enabled, proceed with the payment request
+          this.http
+            .post<{
+              paymentUrl?: string;
+              paymentId?: string;
+              paidByVoucher?: boolean;
+            }>(`${environment.apiUrl}/participations/${participationId}/pay`, {})
+            .subscribe({
+              next: (result) => observer.next(result),
+              error: (err) => observer.error(err),
+              complete: () => observer.complete(),
+            });
+        },
+        error: (err) => {
+          observer.error(err);
+        },
+      });
+    });
   }
 
   joinGuest(eventId: string, displayName: string): Observable<Participation> {

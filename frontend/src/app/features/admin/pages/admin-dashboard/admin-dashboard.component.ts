@@ -56,7 +56,7 @@ import { AdminService } from '../../../../core/services/admin.service';
             </div></app-card
           ></a
         >
-        <a routerLink="/admin/settings"
+        <a routerLink="/admin/system-settings"
           ><app-card
             ><div class="flex items-center gap-3">
               <app-icon name="settings" size="sm"></app-icon>

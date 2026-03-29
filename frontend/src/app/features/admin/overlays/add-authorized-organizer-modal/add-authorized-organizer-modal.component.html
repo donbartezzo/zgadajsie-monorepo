@@ -1,0 +1,106 @@
+<!-- Modal backdrop -->
+<div class="modal-backdrop" (click)="onCancel()" (keyup)="onCancel()" tabindex="-1"></div>
+
+<!-- Modal content -->
+<div class="modal-container">
+  <div class="add-organizer-modal">
+    <div class="modal-header">
+      <h2>Dodaj autoryzowanego organizatora</h2>
+      <p>Wybierz użytkownika, który będzie mógł tworzyć wydarzenia</p>
+    </div>
+
+    <div class="modal-content">
+      <!-- User Selection -->
+      <div class="form-section">
+        <label class="form-label" for="user-search">Użytkownik *</label>
+        <div class="user-search">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Szukaj po nazwie lub email..."
+            [(ngModel)]="selectedUserId"
+            id="user-search"
+            aria-label="Szukaj użytkownika"
+          />
+        </div>
+
+        @if (loading()) {
+          <div class="loading-state">
+            <app-icon name="loader" class="animate-spin"></app-icon>
+            <span>Ładowanie użytkowników...</span>
+          </div>
+        } @else if (filteredUsers().length === 0) {
+          <div class="empty-state">
+            <app-icon name="users" class="text-neutral-400"></app-icon>
+            <span>Brak użytkowników</span>
+          </div>
+        } @else {
+          <div class="user-list">
+            @for (user of filteredUsers(); track user.id) {
+              <div
+                class="user-item"
+                [class.selected]="selectedUserId() === user.id"
+                (click)="selectUser(user.id)"
+                (keyup.enter)="selectUser(user.id)"
+                tabindex="0"
+                role="option"
+                [attr.aria-selected]="selectedUserId() === user.id"
+              >
+                <div class="user-avatar">
+                  @if (user.avatarUrl) {
+                    <img [src]="user.avatarUrl" [alt]="user.displayName" />
+                  } @else {
+                    <div class="avatar-placeholder">
+                      {{ user.displayName.charAt(0).toUpperCase() }}
+                    </div>
+                  }
+                </div>
+                <div class="user-info">
+                  <div class="user-name">{{ user.displayName }}</div>
+                  <div class="user-email">{{ user.email }}</div>
+                  <div class="user-role">{{ user.role }}</div>
+                </div>
+                <div class="user-check">
+                  @if (selectedUserId() === user.id) {
+                    <app-icon name="check" color="success"></app-icon>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Selected User Summary -->
+      @if (selectedUserId()) {
+        @let selectedUser = filteredUsers().find(u => u.id === selectedUserId());
+        @if (selectedUser) {
+          <div class="selected-summary">
+            <h3>Wybrany użytkownik:</h3>
+            <div class="summary-item">
+              <span class="label">Nazwa:</span>
+              <span class="value">{{ selectedUser.displayName }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Email:</span>
+              <span class="value">{{ selectedUser.email }}</span>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <div class="modal-actions">
+      <app-button appearance="ghost" (click)="onCancel()" [disabled]="submitting()"> Anuluj </app-button>
+      <app-button
+        appearance="solid"
+        color="primary"
+        (click)="onSubmit()"
+        [disabled]="!selectedUserId() || submitting()"
+        [loading]="submitting()"
+      >
+        Dodaj organizatora
+      </app-button>
+    </div>
+  </div>
+</div>

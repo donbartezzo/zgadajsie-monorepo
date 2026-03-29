@@ -42,7 +42,7 @@ async function main() {
   // ─── Miasta ──────────────────────────────────────────────────────────────
   console.log('Tworzę miasta...');
   const city = await prisma.city.create({
-    data: { name: 'Zielona Góra', slug: 'zielona-gora' },
+    data: { name: 'Zielona Góra', slug: 'zielona-gora', isActive: true },
   });
 
   // ─── Dyscypliny ──────────────────────────────────────────────────────────
@@ -61,17 +61,17 @@ async function main() {
           },
         },
       },
-      { slug: 'volleyball', schema: null },
-      { slug: 'basketball', schema: null },
-      { slug: 'tennis', schema: null },
-      { slug: 'badminton', schema: null },
-      { slug: 'squash', schema: null },
-      { slug: 'running', schema: null },
-      { slug: 'cycling', schema: null },
-      { slug: 'swimming', schema: null },
-      { slug: 'darts', schema: null },
-      { slug: 'chess', schema: null },
-      { slug: 'table-tennis', schema: null },
+      { slug: 'volleyball' },
+      { slug: 'basketball' },
+      { slug: 'tennis' },
+      { slug: 'badminton' },
+      { slug: 'squash' },
+      { slug: 'running' },
+      { slug: 'cycling' },
+      { slug: 'swimming' },
+      { slug: 'darts' },
+      { slug: 'chess' },
+      { slug: 'table-tennis' },
     ].map((discipline) => prisma.eventDiscipline.create({ data: discipline })),
   );
 
