@@ -7,6 +7,7 @@ import {
   isDevMode,
   LOCALE_ID,
 } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { DATE_PIPE_DEFAULT_OPTIONS } from '@angular/common';
 import { APP_DEFAULT_TIMEZONE } from '@zgadajsie/shared';
 import {
@@ -22,7 +23,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { AuthService } from './core/auth/auth.service';
 import { AppTitleStrategy } from './core/services/app-title.strategy';
-import { provideTransloco } from '@jsverse/transloco';
+import { provideTransloco, TranslocoService } from '@jsverse/transloco';
 import { TranslocoInlineLoader } from './core/i18n/transloco-loader';
 
 export const appConfig: ApplicationConfig = {
@@ -54,6 +55,10 @@ export const appConfig: ApplicationConfig = {
       provide: LOCALE_ID,
       useValue: 'pl-PL',
     },
+    provideAppInitializer(() => {
+      const transloco = inject(TranslocoService);
+      return firstValueFrom(transloco.load(transloco.getDefaultLang()));
+    }),
     provideTransloco({
       config: {
         availableLangs: ['pl'],

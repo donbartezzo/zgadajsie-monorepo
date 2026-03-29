@@ -8,6 +8,7 @@ const translations: Record<string, Translation> = { pl };
 @Injectable({ providedIn: 'root' })
 export class TranslocoInlineLoader implements TranslocoLoader {
   getTranslation(lang: string): Observable<Translation> {
-    return of(translations[lang] ?? {});
+    const translation = translations[lang] ?? translations['pl'] ?? {};
+    return of(translation);
   }
 }

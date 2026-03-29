@@ -22,7 +22,16 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 import { EventListItem } from '../../../../shared/types';
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
-import { formatMonthShort, getDayOfMonth, formatDateLong, getDaysDiffTz } from '@zgadajsie/shared';
+import {
+  formatMonthShort,
+  getDayOfMonth,
+  formatDateLong,
+  getDaysDiffTz,
+  nowInZone,
+  daysFromNow,
+  createDateInZone,
+  toZonedDateTime,
+} from '@zgadajsie/shared';
 import { NotificationStatusService } from '../../../../core/services/notification-status.service';
 import { DateLabelsService } from '../../../../shared/services/date-labels.service';
 
@@ -80,15 +89,16 @@ export class EventsComponent implements OnInit, OnDestroy {
   readonly isLoggedIn = computed(() => this.auth.isLoggedIn());
 
   readonly dateRangeFrom = computed(() => {
-    const now = new Date();
+    const now = nowInZone().toJSDate();
     return {
       day: getDayOfMonth(now).toString(),
       month: formatMonthShort(now),
+      year: now.getFullYear(),
     };
   });
 
   readonly dateRangeTo = computed(() => {
-    const d = new Date(Date.now() + 7 * 86_400_000);
+    const d = daysFromNow(7);
     return {
       day: getDayOfMonth(d).toString(),
       month: formatMonthShort(d),
@@ -96,17 +106,17 @@ export class EventsComponent implements OnInit, OnDestroy {
   });
 
   readonly groupedEvents = computed(() => {
-    const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const now = nowInZone();
+    const todayStart = createDateInZone(now.year, now.month, now.day, 0, 0);
 
     const ongoing: EventListItem[] = [];
     const upcoming: EventListItem[] = [];
     const past: EventListItem[] = [];
 
     for (const event of this.events()) {
-      const start = new Date(event.startsAt).getTime();
-      const end = new Date(event.endsAt).getTime();
-      const nowMs = now.getTime();
+      const start = toZonedDateTime(event.startsAt).toJSDate().getTime();
+      const end = toZonedDateTime(event.endsAt).toJSDate().getTime();
+      const nowMs = now.toMillis();
 
       if (start <= nowMs && end > nowMs) {
         ongoing.push(event);
@@ -137,7 +147,7 @@ export class EventsComponent implements OnInit, OnDestroy {
       });
     }
 
-    const upcomingByDate = this.groupByDate(upcoming, todayStart);
+    const upcomingByDate = this.groupByDate([...ongoing, ...upcoming], todayStart.toJSDate());
     for (const g of upcomingByDate) {
       groups.push({ ...g, isPast: false, isOngoing: false });
     }
@@ -280,13 +290,13 @@ export class EventsComponent implements OnInit, OnDestroy {
     const todayKey = `${todayStart.getFullYear()}-${todayStart.getMonth()}-${todayStart.getDate()}`;
 
     for (const event of events) {
-      const d = new Date(event.startsAt);
-      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      const d = toZonedDateTime(event.startsAt);
+      const key = `${d.year}-${d.month - 1}-${d.day}`;
       const isToday = key === todayKey;
-      const diffDays = getDaysDiffTz(d, todayStart);
-      const shortLabel = this.dateLabels.getRelativeDateLabel(d, todayStart);
+      const diffDays = getDaysDiffTz(d.toJSDate(), todayStart);
+      const shortLabel = this.dateLabels.getRelativeDateLabel(d.toJSDate(), todayStart);
 
-      const dateStr = formatDateLong(d);
+      const dateStr = formatDateLong(d.toJSDate());
       const sub = `<span class="opacity-60 font-normal ml-1">· ${dateStr}</span>`;
       const label = diffDays === 0 ? shortLabel : `${shortLabel} ${sub}`;
 

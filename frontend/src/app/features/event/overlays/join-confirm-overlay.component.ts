@@ -13,6 +13,7 @@ import {
 import {
   getParticipationStatusDescription,
   ParticipationStatusOptions,
+  isEventJoinable,
 } from '../../../shared/utils';
 
 @Component({
@@ -178,9 +179,7 @@ export class JoinConfirmOverlayComponent {
     const e = this.event();
     if (!e) return false;
     // Can rejoin if event hasn't started yet and is not cancelled
-    const now = new Date();
-    const startsAt = new Date(e.startsAt);
-    return now < startsAt && e.status !== 'CANCELLED';
+    return isEventJoinable(e.startsAt, e.status);
   });
 
   readonly hasGuests = computed(() => {

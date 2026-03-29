@@ -58,7 +58,7 @@ class EventValidators {
     if (!control.value) return null;
 
     const startUtc = fromLocalInputValue(control.value);
-    const nowUtc = new Date().toISOString();
+    const nowUtc = nowInZone().toISO()!;
 
     return startUtc <= nowUtc ? { startDateInPast: true } : null;
   }
@@ -695,7 +695,7 @@ export class EventFormComponent implements OnInit {
 
     const startUtc = fromLocalInputValue(val.startsAt);
     const endUtc = fromLocalInputValue(val.endsAt);
-    const nowUtc = new Date().toISOString();
+    const nowUtc = nowInZone().toISO()!;
 
     if (startUtc <= nowUtc) {
       this.snackbar.error('Data rozpoczęcia musi być w przyszłości.');

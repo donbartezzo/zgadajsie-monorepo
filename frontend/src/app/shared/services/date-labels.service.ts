@@ -1,6 +1,11 @@
 import { inject, Injectable } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
-import { calculateDurationParts, getDaysDiffTz, EventCountdown } from '@zgadajsie/shared';
+import {
+  calculateDurationParts,
+  getDaysDiffTz,
+  nowInZone,
+  EventCountdown,
+} from '@zgadajsie/shared';
 import { getPolishPluralKey } from '../pipes/time-unit.pipe';
 
 @Injectable({ providedIn: 'root' })
@@ -33,7 +38,7 @@ export class DateLabelsService {
     return `${minutes} ${minuteAbbr}`;
   }
 
-  getRelativeDateLabel(date: Date | string, now: Date | string = new Date()): string {
+  getRelativeDateLabel(date: Date | string, now: Date | string = nowInZone().toJSDate()): string {
     const diff = getDaysDiffTz(date, now);
     if (diff === 0) return this.transloco.translate('time.relative.today');
     if (diff === 1) return this.transloco.translate('time.relative.tomorrow');

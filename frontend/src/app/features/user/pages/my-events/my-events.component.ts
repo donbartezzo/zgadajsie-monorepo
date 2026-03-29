@@ -10,8 +10,11 @@ import { UserService } from '../../../../core/services/user.service';
 import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { Event as EventModel } from '../../../../shared/types';
-import { EventStatus } from '@zgadajsie/shared';
-import { isEventJoinable } from '../../../../shared/utils/event-time-status.util';
+import { EventStatus, EventTimeStatus } from '@zgadajsie/shared';
+import {
+  isEventJoinable,
+  getEventTimeStatus,
+} from '../../../../shared/utils/event-time-status.util';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 
 @Component({
@@ -213,11 +216,9 @@ export class MyEventsComponent implements OnInit {
 
   getStatusLabel(e: EventModel): string {
     if (e.status === EventStatus.CANCELLED) return 'ODWOŁANE';
-    const now = new Date();
-    const start = new Date(e.startsAt);
-    const end = new Date(e.endsAt);
-    if (now >= start && now < end) return 'W TRAKCIE';
-    if (now >= end) return 'ZAKOŃCZONE';
+    const timeStatus = getEventTimeStatus(e.startsAt, e.endsAt, e.status);
+    if (timeStatus === EventTimeStatus.ONGOING) return 'W TRAKCIE';
+    if (timeStatus === EventTimeStatus.ENDED) return 'ZAKOŃCZONE';
     return 'AKTYWNE';
   }
 }

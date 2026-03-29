@@ -18,6 +18,7 @@ import { IconComponent } from '../../ui/icon/icon.component';
 import { LayoutConfigService, HeroVariant } from './layout-config.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { nowInZone } from '@zgadajsie/shared';
 import {
   NotificationState,
   NotificationStatusService,
@@ -163,7 +164,7 @@ export class PageLayoutComponent {
   // ── Internal state ──
   readonly heroHidden = signal(false);
   readonly coverImageValid = signal(false);
-  readonly currentYear = new Date().getFullYear();
+  readonly currentYear = nowInZone().year;
 
   private observer: IntersectionObserver | null = null;
 

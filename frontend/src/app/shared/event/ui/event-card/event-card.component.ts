@@ -22,6 +22,8 @@ import {
   getDayOfMonth,
   formatTime,
   MILLISECONDS_PER_HOUR,
+  nowInZone,
+  isSameDay,
 } from '@zgadajsie/shared';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { EventDurationPipe } from '../../../pipes/event-duration.pipe';
@@ -193,24 +195,18 @@ export class EventCardComponent implements OnDestroy {
   readonly dateLabel = input<string | null>(null);
   readonly selected = output<EventListItem>();
 
-  private readonly now = signal(new Date());
+  private readonly now = signal(nowInZone().toJSDate());
   private intervalId?: number;
 
   readonly coverUrl = computed(() => {
-    const coverImage = this.event().coverImage;
-    return coverImage?.filename && coverImage?.disciplineSlug
-      ? coverImageUrl(coverImage.disciplineSlug, coverImage.filename)
-      : '';
+    const event = this.event();
+    return coverImageUrl(event.discipline?.slug || '', event.coverImage?.filename || '');
   });
 
   readonly isToday = computed(() => {
-    const d = new Date(this.event().startsAt);
-    const now = new Date();
-    return (
-      d.getFullYear() === now.getFullYear() &&
-      d.getMonth() === now.getMonth() &&
-      d.getDate() === now.getDate()
-    );
+    const eventDate = this.event().startsAt;
+    const now = this.now();
+    return isSameDay(eventDate, now);
   });
 
   readonly countdown = computed(() =>
@@ -282,7 +278,7 @@ export class EventCardComponent implements OnDestroy {
   private startCountdown(): void {
     if (this.intervalId) return;
     this.intervalId = window.setInterval(() => {
-      this.now.set(new Date());
+      this.now.set(nowInZone().toJSDate());
     }, 60000);
   }
 

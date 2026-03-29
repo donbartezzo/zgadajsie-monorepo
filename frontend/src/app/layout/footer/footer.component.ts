@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { APP_BRAND } from '@zgadajsie/shared';
+import { APP_BRAND, nowInZone } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-footer',
@@ -11,5 +11,5 @@ import { APP_BRAND } from '@zgadajsie/shared';
 })
 export class FooterComponent {
   protected readonly APP_BRAND = APP_BRAND;
-  readonly currentYear = new Date().getFullYear();
+  readonly currentYear = nowInZone().year;
 }
