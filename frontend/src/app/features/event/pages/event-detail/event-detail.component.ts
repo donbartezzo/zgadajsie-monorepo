@@ -23,7 +23,7 @@ import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-over
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
 import { EventAnnouncement } from '../../../../shared/types';
-import { getEventCountdown, EventCountdown } from '../../../../shared/utils/date.utils';
+import { getEventCountdown, EventCountdown } from '@zgadajsie/shared';
 import { EventStatus } from '@zgadajsie/shared';
 import { EnrollmentStatusBannerComponent } from '../../ui/enrollment-status-banner/enrollment-status-banner.component';
 import { EventInfoGridComponent } from '../../../../shared/ui/event-info-grid/event-info-grid.component';
@@ -33,6 +33,7 @@ import { EventAnnouncementsComponent } from '../../ui/event-announcements/event-
 import { NotificationStatusService } from '../../../../core/services/notification-status.service';
 import { EventAreaService } from '../../services/event-area.service';
 import { formatEventAddress } from '../../../../shared/utils/event-format.utils';
+import { TimeUnitPipe } from '../../../../shared/pipes/time-unit.pipe';
 
 @Component({
   selector: 'app-event-detail',
@@ -50,6 +51,7 @@ import { formatEventAddress } from '../../../../shared/utils/event-format.utils'
     EnrollmentStatusBannerComponent,
     EventHeroSlotsComponent,
     EventInfoGridComponent,
+    TimeUnitPipe,
   ],
   templateUrl: './event-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -185,13 +187,13 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   private startCountdown(startsAt: string, endsAt: string): void {
     const lotteryThreshold = getLotteryThreshold(startsAt);
     const update = () => {
-      const now = new Date();
-      const result = getEventCountdown(startsAt, endsAt, now, Infinity);
+      const result = getEventCountdown(startsAt, endsAt, Infinity);
       this.countdown.set(result);
+      const now = new Date();
 
       if (now < lotteryThreshold && now < new Date(startsAt)) {
         const lotteryIso = lotteryThreshold.toISOString();
-        const lotteryResult = getEventCountdown(lotteryIso, startsAt, now, Infinity);
+        const lotteryResult = getEventCountdown(lotteryIso, startsAt, Infinity);
         this.lotteryCountdown.set(lotteryResult);
       } else {
         this.lotteryCountdown.set(null);

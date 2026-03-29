@@ -1,6 +1,24 @@
 import { Translation } from '@jsverse/transloco';
 
 export const pl: Translation = {
+  time: {
+    hour: 'godz.',
+    minute: 'min.',
+    days: { one: 'dzień', few: 'dni', many: 'dni' },
+    hours: { one: 'godzina', few: 'godziny', many: 'godzin' },
+    minutes: { one: 'minuta', few: 'minuty', many: 'minut' },
+    seconds: { one: 'sekunda', few: 'sekundy', many: 'sekund' },
+    relative: {
+      today: 'Dziś',
+      tomorrow: 'Jutro',
+      dayAfterTomorrow: 'Pojutrze',
+      nextWeek: 'Za tydzień',
+      inDays: 'Za {{ count }} dni',
+      yesterday: 'Wczoraj',
+      dayBeforeYesterday: 'Przedwczoraj',
+      daysAgo: '{{ count }} dni temu',
+    },
+  },
   dict: {
     discipline: {
       football: 'Piłka nożna',

@@ -31,7 +31,6 @@ import { DictionaryItem, City, Event, CoverImage, EventRoleConfig } from '../../
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 import {
   EventStatus,
-  getDisciplineSchema,
   DisciplineParticipantRoles,
   nowInZone,
   createDateInZone,
@@ -792,16 +791,17 @@ export class EventFormComponent implements OnInit {
       return;
     }
 
-    const schema = getDisciplineSchema(discipline.slug);
-    if (!schema?.participantRoles) {
-      this.disciplineRoles.set(null);
-      this.roleSlots.set([]);
-      this.rolesEnabled.set(false);
-      return;
-    }
+    this.dictService.getDisciplineSchema(discipline.slug).subscribe((schema: any) => {
+      if (!schema?.participantRoles) {
+        this.disciplineRoles.set(null);
+        this.roleSlots.set([]);
+        this.rolesEnabled.set(false);
+        return;
+      }
 
-    this.disciplineRoles.set(schema.participantRoles);
-    this.initializeRoleSlots(schema.participantRoles);
+      this.disciplineRoles.set(schema.participantRoles);
+      this.initializeRoleSlots(schema.participantRoles);
+    });
   }
 
   private initializeRoleSlots(roles: DisciplineParticipantRoles): void {

@@ -6,7 +6,7 @@ import {
   ParticipantManageItem,
   WaitingReason,
 } from '../../../types';
-import { EventCountdown } from '../../../utils/date.utils';
+import { EventCountdown } from '@zgadajsie/shared';
 
 export type OverlayType =
   | 'share'

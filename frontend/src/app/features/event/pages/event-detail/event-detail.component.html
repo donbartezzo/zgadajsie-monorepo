@@ -133,19 +133,19 @@
         <div class="grid grid-cols-4 gap-2 text-center">
           <div>
             <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.days }}</span>
-            <span class="block text-[11px] text-neutral-400">dni</span>
+            <span class="block text-[11px] text-neutral-400">{{ cd.days | timeUnit: 'days' }}</span>
           </div>
           <div>
             <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.hours }}</span>
-            <span class="block text-[11px] text-neutral-400">godzin</span>
+            <span class="block text-[11px] text-neutral-400">{{ cd.hours | timeUnit: 'hours' }}</span>
           </div>
           <div>
             <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.minutes }}</span>
-            <span class="block text-[11px] text-neutral-400">minut</span>
+            <span class="block text-[11px] text-neutral-400">{{ cd.minutes | timeUnit: 'minutes' }}</span>
           </div>
           <div>
             <span class="block text-3xl font-extrabold text-neutral-900">{{ cd.seconds }}</span>
-            <span class="block text-[11px] text-neutral-400">sekund</span>
+            <span class="block text-[11px] text-neutral-400">{{ cd.seconds | timeUnit: 'seconds' }}</span>
           </div>
         </div>
       </div>

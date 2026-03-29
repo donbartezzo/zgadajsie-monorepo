@@ -37,34 +37,8 @@ export interface DisciplineSchema {
 }
 
 /**
- * Statyczna konfiguracja schematów dyscyplin.
- * Klucz = slug dyscypliny (EventDiscipline.slug).
- */
-export const DISCIPLINE_SCHEMAS: Record<string, DisciplineSchema> = {
-  'pilka-nozna': {
-    basic: {
-      maxParticipants: 12,
-      minParticipants: 16,
-    },
-    participantRoles: {
-      default: { key: 'pilkarz', title: 'Piłkarz', desc: 'zawodnik grający w polu' },
-      special: [
-        { key: 'bramkarz', title: 'Bramkarz', desc: 'zawodnik stojący w bramce', slots: 2 },
-      ],
-    },
-  },
-};
-
-/**
- * Pobierz schemat dyscypliny po slug.
- */
-export function getDisciplineSchema(slug: string): DisciplineSchema | null {
-  return DISCIPLINE_SCHEMAS[slug] ?? null;
-}
-
-/**
  * Sprawdź czy dyscyplina ma zdefiniowane role uczestników.
  */
-export function hasParticipantRoles(slug: string): boolean {
-  return !!DISCIPLINE_SCHEMAS[slug]?.participantRoles;
+export function hasParticipantRoles(schema: DisciplineSchema | null): boolean {
+  return !!schema?.participantRoles;
 }

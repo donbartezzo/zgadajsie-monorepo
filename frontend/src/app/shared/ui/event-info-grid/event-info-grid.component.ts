@@ -7,7 +7,7 @@ import {
   formatEventAgeRange,
   formatEventAddress,
 } from '../../utils/event-format.utils';
-import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_MINUTE } from '@zgadajsie/shared';
+import { EventDurationPipe } from '../../pipes/event-duration.pipe';
 
 export type EventInfoFieldKey =
   | 'date'
@@ -24,7 +24,7 @@ export type EventInfoFieldKey =
 
 @Component({
   selector: 'app-event-info-grid',
-  imports: [CommonModule, DatePipe, IconComponent],
+  imports: [CommonModule, DatePipe, IconComponent, EventDurationPipe],
   templateUrl: './event-info-grid.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -36,28 +36,6 @@ export class EventInfoGridComponent {
   readonly addressClicked = output<void>();
 
   readonly fullAddress = computed(() => formatEventAddress(this.event()?.address));
-  readonly duration = computed(() => {
-    const startsAt = this.event()?.startsAt;
-    const endsAt = this.event()?.endsAt;
-    if (!startsAt || !endsAt) return '';
-
-    const start = new Date(startsAt);
-    const end = new Date(endsAt);
-    const diffMs = end.getTime() - start.getTime();
-
-    if (diffMs <= 0) return '';
-
-    const hours = Math.floor(diffMs / MILLISECONDS_PER_HOUR);
-    const minutes = Math.floor((diffMs % MILLISECONDS_PER_HOUR) / MILLISECONDS_PER_MINUTE);
-
-    if (hours > 0 && minutes > 0) {
-      return `${hours}h ${minutes}min`;
-    } else if (hours > 0) {
-      return `${hours}h`;
-    } else {
-      return `${minutes}min`;
-    }
-  });
   readonly genderLabel = computed(() => formatEventGender(this.event()?.gender));
   readonly ageRange = computed(() => {
     const e = this.event();

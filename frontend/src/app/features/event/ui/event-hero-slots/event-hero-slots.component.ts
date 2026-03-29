@@ -4,6 +4,7 @@ import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layo
 import { DateBadgeComponent } from '../../../../shared/event/ui/date-badge/date-badge.component';
 import { Event as EventModel } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
+import { formatMonthShort, getDayOfMonth, formatTime } from '@zgadajsie/shared';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
@@ -49,22 +50,19 @@ export class EventHeroSlotsComponent {
   readonly eventMonth = computed(() => {
     const e = this.event();
     if (!e) return '';
-    return new Date(e.startsAt).toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase();
+    return formatMonthShort(e.startsAt).toUpperCase();
   });
 
   readonly eventDay = computed(() => {
     const e = this.event();
     if (!e) return '';
-    return new Date(e.startsAt).getDate().toString();
+    return getDayOfMonth(e.startsAt).toString();
   });
 
   readonly eventStartTime = computed(() => {
     const e = this.event();
     if (!e) return '';
-    return new Date(e.startsAt).toLocaleTimeString('pl-PL', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return formatTime(e.startsAt);
   });
 
   constructor() {

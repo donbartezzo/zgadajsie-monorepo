@@ -49,19 +49,30 @@ async function main() {
   console.log('Tworzę dyscypliny...');
   const disciplines = await Promise.all(
     [
-      'football',
-      'volleyball',
-      'basketball',
-      'tennis',
-      'badminton',
-      'squash',
-      'running',
-      'cycling',
-      'swimming',
-      'darts',
-      'chess',
-      'table-tennis',
-    ].map((slug) => prisma.eventDiscipline.create({ data: { slug } })),
+      {
+        slug: 'football',
+        schema: {
+          basic: { maxParticipants: 12, minParticipants: 16 },
+          participantRoles: {
+            default: { key: 'pilkarz', title: 'Piłkarz', desc: 'zawodnik grający w polu' },
+            special: [
+              { key: 'bramkarz', title: 'Bramkarz', desc: 'zawodnik stojący w bramce', slots: 2 },
+            ],
+          },
+        },
+      },
+      { slug: 'volleyball', schema: null },
+      { slug: 'basketball', schema: null },
+      { slug: 'tennis', schema: null },
+      { slug: 'badminton', schema: null },
+      { slug: 'squash', schema: null },
+      { slug: 'running', schema: null },
+      { slug: 'cycling', schema: null },
+      { slug: 'swimming', schema: null },
+      { slug: 'darts', schema: null },
+      { slug: 'chess', schema: null },
+      { slug: 'table-tennis', schema: null },
+    ].map((discipline) => prisma.eventDiscipline.create({ data: discipline })),
   );
 
   // ─── Obiekty ─────────────────────────────────────────────────────────────

@@ -151,6 +151,7 @@ model City {
 
 model EventDiscipline {
   slug        String       @id
+  schema      Json?        // Schemat dyscypliny (basic config, participant roles, etc.)
   coverImages CoverImage[]
   events      Event[]
 }

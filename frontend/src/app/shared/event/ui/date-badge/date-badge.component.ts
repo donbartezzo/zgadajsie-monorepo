@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 type DateBadgeSize = 'sm' | 'md' | 'lg';
 
 @Component({
   selector: 'app-date-badge',
-  imports: [CommonModule],
+  imports: [CommonModule, TranslocoPipe],
   template: `
     <div
       [class]="
@@ -37,7 +38,7 @@ type DateBadgeSize = 'sm' | 'md' | 'lg';
             ? 'text-[9px] text-neutral-400'
             : 'text-[10px] text-neutral-400')
         "
-        >godz.</span
+        >{{ 'time.hour' | transloco }}</span
       >
       <span
         [class]="

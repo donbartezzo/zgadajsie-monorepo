@@ -22,9 +22,9 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 import { EventListItem } from '../../../../shared/types';
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
-import { getRelativeDateLabel } from '../../../../shared/utils/date.utils';
 import { formatMonthShort, getDayOfMonth, formatDateLong, getDaysDiffTz } from '@zgadajsie/shared';
 import { NotificationStatusService } from '../../../../core/services/notification-status.service';
+import { DateLabelsService } from '../../../../shared/services/date-labels.service';
 
 interface EventGroup {
   dateKey: string;
@@ -68,6 +68,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   private readonly snackbar = inject(SnackbarService);
   private readonly notifStatus = inject(NotificationStatusService);
   private readonly appTitle = inject(AppTitleService);
+  private readonly dateLabels = inject(DateLabelsService);
 
   readonly events = signal<EventListItem[]>([]);
   readonly isLoading = signal(true);
@@ -283,7 +284,7 @@ export class EventsComponent implements OnInit, OnDestroy {
       const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
       const isToday = key === todayKey;
       const diffDays = getDaysDiffTz(d, todayStart);
-      const shortLabel = getRelativeDateLabel(d, todayStart);
+      const shortLabel = this.dateLabels.getRelativeDateLabel(d, todayStart);
 
       const dateStr = formatDateLong(d);
       const sub = `<span class="opacity-60 font-normal ml-1">· ${dateStr}</span>`;

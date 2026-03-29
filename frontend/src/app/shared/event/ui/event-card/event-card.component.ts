@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   effect,
+  inject,
   input,
   OnDestroy,
   output,
@@ -15,14 +16,16 @@ import { DateBadgeComponent } from '../date-badge/date-badge.component';
 import { EventStatusBadgeComponent } from '../event-status-badge/event-status-badge.component';
 import { EventListItem } from '../../../types';
 import { coverImageUrl } from '../../../types/cover-image.interface';
-import { getEventCountdown, getRelativeDateLabel } from '../../../utils/date.utils';
 import {
-  MILLISECONDS_PER_HOUR,
+  getEventCountdown,
   formatMonthShort,
   getDayOfMonth,
   formatTime,
+  MILLISECONDS_PER_HOUR,
 } from '@zgadajsie/shared';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { EventDurationPipe } from '../../../pipes/event-duration.pipe';
+import { DateLabelsService } from '../../../services/date-labels.service';
 
 @Component({
   selector: 'app-event-card',
@@ -33,6 +36,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
     DateBadgeComponent,
     EventStatusBadgeComponent,
     TranslocoPipe,
+    EventDurationPipe,
   ],
   template: `
     @let _event = event();
@@ -67,7 +71,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
           } @else if (_countdown) {
             <app-event-status-badge
               [variant]="_countdown.isUrgent ? 'countdown-urgent' : 'countdown-soon'"
-              [label]="_countdown.label"
+              [label]="countdownLabel()"
             />
           } @else {
             <app-event-status-badge variant="date" [label]="badgeLabel()" />
@@ -119,7 +123,9 @@ import { TranslocoPipe } from '@jsverse/transloco';
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
           <span class="flex items-center gap-1">
             <app-icon name="clock" size="xs" color="neutral" muted="light" />
-            {{ eventStartTime() }}–{{ eventEndTime() }} ({{ duration() }})
+            {{ eventStartTime() }}–{{ eventEndTime() }} ({{
+              event().startsAt | eventDuration: event().endsAt
+            }})
           </span>
           <span class="flex items-center gap-1">
             <app-icon name="users" size="xs" color="neutral" muted="light" />
@@ -180,6 +186,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventCardComponent implements OnDestroy {
+  private readonly dateLabels = inject(DateLabelsService);
+
   readonly event = input.required<EventListItem>();
   readonly isOngoing = input(false);
   readonly dateLabel = input<string | null>(null);
@@ -206,7 +214,7 @@ export class EventCardComponent implements OnDestroy {
   });
 
   readonly countdown = computed(() =>
-    getEventCountdown(this.event().startsAt, this.event().endsAt, this.now()),
+    getEventCountdown(this.event().startsAt, this.event().endsAt),
   );
 
   readonly borderClass = computed(() => {
@@ -226,14 +234,10 @@ export class EventCardComponent implements OnDestroy {
 
   readonly eventEndTime = computed(() => formatTime(this.event().endsAt));
 
-  readonly duration = computed(() => {
-    const start = new Date(this.event().startsAt).getTime();
-    const end = new Date(this.event().endsAt).getTime();
-    const mins = Math.round((end - start) / 60000);
-    if (mins < 60) return `${mins} min`;
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
-    return m > 0 ? `${h}h ${m}min` : `${h}h`;
+  readonly countdownLabel = computed(() => {
+    const cd = this.countdown();
+    if (!cd) return '';
+    return this.dateLabels.formatCountdownLabel(cd);
   });
 
   readonly genderLabel = computed(() => {
@@ -253,7 +257,7 @@ export class EventCardComponent implements OnDestroy {
   readonly badgeLabel = computed(() => {
     const label = this.dateLabel();
     if (label) return label;
-    return getRelativeDateLabel(new Date(this.event().startsAt));
+    return this.dateLabels.getRelativeDateLabel(new Date(this.event().startsAt));
   });
 
   constructor() {

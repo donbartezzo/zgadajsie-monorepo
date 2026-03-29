@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { City, DictionaryItem } from '../../shared/types';
+import { DisciplineSchema } from '@zgadajsie/shared';
 
 @Injectable({ providedIn: 'root' })
 export class DictionaryService {
@@ -27,5 +28,9 @@ export class DictionaryService {
 
   getCityBySlug(slug: string): Observable<City> {
     return this.http.get<City>(`${this.apiUrl}/cities/${slug}`);
+  }
+
+  getDisciplineSchema(slug: string): Observable<DisciplineSchema | null> {
+    return this.http.get<DisciplineSchema | null>(`${this.apiUrl}/disciplines/${slug}/schema`);
   }
 }

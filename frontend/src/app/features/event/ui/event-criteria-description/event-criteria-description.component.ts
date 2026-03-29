@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { Event as EventModel } from '../../../../shared/types';
 import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.component';
 import { formatTime, formatDateFull, formatDayOfWeek, isSameDay } from '@zgadajsie/shared';
+import { DateLabelsService } from '../../../../shared/services/date-labels.service';
 import { TranslocoService } from '@jsverse/transloco';
 
 interface CriteriaItem {
@@ -36,6 +37,7 @@ interface CriteriaItem {
 })
 export class EventCriteriaDescriptionComponent {
   private readonly transloco = inject(TranslocoService);
+  private readonly dateLabels = inject(DateLabelsService);
 
   readonly event = input.required<EventModel>();
 
@@ -136,18 +138,23 @@ export class EventCriteriaDescriptionComponent {
     const dateStr = formatDateFull(e.startsAt);
     const startTime = formatTime(e.startsAt);
 
-    let text = `Rozpoczyna się o godz. <strong>${startTime}</strong> w <u>${dayName}</u> <strong>${dateStr}</strong>`;
+    let text = `Rozpoczyna się o ${this.transloco.translate('time.hour')} <strong>${startTime}</strong> w <u>${dayName}</u> <strong>${dateStr}</strong>`;
 
+    // Dodaj czas trwania
     if (e.endsAt) {
       const endTime = formatTime(e.endsAt);
       const sameDay = isSameDay(e.startsAt, e.endsAt);
 
+      // Użyj shared helper do duration
+      const durationText = this.dateLabels.formatDuration(e.startsAt, e.endsAt);
+      const durationWithParens = durationText ? ` (${durationText})` : '';
+
       if (sameDay) {
-        text += ` i trwa do godz. <strong>${endTime}</strong>.`;
+        text += ` i trwa do ${this.transloco.translate('time.hour')} <strong>${endTime}</strong>${durationWithParens}.`;
       } else {
         const endDayName = this.getDayOfWeekAccusative(e.endsAt);
         const endDateStr = formatDateFull(e.endsAt);
-        text += ` i trwa do godz. <strong>${endTime}</strong> w <strong>${endDayName}</strong> <strong>${endDateStr}</strong>.`;
+        text += ` i trwa do <strong>${endTime}</strong> w <u>${endDayName}</u> <strong>${endDateStr}</strong>${durationWithParens}.`;
       }
     } else {
       text += '.';

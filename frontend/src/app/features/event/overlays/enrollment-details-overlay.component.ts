@@ -1,12 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { PRE_ENROLLMENT_HOURS, EventTimeStatus } from '@zgadajsie/shared';
+import { PRE_ENROLLMENT_HOURS, EventTimeStatus, EventCountdown } from '@zgadajsie/shared';
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { SemanticColor } from '../../../shared/types/colors';
 import { EnrollmentPhase } from '../../../shared/types/event.interface';
 import { getLotteryThreshold } from '../../../shared/utils/enrollment-phase.util';
-import { EventCountdown } from '../../../shared/utils/date.utils';
+import { TranslocoService } from '@jsverse/transloco';
+import { TimeUnitPipe } from '../../../shared/pipes/time-unit.pipe';
 
 interface StepConfig {
   icon: string;
@@ -17,7 +18,7 @@ interface StepConfig {
 
 @Component({
   selector: 'app-enrollment-details-overlay',
-  imports: [IconComponent, BottomOverlayComponent, DatePipe],
+  imports: [IconComponent, BottomOverlayComponent, DatePipe, TimeUnitPipe],
   template: `
     <app-bottom-overlay
       [open]="open()"
@@ -53,19 +54,27 @@ interface StepConfig {
             <div class="grid grid-cols-4 gap-2 text-center mt-3">
               <div>
                 <span class="block text-2xl font-extrabold text-info-600">{{ lcd.days }}</span>
-                <span class="block text-[10px] text-neutral-400">dni</span>
+                <span class="block text-[10px] text-neutral-400">{{
+                  lcd.days | timeUnit: 'days'
+                }}</span>
               </div>
               <div>
                 <span class="block text-2xl font-extrabold text-info-600">{{ lcd.hours }}</span>
-                <span class="block text-[10px] text-neutral-400">godzin</span>
+                <span class="block text-[10px] text-neutral-400">{{
+                  lcd.hours | timeUnit: 'hours'
+                }}</span>
               </div>
               <div>
                 <span class="block text-2xl font-extrabold text-info-600">{{ lcd.minutes }}</span>
-                <span class="block text-[10px] text-neutral-400">minut</span>
+                <span class="block text-[10px] text-neutral-400">{{
+                  lcd.minutes | timeUnit: 'minutes'
+                }}</span>
               </div>
               <div>
                 <span class="block text-2xl font-extrabold text-info-600">{{ lcd.seconds }}</span>
-                <span class="block text-[10px] text-neutral-400">sekund</span>
+                <span class="block text-[10px] text-neutral-400">{{
+                  lcd.seconds | timeUnit: 'seconds'
+                }}</span>
               </div>
             </div>
           }
@@ -160,6 +169,8 @@ interface StepConfig {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EnrollmentDetailsOverlayComponent {
+  private readonly transloco = inject(TranslocoService);
+
   // ── Inputs ──
   readonly open = input(false);
   readonly enrollmentPhase = input<EnrollmentPhase | null>(null);
@@ -259,7 +270,7 @@ export class EnrollmentDetailsOverlayComponent {
     const phase = this.enrollmentPhase();
     if (phase === 'PRE_ENROLLMENT') {
       return (
-        `W tej fazie możesz zgłosić chęć udziału. Przydział miejsc odbywa się automatycznie ok. ${PRE_ENROLLMENT_HOURS} godz. przed rozpoczęciem wydarzenia: ` +
+        `W tej fazie możesz zgłosić chęć udziału. Przydział miejsc odbywa się automatycznie ok. ${PRE_ENROLLMENT_HOURS} ${this.transloco.translate('time.hour')} przed rozpoczęciem wydarzenia: ` +
         `jeśli zgłoszonych osób będzie więcej niż dostępnych miejsc, odbędzie się losowanie; w przeciwnym razie wszyscy zgłoszeni otrzymają miejsca.`
       );
     }
@@ -329,7 +340,7 @@ export class EnrollmentDetailsOverlayComponent {
       },
       {
         icon: 'shuffle',
-        label: `Losowanie miejsc - ok. ${PRE_ENROLLMENT_HOURS} godz. przed startem wydarzenia`,
+        label: `Losowanie miejsc - ok. ${PRE_ENROLLMENT_HOURS} ${this.transloco.translate('time.hour')} przed startem wydarzenia`,
         active: isLottery,
         done: isOpen,
       },
@@ -408,7 +419,7 @@ export class EnrollmentDetailsOverlayComponent {
       notes.push('Zgłoszenie wstępne nie gwarantuje miejsca - o przydziale decyduje losowanie.');
       notes.push('Lista uczestników jest ukryta do czasu zakończenia losowania.');
       notes.push(
-        `Losowanie i otwarcie zapisów następuje zawsze ok. ${PRE_ENROLLMENT_HOURS} godz. przed startem wydarzenia.`,
+        `Losowanie i otwarcie zapisów następuje zawsze ok. ${PRE_ENROLLMENT_HOURS} ${this.transloco.translate('time.hour')} przed startem wydarzenia.`,
       );
     }
     if (phase === 'LOTTERY_PENDING') {
