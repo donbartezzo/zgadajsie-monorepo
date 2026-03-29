@@ -9,7 +9,6 @@ import {
   MILLISECONDS_PER_HOUR,
   EventGender,
   EventVisibility,
-  PaymentStatus,
   NotificationKind,
 } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
@@ -46,10 +45,8 @@ export class EventsService {
 
   async create(organizerId: string, dto: CreateEventDto) {
     // Check if user is authorized to create events
-    const isAuthorized = await this.systemSettingsService.isUserAuthorizedToCreateEvents(
-      organizerId,
-      dto.citySlug,
-    );
+    const isAuthorized =
+      await this.systemSettingsService.isUserAuthorizedToCreateEvents(organizerId);
 
     if (!isAuthorized) {
       throw new ForbiddenException(

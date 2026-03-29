@@ -685,10 +685,9 @@ export class ParticipationService {
     const roleConfig = event.roleConfig as unknown as EventRoleConfig | null;
 
     // Reset to wanting-in state (update roleKey if provided)
-    const updated = await this.prisma.eventParticipation.update({
+    await this.prisma.eventParticipation.update({
       where: { id: participationId },
       data: { wantsIn: true, withdrawnBy: null, roleKey },
-      include: { user: { select: USER_SELECT }, slot: true },
     });
 
     // Organizer always gets auto-confirmed slot on rejoin

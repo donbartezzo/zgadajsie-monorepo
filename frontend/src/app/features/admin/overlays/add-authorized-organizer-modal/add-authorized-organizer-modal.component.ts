@@ -1,8 +1,6 @@
-import { Component, effect, signal, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { inject } from '@angular/core';
-import { ChangeDetectionStrategy } from '@angular/core';
 import { SystemSettingsService } from '../../../../core/services/system-settings.service';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';

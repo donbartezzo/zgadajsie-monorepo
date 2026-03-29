@@ -90,7 +90,7 @@ export class SystemSettingsService {
     });
   }
 
-  async isUserAuthorizedToCreateEvents(userId: string, citySlug?: string): Promise<boolean> {
+  async isUserAuthorizedToCreateEvents(userId: string): Promise<boolean> {
     const settings = await this.getSettings();
 
     if (!settings.eventCreationRestricted) {
