@@ -9,4 +9,14 @@ export class AppController {
   getData() {
     return this.appService.getData();
   }
+
+  @Get('health')
+  getHealth() {
+    return this.appService.getHealth();
+  }
+
+  @Get('config')
+  getClientConfig() {
+    return this.appService.getClientConfig();
+  }
 }

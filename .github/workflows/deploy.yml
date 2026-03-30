@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main, MVP, dev]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build backend
+        run: pnpm nx build backend
+
+      - name: Build frontend (staging)
+        run: pnpm nx build frontend --configuration=staging
+
+      - name: Test backend
+        run: pnpm nx test backend --passWithNoTests
+
+      - name: Test frontend
+        run: pnpm nx test frontend --passWithNoTests

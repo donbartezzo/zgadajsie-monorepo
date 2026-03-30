@@ -24,6 +24,7 @@ export class ChatService {
   private privateMessageSubject = new Subject<PrivateChatMessage>();
   private privateTypingSubject = new Subject<{ userId: string; displayName: string }>();
   private errorMessageSubject = new Subject<{ type: string; message: string }>();
+  private readonly socketBaseUrl = typeof window !== 'undefined' ? window.location.origin : '';
 
   // ─── Group Chat ─────────────────────────────────────────────────────────────
 
@@ -167,7 +168,7 @@ export class ChatService {
   }
 
   private createSocket(): Socket {
-    const socket = io(`${environment.wsUrl}/chat`, {
+    const socket = io(`${this.socketBaseUrl}/chat`, {
       auth: {
         token: this.authService.getAccessToken(),
         userId: this.authService.currentUser()?.id,
