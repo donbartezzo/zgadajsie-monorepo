@@ -39,14 +39,12 @@ COPY --from=builder /app/dist/backend/package.json ./package.json
 # prisma generate w postinstall i szuka go w ./prisma/schema.prisma
 COPY --from=builder /app/dist/backend/prisma ./prisma
 
-# Instaluj prod deps bez workspace config — ignoredBuiltDependencies NIE obowiązuje,
-# więc bcrypt/sharp/prisma pobierają swoje natywne binaries dla linux
-RUN pnpm install --prod --no-frozen-lockfile
-
-# Pakiety nieujęte przez Nx generatePackageJson (nie są bezpośrednimi importami w kodzie):
+# Instaluj prod deps + pakiety nieujęte przez Nx generatePackageJson:
 # - prisma: CLI do migracji w docker-entrypoint.sh
 # - tslib: runtime helper TypeScript (importHelpers:true w tsconfig.base.json)
-RUN pnpm add prisma@5.22.0 tslib@2
+RUN pnpm install --prod --no-frozen-lockfile && \
+    pnpm add prisma@5.22.0 tslib@2 && \
+    ./node_modules/.bin/prisma generate --schema ./prisma/schema.prisma
 
 # Zbudowana aplikacja
 COPY --from=builder /app/dist/backend/main.js ./main.js
