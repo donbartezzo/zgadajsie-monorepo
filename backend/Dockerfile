@@ -43,9 +43,10 @@ COPY --from=builder /app/dist/backend/prisma ./prisma
 # więc bcrypt/sharp/prisma pobierają swoje natywne binaries dla linux
 RUN pnpm install --prod --no-frozen-lockfile
 
-# prisma CLI nie jest w Nx-generowanym package.json (nie jest importowany w kodzie),
-# ale jest wymagany przez docker-entrypoint.sh do uruchamiania migracji
-RUN pnpm add prisma@5.22.0
+# Pakiety nieujęte przez Nx generatePackageJson (nie są bezpośrednimi importami w kodzie):
+# - prisma: CLI do migracji w docker-entrypoint.sh
+# - tslib: runtime helper TypeScript (importHelpers:true w tsconfig.base.json)
+RUN pnpm add prisma@5.22.0 tslib@2
 
 # Zbudowana aplikacja
 COPY --from=builder /app/dist/backend/main.js ./main.js
