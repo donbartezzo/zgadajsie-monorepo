@@ -28,6 +28,8 @@ FROM node:24-slim AS runner
 
 WORKDIR /app
 
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 RUN npm install -g pnpm@10
 
 # package.json wygenerowany przez nx generatePackageJson (tylko prod deps)
