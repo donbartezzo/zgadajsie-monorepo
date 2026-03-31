@@ -1,14 +1,9 @@
-name: CI/CD
+name: CI
 
 on:
   push:
     branches: [main, MVP, dev]
   pull_request:
-
-env:
-  REGISTRY: ghcr.io
-  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
-  FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend
 
 jobs:
   ci:
@@ -40,51 +35,3 @@ jobs:
 
       - name: Test frontend
         run: pnpm nx test frontend --passWithNoTests
-
-  deploy:
-    needs: ci
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push backend image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: backend/Dockerfile
-          push: true
-          tags: |
-            ${{ env.BACKEND_IMAGE }}:latest
-            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
-
-      - name: Build and push frontend image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: frontend/Dockerfile
-          push: true
-          tags: |
-            ${{ env.FRONTEND_IMAGE }}:latest
-            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
-
-      - name: Deploy backend via Coolify
-        run: |
-          curl -s -X GET "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_BACKEND_UUID }}" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
-
-      - name: Deploy frontend via Coolify
-        run: |
-          curl -s -X GET "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_FRONTEND_UUID }}" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
