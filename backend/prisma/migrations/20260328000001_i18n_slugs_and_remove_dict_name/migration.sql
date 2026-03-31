@@ -43,6 +43,10 @@ UPDATE "EventDiscipline" SET "slug" = 'swimming'      WHERE "slug" = 'plywanie';
 UPDATE "EventDiscipline" SET "slug" = 'darts'         WHERE "slug" = 'rzutki';
 UPDATE "EventDiscipline" SET "slug" = 'chess'         WHERE "slug" = 'szachy';
 UPDATE "EventDiscipline" SET "slug" = 'table-tennis'  WHERE "slug" = 'tenis-stolowy';
+
+-- Drop name column before INSERT (INSERT only provides slug)
+ALTER TABLE "EventDiscipline" DROP COLUMN IF EXISTS "name";
+
 -- Add missing disciplines (may already exist or not)
 INSERT INTO "EventDiscipline" ("slug") VALUES ('badminton')    ON CONFLICT DO NOTHING;
 INSERT INTO "EventDiscipline" ("slug") VALUES ('squash')       ON CONFLICT DO NOTHING;
@@ -67,6 +71,10 @@ UPDATE "EventFacility" SET "slug" = 'stadium'           WHERE "slug" = 'stadion'
 UPDATE "EventFacility" SET "slug" = 'gym'               WHERE "slug" = 'silownia';
 UPDATE "EventFacility" SET "slug" = 'pool'              WHERE "slug" = 'basen';
 UPDATE "EventFacility" SET "slug" = 'beach'             WHERE "slug" = 'plaza';
+
+-- Drop name column before INSERT
+ALTER TABLE "EventFacility" DROP COLUMN IF EXISTS "name";
+
 -- Add missing facilities
 INSERT INTO "EventFacility" ("slug") VALUES ('gym')    ON CONFLICT DO NOTHING;
 INSERT INTO "EventFacility" ("slug") VALUES ('pool')   ON CONFLICT DO NOTHING;
@@ -93,6 +101,4 @@ UPDATE "EventLevel" SET "slug" = 'advanced'      WHERE "slug" = 'zaawansowany';
 UPDATE "EventLevel" SET "slug" = 'professional'  WHERE "slug" = 'zawodowy';
 
 -- ─── Drop name columns ────────────────────────────────────────────────────────
-ALTER TABLE "EventDiscipline" DROP COLUMN IF EXISTS "name";
-ALTER TABLE "EventFacility" DROP COLUMN IF EXISTS "name";
 ALTER TABLE "EventLevel" DROP COLUMN IF EXISTS "name";
