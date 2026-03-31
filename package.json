@@ -2,6 +2,7 @@
   "name": "zgadajsie-monorepo",
   "version": "0.0.0",
   "license": "MIT",
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "start": "pnpm backend:start:db && concurrently --kill-others-on-fail -n FRONTEND,BACKEND -c blue,green \"pnpm frontend:serve\" \"pnpm backend:serve\"",
     "build": "pnpm frontend:build && pnpm backend:build",
