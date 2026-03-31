@@ -43,7 +43,7 @@ RUN pnpm install --prod --no-frozen-lockfile
 
 # prisma CLI nie jest w Nx-generowanym package.json (nie jest importowany w kodzie),
 # ale jest wymagany przez docker-entrypoint.sh do uruchamiania migracji
-RUN pnpm add prisma@5.22.0 --no-frozen-lockfile
+RUN pnpm add prisma@5.22.0
 
 # Zbudowana aplikacja
 COPY --from=builder /app/dist/backend/main.js ./main.js
