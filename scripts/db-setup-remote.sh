@@ -4,7 +4,7 @@ set -e
 TUNNEL_PORT=5454
 SSH_HOST="root@204.168.205.171"
 DB_CONTAINER="owg0tb31vlgrqh7hm86d4jjj"
-ENV_FILE="backend/.env.remote"
+ENV_FILE=".env.development"
 SEED_TYPE="${1:-dev}"
 
 if [ "$SEED_TYPE" = "dev" ]; then
