@@ -10,7 +10,6 @@ import { AuthService } from '../../../../../core/auth/auth.service';
   imports: [IconComponent],
   templateUrl: './notification-alert.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styleUrls: ['../notification-states.scss'],
 })
 export class NotificationAlertComponent {
   private readonly overlays = inject(BottomOverlaysService);

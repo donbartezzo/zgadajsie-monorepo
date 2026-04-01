@@ -17,7 +17,7 @@ import { ConfirmModalService } from './confirm-modal.service';
       <!-- Backdrop -->
       <button
         type="button"
-        class="absolute inset-0 bg-black/50 backdrop-blur-sm cursor-default"
+        class="absolute inset-0 bg-black/50 backdrop-blur-xs cursor-default"
         (click)="onCancel()"
         aria-label="Zamknij"
       ></button>

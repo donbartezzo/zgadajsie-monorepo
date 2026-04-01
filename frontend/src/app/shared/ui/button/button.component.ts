@@ -160,7 +160,7 @@ export class ButtonComponent {
       end: 'justify-end',
     };
     const justifyClass = isIconOnly ? 'justify-center' : alignmentMap[this.alignment()];
-    const base = `flex items-center ${justifyClass} font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed`;
+    const base = `flex items-center ${justifyClass} font-medium rounded-lg transition-all duration-200 focus:outline-hidden focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed`;
 
     // Kwadratowe rozmiary dla icon-only, prostokątne dla tekstu
     const sizeClasses: Record<ButtonSize, string> = isIconOnly
@@ -179,16 +179,16 @@ export class ButtonComponent {
 
     const solidClasses: Record<SemanticColor, string> = {
       primary:
-        'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-300 shadow-sm hover:shadow',
+        'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-300 shadow-xs hover:shadow-sm',
       success:
-        'bg-success-400 text-white hover:bg-success-500 focus:ring-success-300 shadow-sm hover:shadow',
+        'bg-success-400 text-white hover:bg-success-500 focus:ring-success-300 shadow-xs hover:shadow-sm',
       danger:
-        'bg-danger-400 text-white hover:bg-danger-500 focus:ring-danger-300 shadow-sm hover:shadow',
+        'bg-danger-400 text-white hover:bg-danger-500 focus:ring-danger-300 shadow-xs hover:shadow-sm',
       warning:
-        'bg-warning-400 text-white hover:bg-warning-500 focus:ring-warning-300 shadow-sm hover:shadow',
-      info: 'bg-info-400 text-white hover:bg-info-500 focus:ring-info-300 shadow-sm hover:shadow',
+        'bg-warning-400 text-white hover:bg-warning-500 focus:ring-warning-300 shadow-xs hover:shadow-sm',
+      info: 'bg-info-400 text-white hover:bg-info-500 focus:ring-info-300 shadow-xs hover:shadow-sm',
       neutral:
-        'bg-neutral-500 text-white hover:bg-neutral-600 focus:ring-neutral-300 shadow-sm hover:shadow',
+        'bg-neutral-500 text-white hover:bg-neutral-600 focus:ring-neutral-300 shadow-xs hover:shadow-sm',
     };
 
     const softClasses: Record<SemanticColor, string> = {

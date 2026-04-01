@@ -28,7 +28,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
             name="password"
             required
             minlength="8"
-            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
             placeholder="Min. 8 znaków"
           />
         </div>
@@ -42,7 +42,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
             [(ngModel)]="confirmPassword"
             name="confirmPassword"
             required
-            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
             placeholder="Powtórz hasło"
           />
         </div>

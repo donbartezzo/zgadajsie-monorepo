@@ -38,7 +38,8 @@
 | ---------------------------------- | ------------------------------------------------------- |
 | `frontend/src/styles/_tokens.scss` | **Source of Truth** - CSS vars semantycznych palet      |
 | `frontend/tailwind.config.js`      | Foundation palettes (raw) + Semantic mapping (CSS vars) |
-| `frontend/src/styles.scss`         | Import \_tokens.scss + layout vars                      |
+| `frontend/.postcssrc.json`         | PostCSS config z `@tailwindcss/postcss` (Tailwind v4)   |
+| `frontend/src/styles.scss`         | `@use 'tailwindcss'` + `@config` + layout vars          |
 | `/dev/design-system`               | Podgląd wizualny (tylko dev mode)                       |
 
 ---

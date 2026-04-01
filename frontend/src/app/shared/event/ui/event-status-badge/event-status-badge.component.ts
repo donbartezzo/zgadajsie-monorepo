@@ -76,7 +76,7 @@ export class EventStatusBadgeComponent {
       case 'countdown-soon':
         return `${base} bg-info-400`;
       case 'date':
-        return `${base} bg-white shadow-sm`;
+        return `${base} bg-white shadow-xs`;
       case 'ended':
         return `${base} bg-neutral-400`;
       case 'cancelled':

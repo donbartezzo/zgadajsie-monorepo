@@ -59,7 +59,7 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
                     type="button"
                     [attr.data-user-id]="p.userId"
                     [class]="
-                      'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-none ' +
+                      'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-hidden ' +
                       (isCurrentUser(p)
                         ? 'ring-2 ring-primary-400 bg-primary-50'
                         : isCurrentUserGuest(p)
@@ -86,7 +86,7 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
                   @for (i of getEmptySlotIndices(group.emptySlots); track i) {
                     <button
                       type="button"
-                      class="flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-200"
+                      class="flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-hidden focus:ring-2 focus:ring-neutral-200"
                       (click)="emptySlotClicked.emit()"
                     >
                       <div
@@ -122,7 +122,7 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
               type="button"
               [attr.data-user-id]="p.userId"
               [class]="
-                'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-none ' +
+                'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-hidden ' +
                 (isCurrentUser(p)
                   ? 'ring-2 ring-primary-400 bg-primary-50'
                   : isCurrentUserGuest(p)
@@ -151,7 +151,7 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
             @for (i of emptySlotIndices(); track i) {
               <button
                 type="button"
-                class="flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-200"
+                class="flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-hidden focus:ring-2 focus:ring-neutral-200"
                 (click)="emptySlotClicked.emit()"
               >
                 <div
@@ -190,7 +190,7 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
                 type="button"
                 [attr.data-user-id]="p.userId"
                 [class]="
-                  'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-none ' +
+                  'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-hidden ' +
                   (isCurrentUser(p)
                     ? 'ring-2 ring-primary-400 bg-primary-50'
                     : isCurrentUserGuest(p)
@@ -242,7 +242,7 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
                 type="button"
                 [attr.data-user-id]="p.userId"
                 [class]="
-                  'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-none ' +
+                  'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-hidden ' +
                   (isCurrentUser(p)
                     ? 'ring-2 ring-primary-400 bg-primary-50'
                     : 'focus:ring-2 focus:ring-neutral-200 opacity-50')

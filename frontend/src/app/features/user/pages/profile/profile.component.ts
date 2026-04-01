@@ -92,7 +92,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
             <input
               id="profile-display-name"
               [(ngModel)]="editName"
-              class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -107,7 +107,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
               type="password"
               [(ngModel)]="newPassword"
               placeholder="Zostaw puste jeśli bez zmian"
-              class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div class="flex justify-end gap-3">

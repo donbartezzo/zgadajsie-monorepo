@@ -18,13 +18,6 @@ const withOpacity = (varName) => `rgb(var(${varName}) / <alpha-value>)`;
 module.exports = {
   content: ['./src/**/*.{html,ts}', './src/app/**/*.{html,ts}', './src/app/**/**/*.{html,ts}'],
   theme: {
-    container: {
-      center: true,
-      padding: '1rem',
-      screens: {
-        sm: '640px',
-      },
-    },
     extend: {
       spacing: {
         18: '4.5rem', // 72px - for xl avatar size
