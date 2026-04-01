@@ -127,7 +127,7 @@ pnpm install --frozen-lockfile
 | Google   | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`\* | konsola Google Cloud                       |
 | Facebook | `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`\*   | Meta Developers                            |
 
-> 🔒 **Tip:** trzymaj `.env.production` poza repozytorium, np. w `/etc/zgadajsie/` i symlinkuj.
+> 🔒 **Tip:** trzymaj `.env.production` poza repozytorium, np. w `/etc/zgadajsie/` i symlinkuj. Analogicznie `.env.local` służy do lokalnego `pnpm start`, a `.env.development` do środowiska developerskiego.
 
 ---
 
@@ -142,7 +142,7 @@ docker compose ps
 
 # migracje + seed
 pnpm prisma:migrate --schema backend/prisma/schema.prisma
-pnpm backend:db:seed
+NODE_ENV=production pnpm prisma:seed:prod
 ```
 
 > Jeśli używasz zewnętrznej instancji PostgreSQL pomiń Docker i wskaż poprawne `DATABASE_URL`.

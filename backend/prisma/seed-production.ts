@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { config } from 'dotenv';
 
-// Load environment variables from .env file
-config({ path: '../.env' });
+// Load environment variables from .env.production file
+config({ path: '../.env.production' });
 
 const prisma = new PrismaClient();
 

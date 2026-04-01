@@ -36,8 +36,9 @@ testem.log
 
 # Environment files
 .env
-.env.production
+.env.local
 .env.development
+.env.production
 
 # System Files
 .DS_Store
