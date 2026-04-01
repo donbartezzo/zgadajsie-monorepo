@@ -1,19 +1,17 @@
 import { PrismaClient } from '@prisma/client';
-import { config } from 'dotenv';
-
-// Load environment variables from .env.production file
-config({ path: '../.env.production' });
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Inicjalizacja danych słownikowych dla produkcji...');
+  console.log('Inicjalizacja danych słownikowych...');
 
   // ─── Miasta ──────────────────────────────────────────────────────────────
   console.log('Tworzę miasta...');
-  const cities = await Promise.all([
-    prisma.city.create({ data: { name: 'Zielona Góra', slug: 'zielona-gora' } }),
-  ]);
+  const cities = await Promise.all(
+    [{ name: 'Zielona Góra', slug: 'zielona-gora' }].map((data) =>
+      prisma.city.upsert({ where: { slug: data.slug }, update: { name: data.name }, create: data }),
+    ),
+  );
 
   // ─── Dyscypliny ──────────────────────────────────────────────────────────
   console.log('Tworzę dyscypliny...');
@@ -31,7 +29,9 @@ async function main() {
       'darts',
       'chess',
       'table-tennis',
-    ].map((slug) => prisma.eventDiscipline.create({ data: { slug } })),
+    ].map((slug) =>
+      prisma.eventDiscipline.upsert({ where: { slug }, update: {}, create: { slug } }),
+    ),
   );
 
   // ─── Obiekty ─────────────────────────────────────────────────────────────
@@ -49,7 +49,9 @@ async function main() {
       'pool',
       'park',
       'beach',
-    ].map((slug) => prisma.eventFacility.create({ data: { slug } })),
+    ].map((slug) =>
+      prisma.eventFacility.upsert({ where: { slug }, update: {}, create: { slug } }),
+    ),
   );
 
   // ─── Poziomy ─────────────────────────────────────────────────────────────
@@ -63,7 +65,13 @@ async function main() {
       { slug: 'solid', weight: 4 },
       { slug: 'advanced', weight: 5 },
       { slug: 'professional', weight: 6 },
-    ].map((l) => prisma.eventLevel.create({ data: l })),
+    ].map((data) =>
+      prisma.eventLevel.upsert({
+        where: { slug: data.slug },
+        update: { weight: data.weight },
+        create: data,
+      }),
+    ),
   );
 
   console.log('✅ Dane słownikowe zostały pomyślnie zainicjalizowane');

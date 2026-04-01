@@ -43,7 +43,7 @@ COPY --from=builder /app/dist/backend/prisma ./prisma
 # - prisma: CLI do migracji w docker-entrypoint.sh
 # - tslib: runtime helper TypeScript (importHelpers:true w tsconfig.base.json)
 RUN pnpm install --prod --no-frozen-lockfile && \
-    pnpm add prisma@5.22.0 tslib@2 && \
+    pnpm add prisma@5.22.0 tslib@2 tsx && \
     ./node_modules/.bin/prisma generate --schema ./prisma/schema.prisma
 
 # Zbudowana aplikacja

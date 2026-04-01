@@ -23,7 +23,10 @@
     "prisma:generate": "cd backend && prisma generate",
     "prisma:migrate": "cd backend && prisma migrate dev",
     "prisma:studio": "cd backend && prisma studio",
-    "prisma:seed:prod": "cd backend && tsx prisma/seed-production.ts"
+    "prisma:seed:prod": "cd backend && tsx prisma/seed-production.ts",
+    "db:setup": "pnpm prisma:migrate && pnpm prisma:seed:prod",
+    "db:setup:remote": "bash scripts/db-setup-remote.sh",
+    "db:seed:remote": "dotenv -e backend/.env.remote -- sh -c 'cd backend && tsx prisma/seed-production.ts'"
   },
   "engines": {
     "node": ">=24.4.1",
