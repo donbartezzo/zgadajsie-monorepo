@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.dev.zgadajsie.pl',
+  apiUrl: 'https://api.dev.zgadajsie.pl/api',
 };

@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "start": "pnpm backend:start:db && concurrently --kill-others-on-fail -n FRONTEND,BACKEND -c blue,green \"pnpm frontend:serve\" \"pnpm backend:serve\"",
+    "start:remote": "concurrently --kill-others -n TUNNEL,FRONTEND,BACKEND -c yellow,blue,green \"ssh -L 5454:10.0.1.2:5432 root@204.168.205.171 -N -o ExitOnForwardFailure=yes\" \"pnpm frontend:serve\" \"sleep 2 && dotenv -e backend/.env.remote -- nx serve backend\"",
     "build": "pnpm frontend:build && pnpm backend:build",
     "test": "pnpm frontend:test && pnpm backend:test",
     "frontend:serve": "cd frontend && npx -y @angular/cli@21.2.5 serve",
@@ -25,8 +26,7 @@
     "prisma:studio": "cd backend && prisma studio",
     "prisma:seed:prod": "cd backend && tsx prisma/seed-production.ts",
     "db:setup": "pnpm prisma:migrate && pnpm prisma:seed:prod",
-    "db:setup:remote": "bash scripts/db-setup-remote.sh",
-    "db:seed:remote": "dotenv -e backend/.env.remote -- sh -c 'cd backend && tsx prisma/seed-production.ts'"
+    "db:setup:remote": "bash scripts/db-setup-remote.sh"
   },
   "engines": {
     "node": ">=24.4.1",
