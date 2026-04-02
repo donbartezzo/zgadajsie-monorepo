@@ -3,7 +3,6 @@ name: CI/CD
 on:
   push:
     branches: [main]
-    tags: ['v*.*.*']
   pull_request:
   release:
     types: [published]
@@ -69,6 +68,7 @@ jobs:
           context: .
           file: backend/Dockerfile
           push: true
+          provenance: false
           tags: |
             ${{ env.BACKEND_IMAGE }}:dev
             ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
@@ -79,6 +79,7 @@ jobs:
           context: .
           file: frontend/Dockerfile
           push: true
+          provenance: false
           build-args: |
             BUILD_CONFIGURATION=dev
           tags: |
@@ -119,6 +120,7 @@ jobs:
           context: .
           file: backend/Dockerfile
           push: true
+          provenance: false
           tags: |
             ${{ env.BACKEND_IMAGE }}:stable
             ${{ env.BACKEND_IMAGE }}:${{ github.event.release.tag_name }}
@@ -130,6 +132,7 @@ jobs:
           context: .
           file: frontend/Dockerfile
           push: true
+          provenance: false
           build-args: |
             BUILD_CONFIGURATION=prod
           tags: |
