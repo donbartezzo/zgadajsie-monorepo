@@ -66,6 +66,7 @@ enum NotificationKind {
   NEW_EVENT_IN_CITY
   REPRIMAND
   ANNOUNCEMENT
+  PAYMENT_CANCELLED
 }
 
 enum AnnouncementPriority {
