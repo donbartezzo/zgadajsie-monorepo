@@ -12,4 +12,5 @@ import { APP_BRAND, nowInZone } from '@zgadajsie/shared';
 export class FooterComponent {
   protected readonly APP_BRAND = APP_BRAND;
   readonly currentYear = nowInZone().year;
+  readonly appVersion = '1.0.0';
 }
