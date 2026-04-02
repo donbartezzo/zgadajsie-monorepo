@@ -61,17 +61,17 @@ async function main() {
           },
         },
       },
-      { slug: 'volleyball', schema: null },
-      { slug: 'basketball', schema: null },
-      { slug: 'tennis', schema: null },
-      { slug: 'badminton', schema: null },
-      { slug: 'squash', schema: null },
-      { slug: 'running', schema: null },
-      { slug: 'cycling', schema: null },
-      { slug: 'swimming', schema: null },
-      { slug: 'darts', schema: null },
-      { slug: 'chess', schema: null },
-      { slug: 'table-tennis', schema: null },
+      { slug: 'volleyball', schema: undefined },
+      { slug: 'basketball', schema: undefined },
+      { slug: 'tennis', schema: undefined },
+      { slug: 'badminton', schema: undefined },
+      { slug: 'squash', schema: undefined },
+      { slug: 'running', schema: undefined },
+      { slug: 'cycling', schema: undefined },
+      { slug: 'swimming', schema: undefined },
+      { slug: 'darts', schema: undefined },
+      { slug: 'chess', schema: undefined },
+      { slug: 'table-tennis', schema: undefined },
     ].map((discipline) => prisma.eventDiscipline.create({ data: discipline })),
   );
 
@@ -181,23 +181,215 @@ async function main() {
     },
   });
 
+  const ola = await prisma.user.create({
+    data: {
+      email: 'ola.krupa@example.com',
+      passwordHash: userHash,
+      displayName: 'Ola Krupa',
+      role: 'USER',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+
+  const piotr = await prisma.user.create({
+    data: {
+      email: 'piotr.jaworski@example.com',
+      passwordHash: userHash,
+      displayName: 'Piotr Jaworski',
+      role: 'USER',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+
+  const magda = await prisma.user.create({
+    data: {
+      email: 'magda.kaczmarek@example.com',
+      passwordHash: userHash,
+      displayName: 'Magda Kaczmarek',
+      role: 'USER',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+
+  const kuba = await prisma.user.create({
+    data: {
+      email: 'kuba.nowicki@example.com',
+      passwordHash: userHash,
+      displayName: 'Kuba Nowicki',
+      role: 'USER',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+
+  const natalia = await prisma.user.create({
+    data: {
+      email: 'natalia.piatek@example.com',
+      passwordHash: userHash,
+      displayName: 'Natalia Piątek',
+      role: 'USER',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+
+  const wojtek = await prisma.user.create({
+    data: {
+      email: 'wojtek.sikora@example.com',
+      passwordHash: userHash,
+      displayName: 'Wojtek Sikora',
+      role: 'USER',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+
+  const karolina = await prisma.user.create({
+    data: {
+      email: 'karolina.gorska@example.com',
+      passwordHash: userHash,
+      displayName: 'Karolina Górska',
+      role: 'USER',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+
+  const sebastian = await prisma.user.create({
+    data: {
+      email: 'sebastian.olesiak@example.com',
+      passwordHash: userHash,
+      displayName: 'Sebastian Olesiak',
+      role: 'USER',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+
   console.log(
     'Użytkownicy:',
-    [jan, anna, marek, kasia, tomek].map((u) => u.displayName),
+    [
+      jan,
+      anna,
+      marek,
+      kasia,
+      tomek,
+      ola,
+      piotr,
+      magda,
+      kuba,
+      natalia,
+      wojtek,
+      karolina,
+      sebastian,
+    ].map((u) => u.displayName),
   );
 
   // ─── Helper functions ─────────────────────────────────────────────────────
   const now = new Date();
   const hoursFromNow = (h: number): Date => new Date(now.getTime() + h * 60 * 60 * 1000);
 
-  // Create event with slots
+  // Create event with slots respecting discipline schema (roleKey)
   async function createEventWithSlots(data: Parameters<typeof prisma.event.create>[0]['data']) {
-    const event = await prisma.event.create({ data });
-    // Create slots for maxParticipants
-    const maxP = data.maxParticipants as number;
-    await prisma.eventSlot.createMany({
-      data: Array.from({ length: maxP }, () => ({ eventId: event.id })),
+    const discipline = disciplines.find((d) => d.slug === data.disciplineSlug);
+    const schema = discipline?.schema as
+      | {
+          participantRoles?: {
+            default?: { key: string; title: string; desc: string };
+            special?: Array<{ key: string; title: string; desc: string; slots?: number }>;
+          };
+        }
+      | undefined;
+
+    const roleConfig = schema?.participantRoles
+      ? {
+          disciplineSlug: data.disciplineSlug,
+          roles: [
+            ...(schema.participantRoles.default
+              ? [
+                  {
+                    ...schema.participantRoles.default,
+                    slots: Math.max(
+                      0,
+                      (data.maxParticipants as number) -
+                        (schema.participantRoles.special?.reduce(
+                          (sum, role) => sum + (role.slots || 0),
+                          0,
+                        ) ?? 0),
+                    ),
+                    isDefault: true,
+                  },
+                ]
+              : []),
+            ...(schema.participantRoles.special ?? []).map((role) => ({
+              ...role,
+              slots: role.slots ?? 1,
+              isDefault: false,
+            })),
+          ],
+        }
+      : undefined;
+
+    const event = await prisma.event.create({
+      data: {
+        ...data,
+        roleConfig,
+      },
     });
+
+    if (schema) {
+      // Create slots based on discipline schema
+      const slotSchema = schema as {
+        basic?: { maxParticipants?: number };
+        participantRoles?: {
+          default?: { key: string };
+          special?: Array<{ key: string; slots?: number }>;
+        };
+      };
+      const slots: { eventId: string; roleKey?: string }[] = [];
+
+      // Add default role slots
+      if (slotSchema.participantRoles?.default) {
+        const defaultRole = slotSchema.participantRoles.default;
+        const defaultSlots = slotSchema.basic?.maxParticipants || data.maxParticipants;
+
+        // Reserve slots for special roles first
+        let reservedSlots = 0;
+        if (slotSchema.participantRoles?.special) {
+          reservedSlots = slotSchema.participantRoles.special.reduce(
+            (sum: number, role: { slots?: number }) => sum + (role.slots || 0),
+            0,
+          );
+        }
+
+        const defaultSlotsCount = Math.max(0, defaultSlots - reservedSlots);
+        for (let i = 0; i < defaultSlotsCount; i++) {
+          slots.push({ eventId: event.id, roleKey: defaultRole.key });
+        }
+      }
+
+      // Add special role slots
+      if (slotSchema.participantRoles?.special) {
+        for (const role of slotSchema.participantRoles.special) {
+          const slotCount = role.slots || 1;
+          for (let i = 0; i < slotCount; i++) {
+            slots.push({ eventId: event.id, roleKey: role.key });
+          }
+        }
+      }
+
+      await prisma.eventSlot.createMany({ data: slots });
+    } else {
+      // Fallback: create slots without roleKey for disciplines without schema
+      const maxP = data.maxParticipants as number;
+      await prisma.eventSlot.createMany({
+        data: Array.from({ length: maxP }, () => ({ eventId: event.id })),
+      });
+    }
+
     return event;
   }
 
@@ -253,6 +445,50 @@ async function main() {
     });
   }
 
+  async function addBannedParticipant(eventId: string, userId: string, reason: string) {
+    const participant = await prisma.eventParticipation.create({
+      data: { eventId, userId, wantsIn: false, withdrawnBy: 'ORGANIZER' },
+    });
+
+    await prisma.organizerUserRelation.create({
+      data: {
+        organizerUserId: admin.id,
+        targetUserId: userId,
+        isBanned: true,
+        note: reason,
+      },
+    });
+
+    return participant;
+  }
+
+  async function addPayment(
+    participationId: string,
+    userId: string,
+    eventId: string,
+    amount: number,
+    status: 'COMPLETED' | 'REFUNDED' | 'VOUCHER_REFUNDED' = 'COMPLETED',
+    method = 'tpay',
+    voucherAmountUsed = 0,
+  ) {
+    return prisma.payment.create({
+      data: {
+        participationId,
+        userId,
+        eventId,
+        amount,
+        organizerAmount: amount,
+        platformFee: 0,
+        currency: 'PLN',
+        status,
+        method,
+        voucherAmountUsed,
+        paidAt: new Date(),
+        refundedAt: status === 'COMPLETED' ? null : new Date(),
+      },
+    });
+  }
+
   // ─── Przykładowe wydarzenia ─────────────────────────────────────────────
   console.log('Tworzę wydarzenia...');
 
@@ -260,10 +496,10 @@ async function main() {
   // ZAKOŃCZONE (2 szt.)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // 1) Zakończone - piłka nożna wczoraj
+  // 1) Zakończone - football wczoraj
   const ended1 = await createEventWithSlots({
     title: 'Wieczorne granie na orliku',
-    description: 'Rekreacyjna piłka nożna w Zielonej Górze - zakończone z powodzeniem!',
+    description: 'Rekreacyjny football w Zielonej Górze - zakończone z powodzeniem!',
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[0].slug,
     levelSlug: levels[2].slug, // Rekreacyjny
@@ -272,7 +508,7 @@ async function main() {
     startsAt: hoursFromNow(-26),
     endsAt: hoursFromNow(-24.5),
     costPerPerson: 10,
-    maxParticipants: 14,
+    maxParticipants: 12,
     lotteryExecutedAt: hoursFromNow(-74),
     gender: 'ANY',
     visibility: 'PUBLIC',
@@ -285,12 +521,35 @@ async function main() {
   await addConfirmedParticipant(ended1.id, marek.id);
   await addConfirmedParticipant(ended1.id, kasia.id);
   await addConfirmedParticipant(ended1.id, tomek.id);
+  await addPayment(
+    (
+      await prisma.eventParticipation.findUniqueOrThrow({
+        where: { eventId_userId: { eventId: ended1.id, userId: anna.id } },
+      })
+    ).id,
+    anna.id,
+    ended1.id,
+    10,
+  );
+  await addPayment(
+    (
+      await prisma.eventParticipation.findUniqueOrThrow({
+        where: { eventId_userId: { eventId: ended1.id, userId: marek.id } },
+      })
+    ).id,
+    marek.id,
+    ended1.id,
+    10,
+    'VOUCHER_REFUNDED',
+    'voucher',
+    5,
+  );
 
-  // 2) Zakończone - siatkówka przedwczoraj
+  // 2) Zakończone - football przedwczoraj
   const ended2 = await createEventWithSlots({
-    title: 'Siatkówka w hali - spotkanie',
-    description: 'Spotkanie siatkarskie dla amatorów - super atmosfera!',
-    disciplineSlug: disciplines[1].slug,
+    title: 'Football w hali - spotkanie',
+    description: 'Spotkanie footballowe dla amatorów - super atmosfera!',
+    disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[1].slug,
     levelSlug: levels[2].slug, // Rekreacyjny
     citySlug: city.slug,
@@ -298,7 +557,7 @@ async function main() {
     startsAt: hoursFromNow(-50),
     endsAt: hoursFromNow(-47),
     costPerPerson: 15,
-    maxParticipants: 12,
+    maxParticipants: 8,
     lotteryExecutedAt: hoursFromNow(-98),
     gender: 'ANY',
     visibility: 'PUBLIC',
@@ -310,6 +569,18 @@ async function main() {
   await addConfirmedParticipant(ended2.id, jan.id);
   await addConfirmedParticipant(ended2.id, anna.id);
   await addConfirmedParticipant(ended2.id, marek.id);
+  await addPayment(
+    (
+      await prisma.eventParticipation.findUniqueOrThrow({
+        where: { eventId_userId: { eventId: ended2.id, userId: jan.id } },
+      })
+    ).id,
+    jan.id,
+    ended2.id,
+    15,
+    'REFUNDED',
+    'cash',
+  );
 
   // ═══════════════════════════════════════════════════════════════════════════
   // ODWOŁANE (2 szt.)
@@ -350,7 +621,7 @@ async function main() {
     startsAt: hoursFromNow(20),
     endsAt: hoursFromNow(21.5),
     costPerPerson: 25,
-    maxParticipants: 4,
+    maxParticipants: 6,
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'CANCELLED',
@@ -363,11 +634,11 @@ async function main() {
   // W TRAKCIE (2 szt.)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // 5) W trakcie - siatkówka
+  // 5) W trakcie - football
   const ongoing1 = await createEventWithSlots({
-    title: 'Siatkówka w hali - trwa!',
-    description: 'Wydarzenie w trakcie - dołącz jako widz!',
-    disciplineSlug: disciplines[1].slug,
+    title: 'Football w hali - trwa!',
+    description: 'Wydarzenie footballowe w trakcie - dołącz jako widz!',
+    disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[1].slug,
     levelSlug: levels[1].slug,
     citySlug: city.slug,
@@ -387,6 +658,34 @@ async function main() {
   await addConfirmedParticipant(ongoing1.id, jan.id);
   await addConfirmedParticipant(ongoing1.id, anna.id);
   await addConfirmedParticipant(ongoing1.id, kasia.id);
+  await addConfirmedParticipant(ongoing1.id, marek.id);
+  await addConfirmedParticipant(ongoing1.id, tomek.id);
+  await addConfirmedParticipant(ongoing1.id, ola.id);
+  await addApprovedParticipant(ongoing1.id, piotr.id);
+  await addWaitingParticipant(ongoing1.id, magda.id);
+  await addPayment(
+    (
+      await prisma.eventParticipation.findUniqueOrThrow({
+        where: { eventId_userId: { eventId: ongoing1.id, userId: jan.id } },
+      })
+    ).id,
+    jan.id,
+    ongoing1.id,
+    15,
+  );
+  await addPayment(
+    (
+      await prisma.eventParticipation.findUniqueOrThrow({
+        where: { eventId_userId: { eventId: ongoing1.id, userId: anna.id } },
+      })
+    ).id,
+    anna.id,
+    ongoing1.id,
+    15,
+    'VOUCHER_REFUNDED',
+    'voucher',
+    5,
+  );
 
   // 6) W trakcie - bieganie
   const ongoing2 = await createEventWithSlots({
@@ -411,17 +710,19 @@ async function main() {
   });
   await addConfirmedParticipant(ongoing2.id, marek.id);
   await addConfirmedParticipant(ongoing2.id, tomek.id);
+  await addConfirmedParticipant(ongoing2.id, ola.id);
+  await addConfirmedParticipant(ongoing2.id, piotr.id);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // NADCHODZĄCE - OTWARTE ZAPISY (lotteryExecutedAt != null, start > now)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // 7) Otwarte zapisy - tenis za 5h
+  // 7) Otwarte zapisy - football za 5h
   const openEnroll1 = await createEventWithSlots({
-    title: 'Tenis na korcie - otwarte zapisy!',
+    title: 'Football na korcie - otwarte zapisy!',
     description: 'Losowanie za nami, ale wciąż zostały wolne miejsca.',
-    disciplineSlug: disciplines[3].slug,
-    facilitySlug: facilities[5].slug,
+    disciplineSlug: disciplines[0].slug,
+    facilitySlug: facilities[0].slug,
     levelSlug: levels[2].slug,
     citySlug: city.slug,
     organizerId: jan.id,
@@ -439,10 +740,14 @@ async function main() {
   });
   await addConfirmedParticipant(openEnroll1.id, anna.id);
   await addApprovedParticipant(openEnroll1.id, marek.id);
+  await addConfirmedParticipant(openEnroll1.id, kasia.id);
+  await addApprovedParticipant(openEnroll1.id, tomek.id);
+  await addWaitingParticipant(openEnroll1.id, ola.id);
+  await addWaitingParticipant(openEnroll1.id, piotr.id);
 
-  // 8) Otwarte zapisy - piłka nożna jutro
+  // 8) Otwarte zapisy - football jutro
   const openEnroll2 = await createEventWithSlots({
-    title: 'Piłka nożna jutro wieczorem - zapisy otwarte',
+    title: 'Football jutro wieczorem - zapisy otwarte',
     description: 'Losowanie zakończone, ale są jeszcze miejsca!',
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[0].slug,
@@ -465,6 +770,37 @@ async function main() {
   await addConfirmedParticipant(openEnroll2.id, marek.id);
   await addApprovedParticipant(openEnroll2.id, kasia.id);
   await addWaitingParticipant(openEnroll2.id, tomek.id);
+  await addConfirmedParticipant(openEnroll2.id, ola.id);
+  await addConfirmedParticipant(openEnroll2.id, piotr.id);
+  await addConfirmedParticipant(openEnroll2.id, magda.id);
+  await addConfirmedParticipant(openEnroll2.id, kuba.id);
+  await addApprovedParticipant(openEnroll2.id, natalia.id);
+  await addApprovedParticipant(openEnroll2.id, wojtek.id);
+  await addWaitingParticipant(openEnroll2.id, karolina.id);
+  await addWaitingParticipant(openEnroll2.id, sebastian.id);
+  await addPayment(
+    (
+      await prisma.eventParticipation.findUniqueOrThrow({
+        where: { eventId_userId: { eventId: openEnroll2.id, userId: anna.id } },
+      })
+    ).id,
+    anna.id,
+    openEnroll2.id,
+    10,
+  );
+  await addPayment(
+    (
+      await prisma.eventParticipation.findUniqueOrThrow({
+        where: { eventId_userId: { eventId: openEnroll2.id, userId: marek.id } },
+      })
+    ).id,
+    marek.id,
+    openEnroll2.id,
+    10,
+    'COMPLETED',
+    'voucher',
+    10,
+  );
 
   // 9) Otwarte zapisy - badminton pełne
   const openEnroll3 = await createEventWithSlots({
@@ -492,14 +828,19 @@ async function main() {
   await addConfirmedParticipant(openEnroll3.id, kasia.id);
   await addConfirmedParticipant(openEnroll3.id, tomek.id);
   await addWithdrawnParticipant(openEnroll3.id, admin.id, 'ORGANIZER');
+  await addBannedParticipant(
+    openEnroll3.id,
+    piotr.id,
+    'Nieobecność bez uprzedzenia i brak kontaktu',
+  );
 
   // ═══════════════════════════════════════════════════════════════════════════
   // NADCHODZĄCE - PRE-ZAPISY (lotteryExecutedAt == null, start > 48h)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // 10) Pre-zapisy - piłka nożna za 4 dni
+  // 10) Pre-zapisy - football za 4 dni
   const preEnroll1 = await createEventWithSlots({
-    title: 'Piłka nożna weekend - pre-zapisy',
+    title: 'Football weekend - pre-zapisy',
     description: 'Wydarzenie za 4 dni. Trwają wstępne zapisy!',
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[4].slug,
@@ -522,6 +863,9 @@ async function main() {
   await addWaitingParticipant(preEnroll1.id, kasia.id);
   await addWaitingParticipant(preEnroll1.id, tomek.id);
   await addWaitingParticipant(preEnroll1.id, admin.id);
+  await addWaitingParticipant(preEnroll1.id, ola.id);
+  await addWaitingParticipant(preEnroll1.id, piotr.id);
+  await addWaitingParticipant(preEnroll1.id, magda.id);
 
   // 11) Pre-zapisy - koszykówka za 5 dni
   const preEnroll2 = await createEventWithSlots({
@@ -545,6 +889,8 @@ async function main() {
   });
   await addWaitingParticipant(preEnroll2.id, jan.id);
   await addWaitingParticipant(preEnroll2.id, anna.id);
+  await addWaitingParticipant(preEnroll2.id, kuba.id);
+  await addWaitingParticipant(preEnroll2.id, natalia.id);
 
   // 12) Pre-zapisy - pływanie za tydzień
   const preEnroll3 = await createEventWithSlots({
@@ -571,16 +917,17 @@ async function main() {
   await addWaitingParticipant(preEnroll3.id, kasia.id);
   await addWaitingParticipant(preEnroll3.id, tomek.id);
   await addWaitingParticipant(preEnroll3.id, admin.id);
+  await addWaitingParticipant(preEnroll3.id, wojtek.id);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // NADCHODZĄCE - LOTTERY_PENDING (lotteryExecutedAt == null, start <= 48h)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // 13) Loteria - siatkówka pojutrze
+  // 13) Loteria - football pojutrze
   const lotteryPend1 = await createEventWithSlots({
-    title: 'Siatkówka pojutrze - losowanie lada moment!',
+    title: 'Football pojutrze - losowanie lada moment!',
     description: 'Pre-zapisy zamknięte, losowanie miejsc zaraz nastąpi.',
-    disciplineSlug: disciplines[1].slug,
+    disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[1].slug,
     levelSlug: levels[1].slug,
     citySlug: city.slug,
@@ -601,6 +948,8 @@ async function main() {
   await addWaitingParticipant(lotteryPend1.id, marek.id);
   await addWaitingParticipant(lotteryPend1.id, kasia.id);
   await addWaitingParticipant(lotteryPend1.id, tomek.id);
+  await addWaitingParticipant(lotteryPend1.id, ola.id);
+  await addWaitingParticipant(lotteryPend1.id, piotr.id);
 
   // 14) Loteria - kolarstwo za ~40h
   const lotteryPend2 = await createEventWithSlots({
@@ -625,17 +974,18 @@ async function main() {
   await addWaitingParticipant(lotteryPend2.id, anna.id);
   await addWaitingParticipant(lotteryPend2.id, marek.id);
   await addWaitingParticipant(lotteryPend2.id, kasia.id);
+  await addWaitingParticipant(lotteryPend2.id, magda.id);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // NADCHODZĄCE - utworzone < 48h do startu (automatycznie OPEN_ENROLLMENT)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // 15) Szybkie zapisy - squash za 3h
+  // 15) Szybkie zapisy - football za 3h
   const quickOpen1 = await createEventWithSlots({
-    title: 'Squash last-minute - dołącz teraz!',
-    description: 'Szybkie wydarzenie squashowe - bez pre-zapisów!',
-    disciplineSlug: disciplines[5].slug,
-    facilitySlug: facilities[1].slug,
+    title: 'Football last-minute - dołącz teraz!',
+    description: 'Szybkie wydarzenie footballowe - bez pre-zapisów!',
+    disciplineSlug: disciplines[0].slug,
+    facilitySlug: facilities[0].slug,
     levelSlug: levels[0].slug,
     citySlug: city.slug,
     organizerId: marek.id,
@@ -652,6 +1002,11 @@ async function main() {
     lng: 15.512,
   });
   await addApprovedParticipant(quickOpen1.id, jan.id);
+  await addConfirmedParticipant(quickOpen1.id, anna.id);
+  await addConfirmedParticipant(quickOpen1.id, marek.id);
+  await addApprovedParticipant(quickOpen1.id, kasia.id);
+  await addWaitingParticipant(quickOpen1.id, tomek.id);
+  await addWaitingParticipant(quickOpen1.id, ola.id);
 
   // 16) Szybkie zapisy - bieganie dziś wieczorem
   await createEventWithSlots({
@@ -695,6 +1050,15 @@ async function main() {
     },
   });
 
+  await prisma.organizerUserRelation.create({
+    data: {
+      organizerUserId: admin.id,
+      targetUserId: sebastian.id,
+      isBanned: true,
+      note: 'Agresywne zachowanie wobec innych uczestników',
+    },
+  });
+
   console.log('Seed zakończony sukcesem!');
   console.log('');
   console.log('=== Podsumowanie ===');
@@ -707,13 +1071,13 @@ async function main() {
   );
   console.log('');
   console.log('Wydarzenia:');
-  console.log('  Zakończone (2): #1 piłka nożna, #2 siatkówka');
+  console.log('  Zakończone (2): #1 football, #2 football');
   console.log('  Odwołane (2):   #3 koszykówka, #4 squash');
-  console.log('  W trakcie (2):  #5 siatkówka, #6 bieg');
-  console.log('  OPEN_ENROLLMENT (5): #7 tenis 5h, #8 piłka jutro, #9 badminton pełne,');
-  console.log('                       #15 squash last-minute 3h, #16 bieg wieczorem');
-  console.log('  PRE_ENROLLMENT (3):  #10 piłka 4d, #11 koszykówka 5d, #12 pływanie 7d');
-  console.log('  LOTTERY_PENDING (2): #13 siatkówka ~47h, #14 kolarstwo ~40h');
+  console.log('  W trakcie (2):  #5 football, #6 bieg');
+  console.log('  OPEN_ENROLLMENT (5): #7 football 5h, #8 football jutro, #9 badminton pełne,');
+  console.log('                       #15 football last-minute 3h, #16 bieg wieczorem');
+  console.log('  PRE_ENROLLMENT (3):  #10 football 4d, #11 koszykówka 5d, #12 pływanie 7d');
+  console.log('  LOTTERY_PENDING (2): #13 football ~47h, #14 kolarstwo ~40h');
 }
 
 main()
