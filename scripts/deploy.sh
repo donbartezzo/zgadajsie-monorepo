@@ -39,11 +39,11 @@ tar -xzf "$TMP_DIR/release.tar.gz" -C "$NEW_RELEASE"
 # ─── Konfiguracja ────────────────────────────────────────────────────────────
 
 echo "[3/7] Linkowanie .env..."
-# `.env.production` trzymamy poza repo; `.env` w release jest tylko symlinkiem
+# `.env.prod` trzymamy poza repo; `.env` w release jest tylko symlinkiem
 # potrzebnym do migracji Prisma uruchamianej z CWD release.
-# NestJS i PM2 dostają docelowo plik `.env.production`.
-ln -sf "$SHARED_DIR/.env.production" "$NEW_RELEASE/dist/backend/.env"
-ln -sf "$SHARED_DIR/.env.production" "$NEW_RELEASE/.env"
+# NestJS i PM2 dostają docelowo plik `.env.prod`.
+ln -sf "$SHARED_DIR/.env.prod" "$NEW_RELEASE/dist/backend/.env"
+ln -sf "$SHARED_DIR/.env.prod" "$NEW_RELEASE/.env"
 
 # ─── Zależności produkcyjne ──────────────────────────────────────────────────
 

@@ -3,7 +3,7 @@ import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layo
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 import { DateBadgeComponent } from '../../../../shared/event/ui/date-badge/date-badge.component';
 import { Event as EventModel } from '../../../../shared/types';
-import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
+import { getEventCoverUrl } from '../../../../shared/types/cover-image.interface';
 import { formatMonthShort, getDayOfMonth, formatTime } from '@zgadajsie/shared';
 import { TranslocoPipe } from '@jsverse/transloco';
 
@@ -68,13 +68,8 @@ export class EventHeroSlotsComponent {
   constructor() {
     effect(() => {
       const e = this.event();
-      if (e?.coverImage?.filename && e?.coverImage?.disciplineSlug) {
-        this.layoutConfig.coverImageUrl.set(
-          coverImageUrl(e.coverImage.disciplineSlug, e.coverImage.filename),
-        );
-      } else {
-        this.layoutConfig.coverImageUrl.set('');
-      }
+      const coverUrl = e ? getEventCoverUrl(e) : null;
+      this.layoutConfig.coverImageUrl.set(coverUrl || '');
       this.layoutConfig.title.set(e?.title || '');
     });
     this.layoutConfig.contentClass.set('bg-white');

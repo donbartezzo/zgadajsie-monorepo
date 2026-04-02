@@ -97,7 +97,7 @@
       },
       "configurations": {
         "development": {
-          "command": "dotenv -e ../.env.development -- npx tsx prisma/seed.ts"
+          "command": "dotenv -e ../.env.dev -- npx tsx prisma/seed.ts"
         }
       }
     }

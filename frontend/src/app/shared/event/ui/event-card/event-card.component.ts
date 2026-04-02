@@ -15,7 +15,7 @@ import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.co
 import { DateBadgeComponent } from '../date-badge/date-badge.component';
 import { EventStatusBadgeComponent } from '../event-status-badge/event-status-badge.component';
 import { EventListItem } from '../../../types';
-import { coverImageUrl } from '../../../types/cover-image.interface';
+import { getEventCoverUrl } from '../../../types/cover-image.interface';
 import {
   getEventCountdown,
   formatMonthShort,
@@ -198,10 +198,7 @@ export class EventCardComponent implements OnDestroy {
   private readonly now = signal(nowInZone().toJSDate());
   private intervalId?: number;
 
-  readonly coverUrl = computed(() => {
-    const event = this.event();
-    return coverImageUrl(event.discipline?.slug || '', event.coverImage?.filename || '');
-  });
+  readonly coverUrl = computed(() => getEventCoverUrl(this.event()));
 
   readonly isToday = computed(() => {
     const eventDate = this.event().startsAt;

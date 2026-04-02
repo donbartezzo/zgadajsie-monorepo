@@ -41,7 +41,7 @@ myDevil udostępnia środowisko **Node.js** oraz bazę PostgreSQL w ramach konta
    ```
 
 3. Sklonuj repo (`~/app/zgadajsie-monorepo`) i `pnpm install --frozen-lockfile`.
-4. Skopiuj `.env.example` → `.env.production` i uzupełnij (jak w sekcji 3).
+4. Skopiuj `.env.example` → `.env.prod` i uzupełnij (jak w sekcji 3).
 5. W panelu _Aplikacje → Node.js_ dodaj aplikację:
    - **Ścieżka aplikacji**: `app/zgadajsie-monorepo`
    - **Plik startowy**: `dist/apps/backend/main.js`
@@ -107,10 +107,10 @@ pnpm install --frozen-lockfile
 
 ## 3. Konfiguracja środowiska
 
-1. Skopiuj plik `.env.example` → `.env.production`:
+1. Skopiuj plik `.env.example` → `.env.prod`:
 
    ```bash
-   cp .env.example .env.production
+   cp .env.example .env.prod
    ```
 
 2. Uzupełnij zmienne – **pole wymagane** oznaczone \*
@@ -127,7 +127,7 @@ pnpm install --frozen-lockfile
 | Google   | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`\* | konsola Google Cloud                       |
 | Facebook | `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`\*   | Meta Developers                            |
 
-> 🔒 **Tip:** trzymaj `.env.production` poza repozytorium, np. w `/etc/zgadajsie/` i symlinkuj. Analogicznie `.env.local` służy do lokalnego `pnpm start`, a `.env.development` do środowiska developerskiego.
+> 🔒 **Tip:** trzymaj `.env.prod` poza repozytorium, np. w `/etc/zgadajsie/` i symlinkuj. Analogicznie `.env.local` służy do lokalnego `pnpm start`, a `.env.dev` do środowiska developerskiego.
 
 ---
 
@@ -185,7 +185,7 @@ module.exports = {
       cwd: '/home/zgadaj/zgadajsie-monorepo',
       env: {
         NODE_ENV: 'production',
-        DOTENV_CONFIG_PATH: '/home/zgadaj/.env.production',
+        DOTENV_CONFIG_PATH: '/home/zgadaj/.env.prod',
       },
       instances: 2,
       exec_mode: 'cluster',

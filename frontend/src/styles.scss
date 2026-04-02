@@ -14,6 +14,20 @@
   ::file-selector-button {
     border-color: rgb(var(--color-neutral-200));
   }
+
+  // Fix cursor style for buttons after Tailwind preflight appearance: button
+  button,
+  input:where([type='button'], [type='reset'], [type='submit']),
+  ::file-selector-button {
+    cursor: pointer;
+  }
+
+  // Keep not-allowed for disabled buttons
+  button:disabled,
+  input:where([type='button'], [type='reset'], [type='submit']):disabled,
+  ::file-selector-button:disabled {
+    cursor: not-allowed;
+  }
 }
 
 /* Sticky layout base only */

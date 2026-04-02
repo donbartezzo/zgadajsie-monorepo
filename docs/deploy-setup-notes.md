@@ -17,7 +17,7 @@ VAPID_PUBLIC_KEY=BJOz4k9BUtxYFbTL4jWguyjmMhEP2Igz7UrlABk3oy8hsYTZJ4yZF6RQPayOU0Z
 VAPID_PRIVATE_KEY=tGdX2_kgpwOD-KmhM6YuX0u4hkRjfCyMbpR1OhH0R98
 ```
 
-> Klucz prywatny musi trafić do `~/apps/zgadajsie/shared/.env.production` na serwerze (`VAPID_PRIVATE_KEY`).
+> Klucz prywatny musi trafić do `~/apps/zgadajsie/shared/.env.prod` na serwerze (`VAPID_PRIVATE_KEY`).
 > Para musi być spójna — klucz publiczny jest wkompilowany we frontend podczas buildu.
 
 #### ✅ Punkt 4 — Health check endpoint
@@ -34,9 +34,9 @@ Odpowiedź:
 { "status": "error", "db": "unreachable" }
 ```
 
-#### ✅ Punkt 3 — Template `.env.production`
+#### ✅ Punkt 3 — Template `.env.prod`
 
-Plik `.env.production` w repo uzupełniony jako template z wygenerowanymi kluczami VAPID.
+Plik `.env.prod` w repo uzupełniony jako template z wygenerowanymi kluczami VAPID.
 Do uzupełnienia ręcznie na serwerze: `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `SMTP_PASS`, `R2_*`, `TPAY_*`, `GOOGLE_*`, `FACEBOOK_*`.
 
 ### Wymagające akcji ręcznych
@@ -75,7 +75,7 @@ NODE_ENV=production pnpm prisma:seed:prod
 
 - Immutable releases + symlink `current` → rollback jedną komendą
 - Build w CI, nie na serwerze
-- `shared/.env.production` poza katalogiem release
+- `shared/.env.prod` poza katalogiem release
 
 ### Stworzone pliki
 
@@ -97,7 +97,7 @@ Skrypt na serwerze (kopiować jako `~/apps/zgadajsie/deploy.sh`):
 
 1. Utwórz `releases/TIMESTAMP/`
 2. Rozpakuj artefakt
-3. Symlink `.env` z `shared/.env.production` → `dist/backend/.env` i `NEW_RELEASE/.env`
+3. Symlink `.env` z `shared/.env.prod` → `dist/backend/.env` i `NEW_RELEASE/.env`
 4. `pnpm install --prod --frozen-lockfile` w `dist/backend/`
 5. Fallback: jeśli brak `prisma` CLI — `pnpm add prisma`
 6. `./node_modules/.bin/prisma migrate deploy --schema prisma/schema.prisma`
@@ -129,12 +129,12 @@ Aktualna, dokładna dokumentacja procesu deployu z sekcjami:
 - [ ] Ustawić `devil nodejs set 24`
 - [ ] Zainstalować pnpm: `npm install -g pnpm@10`
 - [ ] Stworzyć katalogi: `mkdir -p ~/apps/zgadajsie/{releases,shared,tmp}`
-- [ ] Stworzyć `~/apps/zgadajsie/shared/.env.production` z wszystkimi sekretami
+- [ ] Stworzyć `~/apps/zgadajsie/shared/.env.prod` z wszystkimi sekretami
 - [ ] Skopiować `scripts/deploy.sh` → `~/apps/zgadajsie/deploy.sh` i `chmod +x`
 - [ ] W panelu MyDevil dodać aplikację Node.js dla `api.zgadajsie.pl`
 - [ ] Stworzyć symlink `.env` w `public_nodejs/`:
   ```bash
-  ln -sf ~/apps/zgadajsie/shared/.env.production ~/domains/api.zgadajsie.pl/public_nodejs/.env
+  ln -sf ~/apps/zgadajsie/shared/.env.prod ~/domains/api.zgadajsie.pl/public_nodejs/.env
   ```
 
 ### GitHub

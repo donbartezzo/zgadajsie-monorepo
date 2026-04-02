@@ -4,19 +4,31 @@ set -e
 TUNNEL_PORT=5454
 SSH_HOST="root@204.168.205.171"
 DB_CONTAINER="owg0tb31vlgrqh7hm86d4jjj"
-ENV_FILE=".env.development"
-SEED_TYPE="${1:-dev}"
+ENV_FILE=".env.dev"
+SEED_TYPE="$1"
 
-if [ "$SEED_TYPE" = "dev" ]; then
-  SEED_FILE="backend/prisma/seed.ts"
-  SEED_LABEL="DEWELOPERSKI (seed.ts)"
-  SEED_DESC="  ✔ dane słownikowe + fikcyjni użytkownicy, eventy, etc."
-  SEED_WARN="  ⚠ UWAGA: CZYŚCI całą bazę przed seedowaniem!"
-else
+if [ -z "$SEED_TYPE" ]; then
+  echo "Błąd: wymagany parametr seed type (dev lub prod)"
+  echo "Użycie: $0 [dev|prod]"
+  exit 1
+fi
+
+if [ "$SEED_TYPE" != "dev" ] && [ "$SEED_TYPE" != "prod" ]; then
+  echo "Błąd: nieprawidłowy parametr '$SEED_TYPE'"
+  echo "Dozwolone wartości: dev, prod"
+  exit 1
+fi
+
+if [ "$SEED_TYPE" = "prod" ]; then
   SEED_FILE="backend/prisma/seed-production.ts"
   SEED_LABEL="PRODUKCYJNY (seed-production.ts)"
   SEED_DESC="  ✔ dane słownikowe (miasta, dyscypliny, obiekty, poziomy)"
   SEED_WARN="  ✔ bezpieczny — idempotentny, nie nadpisuje danych użytkowników"
+else
+  SEED_FILE="backend/prisma/seed.ts"
+  SEED_LABEL="DEWELOPERSKI (seed.ts)"
+  SEED_DESC="  ✔ dane słownikowe + fikcyjni użytkownicy, eventy, etc."
+  SEED_WARN="  ⚠ UWAGA: CZYŚCI całą bazę przed seedowaniem!"
 fi
 
 echo "=================================="
@@ -27,8 +39,8 @@ echo "${SEED_WARN}"
 echo "=================================="
 echo ""
 
-if [ "$SEED_TYPE" = "dev" ]; then
-  read -p "Czy na pewno chcesz wyczyścić i zaseedować zdalną bazę? [tak/N] " confirm
+if [ "$SEED_TYPE" = "prod" ]; then
+  read -p "Czy na pewno chcesz uruchomić seed produkcyjny na zdalnej bazie? [tak/N] " confirm
   if [ "$confirm" != "tak" ]; then
     echo "Anulowano."
     exit 0

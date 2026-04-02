@@ -74,7 +74,7 @@ W katalogu głównym repozytorium:
 pnpm install
 ```
 
-## Konfiguracja środowisk (.env.local, .env.development, .env.production)
+## Konfiguracja środowisk (.env.local, .env.dev, .env.prod)
 
 1. Dla lokalnego `pnpm start` skopiuj plik przykładowy do root `.env.local`:
 
@@ -85,8 +85,8 @@ pnpm install
 2. W `.env.local` sprawdź i w razie potrzeby zmodyfikuj zmienną `DATABASE_URL`, aby była spójna z konfiguracją z `docker-compose.yml` (użytkownik, hasło, port, nazwa bazy). Domyślnie Postgres w kontenerze nasłuchuje na `5432`, a na hoście jest wystawiony na `5433`.
 
 3. Jeśli chcesz uruchamiać jawnie środowisko developerskie lub produkcyjne, przygotuj odpowiednio:
-   - `.env.development` dla `nx serve backend --configuration development` / dev deployu,
-   - `.env.production` dla produkcji.
+   - `.env.dev` dla `nx serve backend --configuration development` / dev deployu,
+   - `.env.prod` dla produkcji.
 
 4. (Opcjonalnie, po zmianie schematu) wygeneruj klienta Prisma:
 
