@@ -23,22 +23,18 @@
         "styles": ["frontend/src/styles.scss"]
       },
       "configurations": {
-        "production": {
-          "budgets": [
+        "local": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "fileReplacements": [
             {
-              "type": "initial",
-              "maximumWarning": "500kb",
-              "maximumError": "1mb"
-            },
-            {
-              "type": "anyComponentStyle",
-              "maximumWarning": "4kb",
-              "maximumError": "8kb"
+              "replace": "frontend/src/environments/environment.ts",
+              "with": "frontend/src/environments/environment.local.ts"
             }
-          ],
-          "outputHashing": "all"
+          ]
         },
-        "staging": {
+        "dev": {
           "budgets": [
             {
               "type": "initial",
@@ -55,17 +51,33 @@
           "fileReplacements": [
             {
               "replace": "frontend/src/environments/environment.ts",
-              "with": "frontend/src/environments/environment.staging.ts"
+              "with": "frontend/src/environments/environment.dev.ts"
             }
           ]
         },
-        "development": {
-          "optimization": false,
-          "extractLicenses": false,
-          "sourceMap": true
+        "prod": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "frontend/src/environments/environment.ts",
+              "with": "frontend/src/environments/environment.prod.ts"
+            }
+          ]
         }
       },
-      "defaultConfiguration": "production"
+      "defaultConfiguration": "prod"
     },
     "serve": {
       "continuous": true,
@@ -74,14 +86,14 @@
         "port": 4300
       },
       "configurations": {
-        "production": {
-          "buildTarget": "frontend:build:production"
+        "prod": {
+          "buildTarget": "frontend:build:prod"
         },
-        "development": {
-          "buildTarget": "frontend:build:development"
+        "local": {
+          "buildTarget": "frontend:build:local"
         }
       },
-      "defaultConfiguration": "development"
+      "defaultConfiguration": "local"
     },
     "extract-i18n": {
       "executor": "@angular/build:extract-i18n",

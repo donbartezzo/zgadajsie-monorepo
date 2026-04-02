@@ -1,6 +1,8 @@
 # ─── Stage 1: Build ──────────────────────────────────────────────────────────
 FROM node:24-slim AS builder
 
+ARG BUILD_CONFIGURATION=dev
+
 WORKDIR /app
 
 RUN npm install -g pnpm@10
@@ -9,7 +11,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
-RUN pnpm nx build frontend --configuration=staging
+RUN pnpm nx build frontend --configuration=$BUILD_CONFIGURATION
 
 # ─── Stage 2: Serve ──────────────────────────────────────────────────────────
 FROM nginx:alpine AS runner
