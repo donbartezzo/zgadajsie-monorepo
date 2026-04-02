@@ -1,5 +1,8 @@
+import { APP_VERSION } from './version';
+
 export const environment = {
   production: false,
   apiUrl: '/api',
-  maintenance: true,
+  version: APP_VERSION,
+  maintenance: false,
 };

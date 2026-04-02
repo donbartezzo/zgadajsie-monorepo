@@ -17,7 +17,9 @@
 
     <p class="mt-6 text-xs text-neutral-400">
       Copyright &copy; {{ currentYear }} {{ APP_BRAND.NAME }}. Wszelkie prawa zastrzeżone.
-      <span class="ml-2">Wersja: {{ appVersion }}</span>
+      @if (appVersion) {
+        <span>Wersja: {{ appVersion }}</span>
+      }
     </p>
 
     <!-- Navigation links -->

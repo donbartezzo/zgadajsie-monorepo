@@ -8,6 +8,7 @@
     "start:remote": "concurrently --kill-others -n TUNNEL,FRONTEND,BACKEND -c yellow,blue,green \"ssh -L 5454:10.0.1.2:5432 root@204.168.205.171 -N -o ExitOnForwardFailure=yes\" \"pnpm frontend:serve\" \"sleep 2 && dotenv -e .env.dev -- nx serve backend\"",
     "build": "pnpm frontend:build && pnpm backend:build",
     "test": "pnpm frontend:test && pnpm backend:test",
+    "frontend:version:ci": "GENERATE_FRONTEND_VERSION=true node scripts/generate-frontend-version.mjs",
     "frontend:serve": "cd frontend && npx -y @angular/cli@21.2.5 serve",
     "frontend:build": "cd frontend && npx -y @angular/cli@21.2.5 build",
     "frontend:test": "cd frontend && npx -y @angular/cli@21.2.5 test",
