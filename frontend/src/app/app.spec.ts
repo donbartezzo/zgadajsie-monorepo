@@ -11,7 +11,12 @@ describe('App', () => {
 
   it('should render maintenance screen when maintenance is true', () => {
     const fixture = TestBed.createComponent(App);
-    // Since environment.maintenance is true in tests, maintenance screen should render
+    // Override the readonly maintenance property
+    Object.defineProperty(fixture.componentInstance, 'maintenance', {
+      value: true,
+      writable: false,
+      configurable: true,
+    });
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.app')).toBeTruthy();
@@ -21,8 +26,12 @@ describe('App', () => {
 
   it('should render normal app when maintenance is false', () => {
     const fixture = TestBed.createComponent(App);
-    // Override the component's maintenance property to false
-    (fixture.componentInstance as App).maintenance = false;
+    // Override the readonly maintenance property
+    Object.defineProperty(fixture.componentInstance, 'maintenance', {
+      value: false,
+      writable: false,
+      configurable: true,
+    });
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.app')).toBeTruthy();
@@ -32,8 +41,12 @@ describe('App', () => {
 
   it('should render app components when maintenance is false', () => {
     const fixture = TestBed.createComponent(App);
-    // Override the component's maintenance property to false
-    (fixture.componentInstance as App).maintenance = false;
+    // Override the readonly maintenance property
+    Object.defineProperty(fixture.componentInstance, 'maintenance', {
+      value: false,
+      writable: false,
+      configurable: true,
+    });
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('app-snackbar')).toBeTruthy();
