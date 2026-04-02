@@ -1,6 +1,7 @@
 # ─── Stage 1: Build ──────────────────────────────────────────────────────────
 FROM node:24-slim AS builder
 
+# Force rebuild: 2026-04-02 15:54
 ARG BUILD_CONFIGURATION=dev
 
 WORKDIR /app
