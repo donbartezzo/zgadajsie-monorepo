@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
@@ -9,6 +16,7 @@ import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-sta
 import { UserService } from '../../../../core/services/user.service';
 import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { environment } from '../../../../../environments/environment';
 import { Event as EventModel } from '../../../../shared/types';
 import { EventStatus, EventTimeStatus } from '@zgadajsie/shared';
 import {
@@ -33,11 +41,13 @@ import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm
     <div class="p-4">
       <div class="flex items-center justify-between mb-4">
         <h1 class="text-xl font-bold text-neutral-900">Moje wydarzenia</h1>
-        <a routerLink="/o/w/new">
-          <app-button appearance="soft" color="primary" size="sm">
-            <app-icon name="plus" size="sm"></app-icon> Nowe
-          </app-button>
-        </a>
+        @if (canCreateEvents()) {
+          <a routerLink="/o/w/new">
+            <app-button appearance="soft" color="primary" size="sm">
+              <app-icon name="plus" size="sm"></app-icon> Nowe
+            </app-button>
+          </a>
+        }
       </div>
 
       @if (loading()) {
@@ -131,6 +141,7 @@ export class MyEventsComponent implements OnInit {
 
   readonly events = signal<EventModel[]>([]);
   readonly loading = signal(true);
+  readonly canCreateEvents = computed(() => environment.enableEventCreation);
 
   ngOnInit(): void {
     this.userService.getMyEvents().subscribe({

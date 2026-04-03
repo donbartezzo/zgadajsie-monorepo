@@ -9,8 +9,11 @@ import {
   Query,
   UseGuards,
   ParseUUIDPipe,
+  ForbiddenException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { EventsService } from './events.service';
+import { TEMPORARY_CONFIG } from '../../common/config/temporary-config';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
@@ -23,11 +26,23 @@ import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
 @Controller('events')
 export class EventsController {
-  constructor(private eventsService: EventsService) {}
+  constructor(
+    private eventsService: EventsService,
+    private configService: ConfigService,
+  ) {}
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() dto: CreateEventDto) {
+    const enableEventCreation = this.configService.get<string>('ENABLE_EVENT_CREATION', 'true');
+    const isExemptUser = user.email === TEMPORARY_CONFIG.exemptEmailFromEventCreationBlock;
+
+    if (enableEventCreation !== 'true' && !isExemptUser) {
+      throw new ForbiddenException(
+        'Tworzenie nowych wydarzeń jest tymczasowo wyłączone. Przepraszamy za utrudnienia.',
+      );
+    }
+
     return this.eventsService.create(user.id, dto);
   }
 

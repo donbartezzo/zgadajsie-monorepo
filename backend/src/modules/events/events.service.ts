@@ -9,7 +9,6 @@ import {
   MILLISECONDS_PER_HOUR,
   EventGender,
   EventVisibility,
-  PaymentStatus,
   NotificationKind,
 } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';

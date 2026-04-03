@@ -9,6 +9,7 @@ import { setEventResolvedTitle } from './core/guards/event-seo-title.resolver';
 import { verifiedUserGuard } from './core/guards/verified-user.guard';
 import { participantGuard } from './core/guards/participant.guard';
 import { organizerGuard } from './core/guards/organizer.guard';
+import { eventCreationGuard } from './core/guards/event-creation.guard';
 
 const BARE_LAYOUT = {
   showBorder: false,
@@ -163,7 +164,7 @@ export const appRoutes: Route[] = [
       import('./features/events/pages/event-form/event-form.component').then(
         (m) => m.EventFormComponent,
       ),
-    canActivate: [verifiedUserGuard],
+    canActivate: [verifiedUserGuard, eventCreationGuard],
     data: {
       title: 'Nowe wydarzenie',
       breadcrumb: { parent: '/profile/events', label: 'Moje wydarzenia' },

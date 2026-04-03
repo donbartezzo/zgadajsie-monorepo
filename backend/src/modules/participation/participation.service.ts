@@ -228,8 +228,8 @@ export class ParticipationService {
         waitingReason: isNewUser
           ? 'NEW_USER'
           : phase === 'PRE_ENROLLMENT'
-          ? 'PRE_ENROLLMENT'
-          : 'NO_SLOTS',
+            ? 'PRE_ENROLLMENT'
+            : 'NO_SLOTS',
       },
       include: { user: { select: USER_SELECT }, slot: true },
     });
@@ -465,6 +465,13 @@ export class ParticipationService {
     participationId: string,
     currentUserId: string,
   ): Promise<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
+    const enableOnlinePayments = this.configService.get<string>('ENABLE_ONLINE_PAYMENTS', 'true');
+    if (enableOnlinePayments !== 'true') {
+      throw new ForbiddenException(
+        'Płatności online są tymczasowo wyłączone. Skontaktuj się z organizatorem w sprawie płatności gotówką.',
+      );
+    }
+
     const participation = await this.prisma.eventParticipation.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
@@ -675,7 +682,7 @@ export class ParticipationService {
     const roleConfig = event.roleConfig as unknown as EventRoleConfig | null;
 
     // Reset to wanting-in state (update roleKey if provided)
-    const updated = await this.prisma.eventParticipation.update({
+    await this.prisma.eventParticipation.update({
       where: { id: participationId },
       data: { wantsIn: true, withdrawnBy: null, roleKey },
       include: { user: { select: USER_SELECT }, slot: true },

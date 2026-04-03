@@ -7,4 +7,6 @@ export const environment = {
   maintenance: true,
   enableGoogleLogin: false,
   enableFacebookLogin: false,
+  enableEventCreation: false,
+  enableOnlinePayments: false,
 };
