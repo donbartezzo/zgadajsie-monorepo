@@ -16,6 +16,29 @@ set -a
 source "$OPS_CONFIG"
 set +a
 
+if [ ! -f "$ENV_FILE" ]; then
+  echo "Błąd: Brak pliku środowiskowego $ENV_FILE"
+  exit 1
+fi
+
+build_tunnel_database_url() {
+  DATABASE_URL="$1" TUNNEL_PORT="$2" node -e '
+    const databaseUrl = process.env.DATABASE_URL;
+    const tunnelPort = process.env.TUNNEL_PORT;
+
+    if (!databaseUrl) {
+      console.error("Błąd: DATABASE_URL nie został ustawiony w pliku środowiskowym");
+      process.exit(1);
+    }
+
+    const url = new URL(databaseUrl);
+    url.hostname = "localhost";
+    url.port = tunnelPort;
+
+    process.stdout.write(url.toString());
+  '
+}
+
 # Validate required variables
 if [ -z "$SSH_HOST" ] || [ -z "$DB_CONTAINER" ] || [ -z "$TUNNEL_PORT" ] || [ -z "$ENV_FILE" ]; then
   echo "Błąd: Brak wymaganych zmiennych w $OPS_CONFIG"
@@ -85,10 +108,21 @@ else
 fi
 
 echo "🗄️  Uruchamiam migracje..."
-./node_modules/.bin/dotenv -e ${ENV_FILE} -- sh -c 'cd backend && npx prisma migrate deploy'
+set -a
+source "$ENV_FILE"
+set +a
+
+if [ -z "$DATABASE_URL" ]; then
+  echo "Błąd: DATABASE_URL nie został ustawiony w $ENV_FILE"
+  exit 1
+fi
+
+REMOTE_DATABASE_URL="$(build_tunnel_database_url "$DATABASE_URL" "$TUNNEL_PORT")"
+
+DATABASE_URL="$REMOTE_DATABASE_URL" sh -c 'cd backend && npx prisma migrate deploy'
 
 echo "🌱 Uruchamiam seed (${SEED_LABEL})..."
-./node_modules/.bin/dotenv -e ${ENV_FILE} -- npx tsx ${SEED_FILE}
+DATABASE_URL="$REMOTE_DATABASE_URL" npx tsx ${SEED_FILE}
 
 echo ""
 echo "✅ Setup zakończony pomyślnie!"
