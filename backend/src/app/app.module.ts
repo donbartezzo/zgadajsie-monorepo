@@ -20,6 +20,7 @@ import { CoverImagesModule } from '../modules/cover-images/cover-images.module';
 import { AnnouncementsModule } from '../modules/announcements/announcements.module';
 import { CitySubscriptionsModule } from '../modules/city-subscriptions/city-subscriptions.module';
 import { SlotModule } from '../modules/slots/slot.module';
+import { SystemSettingsModule } from '../modules/system-settings/system-settings.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { SlotModule } from '../modules/slots/slot.module';
     AnnouncementsModule,
     CitySubscriptionsModule,
     SlotModule,
+    SystemSettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

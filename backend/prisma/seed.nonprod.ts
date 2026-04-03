@@ -42,7 +42,7 @@ async function main() {
   // ─── Miasta ──────────────────────────────────────────────────────────────
   console.log('Tworzę miasta...');
   const city = await prisma.city.create({
-    data: { name: 'Zielona Góra', slug: 'zielona-gora' },
+    data: { name: 'Zielona Góra', slug: 'zielona-gora', isActive: true },
   });
 
   // ─── Dyscypliny ──────────────────────────────────────────────────────────

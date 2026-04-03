@@ -176,13 +176,11 @@
     <!-- ═══════════════════════════════════════════════════
  PAGE CONTENT (router-outlet goes here)
  ═══════════════════════════════════════════════════ -->
-    <div
-      [ngClass]="[
-        'relative',
-        _showHeader ? '-mt-6' : '',
-        _centerContent ? 'flex flex-1 items-center justify-center' : '',
-      ]"
-    >
+    @if (globalInfoPage.visible()) {
+      <div class="fixed inset-0 z-50 overflow-hidden">
+        <app-info-page />
+      </div>
+    } @else {
       <div
         [ngClass]="[
           'rounded-2xl border',
@@ -191,27 +189,36 @@
           _contentClass || layoutConfig.contentClass(),
         ]"
       >
-        @if (_showHeader) {
-          <!-- Drag handle -->
-          <div class="mx-auto mt-2 h-[5px] w-12 rounded-full bg-neutral-300/60 sm:hidden"></div>
-        }
+        <div
+          [ngClass]="[
+            'rounded-2xl border',
+            _showBorder ? 'shadow-sm border-neutral-100' : 'border-transparent',
+            _centerContent ? 'overflow-visible w-full' : 'overflow-hidden',
+            _contentClass || layoutConfig.contentClass(),
+          ]"
+        >
+          @if (_showHeader) {
+            <!-- Drag handle -->
+            <div class="mx-auto mt-2 h-[5px] w-12 rounded-full bg-neutral-300/60 sm:hidden"></div>
+          }
 
-        <!-- Notification alert (global) -->
-        @if (notifStatus.alertVisible()) {
-          <div class="px-3 pt-3">
-            <app-notification-alert></app-notification-alert>
-          </div>
-        }
+          <!-- Notification alert (global) -->
+          @if (notifStatus.alertVisible()) {
+            <div class="px-3 pt-3">
+              <app-notification-alert></app-notification-alert>
+            </div>
+          }
 
-        <ng-content></ng-content>
+          <ng-content></ng-content>
+        </div>
       </div>
-    </div>
 
-    <!-- ═══════════════════════════════════════════════════
+      <!-- ═══════════════════════════════════════════════════
  PAGE FOOTER
  ═══════════════════════════════════════════════════ -->
-    @if (_showFooter) {
-      <app-footer />
+      @if (_showFooter) {
+        <app-footer />
+      }
     }
   </div>
 }

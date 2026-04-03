@@ -9,7 +9,6 @@ import {
   MILLISECONDS_PER_HOUR,
   EventGender,
   EventVisibility,
-  PaymentStatus,
   NotificationKind,
 } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
@@ -19,6 +18,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { CoverImagesService } from '../cover-images/cover-images.service';
 import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptions.service';
 import { SlotService } from '../slots/slot.service';
+import { SystemSettingsService } from '../system-settings/system-settings.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
@@ -40,9 +40,20 @@ export class EventsService {
     private coverImagesService: CoverImagesService,
     private citySubscriptionsService: CitySubscriptionsService,
     private slotService: SlotService,
+    private systemSettingsService: SystemSettingsService,
   ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
+    // Check if user is authorized to create events
+    const isAuthorized =
+      await this.systemSettingsService.isUserAuthorizedToCreateEvents(organizerId);
+
+    if (!isAuthorized) {
+      throw new ForbiddenException(
+        'Dodawanie nowych wydarzeń jest w tej chwili ograniczone tylko do wyznaczonych organizatorów. Jeśli chciałbyś być jednym z nich, skontaktuj się z administracją serwisu.',
+      );
+    }
+
     const coverImageId = await this.resolveCoverImageId(dto.coverImageId, dto.disciplineSlug);
 
     const startsAt = new Date(dto.startsAt);

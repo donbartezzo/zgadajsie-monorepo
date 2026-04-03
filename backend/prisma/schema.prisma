@@ -129,6 +129,7 @@ model User {
   reprimandsGiven             Reprimand[]             @relation("ReprimandFrom")
   reprimandsReceived          Reprimand[]             @relation("ReprimandTo")
   socialAccounts              SocialAccount[]
+  authorizedOrganizerEntries AuthorizedOrganizer[] @relation("AuthorizedOrganizerEntries")
 }
 
 model SocialAccount {
@@ -143,11 +144,12 @@ model SocialAccount {
 }
 
 model City {
-  slug          String             @id
+  slug          String                  @id
   name          String
-  isActive      Boolean            @default(true)
+  isActive      Boolean                 @default(true)
   subscriptions CitySubscription[]
   events        Event[]
+  authorizedOrganizers AuthorizedOrganizer[] @relation("AuthorizedOrganizers")
 }
 
 model EventDiscipline {
@@ -468,5 +470,29 @@ model CitySubscription {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, citySlug])
+  @@index([citySlug])
+}
+
+model SystemSettings {
+  id                           String   @id @default(uuid())
+  eventCreationRestricted      Boolean  @default(false)
+  onlinePaymentsDisabled       Boolean  @default(false)
+  updatedAt                    DateTime @updatedAt
+  authorizedOrganizers         AuthorizedOrganizer[]
+
+  @@map("system_settings")
+}
+
+model AuthorizedOrganizer {
+  id                String          @id @default(uuid())
+  systemSettingsId  String          @default("default")
+  userId            String
+  citySlug          String?
+  createdAt         DateTime        @default(now())
+  systemSettings    SystemSettings  @relation(fields: [systemSettingsId], references: [id])
+  user              User            @relation("AuthorizedOrganizerEntries", fields: [userId], references: [id], onDelete: Cascade)
+  city              City?           @relation("AuthorizedOrganizers", fields: [citySlug], references: [slug])
+
+  @@unique([systemSettingsId, userId])
   @@index([citySlug])
 }

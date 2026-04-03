@@ -27,6 +27,8 @@ import { CoverImageService } from '../../../../core/services/cover-image.service
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
+import { SystemSettingsService } from '../../../../core/services/system-settings.service';
+import { GlobalInfoPageService } from '../../../../shared/layouts/page-layout/global-info-page.service';
 import { DictionaryItem, City, Event, CoverImage, EventRoleConfig } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 import {
@@ -97,7 +99,6 @@ class EventValidators {
       <h1 class="text-xl font-bold text-neutral-900 mb-4">
         {{ isEdit() ? 'Edytuj wydarzenie' : 'Nowe wydarzenie' }}
       </h1>
-
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
         <app-card>
           <div class="p-4 space-y-4">
@@ -133,7 +134,9 @@ class EventValidators {
                 >
                   <option value="">Wybierz...</option>
                   @for (d of disciplines(); track d.slug) {
-                    <option [value]="d.slug">{{ 'dict.discipline.' + d.slug | transloco }}</option>
+                    <option [value]="d.slug">
+                      {{ 'dict.discipline.' + d.slug | transloco }}
+                    </option>
                   }
                 </select>
               </div>
@@ -168,8 +171,8 @@ class EventValidators {
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 >
                   <option value="">Wybierz...</option>
-                  @for (c of cities(); track c.slug) {
-                    <option [value]="c.slug">{{ c.name }}</option>
+                  @for (city of cities(); track city.slug) {
+                    <option [value]="city.slug">{{ city.name }}</option>
                   }
                 </select>
               </div>
@@ -184,12 +187,12 @@ class EventValidators {
             <!-- Daty -->
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-medium text-neutral-600 mb-1">Początek</label>
-                <app-date-time-input formControlName="startsAt" />
+                <label class="block text-xs font-medium text-neutral-600 mb-1">Kiedy</label>
+                <app-date-time-input formControlName="startsAt"></app-date-time-input>
               </div>
               <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1">Koniec</label>
-                <app-date-time-input formControlName="endsAt" />
+                <app-date-time-input formControlName="endsAt"></app-date-time-input>
               </div>
             </div>
 
@@ -461,6 +464,8 @@ export class EventFormComponent implements OnInit {
   private readonly dictService = inject(DictionaryService);
   private readonly snackbar = inject(SnackbarService);
   private readonly breadcrumb = inject(BreadcrumbService);
+  private readonly systemSettingsService = inject(SystemSettingsService);
+  private readonly globalInfoPage = inject(GlobalInfoPageService);
 
   readonly isEdit = signal(false);
   readonly submitting = signal(false);
@@ -475,11 +480,11 @@ export class EventFormComponent implements OnInit {
   readonly coverImages = signal<CoverImage[]>([]);
   readonly coverImagesLoading = signal(false);
   readonly selectedCoverImageId = signal<string | null>(null);
-
   readonly disciplineRoles = signal<DisciplineParticipantRoles | null>(null);
   readonly roleSlots = signal<RoleSlotConfig[]>([]);
   readonly rolesEnabled = signal(false);
-
+  readonly errorMessage = signal<string | null>(null);
+  readonly loading = signal(true);
   readonly roleSlotsSum = computed(() => this.roleSlots().reduce((sum, r) => sum + r.slots, 0));
 
   private eventId: string | null = null;
@@ -511,6 +516,49 @@ export class EventFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.globalInfoPage.hide();
+    // Check if event creation is restricted before loading anything
+    this.systemSettingsService.getSettings().subscribe({
+      next: (settings) => {
+        if (settings.eventCreationRestricted) {
+          this.systemSettingsService.canCurrentUserCreateEvents().subscribe({
+            next: (canCreate) => {
+              if (!canCreate) {
+                this.showRestrictedMessage();
+                return;
+              }
+
+              this.globalInfoPage.hide();
+
+              this.loadFormData();
+            },
+            error: () => {
+              this.loadFormData();
+            },
+          });
+          return;
+        }
+        this.loadFormData();
+      },
+      error: () => {
+        // If we can't fetch settings, proceed normally
+        this.loadFormData();
+      },
+    });
+  }
+
+  private showRestrictedMessage(): void {
+    this.globalInfoPage.show({
+      title: 'Tworzenie wydarzeń jest ograniczone',
+      description:
+        'Dodawanie nowych wydarzeń jest w tej chwili ograniczone tylko do wyznaczonych organizatorów w danych miastach. Jeśli chciałbyś być jednym z nich, skontaktuj się z administracją serwisu.',
+      icon: 'shield',
+      buttonLabel: 'Skontaktuj się z administracją',
+      buttonLink: '/contact',
+    });
+  }
+
+  private loadFormData(): void {
     forkJoin({
       disciplines: this.dictService.getDisciplines(),
       facilities: this.dictService.getFacilities(),

@@ -416,6 +416,18 @@ export const appRoutes: Route[] = [
       breadcrumb: { parent: '/admin', label: 'Panel admina' },
     },
   },
+  {
+    path: 'admin/system-settings',
+    loadComponent: () =>
+      import('./features/admin/pages/admin-system-settings/admin-system-settings.component').then(
+        (m) => m.AdminSystemSettingsComponent,
+      ),
+    canActivate: [adminGuard],
+    data: {
+      title: 'Ustawienia systemowe',
+      breadcrumb: { parent: '/admin', label: 'Panel admina' },
+    },
+  },
 
   // ── Static ──
   {
