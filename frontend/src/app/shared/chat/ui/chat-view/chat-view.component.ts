@@ -51,7 +51,7 @@ export interface ChatViewMessage {
       @if (eventId() && organizerId()) {
       <button
         type="button"
-        class="mt-2 inline-flex items-center gap-2 rounded-xl bg-primary-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-primary-500/90 transition-colors"
+        class="mt-2 inline-flex items-center gap-2 rounded-xl bg-primary-500 px-5 py-2.5 text-sm font-medium text-white shadow-xs hover:bg-primary-500/90 transition-colors"
         (click)="navigateToOrganizer()"
       >
         <app-icon name="send" size="sm"></app-icon>
@@ -117,7 +117,7 @@ export interface ChatViewMessage {
           (keyup.enter)="send()"
           (input)="onTyping()"
           placeholder="Napisz wiadomość..."
-          class="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          class="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
         />
         <app-button appearance="soft" color="primary" (clicked)="send()">
           <app-icon name="send" size="sm"></app-icon>

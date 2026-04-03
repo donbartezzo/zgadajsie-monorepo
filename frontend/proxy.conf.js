@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-// Load root .env without external dependencies
-const envPath = path.resolve(__dirname, '..', '.env');
+// Load root .env.local without external dependencies
+const envPath = path.resolve(__dirname, '..', '.env.local');
 if (fs.existsSync(envPath)) {
   fs.readFileSync(envPath, 'utf8')
     .split('\n')

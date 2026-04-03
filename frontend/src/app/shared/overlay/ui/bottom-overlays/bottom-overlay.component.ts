@@ -20,7 +20,7 @@ import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../types/colors';
     <div class="fixed inset-x-0 top-0 bottom-16 z-[60] flex flex-col max-w-app mx-auto">
       <button
         type="button"
-        class="absolute inset-0 m-0 border-0 bg-black/50 p-0 backdrop-blur-sm"
+        class="absolute inset-0 m-0 border-0 bg-black/50 p-0 backdrop-blur-xs"
         (click)="closed.emit()"
         aria-label="Zamknij overlay"
       ></button>

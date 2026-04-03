@@ -39,7 +39,7 @@
     @if (_editingMode) {
       <input
         [(ngModel)]="tempDisplayName"
-        class="border-b-2 border-primary-500 bg-transparent text-center font-bold text-neutral-900 outline-none"
+        class="border-b-2 border-primary-500 bg-transparent text-center font-bold text-neutral-900 outline-hidden"
         [ngClass]="nameInputClass()"
         (keyup.enter)="saveChanges()"
         (keyup.escape)="cancelEditing()"

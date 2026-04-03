@@ -1,12 +1,34 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@use 'tailwindcss';
+@use 'styles/tokens';
+@config '../tailwind.config.js';
 
 // ────────────────────────────────────────────────────────────
-// SEMANTIC COLOR TOKENS - CSS Variables (Source of Truth)
-// Import musi być PO @tailwind directives, żeby :root był dostępny.
+// Tailwind v4 compat: przywrócenie domyślnego koloru border z v3.
+// W v4 default border-color zmienił się z gray-200 na currentColor.
 // ────────────────────────────────────────────────────────────
-@import 'styles/tokens';
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: rgb(var(--color-neutral-200));
+  }
+
+  // Fix cursor style for buttons after Tailwind preflight appearance: button
+  button,
+  input:where([type='button'], [type='reset'], [type='submit']),
+  ::file-selector-button {
+    cursor: pointer;
+  }
+
+  // Keep not-allowed for disabled buttons
+  button:disabled,
+  input:where([type='button'], [type='reset'], [type='submit']):disabled,
+  ::file-selector-button:disabled {
+    cursor: not-allowed;
+  }
+}
 
 /* Sticky layout base only */
 html,

@@ -13,6 +13,9 @@
         "cwd": "backend"
       },
       "configurations": {
+        "local": {
+          "args": ["--node-env=development"]
+        },
         "development": {
           "args": ["--node-env=development"]
         }
@@ -46,13 +49,16 @@
     "serve": {
       "continuous": true,
       "executor": "@nx/js:node",
-      "defaultConfiguration": "development",
+      "defaultConfiguration": "local",
       "dependsOn": ["build"],
       "options": {
         "buildTarget": "backend:build",
         "runBuildTargetDependencies": false
       },
       "configurations": {
+        "local": {
+          "buildTarget": "backend:build:local"
+        },
         "development": {
           "buildTarget": "backend:build:development"
         },
@@ -86,8 +92,13 @@
     "db-seed": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "dotenv -e .env -- npx tsx prisma/seed.ts",
+        "command": "dotenv -e ../config/env/.env.local -- npx tsx prisma/seed.nonprod.ts",
         "cwd": "backend"
+      },
+      "configurations": {
+        "development": {
+          "command": "dotenv -e ../config/env/.env.dev -- npx tsx prisma/seed.nonprod.ts"
+        }
       }
     }
   }

@@ -15,7 +15,7 @@ import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.co
 import { DateBadgeComponent } from '../date-badge/date-badge.component';
 import { EventStatusBadgeComponent } from '../event-status-badge/event-status-badge.component';
 import { EventListItem } from '../../../types';
-import { coverImageUrl } from '../../../types/cover-image.interface';
+import { getEventCoverUrl } from '../../../types/cover-image.interface';
 import {
   getEventCountdown,
   formatMonthShort,
@@ -47,7 +47,7 @@ import { DateLabelsService } from '../../../services/date-labels.service';
 
     <div
       [class]="
-        'rounded-2xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 bg-white border-2 ' +
+        'rounded-2xl shadow-xs overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 bg-white border-2 ' +
         borderClass()
       "
       (click)="selected.emit(_event)"
@@ -90,25 +90,25 @@ import { DateLabelsService } from '../../../services/date-labels.service';
         </div>
 
         <div class="absolute inset-x-0 bottom-0 p-3">
-          <h3 class="text-sm font-bold text-white line-clamp-2 drop-shadow-sm">
+          <h3 class="text-sm font-bold text-white line-clamp-2 drop-shadow-xs">
             {{ _event.title }}
           </h3>
           <div class="mt-1 flex flex-wrap gap-1">
             @if (_event.discipline) {
               <span
-                class="rounded-sm bg-primary-500 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white"
+                class="rounded-xs bg-primary-500 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white"
                 >{{ 'dict.discipline.' + _event.discipline!.slug | transloco }}</span
               >
             }
             @if (_event.level) {
               <span
-                class="rounded-sm bg-warning-300 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white"
+                class="rounded-xs bg-warning-300 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white"
                 >{{ 'dict.level.' + _event.level!.slug | transloco }}</span
               >
             }
             @if (_event.facility) {
               <span
-                class="rounded-sm bg-black/25 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white backdrop-blur-sm"
+                class="rounded-xs bg-black/25 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white backdrop-blur-xs"
                 >{{ 'dict.facility.' + _event.facility!.slug | transloco }}</span
               >
             }
@@ -198,10 +198,7 @@ export class EventCardComponent implements OnDestroy {
   private readonly now = signal(nowInZone().toJSDate());
   private intervalId?: number;
 
-  readonly coverUrl = computed(() => {
-    const event = this.event();
-    return coverImageUrl(event.discipline?.slug || '', event.coverImage?.filename || '');
-  });
+  readonly coverUrl = computed(() => getEventCoverUrl(this.event()));
 
   readonly isToday = computed(() => {
     const eventDate = this.event().startsAt;

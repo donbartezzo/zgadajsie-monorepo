@@ -1,7 +1,7 @@
 <div class="relative">
   <button
     type="button"
-    class="flex w-full items-center justify-between gap-3 rounded-xl border border-neutral-300 bg-white px-3 py-2 text-left text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-neutral-100"
+    class="flex w-full items-center justify-between gap-3 rounded-xl border border-neutral-300 bg-white px-3 py-2 text-left text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-neutral-100"
     [disabled]="disabled()"
     (click)="toggle()"
   >
@@ -21,7 +21,7 @@
           <input
             type="date"
             aria-label="Data wydarzenia"
-            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
             [value]="dateValue()"
             (input)="onDateChange($any($event.target).value)"
           />
@@ -32,7 +32,7 @@
             <div class="mb-1 block text-xs font-medium text-neutral-600">Godzina</div>
             <select
               aria-label="Godzina wydarzenia"
-              class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
               [value]="hourValue()"
               (change)="onHourChange($any($event.target).value)"
             >
@@ -46,7 +46,7 @@
             <div class="mb-1 block text-xs font-medium text-neutral-600">Minuta</div>
             <select
               aria-label="Minuta wydarzenia"
-              class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
               [value]="minuteValue()"
               (change)="onMinuteChange($any($event.target).value)"
             >

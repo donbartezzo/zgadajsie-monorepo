@@ -6,6 +6,7 @@ import { SnackbarComponent } from './shared/ui/snackbar/snackbar.component';
 import { BottomOverlaysComponent } from './shared/overlay/ui/bottom-overlays/bottom-overlays.component';
 import { ConfirmModalComponent } from './shared/ui/confirm-modal/confirm-modal.component';
 import { PageLayoutComponent } from './shared/layouts/page-layout/page-layout.component';
+import { environment } from '../environments/environment';
 
 @Component({
   imports: [
@@ -22,4 +23,6 @@ import { PageLayoutComponent } from './shared/layouts/page-layout/page-layout.co
 })
 export class App {
   protected title = APP_BRAND.NAME;
+  readonly maintenance = environment.maintenance;
+  readonly contactEmail = APP_BRAND.CONTACT_EMAIL;
 }

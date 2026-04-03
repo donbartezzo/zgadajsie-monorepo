@@ -1,0 +1,185 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  release:
+    types: [published]
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma:generate
+
+      - name: Build backend
+        run: pnpm nx build backend
+
+      - name: Build frontend (dev)
+        run: pnpm nx build frontend --configuration=dev
+
+      - name: Test backend
+        run: pnpm nx test backend --passWithNoTests
+
+      - name: Test frontend
+        run: pnpm nx test frontend --passWithNoTests
+
+  deploy-dev:
+    needs: ci
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-dev
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image (dev)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: backend/Dockerfile
+          push: true
+          provenance: false
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:dev
+            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+        # NOTE: Coolify should deploy by immutable :sha tag, not :dev alias
+
+      - name: Build and push frontend image (dev)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: frontend/Dockerfile
+          push: true
+          provenance: false
+          build-args: |
+            BUILD_CONFIGURATION=dev
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:dev
+            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+        # NOTE: Coolify should deploy by immutable :sha tag, not :dev alias
+
+      - name: Deploy backend via Coolify (dev)
+        run: |
+          response=$(curl --fail --show-error --silent -X GET \
+            "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_BACKEND_UUID_DEV }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}")
+          echo "Coolify response: $response"
+          if [ -z "$response" ]; then
+            echo "Error: Empty response from Coolify API"
+            exit 1
+          fi
+
+      - name: Deploy frontend via Coolify (dev)
+        run: |
+          response=$(curl --fail --show-error --silent -X GET \
+            "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_FRONTEND_UUID_DEV }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}")
+          echo "Coolify response: $response"
+          if [ -z "$response" ]; then
+            echo "Error: Empty response from Coolify API"
+            exit 1
+          fi
+
+  deploy-prod:
+    needs: ci
+    if: github.event_name == 'release' && github.event.action == 'published'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image (prod)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: backend/Dockerfile
+          push: true
+          provenance: false
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:stable
+            ${{ env.BACKEND_IMAGE }}:${{ github.event.release.tag_name }}
+            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+        # NOTE: Coolify should deploy by immutable :vX.Y.Z tag, not :stable alias
+
+      - name: Build and push frontend image (prod)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: frontend/Dockerfile
+          push: true
+          provenance: false
+          build-args: |
+            BUILD_CONFIGURATION=prod
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:stable
+            ${{ env.FRONTEND_IMAGE }}:${{ github.event.release.tag_name }}
+            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+        # NOTE: Coolify should deploy by immutable :vX.Y.Z tag, not :stable alias
+
+      - name: Deploy backend via Coolify (prod)
+        run: |
+          response=$(curl --fail --show-error --silent -X GET \
+            "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_BACKEND_UUID_PROD }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}")
+          echo "Coolify response: $response"
+          if [ -z "$response" ]; then
+            echo "Error: Empty response from Coolify API"
+            exit 1
+          fi
+
+      - name: Deploy frontend via Coolify (prod)
+        run: |
+          response=$(curl --fail --show-error --silent -X GET \
+            "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_FRONTEND_UUID_PROD }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}")
+          echo "Coolify response: $response"
+          if [ -z "$response" ]; then
+            echo "Error: Empty response from Coolify API"
+            exit 1
+          fi

@@ -173,7 +173,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
         <textarea
           class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm
             text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500
-            focus:ring-1 focus:ring-primary-500 focus:outline-none"
+            focus:ring-1 focus:ring-primary-500 focus:outline-hidden"
           rows="3"
           placeholder="Treść komunikatu..."
           [(ngModel)]="announcementMessage"
@@ -181,7 +181,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
         <div class="mt-2 flex items-center gap-3">
           <select
             class="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs
-              text-neutral-900 focus:border-primary-500 focus:outline-none"
+              text-neutral-900 focus:border-primary-500 focus:outline-hidden"
             [(ngModel)]="announcementPriority"
           >
             <option value="INFORMATIONAL">Informacyjny</option>

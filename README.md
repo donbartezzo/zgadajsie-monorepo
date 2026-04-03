@@ -74,29 +74,33 @@ W katalogu głównym repozytorium:
 pnpm install
 ```
 
-## Konfiguracja backendu (.env, baza danych)
+## Konfiguracja środowisk (.env.local, .env.dev, .env.prod)
 
-1. Skopiuj plik przykładowy `.env`:
+1. Dla lokalnego `pnpm start` skopiuj plik przykładowy do root `.env.local`:
 
    ```sh
-   cp backend/.env.example backend/.env
+   cp .env.example .env.local
    ```
 
-2. W pliku `backend/.env` sprawdź i w razie potrzeby zmodyfikuj zmienną `DATABASE_URL`, aby była spójna z konfiguracją z `docker-compose.yml` (użytkownik, hasło, port, nazwa bazy). Domyślnie Postgres w kontenerze nasłuchuje na `5432`, a na hoście jest wystawiony na `5433`.
+2. W `.env.local` sprawdź i w razie potrzeby zmodyfikuj zmienną `DATABASE_URL`, aby była spójna z konfiguracją z `docker-compose.yml` (użytkownik, hasło, port, nazwa bazy). Domyślnie Postgres w kontenerze nasłuchuje na `5432`, a na hoście jest wystawiony na `5433`.
 
-3. (Opcjonalnie, po zmianie schematu) wygeneruj klienta Prisma:
+3. Jeśli chcesz uruchamiać jawnie środowisko developerskie lub produkcyjne, przygotuj odpowiednio:
+   - `.env.dev` dla `nx serve backend --configuration development` / dev deployu,
+   - `.env.prod` dla produkcji.
+
+4. (Opcjonalnie, po zmianie schematu) wygeneruj klienta Prisma:
 
    ```sh
    pnpm prisma:generate
    ```
 
-4. Uruchom migracje bazy danych:
+5. Uruchom migracje bazy danych:
 
    ```sh
    pnpm prisma:migrate
    ```
 
-5. (Opcjonalnie) zasil bazę danymi startowymi:
+6. (Opcjonalnie) zasil bazę danymi startowymi:
 
    ```sh
    pnpm backend:db:seed

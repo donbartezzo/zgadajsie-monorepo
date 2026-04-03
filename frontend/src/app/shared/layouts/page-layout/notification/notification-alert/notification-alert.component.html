@@ -14,10 +14,10 @@
     @switch (_state) {
       <!-- Not logged in -->
       @case ('NOT_LOGGED_IN') {
-        <div class="notif-box-login flex items-center gap-2.5 rounded-lg border px-3 py-2">
-          <app-icon name="bell" size="xs" class="notif-icon-login shrink-0"></app-icon>
+        <div class="flex items-center gap-2.5 rounded-lg border border-primary-200 bg-primary-50 px-3 py-2">
+          <app-icon name="bell" size="xs" class="text-primary-500 shrink-0"></app-icon>
           <p class="flex-1 text-[11px] text-neutral-600 leading-tight">
-            <span class="notif-accent-login">Zaloguj się</span>, żeby
+            <span class="text-primary-500 font-semibold">Zaloguj się</span>, żeby
             @if (_isCity) {
               dostawać informacje o nowych wydarzeniach w mieście
               <span class="font-semibold">{{ _label }}</span>
@@ -38,17 +38,17 @@
 
       <!-- Off -->
       @case ('OFF') {
-        <div class="notif-box-off flex items-center gap-2.5 rounded-lg border px-3 py-2">
-          <app-icon name="bell" size="xs" class="notif-icon-off shrink-0"></app-icon>
+        <div class="flex items-center gap-2.5 rounded-lg border border-primary-200 bg-primary-50 px-3 py-2">
+          <app-icon name="bell" size="xs" class="text-primary-500 shrink-0"></app-icon>
           <p class="flex-1 text-[11px] text-neutral-600 leading-tight">
             @if (_isCity) {
               Bądź na bieżąco!
-              <span class="notif-accent-off">Włącz powiadomienia</span>
+              <span class="text-primary-500 font-semibold">Włącz powiadomienia</span>
               o nowych wydarzeniach w mieście
               <span class="font-semibold">{{ _label }}</span>
             } @else {
               Nie przegap ważnych informacji!
-              <span class="notif-accent-off">Włącz powiadomienia</span>
+              <span class="text-primary-500 font-semibold">Włącz powiadomienia</span>
               dla tego wydarzenia
             }
           </p>
@@ -65,10 +65,10 @@
 
       <!-- On but incomplete -->
       @case ('ON_INCOMPLETE') {
-        <div class="notif-box-incomplete flex items-center gap-2.5 rounded-lg border px-3 py-2">
-          <app-icon name="bell" size="xs" class="notif-icon-incomplete shrink-0"></app-icon>
+        <div class="flex items-center gap-2.5 rounded-lg border border-warning-200 bg-warning-50 px-3 py-2">
+          <app-icon name="bell" size="xs" class="text-warning-500 shrink-0"></app-icon>
           <p class="flex-1 text-[11px] text-neutral-600 leading-tight">
-            <span class="notif-accent-incomplete">Włącz powiadomienia Push</span>, żeby nie przegapić
+            <span class="text-warning-500 font-semibold">Włącz powiadomienia Push</span>, żeby nie przegapić
             @if (_isCity) {
               nowych wydarzeń w mieście
               <span class="font-semibold">{{ _label }}</span>

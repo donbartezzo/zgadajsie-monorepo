@@ -9,7 +9,7 @@ import { IconComponent } from '../icon/icon.component';
     @if (isOpen()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4 pb-20 max-w-app mx-auto">
       <div
-        class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm max-w-app mx-auto"
+        class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs max-w-app mx-auto"
         (click)="closed.emit()"
       ></div>
       <div

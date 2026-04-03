@@ -31,7 +31,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
             [(ngModel)]="displayName"
             name="displayName"
             required
-            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
             placeholder="Jan Kowalski"
           />
         </div>
@@ -44,7 +44,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
             [(ngModel)]="email"
             name="email"
             required
-            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
             placeholder="twoj@email.pl"
           />
         </div>
@@ -60,7 +60,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
             name="password"
             required
             minlength="8"
-            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
             placeholder="Min. 8 znaków"
           />
         </div>
@@ -75,7 +75,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
             [(ngModel)]="confirmPassword"
             name="confirmPassword"
             required
-            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
             placeholder="Powtórz hasło"
           />
         </div>

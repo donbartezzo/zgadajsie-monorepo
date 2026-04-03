@@ -106,7 +106,7 @@ class EventValidators {
               <label class="block text-sm font-medium text-neutral-700 mb-1">Tytuł</label>
               <input
                 formControlName="title"
-                class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
                 placeholder="Nazwa wydarzenia"
               />
             </div>
@@ -115,7 +115,7 @@ class EventValidators {
               <textarea
                 formControlName="description"
                 rows="4"
-                class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
                 placeholder="Opis wydarzenia..."
               ></textarea>
             </div>
@@ -365,7 +365,7 @@ class EventValidators {
               <label class="block text-xs font-medium text-neutral-600 mb-1">Adres</label>
               <input
                 formControlName="address"
-                class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
                 placeholder="Ulica, numer, miasto"
               />
             </div>

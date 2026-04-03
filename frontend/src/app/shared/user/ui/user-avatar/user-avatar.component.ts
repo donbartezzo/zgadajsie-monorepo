@@ -42,7 +42,7 @@ type AvatarIndicatorType = SemanticColor | 'pending';
       <div class="flex items-center justify-center gap-0.5 -mt-2 relative z-10">
         @for (indicator of statusIndicators(); track indicator.type) {
         <span
-          class="inline-flex items-center justify-center rounded-lg shadow-sm"
+          class="inline-flex items-center justify-center rounded-lg shadow-xs"
           [ngClass]="indicatorClass(indicator.type)"
           [title]="indicator.tooltip"
         >

@@ -1,19 +1,40 @@
-<div class="app">
-  <!-- Rotated tiled background (hidden on mobile, shown on desktop via styles.scss) -->
-  <div class="app-bg-pattern" aria-hidden="true"></div>
-
-  <!-- Main app container (styled on desktop via styles.scss) -->
-  <div class="app-container">
-    <app-snackbar></app-snackbar>
-
-    <app-page-layout>
-      <router-outlet></router-outlet>
-    </app-page-layout>
-
-    <app-bottom-overlays />
-    <app-confirm-modal />
+@if (maintenance) {
+  <div class="app min-h-screen flex items-center justify-center px-4 py-10">
+    <div class="max-w-md w-full rounded-3xl border border-warning-200 bg-white p-6 text-center shadow-xs">
+      <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-warning-50 text-warning-600">
+        <svg viewBox="0 0 24 24" class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 9v4" stroke-linecap="round" />
+          <path d="M12 17h.01" stroke-linecap="round" />
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold text-neutral-900">Trwają prace techniczne</h1>
+      <p class="mt-3 text-sm leading-6 text-neutral-600">Serwis jest chwilowo niedostępny. To nie potrwa długo.</p>
+      <div class="mt-6 rounded-2xl bg-neutral-50 px-4 py-3 text-sm text-neutral-700">
+        W razie pilnych spraw prosimy o kontakt pod adresem: <strong>{{ contactEmail }}</strong>
+      </div>
+    </div>
   </div>
+} @else {
+  <div class="app">
+    <!-- Rotated tiled background (hidden on mobile, shown on desktop via styles.scss) -->
+    <div class="app-bg-pattern" aria-hidden="true"></div>
 
-  <!-- Bottom nav: fixed outside container so overflow:hidden doesn't affect it -->
-  <app-bottom-nav></app-bottom-nav>
-</div>
+    <!-- Main app container (styled on desktop via styles.scss) -->
+    <div class="app-container">
+      <app-snackbar></app-snackbar>
+
+      <app-page-layout>
+        <router-outlet></router-outlet>
+      </app-page-layout>
+
+      <app-bottom-overlays />
+      <app-confirm-modal />
+    </div>
+
+    <!-- Bottom nav: fixed outside container so overflow:hidden doesn't affect it -->
+    <app-bottom-nav></app-bottom-nav>
+  </div>
+}
+
+<!--- test: 03.04 -->

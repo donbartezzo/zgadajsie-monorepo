@@ -14,7 +14,7 @@ import { environment } from '../../../../../environments/environment';
       <!-- Success Message -->
       @if (formSent()) {
         <div class="mb-4">
-          <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div class="bg-white rounded-2xl shadow-xs overflow-hidden">
             <div class="bg-success-400 p-8 text-center">
               <div
                 class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 mb-4"
@@ -31,7 +31,7 @@ import { environment } from '../../../../../environments/environment';
       <!-- Contact Form -->
       @if (!formSent()) {
         <div>
-          <div class="bg-white rounded-2xl shadow-sm p-6">
+          <div class="bg-white rounded-2xl shadow-xs p-6">
             <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
               <!-- Name Field -->
               <div class="mb-4">
@@ -43,7 +43,7 @@ import { environment } from '../../../../../environments/environment';
                   id="name"
                   formControlName="name"
                   placeholder="Twoje imię"
-                  class="w-full px-4 py-3 rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                  class="w-full px-4 py-3 rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-hidden focus:ring-2 focus:ring-primary-500 transition-colors"
                   [class.border-danger-300]="
                     contactForm.get('name')?.invalid && contactForm.get('name')?.touched
                   "
@@ -63,7 +63,7 @@ import { environment } from '../../../../../environments/environment';
                   id="email"
                   formControlName="email"
                   placeholder="twoj@email.pl"
-                  class="w-full px-4 py-3 rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                  class="w-full px-4 py-3 rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-hidden focus:ring-2 focus:ring-primary-500 transition-colors"
                   [class.border-danger-300]="
                     contactForm.get('email')?.invalid && contactForm.get('email')?.touched
                   "
@@ -88,7 +88,7 @@ import { environment } from '../../../../../environments/environment';
                   formControlName="message"
                   rows="6"
                   placeholder="Twoja wiadomość..."
-                  class="w-full px-4 py-3 rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors resize-none"
+                  class="w-full px-4 py-3 rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-hidden focus:ring-2 focus:ring-primary-500 transition-colors resize-none"
                   [class.border-danger-300]="
                     contactForm.get('message')?.invalid && contactForm.get('message')?.touched
                   "

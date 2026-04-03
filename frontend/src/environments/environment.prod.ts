@@ -1,6 +1,10 @@
+import { APP_VERSION } from './version';
+
 export const environment = {
   production: true,
-  apiUrl: '/api',
-  wsUrl: 'https://api.zgadajsie.pl',
-  vapidPublicKey: '',
+  apiUrl: 'https://api.zgadajsie.pl',
+  version: APP_VERSION,
+  maintenance: true,
+  enableGoogleLogin: false,
+  enableFacebookLogin: false,
 };

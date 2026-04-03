@@ -36,28 +36,28 @@
       </button>
 
       @if (auth.isLoggedIn()) {
-      <button
-        type="button"
-        (click)="navigateToProfile()"
-        class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
-      >
-        <app-user-avatar
-          [avatarUrl]="auth.currentUser()?.avatarUrl"
-          [displayName]="auth.currentUser()?.displayName || ''"
-          size="md"
-          class="mb-1"
-        ></app-user-avatar>
-        <!-- <span>Profil</span> -->
-      </button>
+        <button
+          type="button"
+          (click)="navigateToProfile()"
+          class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
+        >
+          <app-user-avatar
+            [avatarUrl]="auth.currentUser()?.avatarUrl"
+            [displayName]="auth.currentUser()?.displayName || ''"
+            size="md"
+            class="mb-1"
+          ></app-user-avatar>
+          <!-- <span>Profil</span> -->
+        </button>
       } @else {
-      <button
-        type="button"
-        (click)="navigateToLogin()"
-        class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
-      >
-        <app-icon name="log-in" size="lg" color="neutral" class="mb-1"></app-icon>
-        <span>Zaloguj</span>
-      </button>
+        <button
+          type="button"
+          (click)="navigateToLogin()"
+          class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
+        >
+          <app-icon name="log-in" size="lg" color="neutral" class="mb-1"></app-icon>
+          <span>Zaloguj</span>
+        </button>
       }
     </div>
   </nav>

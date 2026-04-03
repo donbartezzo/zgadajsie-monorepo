@@ -23,17 +23,58 @@ Instrukcja opisuje proces uruchomienia projektu **zgadajsie-monorepo** na hostin
 
 ## 2. Struktura katalogów na serwerze
 
-```text
-/home/USER123/
-├── app/
-│   └── zgadajsie-monorepo/          # kod źródłowy projektu
-│       └── .env.production           # zmienne środowiskowe (w projekcie!)
-├── domains/
-│   ├── dev-front.zgadajsie.pl/
-│   │   └── public/                  # link do buildu frontendu (SPA)
-│   └── dev-api.zgadajsie.pl/
-│       └── public_nodejs/           # link do backendu (Passenger)
-```
+myDevil udostępnia środowisko **Node.js** oraz bazę PostgreSQL w ramach konta. Poniższe różnice zastępują lub uzupełniają kroki z dalszej części przewodnika.
+
+- **Brak Dockera/PM2** – aplikacje Node uruchamia się przez menedżer `mydevil nodejs` (oparty o Passenger). Proces backendu będzie restartowany automatycznie.
+- **Porty** – backend nasłuchuje na porcie przydzielonym przez Passenger i **nie stosujemy Nginx**. Panel domen przekieruje ruch HTTP na katalog `public_nodejs/`.
+- **Baza danych** – utwórz bazę PostgreSQL w panelu MD. Zanotuj host, nazwę DB, użytkownika i hasło; wpisz je do `DATABASE_URL`.
+- **Ścieżki** – zalecamy strukturę:
+
+  ```text
+  ~/app/zgadajsie-monorepo   # kod źródłowy
+  ~/domains/zgadajsie.pl/public_nodejs   # link do dist/frontend
+  ~/domains/api.zgadajsie.pl/public_nodejs # link do backend (Passenger)
+  ```
+
+### Kroki
+
+1. Zaloguj się SSH do konta MD.
+2. Zainstaluj/aktywuj Node 20:
+
+   ```bash
+   mydevil nodejs set 20
+   ```
+
+3. Sklonuj repo (`~/app/zgadajsie-monorepo`) i `pnpm install --frozen-lockfile`.
+4. Skopiuj `.env.example` → `.env.prod` i uzupełnij (jak w sekcji 3).
+5. W panelu _Aplikacje → Node.js_ dodaj aplikację:
+   - **Ścieżka aplikacji**: `app/zgadajsie-monorepo`
+   - **Plik startowy**: `dist/apps/backend/main.js`
+   - **Node.js version**: 20
+6. Utwórz link symboliczny frontendu (statyczny build):
+
+   ```bash
+   pnpm frontend:build
+   ln -s ~/app/zgadajsie-monorepo/dist/zgadajsie/browser ~/domains/zgadajsie.pl/public
+   ```
+
+   Jeśli chcesz SSR – dodaj drugą aplikację Node z plikiem `frontend/dist/zgadajsie/server/main.js` i ustaw ścieżkę domeny `zgadajsie.pl` na `public_nodejs`.
+
+7. Migracje + seed (jeden raz):
+
+   ```bash
+   pnpm prisma:migrate --schema backend/prisma/schema.prisma
+   pnpm backend:db:seed
+   ```
+
+8. Po każdym deployu:
+
+   ```bash
+   git pull && pnpm install --frozen-lockfile && pnpm build
+   mydevil nodejs reload all
+   ```
+
+> ℹ️ Crony działają poprzez `crontab -e`. WebSocket (`socket.io`) działa przez Passenger bez dodatkowej konfiguracji.
 
 ---
 
@@ -117,75 +158,17 @@ pnpm install --frozen-lockfile
 
 ## 5. Konfiguracja zmiennych środowiskowych
 
-### 5.1 Utworzenie pliku `.env.production`
+1. Skopiuj plik `.env.example` → `.env.prod`:
 
-```bash
-ssh USER123@s44.mydevil.net
-cd ~/app/zgadajsie-monorepo
-cp .env.example .env.production
-nano .env.production
-```
+   ```bash
+   cp .env.example .env.prod
+   ```
 
 **Ważne:** Plik `.env.production` musi być w katalogu projektu (`~/app/zgadajsie-monorepo/`), ponieważ NestJS `ConfigModule` szuka plików `.env` w working directory aplikacji.
 
 ### 5.2 Konfiguracja kluczowych zmiennych
 
-```bash
-# ─── Database ───
-DATABASE_URL="postgresql://zgadajsie_user:TWOJE_HASŁO@sql5.mydevil.net:5432/zgadajsie_db?schema=public"
-
-# ─── JWT ───
-JWT_SECRET="twoj-jwt-secret-min-32-znakow"
-JWT_REFRESH_SECRET="twoj-jwt-refresh-secret-min-32-znakow"
-
-# ─── URLs ───
-BACKEND_URL="https://dev-api.zgadajsie.pl"
-FRONTEND_URL="https://dev-front.zgadajsie.pl"
-
-# ─── SMTP (Email) ───
-SMTP_HOST="smtp.mydevil.net"
-SMTP_PORT=587
-SMTP_USER="noreply@dev-front.zgadajsie.pl"
-SMTP_PASS="twoje-smtp-haslo"
-SMTP_FROM="noreply@dev-front.zgadajsie.pl"
-
-# ─── Web Push (VAPID) ───
-VAPID_PUBLIC_KEY="wygeneruj-klucz-publiczny"
-VAPID_PRIVATE_KEY="wygeneruj-klucz-prywatny"
-VAPID_SUBJECT="mailto:kontakt@dev-front.zgadajsie.pl"
-
-# ─── Cloudflare R2 (Storage) ───
-R2_ACCOUNT_ID="twoje-r2-account-id"
-R2_ACCESS_KEY_ID="twoje-r2-access-key"
-R2_SECRET_ACCESS_KEY="twoje-r2-secret-key"
-R2_BUCKET_NAME="zgadajsie-media-dev"
-R2_PUBLIC_URL="https://pub-xxxxxxxx.r2.dev"
-
-# ─── Tpay (Payments) ───
-TPAY_API_URL="https://api.sandbox.tpay.com"  # sandbox dla dev
-TPAY_CLIENT_ID="twoj-tpay-client-id"
-TPAY_CLIENT_SECRET="twoj-tpay-client-secret"
-TPAY_MERCHANT_ID="twoj-tpay-merchant-id"
-TPAY_SECURITY_CODE="twoj-security-code"
-
-# ─── Google OAuth2 ───
-GOOGLE_CLIENT_ID="twoj-google-client-id"
-GOOGLE_CLIENT_SECRET="twoj-google-client-secret"
-GOOGLE_CALLBACK_URL="https://dev-api.zgadajsie.pl/api/auth/google/callback"
-
-# ─── Facebook OAuth2 ───
-FACEBOOK_APP_ID="twoj-facebook-app-id"
-FACEBOOK_APP_SECRET="twoj-facebook-app-secret"
-FACEBOOK_CALLBACK_URL="https://dev-api.zgadajsie.pl/api/auth/facebook/callback"
-```
-
-### 5.3 Generowanie kluczy VAPID
-
-```bash
-cd ~/app/zgadajsie-monorepo
-npx web-push generate-vapid-keys
-# Wklej wygenerowane klucze do .env.production
-```
+> 🔒 **Tip:** trzymaj `.env.prod` poza repozytorium, np. w `/etc/zgadajsie/` i symlinkuj. Analogicznie `.env.local` służy do lokalnego `pnpm start`, a `.env.dev` do środowiska developerskiego.
 
 ---
 
@@ -198,41 +181,9 @@ cd ~/app/zgadajsie-monorepo
 # Frontend (SPA - statyczny build)
 pnpm frontend:build --configuration production
 
-# Backend
-pnpm backend:build
-```
-
----
-
-## 7. Konfiguracja domen
-
-### 7.1 Frontend (statyczny SPA)
-
-```bash
-# Utwórz link symboliczny do buildu frontendu
-ln -sf ~/app/zgadajsie-monorepo/dist/frontend/browser ~/domains/dev-front.zgadajsie.pl/public
-```
-
-### 7.2 Backend (Passenger)
-
-```bash
-# Utwórz link symboliczny do backendu
-ln -sf ~/app/zgadajsie-monorepo/dist/backend/main.js ~/domains/dev-api.zgadajsie.pl/public_nodejs/app.js
-```
-
----
-
-## 8. Migracje bazy danych i seed
-
-```bash
-ssh USER123@s44.mydevil.net
-cd ~/app/zgadajsie-monorepo
-
-# Migracje schematu
-pnpm prisma:migrate deploy --schema backend/prisma/schema.prisma
-
-# Seed danych początkowych
-pnpm backend:db:seed
+# migracje + seed
+pnpm prisma:migrate --schema backend/prisma/schema.prisma
+NODE_ENV=production pnpm prisma:seed:prod
 ```
 
 ---
@@ -252,13 +203,29 @@ mydevil nodejs reload all
 
 Utwórz skrypt `deploy.sh` w katalogu domowym:
 
-```bash
+````bash
 #!/bin/bash
 set -e
 
 echo "🚀 Rozpoczynam deploy ZgadajSie..."
 
-cd ~/app/zgadajsie-monorepo
+```js
+module.exports = {
+  apps: [
+    {
+      name: 'zgadaj-backend',
+      script: 'dist/apps/backend/main.js',
+      cwd: '/home/zgadaj/zgadajsie-monorepo',
+      env: {
+        NODE_ENV: 'production',
+        DOTENV_CONFIG_PATH: '/home/zgadaj/.env.prod',
+      },
+      instances: 2,
+      exec_mode: 'cluster',
+    },
+  ],
+};
+````
 
 echo "📦 Pull zmian..."
 git pull origin main
@@ -277,14 +244,15 @@ echo "🔄 Restart aplikacji..."
 mydevil nodejs reload all
 
 echo "✅ Deploy zakończony!"
-```
+
+````
 
 ### 10.2 Wykonanie deployu
 
 ```bash
 chmod +x ~/deploy.sh
 ./deploy.sh
-```
+````
 
 ---
 

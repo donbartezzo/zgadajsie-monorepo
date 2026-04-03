@@ -53,7 +53,7 @@ import { IconComponent } from '../../../shared/ui/icon/icon.component';
             id="guestNameInput"
             type="text"
             [(ngModel)]="guestName"
-            class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+            class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-hidden"
             placeholder="np. Jan Kowalski"
             (keyup.enter)="onSubmit()"
           />

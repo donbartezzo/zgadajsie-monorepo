@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  inject,
+  OnInit,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -14,6 +22,10 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 import { CoverImage, DictionaryItem } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 import { TranslocoPipe } from '@jsverse/transloco';
+import {
+  ImageCropperModalComponent,
+  ImageCropperResult,
+} from '../../../../shared/ui/image-cropper-modal';
 
 @Component({
   selector: 'app-admin-cover-images',
@@ -25,6 +37,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
     CardComponent,
     ButtonComponent,
     TranslocoPipe,
+    ImageCropperModalComponent,
   ],
   template: `
     <div class="p-4">
@@ -175,6 +188,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
                 >Plik graficzny</label
               >
               <input
+                #uploadFileInput
                 id="uploadFile"
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/gif"
@@ -276,10 +290,22 @@ import { TranslocoPipe } from '@jsverse/transloco';
         </div>
       }
     </div>
+
+    <!-- Image Cropper Modal -->
+    @if (showCropper()) {
+      <app-image-cropper-modal
+        [imageFile]="imageOriginalFile()"
+        imageType="cover-image"
+        (confirmed)="onCropConfirmed($event)"
+        (cancelled)="onCropCancelled()"
+      />
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminCoverImagesComponent implements OnInit {
+  @ViewChild('uploadFileInput') uploadFileInput?: ElementRef<HTMLInputElement>;
+
   private readonly coverImageService = inject(CoverImageService);
   private readonly dictService = inject(DictionaryService);
   private readonly snackbar = inject(SnackbarService);
@@ -294,6 +320,16 @@ export class AdminCoverImagesComponent implements OnInit {
   uploadDisciplineId = '';
   uploadFile: File | null = null;
   filterDisciplineId = '';
+
+  // Cropping related signals
+  readonly showCropper = signal(false);
+  readonly imageOriginalFile = signal<File | null>(null);
+
+  private resetUploadFileInput(): void {
+    if (this.uploadFileInput) {
+      this.uploadFileInput.nativeElement.value = '';
+    }
+  }
 
   getCoverUrl(cover: CoverImage): string {
     return coverImageUrl(cover.disciplineSlug, cover.filename);
@@ -339,7 +375,22 @@ export class AdminCoverImagesComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {
       this.uploadFile = input.files[0];
+      this.imageOriginalFile.set(input.files[0]);
+      this.showCropper.set(true);
     }
+  }
+
+  onCropConfirmed(result: ImageCropperResult): void {
+    this.uploadFile = result.file;
+    this.showCropper.set(false);
+    this.imageOriginalFile.set(null);
+  }
+
+  onCropCancelled(): void {
+    this.showCropper.set(false);
+    this.imageOriginalFile.set(null);
+    this.uploadFile = null;
+    this.resetUploadFileInput();
   }
 
   onUpload(): void {
@@ -352,7 +403,7 @@ export class AdminCoverImagesComponent implements OnInit {
         this.snackbar.success('Cover image dodany');
         this.uploading.set(false);
         this.uploadFile = null;
-        this.uploadDisciplineId = '';
+        this.resetUploadFileInput();
         this.loadCovers();
       },
       error: (err) => {

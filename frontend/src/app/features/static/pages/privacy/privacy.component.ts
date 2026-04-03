@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
     <div class="p-4">
       <!-- Privacy Content -->
       <div>
-        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+        <div class="bg-white rounded-2xl shadow-xs p-6 mb-4">
           <p class="text-xs text-success-400 mb-4">Ostatnia aktualizacja: 15 lutego 2026</p>
           <p class="text-sm text-neutral-600">
             Niniejsza Polityka Prywatności opisuje, jak aplikacja "zgadajsie" zbiera, używa, chroni
@@ -16,7 +16,7 @@ import { CommonModule } from '@angular/common';
           </p>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm p-6">
+        <div class="bg-white rounded-2xl shadow-xs p-6">
           <h2 class="text-xl font-bold mb-0">1. Administrator danych</h2>
           <p class="text-xs text-success-400 mb-6">Ostatnia aktualizacja: 15 lutego 2026</p>
           <p class="text-sm text-neutral-600 mb-6">

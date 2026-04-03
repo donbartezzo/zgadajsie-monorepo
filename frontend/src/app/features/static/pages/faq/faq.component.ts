@@ -17,7 +17,7 @@ interface FaqItem {
 
       <!-- Search Box -->
       <div class="mb-4">
-        <div class="relative bg-white rounded-lg shadow-sm border border-neutral-200">
+        <div class="relative bg-white rounded-lg shadow-xs border border-neutral-200">
           <app-icon
             name="search"
             size="sm"
@@ -28,7 +28,7 @@ interface FaqItem {
             [(ngModel)]="searchQuery"
             (input)="filterItems()"
             placeholder="Szukaj tutaj..."
-            class="w-full pl-10 pr-10 py-3 border-0 rounded-lg text-neutral-900 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-400"
+            class="w-full pl-10 pr-10 py-3 border-0 rounded-lg text-neutral-900 placeholder-neutral-500 focus:outline-hidden focus:ring-2 focus:ring-primary-400"
           />
           @if (_searchQuery) {
             <button
@@ -53,7 +53,7 @@ interface FaqItem {
 
       <!-- FAQ Section -->
       <div>
-        <div class="bg-white rounded-2xl shadow-sm p-6">
+        <div class="bg-white rounded-2xl shadow-xs p-6">
           <h2 class="text-xl font-bold text-neutral-900 mb-2">Często zadawane pytania</h2>
           <p class="text-sm text-neutral-600 mb-6">
             Otrzymujemy te pytania często, więc stworzyliśmy tę małą sekcję, aby pomóc Ci szybciej

@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { PaginatedNotifications } from '../../shared/types';
 
@@ -8,13 +8,28 @@ import { PaginatedNotifications } from '../../shared/types';
 export class NotificationService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl + '/notifications';
+  private readonly configUrl = environment.apiUrl + '/config';
 
   unreadCount = signal(0);
   pushPermission = signal<NotificationPermission>(this.detectPushPermission());
+  private vapidPublicKey = signal('');
 
   private detectPushPermission(): NotificationPermission {
     if (typeof Notification === 'undefined') return 'denied';
     return Notification.permission;
+  }
+
+  private async loadClientConfig(): Promise<void> {
+    if (this.vapidPublicKey()) return;
+
+    try {
+      const config = await firstValueFrom(
+        this.http.get<{ vapidPublicKey: string }>(this.configUrl),
+      );
+      this.vapidPublicKey.set(config.vapidPublicKey ?? '');
+    } catch {
+      this.vapidPublicKey.set('');
+    }
   }
 
   async requestPushPermission(): Promise<boolean> {
@@ -58,7 +73,11 @@ export class NotificationService {
 
   async initPushSubscription(): Promise<void> {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-    const vapidKey = environment.vapidPublicKey;
+    if (!this.vapidPublicKey()) {
+      await this.loadClientConfig();
+    }
+
+    const vapidKey = this.vapidPublicKey();
     if (!vapidKey) return;
 
     const permission = await Notification.requestPermission();

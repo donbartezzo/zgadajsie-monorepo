@@ -9,7 +9,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
     <div class="p-4">
       <!-- Terms Content -->
       <div>
-        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+        <div class="bg-white rounded-2xl shadow-xs p-6 mb-4">
           <p class="text-xs text-primary-400 mb-4">Ostatnia aktualizacja: 15 lutego 2026</p>
           <p class="text-sm text-neutral-600">
             Niniejszy regulamin określa zasady korzystania z platformy {{ brandName }}, służącej do
@@ -17,7 +17,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
           </p>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm p-6">
+        <div class="bg-white rounded-2xl shadow-xs p-6">
           <h3 class="text-lg font-semibold mb-3">1. Postanowienia ogólne</h3>
           <p class="text-sm text-neutral-600 mb-6">
             Niniejszy regulamin określa zasady korzystania z platformy {{ brandName }}, służącej do

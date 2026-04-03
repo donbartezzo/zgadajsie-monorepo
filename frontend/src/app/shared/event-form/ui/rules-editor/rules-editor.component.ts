@@ -37,7 +37,7 @@ interface Rule {
               [(ngModel)]="rule.text"
               (ngModelChange)="onRuleChange()"
               placeholder="Wpisz zasadę..."
-              class="flex-1 rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm text-neutral-900 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              class="flex-1 rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-1 focus:ring-primary-500"
             />
 
             <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
