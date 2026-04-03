@@ -1,11 +1,27 @@
 #!/bin/bash
 set -e
 
-TUNNEL_PORT=5454
-SSH_HOST="root@204.168.205.171"
-DB_CONTAINER="owg0tb31vlgrqh7hm86d4jjj"
-ENV_FILE=".env.dev"
 SEED_TYPE="$1"
+
+# Load operational configuration
+OPS_CONFIG="config/ops/.env.ops.dev"
+if [ ! -f "$OPS_CONFIG" ]; then
+  echo "Błąd: Brak pliku konfiguracyjnego $OPS_CONFIG"
+  echo "Skopiuj config/ops/.env.ops.dev.example → config/ops/.env.ops.dev"
+  exit 1
+fi
+
+# Source configuration
+set -a
+source "$OPS_CONFIG"
+set +a
+
+# Validate required variables
+if [ -z "$SSH_HOST" ] || [ -z "$DB_CONTAINER" ] || [ -z "$TUNNEL_PORT" ] || [ -z "$ENV_FILE" ]; then
+  echo "Błąd: Brak wymaganych zmiennych w $OPS_CONFIG"
+  echo "Wymagane: SSH_HOST, DB_CONTAINER, TUNNEL_PORT, ENV_FILE"
+  exit 1
+fi
 
 if [ -z "$SEED_TYPE" ]; then
   echo "Błąd: wymagany parametr seed type (dev lub prod)"
@@ -20,13 +36,13 @@ if [ "$SEED_TYPE" != "dev" ] && [ "$SEED_TYPE" != "prod" ]; then
 fi
 
 if [ "$SEED_TYPE" = "prod" ]; then
-  SEED_FILE="backend/prisma/seed-production.ts"
-  SEED_LABEL="PRODUKCYJNY (seed-production.ts)"
+  SEED_FILE="backend/prisma/seed.prod.ts"
+  SEED_LABEL="PRODUKCYJNY (seed.prod.ts)"
   SEED_DESC="  ✔ dane słownikowe (miasta, dyscypliny, obiekty, poziomy)"
   SEED_WARN="  ✔ bezpieczny — idempotentny, nie nadpisuje danych użytkowników"
 else
-  SEED_FILE="backend/prisma/seed.ts"
-  SEED_LABEL="DEWELOPERSKI (seed.ts)"
+  SEED_FILE="backend/prisma/seed.nonprod.ts"
+  SEED_LABEL="DEWELOPERSKI (seed.nonprod.ts)"
   SEED_DESC="  ✔ dane słownikowe + fikcyjni użytkownicy, eventy, etc."
   SEED_WARN="  ⚠ UWAGA: CZYŚCI całą bazę przed seedowaniem!"
 fi

@@ -48,6 +48,9 @@ jobs:
     needs: ci
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-dev
+      cancel-in-progress: true
     permissions:
       contents: read
       packages: write
@@ -72,6 +75,7 @@ jobs:
           tags: |
             ${{ env.BACKEND_IMAGE }}:dev
             ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+        # NOTE: Coolify should deploy by immutable :sha tag, not :dev alias
 
       - name: Build and push frontend image (dev)
         uses: docker/build-push-action@v5
@@ -85,21 +89,37 @@ jobs:
           tags: |
             ${{ env.FRONTEND_IMAGE }}:dev
             ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+        # NOTE: Coolify should deploy by immutable :sha tag, not :dev alias
 
       - name: Deploy backend via Coolify (dev)
         run: |
-          curl -s -X GET "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_BACKEND_UUID_DEV }}" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+          response=$(curl --fail --show-error --silent -X GET \
+            "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_BACKEND_UUID_DEV }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}")
+          echo "Coolify response: $response"
+          if [ -z "$response" ]; then
+            echo "Error: Empty response from Coolify API"
+            exit 1
+          fi
 
       - name: Deploy frontend via Coolify (dev)
         run: |
-          curl -s -X GET "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_FRONTEND_UUID_DEV }}" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+          response=$(curl --fail --show-error --silent -X GET \
+            "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_FRONTEND_UUID_DEV }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}")
+          echo "Coolify response: $response"
+          if [ -z "$response" ]; then
+            echo "Error: Empty response from Coolify API"
+            exit 1
+          fi
 
   deploy-prod:
     needs: ci
     if: github.event_name == 'release' && github.event.action == 'published'
     runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
     permissions:
       contents: read
       packages: write
@@ -125,6 +145,7 @@ jobs:
             ${{ env.BACKEND_IMAGE }}:stable
             ${{ env.BACKEND_IMAGE }}:${{ github.event.release.tag_name }}
             ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+        # NOTE: Coolify should deploy by immutable :vX.Y.Z tag, not :stable alias
 
       - name: Build and push frontend image (prod)
         uses: docker/build-push-action@v5
@@ -139,13 +160,26 @@ jobs:
             ${{ env.FRONTEND_IMAGE }}:stable
             ${{ env.FRONTEND_IMAGE }}:${{ github.event.release.tag_name }}
             ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+        # NOTE: Coolify should deploy by immutable :vX.Y.Z tag, not :stable alias
 
       - name: Deploy backend via Coolify (prod)
         run: |
-          curl -s -X GET "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_BACKEND_UUID_PROD }}" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+          response=$(curl --fail --show-error --silent -X GET \
+            "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_BACKEND_UUID_PROD }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}")
+          echo "Coolify response: $response"
+          if [ -z "$response" ]; then
+            echo "Error: Empty response from Coolify API"
+            exit 1
+          fi
 
       - name: Deploy frontend via Coolify (prod)
         run: |
-          curl -s -X GET "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_FRONTEND_UUID_PROD }}" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+          response=$(curl --fail --show-error --silent -X GET \
+            "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_FRONTEND_UUID_PROD }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}")
+          echo "Coolify response: $response"
+          if [ -z "$response" ]; then
+            echo "Error: Empty response from Coolify API"
+            exit 1
+          fi
