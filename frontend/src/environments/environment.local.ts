@@ -5,4 +5,6 @@ export const environment = {
   apiUrl: '/api',
   version: APP_VERSION,
   maintenance: false,
+  enableGoogleLogin: false,
+  enableFacebookLogin: false,
 };

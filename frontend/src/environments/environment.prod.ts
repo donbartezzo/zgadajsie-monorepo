@@ -5,4 +5,6 @@ export const environment = {
   apiUrl: 'https://api.zgadajsie.pl',
   version: APP_VERSION,
   maintenance: true,
+  enableGoogleLogin: false,
+  enableFacebookLogin: false,
 };
