@@ -2,6 +2,8 @@
 @use 'styles/tokens';
 @config '../tailwind.config.js';
 
+@import 'leaflet/dist/leaflet.css';
+
 // ────────────────────────────────────────────────────────────
 // Tailwind v4 compat: przywrócenie domyślnego koloru border z v3.
 // W v4 default border-color zmienił się z gray-200 na currentColor.
