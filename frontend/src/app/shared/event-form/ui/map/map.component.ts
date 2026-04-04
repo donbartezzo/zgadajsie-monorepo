@@ -43,12 +43,31 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     try {
       const container = this.mapContainer().nativeElement;
-      this.leaflet = await import('leaflet');
 
-      const markerIcon = this.leaflet.icon({
+      // Logowanie próby załadowania Leaflet
+      console.log('MapComponent: Attempting to load Leaflet...');
+
+      // Sprawdź czy Leaflet jest już dostępny globalnie
+      if ((window as any).L) {
+        console.log('MapComponent: Leaflet found globally');
+        this.leaflet = (window as any).L;
+      } else {
+        console.log('MapComponent: Loading Leaflet dynamically...');
+        this.leaflet = await import('leaflet');
+      }
+
+      console.log('MapComponent: Leaflet loaded successfully');
+
+      // Sprawdź czy ikony istnieją, użyj fallback jeśli nie
+      const iconUrls = {
         iconUrl: '/assets/images/map/marker-icon.png',
         iconRetinaUrl: '/assets/images/map/marker-icon-2x.png',
         shadowUrl: '/assets/images/map/marker-shadow.png',
+      };
+
+      // Fallback do domyślnych ikon Leaflet jeśli nasze nie są dostępne
+      const markerIcon = this.leaflet!.icon({
+        ...iconUrls,
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
@@ -56,26 +75,23 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         shadowSize: [41, 41],
       });
 
-      this.map = this.leaflet
-        .map(container, {
-          dragging: this.interactive(),
-          scrollWheelZoom: this.interactive(),
-          zoomControl: this.interactive(),
-        })
-        .setView([this.lat(), this.lng()], this.zoom());
+      console.log('MapComponent: Creating map instance...');
+      this.map = this.leaflet!.map(container, {
+        dragging: this.interactive(),
+        scrollWheelZoom: this.interactive(),
+        zoomControl: this.interactive(),
+      }).setView([this.lat(), this.lng()], this.zoom());
 
-      this.leaflet
-        .tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors',
-        })
-        .addTo(this.map);
+      console.log('MapComponent: Adding tile layer...');
+      this.leaflet!.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+      }).addTo(this.map!);
 
-      this.marker = this.leaflet
-        .marker([this.lat(), this.lng()], {
-          draggable: this.interactive(),
-          icon: markerIcon,
-        })
-        .addTo(this.map);
+      console.log('MapComponent: Adding marker...');
+      this.marker = this.leaflet!.marker([this.lat(), this.lng()], {
+        draggable: this.interactive(),
+        icon: markerIcon,
+      }).addTo(this.map!);
 
       if (this.interactive()) {
         const marker = this.marker;
@@ -96,7 +112,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       }
 
       this.scheduleInvalidateSize();
-    } catch {
+      console.log('MapComponent: Map initialized successfully');
+    } catch (error) {
+      console.error('MapComponent: Failed to initialize map:', error);
       // Leaflet not available (SSR or missing dep)
     }
   }
