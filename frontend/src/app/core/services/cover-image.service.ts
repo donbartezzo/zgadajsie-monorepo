@@ -52,10 +52,10 @@ export class CoverImageService {
     return this.http.get<{ count: number }>(`${this.apiUrl}/${id}/usage`);
   }
 
-  create(disciplineId: string, file: File): Observable<CoverImage> {
+  create(disciplineSlug: string, file: File): Observable<CoverImage> {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('disciplineId', disciplineId);
+    formData.append('disciplineSlug', disciplineSlug);
     return this.http.post<CoverImage>(this.apiUrl, formData);
   }
 
@@ -65,8 +65,8 @@ export class CoverImageService {
     return this.http.put<CoverImage>(`${this.apiUrl}/${id}/image`, formData);
   }
 
-  updateDiscipline(id: string, disciplineId: string): Observable<CoverImage> {
-    return this.http.put<CoverImage>(`${this.apiUrl}/${id}/discipline`, { disciplineId });
+  updateDiscipline(id: string, disciplineSlug: string): Observable<CoverImage> {
+    return this.http.put<CoverImage>(`${this.apiUrl}/${id}/discipline`, { disciplineSlug });
   }
 
   remove(id: string): Observable<void> {

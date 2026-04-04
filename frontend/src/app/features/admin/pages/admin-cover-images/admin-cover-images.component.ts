@@ -174,7 +174,7 @@ import {
               >
               <select
                 id="uploadDiscipline"
-                [(ngModel)]="uploadDisciplineId"
+                [(ngModel)]="uploadDisciplineSlug"
                 class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
               >
                 <option value="">Wybierz...</option>
@@ -200,7 +200,7 @@ import {
           <app-button
             appearance="soft"
             color="primary"
-            [disabled]="!uploadDisciplineId || !uploadFile || uploading()"
+            [disabled]="!uploadDisciplineSlug || !uploadFile || uploading()"
             [loading]="uploading()"
             (clicked)="onUpload()"
           >
@@ -213,7 +213,7 @@ import {
       <!-- Filter -->
       <div class="mt-4 mb-3">
         <select
-          [(ngModel)]="filterDisciplineId"
+          [(ngModel)]="filterDisciplineSlug"
           (ngModelChange)="loadCovers()"
           class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
         >
@@ -317,9 +317,9 @@ export class AdminCoverImagesComponent implements OnInit {
   readonly syncLoading = signal(false);
   readonly syncReport = signal<CoverImagesSyncReport | null>(null);
 
-  uploadDisciplineId = '';
+  uploadDisciplineSlug = '';
   uploadFile: File | null = null;
-  filterDisciplineId = '';
+  filterDisciplineSlug = '';
 
   // Cropping related signals
   readonly showCropper = signal(false);
@@ -342,8 +342,8 @@ export class AdminCoverImagesComponent implements OnInit {
 
   loadCovers(): void {
     this.loading.set(true);
-    const disciplineId = this.filterDisciplineId || undefined;
-    this.coverImageService.getAll(disciplineId).subscribe({
+    const disciplineSlug = this.filterDisciplineSlug || undefined;
+    this.coverImageService.getAll(disciplineSlug).subscribe({
       next: (covers) => {
         this.covers.set(covers);
         this.loading.set(false);
@@ -394,11 +394,11 @@ export class AdminCoverImagesComponent implements OnInit {
   }
 
   onUpload(): void {
-    if (!this.uploadDisciplineId || !this.uploadFile) {
+    if (!this.uploadDisciplineSlug || !this.uploadFile) {
       return;
     }
     this.uploading.set(true);
-    this.coverImageService.create(this.uploadDisciplineId, this.uploadFile).subscribe({
+    this.coverImageService.create(this.uploadDisciplineSlug, this.uploadFile).subscribe({
       next: () => {
         this.snackbar.success('Cover image dodany');
         this.uploading.set(false);
