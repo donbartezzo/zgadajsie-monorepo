@@ -5,6 +5,7 @@ import {
   inject,
   OnInit,
   signal,
+  viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -25,6 +26,7 @@ import { DateTimeInputComponent } from '../../../../shared/ui/date-time-input/da
 import { EventService } from '../../../../core/services/event.service';
 import { CoverImageService } from '../../../../core/services/cover-image.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
+import { GeocodeService } from '../../../../core/services/geocode.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
 import { DictionaryItem, City, Event, CoverImage, EventRoleConfig } from '../../../../shared/types';
@@ -158,18 +160,6 @@ class EventValidators {
                   <option value="">Wybierz...</option>
                   @for (l of levels(); track l.slug) {
                     <option [value]="l.slug">{{ 'dict.level.' + l.slug | transloco }}</option>
-                  }
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-neutral-600 mb-1">Miasto</label>
-                <select
-                  formControlName="citySlug"
-                  class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
-                >
-                  <option value="">Wybierz...</option>
-                  @for (c of cities(); track c.slug) {
-                    <option [value]="c.slug">{{ c.name }}</option>
                   }
                 </select>
               </div>
@@ -358,21 +348,66 @@ class EventValidators {
         <app-card>
           <div class="p-4 space-y-4">
             <h3 class="text-sm font-semibold text-neutral-900">Lokalizacja</h3>
+
+            <!-- Miasto -->
             <div>
-              <label class="block text-xs font-medium text-neutral-600 mb-1">Adres</label>
-              <input
-                formControlName="address"
-                class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
-                placeholder="Ulica, numer, miasto"
-              />
+              <label class="block text-xs font-medium text-neutral-600 mb-1">Miasto</label>
+              <select
+                formControlName="citySlug"
+                class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="">Wybierz...</option>
+                @for (c of cities(); track c.slug) {
+                  <option [value]="c.slug">{{ c.name }}</option>
+                }
+              </select>
             </div>
-            <app-map
-              [lat]="mapLat()"
-              [lng]="mapLng()"
-              [interactive]="true"
-              [height]="250"
-              (markerMoved)="onMarkerMoved($event)"
-            ></app-map>
+
+            @if (form.get('citySlug')?.value) {
+              <!-- Adres i mapa dostępne tylko po wybraniu miasta -->
+              <div>
+                <label class="block text-xs font-medium text-neutral-600 mb-1">Adres</label>
+                <div class="flex gap-2">
+                  <input
+                    formControlName="address"
+                    (blur)="onAddressChange()"
+                    class="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
+                    placeholder="Ulica, numer"
+                  />
+                  <app-button
+                    type="button"
+                    size="sm"
+                    [disabled]="geocoding()"
+                    (click)="onAddressChange()"
+                    class="whitespace-nowrap"
+                  >
+                    @if (geocoding()) {
+                      <app-icon name="loader" class="animate-spin" size="sm" />
+                    } @else {
+                      <app-icon name="search" size="sm" />
+                    }
+                    Znajdź
+                  </app-button>
+                </div>
+              </div>
+
+              <app-map
+                #mapComponent
+                [lat]="mapLat()"
+                [lng]="mapLng()"
+                [interactive]="true"
+                [height]="250"
+                (markerMoved)="onMarkerMoved($event)"
+              ></app-map>
+            } @else {
+              <!-- Informacja o konieczności wybrania miasta -->
+              <div class="text-center py-8 px-4 bg-neutral-50 rounded-xl border border-neutral-200">
+                <app-icon name="map-pin" size="lg" class="text-neutral-400 mb-2" />
+                <p class="text-sm text-neutral-600">
+                  Wybierz miasto, aby ustawić lokalizację wydarzenia
+                </p>
+              </div>
+            }
           </div>
         </app-card>
 
@@ -464,8 +499,13 @@ export class EventFormComponent implements OnInit {
 
   readonly isEdit = signal(false);
   readonly submitting = signal(false);
+  readonly geocoding = signal(false);
   readonly mapLat = signal(51.935);
   readonly mapLng = signal(15.506);
+
+  private readonly geocodeService = inject(GeocodeService);
+
+  readonly mapComponent = viewChild.required<MapComponent>('mapComponent');
 
   readonly disciplines = signal<DictionaryItem[]>([]);
   readonly facilities = signal<DictionaryItem[]>([]);
@@ -614,6 +654,51 @@ export class EventFormComponent implements OnInit {
     this.form.patchValue({ lat: pos.lat, lng: pos.lng });
     this.mapLat.set(pos.lat);
     this.mapLng.set(pos.lng);
+  }
+
+  async onAddressChange(): Promise<void> {
+    const address = this.form.get('address')?.value;
+    const citySlug = this.form.get('citySlug')?.value;
+
+    if (!address || address.trim().length < 3) {
+      return;
+    }
+
+    this.geocoding.set(true);
+
+    try {
+      // Pobierz dane miasta jeśli jest wybrane
+      let cityName = '';
+      if (citySlug) {
+        const city = this.cities().find((c) => c.slug === citySlug);
+        cityName = city ? city.name : '';
+      }
+
+      // Połącz adres z miastem dla lepszych wyników
+      const fullAddress = cityName ? `${address}, ${cityName}` : address;
+
+      const result = await this.geocodeService.geocodeAddress(fullAddress);
+
+      if (result) {
+        this.form.patchValue({ lat: result.lat, lng: result.lng });
+        this.mapLat.set(result.lat);
+        this.mapLng.set(result.lng);
+
+        // Bezpośrednie wywołanie aktualizacji mapy
+        const mapComponent = this.mapComponent();
+        if (mapComponent) {
+          mapComponent.updatePosition(result.lat, result.lng);
+        }
+
+        this.snackbar.success('Znaleziono lokalizację dla podanego adresu');
+      } else {
+        this.snackbar.warning('Nie znaleziono lokalizacji dla podanego adresu');
+      }
+    } catch {
+      this.snackbar.error('Błąd podczas wyszukiwania adresu');
+    } finally {
+      this.geocoding.set(false);
+    }
   }
 
   onRulesChange(rules: any[]): void {

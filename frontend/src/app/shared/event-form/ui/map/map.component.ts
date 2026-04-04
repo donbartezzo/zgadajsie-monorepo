@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  effect,
   input,
   OnDestroy,
   output,
@@ -27,7 +28,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   readonly lng = input(15.506);
   readonly zoom = input(13);
   readonly height = input(300);
-  readonly interactive = input(true);
+  readonly interactive = input(false); // Domyślnie statyczny
   readonly markerMoved = output<{ lat: number; lng: number }>();
 
   readonly mapContainer = viewChild.required<ElementRef<HTMLElement>>('mapContainer');
@@ -38,47 +39,43 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   private resizeObserver: ResizeObserver | null = null;
   private resizeFrameId: number | null = null;
 
+  private updateMarkerAndView(lat: number, lng: number): void {
+    if (this.map && this.marker) {
+      this.marker.setLatLng([lat, lng]);
+      this.map.setView([lat, lng], this.zoom());
+      this.scheduleInvalidateSize();
+    }
+  }
+
+  updatePosition(lat: number, lng: number): void {
+    this.updateMarkerAndView(lat, lng);
+  }
+
   async ngAfterViewInit(): Promise<void> {
     if (typeof window === 'undefined') return;
 
     try {
       const container = this.mapContainer().nativeElement;
 
-      // Logowanie próby załadowania Leaflet
-      console.log('MapComponent: Attempting to load Leaflet...');
-
       // Sprawdź czy Leaflet jest już dostępny globalnie
       if ((window as any).L) {
-        console.log('MapComponent: Leaflet found globally');
         this.leaflet = (window as any).L;
       } else {
-        console.log('MapComponent: Loading Leaflet dynamically...');
         const leafletModule = await import('leaflet');
         // Użyj domyślnego eksportu z modułu
         this.leaflet = leafletModule.default || leafletModule;
       }
 
-      console.log('MapComponent: Leaflet loaded successfully');
-
       // Sprawdź czy icon funkcja jest dostępna
-      if (typeof this.leaflet!.icon !== 'function') {
-        console.error(
-          'MapComponent: Leaflet.icon is not available. Available methods:',
-          Object.keys(this.leaflet!),
-        );
+      if (!this.leaflet || typeof this.leaflet.icon !== 'function') {
         throw new Error('Leaflet.icon is not available');
       }
 
-      // Sprawdź czy ikony istnieją, użyj fallback jeśli nie
-      const iconUrls = {
+      // Fallback do domyślnych ikon Leaflet jeśli nasze nie są dostępne
+      const markerIcon = this.leaflet.icon({
         iconUrl: '/assets/images/map/marker-icon.png',
         iconRetinaUrl: '/assets/images/map/marker-icon-2x.png',
         shadowUrl: '/assets/images/map/marker-shadow.png',
-      };
-
-      // Fallback do domyślnych ikon Leaflet jeśli nasze nie są dostępne
-      const markerIcon = this.leaflet!.icon({
-        ...iconUrls,
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
@@ -86,32 +83,42 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         shadowSize: [41, 41],
       });
 
-      console.log('MapComponent: Creating map instance...');
-      this.map = this.leaflet!.map(container, {
-        dragging: this.interactive(),
-        scrollWheelZoom: this.interactive(),
-        zoomControl: this.interactive(),
-      }).setView([this.lat(), this.lng()], this.zoom());
+      this.map = this.leaflet
+        .map(container, {
+          dragging: this.interactive(),
+          scrollWheelZoom: this.interactive(),
+          zoomControl: this.interactive(),
+        })
+        .setView([this.lat(), this.lng()], this.zoom());
 
-      console.log('MapComponent: Adding tile layer...');
-      this.leaflet!.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
-      }).addTo(this.map!);
+      this.leaflet
+        .tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors',
+        })
+        .addTo(this.map);
 
-      console.log('MapComponent: Adding marker...');
-      this.marker = this.leaflet!.marker([this.lat(), this.lng()], {
-        draggable: this.interactive(),
-        icon: markerIcon,
-      }).addTo(this.map!);
+      this.marker = this.leaflet
+        .marker([this.lat(), this.lng()], {
+          draggable: this.interactive(),
+          icon: markerIcon,
+        })
+        .addTo(this.map);
 
       if (this.interactive()) {
         const marker = this.marker;
 
         if (marker) {
-          marker.on('dragend', () => {
-            const pos = marker.getLatLng();
-            this.markerMoved.emit({ lat: pos.lat, lng: pos.lng });
-          });
+          marker.on(
+            'dragend',
+            (e: any) => {
+              const pos = e.target.getLatLng();
+              this.markerMoved.emit({ lat: pos.lat, lng: pos.lng });
+
+              // Centruj mapę na nowej pozycji markera
+              this.map?.setView([pos.lat, pos.lng], this.zoom());
+            },
+            { passive: true },
+          );
         }
       }
 
@@ -123,11 +130,19 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       }
 
       this.scheduleInvalidateSize();
-      console.log('MapComponent: Map initialized successfully');
-    } catch (error) {
-      console.error('MapComponent: Failed to initialize map:', error);
+    } catch {
       // Leaflet not available (SSR or missing dep)
     }
+
+    // Effect do aktualizacji pozycji przy zmianie koordynatów - uruchamiany po inicjalizacji
+    effect(() => {
+      if (this.map && this.marker) {
+        const lat = this.lat();
+        const lng = this.lng();
+
+        this.updateMarkerAndView(lat, lng);
+      }
+    });
   }
 
   ngOnDestroy(): void {
