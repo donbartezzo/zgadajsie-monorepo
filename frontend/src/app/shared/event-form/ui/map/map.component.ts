@@ -53,10 +53,21 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         this.leaflet = (window as any).L;
       } else {
         console.log('MapComponent: Loading Leaflet dynamically...');
-        this.leaflet = await import('leaflet');
+        const leafletModule = await import('leaflet');
+        // Użyj domyślnego eksportu z modułu
+        this.leaflet = leafletModule.default || leafletModule;
       }
 
       console.log('MapComponent: Leaflet loaded successfully');
+
+      // Sprawdź czy icon funkcja jest dostępna
+      if (typeof this.leaflet!.icon !== 'function') {
+        console.error(
+          'MapComponent: Leaflet.icon is not available. Available methods:',
+          Object.keys(this.leaflet!),
+        );
+        throw new Error('Leaflet.icon is not available');
+      }
 
       // Sprawdź czy ikony istnieją, użyj fallback jeśli nie
       const iconUrls = {
