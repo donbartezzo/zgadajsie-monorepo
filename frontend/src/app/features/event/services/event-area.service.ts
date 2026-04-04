@@ -333,7 +333,7 @@ export class EventAreaService {
 
   openManageGuests(): void {
     this.overlays.close();
-    this.router.navigate(['/w', this._citySlug, this._eventId, 'participants', 'my']);
+    this.router.navigate(['/w', this._citySlug, this._eventId, 'participants']);
   }
 
   handleNotificationBarAction(barId: string): void {

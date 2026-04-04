@@ -94,21 +94,6 @@ export const appRoutes: Route[] = [
           contentClass: 'bg-white',
         },
       },
-      // Participants list - only mine
-      {
-        path: 'participants/my',
-        loadComponent: () =>
-          import('./features/event/pages/event-participants/event-participants.component').then(
-            (m) => m.EventParticipantsComponent,
-          ),
-        canActivate: [verifiedUserGuard],
-        data: {
-          showFooter: false,
-          showBorder: false,
-          contentClass: 'bg-white',
-          showOnlyMine: true,
-        },
-      },
       // Chat with organizer (participant view) / Conversation list (organizer view)
       {
         path: 'host-chat',

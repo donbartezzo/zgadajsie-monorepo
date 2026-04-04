@@ -1,12 +1,5 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { AfterViewInit, ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
@@ -28,7 +21,6 @@ import { EventSlotInfo } from '../../../../shared/types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventParticipantsComponent implements AfterViewInit {
-  private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   public readonly auth = inject(AuthService);
   protected readonly eventArea = inject(EventAreaService);
@@ -42,28 +34,8 @@ export class EventParticipantsComponent implements AfterViewInit {
 
   // ── Local state ──
   readonly slots = signal<EventSlotInfo[]>([]);
-  readonly showOnlyMyParticipations = signal(false);
-
-  readonly filteredParticipants = computed(() => {
-    const all = this.participants();
-    if (!this.showOnlyMyParticipations()) return all;
-    const userId = this.auth.currentUser()?.id;
-    if (!userId) return all;
-    return all.filter((p) => p.userId === userId || p.addedByUserId === userId);
-  });
-
-  // When filtering, pass only slots of the filtered participants so empty slots are hidden
-  readonly filteredSlots = computed(() => {
-    if (!this.showOnlyMyParticipations()) return this.slots();
-    const ids = new Set(this.filteredParticipants().map((p) => p.id));
-    return this.slots().filter((s) => s.participationId != null && ids.has(s.participationId!));
-  });
 
   ngAfterViewInit(): void {
-    const showOnlyMine = this.route.snapshot.data['showOnlyMine'] as boolean;
-    if (showOnlyMine) {
-      this.showOnlyMyParticipations.set(true);
-    }
     setTimeout(() => this.scrollToCurrentUser(), 100);
     this.loadSlots();
   }
@@ -88,17 +60,6 @@ export class EventParticipantsComponent implements AfterViewInit {
     const slotEl = document.querySelector(`[data-user-id="${userId}"]`);
     if (slotEl) {
       slotEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }
-
-  onToggleFilterMine(checked: boolean): void {
-    this.showOnlyMyParticipations.set(checked);
-    const citySlug = this.route.snapshot.paramMap.get('citySlug');
-    const eventId = this.route.snapshot.paramMap.get('id');
-    if (checked) {
-      this.router.navigate(['/w', citySlug, eventId, 'participants', 'my']);
-    } else {
-      this.router.navigate(['/w', citySlug, eventId, 'participants']);
     }
   }
 }
