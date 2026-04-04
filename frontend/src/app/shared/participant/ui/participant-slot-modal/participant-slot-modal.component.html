@@ -12,11 +12,75 @@
   @let _loading = loading();
   @let _slotLocked = slotLocked();
   @let _currentUserId = currentUserId();
+  @let _config = slotStatusConfig();
+  @let _status = slotDisplayStatus();
+
+  <!-- ═══════════════════════════════════
+       HEADER (zawsze widoczny)
+  ═══════════════════════════════════ -->
+  @let _headerBg =
+    _status === 'participant'
+      ? 'bg-success-50 border-b border-success-200'
+      : _status === 'pending'
+        ? 'bg-warning-50 border-b border-warning-200'
+        : _status === 'withdrawn'
+          ? 'bg-neutral-100 border-b border-neutral-200'
+          : 'bg-primary-50 border-b border-primary-200';
+
+  @let _iconBg =
+    _status === 'participant'
+      ? 'bg-success-100'
+      : _status === 'pending'
+        ? 'bg-warning-100'
+        : _status === 'withdrawn'
+          ? 'bg-neutral-200'
+          : 'bg-primary-100';
+
+  @let _iconColor =
+    _status === 'participant'
+      ? 'text-success-600'
+      : _status === 'pending'
+        ? 'text-warning-600'
+        : _status === 'withdrawn'
+          ? 'text-neutral-500'
+          : 'text-primary-600';
+
+  @let _titleColor =
+    _status === 'participant'
+      ? 'text-success-800'
+      : _status === 'pending'
+        ? 'text-warning-800'
+        : _status === 'withdrawn'
+          ? 'text-neutral-700'
+          : 'text-primary-800';
+
+  @let _descColor =
+    _status === 'participant'
+      ? 'text-success-600'
+      : _status === 'pending'
+        ? 'text-warning-600'
+        : _status === 'withdrawn'
+          ? 'text-neutral-500'
+          : 'text-primary-600';
+
+  <div class="-mx-4 -mt-4 rounded-t-2xl px-5 pb-4 pt-5 pr-12" [class]="_headerBg">
+    <div class="flex items-center gap-4">
+      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full" [class]="_iconBg">
+        <app-icon [name]="_config.icon" size="md" [class]="_iconColor" />
+      </div>
+      <div>
+        <h3 class="text-base font-bold leading-tight uppercase" [class]="_titleColor">{{ titleWithRole() }}</h3>
+        <p class="mt-0.5 text-xs" [class]="_descColor">{{ _config.description }}</p>
+      </div>
+    </div>
+  </div>
 
   @if (_data) {
-    <div class="space-y-4 pt-4">
-      <!-- User profile card (only if participant exists) -->
-      @if (_participant) {
+    <!-- ═══════════════════════════════════
+         BODY (profil uczestnika lub informacja o roli)
+    ═══════════════════════════════════ -->
+    @if (_participant) {
+      <div class="pt-4">
         <app-user-profile-card
           [user]="_participant.user!"
           [context]="_isOrganizer ? 'organizer' : 'participant'"
@@ -51,17 +115,27 @@
             </div>
           }
         </app-user-profile-card>
-      }
+      </div>
+    } @else if (slotRoleInfo(); as roleInfo) {
+      <!-- Wolny slot z informacją o roli -->
+      <div class="pt-4">
+        <div class="flex items-center gap-3 rounded-xl p-4">
+          <div class="flex-1 text-center">
+            <p class="text-xs text-neutral-400 mb-3">Przeznaczone dla:</p>
 
-      <!-- Slot info card (only if slot exists) -->
-      @if (_slot) {
-        <app-slot-info-card [slot]="_slot" [event]="_event" [participant]="_participant" />
-      }
+            <h4 class="text-xl font-semibold text-neutral-900">{{ roleInfo.title }}</h4>
+            @if (roleInfo.description) {
+              <p class="mt-1 text-sm text-neutral-600">{{ roleInfo.description }}</p>
+            }
+          </div>
+        </div>
+      </div>
+    }
 
-      <!-- ═══════════════════════════════════
-           PUBLIC / PARTICIPANT ACTIONS
-      ═══════════════════════════════════ -->
-
+    <!-- ═══════════════════════════════════
+         PUBLIC / PARTICIPANT ACTIONS
+    ═══════════════════════════════════ -->
+    <div class="mt-4 space-y-3">
       <!-- Free slot: Join button -->
       @if (canJoinPublic()) {
         <app-button appearance="solid" color="primary" [fullWidth]="true" (clicked)="onJoin()">
@@ -102,7 +176,7 @@
 
       <!-- Withdrawn / view only -->
       @if (_isWithdrawn) {
-        <div class="text-center text-sm text-neutral-400 py-2">
+        <div class="py-2 text-center text-sm text-neutral-400">
           @if (_participant?.status === 'REJECTED') {
             Zgłoszenie zostało odrzucone przez organizatora.
           } @else {
@@ -120,7 +194,7 @@
         _participant &&
         !_isWithdrawn
       ) {
-        <div class="text-center text-sm text-neutral-400 py-2">
+        <div class="py-2 text-center text-sm text-neutral-400">
           @if (_isBanned) {
             <div class="flex items-center justify-center gap-2 text-danger-500">
               <app-icon name="shield-alert" size="sm" />
@@ -136,19 +210,24 @@
            ORGANIZER ACTIONS
       ═══════════════════════════════════ -->
       @if (_isOrganizer && organizerActions().length > 0) {
-        <div>
-          <select
-            class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-hidden"
-            [value]="selectedOrganizerAction()"
-            (change)="onOrganizerAction($any($event.target).value)"
-          >
-            <option value="" disabled>Akcje organizatora...</option>
-            @for (action of organizerActions(); track action.value) {
-              <option [value]="action.value">{{ action.label }}</option>
-            }
-          </select>
-        </div>
+        <select
+          class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 focus:border-primary-500 focus:outline-hidden focus:ring-1 focus:ring-primary-500"
+          [value]="selectedOrganizerAction()"
+          (change)="onOrganizerAction($any($event.target).value)"
+        >
+          <option value="" disabled>Akcje organizatora...</option>
+          @for (action of organizerActions(); track action.value) {
+            <option [value]="action.value">{{ action.label }}</option>
+          }
+        </select>
       }
+    </div>
+  }
+
+  <!-- Participation update timestamp -->
+  @if (participationUpdatedAt()) {
+    <div class="mt-2 pt-2 border-t border-neutral-100 text-center">
+      <p class="text-xs text-neutral-400">Ostatnia aktualizacja: {{ participationUpdatedAt() }}</p>
     </div>
   }
 </app-modal>

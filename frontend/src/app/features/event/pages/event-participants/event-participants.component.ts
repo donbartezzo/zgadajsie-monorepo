@@ -12,8 +12,6 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
 import { ParticipantSlotsGridComponent } from '../../../../shared/participant/ui/participant-slots-grid/participant-slots-grid.component';
 import { EventStickyNotificationBarComponent } from '../../ui/event-sticky-notification-bar/event-sticky-notification-bar.component';
-import { JoinEventButtonComponent } from '../../ui/join-event-button/join-event-button.component';
-import { LeaveEventButtonComponent } from '../../ui/leave-event-button/leave-event-button.component';
 import { EventService } from '../../../../core/services/event.service';
 import { EventAreaService } from '../../services/event-area.service';
 import { EventSlotInfo } from '../../../../shared/types';
@@ -25,8 +23,6 @@ import { EventSlotInfo } from '../../../../shared/types';
     EventHeroSlotsComponent,
     ParticipantSlotsGridComponent,
     EventStickyNotificationBarComponent,
-    JoinEventButtonComponent,
-    LeaveEventButtonComponent,
   ],
   templateUrl: './event-participants.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

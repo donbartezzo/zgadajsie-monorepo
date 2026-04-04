@@ -6,9 +6,9 @@ import {
   UserProfileCardComponent,
   ProfileEditData,
 } from '../../../user/ui/user-profile-card/user-profile-card.component';
-import { SlotInfoCardComponent } from '../slot-info-card/slot-info-card.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
+import { SlotDisplayStatus, SlotStatusConfig, SLOT_STATUS_CONFIG } from '../../slot-status-config';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { EventService } from '../../../../core/services/event.service';
 import { UserService } from '../../../../core/services/user.service';
@@ -21,6 +21,7 @@ import { ProfileBroadcastService } from '../../../../core/services/profile-broad
 import { Participation, ParticipantManageItem } from '../../../types';
 import { Event } from '../../../types/event.interface';
 import { EventSlotInfo } from '../../../types/payment.interface';
+import { formatDateTime } from '@zgadajsie/shared';
 
 export interface ParticipantModalData {
   participant: Participation | ParticipantManageItem | null;
@@ -50,13 +51,7 @@ function getErrorMessage(err: unknown, fallback: string): string {
 
 @Component({
   selector: 'app-participant-slot-modal',
-  imports: [
-    ModalComponent,
-    UserProfileCardComponent,
-    SlotInfoCardComponent,
-    ButtonComponent,
-    IconComponent,
-  ],
+  imports: [ModalComponent, UserProfileCardComponent, ButtonComponent, IconComponent],
   templateUrl: './participant-slot-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -142,6 +137,71 @@ export class ParticipantSlotModalComponent {
   readonly slotIsEmpty = computed(() => {
     const s = this.slot();
     return !s || (!s.participationId && !s.locked);
+  });
+
+  readonly slotDisplayStatus = computed<SlotDisplayStatus>(() => {
+    const p = this.participant();
+    if (!p) return 'free';
+    const s = p.status;
+    if (s === 'PENDING') return 'pending';
+    if (s === 'WITHDRAWN' || s === 'REJECTED') return 'withdrawn';
+    return 'participant';
+  });
+
+  readonly slotStatusConfig = computed<SlotStatusConfig>(
+    () => SLOT_STATUS_CONFIG[this.slotDisplayStatus()],
+  );
+
+  readonly titleWithRole = computed(() => {
+    const config = this.slotStatusConfig();
+    const slot = this.participant()?.slot;
+
+    if (!slot?.roleKey) return config.title;
+
+    // Find role by roleKey in event roleConfig
+    const event = this.event();
+    if (event?.roleConfig?.roles) {
+      const role = event.roleConfig.roles.find((r) => r.key === slot.roleKey);
+      if (role?.title) {
+        return `${config.title} - ${role.title.toUpperCase()}`;
+      }
+    }
+
+    // Fallback: use roleKey directly
+    return `${config.title} - ${slot.roleKey.toUpperCase()}`;
+  });
+
+  readonly slotRoleInfo = computed(() => {
+    const slot = this.slot();
+    if (!slot?.roleKey) return null;
+
+    // Find role by roleKey in event roleConfig
+    const event = this.event();
+    if (event?.roleConfig?.roles) {
+      const role = event.roleConfig.roles.find((r) => r.key === slot.roleKey);
+      if (role) {
+        return {
+          title: role.title,
+          description: role.desc,
+        };
+      }
+    }
+
+    // Fallback: use roleKey directly
+    return {
+      title: slot.roleKey,
+      description: null,
+    };
+  });
+
+  readonly participationUpdatedAt = computed(() => {
+    const p = this.participant();
+    if (!p) return null;
+    // Sprawdź różne pola daty w zależności od typu
+    if ('updatedAt' in p && p.updatedAt) return formatDateTime(p.updatedAt as string);
+    if ('approvedAt' in p && p.approvedAt) return formatDateTime(p.approvedAt as string);
+    if ('createdAt' in p && p.createdAt) return formatDateTime(p.createdAt as string);
+    return null;
   });
 
   readonly canJoinPublic = computed(() => {

@@ -42,16 +42,5 @@
         (refreshNeeded)="onRefreshNeeded()"
       />
     }
-
-    @if (_isLoggedIn && !eventArea.isOrganizer()) {
-      <div class="mt-6 max-w-lg mx-auto">
-        @if (!eventArea.isParticipant() && eventArea.canJoin()) {
-          <app-join-event-button />
-        }
-        @if (eventArea.isParticipant()) {
-          <app-leave-event-button />
-        }
-      </div>
-    }
   </div>
 }

@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-  output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
@@ -19,6 +12,7 @@ import {
   ParticipantSlotModalComponent,
   ParticipantModalData,
 } from '../participant-slot-modal/participant-slot-modal.component';
+import { SLOT_STATUS_CONFIG } from '../../slot-status-config';
 
 export type ParticipantItem = Participation | ParticipantManageItem;
 
@@ -45,6 +39,8 @@ export class ParticipantSlotsGridComponent {
   private readonly auth = inject(AuthService);
   private readonly modalService = inject(ModalService);
 
+  protected readonly statusConfig = SLOT_STATUS_CONFIG;
+
   readonly event = input.required<Event>();
   readonly participants = input<ParticipantItem[]>([]);
   readonly slots = input<EventSlotInfo[]>([]);
@@ -66,9 +62,7 @@ export class ParticipantSlotsGridComponent {
 
   readonly maxSlots = computed(() => this.event().maxParticipants ?? 0);
 
-  readonly roleConfig = computed<EventRoleConfig | null>(
-    () => this.event().roleConfig ?? null,
-  );
+  readonly roleConfig = computed<EventRoleConfig | null>(() => this.event().roleConfig ?? null);
 
   readonly isPaidEvent = computed(() => (this.event().costPerPerson ?? 0) > 0);
 
@@ -93,7 +87,7 @@ export class ParticipantSlotsGridComponent {
       const roleParticipants = slotParticipants.filter((p) => {
         const pRoleKey =
           'slot' in p && (p as ParticipantManageItem).slot?.roleKey
-            ? (p as ParticipantManageItem).slot!.roleKey
+            ? (p as ParticipantManageItem).slot?.roleKey
             : (p as Participation).roleKey;
         return pRoleKey === role.key;
       });
