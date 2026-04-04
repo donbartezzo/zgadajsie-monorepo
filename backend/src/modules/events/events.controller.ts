@@ -98,6 +98,11 @@ export class EventsController {
     return this.eventsService.getParticipantsForOrganizer(id, user.id);
   }
 
+  @Get(':id/slots')
+  getSlots(@Param('id') id: string) {
+    return this.eventsService.getSlots(id);
+  }
+
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Post(':id/mark-paid/:participationId')
   markPaid(

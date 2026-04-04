@@ -3,8 +3,9 @@ import {
   Event as EventModel,
   ParticipantPaymentInfo,
   Participation,
-  ParticipantManageItem,
   WaitingReason,
+  JoinGuestRequest,
+  CancelPaymentRequest,
 } from '../../../types';
 import { EventCountdown } from '@zgadajsie/shared';
 
@@ -19,11 +20,12 @@ export type OverlayType =
   | 'notifications'
   | 'cancelPayment'
   | 'enrollmentDetails'
-  | 'participantDetail'
-  | 'addGuest'
   | null;
 
-export type ParticipantDetailItem = Participation | ParticipantManageItem;
+export interface JoinWizardConfig {
+  startStep: 1 | 2;
+  type: 'self' | 'guest';
+}
 
 @Injectable({
   providedIn: 'root',
@@ -40,7 +42,7 @@ export class BottomOverlaysService {
   private readonly participantsSignal = signal<Participation[]>([]);
 
   private joinCallback: ((roleKey?: string) => void) | null = null;
-  private joinGuestCallback: ((displayName: string) => void) | null = null;
+  private joinGuestCallback: ((data: JoinGuestRequest) => void) | null = null;
   private authSuccessCallback: (() => void) | null = null;
   private openChatCallback: (() => void) | null = null;
   private payCallback: (() => void) | null = null;
@@ -49,9 +51,7 @@ export class BottomOverlaysService {
   private leaveCallback: (() => void) | null = null;
   private rejoinCallback: (() => void) | null = null;
   private manageGuestsCallback: (() => void) | null = null;
-  private cancelPaymentCallback:
-    | ((options: { refundAsVoucher: boolean; notifyUser: boolean }) => void)
-    | null = null;
+  private cancelPaymentCallback: ((options: CancelPaymentRequest) => void) | null = null;
   private addGuestRequestedCallback: (() => void) | null = null;
 
   private readonly lotteryCountdownSignal = signal<EventCountdown | null>(null);
@@ -62,8 +62,8 @@ export class BottomOverlaysService {
   readonly cancelPayment = this.cancelPaymentSignal.asReadonly();
   readonly cancelPaymentUserName = this.cancelPaymentUserNameSignal.asReadonly();
 
-  private readonly selectedParticipantSignal = signal<ParticipantDetailItem | null>(null);
-  readonly selectedParticipant = this.selectedParticipantSignal.asReadonly();
+  private readonly wizardConfigSignal = signal<JoinWizardConfig | null>(null);
+  readonly wizardConfig = this.wizardConfigSignal.asReadonly();
 
   readonly active = this.activeSignal.asReadonly();
   readonly event = this.eventSignal.asReadonly();
@@ -76,6 +76,14 @@ export class BottomOverlaysService {
 
   open(type: OverlayType): void {
     this.activeSignal.set(type);
+  }
+
+  openJoinWizard(config?: Partial<JoinWizardConfig>): void {
+    this.wizardConfigSignal.set({
+      startStep: config?.startStep ?? 1,
+      type: config?.type ?? 'self',
+    });
+    this.open('joinRules');
   }
 
   close(): void {
@@ -120,7 +128,7 @@ export class BottomOverlaysService {
     this.joinCallback = callback;
   }
 
-  onJoinGuestConfirmed(callback: (displayName: string) => void): void {
+  onJoinGuestConfirmed(callback: (data: JoinGuestRequest) => void): void {
     this.joinGuestCallback = callback;
   }
 
@@ -160,9 +168,7 @@ export class BottomOverlaysService {
     this.manageGuestsCallback = callback;
   }
 
-  onCancelPaymentConfirmed(
-    callback: (options: { refundAsVoucher: boolean; notifyUser: boolean }) => void,
-  ): void {
+  onCancelPaymentConfirmed(callback: (options: CancelPaymentRequest) => void): void {
     this.cancelPaymentCallback = callback;
   }
 
@@ -172,21 +178,12 @@ export class BottomOverlaysService {
     this.open('cancelPayment');
   }
 
-  openParticipantDetail(participant: ParticipantDetailItem): void {
-    this.selectedParticipantSignal.set(participant);
-    this.open('participantDetail');
-  }
-
-  clearParticipantDetail(): void {
-    this.selectedParticipantSignal.set(null);
-  }
-
   confirmJoin(roleKey?: string): void {
     this.joinCallback?.(roleKey);
   }
 
-  confirmJoinGuest(displayName: string): void {
-    this.joinGuestCallback?.(displayName);
+  confirmJoinGuest(data: JoinGuestRequest): void {
+    this.joinGuestCallback?.(data);
   }
 
   handleAuthSuccess(): void {
@@ -225,7 +222,7 @@ export class BottomOverlaysService {
     this.manageGuestsCallback?.();
   }
 
-  handleCancelPayment(options: { refundAsVoucher: boolean; notifyUser: boolean }): void {
+  handleCancelPayment(options: CancelPaymentRequest): void {
     this.cancelPaymentCallback?.(options);
   }
 

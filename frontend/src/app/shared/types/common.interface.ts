@@ -1,3 +1,10 @@
+export type ParticipationStatus =
+  | 'PENDING'
+  | 'APPROVED'
+  | 'CONFIRMED'
+  | 'WITHDRAWN'
+  | 'REJECTED';
+
 /** Typ dla URL awatara użytkownika. */
 export type AvatarUrl = string | null | undefined;
 

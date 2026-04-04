@@ -1,72 +1,83 @@
-@switch (overlays.active()) { @case ('share') {
-<app-share-overlay (closed)="overlays.close()" />
-} @case ('settings') {
-<app-settings-overlay (closed)="overlays.close()" />
-} @case ('map') {
-<app-map-overlay [event]="overlays.event()" (closed)="overlays.close()" />
-} @case ('auth') {
-<app-auth-overlay (closed)="overlays.close()" (authenticated)="overlays.handleAuthSuccess()" />
-} @case ('joinRules') {
-<app-join-rules-overlay
-  [open]="true"
-  [event]="overlays.event()"
-  [loading]="overlays.loading()"
-  [isOrganizer]="overlays.isOrganizer()"
-  (closed)="overlays.close()"
-  (confirmed)="overlays.confirmJoin($event)"
-/>
-} @case ('joinConfirm') {
-<app-join-confirm-overlay
-  [open]="true"
-  [event]="overlays.event()"
-  [loading]="overlays.loading()"
-  [participantStatus]="overlays.participantStatus()"
-  [waitingReason]="overlays.waitingReason()"
-  [participants]="overlays.participants()"
-  (closed)="overlays.close()"
-  (openChat)="overlays.handleOpenChat()"
-  (payRequested)="overlays.handlePay()"
-  (contactOrganizer)="overlays.handleContactOrganizer()"
-  (leaveRequested)="overlays.handleLeaveRequested()"
-  (rejoinRequested)="overlays.handleRejoinRequested()"
-  (addGuestRequested)="overlays.handleAddGuestRequested()"
-  (manageGuests)="overlays.handleManageGuests()"
-/>
-} @case ('organizerActions') { @if (overlays.event(); as evt) {
-<app-organizer-actions-overlay
-  [open]="true"
-  [eventId]="evt.id"
-  [citySlug]="evt.city?.slug ?? ''"
-  [eventStatus]="evt.status"
-  [eventStartsAt]="evt.startsAt"
-  (closed)="overlays.close()"
-  (cancelRequested)="overlays.handleCancelEvent()"
-/>
-} } @case ('enrollmentDetails') { @if (overlays.event(); as evt) {
-<app-enrollment-details-overlay
-  [open]="true"
-  [enrollmentPhase]="evt.enrollmentPhase ?? null"
-  [eventTimeStatus]="evt.eventTimeStatus ?? null"
-  [isCancelled]="evt.status === 'CANCELLED'"
-  [startsAt]="evt.startsAt"
-  [participantCount]="evt._count?.participations ?? 0"
-  [maxParticipants]="evt.maxParticipants"
-  [costPerPerson]="evt.costPerPerson"
-  [lotteryCountdown]="overlays.lotteryCountdown()"
-  (closed)="overlays.close()"
-/>
-} } @case ('cancelPayment') { @if (overlays.cancelPayment(); as payment) {
-<app-cancel-payment-overlay
-  [payment]="payment"
-  [userName]="overlays.cancelPaymentUserName()"
-  (confirmed)="overlays.handleCancelPayment($event)"
-  (closed)="overlays.close()"
-/>
-} } @case ('addGuest') {
-<app-add-guest-overlay
-  [open]="true"
-  [loading]="overlays.loading()"
-  (closed)="overlays.close()"
-  (confirmed)="overlays.confirmJoinGuest($event)"
-/>
-} }
+@switch (overlays.active()) {
+  @case ('share') {
+    <app-share-overlay (closed)="overlays.close()" />
+  }
+  @case ('settings') {
+    <app-settings-overlay (closed)="overlays.close()" />
+  }
+  @case ('map') {
+    <app-map-overlay [event]="overlays.event()" (closed)="overlays.close()" />
+  }
+  @case ('auth') {
+    <app-auth-overlay (closed)="overlays.close()" (authenticated)="overlays.handleAuthSuccess()" />
+  }
+  @case ('joinRules') {
+    <app-join-rules-overlay
+      [open]="true"
+      [event]="overlays.event()"
+      [loading]="overlays.loading()"
+      [isOrganizer]="overlays.isOrganizer()"
+      [wizardConfig]="overlays.wizardConfig()"
+      (closed)="overlays.close()"
+      (joinConfirmed)="overlays.confirmJoin($event)"
+      (guestConfirmed)="overlays.confirmJoinGuest($event)"
+    />
+  }
+  @case ('joinConfirm') {
+    <app-join-confirm-overlay
+      [open]="true"
+      [event]="overlays.event()"
+      [loading]="overlays.loading()"
+      [participantStatus]="overlays.participantStatus()"
+      [waitingReason]="overlays.waitingReason()"
+      [participants]="overlays.participants()"
+      (closed)="overlays.close()"
+      (openChat)="overlays.handleOpenChat()"
+      (payRequested)="overlays.handlePay()"
+      (contactOrganizer)="overlays.handleContactOrganizer()"
+      (leaveRequested)="overlays.handleLeaveRequested()"
+      (rejoinRequested)="overlays.handleRejoinRequested()"
+      (addGuestRequested)="overlays.handleAddGuestRequested()"
+      (manageGuests)="overlays.handleManageGuests()"
+    />
+  }
+  @case ('organizerActions') {
+    @if (overlays.event(); as evt) {
+      <app-organizer-actions-overlay
+        [open]="true"
+        [eventId]="evt.id"
+        [citySlug]="evt.city?.slug ?? ''"
+        [eventStatus]="evt.status"
+        [eventStartsAt]="evt.startsAt"
+        (closed)="overlays.close()"
+        (cancelRequested)="overlays.handleCancelEvent()"
+      />
+    }
+  }
+  @case ('enrollmentDetails') {
+    @if (overlays.event(); as evt) {
+      <app-enrollment-details-overlay
+        [open]="true"
+        [enrollmentPhase]="evt.enrollmentPhase ?? null"
+        [eventTimeStatus]="evt.eventTimeStatus ?? null"
+        [isCancelled]="evt.status === 'CANCELLED'"
+        [startsAt]="evt.startsAt"
+        [participantCount]="evt._count?.participations ?? 0"
+        [maxParticipants]="evt.maxParticipants"
+        [costPerPerson]="evt.costPerPerson"
+        [lotteryCountdown]="overlays.lotteryCountdown()"
+        (closed)="overlays.close()"
+      />
+    }
+  }
+  @case ('cancelPayment') {
+    @if (overlays.cancelPayment(); as payment) {
+      <app-cancel-payment-overlay
+        [payment]="payment"
+        [userName]="overlays.cancelPaymentUserName()"
+        (confirmed)="overlays.handleCancelPayment($event)"
+        (closed)="overlays.close()"
+      />
+    }
+  }
+}

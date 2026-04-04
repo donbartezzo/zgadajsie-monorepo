@@ -1,4 +1,4 @@
-import { UserBriefWithEmail, EventRef } from './common.interface';
+import { UserBriefWithEmail, EventRef, ParticipationStatus } from './common.interface';
 
 export interface Payment {
   id: string;
@@ -48,10 +48,41 @@ export interface ParticipantPaymentInfo {
 export interface ParticipantManageItem {
   id: string;
   userId: string;
-  status: string;
+  status: ParticipationStatus;
   isGuest: boolean;
   addedByUserId?: string;
+  slot?: EventSlotInfo | null;
   createdAt: string;
   user: { id: string; displayName: string; avatarUrl: string | null; email: string };
   payment: ParticipantPaymentInfo | null;
+}
+
+export interface EventSlotInfo {
+  id: string;
+  locked: boolean;
+  roleKey: string | null;
+  participationId: string | null;
+  confirmed: boolean;
+  assignedAt: string | null;
+  createdAt: string;
+}
+
+// Request interfaces for API calls
+export interface JoinGuestRequest {
+  displayName: string;
+  roleKey?: string;
+}
+
+export interface UpdateGuestResponse {
+  id: string;
+  displayName: string;
+}
+
+export interface CancelPaymentRequest {
+  refundAsVoucher: boolean;
+  notifyUser: boolean;
+}
+
+export interface LockSlotResponse {
+  success: boolean;
 }

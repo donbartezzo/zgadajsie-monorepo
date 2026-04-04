@@ -1,4 +1,10 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { EventRoleConfig, AvailableRole } from './slot.types';
@@ -83,7 +89,7 @@ export class SlotService {
     let result: { id: string }[];
 
     if (roleKey) {
-      // Role-specific slot assignment
+      // Role-specific slot assignment (excludes locked slots)
       result = await client.$queryRaw<{ id: string }[]>`
         UPDATE "EventSlot"
         SET "participationId" = ${participationId},
@@ -93,6 +99,7 @@ export class SlotService {
           SELECT "id" FROM "EventSlot"
           WHERE "eventId" = ${eventId}
             AND "participationId" IS NULL
+            AND "locked" = false
             AND "roleKey" = ${roleKey}
           LIMIT 1
           FOR UPDATE SKIP LOCKED
@@ -100,7 +107,7 @@ export class SlotService {
         RETURNING "id"
       `;
     } else {
-      // Any free slot (for events without roles or roleKey=null)
+      // Any free unlocked slot (for events without roles or roleKey=null)
       result = await client.$queryRaw<{ id: string }[]>`
         UPDATE "EventSlot"
         SET "participationId" = ${participationId},
@@ -110,6 +117,7 @@ export class SlotService {
           SELECT "id" FROM "EventSlot"
           WHERE "eventId" = ${eventId}
             AND "participationId" IS NULL
+            AND "locked" = false
           LIMIT 1
           FOR UPDATE SKIP LOCKED
         )
@@ -168,7 +176,7 @@ export class SlotService {
    * If roleKey is provided, counts only slots with that role.
    */
   async getFreeSlotCount(eventId: string, roleKey?: string | null): Promise<number> {
-    const where: Prisma.EventSlotWhereInput = { eventId, participationId: null };
+    const where: Prisma.EventSlotWhereInput = { eventId, participationId: null, locked: false };
     if (roleKey !== undefined) {
       where.roleKey = roleKey;
     }
@@ -182,7 +190,7 @@ export class SlotService {
   async getFreeSlotsByRole(eventId: string): Promise<Map<string, number>> {
     const slots = await this.prisma.eventSlot.groupBy({
       by: ['roleKey'],
-      where: { eventId, participationId: null },
+      where: { eventId, participationId: null, locked: false },
       _count: { id: true },
     });
 
@@ -238,10 +246,11 @@ export class SlotService {
       return 0;
     }
 
-    // Find IDs of empty slots to delete
+    // Find IDs of empty slots to delete (prefer non-locked first)
     const emptySlots = await this.prisma.eventSlot.findMany({
       where: { eventId, participationId: null },
       select: { id: true },
+      orderBy: { locked: 'asc' },
       take: count,
     });
 
@@ -341,6 +350,171 @@ export class SlotService {
       },
       orderBy: { createdAt: 'asc' },
     });
+  }
+
+  /**
+   * Lock a slot. Only the organizer can do this.
+   * If the slot has a participant, they stay — the slot is just marked as locked.
+   */
+  async lockSlot(slotId: string): Promise<void> {
+    const slot = await this.prisma.eventSlot.findUnique({ where: { id: slotId } });
+    if (!slot) {
+      throw new NotFoundException('Slot nie znaleziony');
+    }
+    if (slot.locked) {
+      throw new BadRequestException('Slot jest już zablokowany');
+    }
+    await this.prisma.eventSlot.update({
+      where: { id: slotId },
+      data: { locked: true },
+    });
+    this.logger.log(`Locked slot ${slotId} on event ${slot.eventId}`);
+  }
+
+  /**
+   * Unlock a slot. The slot becomes available for automatic assignment again.
+   */
+  async unlockSlot(slotId: string): Promise<void> {
+    const slot = await this.prisma.eventSlot.findUnique({ where: { id: slotId } });
+    if (!slot) {
+      throw new NotFoundException('Slot nie znaleziony');
+    }
+    if (!slot.locked) {
+      throw new BadRequestException('Slot nie jest zablokowany');
+    }
+    await this.prisma.eventSlot.update({
+      where: { id: slotId },
+      data: { locked: false },
+    });
+    this.logger.log(`Unlocked slot ${slotId} on event ${slot.eventId}`);
+  }
+
+  /**
+   * Assign a specific participation to a specific locked slot.
+   * Used by organizer to manually place a waiting participant onto a locked slot.
+   */
+  async assignToLockedSlot(
+    slotId: string,
+    participationId: string,
+    confirmed: boolean,
+    tx?: Prisma.TransactionClient,
+  ): Promise<{ id: string; confirmed: boolean; assignedAt: Date; roleKey: string | null }> {
+    const client = tx ?? this.prisma;
+
+    const slot = await client.eventSlot.findUnique({ where: { id: slotId } });
+    if (!slot) {
+      throw new NotFoundException('Slot nie znaleziony');
+    }
+    if (!slot.locked) {
+      throw new BadRequestException('Slot nie jest zablokowany — użyj standardowego przydzielania');
+    }
+    if (slot.participationId) {
+      throw new BadRequestException('Slot jest już zajęty');
+    }
+
+    await client.eventSlot.update({
+      where: { id: slotId },
+      data: { participationId, confirmed, assignedAt: new Date() },
+    });
+
+    const updated = await client.eventSlot.findUnique({
+      where: { id: slotId },
+      select: { id: true, confirmed: true, assignedAt: true, roleKey: true },
+    });
+
+    return updated!;
+  }
+
+  /**
+   * Get the eventId for a given slot.
+   */
+  async getSlotEventId(slotId: string): Promise<string> {
+    const slot = await this.prisma.eventSlot.findUnique({
+      where: { id: slotId },
+      select: { eventId: true },
+    });
+    if (!slot) {
+      throw new NotFoundException('Slot nie znaleziony');
+    }
+    return slot.eventId;
+  }
+
+  /**
+   * Organizer locks a slot - prevents automatic assignment.
+   */
+  async lockSlotByOrganizer(
+    slotId: string,
+    organizerUserId: string,
+  ): Promise<{ success: boolean }> {
+    const eventId = await this.getSlotEventId(slotId);
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event || event.organizerId !== organizerUserId) {
+      throw new ForbiddenException('Nie jesteś organizatorem');
+    }
+    await this.lockSlot(slotId);
+    return { success: true };
+  }
+
+  /**
+   * Organizer unlocks a slot - allows automatic assignment again.
+   */
+  async unlockSlotByOrganizer(
+    slotId: string,
+    organizerUserId: string,
+  ): Promise<{ success: boolean }> {
+    const eventId = await this.getSlotEventId(slotId);
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event || event.organizerId !== organizerUserId) {
+      throw new ForbiddenException('Nie jesteś organizatorem');
+    }
+    await this.unlockSlot(slotId);
+    return { success: true };
+  }
+
+  /**
+   * Organizer assigns a waiting participant to a specific locked slot.
+   */
+  async assignParticipantToLockedSlot(
+    slotId: string,
+    participationId: string,
+    organizerUserId: string,
+  ) {
+    const participation = await this.prisma.eventParticipation.findUnique({
+      where: { id: participationId },
+      include: { event: true, slot: true },
+    });
+    if (!participation) {
+      throw new NotFoundException('Zgłoszenie nie znalezione');
+    }
+    if (participation.event.organizerId !== organizerUserId) {
+      throw new ForbiddenException('Nie jesteś organizatorem');
+    }
+    if (!participation.wantsIn) {
+      throw new BadRequestException('Uczestnik wypisał się z wydarzenia');
+    }
+    if (participation.slot) {
+      throw new BadRequestException('Uczestnik już ma przydzielone miejsce');
+    }
+
+    const isPaid = participation.event.costPerPerson.toNumber() > 0;
+    const confirmed = !isPaid;
+
+    await this.assignToLockedSlot(slotId, participationId, confirmed);
+
+    const updated = await this.prisma.eventParticipation.update({
+      where: { id: participationId },
+      data: { waitingReason: null },
+      include: {
+        user: { select: { id: true, displayName: true, avatarUrl: true, email: true } },
+        event: { select: { id: true, title: true } },
+        slot: true,
+      },
+    });
+
+    // TODO: Add notification logic here if needed
+    // await this.notifySlotAssigned(recipientId, updated.event.title, updated.eventId);
+
+    return updated;
   }
 
   /**

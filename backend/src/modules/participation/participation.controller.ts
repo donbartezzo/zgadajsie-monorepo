@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Param, Body, UseGuards, Patch } from '@nestjs/common';
 import { ParticipationService } from './participation.service';
-import { JoinGuestDto } from './dto/join-guest.dto';
-import { JoinEventDto } from './dto/join-event.dto';
+import { SlotService } from '../slots/slot.service';
+import { JoinEventDto, JoinGuestDto } from './dto/join-event.dto';
 import { UpdateGuestDto } from './dto/update-guest.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { IsActiveGuard } from '../auth/guards/is-active.guard';
@@ -11,7 +11,10 @@ import { AuthUser } from '../auth/interfaces/auth-user.interface';
 @UseGuards(JwtAuthGuard, IsActiveGuard)
 @Controller()
 export class ParticipationController {
-  constructor(private participationService: ParticipationService) {}
+  constructor(
+    private participationService: ParticipationService,
+    private slotService: SlotService,
+  ) {}
 
   @Post('events/:eventId/join')
   join(
@@ -28,7 +31,7 @@ export class ParticipationController {
     @CurrentUser() user: AuthUser,
     @Body() dto: JoinGuestDto,
   ) {
-    return this.participationService.joinGuest(eventId, user.id, dto.displayName);
+    return this.participationService.joinGuest(eventId, user.id, dto.displayName, dto.roleKey);
   }
 
   @Patch('participations/:id/update-guest')
@@ -68,5 +71,24 @@ export class ParticipationController {
   @Get('events/:eventId/my-guests')
   getActiveGuests(@Param('eventId') eventId: string, @CurrentUser() user: AuthUser) {
     return this.participationService.getActiveGuestsForHost(eventId, user.id);
+  }
+
+  @Post('slots/:slotId/lock')
+  lockSlot(@Param('slotId') slotId: string, @CurrentUser() user: AuthUser) {
+    return this.slotService.lockSlotByOrganizer(slotId, user.id);
+  }
+
+  @Post('slots/:slotId/unlock')
+  unlockSlot(@Param('slotId') slotId: string, @CurrentUser() user: AuthUser) {
+    return this.slotService.unlockSlotByOrganizer(slotId, user.id);
+  }
+
+  @Post('slots/:slotId/assign-participant/:participationId')
+  assignToLockedSlot(
+    @Param('slotId') slotId: string,
+    @Param('participationId') participationId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.slotService.assignParticipantToLockedSlot(slotId, participationId, user.id);
   }
 }

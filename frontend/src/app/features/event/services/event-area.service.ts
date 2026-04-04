@@ -105,15 +105,6 @@ export class EventAreaService {
     return p.status === 'PENDING' || p.status === 'APPROVED' || p.status === 'CONFIRMED';
   });
 
-  readonly hasAnyParticipationWithOrganizer = computed(() => {
-    const userId = this.auth.currentUser()?.id;
-    const organizerId = this.event()?.organizerId;
-    if (!userId || !organizerId) return false;
-
-    // Check if user has any participation (current or past) with this organizer
-    return this.participants().some((p) => p.userId === userId);
-  });
-
   readonly isOrganizer = computed(() => {
     const userId = this.auth.currentUser()?.id;
     return !!userId && this.event()?.organizerId === userId;
@@ -316,7 +307,9 @@ export class EventAreaService {
 
   private registerOverlayCallbacks(): void {
     this.overlays.onJoinConfirmed((roleKey?: string) => this.confirmJoin(roleKey));
-    this.overlays.onJoinGuestConfirmed((displayName: string) => this.confirmJoinGuest(displayName));
+    this.overlays.onJoinGuestConfirmed((data: { displayName: string; roleKey?: string }) =>
+      this.confirmJoinGuest(data.displayName, data.roleKey),
+    );
     this.overlays.onOpenChat(() => this.openChat());
     this.overlays.onPay(() => this.payEvent());
     this.overlays.onContactOrganizer(() => this.contactOrganizer());
@@ -350,16 +343,7 @@ export class EventAreaService {
       return;
     }
 
-    // User must have any participation with the organizer to add guests
-    if (!this.hasAnyParticipationWithOrganizer()) {
-      this.snackbar.info(
-        'Musisz najpierw wziąć udział w wydarzeniu tego organizatora, aby móc dodawać osoby towarzyszące.',
-      );
-      this.openJoinSheet();
-      return;
-    }
-
-    this.overlays.open('addGuest');
+    this.overlays.openJoinWizard({ startStep: 2, type: 'guest' });
   }
 
   openManageGuests(): void {
@@ -449,12 +433,12 @@ export class EventAreaService {
       });
   }
 
-  confirmJoinGuest(displayName: string): void {
+  confirmJoinGuest(displayName: string, roleKey?: string): void {
     this.overlays.close();
     this.joining.set(true);
 
     this.eventService
-      .joinGuest(this._eventId, displayName)
+      .joinGuest(this._eventId, displayName, roleKey)
       .pipe(finalize(() => this.joining.set(false)))
       .subscribe({
         next: (p) => {

@@ -258,6 +258,7 @@ model EventSlot {
   eventId         String
   participationId String?             @unique
   confirmed       Boolean             @default(false)
+  locked          Boolean             @default(false)
   assignedAt      DateTime?
   createdAt       DateTime            @default(now())
   roleKey         String?

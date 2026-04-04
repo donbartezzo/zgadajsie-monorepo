@@ -153,13 +153,21 @@ export class ParticipationService {
     return roleKey;
   }
 
-  async joinGuest(eventId: string, addedByUserId: string, displayName: string) {
+  async joinGuest(eventId: string, addedByUserId: string, displayName: string, roleKey?: string) {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
       throw new NotFoundException('Wydarzenie nie znalezione');
     }
     if (!isEventJoinable(event)) {
       throw new BadRequestException('Wydarzenie już się rozpoczęło - dołączenie nie jest możliwe');
+    }
+
+    // Validate roleKey if provided
+    if (roleKey) {
+      const roleConfig = event.roleConfig as unknown as EventRoleConfig | null;
+      const validatedRoleKey = this.validateRoleKey(roleConfig, roleKey);
+      // Use validated role (throws if invalid)
+      roleKey = validatedRoleKey;
     }
 
     const phase = getEnrollmentPhase(event);
@@ -201,6 +209,7 @@ export class ParticipationService {
                 userId: guestUser.id,
                 addedByUserId,
                 wantsIn: true,
+                roleKey,
               },
               include: { user: { select: USER_SELECT } },
             });
@@ -225,6 +234,7 @@ export class ParticipationService {
         userId: guestUser.id,
         addedByUserId,
         wantsIn: true,
+        roleKey,
         waitingReason: isNewUser
           ? 'NEW_USER'
           : phase === 'PRE_ENROLLMENT'
@@ -288,7 +298,7 @@ export class ParticipationService {
 
     const freeSlots = await this.slotService.getFreeSlotCount(participation.eventId);
     if (freeSlots === 0) {
-      throw new BadRequestException('Brak wolnych miejsc');
+      throw new BadRequestException('Brak wolnych (odblokowanych) miejsc');
     }
 
     const phase = getEnrollmentPhase(participation.event);
@@ -367,6 +377,7 @@ export class ParticipationService {
     }
 
     const hadSlot = !!participation.slot;
+    const slotWasLocked = participation.slot?.locked ?? false;
 
     // Transaction: set wantsIn=false + release slot
     await this.prisma.$transaction(async (tx) => {
@@ -397,8 +408,8 @@ export class ParticipationService {
       await this.notifyRemoved(recipientId, updated.event.title, updated.eventId);
     }
 
-    // Notify waiting participants about freed slot
-    if (hadSlot) {
+    // Notify waiting participants about freed slot (skip for locked slots)
+    if (hadSlot && !slotWasLocked) {
       this.notifyWaitingAboutFreeSlot(participation.eventId, participation.event.title);
     }
 
@@ -424,6 +435,7 @@ export class ParticipationService {
     }
 
     const hadSlot = !!participation.slot;
+    const slotWasLocked = participation.slot?.locked ?? false;
 
     // Transaction: set wantsIn=false + release slot
     await this.prisma.$transaction(async (tx) => {
@@ -439,8 +451,8 @@ export class ParticipationService {
     // Cleanup payment intents
     await this.paymentsService.cleanupIntents(participationId, participation.event.organizerId);
 
-    // Notify waiting participants about freed slot
-    if (hadSlot) {
+    // Notify waiting participants about freed slot (skip for locked slots)
+    if (hadSlot && !slotWasLocked) {
       this.notifyWaitingAboutFreeSlot(participation.eventId, participation.event.title);
     }
 

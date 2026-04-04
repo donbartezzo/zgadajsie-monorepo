@@ -500,8 +500,21 @@ export class EventsService {
     const participations = await this.prisma.eventParticipation.findMany({
       where: { eventId },
       include: {
-        user: { select: { id: true, displayName: true, avatarUrl: true } },
+        user: { select: { id: true, displayName: true, avatarUrl: true, email: true } },
         slot: true,
+        payments: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            amount: true,
+            voucherAmountUsed: true,
+            organizerAmount: true,
+            method: true,
+            status: true,
+            paidAt: true,
+          },
+        },
       },
       orderBy: { createdAt: 'asc' },
     });
@@ -522,6 +535,7 @@ export class EventsService {
         waitingReason: status === 'PENDING' ? p.waitingReason : null,
         addedByUserId: p.addedByUserId,
         isGuest: p.addedByUserId !== null,
+        payment: p.payments[0] ?? null,
       };
     });
   }
@@ -574,16 +588,45 @@ export class EventsService {
         id: p.id,
         userId: p.userId,
         status: derivedStatus,
-        wantsIn: p.wantsIn,
-        hasSlot: !!p.slot,
-        slotConfirmed: p.slot?.confirmed ?? false,
         isGuest: p.addedByUserId !== null,
         addedByUserId: p.addedByUserId,
+        slot: p.slot
+          ? {
+              id: p.slot.id,
+              locked: p.slot.locked,
+              roleKey: p.slot.roleKey,
+              participationId: p.slot.participationId,
+              confirmed: p.slot.confirmed,
+            }
+          : null,
         createdAt: p.createdAt,
         user: p.user,
         payment: p.payments[0] ?? null,
       };
     });
+  }
+
+  async getSlots(eventId: string) {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException('Wydarzenie nie znalezione');
+    }
+
+    const slots = await this.prisma.eventSlot.findMany({
+      where: { eventId },
+      select: {
+        id: true,
+        locked: true,
+        roleKey: true,
+        participationId: true,
+        confirmed: true,
+        assignedAt: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return slots;
   }
 
   async markPaid(eventId: string, participationId: string, organizerUserId: string) {

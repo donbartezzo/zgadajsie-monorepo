@@ -1,4 +1,6 @@
-import { UserBrief } from './common.interface';
+import { ParticipantPaymentInfo, EventSlotInfo } from './payment.interface';
+export type { ParticipationStatus } from './common.interface';
+import type { ParticipationStatus } from './common.interface';
 
 export interface EventSlot {
   id: string;
@@ -9,14 +11,6 @@ export interface EventSlot {
   assignedAt: string | null;
   createdAt: string;
 }
-
-// Derived status from slot-based model
-export type ParticipationStatus =
-  | 'PENDING' // wantsIn=true, no slot
-  | 'APPROVED' // wantsIn=true, has slot, slot.confirmed=false
-  | 'CONFIRMED' // wantsIn=true, has slot, slot.confirmed=true
-  | 'WITHDRAWN' // wantsIn=false
-  | 'REJECTED'; // wantsIn=false, withdrawnBy='ORGANIZER'
 
 // Reason why user is waiting (didn't get automatic slot)
 export type WaitingReason =
@@ -47,10 +41,13 @@ export interface Participation {
 
   // Derived status (computed by backend, always present in API responses)
   status: ParticipationStatus;
-  slot?: EventSlot | null;
+  slot?: EventSlotInfo | null;
 
   // Reason why user is waiting (only present when status is PENDING)
   waitingReason?: WaitingReason | null;
+
+  // Payment info (for organizer view)
+  payment: ParticipantPaymentInfo | null;
 
   // Available roles when waitingReason is NO_SLOTS_FOR_ROLE
   availableRoles?: AvailableRole[] | null;
@@ -63,5 +60,5 @@ export interface Participation {
     status: string;
     city?: { slug: string };
   };
-  user?: UserBrief;
+  user: { id: string; displayName: string; avatarUrl: string | null; email: string };
 }

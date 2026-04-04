@@ -1,11 +1,24 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { Participation, ParticipantManageItem, EventRoleConfig, EventRole } from '../../../types';
 import { SemanticColor } from '../../../types/colors';
-import { EnrollmentPhase } from '../../../types/event.interface';
-
-export type SlotMode = 'public' | 'organizer';
+import { EventSlotInfo } from '../../../types/payment.interface';
+import { Event, EnrollmentPhase } from '../../../types/event.interface';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { ModalService } from '../../../ui/modal/modal.service';
+import {
+  ParticipantSlotModalComponent,
+  ParticipantModalData,
+} from '../participant-slot-modal/participant-slot-modal.component';
 
 export type ParticipantItem = Participation | ParticipantManageItem;
 
@@ -16,8 +29,6 @@ export interface RoleGroup {
 }
 
 // Participants who occupy a slot (have guaranteed place)
-// APPROVED = has slot, not confirmed yet (pending payment for paid events)
-// CONFIRMED = has slot, confirmed (paid or free event)
 const SLOT_STATUSES = ['APPROVED', 'CONFIRMED'];
 // Participants waiting for approval (no guaranteed place yet)
 const PENDING_STATUSES = ['PENDING'];
@@ -27,269 +38,49 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
 @Component({
   selector: 'app-participant-slots-grid',
   imports: [UserAvatarComponent, IconComponent],
-  template: `
-    @if (isPreEnrollment() && mode() === 'public') {
-      <div
-        class="flex flex-col items-center justify-center rounded-xl border border-info-200 bg-info-50 p-6 text-center"
-      >
-        <app-icon name="users" size="lg" class="text-info-400 mb-3"></app-icon>
-        <h3 class="text-sm font-semibold text-info-700">Trwają wstępne zapisy</h3>
-        <p class="mt-1 text-xs text-neutral-500">
-          Lista uczestników zostanie ujawniona po zakończeniu losowania.
-        </p>
-        @if (totalCount() > 0) {
-          <p class="mt-2 text-xs font-medium text-info-600">Zgłoszonych: {{ totalCount() }}</p>
-        }
-      </div>
-    } @else {
-      @if (hasRoles()) {
-        <!-- ROLE-GROUPED VIEW -->
-        <div class="space-y-6">
-          @for (group of roleGroups(); track group.role.key) {
-            <div>
-              <div class="flex items-center gap-2 mb-3">
-                <span class="text-xs font-semibold text-neutral-700">{{ group.role.title }}</span>
-                <span class="text-xs px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-500">
-                  {{ group.participants.length }}/{{ group.role.slots }}
-                </span>
-              </div>
-              <div class="flex flex-wrap gap-3 justify-center">
-                @for (p of group.participants; track p.id) {
-                  <button
-                    type="button"
-                    [attr.data-user-id]="p.userId"
-                    [class]="
-                      'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-hidden ' +
-                      (isCurrentUser(p)
-                        ? 'ring-2 ring-primary-400 bg-primary-50'
-                        : isCurrentUserGuest(p)
-                          ? 'ring-2 ring-secondary-300 bg-secondary-50'
-                          : 'focus:ring-2 focus:ring-primary-200')
-                    "
-                    (click)="onParticipantClick(p)"
-                  >
-                    <app-user-avatar
-                      [avatarUrl]="getAvatarUrl(p)"
-                      [displayName]="getDisplayName(p)"
-                      size="lg"
-                      [showPaymentWarning]="needsPayment(p)"
-                      [status]="getStatusIndicator(p)"
-                    />
-                    <span
-                      class="text-[11px] text-neutral-700 text-center leading-tight mt-1 w-full line-clamp-2 min-h-[2.5em]"
-                    >
-                      {{ getDisplayName(p) }}
-                    </span>
-                  </button>
-                }
-                @if (group.emptySlots > 0) {
-                  @for (i of getEmptySlotIndices(group.emptySlots); track i) {
-                    <button
-                      type="button"
-                      class="flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-hidden focus:ring-2 focus:ring-neutral-200"
-                      (click)="emptySlotClicked.emit()"
-                    >
-                      <div
-                        class="w-14 h-14 rounded-xl border-2 border-dashed border-neutral-200 flex items-center justify-center bg-neutral-50"
-                      >
-                        <app-icon name="plus" size="sm" class="text-neutral-300"></app-icon>
-                      </div>
-                      <span
-                        class="text-[11px] text-neutral-400 text-center leading-tight mt-1 min-h-[2.5em]"
-                        >Wolne</span
-                      >
-                    </button>
-                  }
-                }
-              </div>
-            </div>
-          }
-        </div>
-
-        <!-- Summary row for roles -->
-        <div class="mt-4 flex items-center justify-between text-xs text-neutral-500">
-          <span> {{ slotParticipants().length }}/{{ maxSlots() }} miejsc zajętych </span>
-          @if (emptySlotCount() > 0) {
-            <span class="text-primary-500">{{ emptySlotCount() }} wolnych</span>
-          }
-        </div>
-      } @else {
-        <!-- STANDARD VIEW (no roles) -->
-        <div class="flex flex-wrap gap-3 justify-center">
-          <!-- Occupied slots -->
-          @for (p of slotParticipants(); track p.id) {
-            <button
-              type="button"
-              [attr.data-user-id]="p.userId"
-              [class]="
-                'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-hidden ' +
-                (isCurrentUser(p)
-                  ? 'ring-2 ring-primary-400 bg-primary-50'
-                  : isCurrentUserGuest(p)
-                    ? 'ring-2 ring-secondary-300 bg-secondary-50'
-                    : 'focus:ring-2 focus:ring-primary-200')
-              "
-              (click)="onParticipantClick(p)"
-            >
-              <app-user-avatar
-                [avatarUrl]="getAvatarUrl(p)"
-                [displayName]="getDisplayName(p)"
-                size="lg"
-                [showPaymentWarning]="needsPayment(p)"
-                [status]="getStatusIndicator(p)"
-              />
-              <span
-                class="text-[11px] text-neutral-700 text-center leading-tight mt-1 w-full line-clamp-2 min-h-[2.5em]"
-              >
-                {{ getDisplayName(p) }}
-              </span>
-            </button>
-          }
-
-          <!-- Empty slots (only show when there are any) -->
-          @if (emptySlotCount() > 0) {
-            @for (i of emptySlotIndices(); track i) {
-              <button
-                type="button"
-                class="flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-hidden focus:ring-2 focus:ring-neutral-200"
-                (click)="emptySlotClicked.emit()"
-              >
-                <div
-                  class="w-14 h-14 rounded-xl border-2 border-dashed border-neutral-200 flex items-center justify-center bg-neutral-50"
-                >
-                  <app-icon name="plus" size="sm" class="text-neutral-300"></app-icon>
-                </div>
-                <span
-                  class="text-[11px] text-neutral-400 text-center leading-tight mt-1 min-h-[2.5em]"
-                  >Wolne</span
-                >
-              </button>
-            }
-          }
-        </div>
-
-        <!-- Summary row -->
-        <div class="mt-4 flex items-center justify-between text-xs text-neutral-500">
-          <span> {{ slotParticipants().length }}/{{ maxSlots() }} miejsc zajętych </span>
-          @if (emptySlotCount() > 0) {
-            <span class="text-primary-500">{{ emptySlotCount() }} wolnych</span>
-          }
-        </div>
-      }
-
-      <!-- SECTION 2: PENDING (outside slots) -->
-      @if (pendingParticipants().length > 0) {
-        <div class="mt-6 pt-4 border-t border-neutral-100">
-          <h4 class="text-xs font-semibold text-warning-600 mb-3 flex items-center gap-1">
-            <app-icon name="clock" size="xs" />
-            Oczekujący ({{ pendingParticipants().length }})
-          </h4>
-          <div class="flex flex-wrap gap-3 justify-center">
-            @for (p of pendingParticipants(); track p.id) {
-              <button
-                type="button"
-                [attr.data-user-id]="p.userId"
-                [class]="
-                  'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-hidden ' +
-                  (isCurrentUser(p)
-                    ? 'ring-2 ring-primary-400 bg-primary-50'
-                    : isCurrentUserGuest(p)
-                      ? 'ring-2 ring-secondary-300 bg-secondary-50 opacity-80'
-                      : 'focus:ring-2 focus:ring-warning-200 opacity-80')
-                "
-                (click)="onParticipantClick(p)"
-              >
-                <div class="relative">
-                  <app-user-avatar
-                    [avatarUrl]="getAvatarUrl(p)"
-                    [displayName]="getDisplayName(p)"
-                    size="lg"
-                    [showPending]="!isBanned(p)"
-                  />
-                  @if (isBanned(p)) {
-                    <span
-                      class="absolute -bottom-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full bg-danger-500 ring-2 ring-white"
-                      title="Zbanowany"
-                    >
-                      <app-icon name="shield-alert" size="xs" class="text-white" />
-                    </span>
-                  }
-                </div>
-                <span
-                  [class]="
-                    'text-[11px] text-center leading-tight mt-1 w-full line-clamp-2 min-h-[2.5em] ' +
-                    (isBanned(p) ? 'text-danger-500' : 'text-warning-600')
-                  "
-                >
-                  {{ getDisplayName(p) }}
-                </span>
-              </button>
-            }
-          </div>
-        </div>
-      }
-
-      <!-- SECTION 3: WITHDRAWN (removed/left) -->
-      @if (withdrawnParticipants().length > 0) {
-        <div class="mt-6 pt-4 border-t border-neutral-100">
-          <h4 class="text-xs font-semibold text-neutral-400 mb-3 flex items-center gap-1">
-            <app-icon name="user-x" size="xs" />
-            Wypisani ({{ withdrawnParticipants().length }})
-          </h4>
-          <div class="flex flex-wrap gap-3 justify-center">
-            @for (p of withdrawnParticipants(); track p.id) {
-              <button
-                type="button"
-                [attr.data-user-id]="p.userId"
-                [class]="
-                  'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-hidden ' +
-                  (isCurrentUser(p)
-                    ? 'ring-2 ring-primary-400 bg-primary-50'
-                    : 'focus:ring-2 focus:ring-neutral-200 opacity-50')
-                "
-                (click)="onParticipantClick(p)"
-              >
-                <app-user-avatar
-                  [avatarUrl]="getAvatarUrl(p)"
-                  [displayName]="getDisplayName(p)"
-                  size="lg"
-                  [status]="p.status === 'REJECTED' ? 'danger' : null"
-                />
-                <span
-                  class="text-[11px] text-neutral-400 text-center leading-tight mt-1 w-full line-clamp-2 min-h-[2.5em]"
-                >
-                  {{ getDisplayName(p) }}
-                </span>
-              </button>
-            }
-          </div>
-        </div>
-      }
-    }
-  `,
+  templateUrl: './participant-slots-grid.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParticipantSlotsGridComponent {
-  readonly participants = input<ParticipantItem[]>([]);
-  readonly maxSlots = input(0);
-  readonly mode = input<SlotMode>('public');
-  readonly enrollmentPhase = input<EnrollmentPhase | null>(null);
-  readonly isPaidEvent = input(false);
-  readonly currentUserId = input<string | null>(null);
-  readonly roleConfig = input<EventRoleConfig | null>(null);
+  private readonly auth = inject(AuthService);
+  private readonly modalService = inject(ModalService);
 
-  readonly participantClicked = output<ParticipantItem>();
-  readonly emptySlotClicked = output<void>();
+  readonly event = input.required<Event>();
+  readonly participants = input<ParticipantItem[]>([]);
+  readonly slots = input<EventSlotInfo[]>([]);
+
+  readonly refreshNeeded = output<void>();
+
+  constructor() {
+    // Emit refreshNeeded whenever the modal signals a refresh
+    this.modalService.refresh$.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.refreshNeeded.emit();
+    });
+  }
+
+  // ── Computed from event ──
+
+  readonly enrollmentPhase = computed<EnrollmentPhase | null>(
+    () => this.event().enrollmentPhase ?? null,
+  );
+
+  readonly maxSlots = computed(() => this.event().maxParticipants ?? 0);
+
+  readonly roleConfig = computed<EventRoleConfig | null>(
+    () => this.event().roleConfig ?? null,
+  );
+
+  readonly isPaidEvent = computed(() => (this.event().costPerPerson ?? 0) > 0);
+
+  readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
+
+  // ── Derived computed ──
 
   readonly isPreEnrollment = computed(() => this.enrollmentPhase() === 'PRE_ENROLLMENT');
+
   readonly hasRoles = computed(() => {
     const config = this.roleConfig();
-    return config?.roles && config.roles.length > 1;
-  });
-
-  readonly shouldHideEmptySlots = computed(() => {
-    // Hide empty slots when maxSlots equals occupied slots (filtering mode)
-    return this.maxSlots() === this.slotParticipants().length;
+    return !!(config?.roles && config.roles.length > 1);
   });
 
   readonly roleGroups = computed<RoleGroup[]>(() => {
@@ -297,33 +88,31 @@ export class ParticipantSlotsGridComponent {
     if (!config?.roles || config.roles.length <= 1) return [];
 
     const slotParticipants = this.slotParticipants();
-    const hideEmpty = this.shouldHideEmptySlots();
 
     return config.roles.map((role) => {
       const roleParticipants = slotParticipants.filter((p) => {
         const pRoleKey =
-          'slot' in p && p.slot?.roleKey ? p.slot.roleKey : (p as Participation).roleKey;
+          'slot' in p && (p as ParticipantManageItem).slot?.roleKey
+            ? (p as ParticipantManageItem).slot!.roleKey
+            : (p as Participation).roleKey;
         return pRoleKey === role.key;
       });
       return {
         role,
         participants: roleParticipants,
-        emptySlots: hideEmpty ? 0 : Math.max(0, role.slots - roleParticipants.length),
+        emptySlots: Math.max(0, role.slots - roleParticipants.length),
       };
     });
   });
 
-  // Section 1: Participants who occupy slots (APPROVED, CONFIRMED, PENDING_PAYMENT)
   readonly slotParticipants = computed(() =>
     this.participants().filter((p) => SLOT_STATUSES.includes(p.status)),
   );
 
-  // Section 2: Participants waiting for approval (PENDING, APPLIED)
   readonly pendingParticipants = computed(() =>
     this.participants().filter((p) => PENDING_STATUSES.includes(p.status)),
   );
 
-  // Section 3: Participants who left or were removed (WITHDRAWN, REJECTED)
   readonly withdrawnParticipants = computed(() =>
     this.participants().filter((p) => WITHDRAWN_STATUSES.includes(p.status)),
   );
@@ -336,13 +125,65 @@ export class ParticipantSlotsGridComponent {
     return Math.max(0, max - occupied);
   });
 
-  readonly emptySlotIndices = computed(() => {
+  readonly emptySlotItems = computed(() => {
+    const allSlots = this.slots();
+    if (allSlots.length > 0) {
+      const emptySlots = allSlots.filter((s) => !s.participationId);
+      const count = this.emptySlotCount();
+      return emptySlots.slice(0, count).map((s) => ({ slotId: s.id, locked: s.locked, slot: s }));
+    }
     const count = this.emptySlotCount();
-    return Array.from({ length: count }, (_, i) => i);
+    return Array.from({ length: count }, () => ({
+      slotId: undefined as string | undefined,
+      locked: false,
+      slot: null as EventSlotInfo | null,
+    }));
   });
 
-  getEmptySlotIndices(count: number): number[] {
-    return Array.from({ length: count }, (_, i) => i);
+  getEmptySlotItemsForRole(
+    roleKey: string,
+  ): { slotId: string | undefined; locked: boolean; slot: EventSlotInfo | null }[] {
+    const allSlots = this.slots();
+    if (allSlots.length > 0) {
+      const emptyForRole = allSlots.filter((s) => !s.participationId && s.roleKey === roleKey);
+      const groups = this.roleGroups();
+      const group = groups.find((g) => g.role.key === roleKey);
+      if (!group) return [];
+      return emptyForRole
+        .slice(0, group.emptySlots)
+        .map((s) => ({ slotId: s.id, locked: s.locked, slot: s }));
+    }
+    const groups = this.roleGroups();
+    const group = groups.find((g) => g.role.key === roleKey);
+    if (!group) return [];
+    return Array.from({ length: group.emptySlots }, () => ({
+      slotId: undefined as string | undefined,
+      locked: false,
+      slot: null,
+    }));
+  }
+
+  onParticipantClick(p: ParticipantItem): void {
+    const slot = this.findSlotForParticipant(p);
+    const data: ParticipantModalData = { participant: p, slot, event: this.event() };
+    this.modalService.open(ParticipantSlotModalComponent, { data });
+  }
+
+  onSlotClick(slotInfo: EventSlotInfo | null): void {
+    const data: ParticipantModalData = { participant: null, slot: slotInfo, event: this.event() };
+    this.modalService.open(ParticipantSlotModalComponent, { data });
+  }
+
+  private findSlotForParticipant(p: ParticipantItem): EventSlotInfo | null {
+    // ParticipantManageItem has slot directly
+    if ('slot' in p && (p as ParticipantManageItem).slot) {
+      return (p as ParticipantManageItem).slot ?? null;
+    }
+    // Participation has slot too
+    const participation = p as Participation;
+    if (participation.slot) return participation.slot;
+    // Look up in slots input by participationId
+    return this.slots().find((s) => s.participationId === p.id) ?? null;
   }
 
   getAvatarUrl(p: ParticipantItem): string | null {
@@ -354,30 +195,19 @@ export class ParticipantSlotsGridComponent {
   }
 
   needsPayment(p: ParticipantItem): boolean {
-    // For organizer view with ParticipantManageItem - check payment field
     if ('payment' in p) {
       const pm = p as ParticipantManageItem;
-      // APPROVED = has slot but not confirmed (needs payment for paid events)
       return pm.payment === null && p.status === 'APPROVED';
     }
-    // For public view - APPROVED with no slot.confirmed means pending payment
     if (this.isPaidEvent()) {
-      return p.status === 'APPROVED';
+      return (p as Participation).status === 'APPROVED';
     }
     return false;
-  }
-
-  isPendingStatus(p: ParticipantItem): boolean {
-    return p.status === 'PENDING';
   }
 
   getStatusIndicator(p: ParticipantItem): SemanticColor | null {
     if (p.status === 'CONFIRMED') return 'success';
     return null;
-  }
-
-  onParticipantClick(p: ParticipantItem): void {
-    this.participantClicked.emit(p);
   }
 
   isCurrentUser(p: ParticipantItem): boolean {

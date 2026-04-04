@@ -1,21 +1,26 @@
-<app-event-hero-slots [event]="event()" />
+@let _event = event();
+@let _loading = loading();
+@let _isLoggedIn = auth.isLoggedIn();
+@let _notificationBars = notificationBars();
 
-@if (loading()) {
+<app-event-hero-slots [event]="_event" />
+
+@if (_loading) {
   <app-loading-spinner></app-loading-spinner>
 } @else {
   <div class="px-4 py-4">
-    <!-- Current user status banner (sticky) -->
-    @if (auth.isLoggedIn() && notificationBars().length > 0) {
+    <!-- Current user status banner -->
+    @if (_isLoggedIn && _notificationBars.length > 0) {
       <div class="mb-4">
         <app-event-sticky-notification-bar
-          [bars]="notificationBars()"
+          [bars]="_notificationBars"
           (barAction)="eventArea.handleNotificationBarAction($event)"
         />
       </div>
     }
 
     <!-- Filter checkbox (only for logged-in users) -->
-    @if (auth.isLoggedIn()) {
+    @if (_isLoggedIn) {
       <div class="mb-3 flex justify-end">
         <label class="flex items-center gap-2 text-xs text-neutral-500 cursor-pointer">
           <input
@@ -29,28 +34,24 @@
       </div>
     }
 
-    <app-participant-slots-grid
-      [participants]="filteredParticipants()"
-      [maxSlots]="effectiveMaxSlots()"
-      [enrollmentPhase]="enrollmentPhase()"
-      [isPaidEvent]="isPaidEvent()"
-      [currentUserId]="currentUserId()"
-      [roleConfig]="event()?.roleConfig ?? null"
-      mode="public"
-      (participantClicked)="onParticipantClick($event)"
-      (emptySlotClicked)="onEmptySlotClick()"
-    />
+    @if (_event) {
+      <app-participant-slots-grid
+        [event]="_event"
+        [participants]="filteredParticipants()"
+        [slots]="filteredSlots()"
+        (refreshNeeded)="onRefreshNeeded()"
+      />
+    }
+
+    @if (_isLoggedIn && !eventArea.isOrganizer()) {
+      <div class="mt-6 max-w-lg mx-auto">
+        @if (!eventArea.isParticipant() && eventArea.canJoin()) {
+          <app-join-event-button />
+        }
+        @if (eventArea.isParticipant()) {
+          <app-leave-event-button />
+        }
+      </div>
+    }
   </div>
 }
-
-<app-participant-detail-overlay
-  [participant]="selectedParticipant()"
-  [open]="detailOverlayOpen()"
-  [mode]="detailMode()"
-  [isPaidEvent]="isPaidEvent()"
-  [currentUserId]="currentUserId()"
-  (closed)="closeDetailOverlay()"
-  (removeGuestRequested)="onRemoveGuestRequested($event)"
-  (banRequested)="onBanRequested($event)"
-  (unbanRequested)="onUnbanRequested($event)"
-/>

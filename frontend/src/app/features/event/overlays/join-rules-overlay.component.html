@@ -1,0 +1,228 @@
+<app-bottom-overlay
+  [open]="open()"
+  icon="list"
+  iconColor="info"
+  [title]="currentStep() === 1 ? 'Chcesz dołączyć?' : 'Zgłoś uczestnictwo'"
+  [description]="
+    currentStep() === 1
+      ? 'Zapoznaj się z poniższymi danymi i organizacją tego wydarzenia.'
+      : 'Wybierz w czyim imieniu zgłaszasz uczestnictwo.'
+  "
+  (closed)="closed.emit()"
+>
+  @let _event = event();
+  @let _step = currentStep();
+  @let _type = participantType();
+  @let _roles = availableRoles();
+  @let _rules = rulesList();
+  @let _loading = isLoadingAny();
+
+  @if (_event) {
+    <!-- ════════════════════════════════════════
+         STEP 1: Zasady i akceptacja
+    ════════════════════════════════════════ -->
+    @if (_step === 1) {
+      <div class="space-y-4">
+        <!-- Event details + criteria -->
+        <div>
+          <h3 class="font-bold text-neutral-900 mb-2">Szczegóły wydarzenia i kryteria uczestnictwa:</h3>
+          <app-event-criteria-description [event]="_event" />
+        </div>
+
+        <!-- Organizer rules -->
+        @if (_rules.length > 0) {
+          <div>
+            <h3 class="font-bold text-neutral-900 mb-2">Zasady ogólne wyznaczone przez organizatora:</h3>
+            <ol class="list-decimal list-inside space-y-1.5 text-sm text-neutral-600">
+              @for (rule of _rules; track $index) {
+                <li>{{ rule }}</li>
+              }
+            </ol>
+          </div>
+        }
+
+        <!-- Organizer notice (paid event) -->
+        @if (isOrganizer() && _event.costPerPerson > 0) {
+          <div class="rounded-lg border border-info-200 bg-info-50 p-3">
+            <div class="flex items-start gap-3">
+              <app-icon name="shield" size="sm" class="text-info-400 mt-0.5" />
+              <div>
+                <p class="text-sm font-semibold text-info-700">Jesteś organizatorem tego wydarzenia</p>
+                <p class="mt-1 text-xs text-info-600">
+                  Jako organizator automatycznie dostaniesz status "Zaakceptowano" i nie musisz płacić za udział.
+                </p>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Acceptance checkbox -->
+        <label
+          [class]="
+            rulesAccepted()
+              ? 'flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-colors border-success-200 bg-success-50'
+              : 'flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-colors border-neutral-200'
+          "
+        >
+          <input
+            type="checkbox"
+            class="h-5 w-5 shrink-0 rounded border-neutral-300 text-primary-500 accent-highlight cursor-pointer"
+            [checked]="rulesAccepted()"
+            (change)="rulesAccepted.set(!rulesAccepted())"
+          />
+          <span class="text-sm text-neutral-700">
+            Oświadczam, że zapoznałem się z powyższymi informacjami i spełniam kryteria uczestnictwa
+            @if (_rules.length > 0) {
+              oraz akceptuję wyznaczone zasady
+            }
+          </span>
+        </label>
+
+        <!-- CTA step 1 -->
+        <div class="max-w-lg mx-auto">
+          <app-button
+            appearance="solid"
+            color="primary"
+            [fullWidth]="true"
+            [disabled]="!canProceedStep1()"
+            (clicked)="goToStep2()"
+          >
+            <app-icon name="arrow-right" size="sm" />
+            Akceptuję
+          </app-button>
+        </div>
+      </div>
+    }
+
+    <!-- ════════════════════════════════════════
+         STEP 2: Dane uczestnika
+    ════════════════════════════════════════ -->
+    @if (_step === 2) {
+      <div class="space-y-4">
+        <!-- Type toggle -->
+        <div>
+          <p class="text-sm font-semibold text-neutral-700 mb-2">Zgłaszam jako:</p>
+          <div class="flex rounded-xl border border-neutral-200 overflow-hidden">
+            <button
+              type="button"
+              [class]="
+                'flex-1 py-2 text-sm font-medium transition-colors ' +
+                (_type === 'self' ? 'bg-primary-500 text-white' : 'bg-white text-neutral-600 hover:bg-neutral-50')
+              "
+              (click)="setParticipantType('self')"
+            >
+              Ja
+            </button>
+            <button
+              type="button"
+              [class]="
+                'flex-1 py-2 text-sm font-medium transition-colors border-l border-neutral-200 ' +
+                (_type === 'guest' ? 'bg-primary-500 text-white' : 'bg-white text-neutral-600 hover:bg-neutral-50')
+              "
+              (click)="setParticipantType('guest')"
+            >
+              Osoba towarzysząca
+            </button>
+          </div>
+        </div>
+
+        <!-- Guest rules info (only when type = guest) -->
+        @if (_type === 'guest') {
+          <div class="rounded-xl border border-secondary-200 bg-secondary-50 p-3">
+            <div class="flex items-start gap-3">
+              <app-icon name="help-circle" size="sm" class="text-secondary-500 shrink-0 mt-0.5" />
+              <div class="text-xs text-secondary-800 space-y-2">
+                <p>
+                  <strong>Zasady dodawania osoby towarzyszącej:</strong> Dodana osoba uzyska własne miejsce i będzie
+                  widoczna na liście uczestników.
+                </p>
+                <p>
+                  Jako osoba zapraszająca w pełni zarządzasz uczestnictwem swojego gościa. Wszystkie powiadomienia będą
+                  wysyłane bezpośrednio do Ciebie.
+                </p>
+                <p>
+                  Odpowiadasz za każdą dodaną w ten sposób osobę oraz ponosisz konsekwencje w przypadku naruszenia przez
+                  nich regulaminu.
+                </p>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Participant name field -->
+        <div>
+          <label for="participantNameInput" class="block text-sm font-medium text-neutral-700 mb-1">
+            Nazwa uczestnika
+            <span class="text-danger-500 ml-0.5">*</span>
+          </label>
+          <input
+            id="participantNameInput"
+            type="text"
+            [ngModel]="participantName()"
+            (ngModelChange)="participantName.set($event)"
+            class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-hidden"
+            [placeholder]="_type === 'guest' ? 'np. Jan Kowalski' : 'Twoja nazwa'"
+            (keyup.enter)="onSubmit()"
+          />
+          <p class="mt-1 text-xs text-neutral-500">
+            @if (_type === 'self') {
+              Możesz zmienić nazwę — zostanie zaktualizowana w Twoim profilu.
+            } @else {
+              Minimalna długość: 3 znaki.
+            }
+          </p>
+        </div>
+
+        <!-- Role selection (only if event has roles) -->
+        @if (_roles.length > 0) {
+          <div>
+            <h3 class="font-bold text-neutral-900 mb-2">Wybierz swoją rolę:</h3>
+            <div class="space-y-2">
+              @for (role of _roles; track role.key) {
+                <label
+                  [class]="
+                    selectedRoleKey() === role.key
+                      ? 'flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-colors border-primary-300 bg-primary-50'
+                      : 'flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-colors border-neutral-200 hover:border-neutral-300'
+                  "
+                >
+                  <input
+                    type="radio"
+                    name="roleSelection"
+                    [value]="role.key"
+                    [checked]="selectedRoleKey() === role.key"
+                    (change)="selectedRoleKey.set(role.key)"
+                    class="h-4 w-4 text-primary-500 accent-primary-500"
+                  />
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm font-medium text-neutral-900">{{ role.title }}</span>
+                      @if (role.desc) {
+                        <span class="text-xs text-neutral-500">— {{ role.desc }}</span>
+                      }
+                    </div>
+                  </div>
+                </label>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- CTA step 2 -->
+        <div class="max-w-lg mx-auto">
+          <app-button
+            appearance="solid"
+            color="primary"
+            [fullWidth]="true"
+            [loading]="_loading"
+            [disabled]="!canSubmitStep2()"
+            (clicked)="onSubmit()"
+          >
+            <app-icon name="check" size="sm" />
+            Zgłaszam chęć udziału
+          </app-button>
+        </div>
+      </div>
+    }
+  }
+</app-bottom-overlay>

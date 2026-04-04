@@ -5,6 +5,7 @@ import { BottomNavComponent } from './layout/footer/bottom-nav.component';
 import { SnackbarComponent } from './shared/ui/snackbar/snackbar.component';
 import { BottomOverlaysComponent } from './shared/overlay/ui/bottom-overlays/bottom-overlays.component';
 import { ConfirmModalComponent } from './shared/ui/confirm-modal/confirm-modal.component';
+import { ModalHostComponent } from './shared/ui/modal/modal-host.component';
 import { PageLayoutComponent } from './shared/layouts/page-layout/page-layout.component';
 import { environment } from '../environments/environment';
 
@@ -15,6 +16,7 @@ import { environment } from '../environments/environment';
     SnackbarComponent,
     BottomOverlaysComponent,
     ConfirmModalComponent,
+    ModalHostComponent,
     PageLayoutComponent,
   ],
   selector: 'app-root',

@@ -1,0 +1,154 @@
+<app-modal (closed)="modalService.close()">
+  @let _data = data();
+  @let _participant = participant();
+  @let _slot = slot();
+  @let _event = event();
+  @let _isOrganizer = isOrganizer();
+  @let _isActive = isActiveStatus();
+  @let _isWithdrawn = isWithdrawnStatus();
+  @let _isBanned = isBanned();
+  @let _isPaid = isPaidEvent();
+  @let _payment = paymentInfo();
+  @let _loading = loading();
+  @let _slotLocked = slotLocked();
+  @let _currentUserId = currentUserId();
+
+  @if (_data) {
+    <div class="space-y-4 pt-4">
+      <!-- User profile card (only if participant exists) -->
+      @if (_participant) {
+        <app-user-profile-card
+          [user]="_participant.user!"
+          [context]="_isOrganizer ? 'organizer' : 'participant'"
+          [participationStatus]="_participant.status"
+          [paymentInfo]="null"
+          [isGuest]="_participant.isGuest"
+          [participationId]="_participant.id"
+          [currentUserId]="_currentUserId"
+          [isOrganizer]="_isOrganizer"
+          [loading]="_loading"
+          [addedByUserId]="_participant.addedByUserId ?? null"
+          variant="overlay"
+          (profileUpdated)="onProfileUpdated($event)"
+          (guestUpdated)="onGuestUpdated($event)"
+        >
+          <!-- Payment status (for organizer, paid event) -->
+          @if (_isOrganizer && _isPaid) {
+            <div class="mt-3 flex items-center justify-center gap-2 text-sm">
+              @if (_payment; as payment) {
+                <app-icon
+                  [name]="payment.status === 'COMPLETED' ? 'check-circle' : 'clock'"
+                  size="sm"
+                  [class]="payment.status === 'COMPLETED' ? 'text-success-400' : 'text-warning-400'"
+                />
+                <span [class]="payment.status === 'COMPLETED' ? 'text-success-600' : 'text-warning-600'">
+                  {{ paymentStatusLabel() }}
+                </span>
+              } @else if (_isActive) {
+                <app-icon name="clock" size="sm" class="text-warning-400" />
+                <span class="text-warning-500">Oczekuje na płatność</span>
+              }
+            </div>
+          }
+        </app-user-profile-card>
+      }
+
+      <!-- Slot info card (only if slot exists) -->
+      @if (_slot) {
+        <app-slot-info-card [slot]="_slot" [event]="_event" [participant]="_participant" />
+      }
+
+      <!-- ═══════════════════════════════════
+           PUBLIC / PARTICIPANT ACTIONS
+      ═══════════════════════════════════ -->
+
+      <!-- Free slot: Join button -->
+      @if (canJoinPublic()) {
+        <app-button appearance="solid" color="primary" [fullWidth]="true" (clicked)="onJoin()">
+          <app-icon name="user-plus" size="sm" />
+          Dołącz do wydarzenia
+        </app-button>
+      }
+
+      <!-- Own slot / own participation: Leave button -->
+      @if (isCurrentUserParticipant() && !_isWithdrawn) {
+        <app-button appearance="outline" color="danger" [fullWidth]="true" [loading]="_loading" (clicked)="onLeave()">
+          <app-icon name="user-x" size="sm" />
+          Wypisz się z wydarzenia
+        </app-button>
+      }
+
+      <!-- Guest host: Remove guest button -->
+      @if (isGuestHost() && !_isWithdrawn) {
+        <app-button
+          appearance="soft"
+          color="danger"
+          [fullWidth]="true"
+          [loading]="_loading"
+          (clicked)="onRemoveGuest()"
+        >
+          <app-icon name="user-x" size="sm" />
+          Wypisz gościa z wydarzenia
+        </app-button>
+      }
+
+      <!-- Locked slot (non-organizer): Contact organizer -->
+      @if (_slotLocked && !_participant) {
+        <app-button appearance="outline" color="neutral" [fullWidth]="true" (clicked)="onContactOrganizer()">
+          <app-icon name="message-circle" size="sm" />
+          Napisz do organizatora
+        </app-button>
+      }
+
+      <!-- Withdrawn / view only -->
+      @if (_isWithdrawn) {
+        <div class="text-center text-sm text-neutral-400 py-2">
+          @if (_participant?.status === 'REJECTED') {
+            Zgłoszenie zostało odrzucone przez organizatora.
+          } @else {
+            Uczestnik zrezygnował z udziału w wydarzeniu.
+          }
+        </div>
+      }
+
+      <!-- Non-participant, no actions (just viewing) -->
+      @if (
+        !isCurrentUserParticipant() &&
+        !isGuestHost() &&
+        !canJoinPublic() &&
+        !_slotLocked &&
+        _participant &&
+        !_isWithdrawn
+      ) {
+        <div class="text-center text-sm text-neutral-400 py-2">
+          @if (_isBanned) {
+            <div class="flex items-center justify-center gap-2 text-danger-500">
+              <app-icon name="shield-alert" size="sm" />
+              <span>Uczestnik jest zbanowany przez organizatora</span>
+            </div>
+          } @else {
+            Uczestnik wydarzenia
+          }
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════
+           ORGANIZER ACTIONS
+      ═══════════════════════════════════ -->
+      @if (_isOrganizer && organizerActions().length > 0) {
+        <div>
+          <select
+            class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-hidden"
+            [value]="selectedOrganizerAction()"
+            (change)="onOrganizerAction($any($event.target).value)"
+          >
+            <option value="" disabled>Akcje organizatora...</option>
+            @for (action of organizerActions(); track action.value) {
+              <option [value]="action.value">{{ action.label }}</option>
+            }
+          </select>
+        </div>
+      }
+    </div>
+  }
+</app-modal>

@@ -2,7 +2,17 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Event, EventListItem, Participation, ParticipantManageItem } from '../../shared/types';
+import {
+  Event,
+  EventListItem,
+  Participation,
+  ParticipantManageItem,
+  EventSlotInfo,
+  JoinGuestRequest,
+  UpdateGuestResponse,
+  CancelPaymentRequest,
+  LockSlotResponse,
+} from '../../shared/types';
 
 interface PaginatedEvents {
   data: EventListItem[];
@@ -84,15 +94,16 @@ export class EventService {
     );
   }
 
-  joinGuest(eventId: string, displayName: string): Observable<Participation> {
-    return this.http.post<Participation>(`${this.apiUrl}/${eventId}/join-guest`, { displayName });
+  joinGuest(eventId: string, displayName: string, roleKey?: string): Observable<Participation> {
+    const body: JoinGuestRequest = { displayName };
+    if (roleKey) {
+      body.roleKey = roleKey;
+    }
+    return this.http.post<Participation>(`${this.apiUrl}/${eventId}/join-guest`, body);
   }
 
-  updateGuestName(
-    participationId: string,
-    displayName: string,
-  ): Observable<{ id: string; displayName: string }> {
-    return this.http.patch<{ id: string; displayName: string }>(
+  updateGuestName(participationId: string, displayName: string): Observable<UpdateGuestResponse> {
+    return this.http.patch<UpdateGuestResponse>(
       `${environment.apiUrl}/participations/${participationId}/update-guest`,
       { displayName },
     );
@@ -148,11 +159,30 @@ export class EventService {
   cancelPayment(
     eventId: string,
     paymentId: string,
-    options: { refundAsVoucher: boolean; notifyUser: boolean },
+    options: CancelPaymentRequest,
   ): Observable<ParticipantManageItem[]> {
     return this.http.post<ParticipantManageItem[]>(
       `${this.apiUrl}/${eventId}/cancel-payment/${paymentId}`,
       options,
+    );
+  }
+
+  getSlots(eventId: string): Observable<EventSlotInfo[]> {
+    return this.http.get<EventSlotInfo[]>(`${this.apiUrl}/${eventId}/slots`);
+  }
+
+  lockSlot(slotId: string): Observable<LockSlotResponse> {
+    return this.http.post<LockSlotResponse>(`${environment.apiUrl}/slots/${slotId}/lock`, {});
+  }
+
+  unlockSlot(slotId: string): Observable<LockSlotResponse> {
+    return this.http.post<LockSlotResponse>(`${environment.apiUrl}/slots/${slotId}/unlock`, {});
+  }
+
+  assignParticipantToSlot(slotId: string, participationId: string): Observable<unknown> {
+    return this.http.post(
+      `${environment.apiUrl}/slots/${slotId}/assign-participant/${participationId}`,
+      {},
     );
   }
 }
