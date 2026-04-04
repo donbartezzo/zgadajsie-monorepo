@@ -1,5 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { syncCoverImagesFromFilesystem } from '../src/modules/cover-images/cover-images-sync.util';
 
 // Brand constants (synchronized with libs/src/lib/constants/brand.constants.ts)
 const APP_BRAND = {
@@ -74,6 +75,9 @@ async function main() {
       { slug: 'table-tennis', schema: undefined },
     ].map((discipline) => prisma.eventDiscipline.create({ data: discipline })),
   );
+
+  console.log('Synchronizuję cover images z katalogu...');
+  await syncCoverImagesFromFilesystem(prisma);
 
   // ─── Obiekty ─────────────────────────────────────────────────────────────
   console.log('Tworzę obiekty...');
@@ -292,9 +296,23 @@ async function main() {
   const now = new Date();
   const hoursFromNow = (h: number): Date => new Date(now.getTime() + h * 60 * 60 * 1000);
 
+  async function getRandomCoverImageId(disciplineSlug: string): Promise<string | undefined> {
+    const covers = await prisma.coverImage.findMany({
+      where: { discipline: { slug: disciplineSlug } },
+      select: { id: true },
+    });
+
+    if (covers.length === 0) {
+      return undefined;
+    }
+
+    return covers[Math.floor(Math.random() * covers.length)]?.id;
+  }
+
   // Create event with slots respecting discipline schema (roleKey)
   async function createEventWithSlots(data: Parameters<typeof prisma.event.create>[0]['data']) {
-    const discipline = disciplines.find((d) => d.slug === data.disciplineSlug);
+    const disciplineSlug = data.disciplineSlug as string;
+    const discipline = disciplines.find((d) => d.slug === disciplineSlug);
     const schema = discipline?.schema as
       | {
           participantRoles?: {
@@ -306,7 +324,7 @@ async function main() {
 
     const roleConfig = schema?.participantRoles
       ? {
-          disciplineSlug: data.disciplineSlug,
+          disciplineSlug,
           roles: [
             ...(schema.participantRoles.default
               ? [
@@ -333,11 +351,16 @@ async function main() {
         }
       : undefined;
 
+    const coverImageId = await getRandomCoverImageId(disciplineSlug);
+
+    const eventData = {
+      ...data,
+      coverImageId,
+      roleConfig,
+    } as Prisma.EventUncheckedCreateInput;
+
     const event = await prisma.event.create({
-      data: {
-        ...data,
-        roleConfig,
-      },
+      data: eventData,
     });
 
     if (schema) {
