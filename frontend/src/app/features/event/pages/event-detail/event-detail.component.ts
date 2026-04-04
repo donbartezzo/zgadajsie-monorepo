@@ -147,15 +147,12 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     this.overlays.onCancelEvent(() => this.cancelEvent());
 
     // Setup countdown effect in injection context
-    effect(
-      () => {
-        const e = this.event();
-        if (e && !this.countdownInterval) {
-          this.startCountdown(e.startsAt, e.endsAt);
-        }
-      },
-      { allowSignalWrites: true },
-    );
+    effect(() => {
+      const e = this.event();
+      if (e && !this.countdownInterval) {
+        this.startCountdown(e.startsAt, e.endsAt);
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -178,15 +175,12 @@ export class EventDetailComponent implements OnInit, OnDestroy {
 
   private setupCountdown(): void {
     // Wait for event to be loaded, then start countdown
-    effect(
-      () => {
-        const e = this.event();
-        if (e && !this.countdownInterval) {
-          this.startCountdown(e.startsAt, e.endsAt);
-        }
-      },
-      { allowSignalWrites: true },
-    );
+    effect(() => {
+      const e = this.event();
+      if (e && !this.countdownInterval) {
+        this.startCountdown(e.startsAt, e.endsAt);
+      }
+    });
   }
 
   private startCountdown(startsAt: string, endsAt: string): void {

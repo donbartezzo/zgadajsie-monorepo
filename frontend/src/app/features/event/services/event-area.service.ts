@@ -1,4 +1,4 @@
-import { computed, effect, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, NgZone, signal } from '@angular/core';
 import { finalize } from 'rxjs';
 import { Router } from '@angular/router';
 import { EventService } from '../../../core/services/event.service';
@@ -38,6 +38,7 @@ export class EventAreaService {
   private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
   private readonly auth = inject(AuthService);
+  private readonly ngZone = inject(NgZone);
   private readonly snackbar = inject(SnackbarService);
   private readonly overlays = inject(BottomOverlaysService);
   private readonly confirmModal = inject(ConfirmModalService);
@@ -253,10 +254,14 @@ export class EventAreaService {
   }
 
   private startAutoRefresh(): void {
-    this.refreshInterval = setInterval(() => {
-      this.refreshEvent();
-      this.refreshParticipants();
-    }, AUTO_REFRESH_INTERVAL);
+    this.ngZone.runOutsideAngular(() => {
+      this.refreshInterval = setInterval(() => {
+        this.ngZone.run(() => {
+          this.refreshEvent();
+          this.refreshParticipants();
+        });
+      }, AUTO_REFRESH_INTERVAL);
+    });
   }
 
   private stopAutoRefresh(): void {
@@ -279,30 +284,10 @@ export class EventAreaService {
     });
 
     // Setup overlay sync effects in injection context
-    effect(
-      () => {
-        this.overlays.setEventContext(this.event(), this.isParticipant());
-      },
-      { allowSignalWrites: true },
-    );
-    effect(
-      () => {
-        this.overlays.setIsOrganizer(this.isOrganizer());
-      },
-      { allowSignalWrites: true },
-    );
-    effect(
-      () => {
-        this.overlays.setLoading(this.joining());
-      },
-      { allowSignalWrites: true },
-    );
-    effect(
-      () => {
-        this.overlays.setParticipants(this.participants());
-      },
-      { allowSignalWrites: true },
-    );
+    effect(() => this.overlays.setEventContext(this.event(), this.isParticipant()));
+    effect(() => this.overlays.setIsOrganizer(this.isOrganizer()));
+    effect(() => this.overlays.setLoading(this.joining()));
+    effect(() => this.overlays.setParticipants(this.participants()));
   }
 
   private registerOverlayCallbacks(): void {

@@ -3,6 +3,7 @@ import { appConfig } from './app/app.config';
 import { App } from './app/app';
 import { registerLocaleData } from '@angular/common';
 import pl from '@angular/common/locales/pl';
+import 'zone.js/plugins/task-tracking';
 
 registerLocaleData(pl);
 

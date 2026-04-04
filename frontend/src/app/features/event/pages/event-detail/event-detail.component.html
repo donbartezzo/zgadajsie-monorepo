@@ -74,8 +74,8 @@
           @for (p of _visibleAvatars; track p.id; let i = $index) {
             <div class="relative h-7 w-7 shrink-0 rounded-full ring-2 ring-white" [style.z-index]="6 - i">
               <app-user-avatar
-                [avatarUrl]="p.user?.avatarUrl"
-                [displayName]="p.user?.displayName || ''"
+                [avatarUrl]="p.user.avatarUrl"
+                [displayName]="p.user.displayName || ''"
                 size="sm"
               ></app-user-avatar>
             </div>
