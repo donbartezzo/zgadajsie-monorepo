@@ -32,7 +32,7 @@ function getEnvironmentName() {
     return 'prod';
   }
 
-  return 'local';
+  return '--';
 }
 
 function getVersion() {

@@ -90,6 +90,9 @@
         "prod": {
           "buildTarget": "frontend:build:prod"
         },
+        "dev": {
+          "buildTarget": "frontend:build:dev"
+        },
         "local": {
           "buildTarget": "frontend:build:local"
         }
