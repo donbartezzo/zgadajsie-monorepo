@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process';
-import { mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
 const targetFile = resolve('frontend/src/environments/version.ts');
@@ -67,11 +67,7 @@ mkdirSync(targetDir, { recursive: true });
 
 if (shouldWriteVersionFile()) {
   writeFileSync(targetFile, `export const APP_VERSION = '${getVersion()}';\n`);
-} else {
-  // Usun plik wersji gdy nie powinien byc generowany, aby uniknac wyswietlania starej wersji
-  try {
-    unlinkSync(targetFile);
-  } catch {
-    // Plik nie istnieje - ignoruj
-  }
+} else if (!existsSync(targetFile)) {
+  // Stworz plik tylko jesli nie istnieje, aby uniknac bledow importu
+  writeFileSync(targetFile, `export const APP_VERSION = '';\n`);
 }
