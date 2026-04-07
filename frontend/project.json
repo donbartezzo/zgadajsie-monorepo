@@ -132,7 +132,7 @@
     "version:ci": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "GENERATE_FRONTEND_VERSION=true node /home/bk/projects/priv/zgadajsie-monorepo/scripts/generate-frontend-version.mjs"
+        "command": "GENERATE_FRONTEND_VERSION=true node scripts/generate-frontend-version.mjs"
       }
     }
   }
