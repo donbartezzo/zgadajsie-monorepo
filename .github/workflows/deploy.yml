@@ -36,6 +36,8 @@ jobs:
         run: pnpm nx build backend
 
       - name: Build frontend (dev)
+        env:
+          FRONTEND_VERSION: ${{ github.event.release.tag_name || github.sha }}
         run: pnpm nx build frontend --configuration=dev
 
       - name: Test backend
@@ -86,6 +88,7 @@ jobs:
           provenance: false
           build-args: |
             BUILD_CONFIGURATION=dev
+            FRONTEND_VERSION=${{ github.sha }}
           tags: |
             ${{ env.FRONTEND_IMAGE }}:dev
             ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
@@ -156,6 +159,7 @@ jobs:
           provenance: false
           build-args: |
             BUILD_CONFIGURATION=prod
+            FRONTEND_VERSION=${{ github.event.release.tag_name }}
           tags: |
             ${{ env.FRONTEND_IMAGE }}:stable
             ${{ env.FRONTEND_IMAGE }}:${{ github.event.release.tag_name }}

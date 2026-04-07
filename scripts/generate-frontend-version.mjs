@@ -17,25 +17,13 @@ function shouldWriteVersionFile() {
   return false;
 }
 
-function getEnvironmentName() {
-  const targetConfiguration = process.env.NX_TASK_TARGET_CONFIGURATION?.trim();
+function getConfiguredVersion() {
+  const configuredVersion = process.env.FRONTEND_VERSION?.trim();
 
-  if (
-    targetConfiguration === 'local' ||
-    targetConfiguration === 'dev' ||
-    targetConfiguration === 'prod'
-  ) {
-    return targetConfiguration;
-  }
-
-  if (process.env.NODE_ENV === 'production') {
-    return 'prod';
-  }
-
-  return '--';
+  return configuredVersion || null;
 }
 
-function getVersion() {
+function getGitVersion() {
   try {
     const tag = execSync('git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --abbrev=0', {
       encoding: 'utf8',
@@ -49,18 +37,32 @@ function getVersion() {
     // Ignore and use fallback below.
   }
 
-  const environmentName = getEnvironmentName();
-
   try {
     const sha = execSync('git rev-parse --short HEAD', {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
     }).trim();
 
-    return sha ? `${environmentName}-${sha}` : environmentName;
+    return sha || null;
   } catch {
-    return environmentName;
+    return null;
   }
+}
+
+function getVersion() {
+  const configuredVersion = getConfiguredVersion();
+
+  if (configuredVersion) {
+    return configuredVersion;
+  }
+
+  const gitVersion = getGitVersion();
+
+  if (gitVersion) {
+    return gitVersion;
+  }
+
+  return 'unknown';
 }
 
 mkdirSync(targetDir, { recursive: true });

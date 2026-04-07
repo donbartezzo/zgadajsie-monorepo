@@ -48,7 +48,7 @@ Każdy push do brancha `main`.
 
 ### Przebieg
 
-```
+```text
 developer → git push origin main
                │
                ▼
@@ -69,7 +69,7 @@ developer → git push origin main
           2. docker build backend/Dockerfile → push:
                ghcr.io/.../backend:dev
                ghcr.io/.../backend:<commit-sha>
-          3. docker build frontend/Dockerfile (BUILD_CONFIGURATION=dev) → push:
+          3. docker build frontend/Dockerfile (BUILD_CONFIGURATION=dev, FRONTEND_VERSION=<commit-sha>) → push:
                ghcr.io/.../frontend:dev
                ghcr.io/.../frontend:<commit-sha>
           4. curl Coolify API → deploy backend (DEV-zgadajsie-backend)
@@ -104,6 +104,9 @@ developer → git push origin main
 | Optymalizacja        | tak (budgets, outputHashing)                                     |
 | Source maps          | nie                                                              |
 
+Wersja frontendu w DEV pochodzi z `FRONTEND_VERSION=${{ github.sha }}` przekazanego do buildu obrazu.
+Jeśli ten argument nie zostanie ustawiony, generator użyje danych z Git jako fallbacku.
+
 ### Obrazy Docker (dev)
 
 | Obraz      | Tag             | Opis                                 |
@@ -123,7 +126,7 @@ Opublikowanie GitHub Release (kliknięcie **Publish release** w GitHubie). Nie o
 
 ### Przebieg
 
-```
+```text
 developer → GitHub → New Release → Publish (tag: v1.2.3)
                │
                ▼
@@ -138,7 +141,7 @@ developer → GitHub → New Release → Publish (tag: v1.2.3)
                ghcr.io/.../backend:stable
                ghcr.io/.../backend:v1.2.3
                ghcr.io/.../backend:<commit-sha>
-          3. docker build frontend/Dockerfile (BUILD_CONFIGURATION=prod) → push:
+          3. docker build frontend/Dockerfile (BUILD_CONFIGURATION=prod, FRONTEND_VERSION=v1.2.3) → push:
                ghcr.io/.../frontend:stable
                ghcr.io/.../frontend:v1.2.3
                ghcr.io/.../frontend:<commit-sha>
@@ -172,6 +175,10 @@ developer → GitHub → New Release → Publish (tag: v1.2.3)
 | `environment.prod.ts` | `production: true`, `apiUrl: 'https://api.zgadajsie.pl/api'` |
 | Optymalizacja         | tak (budgets, outputHashing)                                 |
 | Source maps           | nie                                                          |
+
+Wersja frontendu w PROD pochodzi z `FRONTEND_VERSION=${{ github.event.release.tag_name }}`
+przekazanego do buildu obrazu.
+Jeśli release tag nie zostanie przekazany, generator użyje danych z Git jako fallbacku.
 
 ### Obrazy Docker (prod)
 
@@ -237,8 +244,10 @@ Wieloetapowy build:
 **Stage 1 — builder (`node:24-slim`)**
 
 1. `ARG BUILD_CONFIGURATION=dev` — konfiguracja przekazywana z CI
-2. `pnpm install --frozen-lockfile`
-3. `pnpm nx build frontend --configuration=$BUILD_CONFIGURATION` → `dist/frontend/browser/`
+2. `ARG FRONTEND_VERSION` — jawna wersja przekazywana z CI
+3. `pnpm install --frozen-lockfile`
+4. `ENV FRONTEND_VERSION=${FRONTEND_VERSION}` — generator wersji odczytuje tę wartość przed fallbackiem do Git
+5. `pnpm nx build frontend --configuration=$BUILD_CONFIGURATION` → `dist/frontend/browser/`
 
 **Stage 2 — runner (`nginx:alpine`)**
 
