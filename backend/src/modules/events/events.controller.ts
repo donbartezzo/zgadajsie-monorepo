@@ -11,9 +11,7 @@ import {
   ParseUUIDPipe,
   ForbiddenException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { EventsService } from './events.service';
-import { TEMPORARY_CONFIG } from '../../common/config/temporary-config';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
@@ -23,21 +21,16 @@ import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { IsActiveGuard } from '../auth/guards/is-active.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
+import { RuntimeConfig, Role } from '@zgadajsie/shared';
 
 @Controller('events')
 export class EventsController {
-  constructor(
-    private eventsService: EventsService,
-    private configService: ConfigService,
-  ) {}
+  constructor(private eventsService: EventsService) {}
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() dto: CreateEventDto) {
-    const enableEventCreation = this.configService.get<string>('ENABLE_EVENT_CREATION', 'true');
-    const isExemptUser = user.email === TEMPORARY_CONFIG.exemptEmailFromEventCreationBlock;
-
-    if (enableEventCreation !== 'true' && !isExemptUser) {
+    if (RuntimeConfig.isEventCreationEnabled() === false) {
       throw new ForbiddenException(
         'Tworzenie nowych wydarzeń jest tymczasowo wyłączone. Przepraszamy za utrudnienia.',
       );
@@ -84,18 +77,13 @@ export class EventsController {
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Delete(':id')
   remove(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.eventsService.remove(id, user.id, user.role === 'ADMIN');
+    return this.eventsService.remove(id, user.id, user.role === Role.ADMIN);
   }
 
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(':id/participants')
   getParticipants(@Param('id') id: string) {
     return this.eventsService.getParticipants(id);
-  }
-
-  @UseGuards(JwtAuthGuard, IsActiveGuard)
-  @Get(':id/participants/manage')
-  getParticipantsManage(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.eventsService.getParticipantsForOrganizer(id, user.id);
   }
 
   @Get(':id/slots')

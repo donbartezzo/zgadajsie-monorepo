@@ -97,12 +97,12 @@ developer → git push origin main
 
 ### Konfiguracja frontendu (dev)
 
-| Parametr             | Wartość                                                      |
-| -------------------- | ------------------------------------------------------------ |
-| Angular config       | `dev`                                                        |
-| `environment.dev.ts` | `production: true`, `apiUrl: 'https://api.dev.zgadajsie.pl'` |
-| Optymalizacja        | tak (budgets, outputHashing)                                 |
-| Source maps          | nie                                                          |
+| Parametr             | Wartość                                                          |
+| -------------------- | ---------------------------------------------------------------- |
+| Angular config       | `dev`                                                            |
+| `environment.dev.ts` | `production: true`, `apiUrl: 'https://api.dev.zgadajsie.pl/api'` |
+| Optymalizacja        | tak (budgets, outputHashing)                                     |
+| Source maps          | nie                                                              |
 
 ### Obrazy Docker (dev)
 
@@ -166,12 +166,12 @@ developer → GitHub → New Release → Publish (tag: v1.2.3)
 
 ### Konfiguracja frontendu (prod)
 
-| Parametr              | Wartość                                                  |
-| --------------------- | -------------------------------------------------------- |
-| Angular config        | `prod`                                                   |
-| `environment.prod.ts` | `production: true`, `apiUrl: 'https://api.zgadajsie.pl'` |
-| Optymalizacja         | tak (budgets, outputHashing)                             |
-| Source maps           | nie                                                      |
+| Parametr              | Wartość                                                      |
+| --------------------- | ------------------------------------------------------------ |
+| Angular config        | `prod`                                                       |
+| `environment.prod.ts` | `production: true`, `apiUrl: 'https://api.zgadajsie.pl/api'` |
+| Optymalizacja         | tak (budgets, outputHashing)                                 |
+| Source maps           | nie                                                          |
 
 ### Obrazy Docker (prod)
 
@@ -188,15 +188,15 @@ developer → GitHub → New Release → Publish (tag: v1.2.3)
 
 ## Porównanie środowisk
 
-|                     | dev                            | prod                         |
-| ------------------- | ------------------------------ | ---------------------------- |
-| Trigger             | push → `main`                  | GitHub Release published     |
-| Angular config      | `dev`                          | `prod`                       |
-| API URL             | `https://api.dev.zgadajsie.pl` | `https://api.zgadajsie.pl`   |
-| Baza danych         | `zgadajsie-dev-db` (osobna)    | `zgadajsie-prod-db` (osobna) |
-| Obraz tag "bieżący" | `:dev`                         | `:stable`                    |
-| Obraz tag "wersja"  | `:<sha>`                       | `:vX.Y.Z` + `:<sha>`         |
-| Coolify projekt     | `zgadajsie-dev`                | `zgadajsie-prod`             |
+|                     | dev                                | prod                           |
+| ------------------- | ---------------------------------- | ------------------------------ |
+| Trigger             | push → `main`                      | GitHub Release published       |
+| Angular config      | `dev`                              | `prod`                         |
+| API URL             | `https://api.dev.zgadajsie.pl/api` | `https://api.zgadajsie.pl/api` |
+| Baza danych         | `zgadajsie-dev-db` (osobna)        | `zgadajsie-prod-db` (osobna)   |
+| Obraz tag "bieżący" | `:dev`                             | `:stable`                      |
+| Obraz tag "wersja"  | `:<sha>`                           | `:vX.Y.Z` + `:<sha>`           |
+| Coolify projekt     | `zgadajsie-dev`                    | `zgadajsie-prod`               |
 
 ---
 

@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 import { User } from '../../shared/types';
 import { NotificationService } from '../services/notification.service';
 import { ProfileBroadcastService } from '../services/profile-broadcast.service';
+import { Role } from '@zgadajsie/shared';
 
 interface AuthTokens {
   accessToken: string;
@@ -26,7 +27,7 @@ export class AuthService {
 
   currentUser = signal<User | null>(null);
   isLoggedIn = computed(() => !!this.currentUser());
-  isAdmin = computed(() => this.currentUser()?.role === 'ADMIN');
+  isAdmin = computed(() => this.currentUser()?.role === Role.ADMIN);
   isActive = computed(() => this.currentUser()?.isActive ?? false);
 
   constructor() {

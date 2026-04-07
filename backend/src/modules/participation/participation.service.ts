@@ -15,6 +15,7 @@ import { EnrollmentEligibilityService } from './enrollment-eligibility.service';
 import { isEventJoinable } from '../events/event-time-status.util';
 import { getEnrollmentPhase } from '../events/enrollment-phase.util';
 import { EventRoleConfig, AvailableRole } from '../slots/slot.types';
+import { RuntimeConfig } from '@zgadajsie/shared';
 
 const USER_SELECT = { id: true, displayName: true, avatarUrl: true, email: true };
 const MAX_GUESTS_PER_USER = 3;
@@ -101,8 +102,11 @@ export class ParticipationService {
           where: { id: participation.id },
           include: { user: { select: USER_SELECT }, slot: true },
         });
+        if (!withSlot) {
+          throw new Error('Nie udało się odczytać zgłoszenia po utworzeniu uczestnictwa');
+        }
         return {
-          ...withDerivedStatus(withSlot!),
+          ...withDerivedStatus(withSlot),
           isPaid,
           costPerPerson: event.costPerPerson.toNumber(),
         };
@@ -196,7 +200,10 @@ export class ParticipationService {
 
     // In open enrollment with free slots → assign slot (confirmed=false, user must confirm)
     if (phase === 'OPEN_ENROLLMENT') {
-      const freeSlots = await this.slotService.getFreeSlotCount(eventId);
+      // Validate roleKey if roleConfig exists
+      const roleConfig = event.roleConfig as unknown as EventRoleConfig | null;
+      const validatedRoleKey = this.validateRoleKey(roleConfig, roleKey);
+      const freeSlots = await this.slotService.getFreeSlotCount(eventId, validatedRoleKey);
       if (freeSlots > 0) {
         // If the user adding the guest is a new user, the guest should be pending approval
         const isNewUser = await this.eligibility.isNewUser(addedByUserId, event.organizerId);
@@ -209,17 +216,26 @@ export class ParticipationService {
                 userId: guestUser.id,
                 addedByUserId,
                 wantsIn: true,
-                roleKey,
+                roleKey: validatedRoleKey,
               },
               include: { user: { select: USER_SELECT } },
             });
             // confirmed=false because user (host) must confirm
-            await this.slotService.assignSlot(eventId, participation.id, false, tx);
+            await this.slotService.assignSlot(
+              eventId,
+              participation.id,
+              false,
+              tx,
+              validatedRoleKey,
+            );
             const withSlot = await tx.eventParticipation.findUnique({
               where: { id: participation.id },
               include: { user: { select: USER_SELECT }, slot: true },
             });
-            return withDerivedStatus(withSlot!);
+            if (!withSlot) {
+              throw new Error('Nie udało się odczytać zgłoszenia po przydzieleniu miejsca');
+            }
+            return withDerivedStatus(withSlot);
           });
         }
       }
@@ -477,8 +493,7 @@ export class ParticipationService {
     participationId: string,
     currentUserId: string,
   ): Promise<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
-    const enableOnlinePayments = this.configService.get<string>('ENABLE_ONLINE_PAYMENTS', 'true');
-    if (enableOnlinePayments !== 'true') {
+    if (RuntimeConfig.isOnlinePaymentsEnabled() === false) {
       throw new ForbiddenException(
         'Płatności online są tymczasowo wyłączone. Skontaktuj się z organizatorem w sprawie płatności gotówką.',
       );
@@ -660,9 +675,12 @@ export class ParticipationService {
         where: { id: participation.id },
         include: { user: { select: USER_SELECT }, slot: true },
       });
+      if (!withSlot) {
+        throw new Error('Nie udało się odczytać zgłoszenia po przydzieleniu miejsca');
+      }
 
       return {
-        ...withDerivedStatus(withSlot!),
+        ...withDerivedStatus(withSlot),
         isPaid,
         costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0,
       };
@@ -707,8 +725,11 @@ export class ParticipationService {
         where: { id: participationId },
         include: { user: { select: USER_SELECT }, slot: true },
       });
+      if (!withSlot) {
+        throw new Error('Nie udało się odczytać zgłoszenia po przydzieleniu miejsca');
+      }
       return {
-        ...withDerivedStatus(withSlot!),
+        ...withDerivedStatus(withSlot),
         isPaid,
         costPerPerson: event.costPerPerson.toNumber(),
       };
@@ -772,9 +793,12 @@ export class ParticipationService {
       where: { id: participationId },
       include: { user: { select: USER_SELECT }, slot: true },
     });
+    if (!withSlot) {
+      throw new Error('Nie udało się odczytać zgłoszenia po przydzieleniu miejsca');
+    }
 
     return {
-      ...withDerivedStatus(withSlot!),
+      ...withDerivedStatus(withSlot),
       isPaid,
       costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0,
     };

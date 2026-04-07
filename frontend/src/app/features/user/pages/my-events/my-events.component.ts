@@ -16,9 +16,8 @@ import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-sta
 import { UserService } from '../../../../core/services/user.service';
 import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { environment } from '../../../../../environments/environment';
+import { RuntimeConfig, EventStatus, EventTimeStatus } from '@zgadajsie/shared';
 import { Event as EventModel } from '../../../../shared/types';
-import { EventStatus, EventTimeStatus } from '@zgadajsie/shared';
 import {
   isEventJoinable,
   getEventTimeStatus,
@@ -141,7 +140,7 @@ export class MyEventsComponent implements OnInit {
 
   readonly events = signal<EventModel[]>([]);
   readonly loading = signal(true);
-  readonly canCreateEvents = computed(() => environment.enableEventCreation);
+  readonly canCreateEvents = computed(() => RuntimeConfig.isEventCreationEnabled());
 
   ngOnInit(): void {
     this.userService.getMyEvents().subscribe({

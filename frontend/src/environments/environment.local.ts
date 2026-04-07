@@ -4,9 +4,4 @@ export const environment = {
   production: false,
   apiUrl: '/api',
   version: APP_VERSION,
-  maintenance: false,
-  enableGoogleLogin: false,
-  enableFacebookLogin: false,
-  enableEventCreation: false,
-  enableOnlinePayments: false,
 };

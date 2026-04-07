@@ -300,6 +300,36 @@ export class EventsService {
     if (dto.startsAt) data.startsAt = new Date(dto.startsAt);
     if (dto.endsAt) data.endsAt = new Date(dto.endsAt);
 
+    // Validate and sync slots if maxParticipants is changing
+    if (dto.maxParticipants !== undefined) {
+      const newMaxParticipants = dto.maxParticipants;
+
+      // Validate the change
+      const validationError = await this.slotService.validateMaxParticipantsChange(
+        id,
+        newMaxParticipants,
+      );
+      if (validationError) {
+        throw new BadRequestException(validationError);
+      }
+
+      // Update event first
+      const updatedEvent = await this.prisma.event.update({
+        where: { id },
+        data,
+        include: { discipline: true, facility: true, level: true, city: true },
+      });
+
+      // Then sync slots
+      await this.slotService.adjustSlotsForMaxParticipants(
+        id,
+        event.maxParticipants,
+        newMaxParticipants,
+      );
+
+      return updatedEvent;
+    }
+
     return this.prisma.event.update({
       where: { id },
       data,
@@ -540,79 +570,8 @@ export class EventsService {
     });
   }
 
-  // ─── Organizer Participant Management ────────────────────────────────────────
-
-  async getParticipantsForOrganizer(eventId: string, organizerUserId: string) {
-    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
-    if (!event) {
-      throw new NotFoundException('Wydarzenie nie znalezione');
-    }
-    if (event.organizerId !== organizerUserId) {
-      throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
-    }
-
-    const participations = await this.prisma.eventParticipation.findMany({
-      where: { eventId },
-      include: {
-        user: { select: { id: true, displayName: true, avatarUrl: true, email: true } },
-        slot: true,
-        payments: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-          select: {
-            id: true,
-            amount: true,
-            voucherAmountUsed: true,
-            organizerAmount: true,
-            method: true,
-            status: true,
-            paidAt: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'asc' },
-    });
-
-    return participations.map((p) => {
-      // Derive status from slot-based model
-      let derivedStatus: string;
-      if (!p.wantsIn) {
-        derivedStatus = p.withdrawnBy === 'ORGANIZER' ? 'REJECTED' : 'WITHDRAWN';
-      } else if (p.slot) {
-        derivedStatus = p.slot.confirmed ? 'CONFIRMED' : 'APPROVED';
-      } else {
-        derivedStatus = 'PENDING';
-      }
-
-      return {
-        id: p.id,
-        userId: p.userId,
-        status: derivedStatus,
-        isGuest: p.addedByUserId !== null,
-        addedByUserId: p.addedByUserId,
-        slot: p.slot
-          ? {
-              id: p.slot.id,
-              locked: p.slot.locked,
-              roleKey: p.slot.roleKey,
-              participationId: p.slot.participationId,
-              confirmed: p.slot.confirmed,
-            }
-          : null,
-        createdAt: p.createdAt,
-        user: p.user,
-        payment: p.payments[0] ?? null,
-      };
-    });
-  }
-
   async getSlots(eventId: string) {
-    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
-    if (!event) {
-      throw new NotFoundException('Wydarzenie nie znalezione');
-    }
-
-    const slots = await this.prisma.eventSlot.findMany({
+    return this.prisma.eventSlot.findMany({
       where: { eventId },
       select: {
         id: true,
@@ -625,8 +584,6 @@ export class EventsService {
       },
       orderBy: { createdAt: 'asc' },
     });
-
-    return slots;
   }
 
   async markPaid(eventId: string, participationId: string, organizerUserId: string) {
@@ -669,7 +626,7 @@ export class EventsService {
       },
     });
 
-    return this.getParticipantsForOrganizer(eventId, organizerUserId);
+    return this.getParticipants(eventId);
   }
 
   async cancelPayment(
@@ -725,7 +682,7 @@ export class EventsService {
       } else {
         await tx.payment.update({
           where: { id: paymentId },
-          data: { status: 'CANCELLED' as any, refundedAt: new Date() },
+          data: { status: 'REFUNDED', refundedAt: new Date() },
         });
       }
 
@@ -748,7 +705,7 @@ export class EventsService {
       );
     }
 
-    return this.getParticipantsForOrganizer(eventId, organizerUserId);
+    return this.getParticipants(eventId);
   }
 
   async createSeries(organizerId: string, dto: CreateEventDto) {

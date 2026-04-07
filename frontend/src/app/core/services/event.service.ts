@@ -6,7 +6,6 @@ import {
   Event,
   EventListItem,
   Participation,
-  ParticipantManageItem,
   EventSlotInfo,
   JoinGuestRequest,
   UpdateGuestResponse,
@@ -145,12 +144,8 @@ export class EventService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  getParticipantsManage(eventId: string): Observable<ParticipantManageItem[]> {
-    return this.http.get<ParticipantManageItem[]>(`${this.apiUrl}/${eventId}/participants/manage`);
-  }
-
-  markAsPaid(eventId: string, participationId: string): Observable<ParticipantManageItem[]> {
-    return this.http.post<ParticipantManageItem[]>(
+  markAsPaid(eventId: string, participationId: string): Observable<Participation[]> {
+    return this.http.post<Participation[]>(
       `${this.apiUrl}/${eventId}/mark-paid/${participationId}`,
       {},
     );
@@ -160,8 +155,8 @@ export class EventService {
     eventId: string,
     paymentId: string,
     options: CancelPaymentRequest,
-  ): Observable<ParticipantManageItem[]> {
-    return this.http.post<ParticipantManageItem[]>(
+  ): Observable<Participation[]> {
+    return this.http.post<Participation[]>(
       `${this.apiUrl}/${eventId}/cancel-payment/${paymentId}`,
       options,
     );

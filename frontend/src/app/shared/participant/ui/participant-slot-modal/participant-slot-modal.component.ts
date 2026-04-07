@@ -127,8 +127,8 @@ export class ParticipantSlotModalComponent {
         return `Opłacone (${payment.amount} zł)`;
       case 'VOUCHER_REFUNDED':
         return 'Zwrócone (voucher)';
-      case 'CANCELLED':
-        return 'Anulowane';
+      case 'REFUNDED':
+        return 'Zwrócone';
       default:
         return payment.status;
     }

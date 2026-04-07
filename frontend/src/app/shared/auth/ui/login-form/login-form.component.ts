@@ -14,7 +14,7 @@ import { IconComponent } from '../../../ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { environment } from '../../../../../environments/environment';
+import { RuntimeConfig } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-login-form',
@@ -94,7 +94,7 @@ import { environment } from '../../../../../environments/environment';
       </div>
 
       <div class="space-y-2">
-        @if (environment.enableGoogleLogin) {
+        @if (showGoogleLogin()) {
           <a
             [href]="googleLoginUrl()"
             class="flex items-center justify-center gap-2 w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
@@ -120,7 +120,7 @@ import { environment } from '../../../../../environments/environment';
             Zaloguj przez Google
           </a>
         }
-        @if (environment.enableFacebookLogin) {
+        @if (showFacebookLogin()) {
           <a
             [href]="facebookLoginUrl()"
             class="flex items-center justify-center gap-2 w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
@@ -148,14 +148,13 @@ import { environment } from '../../../../../environments/environment';
 export class LoginFormComponent {
   private readonly auth = inject(AuthService);
   private readonly snackbar = inject(SnackbarService);
-  protected readonly environment = environment;
 
   readonly returnUrl = input<string | null>(null);
   readonly authenticated = output<void>();
 
-  readonly showSocialLogin = computed(
-    () => this.environment.enableGoogleLogin || this.environment.enableFacebookLogin,
-  );
+  readonly showGoogleLogin = computed(() => RuntimeConfig.isGoogleLoginEnabled());
+  readonly showFacebookLogin = computed(() => RuntimeConfig.isFacebookLoginEnabled());
+  readonly showSocialLogin = computed(() => this.showGoogleLogin() || this.showFacebookLogin());
 
   readonly googleLoginUrl = computed(() => {
     const base = this.auth.getSocialLoginUrl('google');
