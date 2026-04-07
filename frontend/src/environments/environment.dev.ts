@@ -1,7 +1,7 @@
-import { APP_VERSION } from './version';
+import { baseEnvironment } from './base';
 
 export const environment = {
+  ...baseEnvironment,
   production: true,
   apiUrl: 'https://api.dev.zgadajsie.pl/api',
-  version: APP_VERSION,
 };

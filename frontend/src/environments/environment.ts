@@ -1,7 +1,3 @@
-import { APP_VERSION } from './version';
+import { baseEnvironment } from './base';
 
-export const environment = {
-  production: false,
-  apiUrl: '/api',
-  version: APP_VERSION,
-};
+export const environment = baseEnvironment;

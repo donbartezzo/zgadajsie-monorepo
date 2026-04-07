@@ -9,6 +9,7 @@
     "build": {
       "executor": "@angular/build:application",
       "outputs": ["{options.outputPath}"],
+      "dependsOn": ["frontend:version:ci"],
       "options": {
         "outputPath": "dist/frontend",
         "browser": "frontend/src/main.ts",
@@ -126,6 +127,12 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "docker compose up -d"
+      }
+    },
+    "version:ci": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "GENERATE_FRONTEND_VERSION=true node /home/bk/projects/priv/zgadajsie-monorepo/scripts/generate-frontend-version.mjs"
       }
     }
   }
