@@ -23,6 +23,7 @@ import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { MapComponent } from '../../../../shared/event-form/ui/map/map.component';
 import { RulesEditorComponent } from '../../../../shared/event-form/ui/rules-editor/rules-editor.component';
 import { DateTimeInputComponent } from '../../../../shared/ui/date-time-input/date-time-input.component';
+import { FormControlErrorDirective } from '../../../../shared/ui/form-control-error/form-control-error.directive';
 import { EventService } from '../../../../core/services/event.service';
 import { CoverImageService } from '../../../../core/services/cover-image.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
@@ -92,6 +93,7 @@ class EventValidators {
     MapComponent,
     RulesEditorComponent,
     DateTimeInputComponent,
+    FormControlErrorDirective,
     TranslocoPipe,
   ],
   template: `
@@ -105,18 +107,14 @@ class EventValidators {
           <div class="p-4 space-y-4">
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-1">Tytuł</label>
-              <input
-                formControlName="title"
-                class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
-                placeholder="Nazwa wydarzenia"
-              />
+              <input formControlName="title" appFormControlError placeholder="Nazwa wydarzenia" />
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-1">Opis</label>
               <textarea
                 formControlName="description"
                 rows="4"
-                class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
+                appFormControlError
                 placeholder="Opis wydarzenia..."
               ></textarea>
             </div>
@@ -129,10 +127,7 @@ class EventValidators {
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1">Dyscyplina</label>
-                <select
-                  formControlName="disciplineSlug"
-                  class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
-                >
+                <select formControlName="disciplineSlug" appFormControlError>
                   <option value="">Wybierz...</option>
                   @for (d of disciplines(); track d.slug) {
                     <option [value]="d.slug">{{ 'dict.discipline.' + d.slug | transloco }}</option>
@@ -141,10 +136,7 @@ class EventValidators {
               </div>
               <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1">Obiekt</label>
-                <select
-                  formControlName="facilitySlug"
-                  class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
-                >
+                <select formControlName="facilitySlug" appFormControlError>
                   <option value="">Wybierz...</option>
                   @for (f of facilities(); track f.slug) {
                     <option [value]="f.slug">{{ 'dict.facility.' + f.slug | transloco }}</option>
@@ -153,10 +145,7 @@ class EventValidators {
               </div>
               <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1">Poziom</label>
-                <select
-                  formControlName="levelSlug"
-                  class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
-                >
+                <select formControlName="levelSlug" appFormControlError>
                   <option value="">Wybierz...</option>
                   @for (l of levels(); track l.slug) {
                     <option [value]="l.slug">{{ 'dict.level.' + l.slug | transloco }}</option>
@@ -333,7 +322,7 @@ class EventValidators {
                 }
               </div>
 
-              @if (roleSlotsSum() !== form.get('maxParticipants')?.value) {
+              @if (rolesEnabled() && roleSlotsSum() !== form.get('maxParticipants')?.value) {
                 <div class="text-xs text-danger-600 flex items-center gap-1">
                   <app-icon name="alert-triangle" size="xs" />
                   Suma slotów ({{ roleSlotsSum() }}) nie zgadza się z liczbą uczestników ({{
@@ -352,10 +341,7 @@ class EventValidators {
             <!-- Miasto -->
             <div>
               <label class="block text-xs font-medium text-neutral-600 mb-1">Miasto</label>
-              <select
-                formControlName="citySlug"
-                class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
-              >
+              <select formControlName="citySlug" appFormControlError>
                 <option value="">Wybierz...</option>
                 @for (c of cities(); track c.slug) {
                   <option [value]="c.slug">{{ c.name }}</option>
@@ -371,7 +357,7 @@ class EventValidators {
                   <input
                     formControlName="address"
                     (blur)="onAddressChange()"
-                    class="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
+                    appFormControlError
                     placeholder="Ulica, numer"
                   />
                   <app-button
@@ -417,57 +403,51 @@ class EventValidators {
           </div>
         </app-card>
 
-        <!-- Cover image gallery -->
-        <app-card>
-          <div class="p-4 space-y-3">
-            <h3 class="text-sm font-semibold text-neutral-900">Grafika wydarzenia</h3>
-            @if (!form.get('disciplineSlug')?.value) {
-              <p class="text-xs text-neutral-400">
-                Najpierw wybierz dyscyplinę, aby zobaczyć dostępne grafiki.
-              </p>
-            } @else if (coverImagesLoading()) {
-              <div class="flex items-center justify-center py-6">
-                <div
-                  class="h-6 w-6 animate-spin rounded-full border-2 border-highlight border-t-transparent"
-                ></div>
-              </div>
-            } @else if (coverImages().length === 0) {
-              <p class="text-xs text-neutral-400">
-                Brak dostępnych grafik dla wybranej dyscypliny.
-              </p>
-            } @else {
-              <div class="grid grid-cols-2 gap-2">
-                @for (cover of coverImages(); track cover.id) {
-                  <button
-                    type="button"
-                    [class]="
-                      'relative overflow-hidden rounded-xl border-2 transition-all ' +
-                      (selectedCoverImageId() === cover.id
-                        ? 'border-highlight ring-2 ring-primary-500/30'
-                        : 'border-neutral-200 hover:border-neutral-400')
-                    "
-                    (click)="selectCoverImage(cover)"
-                  >
-                    <img
-                      [src]="coverUrl(cover)"
-                      [alt]="cover.filename"
-                      class="w-full aspect-[700/250] object-cover"
-                    />
-                    @if (selectedCoverImageId() === cover.id) {
-                      <div
-                        class="absolute inset-0 bg-primary-500/20 flex items-center justify-center"
-                      >
-                        <div class="rounded-full bg-primary-500 p-1">
-                          <app-icon name="check" size="sm" class="text-white" />
+        <!-- Cover image gallery - pokazuj tylko po wybraniu dyscypliny i gdy sa dostepne cover images -->
+        @if (form.get('disciplineSlug')?.value && coverImages().length > 0) {
+          <app-card>
+            <div class="p-4 space-y-3">
+              <h3 class="text-sm font-semibold text-neutral-900">Grafika wydarzenia</h3>
+              @if (coverImagesLoading()) {
+                <div class="flex items-center justify-center py-6">
+                  <div
+                    class="h-6 w-6 animate-spin rounded-full border-2 border-highlight border-t-transparent"
+                  ></div>
+                </div>
+              } @else {
+                <div class="grid grid-cols-2 gap-2">
+                  @for (cover of coverImages(); track cover.id) {
+                    <button
+                      type="button"
+                      [class]="
+                        'relative overflow-hidden rounded-xl border-2 transition-all ' +
+                        (selectedCoverImageId() === cover.id
+                          ? 'border-highlight ring-2 ring-primary-500/30'
+                          : 'border-neutral-200 hover:border-neutral-400')
+                      "
+                      (click)="selectCoverImage(cover)"
+                    >
+                      <img
+                        [src]="coverUrl(cover)"
+                        [alt]="cover.filename"
+                        class="w-full aspect-[700/250] object-cover"
+                      />
+                      @if (selectedCoverImageId() === cover.id) {
+                        <div
+                          class="absolute inset-0 bg-primary-500/20 flex items-center justify-center"
+                        >
+                          <div class="rounded-full bg-primary-500 p-1">
+                            <app-icon name="check" size="sm" class="text-white" />
+                          </div>
                         </div>
-                      </div>
-                    }
-                  </button>
-                }
-              </div>
-            }
-          </div>
-        </app-card>
+                      }
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          </app-card>
+        }
 
         <div>
           <app-button
@@ -847,9 +827,9 @@ export class EventFormComponent implements OnInit {
     });
   }
 
-  private loadCoverImages(disciplineId: string): void {
+  private loadCoverImages(disciplineSlug: string): void {
     this.coverImagesLoading.set(true);
-    this.coverImageService.getAll(disciplineId).subscribe({
+    this.coverImageService.getAll(disciplineSlug).subscribe({
       next: (images) => {
         this.coverImages.set(images);
         this.coverImagesLoading.set(false);

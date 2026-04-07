@@ -17,9 +17,9 @@ import {
   ParticipationStatus,
   WaitingReason,
 } from '../../../shared/types';
+import { MAX_GUESTS_PER_USER, EventTimeStatus } from '@zgadajsie/shared';
 import { getEnrollmentPhase } from '../../../shared/utils/enrollment-phase.util';
 import { isEventJoinable } from '../../../shared/utils/event-time-status.util';
-import { EventTimeStatus } from '@zgadajsie/shared';
 import {
   getWaitingReasonToast,
   getWaitingReasonBarTitle,
@@ -328,7 +328,19 @@ export class EventAreaService {
       return;
     }
 
-    this.overlays.openJoinWizard({ startStep: 2, type: 'guest' });
+    const guestsRemaining = this.calculateGuestsRemaining();
+    this.overlays.openJoinWizard({ startStep: 2, type: 'guest', guestsRemaining });
+  }
+
+  private calculateGuestsRemaining(): number {
+    const currentUserId = this.auth.currentUser()?.id;
+    if (!currentUserId) return MAX_GUESTS_PER_USER;
+
+    const currentGuests = this.participants().filter(
+      (p) => p.isGuest && p.addedByUserId === currentUserId && p.wantsIn,
+    ).length;
+
+    return Math.max(0, MAX_GUESTS_PER_USER - currentGuests);
   }
 
   openManageGuests(): void {

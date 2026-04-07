@@ -15,10 +15,9 @@ import { EnrollmentEligibilityService } from './enrollment-eligibility.service';
 import { isEventJoinable } from '../events/event-time-status.util';
 import { getEnrollmentPhase } from '../events/enrollment-phase.util';
 import { EventRoleConfig, AvailableRole } from '../slots/slot.types';
-import { RuntimeConfig } from '@zgadajsie/shared';
+import { RuntimeConfig, MAX_GUESTS_PER_USER } from '@zgadajsie/shared';
 
 const USER_SELECT = { id: true, displayName: true, avatarUrl: true, email: true };
-const MAX_GUESTS_PER_USER = 3;
 
 type ParticipationWithSlot = {
   wantsIn: boolean;

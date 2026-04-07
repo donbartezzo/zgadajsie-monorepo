@@ -25,6 +25,7 @@ export type OverlayType =
 export interface JoinWizardConfig {
   startStep: 1 | 2;
   type: 'self' | 'guest';
+  guestsRemaining?: number;
 }
 
 @Injectable({
@@ -82,6 +83,7 @@ export class BottomOverlaysService {
     this.wizardConfigSignal.set({
       startStep: config?.startStep ?? 1,
       type: config?.type ?? 'self',
+      guestsRemaining: config?.guestsRemaining,
     });
     this.open('joinRules');
   }

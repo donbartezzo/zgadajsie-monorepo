@@ -94,10 +94,7 @@ import {
           }
           <!-- Participant options (hidden for withdrawn/rejected) -->
           @if (!isWithdrawnOrRejected()) {
-            <div>
-              <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-2">
-                Opcje uczestnika
-              </p>
+            <div class="mt-2">
               <app-link-list
                 [items]="participantLinks()"
                 (itemClicked)="handleParticipantOption($event)"

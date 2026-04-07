@@ -18,6 +18,7 @@ import { JoinWizardConfig } from '../../../shared/overlay/ui/bottom-overlays/bot
 import { AuthService } from '../../../core/auth/auth.service';
 import { UserService } from '../../../core/services/user.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
+import { MAX_GUESTS_PER_USER } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-join-rules-overlay',
@@ -78,6 +79,10 @@ export class JoinRulesOverlayComponent {
   });
 
   readonly currentUserDisplayName = computed(() => this.auth.currentUser()?.displayName ?? '');
+
+  readonly guestsRemaining = computed(() => this.wizardConfig()?.guestsRemaining ?? 0);
+
+  readonly MAX_GUESTS = MAX_GUESTS_PER_USER;
 
   readonly isNameValid = computed(() => this.participantName().trim().length >= 3);
 

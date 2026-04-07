@@ -19,16 +19,19 @@ const SNACKBAR_COLOR_MAP: Record<SnackbarType, SemanticColor> = {
       class="fixed top-4 left-1/2 -translate-x-1/2 z-[70] flex flex-col gap-2 w-full max-w-sm px-4"
     >
       @for (msg of messages(); track msg.id) {
-      <div
-        class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium animate-slide-up"
-        [ngClass]="typeClass(msg.type)"
-      >
-        <app-icon [name]="typeIcon(msg.type)" size="sm" />
-        <span class="flex-1">{{ msg.message }}</span>
-        <button class="opacity-70 hover:opacity-100" (click)="snackbar.dismiss(msg.id)">
-          <app-icon name="x" size="sm" />
-        </button>
-      </div>
+        <div
+          class="relative flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium animate-slide-up"
+          [ngClass]="typeClass(msg.type)"
+        >
+          <app-icon [name]="typeIcon(msg.type)" size="sm" />
+          <span class="flex-1 whitespace-pre-wrap pr-6">{{ msg.message }}</span>
+          <button
+            class="absolute top-2 right-2 opacity-70 hover:opacity-100"
+            (click)="snackbar.dismiss(msg.id)"
+          >
+            <app-icon name="x" size="sm" />
+          </button>
+        </div>
       }
     </div>
   `,
@@ -59,10 +62,10 @@ export class SnackbarComponent {
     return SEMANTIC_COLOR_CLASSES.button[SNACKBAR_COLOR_MAP[type]];
   }
 
-  typeIcon(type: SnackbarType): 'check' | 'x' | 'bell' | 'shield-alert' {
-    const icons: Record<SnackbarType, 'check' | 'x' | 'bell' | 'shield-alert'> = {
+  typeIcon(type: SnackbarType): 'check' | 'alert-triangle' | 'bell' | 'shield-alert' {
+    const icons: Record<SnackbarType, 'check' | 'alert-triangle' | 'bell' | 'shield-alert'> = {
       success: 'check',
-      error: 'x',
+      error: 'alert-triangle',
       info: 'bell',
       warning: 'shield-alert',
     };

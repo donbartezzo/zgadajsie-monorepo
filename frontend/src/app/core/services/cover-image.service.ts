@@ -36,10 +36,10 @@ export class CoverImageService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl + '/cover-images';
 
-  getAll(disciplineId?: string): Observable<CoverImage[]> {
+  getAll(disciplineSlug?: string): Observable<CoverImage[]> {
     let params = new HttpParams();
-    if (disciplineId) {
-      params = params.set('disciplineId', disciplineId);
+    if (disciplineSlug) {
+      params = params.set('disciplineSlug', disciplineSlug);
     }
     return this.http.get<CoverImage[]>(this.apiUrl, { params });
   }
