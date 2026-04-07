@@ -76,8 +76,15 @@ async function main() {
     ].map((discipline) => prisma.eventDiscipline.create({ data: discipline })),
   );
 
-  console.log('Synchronizuję cover images z katalogu...');
-  await syncCoverImagesFromFilesystem(prisma);
+  console.log('Synchronizujemy cover images z katalogu...');
+  try {
+    await syncCoverImagesFromFilesystem(prisma);
+  } catch (error) {
+    console.warn(
+      'Nie uda³o siê zsynchronizowaæ cover images (kontener Docker nie ma dostêpu do katalogu frontend):',
+      error instanceof Error ? error.message : error,
+    );
+  }
 
   // ─── Obiekty ─────────────────────────────────────────────────────────────
   console.log('Tworzę obiekty...');
