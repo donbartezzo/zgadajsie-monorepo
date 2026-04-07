@@ -104,8 +104,8 @@ developer → git push origin main
 | Optymalizacja        | tak (budgets, outputHashing)                                     |
 | Source maps          | nie                                                              |
 
-Wersja frontendu w DEV pochodzi z `FRONTEND_VERSION=${{ github.sha }}` przekazanego do buildu obrazu.
-Jeśli ten argument nie zostanie ustawiony, generator użyje danych z Git jako fallbacku.
+Wersja frontendu w DEV pochodzi z skróconego `FRONTEND_VERSION=${{ github.sha }}` (7-8 znaków) przekazanego do buildu obrazu.
+Jeśli ten argument nie zostanie ustawiony, generator używa danych z Git jako fallbacku.
 
 ### Obrazy Docker (dev)
 
@@ -244,7 +244,7 @@ Wieloetapowy build:
 **Stage 1 — builder (`node:24-slim`)**
 
 1. `ARG BUILD_CONFIGURATION=dev` — konfiguracja przekazywana z CI
-2. `ARG FRONTEND_VERSION` — jawna wersja przekazywana z CI
+2. `ARG FRONTEND_VERSION` — jawna wersja przekazywana z CI (dla DEV: skrócony SHA, dla PROD: tag)
 3. `pnpm install --frozen-lockfile`
 4. `ENV FRONTEND_VERSION=${FRONTEND_VERSION}` — generator wersji odczytuje tę wartość przed fallbackiem do Git
 5. `pnpm nx build frontend --configuration=$BUILD_CONFIGURATION` → `dist/frontend/browser/`
