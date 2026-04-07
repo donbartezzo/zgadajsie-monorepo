@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import { syncCoverImagesFromFilesystem } from '../src/modules/cover-images/cover-images-sync.util';
 
 const prisma = new PrismaClient();
 
@@ -80,19 +79,6 @@ async function main() {
   console.log(`Dyscypliny: ${disciplines.length}`);
   console.log(`Obiekty: ${facilities.length}`);
   console.log(`Poziomy: ${levels.length}`);
-
-  console.log('Synchronizujemy cover images z katalogu...');
-  try {
-    const coverImagesSyncReport = await syncCoverImagesFromFilesystem(prisma);
-    console.log(
-      `Cover images: dodane ${coverImagesSyncReport.summary.added}, istniejące ${coverImagesSyncReport.summary.existing}, brakujących plików w DB ${coverImagesSyncReport.summary.missingFilesInDb}`,
-    );
-  } catch (error) {
-    console.warn(
-      'Nie udało się zsynchronizować cover images (kontener Docker nie ma dostępu do katalogu frontend):',
-      error instanceof Error ? error.message : error,
-    );
-  }
 }
 
 main()
