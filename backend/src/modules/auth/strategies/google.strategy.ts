@@ -4,7 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Profile, Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { MemoryStateStore } from './memory-state-store';
-import { RUNTIME_CONFIG } from '@zgadajsie/shared';
+import { RuntimeConfig } from '@zgadajsie/shared';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -25,7 +25,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
 
     if (
-      RUNTIME_CONFIG.disableGoogleLogin ||
+      !RuntimeConfig.isGoogleLoginEnabled() ||
       clientID === 'disabled' ||
       clientSecret === 'disabled'
     ) {
