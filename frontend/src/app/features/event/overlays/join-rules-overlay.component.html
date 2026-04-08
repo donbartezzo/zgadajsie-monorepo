@@ -35,14 +35,8 @@
           [participants]="participants()"
           [currentUserId]="currentUserId()"
           (participantClicked)="onRejoinParticipant($event)"
+          (addNewParticipant)="onAddNewParticipant()"
         />
-
-        <div class="max-w-lg mx-auto">
-          <app-button appearance="outline" color="primary" [fullWidth]="true" (clicked)="goToStep1()">
-            <app-icon name="user-plus" size="sm" />
-            Zapisz nową osobę
-          </app-button>
-        </div>
       </div>
     }
 

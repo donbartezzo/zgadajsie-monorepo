@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { ParticipantCardComponent } from '../participant-card/participant-card.component';
+import { AddParticipantCardComponent } from '../add-participant-card/add-participant-card.component';
 import { Participation } from '../../../types';
 import { ParticipationStatus } from '../../../types/common.interface';
 
@@ -9,7 +10,7 @@ const WITHOUT_SLOT_STATUSES: ParticipationStatus[] = ['PENDING', 'WITHDRAWN', 'R
 
 @Component({
   selector: 'app-event-user-participants',
-  imports: [ParticipantCardComponent],
+  imports: [ParticipantCardComponent, AddParticipantCardComponent],
   templateUrl: './event-user-participants.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -19,6 +20,7 @@ export class EventUserParticipantsComponent {
   readonly isPaidEvent = input(false);
 
   readonly participantClicked = output<Participation>();
+  readonly addNewParticipant = output<void>();
 
   readonly filter = signal<ParticipantFilter>('without-slot');
 

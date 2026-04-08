@@ -1,9 +1,4 @@
-<button
-  type="button"
-  [attr.data-user-id]="participant().userId"
-  [class]="buttonClass()"
-  (click)="clicked.emit()"
->
+<button type="button" [attr.data-user-id]="participant().userId" [class]="buttonClass()" (click)="clicked.emit()">
   <div class="relative">
     <app-user-avatar
       [avatarUrl]="avatarUrl()"
@@ -23,10 +18,7 @@
     }
   </div>
 
-  <span
-    class="text-[11px] text-center leading-tight mt-1 w-full line-clamp-2 min-h-[2.5em]"
-    [class]="nameClass()"
-  >
+  <span [class]="'text-[11px] text-center leading-tight mt-1 w-full line-clamp-2 min-h-[2.5em] ' + nameClass()">
     {{ displayName() }}
   </span>
 </button>

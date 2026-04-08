@@ -199,6 +199,10 @@ export class JoinRulesOverlayComponent {
     this.rejoinParticipantConfirmed.emit(p);
   }
 
+  onAddNewParticipant(): void {
+    this.goToStep1();
+  }
+
   setParticipantType(type: 'self' | 'guest'): void {
     this.participantType.set(type);
   }
