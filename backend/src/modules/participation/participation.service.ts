@@ -25,6 +25,13 @@ type ParticipationWithSlot = {
   slot?: { confirmed: boolean } | null;
 };
 
+type JoinEventLike = {
+  startsAt: Date;
+  endsAt: Date;
+  lotteryExecutedAt: Date | null;
+  status: string;
+};
+
 function deriveStatus(p: ParticipationWithSlot): string {
   if (!p.wantsIn) {
     return p.withdrawnBy === 'ORGANIZER' ? 'REJECTED' : 'WITHDRAWN';
@@ -58,17 +65,8 @@ export class ParticipationService {
     if (!event) {
       throw new NotFoundException('Wydarzenie nie znalezione');
     }
-    if (event.status !== 'ACTIVE') {
-      throw new BadRequestException('Wydarzenie nie jest aktywne');
-    }
-    if (!isEventJoinable(event)) {
-      throw new BadRequestException('Wydarzenie już się rozpoczęło - dołączenie nie jest możliwe');
-    }
 
-    const phase = getEnrollmentPhase(event);
-    if (phase === 'LOTTERY_PENDING') {
-      throw new BadRequestException('Trwa losowanie miejsc - spróbuj za chwilę');
-    }
+    const phase = this.assertJoinEligibility(event);
 
     const isPaid = event.costPerPerson.toNumber() > 0;
     const roleConfig = event.roleConfig as unknown as EventRoleConfig | null;
@@ -161,9 +159,8 @@ export class ParticipationService {
     if (!event) {
       throw new NotFoundException('Wydarzenie nie znalezione');
     }
-    if (!isEventJoinable(event)) {
-      throw new BadRequestException('Wydarzenie już się rozpoczęło - dołączenie nie jest możliwe');
-    }
+
+    const phase = this.assertJoinEligibility(event);
 
     // Validate roleKey if provided
     if (roleKey) {
@@ -171,11 +168,6 @@ export class ParticipationService {
       const validatedRoleKey = this.validateRoleKey(roleConfig, roleKey);
       // Use validated role (throws if invalid)
       roleKey = validatedRoleKey;
-    }
-
-    const phase = getEnrollmentPhase(event);
-    if (phase === 'LOTTERY_PENDING') {
-      throw new BadRequestException('Trwa losowanie miejsc - spróbuj za chwilę');
     }
 
     // Everyone can add guests now
@@ -549,6 +541,23 @@ export class ParticipationService {
 
   // ─── Private helpers ──────────────────────────────────────────────────────
 
+  private assertJoinEligibility(event: JoinEventLike): ReturnType<typeof getEnrollmentPhase> {
+    if (event.status !== 'ACTIVE') {
+      throw new BadRequestException('Wydarzenie nie jest aktywne');
+    }
+
+    if (!isEventJoinable(event)) {
+      throw new BadRequestException('Wydarzenie już się rozpoczęło - dołączenie nie jest możliwe');
+    }
+
+    const phase = getEnrollmentPhase(event);
+    if (phase === 'LOTTERY_PENDING') {
+      throw new BadRequestException('Trwa losowanie miejsc - spróbuj za chwilę');
+    }
+
+    return phase;
+  }
+
   /**
    * Create a waiting participation (no slot assigned).
    * @param waitingReason - Why user didn't get automatic slot: NEW_USER, BANNED, NO_SLOTS, NO_SLOTS_FOR_ROLE, PRE_ENROLLMENT
@@ -687,6 +696,30 @@ export class ParticipationService {
   }
 
   /**
+   * Common validation for rejoin operations.
+   */
+  private validateRejoinEligibility(
+    event: JoinEventLike,
+    participation: {
+      wantsIn: boolean;
+      userId: string;
+      roleKey?: string | null;
+    },
+  ): { isPaid: boolean; phase: ReturnType<typeof getEnrollmentPhase>; roleKey?: string } {
+    const phase = this.assertJoinEligibility(event);
+
+    if (participation.wantsIn) {
+      throw new BadRequestException('Uczestnik już jest aktywny w tym wydarzeniu');
+    }
+
+    return {
+      isPaid: false, // Will be set by caller
+      phase,
+      roleKey: participation.roleKey ?? undefined,
+    };
+  }
+
+  /**
    * Handle rejoin after withdrawal.
    */
   private async handleRejoin(
@@ -801,6 +834,34 @@ export class ParticipationService {
       isPaid,
       costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0,
     };
+  }
+
+  /**
+   * Rejoin an existing participation by its ID (for withdrawn/pending participants).
+   * Used by the frontend when re-adding a guest or rejoining as a user
+   * — prevents creating a new User entity and bypassing the unique constraint.
+   */
+  async rejoinById(participationId: string, currentUserId: string) {
+    const participation = await this.prisma.eventParticipation.findUnique({
+      where: { id: participationId },
+      include: { event: true, slot: true },
+    });
+    if (!participation) {
+      throw new NotFoundException('Zgłoszenie nie znalezione');
+    }
+
+    this.assertCanActOnParticipation(participation, currentUserId);
+
+    const { phase, roleKey } = this.validateRejoinEligibility(participation.event, participation);
+
+    return this.handleRejoin(
+      participationId,
+      participation.event,
+      participation.userId,
+      participation.event.costPerPerson.toNumber() > 0,
+      phase,
+      roleKey,
+    );
   }
 
   private assertCanActOnParticipation(

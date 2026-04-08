@@ -9,25 +9,31 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { EventCriteriaDescriptionComponent } from '../ui/event-criteria-description/event-criteria-description.component';
-import { Event as EventModel, EventRole } from '../../../shared/types';
+import { EventUserParticipantsComponent } from '../../../shared/participant/ui/event-user-participants/event-user-participants.component';
+import { Event as EventModel, Participation } from '../../../shared/types';
 import { JoinWizardConfig } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { UserService } from '../../../core/services/user.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
-import { MAX_GUESTS_PER_USER } from '@zgadajsie/shared';
+import { MAX_GUESTS_PER_USER, DisciplineRole } from '@zgadajsie/shared';
+
+const WITHOUT_SLOT_STATUSES = ['PENDING', 'WITHDRAWN', 'REJECTED'] as const;
 
 @Component({
   selector: 'app-join-rules-overlay',
   imports: [
     FormsModule,
+    TranslocoPipe,
     IconComponent,
     ButtonComponent,
     BottomOverlayComponent,
     EventCriteriaDescriptionComponent,
+    EventUserParticipantsComponent,
   ],
   templateUrl: './join-rules-overlay.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,10 +48,25 @@ export class JoinRulesOverlayComponent {
   readonly loading = input(false);
   readonly isOrganizer = input(false);
   readonly wizardConfig = input<JoinWizardConfig | null>(null);
+  readonly participants = input<Participation[]>([]);
 
   readonly closed = output<void>();
   readonly joinConfirmed = output<string | undefined>();
   readonly guestConfirmed = output<{ displayName: string; roleKey?: string }>();
+  readonly rejoinParticipantConfirmed = output<Participation>();
+
+  // ── Step 0 state ──
+  readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
+
+  readonly participantsWithoutSlot = computed(() => {
+    const uid = this.currentUserId();
+    if (!uid) return [];
+    return this.participants().filter(
+      (p) =>
+        ((!p.isGuest && p.userId === uid) || (p.isGuest && p.addedByUserId === uid)) &&
+        (WITHOUT_SLOT_STATUSES as readonly string[]).includes(p.status),
+    );
+  });
 
   // ── Step 1 state ──
   readonly rulesAccepted = signal(false);
@@ -56,7 +77,7 @@ export class JoinRulesOverlayComponent {
   readonly selectedRoleKey = signal<string | null>(null);
   readonly submitting = signal(false);
 
-  readonly currentStep = signal<1 | 2>(1);
+  readonly currentStep = signal<0 | 1 | 2>(1);
 
   readonly rulesList = computed(() => {
     const rules = this.event()?.rules;
@@ -67,7 +88,7 @@ export class JoinRulesOverlayComponent {
       .filter((r) => r.length > 0);
   });
 
-  readonly availableRoles = computed<EventRole[]>(() => {
+  readonly availableRoles = computed<DisciplineRole[]>(() => {
     const e = this.event();
     if (!e?.roleConfig?.roles) return [];
     return e.roleConfig.roles;
@@ -113,10 +134,16 @@ export class JoinRulesOverlayComponent {
       if (this.open()) {
         const step = config?.startStep ?? 1;
         const type = config?.type ?? 'self';
-        this.currentStep.set(step);
         this.participantType.set(type);
         if (step === 2) {
+          // Direct to step 2 (e.g., add guest forced)
+          this.currentStep.set(2);
           this.syncNameFromType(type);
+        } else if (this.participantsWithoutSlot().length > 0) {
+          // Show participant choice first
+          this.currentStep.set(0);
+        } else {
+          this.currentStep.set(1);
         }
       }
     });
@@ -150,10 +177,18 @@ export class JoinRulesOverlayComponent {
     }
   }
 
+  goToStep1(): void {
+    this.currentStep.set(1);
+  }
+
   goToStep2(): void {
     if (!this.canProceedStep1()) return;
     this.currentStep.set(2);
     this.syncNameFromType(this.participantType());
+  }
+
+  onRejoinParticipant(p: Participation): void {
+    this.rejoinParticipantConfirmed.emit(p);
   }
 
   setParticipantType(type: 'self' | 'guest'): void {

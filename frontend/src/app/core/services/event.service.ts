@@ -108,6 +108,13 @@ export class EventService {
     );
   }
 
+  rejoinParticipation(participationId: string): Observable<Participation> {
+    return this.http.post<Participation>(
+      `${environment.apiUrl}/participations/${participationId}/rejoin`,
+      {},
+    );
+  }
+
   leaveParticipation(participationId: string): Observable<void> {
     return this.http.post<void>(
       `${environment.apiUrl}/participations/${participationId}/leave`,

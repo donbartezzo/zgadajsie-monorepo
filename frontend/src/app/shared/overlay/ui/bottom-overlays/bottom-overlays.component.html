@@ -18,9 +18,11 @@
       [loading]="overlays.loading()"
       [isOrganizer]="overlays.isOrganizer()"
       [wizardConfig]="overlays.wizardConfig()"
+      [participants]="overlays.participants()"
       (closed)="overlays.close()"
       (joinConfirmed)="overlays.confirmJoin($event)"
       (guestConfirmed)="overlays.confirmJoinGuest($event)"
+      (rejoinParticipantConfirmed)="overlays.handleRejoinParticipant($event)"
     />
   }
   @case ('joinConfirm') {

@@ -1,23 +1,22 @@
 import { EventDefaultableFields } from './event-defaultable-fields';
 
 /**
- * Wspólny interfejs roli — slots opcjonalny (tylko dla special).
+ * Wspólny interfejs roli - isDefault wymagane dla type safety.
  */
 export interface DisciplineRole {
   key: string;
-  title: string;
-  desc: string;
   slots?: number;
+  isDefault: boolean;
 }
 
 /**
  * Konfiguracja ról uczestników dla dyscypliny.
- * - default: rola domyślna (slots NIGDY nie ustawiany — wyliczany jako reszta)
- * - special: role specjalne (slots ZAWSZE ustawiany, min 1 element)
+ * - default: rola domyślna (isDefault: true)
+ * - special: role specjalne (isDefault: false)
  */
 export interface DisciplineParticipantRoles {
-  default: DisciplineRole;
-  special: DisciplineRole[];
+  default: DisciplineRole & { isDefault: true };
+  special: (DisciplineRole & { isDefault: false })[];
 }
 
 /**

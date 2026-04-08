@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.component';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { IconComponent } from '../../../ui/icon/icon.component';
-import { Participation, ParticipantManageItem, EventRoleConfig, EventRole } from '../../../types';
-import { SemanticColor } from '../../../types/colors';
+import { Participation, ParticipantManageItem, EventRoleConfig } from '../../../types';
+import { DisciplineRole } from '@zgadajsie/shared';
 import { EventSlotInfo } from '../../../types/payment.interface';
 import { Event, EnrollmentPhase } from '../../../types/event.interface';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -13,11 +13,12 @@ import {
   ParticipantModalData,
 } from '../participant-slot-modal/participant-slot-modal.component';
 import { SLOT_STATUS_CONFIG } from '../../slot-status-config';
+import { ParticipantCardComponent } from '../participant-card/participant-card.component';
 
 export type ParticipantItem = Participation | ParticipantManageItem;
 
 export interface RoleGroup {
-  role: EventRole;
+  role: DisciplineRole;
   participants: ParticipantItem[];
   emptySlots: number;
 }
@@ -31,7 +32,7 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
 
 @Component({
   selector: 'app-participant-slots-grid',
-  imports: [UserAvatarComponent, IconComponent],
+  imports: [IconComponent, ParticipantCardComponent, TranslocoPipe],
   templateUrl: './participant-slots-grid.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -94,7 +95,7 @@ export class ParticipantSlotsGridComponent {
       return {
         role,
         participants: roleParticipants,
-        emptySlots: Math.max(0, role.slots - roleParticipants.length),
+        emptySlots: Math.max(0, (role.slots || 0) - roleParticipants.length),
       };
     });
   });
@@ -178,42 +179,5 @@ export class ParticipantSlotsGridComponent {
     if (participation.slot) return participation.slot;
     // Look up in slots input by participationId
     return this.slots().find((s) => s.participationId === p.id) ?? null;
-  }
-
-  getAvatarUrl(p: ParticipantItem): string | null {
-    return p.user?.avatarUrl ?? null;
-  }
-
-  getDisplayName(p: ParticipantItem): string {
-    return p.user?.displayName ?? 'Uczestnik';
-  }
-
-  needsPayment(p: ParticipantItem): boolean {
-    if ('payment' in p) {
-      const pm = p as ParticipantManageItem;
-      return pm.payment === null && p.status === 'APPROVED';
-    }
-    if (this.isPaidEvent()) {
-      return (p as Participation).status === 'APPROVED';
-    }
-    return false;
-  }
-
-  getStatusIndicator(p: ParticipantItem): SemanticColor | null {
-    if (p.status === 'CONFIRMED') return 'success';
-    return null;
-  }
-
-  isCurrentUser(p: ParticipantItem): boolean {
-    return p.userId === this.currentUserId();
-  }
-
-  isCurrentUserGuest(p: ParticipantItem): boolean {
-    if (!p.isGuest || !this.currentUserId()) return false;
-    return p.addedByUserId === this.currentUserId();
-  }
-
-  isBanned(p: ParticipantItem): boolean {
-    return (p as Participation).waitingReason === 'BANNED';
   }
 }

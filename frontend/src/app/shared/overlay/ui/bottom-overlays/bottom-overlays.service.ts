@@ -51,6 +51,7 @@ export class BottomOverlaysService {
   private cancelEventCallback: (() => void) | null = null;
   private leaveCallback: (() => void) | null = null;
   private rejoinCallback: (() => void) | null = null;
+  private rejoinParticipantCallback: ((p: Participation) => void) | null = null;
   private manageGuestsCallback: (() => void) | null = null;
   private cancelPaymentCallback: ((options: CancelPaymentRequest) => void) | null = null;
   private addGuestRequestedCallback: (() => void) | null = null;
@@ -162,6 +163,10 @@ export class BottomOverlaysService {
     this.rejoinCallback = callback;
   }
 
+  onRejoinParticipantRequested(callback: (p: Participation) => void): void {
+    this.rejoinParticipantCallback = callback;
+  }
+
   onAddGuestRequested(callback: () => void): void {
     this.addGuestRequestedCallback = callback;
   }
@@ -216,6 +221,10 @@ export class BottomOverlaysService {
     this.rejoinCallback?.();
   }
 
+  handleRejoinParticipant(p: Participation): void {
+    this.rejoinParticipantCallback?.(p);
+  }
+
   handleAddGuestRequested(): void {
     this.addGuestRequestedCallback?.();
   }
@@ -237,6 +246,7 @@ export class BottomOverlaysService {
     this.cancelEventCallback = null;
     this.leaveCallback = null;
     this.rejoinCallback = null;
+    this.rejoinParticipantCallback = null;
     this.addGuestRequestedCallback = null;
     this.manageGuestsCallback = null;
     this.cancelPaymentCallback = null;

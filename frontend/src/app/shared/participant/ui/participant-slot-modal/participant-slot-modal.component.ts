@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { UpperCasePipe } from '@angular/common';
+import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
 import { ModalComponent } from '../../../ui/modal/modal.component';
 import { ModalService } from '../../../ui/modal/modal.service';
 import {
@@ -51,7 +53,14 @@ function getErrorMessage(err: unknown, fallback: string): string {
 
 @Component({
   selector: 'app-participant-slot-modal',
-  imports: [ModalComponent, UserProfileCardComponent, ButtonComponent, IconComponent],
+  imports: [
+    ModalComponent,
+    UserProfileCardComponent,
+    ButtonComponent,
+    IconComponent,
+    UpperCasePipe,
+    TranslocoPipe,
+  ],
   templateUrl: './participant-slot-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -152,48 +161,6 @@ export class ParticipantSlotModalComponent {
     () => SLOT_STATUS_CONFIG[this.slotDisplayStatus()],
   );
 
-  readonly titleWithRole = computed(() => {
-    const config = this.slotStatusConfig();
-    const slot = this.participant()?.slot;
-
-    if (!slot?.roleKey) return config.title;
-
-    // Find role by roleKey in event roleConfig
-    const event = this.event();
-    if (event?.roleConfig?.roles) {
-      const role = event.roleConfig.roles.find((r) => r.key === slot.roleKey);
-      if (role?.title) {
-        return `${config.title} - ${role.title.toUpperCase()}`;
-      }
-    }
-
-    // Fallback: use roleKey directly
-    return `${config.title} - ${slot.roleKey.toUpperCase()}`;
-  });
-
-  readonly slotRoleInfo = computed(() => {
-    const slot = this.slot();
-    if (!slot?.roleKey) return null;
-
-    // Find role by roleKey in event roleConfig
-    const event = this.event();
-    if (event?.roleConfig?.roles) {
-      const role = event.roleConfig.roles.find((r) => r.key === slot.roleKey);
-      if (role) {
-        return {
-          title: role.title,
-          description: role.desc,
-        };
-      }
-    }
-
-    // Fallback: use roleKey directly
-    return {
-      title: slot.roleKey,
-      description: null,
-    };
-  });
-
   readonly participationUpdatedAt = computed(() => {
     const p = this.participant();
     if (!p) return null;
@@ -208,6 +175,19 @@ export class ParticipantSlotModalComponent {
     if (this.isCurrentUserParticipant()) return false;
     if (this.participant()) return false; // ← blokuj jeśli uczestnik istnieje
     if (!this.slotIsEmpty()) return false;
+    return this.eventArea.canJoin();
+  });
+
+  readonly canRejoin = computed(() => {
+    if (!this.isCurrentUserParticipant()) return false;
+    if (!this.isWithdrawnStatus()) return false;
+    if (this.isBanned()) return false;
+    return this.eventArea.canJoin();
+  });
+
+  readonly canGuestRejoin = computed(() => {
+    if (!this.isGuestHost()) return false;
+    if (!this.isWithdrawnStatus()) return false;
     return this.eventArea.canJoin();
   });
 
@@ -446,6 +426,20 @@ export class ParticipantSlotModalComponent {
   onJoin(): void {
     this.modalService.close();
     this.eventArea.openJoinSheet();
+  }
+
+  onRejoin(): void {
+    const p = this.participant() as Participation;
+    if (!p) return;
+    this.modalService.close();
+    this.eventArea.rejoinParticipantDirect(p);
+  }
+
+  onRejoinGuest(): void {
+    const p = this.participant() as Participation;
+    if (!p) return;
+    this.modalService.close();
+    this.eventArea.rejoinParticipantDirect(p);
   }
 
   async onLeave(): Promise<void> {

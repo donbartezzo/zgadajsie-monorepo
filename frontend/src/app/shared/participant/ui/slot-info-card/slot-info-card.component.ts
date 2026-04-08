@@ -5,6 +5,7 @@ import { IconComponent } from '../../../ui/icon/icon.component';
 import { EventSlotInfo } from '../../../types/payment.interface';
 import { Event } from '../../../types/event.interface';
 import { ParticipantItem } from '../participant-slots-grid/participant-slots-grid.component';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 function formatSlotDate(isoString: string | null | undefined): string {
   if (!isoString) return '';
@@ -15,14 +16,18 @@ function formatSlotDate(isoString: string | null | undefined): string {
 
 @Component({
   selector: 'app-slot-info-card',
-  imports: [IconComponent],
+  imports: [IconComponent, TranslocoPipe],
   template: `
     @let _event = event();
 
     <div class="rounded-xl border border-neutral-100 bg-neutral-50 p-4 space-y-3">
       <!-- Status row -->
       <div class="flex items-center gap-3">
-        <div [class]="'flex h-10 w-10 shrink-0 items-center justify-center rounded-full ' + statusBgClass()">
+        <div
+          [class]="
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-full ' + statusBgClass()
+          "
+        >
           <app-icon [name]="statusIcon()" size="sm" [class]="statusIconClass()" />
         </div>
         <div>
@@ -40,10 +45,12 @@ function formatSlotDate(isoString: string | null | undefined): string {
           </div>
         }
 
-        @if (roleTitle()) {
+        @if (slot()?.roleKey) {
           <div class="space-y-0.5">
             <p class="text-[10px] uppercase tracking-wide text-neutral-400 font-medium">Rola</p>
-            <p class="text-sm font-semibold text-neutral-800">{{ roleTitle() }}</p>
+            <p class="text-sm font-semibold text-neutral-800">
+              {{ 'dict.participant-role.' + slot()!.roleKey + '.title' | transloco }}
+            </p>
           </div>
         }
 
@@ -149,14 +156,6 @@ export class SlotInfoCardComponent {
       case 'occupied':
         return s?.confirmed ? 'Udzia potwierdzony' : 'Miejsce przyznane';
     }
-  });
-
-  readonly roleTitle = computed<string | null>(() => {
-    const roleKey = this.slot()?.roleKey;
-    if (!roleKey) return null;
-    const roles = this.event()?.roleConfig?.roles;
-    if (!roles) return roleKey;
-    return roles.find((r) => r.key === roleKey)?.title ?? roleKey;
   });
 
   readonly assignedAtFormatted = computed(() => formatSlotDate(this.slot()?.assignedAt));

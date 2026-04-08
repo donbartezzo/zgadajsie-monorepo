@@ -69,5 +69,15 @@ export const pl: Translation = {
       advanced: 'Zaawansowany',
       professional: 'Zawodowy',
     },
+    'participant-role': {
+      player: {
+        title: 'Piłkarz',
+        desc: 'zawodnik grający w polu',
+      },
+      goalkeeper: {
+        title: 'Bramkarz',
+        desc: 'zawodnik stojący w bramce',
+      },
+    },
   },
 };

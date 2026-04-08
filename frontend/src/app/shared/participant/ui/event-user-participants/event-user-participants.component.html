@@ -1,0 +1,63 @@
+@let _filter = filter();
+@let _withoutSlotCount = withoutSlotCount();
+@let _filtered = filteredParticipations();
+@let _currentUserId = currentUserId();
+@let _isPaidEvent = isPaidEvent();
+
+<!-- Nagłówek + filtry -->
+<div class="flex items-center justify-between gap-2 mb-3">
+  <p class="text-xs font-semibold uppercase tracking-wide text-neutral-500">Twoi uczestnicy</p>
+
+  <div class="flex items-center gap-1">
+    <button
+      type="button"
+      class="rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors"
+      [class]="
+        _filter === 'without-slot'
+          ? 'bg-primary-100 text-primary-700'
+          : 'text-neutral-500 hover:text-neutral-700'
+      "
+      (click)="setFilter('without-slot')"
+    >
+      Bez miejsca
+      @if (_withoutSlotCount > 0) {
+        <span class="ml-1 tabular-nums">({{ _withoutSlotCount }})</span>
+      }
+    </button>
+
+    <button
+      type="button"
+      class="rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors"
+      [class]="
+        _filter === 'all'
+          ? 'bg-primary-100 text-primary-700'
+          : 'text-neutral-500 hover:text-neutral-700'
+      "
+      (click)="setFilter('all')"
+    >
+      Wszyscy
+    </button>
+  </div>
+</div>
+
+<!-- Siatka uczestników -->
+@if (_filtered.length > 0) {
+  <div class="flex flex-wrap gap-3 justify-center">
+    @for (p of _filtered; track p.id) {
+      <app-participant-card
+        [participant]="p"
+        [currentUserId]="_currentUserId"
+        [isPaidEvent]="_isPaidEvent"
+        (clicked)="participantClicked.emit(p)"
+      />
+    }
+  </div>
+} @else {
+  <p class="py-3 text-center text-xs text-neutral-400">
+    @if (_filter === 'without-slot') {
+      Wszyscy Twoi uczestnicy mają już przypisane miejsce.
+    } @else {
+      Nie masz żadnych uczestników w tym wydarzeniu.
+    }
+  </p>
+}

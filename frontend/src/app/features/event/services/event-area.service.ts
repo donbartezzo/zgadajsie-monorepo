@@ -300,6 +300,7 @@ export class EventAreaService {
     this.overlays.onContactOrganizer(() => this.contactOrganizer());
     this.overlays.onLeaveRequested(() => this.requestLeave());
     this.overlays.onRejoinRequested(() => this.confirmJoin());
+    this.overlays.onRejoinParticipantRequested((p) => this.confirmRejoinParticipant(p));
     this.overlays.onAddGuestRequested(() => this.openAddGuest());
     this.overlays.onManageGuests(() => this.openManageGuests());
   }
@@ -428,6 +429,40 @@ export class EventAreaService {
           this.snackbar.error(err.error?.message || 'Nie udało się dołączyć do wydarzenia');
         },
       });
+  }
+
+  /**
+   * Public entry point for rejoining a specific participation by ID.
+   * Used by the participant-slot-modal to avoid going through the overlay flow.
+   */
+  rejoinParticipantDirect(p: Participation): void {
+    this.confirmRejoinParticipant(p);
+  }
+
+  private confirmRejoinParticipant(p: Participation): void {
+    this.overlays.close();
+    this.joining.set(true);
+
+    // Always rejoin by participation ID to avoid creating a new User entity for guests.
+    // joinGuest / joinEvent would create a duplicate record for guests.
+    const source$ = this.eventService.rejoinParticipation(p.id);
+
+    source$.pipe(finalize(() => this.joining.set(false))).subscribe({
+      next: (result) => {
+        const toastMsg = this.getJoinSuccessMessage(result.status, result.waitingReason);
+        const label = p.isGuest ? `${p.user.displayName}: ` : '';
+        this.snackbar.success(`${label}${toastMsg}`);
+        this.eventService.getParticipants(this._eventId).subscribe({
+          next: (participants) => {
+            this.participants.set(participants);
+            this.router.navigate(['/w', this._citySlug, this._eventId, 'participants']);
+          },
+        });
+      },
+      error: (err: { error?: { message?: string } }) => {
+        this.snackbar.error(err.error?.message ?? 'Nie udało się dołączyć');
+      },
+    });
   }
 
   confirmJoinGuest(displayName: string, roleKey?: string): void {

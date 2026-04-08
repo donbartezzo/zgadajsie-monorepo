@@ -2,7 +2,6 @@
   @let _data = data();
   @let _participant = participant();
   @let _slot = slot();
-  @let _event = event();
   @let _isOrganizer = isOrganizer();
   @let _isActive = isActiveStatus();
   @let _isWithdrawn = isWithdrawnStatus();
@@ -14,6 +13,8 @@
   @let _currentUserId = currentUserId();
   @let _config = slotStatusConfig();
   @let _status = slotDisplayStatus();
+  @let _canRejoin = canRejoin();
+  @let _canGuestRejoin = canGuestRejoin();
 
   <!-- ═══════════════════════════════════
        HEADER (zawsze widoczny)
@@ -69,7 +70,13 @@
         <app-icon [name]="_config.icon" size="md" [class]="_iconColor" />
       </div>
       <div>
-        <h3 class="text-base font-bold leading-tight uppercase" [class]="_titleColor">{{ titleWithRole() }}</h3>
+        <h3 class="text-base font-bold leading-tight uppercase" [class]="_titleColor">
+          {{ _config.title }}
+          @let _participantSlot = _participant?.slot;
+          @if (_participantSlot && _participantSlot.roleKey) {
+            - {{ 'dict.participant-role.' + _participantSlot.roleKey + '.title' | transloco | uppercase }}
+          }
+        </h3>
         <p class="mt-0.5 text-xs" [class]="_descColor">{{ _config.description }}</p>
       </div>
     </div>
@@ -116,16 +123,17 @@
           }
         </app-user-profile-card>
       </div>
-    } @else if (slotRoleInfo(); as roleInfo) {
-      <!-- Wolny slot z informacją o roli -->
+    } @else if (_slot && _slot.roleKey) {
+      <!-- Wolny slot z informacjami o roli -->
       <div class="pt-4">
         <div class="flex items-center gap-3 rounded-xl p-4">
           <div class="flex-1 text-center">
             <p class="text-xs text-neutral-400 mb-3">Przeznaczone dla:</p>
-
-            <h4 class="text-xl font-semibold text-neutral-900">{{ roleInfo.title }}</h4>
-            @if (roleInfo.description) {
-              <p class="mt-1 text-sm text-neutral-600">{{ roleInfo.description }}</p>
+            @let _roleTitle = 'dict.participant-role.' + _slot.roleKey + '.title' | transloco;
+            <h4 class="text-xl font-semibold text-neutral-900">{{ _roleTitle }}</h4>
+            @let _roleDesc = 'dict.participant-role.' + _slot.roleKey + '.desc' | transloco;
+            @if (_roleDesc) {
+              <p class="mt-1 text-sm text-neutral-600">{{ _roleDesc }}</p>
             }
           </div>
         </div>
@@ -140,7 +148,7 @@
       @if (canJoinPublic()) {
         <app-button appearance="solid" color="primary" [fullWidth]="true" (clicked)="onJoin()">
           <app-icon name="user-plus" size="sm" />
-          Dołącz do wydarzenia
+          Zapisz się
         </app-button>
       }
 
@@ -183,6 +191,20 @@
             Uczestnik zrezygnował z udziału w wydarzeniu.
           }
         </div>
+
+        @if (_canRejoin) {
+          <app-button appearance="solid" color="primary" [fullWidth]="true" (clicked)="onRejoin()">
+            <app-icon name="user-plus" size="sm" />
+            Wróć do wydarzenia
+          </app-button>
+        }
+
+        @if (_canGuestRejoin) {
+          <app-button appearance="soft" color="primary" [fullWidth]="true" (clicked)="onRejoinGuest()">
+            <app-icon name="user-plus" size="sm" />
+            Dodaj gościa ponownie
+          </app-button>
+        }
       }
 
       <!-- Non-participant, no actions (just viewing) -->

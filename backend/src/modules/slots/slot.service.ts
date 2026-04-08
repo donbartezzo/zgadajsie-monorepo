@@ -9,6 +9,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { EventRoleConfig, AvailableRole } from './slot.types';
 
+type SlotRoleConfig = {
+  roles: Array<{
+    key: string;
+    slots: number;
+  }>;
+};
+
 @Injectable()
 export class SlotService {
   private readonly logger = new Logger(SlotService.name);
@@ -22,7 +29,7 @@ export class SlotService {
   async createSlotsForEvent(
     eventId: string,
     count: number,
-    roleConfig?: EventRoleConfig | null,
+    roleConfig?: SlotRoleConfig | null,
   ): Promise<void> {
     if (roleConfig && roleConfig.roles.length > 0) {
       // Create slots per role

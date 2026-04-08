@@ -1,0 +1,32 @@
+<button
+  type="button"
+  [attr.data-user-id]="participant().userId"
+  [class]="buttonClass()"
+  (click)="clicked.emit()"
+>
+  <div class="relative">
+    <app-user-avatar
+      [avatarUrl]="avatarUrl()"
+      [displayName]="displayName()"
+      size="lg"
+      [showPaymentWarning]="needsPayment()"
+      [showPending]="showPending()"
+      [status]="avatarStatus()"
+    />
+    @if (isBanned()) {
+      <span
+        class="absolute -bottom-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full bg-danger-500 ring-2 ring-white"
+        title="Zbanowany"
+      >
+        <app-icon name="shield-alert" size="xs" class="text-white" />
+      </span>
+    }
+  </div>
+
+  <span
+    class="text-[11px] text-center leading-tight mt-1 w-full line-clamp-2 min-h-[2.5em]"
+    [class]="nameClass()"
+  >
+    {{ displayName() }}
+  </span>
+</button>

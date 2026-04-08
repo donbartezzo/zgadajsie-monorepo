@@ -2,11 +2,19 @@
   [open]="open()"
   icon="list"
   iconColor="info"
-  [title]="currentStep() === 1 ? 'Chcesz dołączyć?' : 'Zgłoś uczestnictwo'"
+  [title]="
+    currentStep() === 0
+      ? 'Twoi uczestnicy bez miejsca'
+      : currentStep() === 1
+        ? 'Chcesz dołączyć?'
+        : 'Zgłoś uczestnictwo'
+  "
   [description]="
-    currentStep() === 1
-      ? 'Zapoznaj się z poniższymi danymi i organizacją tego wydarzenia.'
-      : 'Wybierz w czyim imieniu zgłaszasz uczestnictwo.'
+    currentStep() === 0
+      ? 'Kliknij uczestnika, aby ponownie go zapisać, lub dodaj nowy zapis.'
+      : currentStep() === 1
+        ? 'Zapoznaj się z poniższymi danymi i organizacją tego wydarzenia.'
+        : 'Wybierz w czyim imieniu zgłaszasz uczestnictwo.'
   "
   (closed)="closed.emit()"
 >
@@ -18,6 +26,26 @@
   @let _loading = isLoadingAny();
 
   @if (_event) {
+    <!-- ════════════════════════════════════════
+         STEP 0: Uczestnicy bez miejsca
+    ════════════════════════════════════════ -->
+    @if (_step === 0) {
+      <div class="space-y-4">
+        <app-event-user-participants
+          [participants]="participants()"
+          [currentUserId]="currentUserId()"
+          (participantClicked)="onRejoinParticipant($event)"
+        />
+
+        <div class="max-w-lg mx-auto">
+          <app-button appearance="outline" color="primary" [fullWidth]="true" (clicked)="goToStep1()">
+            <app-icon name="user-plus" size="sm" />
+            Zapisz nową osobę
+          </app-button>
+        </div>
+      </div>
+    }
+
     <!-- ════════════════════════════════════════
          STEP 1: Zasady i akceptacja
     ════════════════════════════════════════ -->
@@ -199,9 +227,13 @@
                   />
                   <div class="flex-1">
                     <div class="flex items-center gap-2">
-                      <span class="text-sm font-medium text-neutral-900">{{ role.title }}</span>
-                      @if (role.desc) {
-                        <span class="text-xs text-neutral-500">— {{ role.desc }}</span>
+                      <span class="text-sm font-medium text-neutral-900">{{
+                        'dict.participant-role.' + role.key + '.title' | transloco
+                      }}</span>
+                      @if ('dict.participant-role.' + role.key + '.desc' | transloco) {
+                        <span class="text-xs text-neutral-500"
+                          >- {{ 'dict.participant-role.' + role.key + '.desc' | transloco }}</span
+                        >
                       }
                     </div>
                   </div>

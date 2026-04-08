@@ -1,4 +1,9 @@
-import { EventDefaultableFields, EventStatus, EventTimeStatus } from '@zgadajsie/shared';
+import {
+  EventDefaultableFields,
+  EventStatus,
+  EventTimeStatus,
+  DisciplineRole,
+} from '@zgadajsie/shared';
 import { DictionaryItem, City } from './dictionary.interface';
 import { UserBrief } from './common.interface';
 import { CoverImage } from './cover-image.interface';
@@ -13,23 +18,9 @@ export interface CurrentUserAccess {
   isBannedByOrganizer?: boolean;
 }
 
-/**
- * Konfiguracja roli w wydarzeniu (snapshot z schematu dyscypliny).
- */
-export interface EventRole {
-  key: string;
-  title: string;
-  desc: string;
-  slots: number;
-  isDefault: boolean;
-}
-
-/**
- * Konfiguracja ról dla wydarzenia (przechowywana jako JSON w Event.roleConfig).
- */
 export interface EventRoleConfig {
   disciplineSlug: string;
-  roles: EventRole[];
+  roles: DisciplineRole[];
 }
 
 /**

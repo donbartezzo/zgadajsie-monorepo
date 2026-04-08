@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { IconComponent } from '../icon/icon.component';
 import { Event as EventModel } from '../../types';
 import {
@@ -24,7 +25,7 @@ export type EventInfoFieldKey =
 
 @Component({
   selector: 'app-event-info-grid',
-  imports: [CommonModule, DatePipe, IconComponent, EventDurationPipe],
+  imports: [CommonModule, IconComponent, DatePipe, EventDurationPipe, TranslocoPipe],
   templateUrl: './event-info-grid.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

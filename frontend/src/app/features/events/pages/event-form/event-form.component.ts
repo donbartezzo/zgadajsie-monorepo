@@ -35,6 +35,7 @@ import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 import {
   EventStatus,
   DisciplineParticipantRoles,
+  DisciplineRole,
   nowInZone,
   createDateInZone,
   toLocalInputValue,
@@ -42,14 +43,6 @@ import {
 } from '@zgadajsie/shared';
 import { isEventJoinable } from '../../../../shared/utils/event-time-status.util';
 import { TranslocoPipe } from '@jsverse/transloco';
-
-interface RoleSlotConfig {
-  key: string;
-  title: string;
-  desc: string;
-  slots: number;
-  isDefault: boolean;
-}
 
 interface DuplicateQueryParams {
   duplicateId?: string;
@@ -292,7 +285,9 @@ class EventValidators {
                   >
                     <div class="flex-1">
                       <div class="flex items-center gap-2">
-                        <span class="text-sm font-medium text-neutral-900">{{ role.title }}</span>
+                        <span class="text-sm font-medium text-neutral-900">
+                          {{ 'dict.participant-role.' + role.key + '.title' | transloco }}
+                        </span>
                         @if (role.isDefault) {
                           <span
                             class="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700"
@@ -300,17 +295,19 @@ class EventValidators {
                           >
                         }
                       </div>
-                      <p class="text-xs text-neutral-500 mt-0.5">{{ role.desc }}</p>
+                      <p class="text-xs text-neutral-500 mt-0.5">
+                        {{ 'dict.participant-role.' + role.key + '.desc' | transloco }}
+                      </p>
                     </div>
                     <div class="flex items-center gap-2 ml-4">
                       @if (role.isDefault) {
                         <span class="text-sm font-medium text-neutral-700 w-12 text-center">{{
-                          role.slots
+                          role.slots || 0
                         }}</span>
                       } @else {
                         <input
                           type="number"
-                          [value]="role.slots"
+                          [value]="role.slots || 0"
                           min="0"
                           [max]="form.get('maxParticipants')?.value"
                           (change)="updateRoleSlots(role.key, +$any($event.target).value)"
@@ -497,10 +494,12 @@ export class EventFormComponent implements OnInit {
   readonly selectedCoverImageId = signal<string | null>(null);
 
   readonly disciplineRoles = signal<DisciplineParticipantRoles | null>(null);
-  readonly roleSlots = signal<RoleSlotConfig[]>([]);
+  readonly roleSlots = signal<DisciplineRole[]>([]);
   readonly rolesEnabled = signal(false);
 
-  readonly roleSlotsSum = computed(() => this.roleSlots().reduce((sum, r) => sum + r.slots, 0));
+  readonly roleSlotsSum = computed(() =>
+    this.roleSlots().reduce((sum, r) => sum + (r.slots || 0), 0),
+  );
 
   private eventId: string | null = null;
 
@@ -874,18 +873,14 @@ export class EventFormComponent implements OnInit {
     const specialSlotsSum = roles.special.reduce((sum, r) => sum + (r.slots || 0), 0);
     const defaultSlots = Math.max(0, maxParticipants - specialSlotsSum);
 
-    const slots: RoleSlotConfig[] = [
+    const slots: DisciplineRole[] = [
       {
         key: roles.default.key,
-        title: roles.default.title,
-        desc: roles.default.desc,
         slots: defaultSlots,
         isDefault: true,
       },
       ...roles.special.map((r) => ({
         key: r.key,
-        title: r.title,
-        desc: r.desc,
         slots: r.slots || 0,
         isDefault: false,
       })),
@@ -902,7 +897,7 @@ export class EventFormComponent implements OnInit {
     const currentSlots = this.roleSlots();
     const specialSlotsSum = currentSlots
       .filter((r) => !r.isDefault)
-      .reduce((sum, r) => sum + r.slots, 0);
+      .reduce((sum, r) => sum + (r.slots || 0), 0);
     const defaultSlots = Math.max(0, maxParticipants - specialSlotsSum);
 
     this.roleSlots.update((slots) =>
@@ -915,7 +910,9 @@ export class EventFormComponent implements OnInit {
 
     this.roleSlots.update((slots) => {
       const updated = slots.map((s) => (s.key === roleKey ? { ...s, slots: newSlots } : s));
-      const specialSum = updated.filter((r) => !r.isDefault).reduce((sum, r) => sum + r.slots, 0);
+      const specialSum = updated
+        .filter((r) => !r.isDefault)
+        .reduce((sum, r) => sum + (r.slots || 0), 0);
       const defaultSlots = Math.max(0, maxParticipants - specialSum);
       return updated.map((s) => (s.isDefault ? { ...s, slots: defaultSlots } : s));
     });
@@ -933,13 +930,7 @@ export class EventFormComponent implements OnInit {
 
     return {
       disciplineSlug: discipline.slug,
-      roles: this.roleSlots().map((r) => ({
-        key: r.key,
-        title: r.title,
-        desc: r.desc,
-        slots: r.slots,
-        isDefault: r.isDefault,
-      })),
+      roles: this.roleSlots(),
     };
   }
 

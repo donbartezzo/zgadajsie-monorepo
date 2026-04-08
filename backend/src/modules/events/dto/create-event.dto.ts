@@ -17,12 +17,6 @@ class EventRoleDto {
   @IsString()
   key: string;
 
-  @IsString()
-  title: string;
-
-  @IsString()
-  desc: string;
-
   @IsInt()
   @Min(0)
   slots: number;

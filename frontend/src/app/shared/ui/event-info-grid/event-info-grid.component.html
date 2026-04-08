@@ -153,7 +153,7 @@
                 class="inline-flex items-center gap-0.5 text-[11px] px-1.5 py-0.5 rounded-full"
                 [ngClass]="role.isDefault ? 'bg-primary-100 text-primary-700' : 'bg-neutral-100 text-neutral-600'"
               >
-                {{ role.title }}
+                {{ 'dict.participant-role.' + role.key + '.title' | transloco }}
                 <span class="text-[9px] opacity-60">({{ role.slots }})</span>
               </span>
             }

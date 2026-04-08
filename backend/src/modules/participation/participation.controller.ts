@@ -58,6 +58,11 @@ export class ParticipationController {
     return this.participationService.releaseSlotFromParticipant(id, user.id);
   }
 
+  @Post('participations/:id/rejoin')
+  rejoin(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.participationService.rejoinById(id, user.id);
+  }
+
   @Post('participations/:id/leave')
   leave(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.participationService.leave(id, user.id);

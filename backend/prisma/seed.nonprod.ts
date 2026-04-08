@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { createCommonSeedData } from './seed-common';
 import { syncCoverImagesFromFilesystem } from '../src/modules/cover-images/cover-images-sync.util';
 
 // Brand constants (synchronized with libs/src/lib/constants/brand.constants.ts)
@@ -40,41 +41,8 @@ async function main() {
   await prisma.eventLevel.deleteMany({});
   await prisma.city.deleteMany({});
 
-  // ─── Miasta ──────────────────────────────────────────────────────────────
-  console.log('Tworzę miasta...');
-  const city = await prisma.city.create({
-    data: { name: 'Zielona Góra', slug: 'zielona-gora' },
-  });
-
-  // ─── Dyscypliny ──────────────────────────────────────────────────────────
-  console.log('Tworzę dyscypliny...');
-  const disciplines = await Promise.all(
-    [
-      {
-        slug: 'football',
-        schema: {
-          basic: { maxParticipants: 12, minParticipants: 16 },
-          participantRoles: {
-            default: { key: 'pilkarz', title: 'Piłkarz', desc: 'zawodnik grający w polu' },
-            special: [
-              { key: 'bramkarz', title: 'Bramkarz', desc: 'zawodnik stojący w bramce', slots: 2 },
-            ],
-          },
-        },
-      },
-      { slug: 'volleyball', schema: undefined },
-      { slug: 'basketball', schema: undefined },
-      { slug: 'tennis', schema: undefined },
-      { slug: 'badminton', schema: undefined },
-      { slug: 'squash', schema: undefined },
-      { slug: 'running', schema: undefined },
-      { slug: 'cycling', schema: undefined },
-      { slug: 'swimming', schema: undefined },
-      { slug: 'darts', schema: undefined },
-      { slug: 'chess', schema: undefined },
-      { slug: 'table-tennis', schema: undefined },
-    ].map((discipline) => prisma.eventDiscipline.create({ data: discipline })),
-  );
+  // U¿ywamy wspólnych danych dla obu environmentów
+  const { cities, disciplines, facilities, levels } = await createCommonSeedData(prisma);
 
   console.log('Synchronizujemy cover images z katalogu...');
   try {
@@ -85,38 +53,6 @@ async function main() {
       error instanceof Error ? error.message : error,
     );
   }
-
-  // ─── Obiekty ─────────────────────────────────────────────────────────────
-  console.log('Tworzę obiekty...');
-  const facilities = await Promise.all(
-    [
-      'orlik',
-      'sports-hall',
-      'balloon',
-      'synthetic-pitch',
-      'grass-pitch',
-      'court',
-      'stadium',
-      'gym',
-      'pool',
-      'park',
-      'beach',
-    ].map((slug) => prisma.eventFacility.create({ data: { slug } })),
-  );
-
-  // ─── Poziomy ─────────────────────────────────────────────────────────────
-  console.log('Tworzę poziomy...');
-  const levels = await Promise.all(
-    [
-      { slug: 'mixed-open', weight: null },
-      { slug: 'beginner', weight: 1 },
-      { slug: 'recreational', weight: 2 },
-      { slug: 'regular', weight: 3 },
-      { slug: 'solid', weight: 4 },
-      { slug: 'advanced', weight: 5 },
-      { slug: 'professional', weight: 6 },
-    ].map((l) => prisma.eventLevel.create({ data: l })),
-  );
 
   // ─── Admin ───────────────────────────────────────────────────────────────
   console.log('Tworzę konto admina...');
@@ -533,7 +469,7 @@ async function main() {
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[0].slug,
     levelSlug: levels[2].slug, // Rekreacyjny
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: jan.id,
     startsAt: hoursFromNow(-26),
     endsAt: hoursFromNow(-24.5),
@@ -582,7 +518,7 @@ async function main() {
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[1].slug,
     levelSlug: levels[2].slug, // Rekreacyjny
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: admin.id,
     startsAt: hoursFromNow(-50),
     endsAt: hoursFromNow(-47),
@@ -623,7 +559,7 @@ async function main() {
     disciplineSlug: disciplines[2].slug,
     facilitySlug: facilities[1].slug,
     levelSlug: levels[1].slug,
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: jan.id,
     startsAt: hoursFromNow(-20),
     endsAt: hoursFromNow(-18.5),
@@ -646,7 +582,7 @@ async function main() {
     disciplineSlug: disciplines[5].slug,
     facilitySlug: facilities[1].slug,
     levelSlug: levels[0].slug,
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: anna.id,
     startsAt: hoursFromNow(20),
     endsAt: hoursFromNow(21.5),
@@ -671,7 +607,7 @@ async function main() {
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[1].slug,
     levelSlug: levels[1].slug,
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: admin.id,
     startsAt: hoursFromNow(-1),
     endsAt: hoursFromNow(1),
@@ -724,7 +660,7 @@ async function main() {
     disciplineSlug: disciplines[6].slug,
     facilitySlug: facilities[6].slug,
     levelSlug: levels[0].slug,
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: anna.id,
     startsAt: hoursFromNow(-0.5),
     endsAt: hoursFromNow(1.5),
@@ -754,7 +690,7 @@ async function main() {
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[0].slug,
     levelSlug: levels[2].slug,
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: jan.id,
     startsAt: hoursFromNow(5),
     endsAt: hoursFromNow(6.5),
@@ -782,7 +718,7 @@ async function main() {
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[0].slug,
     levelSlug: levels[0].slug,
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: jan.id,
     startsAt: hoursFromNow(24),
     endsAt: hoursFromNow(25.5),
@@ -839,7 +775,7 @@ async function main() {
     disciplineSlug: disciplines[4].slug,
     facilitySlug: facilities[1].slug,
     levelSlug: levels[1].slug,
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: anna.id,
     startsAt: hoursFromNow(10),
     endsAt: hoursFromNow(11.5),
@@ -875,7 +811,7 @@ async function main() {
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[4].slug,
     levelSlug: levels[0].slug,
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: jan.id,
     startsAt: hoursFromNow(96),
     endsAt: hoursFromNow(97.5),
@@ -904,7 +840,7 @@ async function main() {
     disciplineSlug: disciplines[2].slug,
     facilitySlug: facilities[1].slug,
     levelSlug: levels[2].slug,
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: admin.id,
     startsAt: hoursFromNow(120),
     endsAt: hoursFromNow(122),
@@ -929,7 +865,7 @@ async function main() {
     disciplineSlug: disciplines[8].slug,
     facilitySlug: facilities[1].slug,
     levelSlug: levels[0].slug,
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: anna.id,
     startsAt: hoursFromNow(168),
     endsAt: hoursFromNow(169.5),
@@ -960,7 +896,7 @@ async function main() {
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[1].slug,
     levelSlug: levels[1].slug,
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: admin.id,
     startsAt: hoursFromNow(47),
     endsAt: hoursFromNow(48.5),
@@ -988,7 +924,7 @@ async function main() {
     disciplineSlug: disciplines[7].slug,
     facilitySlug: facilities[6].slug,
     levelSlug: levels[1].slug,
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: jan.id,
     startsAt: hoursFromNow(40),
     endsAt: hoursFromNow(43),
@@ -1017,7 +953,7 @@ async function main() {
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[0].slug,
     levelSlug: levels[0].slug,
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: marek.id,
     startsAt: hoursFromNow(3),
     endsAt: hoursFromNow(4),
@@ -1045,7 +981,7 @@ async function main() {
     disciplineSlug: disciplines[6].slug,
     facilitySlug: facilities[6].slug,
     levelSlug: levels[0].slug,
-    citySlug: city.slug,
+    citySlug: cities[0].slug,
     organizerId: kasia.id,
     startsAt: hoursFromNow(8),
     endsAt: hoursFromNow(9.5),
