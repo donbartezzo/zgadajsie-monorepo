@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { UpperCasePipe } from '@angular/common';
-import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { ModalComponent } from '../../../ui/modal/modal.component';
 import { ModalService } from '../../../ui/modal/modal.service';
 import {
@@ -425,7 +425,8 @@ export class ParticipantSlotModalComponent {
 
   onJoin(): void {
     this.modalService.close();
-    this.eventArea.openJoinSheet();
+    const roleKey = this.slot()?.roleKey ?? undefined;
+    this.eventArea.openJoinWizardWithRole(roleKey);
   }
 
   onRejoin(): void {

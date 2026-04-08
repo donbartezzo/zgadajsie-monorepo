@@ -26,6 +26,7 @@ export interface JoinWizardConfig {
   startStep: 1 | 2;
   type: 'self' | 'guest';
   guestsRemaining?: number;
+  preselectedRoleKey?: string;
 }
 
 @Injectable({
@@ -85,6 +86,7 @@ export class BottomOverlaysService {
       startStep: config?.startStep ?? 1,
       type: config?.type ?? 'self',
       guestsRemaining: config?.guestsRemaining,
+      preselectedRoleKey: config?.preselectedRoleKey,
     });
     this.open('joinRules');
   }

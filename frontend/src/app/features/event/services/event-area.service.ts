@@ -5,6 +5,7 @@ import { EventService } from '../../../core/services/event.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
+import { ModalService } from '../../../shared/ui/modal/modal.service';
 import { ConfirmModalService } from '../../../shared/ui/confirm-modal/confirm-modal.service';
 import {
   applyProfileChangeToList,
@@ -41,6 +42,7 @@ export class EventAreaService {
   private readonly ngZone = inject(NgZone);
   private readonly snackbar = inject(SnackbarService);
   private readonly overlays = inject(BottomOverlaysService);
+  private readonly modalService = inject(ModalService);
   private readonly confirmModal = inject(ConfirmModalService);
   private readonly profileBroadcast = inject(ProfileBroadcastService);
 
@@ -323,6 +325,22 @@ export class EventAreaService {
     }
   }
 
+  openJoinWizardWithRole(roleKey?: string): void {
+    if (this.auth.isLoggedIn()) {
+      this.overlays.openJoinWizard({ preselectedRoleKey: roleKey });
+    } else {
+      this.overlays.open('auth');
+    }
+  }
+
+  openJoinConfirm(): void {
+    if (this.auth.isLoggedIn()) {
+      this.openJoinConfirmOverlay();
+    } else {
+      this.overlays.open('auth');
+    }
+  }
+
   openAddGuest(): void {
     if (!this.auth.isLoggedIn()) {
       this.overlays.open('auth');
@@ -398,6 +416,7 @@ export class EventAreaService {
         this.joining.set(false);
         this.snackbar.info('Wypisano z wydarzenia');
         this.refreshParticipants();
+        this.modalService.requestRefresh();
       },
       error: () => {
         this.snackbar.error('Nie udało się wypisać');

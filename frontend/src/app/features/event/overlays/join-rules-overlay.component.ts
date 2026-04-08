@@ -134,7 +134,15 @@ export class JoinRulesOverlayComponent {
       if (this.open()) {
         const step = config?.startStep ?? 1;
         const type = config?.type ?? 'self';
+        const preselectedRole = config?.preselectedRoleKey;
+
         this.participantType.set(type);
+
+        // Set preselected role if provided
+        if (preselectedRole && this.availableRoles().some((r) => r.key === preselectedRole)) {
+          this.selectedRoleKey.set(preselectedRole);
+        }
+
         if (step === 2) {
           // Direct to step 2 (e.g., add guest forced)
           this.currentStep.set(2);
