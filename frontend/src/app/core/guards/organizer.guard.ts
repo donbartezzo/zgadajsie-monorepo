@@ -1,30 +1,28 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { catchError, map, of } from 'rxjs';
-import { EventService } from '../services/event.service';
+import { AuthService } from '../auth/auth.service';
+import { Event } from '../../shared/types/event.interface';
 
 export const organizerGuard: CanActivateFn = (route) => {
   const router = inject(Router);
-  const eventService = inject(EventService);
+  const authService = inject(AuthService);
 
-  const eventId = route.paramMap.get('id') ?? route.parent?.paramMap.get('id');
-
-  if (!eventId) {
+  const currentUser = authService.currentUser();
+  if (!currentUser) {
     router.navigate(['/not-found'], { skipLocationChange: true });
     return false;
   }
 
-  return eventService.getEvent(eventId).pipe(
-    map((event) => {
-      if (event?.currentUserAccess?.isOrganizer) {
-        return true;
-      }
-      router.navigate(['/not-found'], { skipLocationChange: true });
-      return false;
-    }),
-    catchError(() => {
-      router.navigate(['/not-found'], { skipLocationChange: true });
-      return of(false);
-    }),
-  );
+  const event = route.data['event'] as Event;
+  if (!event) {
+    router.navigate(['/not-found'], { skipLocationChange: true });
+    return false;
+  }
+
+  if (event.organizerId === currentUser.id) {
+    return true;
+  }
+
+  router.navigate(['/not-found'], { skipLocationChange: true });
+  return false;
 };

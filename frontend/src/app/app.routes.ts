@@ -7,7 +7,7 @@ import { paymentRedirectGuard } from './features/payments/guards/payment-redirec
 import { eventResolver } from './core/guards/event.resolver';
 import { setEventResolvedTitle } from './core/guards/event-seo-title.resolver';
 import { verifiedUserGuard } from './core/guards/verified-user.guard';
-import { participantGuard } from './core/guards/participant.guard';
+import { chatAccessGuard } from './core/guards/chat-access.guard';
 import { organizerGuard } from './core/guards/organizer.guard';
 import { eventCreationGuard } from './core/guards/event-creation.guard';
 
@@ -131,8 +131,8 @@ export const appRoutes: Route[] = [
           import('./features/chat/pages/unified-chat/unified-chat.component').then(
             (m) => m.UnifiedChatComponent,
           ),
-        canActivate: [verifiedUserGuard, participantGuard],
         resolve: setEventResolvedTitle('Czat grupowy'),
+        canActivate: [verifiedUserGuard, chatAccessGuard],
         data: {
           showFooter: false,
           showBorder: false,
@@ -163,6 +163,7 @@ export const appRoutes: Route[] = [
       import('./features/events/pages/event-form/event-form.component').then(
         (m) => m.EventFormComponent,
       ),
+    resolve: { event: eventResolver },
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Edycja wydarzenia',
@@ -176,6 +177,7 @@ export const appRoutes: Route[] = [
       import('./features/organizer/pages/event-manage/event-manage.component').then(
         (m) => m.EventManageComponent,
       ),
+    resolve: { event: eventResolver },
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Zarządzanie',

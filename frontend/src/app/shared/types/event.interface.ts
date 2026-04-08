@@ -66,7 +66,6 @@ export interface Event
   organizer?: UserBrief;
   coverImage?: CoverImage;
   _count?: { participations: number };
-  currentUserAccess?: CurrentUserAccess;
   eventTimeStatus?: EventTimeStatus;
   enrollmentPhase?: EnrollmentPhase | null;
 }

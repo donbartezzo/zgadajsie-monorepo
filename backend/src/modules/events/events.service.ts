@@ -190,7 +190,7 @@ export class EventsService {
     return { data: events, total, page, limit };
   }
 
-  async findOne(id: string, userId?: string) {
+  async findOne(id: string) {
     const event = await this.prisma.event.findUnique({
       where: { id },
       include: {
@@ -200,12 +200,6 @@ export class EventsService {
         city: true,
         coverImage: true,
         organizer: { select: { id: true, displayName: true, avatarUrl: true } },
-        participations: {
-          include: {
-            user: { select: { id: true, displayName: true, avatarUrl: true } },
-            slot: true,
-          },
-        },
       },
     });
     if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
@@ -213,49 +207,10 @@ export class EventsService {
     const eventTimeStatus = getEventTimeStatus(event);
     const enrollmentPhase = getEnrollmentPhase(event);
 
-    if (!userId) return { ...event, eventTimeStatus, enrollmentPhase };
-
-    const participation = event.participations.find((p) => p.userId === userId);
-
-    let isBannedByOrganizer = false;
-    if (event.organizerId !== userId) {
-      const relation = await this.prisma.organizerUserRelation.findUnique({
-        where: {
-          organizerUserId_targetUserId: {
-            organizerUserId: event.organizerId,
-            targetUserId: userId,
-          },
-        },
-        select: { isBanned: true },
-      });
-      isBannedByOrganizer = relation?.isBanned === true;
-    }
-
-    // Derive status from slot-based model
-    let derivedStatus: string | null = null;
-    if (participation) {
-      if (!participation.wantsIn) {
-        derivedStatus = participation.withdrawnBy === 'ORGANIZER' ? 'REJECTED' : 'WITHDRAWN';
-      } else if (participation.slot) {
-        derivedStatus = participation.slot.confirmed ? 'CONFIRMED' : 'APPROVED';
-      } else {
-        derivedStatus = 'PENDING';
-      }
-    }
-
     return {
       ...event,
       eventTimeStatus,
       enrollmentPhase,
-      currentUserAccess: {
-        isParticipant: !!participation && participation.wantsIn,
-        isOrganizer: event.organizerId === userId,
-        participationStatus: derivedStatus,
-        participationId: participation?.id ?? null,
-        hasSlot: !!participation?.slot,
-        slotConfirmed: participation?.slot?.confirmed ?? false,
-        isBannedByOrganizer,
-      },
     };
   }
 

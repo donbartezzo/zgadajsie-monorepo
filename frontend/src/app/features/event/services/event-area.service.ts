@@ -80,10 +80,6 @@ export class EventAreaService {
 
   readonly isCancelled = computed(() => this.event()?.status === 'CANCELLED');
 
-  readonly isBannedByOrganizer = computed(
-    () => this.event()?.currentUserAccess?.isBannedByOrganizer === true,
-  );
-
   readonly currentUserParticipation = computed<Participation | null>(() => {
     const userId = this.auth.currentUser()?.id;
     if (!userId) return null;
@@ -177,7 +173,7 @@ export class EventAreaService {
       });
     }
 
-    if (!this.isParticipant() && !this.isBannedByOrganizer() && this.canJoin()) {
+    if (!this.isParticipant() && this.canJoin()) {
       const phase = this.enrollmentPhase();
       bars.push({
         id: 'join',

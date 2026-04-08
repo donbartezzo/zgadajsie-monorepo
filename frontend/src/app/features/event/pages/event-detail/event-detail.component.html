@@ -6,7 +6,6 @@
   @let _auth = auth.isLoggedIn();
   @let _isParticipant = isParticipant();
   @let _isOrganizer = isOrganizer();
-  @let _isBanned = isBannedByOrganizer();
   @let _participants = participants();
   @let _participantCount = participantCount();
   @let _phase = enrollmentPhase();
@@ -158,22 +157,6 @@
           [bars]="_notificationBars"
           (barAction)="eventArea.handleNotificationBarAction($event)"
         ></app-event-inline-notification-bars>
-      </div>
-    }
-
-    <!-- Ban banner -->
-    @if (_isBanned) {
-      <div class="mt-4 rounded-xl border border-danger-200 bg-danger-50 p-4">
-        <div class="flex items-start gap-3">
-          <app-icon name="shield-alert" size="sm" class="text-danger-400 mt-0.5 shrink-0"></app-icon>
-          <div>
-            <p class="text-sm font-semibold text-danger-600">Nie możesz dołączyć do wydarzeń tego organizatora</p>
-            <p class="mt-1 text-xs text-danger-500">
-              Organizator zablokował Ci możliwość zapisu na swoje wydarzenia. Jeśli uważasz, że to pomyłka, skontaktuj
-              się bezpośrednio z organizatorem.
-            </p>
-          </div>
-        </div>
       </div>
     }
 
