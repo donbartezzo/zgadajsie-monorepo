@@ -61,6 +61,39 @@ export class ParticipantCardComponent {
     return null;
   });
 
+  readonly statusIndicators = computed(() => {
+    const indicators: { icon: string; tooltip: string; color: SemanticColor }[] = [];
+
+    if (this.needsPayment()) {
+      indicators.push({ icon: 'credit-card', tooltip: 'Oczekuje na płatność', color: 'warning' });
+    }
+
+    if (this.showPending()) {
+      indicators.push({ icon: 'clock', tooltip: 'Oczekuje na zatwierdzenie', color: 'warning' });
+    }
+
+    if (this.isCurrentUserGuest()) {
+      indicators.push({ icon: 'user-plus', tooltip: 'Gość dodany przez ciebie', color: 'info' });
+    }
+
+    if (this.isBanned()) {
+      indicators.push({ icon: 'shield-alert', tooltip: 'Zbanowany', color: 'danger' });
+    }
+
+    const avatarStatus = this.avatarStatus();
+    if (avatarStatus === 'success') {
+      indicators.push({ icon: 'check', tooltip: 'Potwierdzony', color: 'success' });
+    }
+    if (avatarStatus === 'danger') {
+      indicators.push({ icon: 'x', tooltip: 'Odrzucony', color: 'danger' });
+    }
+
+    return indicators;
+  });
+
+  readonly indicatorClass =
+    'inline-flex items-center justify-center w-5 h-5 rounded-full bg-white ring-1 ring-neutral-200 shadow-xs';
+
   readonly buttonClass = computed(() => {
     const base =
       'flex flex-col items-center w-full h-full p-2 rounded-xl transition-colors' +

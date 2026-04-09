@@ -1,26 +1,24 @@
+@let _statusIndicators = statusIndicators();
+
 <button type="button" [attr.data-user-id]="participant().userId" [class]="buttonClass()" (click)="clicked.emit()">
   <div class="relative flex flex-col items-center justify-center flex-1">
-    <app-user-avatar
-      [avatarUrl]="avatarUrl()"
-      [displayName]="displayName()"
-      size="lg"
-      [showPaymentWarning]="needsPayment()"
-      [showPending]="showPending()"
-      [showGuest]="isCurrentUserGuest()"
-      [status]="avatarStatus()"
-    />
-    @if (isBanned()) {
-      <span
-        class="absolute -bottom-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full bg-danger-500 ring-2 ring-white"
-        title="Zbanowany"
-      >
-        <app-icon name="shield-alert" size="xs" class="text-white" />
-      </span>
-    }
+    <div class="relative">
+      <app-user-avatar [avatarUrl]="avatarUrl()" [displayName]="displayName()" size="lg" />
+
+      @if (_statusIndicators.length > 0) {
+        <div class="absolute -top-2 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1">
+          @for (indicator of _statusIndicators; track indicator.icon) {
+            <span [class]="indicatorClass" [title]="indicator.tooltip">
+              <app-icon [name]="$any(indicator.icon)" size="xs" [color]="indicator.color" />
+            </span>
+          }
+        </div>
+      }
+    </div>
   </div>
 
   <span
-    [class]="'text-[9px] text-center leading-tight mt-2 w-full line-clamp-2 h-[2.2em] flex-shrink-0 ' + nameClass()"
+    [class]="'text-[9px] text-center leading-tight mt-1 w-full line-clamp-2 h-[2.6em] flex-shrink-0 ' + nameClass()"
   >
     {{ displayName() }}
   </span>

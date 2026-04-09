@@ -11,6 +11,8 @@
 @let _statusBadgeClass = statusBadgeClass();
 @let _statusBadgeIcon = statusBadgeIcon();
 @let _hasChanges = hasChanges();
+@let _showPaymentWarning = showPaymentWarning();
+@let _showPending = showPending();
 @let _stats = stats();
 @let _description = description();
 
@@ -21,9 +23,29 @@
       [displayName]="_editingMode ? _tempDisplayName : _displayName"
       [size]="avatarSize()"
       shape="rounded"
-      [showPaymentWarning]="showPaymentWarning()"
-      [showPending]="showPending()"
     />
+
+    @if (!_editingMode && (_showPaymentWarning || _showPending)) {
+      <div class="mt-1 flex items-center justify-center gap-1">
+        @if (_showPaymentWarning) {
+          <span
+            class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white ring-1 ring-neutral-200 shadow-xs"
+            title="Oczekuje na płatność"
+          >
+            <app-icon name="credit-card" size="xs" color="warning" />
+          </span>
+        }
+
+        @if (_showPending) {
+          <span
+            class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white ring-1 ring-neutral-200 shadow-xs"
+            title="Oczekuje na zatwierdzenie"
+          >
+            <app-icon name="clock" size="xs" color="warning" />
+          </span>
+        }
+      </div>
+    }
 
     @if (_canEditAvatar && !_editingMode) {
       <button
