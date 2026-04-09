@@ -1,6 +1,5 @@
 import {
   Injectable,
-  Logger,
   NotFoundException,
   BadRequestException,
   ForbiddenException,
@@ -8,16 +7,16 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { TpayService, TpayWebhookPayload } from './tpay.service';
 import { VouchersService } from '../vouchers/vouchers.service';
+import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class PaymentsService {
-  private readonly logger = new Logger(PaymentsService.name);
-
   constructor(
     private prisma: PrismaService,
     private tpayService: TpayService,
     private vouchersService: VouchersService,
+    private eventRealtime: EventRealtimeService,
   ) {}
 
   async cleanupIntents(participationId: string, organizerId: string) {
@@ -80,6 +79,8 @@ export class PaymentsService {
         where: { participationId },
         data: { confirmed: true },
       });
+
+      this.eventRealtime.invalidateEvent(eventId, 'participants');
 
       return { paymentId: payment.id, paidByVoucher: true };
     }
@@ -178,6 +179,8 @@ export class PaymentsService {
         });
       });
 
+      this.eventRealtime.invalidateEvent(intent.eventId, 'participants');
+
       return;
     }
 
@@ -192,6 +195,8 @@ export class PaymentsService {
           voucherReserved,
         );
       }
+
+      this.eventRealtime.invalidateEvent(intent.eventId, 'participants');
 
       return;
     }
@@ -350,7 +355,7 @@ export class PaymentsService {
       return existing;
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const payment = await this.prisma.$transaction(async (tx) => {
       const payment = await tx.payment.create({
         data: {
           participationId: intent.participationId,
@@ -375,5 +380,9 @@ export class PaymentsService {
 
       return payment;
     });
+
+    this.eventRealtime.invalidateEvent(intent.eventId, 'participants');
+
+    return payment;
   }
 }

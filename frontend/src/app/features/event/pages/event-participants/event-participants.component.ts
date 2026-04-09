@@ -1,5 +1,14 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subscription } from 'rxjs';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
@@ -22,6 +31,7 @@ import { EventSlotInfo } from '../../../../shared/types';
 })
 export class EventParticipantsComponent implements AfterViewInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   public readonly auth = inject(AuthService);
   protected readonly eventArea = inject(EventAreaService);
   private readonly eventService = inject(EventService);
@@ -34,23 +44,37 @@ export class EventParticipantsComponent implements AfterViewInit {
 
   // ── Local state ──
   readonly slots = signal<EventSlotInfo[]>([]);
+  private slotsSubscription: Subscription | null = null;
 
   ngAfterViewInit(): void {
     setTimeout(() => this.scrollToCurrentUser(), 100);
+
+    this.eventArea.refreshCompleted$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.loadSlots());
+
     this.loadSlots();
   }
 
   private loadSlots(): void {
     const eventId = this.eventArea.eventId;
     if (!eventId) return;
-    this.eventService.getSlots(eventId).subscribe({
-      next: (slots) => this.slots.set(slots),
-    });
+
+    if (this.slotsSubscription) {
+      this.slotsSubscription.unsubscribe();
+      this.slotsSubscription = null;
+    }
+
+    this.slotsSubscription = this.eventService
+      .getSlots(eventId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (slots) => this.slots.set(slots),
+      });
   }
 
   onRefreshNeeded(): void {
     this.eventArea.refreshParticipants();
-    this.loadSlots();
   }
 
   private scrollToCurrentUser(): void {

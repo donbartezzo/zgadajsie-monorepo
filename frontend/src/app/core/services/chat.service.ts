@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
@@ -17,6 +17,7 @@ import { AuthService } from '../auth/auth.service';
 export class ChatService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
+  private readonly ngZone = inject(NgZone);
 
   private socket: Socket | null = null;
   private messageSubject = new Subject<ChatMessage>();
@@ -31,19 +32,27 @@ export class ChatService {
   connect(eventId: string): void {
     if (this.socket) this.disconnect();
 
-    this.socket = this.createSocket();
-    this.socket.emit('joinRoom', { eventId });
+    this.ngZone.runOutsideAngular(() => {
+      this.socket = this.createSocket();
+      this.socket.emit('joinRoom', { eventId });
 
-    this.socket.on('newMessage', (message: ChatMessage) => {
-      this.messageSubject.next(message);
-    });
+      this.socket.on('newMessage', (message: ChatMessage) => {
+        this.ngZone.run(() => {
+          this.messageSubject.next(message);
+        });
+      });
 
-    this.socket.on('userTyping', (data: { userId: string; displayName: string }) => {
-      this.typingSubject.next(data);
-    });
+      this.socket.on('userTyping', (data: { userId: string; displayName: string }) => {
+        this.ngZone.run(() => {
+          this.typingSubject.next(data);
+        });
+      });
 
-    this.socket.on('errorMessage', (data: { type: string; message: string }) => {
-      this.errorMessageSubject.next(data);
+      this.socket.on('errorMessage', (data: { type: string; message: string }) => {
+        this.ngZone.run(() => {
+          this.errorMessageSubject.next(data);
+        });
+      });
     });
   }
 
@@ -82,17 +91,23 @@ export class ChatService {
     if (this.socket) this.disconnect();
 
     const user = this.authService.currentUser();
-    this.socket = this.createSocket();
-    this.socket.emit('joinPrivateRoom', { eventId, otherUserId });
+    this.ngZone.runOutsideAngular(() => {
+      this.socket = this.createSocket();
+      this.socket.emit('joinPrivateRoom', { eventId, otherUserId });
 
-    this.socket.on('newPrivateMessage', (message: PrivateChatMessage) => {
-      this.privateMessageSubject.next(message);
-    });
+      this.socket.on('newPrivateMessage', (message: PrivateChatMessage) => {
+        this.ngZone.run(() => {
+          this.privateMessageSubject.next(message);
+        });
+      });
 
-    this.socket.on('privateUserTyping', (data: { userId: string; displayName: string }) => {
-      if (data.userId !== user?.id) {
-        this.privateTypingSubject.next(data);
-      }
+      this.socket.on('privateUserTyping', (data: { userId: string; displayName: string }) => {
+        if (data.userId !== user?.id) {
+          this.ngZone.run(() => {
+            this.privateTypingSubject.next(data);
+          });
+        }
+      });
     });
   }
 
@@ -169,6 +184,7 @@ export class ChatService {
 
   private createSocket(): Socket {
     const socket = io(`${this.socketBaseUrl}/chat`, {
+      transports: ['websocket'],
       auth: {
         token: this.authService.getAccessToken(),
         userId: this.authService.currentUser()?.id,

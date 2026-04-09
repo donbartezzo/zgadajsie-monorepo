@@ -4,6 +4,7 @@ import {
   computed,
   effect,
   inject,
+  NgZone,
   OnDestroy,
   OnInit,
   signal,
@@ -63,6 +64,7 @@ import { TimeUnitPipe } from '../../../../shared/pipes/time-unit.pipe';
 })
 export class EventDetailComponent implements OnInit, OnDestroy {
   private countdownInterval: ReturnType<typeof setInterval> | null = null;
+  private readonly ngZone = inject(NgZone);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
@@ -205,8 +207,13 @@ export class EventDetailComponent implements OnInit, OnDestroy {
         this.countdownInterval = null;
       }
     };
-    update();
-    this.countdownInterval = setInterval(update, 1000);
+
+    this.ngZone.runOutsideAngular(() => {
+      update();
+      this.countdownInterval = setInterval(() => {
+        this.ngZone.run(update);
+      }, 1000);
+    });
   }
 
   onAuthSuccess(): void {

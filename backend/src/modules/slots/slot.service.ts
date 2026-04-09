@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { EventRoleConfig, AvailableRole } from './slot.types';
+import { EventRealtimeService } from '../realtime/event-realtime.service';
 
 type SlotRoleConfig = {
   roles: Array<{
@@ -20,7 +21,10 @@ type SlotRoleConfig = {
 export class SlotService {
   private readonly logger = new Logger(SlotService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventRealtime: EventRealtimeService,
+  ) {}
 
   /**
    * Create slots for an event (called when event is created).
@@ -375,6 +379,7 @@ export class SlotService {
       where: { id: slotId },
       data: { locked: true },
     });
+    this.eventRealtime.invalidateEvent(slot.eventId, 'slots');
     this.logger.log(`Locked slot ${slotId} on event ${slot.eventId}`);
   }
 
@@ -393,6 +398,7 @@ export class SlotService {
       where: { id: slotId },
       data: { locked: false },
     });
+    this.eventRealtime.invalidateEvent(slot.eventId, 'slots');
     this.logger.log(`Unlocked slot ${slotId} on event ${slot.eventId}`);
   }
 
@@ -424,12 +430,18 @@ export class SlotService {
       data: { participationId, confirmed, assignedAt: new Date() },
     });
 
+    this.eventRealtime.invalidateEvent(slot.eventId, 'all');
+
     const updated = await client.eventSlot.findUnique({
       where: { id: slotId },
       select: { id: true, confirmed: true, assignedAt: true, roleKey: true },
     });
 
-    return updated!;
+    if (!updated) {
+      throw new Error('Nie udało się odczytać slotu po przypisaniu uczestnika');
+    }
+
+    return updated;
   }
 
   /**

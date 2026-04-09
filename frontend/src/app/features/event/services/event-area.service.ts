@@ -1,7 +1,8 @@
 import { computed, effect, inject, Injectable, NgZone, signal } from '@angular/core';
-import { finalize } from 'rxjs';
+import { bufferTime, filter, finalize, forkJoin, map, Subject, Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { EventService } from '../../../core/services/event.service';
+import { EventRealtimeService } from '../../../core/services/event-realtime.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
@@ -30,7 +31,7 @@ import { getParticipationStatusConfig, ParticipationStatusOptions } from '../../
 import { NotificationBarConfig } from '../ui/event-inline-notification-bars/event-inline-notification-bars.component';
 import type { IconName } from '../../../shared/ui/icon/icon.component';
 
-const AUTO_REFRESH_INTERVAL = 30000; // 30 seconds
+const AUTO_REFRESH_INTERVAL = 120000; // 120 seconds — safety-net fallback; primary updates via WebSocket
 
 @Injectable({
   providedIn: 'root',
@@ -45,9 +46,19 @@ export class EventAreaService {
   private readonly modalService = inject(ModalService);
   private readonly confirmModal = inject(ConfirmModalService);
   private readonly profileBroadcast = inject(ProfileBroadcastService);
+  private readonly eventRealtime = inject(EventRealtimeService);
 
   private refreshInterval: ReturnType<typeof setInterval> | null = null;
+  private realtimeSubscription: Subscription | null = null;
+  private refreshSubscription: Subscription | null = null;
   private initialized = false;
+  private refreshInFlight = false;
+  private refreshQueued = false;
+  private autoRefreshPausedByOverlay = false;
+  private autoRefreshPausedByVisibility = false;
+  private readonly isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
+  private readonly refreshCompletedSubject = new Subject<void>();
+  readonly refreshCompleted$ = this.refreshCompletedSubject.asObservable();
 
   // ── Core state ──
   readonly event = signal<EventModel | null>(null);
@@ -196,9 +207,13 @@ export class EventAreaService {
 
   // ── Lifecycle ──
 
-  init(eventId: string, citySlug: string): void {
+  init(eventId: string, citySlug: string, resolvedEvent?: EventModel): void {
     if (this.initialized && this._eventId === eventId) {
       return;
+    }
+
+    if (this.initialized) {
+      this.destroy();
     }
 
     this._eventId = eventId;
@@ -206,16 +221,70 @@ export class EventAreaService {
     this.initialized = true;
     this.loading.set(true);
 
-    this.loadData();
+    if (this.isBrowser) {
+      this.autoRefreshPausedByVisibility = document.hidden;
+      document.addEventListener('visibilitychange', this.handleVisibilityChange);
+
+      this.eventRealtime.connect(eventId);
+      // Run outside Angular zone: bufferTime uses RxJS asyncScheduler (setInterval internally),
+      // which zone.js patches and tracks as a macrotask — keeping the app permanently unstable.
+      // Re-enter zone only when performing the actual state update.
+      this.ngZone.runOutsideAngular(() => {
+        this.realtimeSubscription = this.eventRealtime
+          .onInvalidation()
+          .pipe(
+            filter((payload) => payload.eventId === this._eventId),
+            // Collect all scopes within 300ms window — handles burst events (e.g. lottery)
+            bufferTime(300),
+            filter((payloads) => payloads.length > 0),
+          )
+          .subscribe((payloads) => {
+            this.ngZone.run(() => {
+              const scopes = new Set(payloads.map((p) => p.scope));
+              const needsAll = scopes.has('all');
+              const needsParticipants =
+                needsAll || scopes.has('participants') || scopes.has('slots');
+              const needsEvent = needsAll || scopes.has('event');
+
+              // Real-time events always refresh even during overlay
+              if (needsAll || (needsParticipants && needsEvent)) {
+                this.requestRefresh({ force: true, emitCompletion: false });
+              } else if (needsParticipants) {
+                this.requestRefresh({ force: true, emitCompletion: false, participantsOnly: true });
+              } else if (needsEvent) {
+                this.requestRefresh({ force: true, emitCompletion: false, eventOnly: true });
+              }
+            });
+          });
+      });
+    }
+
+    this.loadData(resolvedEvent);
     this.startAutoRefresh();
     this.registerOverlayCallbacks();
   }
 
   destroy(): void {
     this.stopAutoRefresh();
+    this.initialized = false;
+    this.refreshQueued = false;
+    this.refreshInFlight = false;
+    this.eventRealtime.disconnect();
+    if (this.realtimeSubscription) {
+      this.realtimeSubscription.unsubscribe();
+      this.realtimeSubscription = null;
+    }
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+      this.refreshSubscription = null;
+    }
+    if (this.isBrowser) {
+      document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    }
+    this.autoRefreshPausedByOverlay = false;
+    this.autoRefreshPausedByVisibility = false;
     this.overlays.clearCallbacks();
     this.overlays.setEventContext(null);
-    this.initialized = false;
     this._eventId = '';
     this._citySlug = '';
     this.event.set(null);
@@ -226,37 +295,38 @@ export class EventAreaService {
 
   // ── Data loading ──
 
-  private loadData(): void {
-    this.eventService.getEvent(this._eventId).subscribe({
-      next: (e) => {
-        this.event.set(e);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
-    this.eventService.getParticipants(this._eventId).subscribe({
-      next: (p) => this.participants.set(p),
-    });
+  private loadData(resolvedEvent?: EventModel): void {
+    if (resolvedEvent) {
+      this.event.set(resolvedEvent);
+      this.requestRefresh({
+        force: true,
+        emitCompletion: false,
+        markLoading: true,
+        participantsOnly: true,
+      });
+      return;
+    }
+
+    this.requestRefresh({ force: true, emitCompletion: false, markLoading: true });
   }
 
   refreshEvent(): void {
-    this.eventService.getEvent(this._eventId).subscribe({
-      next: (e) => this.event.set(e),
-    });
+    this.requestRefresh({ force: true });
   }
 
   refreshParticipants(): void {
-    this.eventService.getParticipants(this._eventId).subscribe({
-      next: (p) => this.participants.set(p),
-    });
+    this.requestRefresh({ force: true });
   }
 
   private startAutoRefresh(): void {
+    if (this.refreshInterval || !this.canAutoRefresh()) {
+      return;
+    }
+
     this.ngZone.runOutsideAngular(() => {
       this.refreshInterval = setInterval(() => {
         this.ngZone.run(() => {
-          this.refreshEvent();
-          this.refreshParticipants();
+          this.requestRefresh({ force: false });
         });
       }, AUTO_REFRESH_INTERVAL);
     });
@@ -267,6 +337,155 @@ export class EventAreaService {
       clearInterval(this.refreshInterval);
       this.refreshInterval = null;
     }
+  }
+
+  private syncAutoRefresh(): void {
+    if (!this.initialized) {
+      return;
+    }
+
+    if (this.canAutoRefresh()) {
+      this.startAutoRefresh();
+      this.flushQueuedRefresh();
+      return;
+    }
+
+    this.stopAutoRefresh();
+  }
+
+  private readonly handleVisibilityChange = (): void => {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    this.autoRefreshPausedByVisibility = document.hidden;
+    this.syncAutoRefresh();
+
+    if (
+      !document.hidden &&
+      !this.autoRefreshPausedByOverlay &&
+      !this.refreshQueued &&
+      !this.refreshInFlight
+    ) {
+      this.requestRefresh({ force: true });
+      this.flushQueuedRefresh();
+    }
+  };
+
+  private canAutoRefresh(): boolean {
+    if (!this.initialized || !this.isBrowser) {
+      return false;
+    }
+
+    return !this.autoRefreshPausedByOverlay && !this.autoRefreshPausedByVisibility;
+  }
+
+  private requestRefresh(
+    options: {
+      force?: boolean;
+      emitCompletion?: boolean;
+      markLoading?: boolean;
+      participantsOnly?: boolean;
+      eventOnly?: boolean;
+    } = {},
+  ): void {
+    const force = options.force ?? false;
+    const emitCompletion = options.emitCompletion ?? true;
+    const markLoading = options.markLoading ?? false;
+    const participantsOnly = options.participantsOnly ?? false;
+    const eventOnly = options.eventOnly ?? false;
+
+    if (!this.initialized) {
+      return;
+    }
+
+    if (!force && !this.canAutoRefresh()) {
+      this.refreshQueued = true;
+      return;
+    }
+
+    if (this.refreshInFlight) {
+      this.refreshQueued = true;
+      return;
+    }
+
+    this.refreshInFlight = true;
+    if (markLoading) {
+      this.loading.set(true);
+    }
+
+    const request$ = participantsOnly
+      ? this.eventService.getParticipants(this._eventId).pipe(
+          map((participants): { event: EventModel | null; participants: Participation[] } => ({
+            event: this.event(),
+            participants,
+          })),
+        )
+      : eventOnly
+        ? this.eventService.getEvent(this._eventId).pipe(
+            map((event): { event: EventModel | null; participants: Participation[] } => ({
+              event,
+              participants: this.participants(),
+            })),
+          )
+        : forkJoin({
+            event: this.eventService.getEvent(this._eventId),
+            participants: this.eventService.getParticipants(this._eventId),
+          });
+
+    const refreshRequestSubscription = request$
+      .pipe(
+        finalize(() => {
+          this.refreshInFlight = false;
+          if (this.refreshSubscription === refreshRequestSubscription) {
+            this.refreshSubscription = null;
+          }
+          if (markLoading) {
+            this.loading.set(false);
+          }
+          this.flushQueuedRefresh();
+        }),
+      )
+      .subscribe({
+        next: ({ event, participants }) => {
+          if (event) {
+            this.event.set(event);
+          }
+          this.participants.set(participants);
+          if (emitCompletion) {
+            this.refreshCompletedSubject.next();
+          }
+        },
+        error: (error: { status?: number }) => {
+          if (this.isBrowser && error.status === 404) {
+            this.refreshQueued = false;
+            this.stopAutoRefresh();
+            this.loading.set(false);
+            this.event.set(null);
+            this.participants.set([]);
+            this.router.navigate(['/not-found'], {
+              skipLocationChange: true,
+              state: { reason: 'event-not-found', citySlug: this._citySlug },
+            });
+            return;
+          }
+
+          if (markLoading) {
+            this.loading.set(false);
+          }
+        },
+      });
+
+    this.refreshSubscription = refreshRequestSubscription;
+  }
+
+  private flushQueuedRefresh(): void {
+    if (!this.refreshQueued || this.refreshInFlight || !this.canAutoRefresh()) {
+      return;
+    }
+
+    this.refreshQueued = false;
+    this.requestRefresh({ force: true });
   }
 
   // ── Overlay management ──
@@ -286,6 +505,22 @@ export class EventAreaService {
     effect(() => this.overlays.setIsOrganizer(this.isOrganizer()));
     effect(() => this.overlays.setLoading(this.joining()));
     effect(() => this.overlays.setParticipants(this.participants()));
+    effect(() => {
+      const wasOverlayOpen = this.autoRefreshPausedByOverlay;
+      this.autoRefreshPausedByOverlay = this.overlays.active() !== null;
+      if (this.initialized) {
+        this.syncAutoRefresh();
+        if (
+          wasOverlayOpen &&
+          !this.autoRefreshPausedByOverlay &&
+          !this.autoRefreshPausedByVisibility &&
+          !this.refreshQueued &&
+          !this.refreshInFlight
+        ) {
+          this.requestRefresh({ force: true });
+        }
+      }
+    });
   }
 
   private registerOverlayCallbacks(): void {

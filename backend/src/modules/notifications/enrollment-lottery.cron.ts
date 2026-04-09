@@ -2,9 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PRE_ENROLLMENT_HOURS, MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
-import { EmailService } from './email.service';
 import { PushService } from './push.service';
-import { SlotService } from '../slots/slot.service';
+import { EventRealtimeService } from '../realtime/event-realtime.service';
 
 @Injectable()
 export class EnrollmentLotteryCron {
@@ -12,9 +11,8 @@ export class EnrollmentLotteryCron {
 
   constructor(
     private prisma: PrismaService,
-    private emailService: EmailService,
     private pushService: PushService,
-    private slotService: SlotService,
+    private eventRealtime: EventRealtimeService,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -171,6 +169,8 @@ export class EnrollmentLotteryCron {
     if (!result) {
       return; // Already processed
     }
+
+    this.eventRealtime.invalidateEvent(event.id, 'all');
 
     // Notifications - fire-and-forget, AFTER successful commit
     const { assignedIds, pendingParticipations } = result;

@@ -14,8 +14,9 @@ import { SlotService } from '../slots/slot.service';
 import { EnrollmentEligibilityService } from './enrollment-eligibility.service';
 import { isEventJoinable } from '../events/event-time-status.util';
 import { getEnrollmentPhase } from '../events/enrollment-phase.util';
+import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { EventRoleConfig, AvailableRole } from '../slots/slot.types';
-import { RuntimeConfig, MAX_GUESTS_PER_USER } from '@zgadajsie/shared';
+import { EventRealtimeScope, RuntimeConfig, MAX_GUESTS_PER_USER } from '@zgadajsie/shared';
 
 const USER_SELECT = { id: true, displayName: true, avatarUrl: true, email: true };
 
@@ -58,6 +59,7 @@ export class ParticipationService {
     private paymentsService: PaymentsService,
     private slotService: SlotService,
     private eligibility: EnrollmentEligibilityService,
+    private eventRealtime: EventRealtimeService,
   ) {}
 
   async join(eventId: string, userId: string, roleKey?: string) {
@@ -89,7 +91,7 @@ export class ParticipationService {
 
     // Organizer auto-confirmed with slot
     if (event.organizerId === userId) {
-      return this.prisma.$transaction(async (tx) => {
+      const result = await this.prisma.$transaction(async (tx) => {
         const participation = await tx.eventParticipation.create({
           data: { eventId, userId, wantsIn: true, roleKey: validatedRoleKey },
           include: { user: { select: USER_SELECT } },
@@ -108,6 +110,9 @@ export class ParticipationService {
           costPerPerson: event.costPerPerson.toNumber(),
         };
       });
+
+      this.notifyEventChanged(eventId, 'all');
+      return result;
     }
 
     // PRE_ENROLLMENT: always waiting (no slot)
@@ -200,7 +205,7 @@ export class ParticipationService {
         const isNewUser = await this.eligibility.isNewUser(addedByUserId, event.organizerId);
 
         if (!isNewUser) {
-          return this.prisma.$transaction(async (tx) => {
+          const result = await this.prisma.$transaction(async (tx) => {
             const participation = await tx.eventParticipation.create({
               data: {
                 eventId,
@@ -228,6 +233,8 @@ export class ParticipationService {
             }
             return withDerivedStatus(withSlot);
           });
+          this.notifyEventChanged(eventId, 'participants');
+          return result;
         }
       }
     }
@@ -250,6 +257,7 @@ export class ParticipationService {
       },
       include: { user: { select: USER_SELECT }, slot: true },
     });
+    this.notifyEventChanged(eventId, 'participants');
     return withDerivedStatus(participation);
   }
 
@@ -323,6 +331,8 @@ export class ParticipationService {
       },
     });
 
+    this.notifyEventChanged(participation.eventId, 'all');
+
     // Notify only in OPEN_ENROLLMENT (not during pre-enrollment)
     if (phase === 'OPEN_ENROLLMENT' && updated) {
       const recipientId = updated.addedByUserId ?? updated.userId;
@@ -358,7 +368,7 @@ export class ParticipationService {
 
     await this.slotService.confirmSlot(participationId);
 
-    return this.prisma.eventParticipation.findUnique({
+    const updated = await this.prisma.eventParticipation.findUnique({
       where: { id: participationId },
       include: {
         user: { select: USER_SELECT },
@@ -366,6 +376,9 @@ export class ParticipationService {
         slot: true,
       },
     });
+
+    this.notifyEventChanged(participation.eventId, 'all');
+    return updated;
   }
 
   /**
@@ -420,6 +433,8 @@ export class ParticipationService {
       this.notifyWaitingAboutFreeSlot(participation.eventId, participation.event.title);
     }
 
+    this.notifyEventChanged(participation.eventId, 'all');
+
     return updated;
   }
 
@@ -462,6 +477,8 @@ export class ParticipationService {
     if (hadSlot && !slotWasLocked) {
       this.notifyWaitingAboutFreeSlot(participation.eventId, participation.event.title);
     }
+
+    this.notifyEventChanged(participation.eventId, 'all');
 
     return this.prisma.eventParticipation.findUnique({
       where: { id: participationId },
@@ -600,13 +617,16 @@ export class ParticipationService {
       );
     }
 
-    return {
+    const result = {
       ...withDerivedStatus(participation),
       isPaid,
       costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0,
       waitingReason: waitingReason ?? null,
       availableRoles: availableRoles ?? null,
     };
+
+    this.notifyEventChanged(eventId, 'participants');
+    return result;
   }
 
   /**
@@ -669,7 +689,7 @@ export class ParticipationService {
     }
 
     // Eligible + free slot → assign slot (confirmed=true for free events, false for paid)
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const participation = await tx.eventParticipation.create({
         data: { eventId, userId, wantsIn: true, roleKey },
         include: { user: { select: USER_SELECT } },
@@ -693,6 +713,9 @@ export class ParticipationService {
         costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0,
       };
     });
+
+    this.notifyEventChanged(eventId, 'all');
+    return result;
   }
 
   /**
@@ -760,6 +783,7 @@ export class ParticipationService {
       if (!withSlot) {
         throw new Error('Nie udało się odczytać zgłoszenia po przydzieleniu miejsca');
       }
+      this.notifyEventChanged(event.id, 'all');
       return {
         ...withDerivedStatus(withSlot),
         isPaid,
@@ -774,6 +798,7 @@ export class ParticipationService {
         data: { waitingReason: 'PRE_ENROLLMENT' },
         include: { user: { select: USER_SELECT }, slot: true },
       });
+      this.notifyEventChanged(event.id, 'participants');
       return {
         ...withDerivedStatus(withReason),
         isPaid,
@@ -795,6 +820,7 @@ export class ParticipationService {
             data: { waitingReason: 'NO_SLOTS_FOR_ROLE' },
             include: { user: { select: USER_SELECT }, slot: true },
           });
+          this.notifyEventChanged(event.id, 'participants');
           return {
             ...withDerivedStatus(withReason),
             isPaid,
@@ -809,6 +835,7 @@ export class ParticipationService {
         data: { waitingReason: 'NO_SLOTS' },
         include: { user: { select: USER_SELECT }, slot: true },
       });
+      this.notifyEventChanged(event.id, 'participants');
       return {
         ...withDerivedStatus(withReason),
         isPaid,
@@ -828,6 +855,8 @@ export class ParticipationService {
     if (!withSlot) {
       throw new Error('Nie udało się odczytać zgłoszenia po przydzieleniu miejsca');
     }
+
+    this.notifyEventChanged(event.id, 'all');
 
     return {
       ...withDerivedStatus(withSlot),
@@ -874,6 +903,10 @@ export class ParticipationService {
     if (!isOwner && !isHost && !isOrganizer) {
       throw new ForbiddenException('Brak uprawnień do tej operacji');
     }
+  }
+
+  private notifyEventChanged(eventId: string, scope: EventRealtimeScope = 'participants'): void {
+    this.eventRealtime.invalidateEvent(eventId, scope);
   }
 
   /**

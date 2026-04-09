@@ -18,6 +18,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { CoverImagesService } from '../cover-images/cover-images.service';
 import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptions.service';
 import { SlotService } from '../slots/slot.service';
+import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
@@ -39,6 +40,7 @@ export class EventsService {
     private coverImagesService: CoverImagesService,
     private citySubscriptionsService: CitySubscriptionsService,
     private slotService: SlotService,
+    private eventRealtime: EventRealtimeService,
   ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
@@ -282,14 +284,20 @@ export class EventsService {
         newMaxParticipants,
       );
 
+      this.eventRealtime.invalidateEvent(id, 'all');
+
       return updatedEvent;
     }
 
-    return this.prisma.event.update({
+    const updatedEvent = await this.prisma.event.update({
       where: { id },
       data,
       include: { discipline: true, facility: true, level: true, city: true },
     });
+
+    this.eventRealtime.invalidateEvent(id, 'all');
+
+    return updatedEvent;
   }
 
   async cancel(id: string, userId: string) {
@@ -432,6 +440,8 @@ export class EventsService {
       );
     }
 
+    this.eventRealtime.invalidateEvent(id, 'all');
+
     return {
       ...updated,
       refundedParticipants: refundedCount,
@@ -450,7 +460,7 @@ export class EventsService {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id: _id, createdAt: _ca, updatedAt: _ua, status: _st, ...rest } = event;
-    return this.prisma.event.create({
+    const newEvent = await this.prisma.event.create({
       data: {
         ...rest,
         status: 'ACTIVE',
@@ -458,6 +468,10 @@ export class EventsService {
       },
       include: { discipline: true, facility: true, level: true, city: true },
     });
+
+    this.eventRealtime.invalidateEvent(newEvent.id, 'all');
+
+    return newEvent;
   }
 
   async remove(id: string, userId: string, isAdmin: boolean) {
@@ -478,7 +492,11 @@ export class EventsService {
       }
     }
 
-    return this.prisma.event.delete({ where: { id } });
+    await this.prisma.event.delete({ where: { id } });
+
+    this.eventRealtime.invalidateEvent(id, 'all');
+
+    return;
   }
 
   async getParticipants(eventId: string) {
@@ -581,6 +599,8 @@ export class EventsService {
       },
     });
 
+    this.eventRealtime.invalidateEvent(eventId, 'participants');
+
     return this.getParticipants(eventId);
   }
 
@@ -659,6 +679,8 @@ export class EventsService {
         eventId,
       );
     }
+
+    this.eventRealtime.invalidateEvent(eventId, 'participants');
 
     return this.getParticipants(eventId);
   }

@@ -7,6 +7,7 @@ import {
   input,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -128,7 +129,9 @@ export class JoinRulesOverlayComponent {
       }
     });
 
-    // Apply wizard config when overlay opens or config changes
+    // Apply wizard config when overlay opens or config changes.
+    // participantsWithoutSlot is read with untracked() so that background
+    // participant refreshes (e.g. real-time) don't reset the current step.
     effect(() => {
       const config = this.wizardConfig();
       if (this.open()) {
@@ -139,7 +142,10 @@ export class JoinRulesOverlayComponent {
         this.participantType.set(type);
 
         // Set preselected role if provided
-        if (preselectedRole && this.availableRoles().some((r) => r.key === preselectedRole)) {
+        if (
+          preselectedRole &&
+          untracked(() => this.availableRoles().some((r) => r.key === preselectedRole))
+        ) {
           this.selectedRoleKey.set(preselectedRole);
         }
 
@@ -147,7 +153,7 @@ export class JoinRulesOverlayComponent {
           // Direct to step 2 (e.g., add guest forced)
           this.currentStep.set(2);
           this.syncNameFromType(type);
-        } else if (this.participantsWithoutSlot().length > 0) {
+        } else if (untracked(() => this.participantsWithoutSlot().length) > 0) {
           // Show participant choice first
           this.currentStep.set(0);
         } else {

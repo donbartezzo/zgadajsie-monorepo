@@ -10,6 +10,7 @@ import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { AppModule } from './app/app.module';
 import { DecimalSerializationInterceptor } from './app/interceptors/decimal-serialization.interceptor';
+import { etagMiddleware } from './app/middleware/etag.middleware';
 
 async function bootstrap() {
   const backendUrl = process.env.BACKEND_URL;
@@ -27,6 +28,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.use(helmet());
+  app.use(etagMiddleware);
 
   app.enableCors({
     origin: frontendUrl.split(','),

@@ -9,9 +9,10 @@ import { EventReminderCron } from './event-reminder.cron';
 import { EnrollmentLotteryCron } from './enrollment-lottery.cron';
 import { ApprovalReminderCron } from './approval-reminder.cron';
 import { SlotModule } from '../slots/slot.module';
+import { EventRealtimeModule } from '../realtime/event-realtime.module';
 
 @Module({
-  imports: [ScheduleModule.forRoot(), SlotModule],
+  imports: [ScheduleModule.forRoot(), SlotModule, EventRealtimeModule],
   controllers: [NotificationsController],
   providers: [
     NotificationsService,

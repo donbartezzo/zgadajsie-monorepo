@@ -4,6 +4,7 @@ import {
   computed,
   effect,
   inject,
+  NgZone,
   input,
   OnDestroy,
   output,
@@ -188,6 +189,7 @@ import { DateLabelsService } from '../../../services/date-labels.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventCardComponent implements OnDestroy {
+  private readonly ngZone = inject(NgZone);
   private readonly dateLabels = inject(DateLabelsService);
 
   readonly event = input.required<EventListItem>();
@@ -274,9 +276,16 @@ export class EventCardComponent implements OnDestroy {
 
   private startCountdown(): void {
     if (this.intervalId) return;
-    this.intervalId = window.setInterval(() => {
-      this.now.set(nowInZone().toJSDate());
-    }, 60000);
+
+    // Run outside Angular zone to avoid triggering change detection every minute.
+    // Only re-enter the zone when updating the signal, which is the actual state change.
+    this.ngZone.runOutsideAngular(() => {
+      this.intervalId = window.setInterval(() => {
+        this.ngZone.run(() => {
+          this.now.set(nowInZone().toJSDate());
+        });
+      }, 60000);
+    });
   }
 
   private stopCountdown(): void {
