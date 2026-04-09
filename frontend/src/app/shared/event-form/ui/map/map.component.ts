@@ -39,6 +39,15 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   private resizeObserver: ResizeObserver | null = null;
   private resizeFrameId: number | null = null;
 
+  // Effect do aktualizacji pozycji przy zmianie koordynatów
+  private readonly positionEffect = effect(() => {
+    if (this.map && this.marker) {
+      const lat = this.lat();
+      const lng = this.lng();
+      this.updateMarkerAndView(lat, lng);
+    }
+  });
+
   private updateMarkerAndView(lat: number, lng: number): void {
     if (this.map && this.marker) {
       this.marker.setLatLng([lat, lng]);
@@ -133,16 +142,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     } catch {
       // Leaflet not available (SSR or missing dep)
     }
-
-    // Effect do aktualizacji pozycji przy zmianie koordynatów - uruchamiany po inicjalizacji
-    effect(() => {
-      if (this.map && this.marker) {
-        const lat = this.lat();
-        const lng = this.lng();
-
-        this.updateMarkerAndView(lat, lng);
-      }
-    });
   }
 
   ngOnDestroy(): void {

@@ -163,7 +163,6 @@ export const appRoutes: Route[] = [
       import('./features/events/pages/event-form/event-form.component').then(
         (m) => m.EventFormComponent,
       ),
-    resolve: { event: eventResolver },
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Edycja wydarzenia',
@@ -177,7 +176,6 @@ export const appRoutes: Route[] = [
       import('./features/organizer/pages/event-manage/event-manage.component').then(
         (m) => m.EventManageComponent,
       ),
-    resolve: { event: eventResolver },
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Zarządzanie',
