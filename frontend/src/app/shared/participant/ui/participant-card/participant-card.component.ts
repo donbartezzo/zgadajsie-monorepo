@@ -63,14 +63,14 @@ export class ParticipantCardComponent {
 
   readonly buttonClass = computed(() => {
     const base =
-      'flex flex-col items-center w-20 sm:w-22 h-20 sm:h-22 p-2 rounded-xl transition-colors' +
+      'flex flex-col items-center w-full h-full p-2 rounded-xl transition-colors' +
       ' hover:bg-neutral-50 focus:outline-hidden';
     const status = this.slotDisplayStatus();
 
     // Current user and their guests: unified green styling
-    if (this.isCurrentUserOrGuest()) {
-      return `${base} ring-2 ring-primary-100`;
-    }
+    // if (this.isCurrentUserOrGuest()) { @TODO:
+    //   return `${base} ring-2 ring-primary-100`;
+    // }
 
     // Other participants
     if (status === 'pending') return `${base} focus:ring-2 focus:ring-warning-200 opacity-80`;

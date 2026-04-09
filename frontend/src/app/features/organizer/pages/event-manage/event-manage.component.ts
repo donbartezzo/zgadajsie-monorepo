@@ -28,10 +28,8 @@ import {
   EventAnnouncement,
   EventSlotInfo,
 } from '../../../../shared/types';
-import {
-  ParticipantSlotsGridComponent,
-  ParticipantItem,
-} from '../../../../shared/participant/ui/participant-slots-grid/participant-slots-grid.component';
+import { ParticipantGridComponent } from '../../../../shared/participant/ui/participant-grid/participant-grid.component';
+import { ParticipantItem } from '../../../../shared/participant/ui/participant-grid/participant-grid-item.component';
 import { EventStatus } from '@zgadajsie/shared';
 import {
   EventLifecycleBannerComponent,
@@ -53,7 +51,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
     FormsModule,
     EventLifecycleBannerComponent,
     EventAnnouncementsComponent,
-    ParticipantSlotsGridComponent,
+    ParticipantGridComponent,
   ],
   template: `
     <div class="p-4">
@@ -159,7 +157,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
         }
 
         @if (eventData(); as _event) {
-          <app-participant-slots-grid
+          <app-participant-grid
             [event]="_event"
             [participants]="manageParticipants()"
             [slots]="slots()"
@@ -216,7 +214,6 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
         </div>
       }
     </div>
-
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

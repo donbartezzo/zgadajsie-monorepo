@@ -45,10 +45,10 @@ type AvatarIndicatorType = SemanticColor | 'pending' | 'secondary';
           @for (indicator of statusIndicators(); track indicator.type) {
             <span
               class="inline-flex items-center justify-center shadow-xs"
-              [ngClass]="indicatorClass(indicator.type)"
+              [ngClass]="indicatorClass()"
               [title]="indicator.tooltip"
             >
-              <app-icon [name]="$any(indicator.icon)" [size]="'xs'" [color]="$any('neutral-400')" />
+              <app-icon [name]="$any(indicator.icon)" [size]="'xs'" [class]="'text-neutral-400'" />
             </span>
           }
         </div>
@@ -141,12 +141,9 @@ export class UserAvatarComponent {
     return indicators;
   });
 
-  indicatorClass(_type: AvatarIndicatorType): string {
-    const base =
-      'w-5 h-5 bg-white border border-white rounded-full shadow-xs flex items-center justify-center';
-
-    // Ikona wewnatrz bialego kola ma kolor semantyczny
-    return base;
+  indicatorClass(): string {
+    // Wszystkie indicatory maja ten sam wyglad: biale tlo, biala ikona
+    return 'w-5 h-5 bg-white border border-white rounded-full shadow-xs flex items-center justify-center';
   }
 
   indicatorIconSize(): 'xs' | 'sm' {

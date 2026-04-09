@@ -12,7 +12,7 @@ import { Subscription } from 'rxjs';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
-import { ParticipantSlotsGridComponent } from '../../../../shared/participant/ui/participant-slots-grid/participant-slots-grid.component';
+import { ParticipantGridComponent } from '../../../../shared/participant/ui/participant-grid/participant-grid.component';
 import { EventStickyNotificationBarComponent } from '../../ui/event-sticky-notification-bar/event-sticky-notification-bar.component';
 import { EventService } from '../../../../core/services/event.service';
 import { EventAreaService } from '../../services/event-area.service';
@@ -23,7 +23,7 @@ import { EventSlotInfo } from '../../../../shared/types';
   imports: [
     LoadingSpinnerComponent,
     EventHeroSlotsComponent,
-    ParticipantSlotsGridComponent,
+    ParticipantGridComponent,
     EventStickyNotificationBarComponent,
   ],
   templateUrl: './event-participants.component.html',

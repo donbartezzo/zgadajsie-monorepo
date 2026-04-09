@@ -1,0 +1,80 @@
+@if (isPreEnrollment()) {
+  <div class="flex flex-col items-center justify-center rounded-xl border border-info-200 bg-info-50 p-6 text-center">
+    <app-icon name="users" size="lg" class="text-info-400 mb-3"></app-icon>
+    <h3 class="text-sm font-semibold text-info-700">Trwają wstępne zapisy</h3>
+    <p class="mt-1 text-xs text-neutral-500">Lista uczestników zostanie ujawniona po zakończeniu losowania.</p>
+    @if (totalCount() > 0) {
+      <p class="mt-2 text-xs font-medium text-info-600">Zgłoszonych: {{ totalCount() }}</p>
+    }
+  </div>
+} @else {
+  <div [class]="slotGroups().length > 1 ? 'space-y-6' : ''">
+    @for (group of slotGroups(); track group.role?.key ?? '__all') {
+      <div>
+        <div class="mb-3 flex items-center gap-2">
+          <app-icon [name]="statusConfig.participant.icon" size="xs" class="text-success-500" />
+          @if (group.role) {
+            <span class="text-xs font-semibold text-success-700">{{
+              'dict.participant-role.' + group.role.key + '.title' | transloco
+            }}</span>
+          } @else {
+            <span class="text-xs font-semibold text-success-700">{{ statusConfig.participant.title }}</span>
+          }
+          <span class="text-xs px-1.5 py-0.5 rounded bg-success-50 text-success-600 border border-success-200">
+            {{ group.occupiedCount }}/{{ group.totalSlots }}
+          </span>
+        </div>
+        <div class="flex flex-wrap gap-3 justify-center">
+          @for (item of group.items; track $index) {
+            <app-participant-grid-item
+              [item]="item"
+              [currentUserId]="currentUserId()"
+              [isPaidEvent]="isPaidEvent()"
+              (slotClick)="onSlotItemClick($event)"
+            />
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- SECTION: PENDING (outside slots) -->
+  @if (pendingParticipants().length > 0) {
+    <div class="mt-6 pt-4 border-t border-warning-200">
+      <h4 class="text-xs font-semibold text-warning-700 mb-3 flex items-center gap-1.5">
+        <app-icon [name]="statusConfig.pending.icon" size="xs" />
+        {{ statusConfig.pending.title }} ({{ pendingParticipants().length }})
+      </h4>
+      <div class="flex flex-wrap gap-3 justify-center">
+        @for (item of pendingSlotItems(); track $index) {
+          <app-participant-grid-item
+            [item]="item"
+            [currentUserId]="currentUserId()"
+            [isPaidEvent]="isPaidEvent()"
+            (slotClick)="onSlotItemClick($event)"
+          />
+        }
+      </div>
+    </div>
+  }
+
+  <!-- SECTION: WITHDRAWN (removed/left) -->
+  @if (withdrawnParticipants().length > 0) {
+    <div class="mt-6 pt-4 border-t border-neutral-200">
+      <h4 class="text-xs font-semibold text-neutral-500 mb-3 flex items-center gap-1.5">
+        <app-icon [name]="statusConfig.withdrawn.icon" size="xs" />
+        {{ statusConfig.withdrawn.title }} ({{ withdrawnParticipants().length }})
+      </h4>
+      <div class="flex flex-wrap gap-3 justify-center">
+        @for (item of withdrawnSlotItems(); track $index) {
+          <app-participant-grid-item
+            [item]="item"
+            [currentUserId]="currentUserId()"
+            [isPaidEvent]="isPaidEvent()"
+            (slotClick)="onSlotItemClick($event)"
+          />
+        }
+      </div>
+    </div>
+  }
+}
