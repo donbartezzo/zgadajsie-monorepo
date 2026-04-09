@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import { ParticipantCardComponent } from '../participant-card/participant-card.component';
-import { AddParticipantCardComponent } from '../add-participant-card/add-participant-card.component';
 import { Participation } from '../../../types';
 import { ParticipationStatus } from '../../../types/common.interface';
+import { ParticipantGridItemComponent } from '../participant-grid/participant-grid-item.component';
+import { ParticipantGridItemEmptyComponent } from '../participant-grid/participant-grid-item-empty.component';
 
 type ParticipantFilter = 'all' | 'without-slot';
 
@@ -10,14 +10,13 @@ const WITHOUT_SLOT_STATUSES: ParticipationStatus[] = ['PENDING', 'WITHDRAWN', 'R
 
 @Component({
   selector: 'app-event-user-participants',
-  imports: [ParticipantCardComponent, AddParticipantCardComponent],
+  imports: [ParticipantGridItemComponent, ParticipantGridItemEmptyComponent],
   templateUrl: './event-user-participants.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventUserParticipantsComponent {
   readonly participants = input<Participation[]>([]);
   readonly currentUserId = input<string | null>(null);
-  readonly isPaidEvent = input(false);
 
   readonly participantClicked = output<Participation>();
   readonly addNewParticipant = output<void>();
@@ -27,9 +26,7 @@ export class EventUserParticipantsComponent {
   readonly userParticipations = computed(() => {
     const uid = this.currentUserId();
     if (!uid) return [];
-    return this.participants().filter(
-      (p) => (!p.isGuest && p.userId === uid) || (p.isGuest && p.addedByUserId === uid),
-    );
+    return this.participants().filter((p) => p.userId === uid);
   });
 
   readonly withoutSlotCount = computed(

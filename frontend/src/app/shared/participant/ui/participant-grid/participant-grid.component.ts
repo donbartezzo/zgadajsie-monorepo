@@ -18,6 +18,7 @@ import {
   SlotItem,
   ParticipantItem,
 } from './participant-grid-item.component';
+import { ParticipantGridItemEmptyComponent } from './participant-grid-item-empty.component';
 
 interface SlotGroup {
   role: DisciplineRole | null;
@@ -35,7 +36,12 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
 
 @Component({
   selector: 'app-participant-grid',
-  imports: [IconComponent, TranslocoPipe, ParticipantGridItemComponent],
+  imports: [
+    IconComponent,
+    TranslocoPipe,
+    ParticipantGridItemComponent,
+    ParticipantGridItemEmptyComponent,
+  ],
   templateUrl: './participant-grid.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -66,8 +72,6 @@ export class ParticipantGridComponent {
   readonly maxSlots = computed(() => this.event().maxParticipants ?? 0);
 
   readonly roleConfig = computed<EventRoleConfig | null>(() => this.event().roleConfig ?? null);
-
-  readonly isPaidEvent = computed(() => (this.event().costPerPerson ?? 0) > 0);
 
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
 

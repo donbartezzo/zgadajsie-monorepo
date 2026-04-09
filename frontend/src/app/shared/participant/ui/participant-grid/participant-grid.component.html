@@ -26,12 +26,18 @@
         </div>
         <div class="flex flex-wrap gap-3 justify-center">
           @for (item of group.items; track $index) {
-            <app-participant-grid-item
-              [item]="item"
-              [currentUserId]="currentUserId()"
-              [isPaidEvent]="isPaidEvent()"
-              (slotClick)="onSlotItemClick($event)"
-            />
+            @if (item.participant) {
+              <app-participant-grid-item
+                [participant]="item.participant"
+                [currentUserId]="currentUserId()"
+                (clicked)="onSlotItemClick(item)"
+              />
+            } @else {
+              <app-participant-grid-item-empty
+                [variant]="item.slotData.locked ? 'locked' : 'free'"
+                (clicked)="onSlotItemClick(item)"
+              />
+            }
           }
         </div>
       </div>
@@ -48,10 +54,9 @@
       <div class="flex flex-wrap gap-3 justify-center">
         @for (item of pendingSlotItems(); track $index) {
           <app-participant-grid-item
-            [item]="item"
+            [participant]="item.participant!"
             [currentUserId]="currentUserId()"
-            [isPaidEvent]="isPaidEvent()"
-            (slotClick)="onSlotItemClick($event)"
+            (clicked)="onSlotItemClick(item)"
           />
         }
       </div>
@@ -68,10 +73,9 @@
       <div class="flex flex-wrap gap-3 justify-center">
         @for (item of withdrawnSlotItems(); track $index) {
           <app-participant-grid-item
-            [item]="item"
+            [participant]="item.participant!"
             [currentUserId]="currentUserId()"
-            [isPaidEvent]="isPaidEvent()"
-            (slotClick)="onSlotItemClick($event)"
+            (clicked)="onSlotItemClick(item)"
           />
         }
       </div>

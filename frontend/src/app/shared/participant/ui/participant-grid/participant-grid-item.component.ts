@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { NgClass } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { IconComponent } from '../../../ui/icon/icon.component';
+import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.component';
 import { EventSlotInfo } from '../../../types/payment.interface';
 import { Participation, ParticipantManageItem } from '../../../types';
-import { ParticipantCardComponent } from '../participant-card/participant-card.component';
+import { SemanticColor } from '../../../types/colors';
+import { SlotDisplayStatus } from '../../slot-status-config';
 
 export type ParticipantItem = Participation | ParticipantManageItem;
 
@@ -20,63 +21,155 @@ export interface SlotItem {
 
 @Component({
   selector: 'app-participant-grid-item',
-  imports: [IconComponent, NgClass, ParticipantCardComponent],
+  imports: [IconComponent, UserAvatarComponent],
   template: `
-    @let _participant = item().participant;
-    @let isReal = isRealSlot();
-    <div
-      [class]="
-        'w-24 h-24 rounded-xl transition-colors' +
-        (isReal ? ' border-2 border-dashed border-primary-200 bg-primary-50' : '')
-      "
-    >
-      @if (_participant) {
-        <app-participant-card
-          [participant]="_participant"
-          [currentUserId]="currentUserId()"
-          [isPaidEvent]="isPaidEvent()"
-          (clicked)="slotClick.emit(item())"
-        />
-      } @else {
-        <button
-          type="button"
-          class="flex flex-col items-center w-full h-full p-1.5 rounded-xl transition-colors hover:bg-neutral-50 focus:outline-hidden focus:ring-2 focus:ring-primary-200"
-          (click)="slotClick.emit(item())"
-        >
-          <div
-            [ngClass]="[
-              'w-16 h-16 rounded-xl flex items-center justify-center',
-              item().slotData.locked ? 'border-2 border-warning-300 bg-warning-50' : 'border-0',
-            ]"
-          >
-            <app-icon
-              [name]="item().slotData.locked ? 'lock' : 'plus'"
-              size="sm"
-              [ngClass]="item().slotData.locked ? 'text-warning-400' : 'text-primary-400'"
+    @let _statusIndicators = statusIndicators();
+
+    <div class="w-24 h-24 rounded-xl transition-colors">
+      <button
+        type="button"
+        [attr.data-user-id]="participant().userId"
+        [class]="buttonClass()"
+        (click)="clicked.emit()"
+      >
+        <div class="relative flex flex-col items-center justify-center flex-1">
+          <div class="relative">
+            <app-user-avatar
+              [avatarUrl]="avatarUrl()"
+              [displayName]="displayName()"
+              size="lg"
+              shape="rounded"
             />
+            @if (_statusIndicators.length > 0) {
+              <div
+                class="absolute -top-2 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1"
+              >
+                @for (indicator of _statusIndicators; track indicator.icon) {
+                  <span
+                    [class]="indicatorClass + ' bg-' + indicator.color + '-400'"
+                    [title]="indicator.tooltip"
+                  >
+                    <app-icon [name]="$any(indicator.icon)" size="xs" class="text-white" />
+                  </span>
+                }
+              </div>
+            }
           </div>
+
           <span
-            [ngClass]="[
-              'text-[11px] text-center leading-tight mt-1 min-h-[2.5em]',
-              item().slotData.locked ? 'text-warning-500' : 'text-primary-500',
-            ]"
+            [class]="
+              'text-[9px] text-center leading-tight mt-1 w-full line-clamp-2 h-[2.6em] flex-shrink-0 ' +
+              nameClass()
+            "
           >
-            {{ item().slotData.locked ? 'Zajete' : 'Wolne' }}
+            {{ displayName() }}
           </span>
-        </button>
-      }
+        </div>
+      </button>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParticipantGridItemComponent {
-  readonly item = input.required<SlotItem>();
+  readonly participant = input.required<ParticipantItem>();
   readonly currentUserId = input<string | null>(null);
-  readonly isPaidEvent = input(false);
-  readonly slotClick = output<SlotItem>();
+  readonly clicked = output<void>();
 
-  // Helper to determine if this is a real slot (not pending/withdrawn placeholder)
-  isRealSlot(): boolean {
-    return this.item().slotData.slotId !== undefined;
-  }
+  readonly displayName = computed(() => this.participant().user?.displayName ?? 'Uczestnik');
+  readonly avatarUrl = computed(() => this.participant().user?.avatarUrl ?? null);
+
+  readonly slotDisplayStatus = computed<SlotDisplayStatus>(() => {
+    const status = this.participant().status;
+    if (status === 'PENDING') return 'pending';
+    if (status === 'WITHDRAWN' || status === 'REJECTED') return 'withdrawn';
+    return 'participant';
+  });
+
+  readonly isCurrentUserGuest = computed(() => {
+    const participant = this.participant();
+    if (!participant.isGuest) return false;
+    return participant.addedByUserId === this.currentUserId();
+  });
+
+  readonly isCurrentUser = computed(() => this.participant().userId === this.currentUserId());
+
+  readonly isCurrentUserOrGuest = computed(() => {
+    return this.isCurrentUser() || this.isCurrentUserGuest();
+  });
+
+  readonly isBanned = computed(() => {
+    const participant = this.participant();
+    return 'waitingReason' in participant && participant.waitingReason === 'BANNED';
+  });
+
+  readonly needsPayment = computed(
+    () => this.participant().payment === null && this.participant().status === 'APPROVED',
+  );
+
+  readonly showPending = computed(
+    () => this.participant().status === 'PENDING' && !this.isBanned(),
+  );
+
+  readonly avatarStatus = computed<SemanticColor | null>(() => {
+    const status = this.participant().status;
+    if (status === 'CONFIRMED') return 'success';
+    if (status === 'REJECTED') return 'danger';
+    return null;
+  });
+
+  readonly statusIndicators = computed(() => {
+    const indicators: { icon: string; tooltip: string; color: SemanticColor }[] = [];
+
+    if (this.needsPayment()) {
+      indicators.push({ icon: 'credit-card', tooltip: 'Oczekuje na płatność', color: 'warning' });
+    }
+
+    if (this.showPending()) {
+      indicators.push({ icon: 'clock', tooltip: 'Oczekuje na zatwierdzenie', color: 'warning' });
+    }
+
+    if (this.isCurrentUserGuest()) {
+      indicators.push({ icon: 'user-plus', tooltip: 'Gość dodany przez ciebie', color: 'info' });
+    }
+
+    if (this.isBanned()) {
+      indicators.push({ icon: 'shield-alert', tooltip: 'Zbanowany', color: 'danger' });
+    }
+
+    const avatarStatus = this.avatarStatus();
+    if (avatarStatus === 'success') {
+      indicators.push({ icon: 'check', tooltip: 'Potwierdzony', color: 'success' });
+    }
+    if (avatarStatus === 'danger') {
+      indicators.push({ icon: 'x', tooltip: 'Odrzucony', color: 'danger' });
+    }
+
+    return indicators;
+  });
+
+  readonly indicatorClass =
+    'inline-flex items-center justify-center w-5 h-5 rounded-full shadow-xs border border-white';
+
+  readonly buttonClass = computed(() => {
+    const base =
+      'flex flex-col items-center w-full h-full p-2 rounded-xl transition-colors' +
+      ' hover:bg-neutral-50 focus:outline-hidden';
+    const status = this.slotDisplayStatus();
+
+    // Current user and their guests: unified green styling
+    if (this.isCurrentUserOrGuest()) {
+      return `${base} ring-2 ring-primary-100 ring-dashed`;
+    }
+
+    if (status === 'pending') return `${base} focus:ring-2 focus:ring-warning-200`;
+    if (status === 'withdrawn') return `${base} focus:ring-2 focus:ring-neutral-200`;
+    return `${base} focus:ring-2 focus:ring-primary-200`;
+  });
+
+  readonly nameClass = computed(() => {
+    const status = this.slotDisplayStatus();
+    if (status === 'withdrawn') return 'text-neutral-400';
+    if (status === 'pending') return this.isBanned() ? 'text-danger-500' : 'text-warning-600';
+    return 'text-neutral-700';
+  });
 }

@@ -2,7 +2,6 @@
 @let _withoutSlotCount = withoutSlotCount();
 @let _filtered = filteredParticipations();
 @let _currentUserId = currentUserId();
-@let _isPaidEvent = isPaidEvent();
 
 <!-- Nagłówek + filtry -->
 <div class="flex items-center justify-between gap-2 mb-3">
@@ -39,14 +38,13 @@
 <!-- Siatka uczestników -->
 <div class="flex flex-wrap gap-3 justify-center">
   <!-- Klocek do dodawania nowego uczestnika -->
-  <app-add-participant-card (clicked)="addNewParticipant.emit()" />
+  <app-participant-grid-item-empty variant="add" (clicked)="addNewParticipant.emit()" />
 
   @if (_filtered.length > 0) {
     @for (p of _filtered; track p.id) {
-      <app-participant-card
+      <app-participant-grid-item
         [participant]="p"
         [currentUserId]="_currentUserId"
-        [isPaidEvent]="_isPaidEvent"
         (clicked)="participantClicked.emit(p)"
       />
     }

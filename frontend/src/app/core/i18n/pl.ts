@@ -63,10 +63,8 @@ export const pl: Translation = {
     level: {
       'mixed-open': 'Mieszany (open)',
       beginner: 'Początkujący',
-      recreational: 'Rekreacyjny',
-      regular: 'Regularny',
-      solid: 'Solidny',
-      advanced: 'Zaawansowany',
+      amateur: 'Amatorski',
+      'semi-pro': 'Półprofesjonalny',
       professional: 'Zawodowy',
     },
     'participant-role': {
