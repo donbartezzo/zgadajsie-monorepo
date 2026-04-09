@@ -19,6 +19,11 @@ export class ChatController {
     return this.chatService.getMessages(eventId, page ? +page : 1, limit ? +limit : 50);
   }
 
+  @Get('messages/count')
+  getMessageCount(@Param('eventId') eventId: string) {
+    return this.chatService.getMessageCount(eventId);
+  }
+
   @Get('members')
   getMembers(@Param('eventId') eventId: string) {
     return this.chatService.getChatMembers(eventId);

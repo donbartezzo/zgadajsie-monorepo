@@ -19,6 +19,7 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { EventService } from '../../../../core/services/event.service';
 import { EventAnnouncementService } from '../../../../core/services/event-announcement.service';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { ChatService } from '../../../../core/services/chat.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
@@ -70,6 +71,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   private readonly eventService = inject(EventService);
   private readonly announcementService = inject(EventAnnouncementService);
   readonly auth = inject(AuthService);
+  private readonly chatService = inject(ChatService);
   private readonly snackbar = inject(SnackbarService);
   readonly overlays = inject(BottomOverlaysService);
   private readonly confirmModal = inject(ConfirmModalService);
@@ -99,6 +101,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly hasAnnouncements = signal(false);
   readonly countdown = signal<EventCountdown | null>(null);
   readonly lotteryCountdown = signal<EventCountdown | null>(null);
+  readonly chatMessageCount = signal<number | null>(null);
   readonly loginQueryParams = { returnUrl: inject(Router).url };
   readonly fullAddress = computed(() => formatEventAddress(this.event()?.address));
 
@@ -147,6 +150,16 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     this.overlays.onAuthSuccess(() => this.onAuthSuccess());
     this.overlays.onCancelEvent(() => this.cancelEvent());
 
+    // Load chat message count when event is available and user has access
+    effect(() => {
+      const e = this.event();
+      if (e && (this.isParticipant() || this.isOrganizer())) {
+        this.loadChatMessageCount(e.id);
+      } else {
+        this.chatMessageCount.set(null);
+      }
+    });
+
     // Setup countdown effect in injection context
     effect(() => {
       const e = this.event();
@@ -170,6 +183,23 @@ export class EventDetailComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.announcements.set(res.announcements);
         this.hasAnnouncements.set(res.hasAnnouncements);
+      },
+    });
+  }
+
+  private loadChatMessageCount(eventId: string): void {
+    // Simple caching: don't refetch if we already have a count
+    if (this.chatMessageCount() !== null) {
+      return;
+    }
+
+    this.chatService.getMessageCount(eventId).subscribe({
+      next: (res) => {
+        this.chatMessageCount.set(res.count);
+      },
+      error: () => {
+        // Silent fail - don't show error for message count
+        this.chatMessageCount.set(null);
       },
     });
   }

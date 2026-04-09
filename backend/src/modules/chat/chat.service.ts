@@ -25,6 +25,13 @@ export class ChatService {
     return { data: messages.reverse(), total, page, limit };
   }
 
+  async getMessageCount(eventId: string): Promise<{ count: number }> {
+    const count = await this.prisma.eventGroupMessage.count({
+      where: { eventId },
+    });
+    return { count };
+  }
+
   async createMessage(eventId: string, userId: string, content: string) {
     const hasAccess = await this.hasEventAccess(eventId, userId);
     if (!hasAccess) {

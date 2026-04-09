@@ -168,7 +168,16 @@
           class="flex w-full items-center gap-3 rounded-xl border border-neutral-100 bg-neutral-50 px-4 py-3 text-left transition-colors hover:bg-neutral-100"
           (click)="openChat()"
         >
-          <app-icon name="message-circle" size="sm" class="text-primary-500"></app-icon>
+          <div class="relative">
+            <app-icon name="message-circle" size="sm" class="text-primary-500"></app-icon>
+            @if (chatMessageCount(); as count) {
+              <span
+                class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary-500 text-[10px] font-semibold text-white"
+              >
+                {{ count > 99 ? '99+' : count }}
+              </span>
+            }
+          </div>
           <div class="flex-1 min-w-0">
             <p class="text-sm font-semibold text-neutral-900">Czat grupowy</p>
             <p class="text-[10px] text-neutral-400">Porozmawiaj z uczestnikami</p>

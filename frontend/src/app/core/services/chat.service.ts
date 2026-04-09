@@ -85,6 +85,12 @@ export class ChatService {
     );
   }
 
+  getMessageCount(eventId: string): Observable<{ count: number }> {
+    return this.http.get<{ count: number }>(
+      `${environment.apiUrl}/events/${eventId}/chat/messages/count`,
+    );
+  }
+
   // ─── Private Chat (Organizer ↔ Participant) ────────────────────────────────
 
   connectPrivate(eventId: string, otherUserId: string): void {
