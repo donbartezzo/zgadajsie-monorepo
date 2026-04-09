@@ -510,7 +510,7 @@ export class IconComponent {
       return '';
     }
 
-    const baseClass = SEMANTIC_COLOR_CLASSES.text[colorInput];
+    const baseClass = SEMANTIC_COLOR_CLASSES.text[colorInput] || '';
     const mutedValue = this.muted();
 
     if (mutedValue === 'light') {

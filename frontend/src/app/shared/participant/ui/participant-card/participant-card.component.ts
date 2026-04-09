@@ -38,6 +38,10 @@ export class ParticipantCardComponent {
     return p.addedByUserId === this.currentUserId();
   });
 
+  readonly isCurrentUserOrGuest = computed(() => {
+    return this.isCurrentUser() || this.isCurrentUserGuest();
+  });
+
   readonly isBanned = computed(
     () => (this.participant() as Participation).waitingReason === 'BANNED',
   );
@@ -59,14 +63,16 @@ export class ParticipantCardComponent {
 
   readonly buttonClass = computed(() => {
     const base =
-      'flex flex-col items-center w-16 sm:w-18 p-1.5 rounded-xl transition-colors' +
+      'flex flex-col items-center w-20 sm:w-22 h-20 sm:h-22 p-2 rounded-xl transition-colors' +
       ' hover:bg-neutral-50 focus:outline-hidden';
     const status = this.slotDisplayStatus();
-    if (this.isCurrentUser()) return `${base} ring-2 ring-primary-400 bg-primary-50`;
-    if (this.isCurrentUserGuest()) {
-      if (status === 'pending') return `${base} ring-2 ring-secondary-300 bg-secondary-50 opacity-80`;
-      return `${base} ring-2 ring-secondary-300 bg-secondary-50`;
+
+    // Current user and their guests: unified green styling
+    if (this.isCurrentUserOrGuest()) {
+      return `${base} ring-2 ring-primary-100`;
     }
+
+    // Other participants
     if (status === 'pending') return `${base} focus:ring-2 focus:ring-warning-200 opacity-80`;
     if (status === 'withdrawn') return `${base} focus:ring-2 focus:ring-neutral-200 opacity-50`;
     return `${base} focus:ring-2 focus:ring-primary-200`;

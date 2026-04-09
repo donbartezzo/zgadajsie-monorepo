@@ -2,12 +2,12 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
 import { CommonModule } from '@angular/common';
 import { AvatarUrl } from '../../../types';
 import { IconComponent, IconName } from '../../../ui/icon/icon.component';
-import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../types/colors';
+import { SemanticColor } from '../../../types/colors';
 
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 export type AvatarShape = 'circle' | 'rounded';
 
-type AvatarIndicatorType = SemanticColor | 'pending';
+type AvatarIndicatorType = SemanticColor | 'pending' | 'secondary';
 
 @Component({
   selector: 'app-user-avatar',
@@ -20,55 +20,38 @@ type AvatarIndicatorType = SemanticColor | 'pending';
         [ngClass]="[sizeClass(), shapeClass()]"
       >
         @if (hasAvatar() && showImage()) {
-        <img
-          [src]="avatarUrl()"
-          [alt]="displayName()"
-          class="object-cover w-full h-full"
-          [ngClass]="shapeClass()"
-          (error)="onImageError()"
-        />
+          <img
+            [src]="avatarUrl()"
+            [alt]="displayName()"
+            class="object-cover w-full h-full"
+            [ngClass]="shapeClass()"
+            (error)="onImageError()"
+          />
         } @else {
-        <div
-          class="flex items-center justify-center font-semibold text-white w-full h-full"
-          [ngClass]="[bgClass(), shapeClass()]"
-        >
-          {{ initials() }}
-        </div>
+          <div
+            class="flex items-center justify-center font-semibold text-white w-full h-full"
+            [ngClass]="[bgClass(), shapeClass()]"
+          >
+            {{ initials() }}
+          </div>
         }
       </div>
 
       <!-- Status indicators (icons below avatar, styled like app-button icon variant) -->
       @if (statusIndicators().length > 0) {
-      <div class="flex items-center justify-center gap-0.5 -mt-2 relative z-10">
-        @for (indicator of statusIndicators(); track indicator.type) {
-        <span
-          class="inline-flex items-center justify-center rounded-lg shadow-xs"
-          [ngClass]="indicatorClass(indicator.type)"
-          [title]="indicator.tooltip"
+        <div
+          class="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1 translate-y-1/2 z-10"
         >
-          <app-icon
-            [name]="$any(indicator.icon)"
-            [size]="indicatorIconSize()"
-            [color]="indicator.type === 'pending' ? 'neutral' : indicator.type"
-          />
-        </span>
-        }
-      </div>
-      }
-
-      <!-- Legacy: isNew indicator -->
-      @if (isNew() && statusIndicators().length === 0) {
-      <span
-        class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-success-400 rounded-full border-2 border-white"
-      ></span>
-      }
-
-      <!-- Legacy: rank badge -->
-      @if (rank()) {
-      <span
-        class="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-bold px-1 rounded-full bg-warning-50 text-warning-400 whitespace-nowrap"
-        >{{ rank() }}</span
-      >
+          @for (indicator of statusIndicators(); track indicator.type) {
+            <span
+              class="inline-flex items-center justify-center shadow-xs"
+              [ngClass]="indicatorClass(indicator.type)"
+              [title]="indicator.tooltip"
+            >
+              <app-icon [name]="$any(indicator.icon)" [size]="'xs'" [color]="$any('neutral-400')" />
+            </span>
+          }
+        </div>
       }
     </div>
   `,
@@ -79,11 +62,10 @@ export class UserAvatarComponent {
   readonly displayName = input('');
   readonly size = input<AvatarSize>('md');
   readonly shape = input<AvatarShape>('rounded');
-  readonly rank = input<string | null>(null);
-  readonly isNew = input(false);
   readonly status = input<SemanticColor | null>(null);
   readonly showPaymentWarning = input(false);
   readonly showPending = input(false);
+  readonly showGuest = input(false);
 
   readonly hasAvatar = computed(() => {
     const url = this.avatarUrl();
@@ -142,6 +124,13 @@ export class UserAvatarComponent {
     if (this.showPending()) {
       indicators.push({ type: 'pending', icon: 'clock', tooltip: 'Oczekuje na zatwierdzenie' });
     }
+    if (this.showGuest()) {
+      indicators.push({
+        type: 'secondary',
+        icon: 'user-plus',
+        tooltip: 'Gość dodany przez ciebie',
+      });
+    }
     if (this.status() === 'success') {
       indicators.push({ type: 'success', icon: 'check', tooltip: 'Potwierdzony' });
     }
@@ -152,13 +141,12 @@ export class UserAvatarComponent {
     return indicators;
   });
 
-  indicatorClass(type: AvatarIndicatorType): string {
-    const base = 'w-5 h-5 border border-white';
-    if (type === 'pending') {
-      return `${base} ${SEMANTIC_COLOR_CLASSES.surface.neutral}`;
-    }
+  indicatorClass(_type: AvatarIndicatorType): string {
+    const base =
+      'w-5 h-5 bg-white border border-white rounded-full shadow-xs flex items-center justify-center';
 
-    return `${base} ${SEMANTIC_COLOR_CLASSES.surface[type]}`;
+    // Ikona wewnatrz bialego kola ma kolor semantyczny
+    return base;
   }
 
   indicatorIconSize(): 'xs' | 'sm' {
