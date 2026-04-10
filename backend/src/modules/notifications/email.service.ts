@@ -227,6 +227,22 @@ export class EmailService {
     }
   }
 
+  async sendContactEmail(name: string, email: string, message: string): Promise<void> {
+    const subject = `Formularz kontaktowy: ${name} (${email})`;
+    const html = `
+      <h2>Wiadomość z formularza kontaktowego</h2>
+      <p><strong>Imię:</strong> ${name}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Wiadomość:</strong></p>
+      <div style="background:#f9fafb;border-left:4px solid #3b82f6;padding:16px;margin:16px 0;">
+        ${message.replace(/\n/g, '<br>')}
+      </div>
+    `;
+
+    // Send to admin email (using SMTP_FROM as recipient)
+    await this.send(this.fromAddress, subject, html);
+  }
+
   private wrapHtml(body: string): string {
     return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">${body}<hr style="margin-top:32px;border:none;border-top:1px solid #e5e7eb;"/><p style="font-size:12px;color:#9ca3af;">${APP_BRAND.NAME} – ${APP_BRAND.TAGLINE}</p></body></html>`;
   }
