@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
-import { EmailTestService } from '../email/email-test.service';
+import { EmailService } from './email.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
@@ -10,7 +10,7 @@ import { AuthUser } from '../auth/interfaces/auth-user.interface';
 export class NotificationsController {
   constructor(
     private notificationsService: NotificationsService,
-    private emailTestService: EmailTestService,
+    private emailService: EmailService,
   ) {}
 
   @Get()
@@ -54,16 +54,10 @@ export class NotificationsController {
     return this.notificationsService.unsubscribePush(user.id, body.endpoint);
   }
 
-  @Post('email/test-connection')
-  async testConnection() {
-    const success = await this.emailTestService.testConnection();
-    return { success, message: success ? 'SMTP connection OK' : 'SMTP connection failed' };
-  }
-
   @Post('email/send-test')
   async sendTestEmail(@CurrentUser() user: AuthUser, @Body() body: { to?: string }) {
     const to = body.to || user.email;
-    const success = await this.emailTestService.sendTestEmail(to);
-    return { success, message: success ? `Test email sent to ${to}` : 'Failed to send test email' };
+    await this.emailService.sendActivationEmail(to, user.displayName ?? user.email, 'test-token');
+    return { success: true, message: `Test email sent to ${to}` };
   }
 }

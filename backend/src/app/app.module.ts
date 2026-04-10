@@ -3,7 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { EmailService } from '../modules/notifications/email.service';
 import { PrismaModule } from '../modules/prisma/prisma.module';
 import { AuthModule } from '../modules/auth/auth.module';
 import { UsersModule } from '../modules/users/users.module';
@@ -45,6 +44,6 @@ import { SlotModule } from '../modules/slots/slot.module';
     SlotModule,
   ],
   controllers: [AppController],
-  providers: [AppService, EmailService],
+  providers: [AppService],
 })
 export class AppModule {}

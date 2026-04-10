@@ -1,31 +1,22 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Transporter, createTransport } from 'nodemailer';
+import { Resend } from 'resend';
 import { APP_BRAND, formatDateTime } from '@zgadajsie/shared';
 
 @Injectable()
-export class EmailService {
+export class EmailService implements OnModuleInit {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: Transporter;
+  private resend: Resend;
 
-  constructor(private configService: ConfigService) {
-    const smtpPort = this.configService.get<number>('SMTP_PORT', 587);
-    this.transporter = createTransport({
-      host: this.configService.get<string>('SMTP_HOST', 'localhost'),
-      port: smtpPort,
-      secure: smtpPort === 465,
-      connectionTimeout: 10_000,
-      greetingTimeout: 10_000,
-      socketTimeout: 15_000,
-      auth: {
-        user: this.configService.get<string>('SMTP_USER', ''),
-        pass: this.configService.get<string>('SMTP_PASS', ''),
-      },
-    });
+  constructor(private configService: ConfigService) {}
+
+  onModuleInit() {
+    const apiKey = this.configService.getOrThrow<string>('RESEND_API_KEY');
+    this.resend = new Resend(apiKey);
   }
 
   private get fromAddress(): string {
-    return this.configService.get<string>('SMTP_FROM', APP_BRAND.NOREPLY_EMAIL);
+    return this.configService.get<string>('EMAIL_FROM', APP_BRAND.NOREPLY_EMAIL);
   }
 
   private get frontendUrl(): string {
@@ -124,9 +115,7 @@ export class EmailService {
       `Potwierdzenie płatności – ${eventTitle}`,
       `
       <h2>Hej ${displayName}!</h2>
-      <p>Twoja płatność <strong>${amount.toFixed(
-        2,
-      )} zł</strong> za wydarzenie <strong>${eventTitle}</strong> została zaksięgowana.</p>
+      <p>Twoja płatność <strong>${amount.toFixed(2)} zł</strong> za wydarzenie <strong>${eventTitle}</strong> została zaksięgowana.</p>
     `,
     );
   }
@@ -142,9 +131,7 @@ export class EmailService {
       `Zwrot płatności – ${eventTitle}`,
       `
       <h2>Hej ${displayName}!</h2>
-      <p>Zwrot <strong>${amount.toFixed(
-        2,
-      )} zł</strong> za wydarzenie <strong>${eventTitle}</strong> został zlecony.</p>
+      <p>Zwrot <strong>${amount.toFixed(2)} zł</strong> za wydarzenie <strong>${eventTitle}</strong> został zlecony.</p>
     `,
     );
   }
@@ -214,20 +201,6 @@ export class EmailService {
     );
   }
 
-  private async send(to: string, subject: string, html: string): Promise<void> {
-    try {
-      await this.transporter.sendMail({
-        from: this.fromAddress,
-        to,
-        subject,
-        html: this.wrapHtml(html),
-      });
-      this.logger.log(`Email sent to ${to}: ${subject}`);
-    } catch (error) {
-      this.logger.error(`Failed to send email to ${to}: ${error.message}`);
-    }
-  }
-
   async sendContactEmail(name: string, email: string, message: string): Promise<void> {
     const subject = `Formularz kontaktowy: ${name} (${email})`;
     const html = `
@@ -239,9 +212,21 @@ export class EmailService {
         ${message.replace(/\n/g, '<br>')}
       </div>
     `;
-
-    // Send to admin email (using SMTP_FROM as recipient)
     await this.send(this.fromAddress, subject, html);
+  }
+
+  private async send(to: string, subject: string, html: string): Promise<void> {
+    try {
+      await this.resend.emails.send({
+        from: this.fromAddress,
+        to,
+        subject,
+        html: this.wrapHtml(html),
+      });
+      this.logger.log(`Email sent to ${to}: ${subject}`);
+    } catch (error) {
+      this.logger.error(`Failed to send email to ${to}: ${error.message}`);
+    }
   }
 
   private wrapHtml(body: string): string {
