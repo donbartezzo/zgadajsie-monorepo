@@ -6,7 +6,7 @@ import {
   nowInZone,
   EventCountdown,
 } from '@zgadajsie/shared';
-import { getPolishPluralKey } from '../pipes/time-unit.pipe';
+import { getPolishPluralKey } from '../utils/pluralization.utils';
 
 @Injectable({ providedIn: 'root' })
 export class DateLabelsService {

@@ -152,8 +152,6 @@ export class EventAreaService {
 
   readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
 
-  readonly remainingCount = computed(() => Math.max(0, this.participants().length - 6));
-
   readonly lifecycleBannerVariant = computed(() => {
     if (this.isCancelled()) return 'cancelled' as const;
     const ts = this.eventTimeStatus();

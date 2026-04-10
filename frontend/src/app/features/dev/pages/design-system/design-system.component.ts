@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.component';
 import { ButtonAppearance, ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
+import { CapacityProgressComponent } from '../../../../shared/ui/capacity-progress/capacity-progress.component';
 import { SemanticColor } from '../../../../shared/types/colors';
 
 interface ColorSwatch {
@@ -17,7 +18,7 @@ interface ColorPalette {
 
 @Component({
   selector: 'app-design-system',
-  imports: [IconComponent, ButtonComponent, BadgeComponent],
+  imports: [IconComponent, ButtonComponent, BadgeComponent, CapacityProgressComponent],
   templateUrl: './design-system.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -393,6 +394,21 @@ export class DesignSystemComponent {
     { name: '10', rem: '2.5rem', px: '40px' },
     { name: '12', rem: '3rem', px: '48px' },
     { name: '16', rem: '4rem', px: '64px' },
+  ];
+
+  readonly progressExamples = [
+    { current: 0, max: 10 },
+    { current: 1, max: 10 },
+    { current: 2, max: 10 },
+    { current: 3, max: 10 },
+    { current: 4, max: 10 },
+    { current: 5, max: 10 },
+    { current: 6, max: 10 },
+    { current: 7, max: 10 },
+    { current: 8, max: 10 },
+    { current: 9, max: 10 },
+    { current: 10, max: 10 },
+    { current: 5, max: 0 },
   ];
 
   setSection(id: string): void {

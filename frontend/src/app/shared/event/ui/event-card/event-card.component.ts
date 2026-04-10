@@ -12,9 +12,9 @@ import {
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { IconComponent } from '../../../ui/icon/icon.component';
-import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.component';
 import { DateBadgeComponent } from '../date-badge/date-badge.component';
 import { EventStatusBadgeComponent } from '../event-status-badge/event-status-badge.component';
+import { CapacityProgressComponent } from '../../../ui/capacity-progress/capacity-progress.component';
 import { EventListItem } from '../../../types';
 import { getEventCoverUrl } from '../../../types/cover-image.interface';
 import {
@@ -35,9 +35,9 @@ import { DateLabelsService } from '../../../services/date-labels.service';
   imports: [
     DecimalPipe,
     IconComponent,
-    UserAvatarComponent,
     DateBadgeComponent,
     EventStatusBadgeComponent,
+    CapacityProgressComponent,
     TranslocoPipe,
     EventDurationPipe,
   ],
@@ -46,9 +46,10 @@ import { DateLabelsService } from '../../../services/date-labels.service';
     @let _countdown = countdown();
     @let _coverUrl = coverUrl();
 
-    <div
+    <button
+      type="button"
       [class]="
-        'rounded-2xl shadow-xs overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 bg-white border-2 ' +
+        'rounded-2xl shadow-xs overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 bg-white border-2 text-left w-full ' +
         borderClass()
       "
       (click)="selected.emit(_event)"
@@ -118,15 +119,14 @@ import { DateLabelsService } from '../../../services/date-labels.service';
       </div>
 
       <div class="p-3 space-y-2">
-        <div class="flex items-center gap-1 text-sm text-neutral-500">
-          <app-icon name="map-pin" size="sm" color="neutral" muted="light" />
-          <span class="truncate">{{ _event.address }}</span>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
+          <span class="flex items-center gap-1">
+            <app-icon name="map-pin" size="xs" color="neutral" muted="light" />
+            {{ _event.address }}
+          </span>
           <span class="flex items-center gap-1">
             <app-icon name="clock" size="xs" color="neutral" muted="light" />
-            {{ eventStartTime() }}–{{ eventEndTime() }} ({{
+            {{ eventStartTime() }}-{{ eventEndTime() }} ({{
               event().startsAt | eventDuration: event().endsAt
             }})
           </span>
@@ -136,7 +136,7 @@ import { DateLabelsService } from '../../../services/date-labels.service';
           </span>
         </div>
 
-        @if (rulesList().length > 0) {
+        <!-- @if (rulesList().length > 0) {
           <div class="text-sm">
             <div class="flex items-center gap-1 text-neutral-900 font-medium mb-1">
               <app-icon name="check-circle" size="sm" color="neutral" muted="light" />
@@ -151,40 +151,28 @@ import { DateLabelsService } from '../../../services/date-labels.service';
               }
             </div>
           </div>
-        }
+        } -->
 
-        <div class="flex items-center justify-between pt-2 border-t border-neutral-200">
-          <div class="flex items-center gap-2">
-            @if (_event.organizer) {
-              <app-user-avatar
-                [avatarUrl]="_event.organizer!.avatarUrl"
-                [displayName]="_event.organizer!.displayName"
-                size="sm"
-              />
-              <span class="text-sm text-neutral-900">{{ _event.organizer!.displayName }}</span>
-            }
-          </div>
-          <div class="flex items-center gap-3 text-sm">
-            @if (_event._count) {
-              <span class="flex items-center gap-1 text-neutral-500">
-                <app-icon name="users" size="sm" color="neutral" muted="light" />
-                {{ _event._count!.participations }}
-                @if (_event.maxParticipants) {
-                  /{{ _event.maxParticipants }}
-                }
-              </span>
-            }
-            @if (_event.costPerPerson > 0) {
-              <span class="font-semibold text-success-400"
-                >{{ _event.costPerPerson | number: '1.0-2' }} zł</span
-              >
-            } @else {
-              <span class="font-semibold text-success-400">Bezpłatne</span>
-            }
-          </div>
+        <div class="flex items-center justify-between">
+          <app-capacity-progress
+            class="w-60"
+            [current]="_event._count?.participations ?? 0"
+            [max]="_event.maxParticipants ?? 0"
+          />
+          @if (_event.costPerPerson > 0) {
+            <span class="flex items-center gap-1 text-sm font-semibold text-success-400">
+              <app-icon name="dollar-sign" size="xs" color="success" />
+              {{ _event.costPerPerson | number: '1.0-2' }} zł
+            </span>
+          } @else {
+            <span class="flex items-center gap-1 text-sm font-semibold text-success-400">
+              <app-icon name="check-circle" size="xs" color="success" />
+              Bezpłatne
+            </span>
+          }
         </div>
       </div>
-    </div>
+    </button>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -16,6 +16,7 @@ import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
 import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
+import { CapacityProgressComponent } from '../../../../shared/ui/capacity-progress/capacity-progress.component';
 import { EventService } from '../../../../core/services/event.service';
 import { EventAnnouncementService } from '../../../../core/services/event-announcement.service';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -49,6 +50,7 @@ import { TimeUnitPipe } from '../../../../shared/pipes/time-unit.pipe';
     DatePipe,
     RouterLink,
     IconComponent,
+    CapacityProgressComponent,
     ButtonComponent,
     BadgeComponent,
     UserAvatarComponent,
@@ -93,7 +95,6 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly participantCount = this.eventArea.participantCount;
   readonly notificationBars = this.eventArea.notificationBars;
   readonly visibleAvatars = this.eventArea.visibleAvatars;
-  readonly remainingCount = this.eventArea.remainingCount;
   readonly lifecycleBannerVariant = this.eventArea.lifecycleBannerVariant;
 
   // ── Local state ──

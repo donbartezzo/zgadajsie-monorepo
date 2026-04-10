@@ -78,4 +78,17 @@ export const pl: Translation = {
       },
     },
   },
+  progress: {
+    full: 'Jest komplet!',
+    freeSeat: {
+      one: 'wolne miejsce',
+      few: 'wolne miejsca',
+      many: 'wolnych miejsc',
+    },
+    remainingPrefix: {
+      one: 'Pozostało',
+      few: 'Pozostały',
+      many: 'Pozostało',
+    },
+  },
 };

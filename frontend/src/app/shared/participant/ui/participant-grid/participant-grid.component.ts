@@ -19,6 +19,7 @@ import {
   ParticipantItem,
 } from './participant-grid-item.component';
 import { ParticipantGridItemEmptyComponent } from './participant-grid-item-empty.component';
+import { CapacityProgressComponent } from '../../../ui/capacity-progress/capacity-progress.component';
 
 interface SlotGroup {
   role: DisciplineRole | null;
@@ -39,6 +40,7 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
   imports: [
     IconComponent,
     TranslocoPipe,
+    CapacityProgressComponent,
     ParticipantGridItemComponent,
     ParticipantGridItemEmptyComponent,
   ],

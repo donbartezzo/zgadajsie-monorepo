@@ -1,0 +1,31 @@
+@let _barText = barText();
+@let _freeText = freeText();
+@let _ariaText = ariaValueText();
+
+<div
+  class="{{ rootClass }}"
+  role="progressbar"
+  aria-valuemin="0"
+  [attr.aria-valuemax]="max()"
+  [attr.aria-valuenow]="occupiedCount()"
+  [attr.aria-valuetext]="_ariaText"
+>
+  <div class="{{ trackClass }}">
+    @if (occupiedPercent() === 0) {
+      <!-- Pusty pasek - tekst na szarym tle -->
+      <div class="flex items-center justify-start h-full pl-2 leading-none">
+        <span class="{{ barTextClass }}">{{ _barText }}</span>
+      </div>
+    } @else {
+      <!-- Wypełniony pasek - tekst na kolorowym tle -->
+      <div class="{{ barClass() }}" [style.width.%]="occupiedPercent()" [style]="barStyle()">
+        <div class="flex items-center justify-start h-full pl-2 leading-none">
+          <span class="{{ barTextClass }}">{{ _barText }}</span>
+        </div>
+      </div>
+    }
+  </div>
+  @if (_freeText) {
+    <p class="{{ subtitleClass }}">{{ _freeText }}</p>
+  }
+</div>

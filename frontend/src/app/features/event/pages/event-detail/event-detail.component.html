@@ -11,7 +11,6 @@
   @let _phase = enrollmentPhase();
   @let _isPreEnrollment = _phase === 'PRE_ENROLLMENT';
   @let _visibleAvatars = visibleAvatars();
-  @let _remainingCount = remainingCount();
   @let _fullAddress = fullAddress();
   @let _countdown = countdown();
   @let _notificationBars = notificationBars();
@@ -56,38 +55,38 @@
 
     <!-- Participants section -->
     @if (_isPreEnrollment) {
-      <!-- Pre-enrollment: only show count, no avatar list, no link -->
-      @if (_participantCount > 0) {
-        <div class="mb-4 flex items-center gap-2">
+      <a [routerLink]="['/w', e.city?.slug, e.id, 'participants']" class="mb-4 flex items-center gap-3">
+        <div class="flex items-center gap-2">
           <app-icon name="users" size="sm" class="text-info-400"></app-icon>
-          <span class="text-xs text-neutral-500">
-            {{ _participantCount }}
-            {{ _participantCount === 1 ? 'osoba zgłoszona' : 'osób zgłoszonych' }}
-          </span>
+          <span class="text-xs text-neutral-500">Trwają wstępne zapisy</span>
         </div>
-      }
-    } @else if (_participants.length > 0) {
-      <!-- Normal: clickable avatars → participants page -->
-      <a [routerLink]="['/w', e.city?.slug, e.id, 'participants']" class="flex items-center mb-4">
-        <div class="flex items-center -space-x-3">
-          @for (p of _visibleAvatars; track p.id; let i = $index) {
-            <div class="relative h-7 w-7 shrink-0 rounded-full ring-2 ring-white" [style.z-index]="6 - i">
-              <app-user-avatar
-                [avatarUrl]="p.user.avatarUrl"
-                [displayName]="p.user.displayName || ''"
-                size="sm"
-              ></app-user-avatar>
+      </a>
+    } @else {
+      <a [routerLink]="['/w', e.city?.slug, e.id, 'participants']" class="mb-4 flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          @if (_participants.length > 0) {
+            <div class="flex items-center -space-x-3 mr-3">
+              @for (p of _visibleAvatars; track p.id; let i = $index) {
+                <div class="relative h-7 w-7 shrink-0 rounded-full ring-2 ring-white" [style.z-index]="6 - i">
+                  <app-user-avatar
+                    [avatarUrl]="p.user.avatarUrl"
+                    [displayName]="p.user.displayName || ''"
+                    size="sm"
+                  ></app-user-avatar>
+                </div>
+              }
             </div>
           }
+          <div>
+            <app-capacity-progress
+              class="w-40"
+              [current]="_participantCount"
+              [max]="e.maxParticipants"
+              unitKey="progress.participant"
+              mode="compact"
+            />
+          </div>
         </div>
-        <span class="pl-4 text-[10px] text-neutral-400">
-          @if (_remainingCount > 0) {
-            +{{ _remainingCount }} uczestników
-          } @else {
-            {{ _participants.length }}
-            {{ _participants.length === 1 ? 'uczestnik' : 'uczestników' }}
-          }
-        </span>
       </a>
     }
 
