@@ -102,6 +102,14 @@ jobs:
             ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
         # NOTE: Coolify should deploy by immutable :sha tag, not :dev alias
 
+      - name: Update backend image tag in Coolify (dev)
+        run: |
+          curl --fail --show-error --silent -X PATCH \
+            "${{ secrets.COOLIFY_URL }}/api/v1/applications/${{ secrets.COOLIFY_BACKEND_UUID_DEV }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"docker_registry_image_tag\": \"${{ github.sha }}\"}"
+
       - name: Deploy backend via Coolify (dev)
         run: |
           response=$(curl --fail --show-error --silent -X GET \
@@ -112,6 +120,14 @@ jobs:
             echo "Error: Empty response from Coolify API"
             exit 1
           fi
+
+      - name: Update frontend image tag in Coolify (dev)
+        run: |
+          curl --fail --show-error --silent -X PATCH \
+            "${{ secrets.COOLIFY_URL }}/api/v1/applications/${{ secrets.COOLIFY_FRONTEND_UUID_DEV }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"docker_registry_image_tag\": \"${{ github.sha }}\"}"
 
       - name: Deploy frontend via Coolify (dev)
         run: |
@@ -174,6 +190,14 @@ jobs:
             ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
         # NOTE: Coolify should deploy by immutable :vX.Y.Z tag, not :stable alias
 
+      - name: Update backend image tag in Coolify (prod)
+        run: |
+          curl --fail --show-error --silent -X PATCH \
+            "${{ secrets.COOLIFY_URL }}/api/v1/applications/${{ secrets.COOLIFY_BACKEND_UUID_PROD }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"docker_registry_image_tag\": \"${{ github.event.release.tag_name }}\"}"
+
       - name: Deploy backend via Coolify (prod)
         run: |
           response=$(curl --fail --show-error --silent -X GET \
@@ -184,6 +208,14 @@ jobs:
             echo "Error: Empty response from Coolify API"
             exit 1
           fi
+
+      - name: Update frontend image tag in Coolify (prod)
+        run: |
+          curl --fail --show-error --silent -X PATCH \
+            "${{ secrets.COOLIFY_URL }}/api/v1/applications/${{ secrets.COOLIFY_FRONTEND_UUID_PROD }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"docker_registry_image_tag\": \"${{ github.event.release.tag_name }}\"}"
 
       - name: Deploy frontend via Coolify (prod)
         run: |
