@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { EmailService } from '../modules/notifications/email.service';
 import { PrismaService } from '../modules/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 
@@ -12,6 +13,7 @@ describe('AppController', () => {
       controllers: [AppController],
       providers: [
         AppService,
+        { provide: EmailService, useValue: { sendContactEmail: jest.fn() } },
         { provide: PrismaService, useValue: { $queryRaw: jest.fn() } },
         { provide: ConfigService, useValue: { get: jest.fn() } },
       ],
