@@ -7,7 +7,7 @@ import { syncCoverImagesFromFilesystem } from '../src/modules/cover-images/cover
 const APP_BRAND = {
   NAME: 'ZgadajSie.pl',
   CONTACT_EMAIL: 'kontakt@zgadajsie.pl',
-  NOREPLY_EMAIL: 'noreply@zgadajsie.pl',
+  NOREPLY_EMAIL: 'kontakt@zgadajsie.pl',
 } as const;
 
 const prisma = new PrismaClient();

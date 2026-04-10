@@ -15,7 +15,7 @@ export const APP_BRAND = {
   CONTACT_EMAIL: 'kontakt@zgadajsie.pl',
 
   /** No-reply email */
-  NOREPLY_EMAIL: 'noreply@zgadajsie.pl',
+  NOREPLY_EMAIL: 'kontakt@zgadajsie.pl',
 
   /** Tagline */
   TAGLINE: 'Zgadaj się na wspólną grę!',

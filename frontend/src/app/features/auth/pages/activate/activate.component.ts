@@ -10,41 +10,45 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
   selector: 'app-activate',
   imports: [RouterLink, IconComponent, ButtonComponent, FormsModule],
   template: `
-    <div class="text-center">
-      @if (loading()) {
-        <app-icon name="loader" size="lg" color="primary" class="animate-spin mb-4"></app-icon>
-        <p class="text-neutral-600">Aktywowanie konta...</p>
-      } @else if (success()) {
-        <div
-          class="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-50"
-        >
-          <app-icon name="check" size="lg" color="primary"></app-icon>
-        </div>
-        <h1 class="text-xl font-bold text-neutral-900 mb-2">Konto aktywowane!</h1>
-        <p class="text-sm text-neutral-500 mb-4">Możesz się teraz zalogować.</p>
-        <a routerLink="/auth/login">
-          <app-button appearance="solid" color="primary">Zaloguj się</app-button>
-        </a>
-      } @else {
-        <div
-          class="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-danger-50"
-        >
-          <app-icon name="x" size="lg" color="danger"></app-icon>
-        </div>
-        <h1 class="text-xl font-bold text-neutral-900 mb-2">Błąd aktywacji</h1>
-        <p class="text-sm text-neutral-500 mb-4">{{ errorMsg() }}</p>
-        <div class="mt-4 space-y-3">
-          <input
-            type="email"
-            [(ngModel)]="resendEmail"
-            placeholder="Twój adres email"
-            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
-          />
-          <app-button appearance="outline" color="neutral" [fullWidth]="true" (clicked)="resend()">
-            Wyślij link ponownie
-          </app-button>
-        </div>
-      }
+    <div class="flex min-h-screen items-center justify-center px-4">
+      <div class="text-center w-full max-w-sm">
+        @if (loading()) {
+          <app-icon name="loader" size="lg" color="primary" class="animate-spin mb-4"></app-icon>
+          <p class="text-neutral-600">Aktywowanie konta...</p>
+        } @else if (success()) {
+          <div
+            class="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-50"
+          >
+            <app-icon name="check" size="lg" color="primary"></app-icon>
+          </div>
+          <h1 class="text-xl font-bold text-neutral-900 mb-2">Konto aktywowane!</h1>
+          <p class="text-sm text-neutral-500 mb-4">Możesz teraz zalogować się.</p>
+          <div class="flex justify-center">
+            <a routerLink="/auth/login">
+              <app-button appearance="solid" color="primary">Zaloguj się</app-button>
+            </a>
+          </div>
+        } @else {
+          <div
+            class="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-danger-50"
+          >
+            <app-icon name="x" size="lg" color="danger"></app-icon>
+          </div>
+          <h1 class="text-xl font-bold text-neutral-900 mb-2">Błąd aktywacji</h1>
+          <p class="text-sm text-neutral-500 mb-4">{{ errorMsg() }}</p>
+          <div class="mt-4 space-y-3">
+            <input
+              type="email"
+              [(ngModel)]="resendEmail"
+              placeholder="Twój adres email"
+              class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
+            />
+            <app-button color="primary" [fullWidth]="true" (clicked)="resend()">
+              Wyślij link ponownie
+            </app-button>
+          </div>
+        }
+      </div>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
