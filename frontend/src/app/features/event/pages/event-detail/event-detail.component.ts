@@ -35,6 +35,7 @@ import {
 } from '@zgadajsie/shared';
 import { EnrollmentStatusBannerComponent } from '../../ui/enrollment-status-banner/enrollment-status-banner.component';
 import { EventInfoGridComponent } from '../../../../shared/ui/event-info-grid/event-info-grid.component';
+import { MapComponent } from '../../../../shared/event-form/ui/map/map.component';
 import { getLotteryThreshold } from '../../../../shared/utils/enrollment-phase.util';
 import { EventInlineNotificationBarsComponent } from '../../ui/event-inline-notification-bars/event-inline-notification-bars.component';
 import { EventAnnouncementsComponent } from '../../ui/event-announcements/event-announcements.component';
@@ -60,6 +61,7 @@ import { TimeUnitPipe } from '../../../../shared/pipes/time-unit.pipe';
     EnrollmentStatusBannerComponent,
     EventHeroSlotsComponent,
     EventInfoGridComponent,
+    MapComponent,
     TimeUnitPipe,
   ],
   templateUrl: './event-detail.component.html',

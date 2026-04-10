@@ -15,11 +15,28 @@ import type * as L from 'leaflet';
   selector: 'app-map',
   host: { class: 'block w-full max-w-full' },
   template: `
-    <div
-      #mapContainer
-      class="block w-full max-w-full rounded-xl overflow-hidden"
-      [style.height.px]="height()"
-    ></div>
+    <div class="relative">
+      @if (showLayerControls()) {
+        <div
+          class="absolute top-2 right-2 z-[1000] bg-white rounded-lg shadow-md border border-neutral-200"
+        >
+          <select
+            [value]="defaultLayer()"
+            (change)="changeMapLayer($any($event.target).value)"
+            class="px-3 py-1 text-sm border-0 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
+          >
+            <option value="street">Mapa</option>
+            <option value="satellite">Satelita</option>
+            <option value="terrain">Teren</option>
+          </select>
+        </div>
+      }
+      <div
+        #mapContainer
+        class="block w-full max-w-full rounded-xl overflow-hidden"
+        [style.height.px]="height()"
+      ></div>
+    </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -29,6 +46,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   readonly zoom = input(13);
   readonly height = input(300);
   readonly interactive = input(false); // Domyślnie statyczny
+  readonly markerDraggable = input(true); // Domylnie marker jest przesuwalny gdy mapa jest interaktywna
+  readonly showLayerControls = input(false); // Pokazuje kontrolki zmiany warstwy mapy
+  readonly defaultLayer = input<'street' | 'satellite' | 'terrain'>('street'); // Domylna warstwa
   readonly markerMoved = output<{ lat: number; lng: number }>();
 
   readonly mapContainer = viewChild.required<ElementRef<HTMLElement>>('mapContainer');
@@ -38,6 +58,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   private leaflet: typeof L | null = null;
   private resizeObserver: ResizeObserver | null = null;
   private resizeFrameId: number | null = null;
+  private currentTileLayer: L.TileLayer | null = null;
+  private layerControl: L.Control | null = null;
 
   // Effect do aktualizacji pozycji przy zmianie koordynatów
   private readonly positionEffect = effect(() => {
@@ -58,6 +80,40 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   updatePosition(lat: number, lng: number): void {
     this.updateMarkerAndView(lat, lng);
+  }
+
+  changeMapLayer(layerType: 'street' | 'satellite' | 'terrain'): void {
+    if (!this.map || !this.leaflet) return;
+
+    // Usu obecn warstw
+    if (this.currentTileLayer) {
+      this.map.removeLayer(this.currentTileLayer);
+    }
+
+    // Dodaj now warstw w zalenoci od typu
+    let tileUrl: string;
+    let attribution: string;
+
+    switch (layerType) {
+      case 'satellite':
+        tileUrl =
+          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+        attribution = '&copy; Esri';
+        break;
+      case 'terrain':
+        tileUrl = 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
+        attribution = '&copy; OpenTopoMap';
+        break;
+      default: // street
+        tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        attribution = '&copy; OpenStreetMap';
+    }
+
+    this.currentTileLayer = this.leaflet.tileLayer(tileUrl, {
+      attribution,
+    });
+
+    this.currentTileLayer.addTo(this.map);
   }
 
   async ngAfterViewInit(): Promise<void> {
@@ -100,15 +156,12 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         })
         .setView([this.lat(), this.lng()], this.zoom());
 
-      this.leaflet
-        .tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors',
-        })
-        .addTo(this.map);
+      // Inicjalizuj domyln warstw
+      this.changeMapLayer(this.defaultLayer());
 
       this.marker = this.leaflet
         .marker([this.lat(), this.lng()], {
-          draggable: this.interactive(),
+          draggable: this.markerDraggable(),
           icon: markerIcon,
         })
         .addTo(this.map);
