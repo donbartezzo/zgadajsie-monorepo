@@ -230,8 +230,9 @@ export class SlotService {
 
   /**
    * Add empty slots to an event (when maxParticipants is increased).
+   * Optionally assign a roleKey to all new slots.
    */
-  async addSlots(eventId: string, count: number): Promise<void> {
+  async addSlots(eventId: string, count: number, roleKey?: string | null): Promise<void> {
     if (count <= 0) {
       return;
     }
@@ -240,12 +241,50 @@ export class SlotService {
       id: crypto.randomUUID(),
       eventId,
       participationId: null,
+      roleKey: roleKey ?? null,
       confirmed: false,
       assignedAt: null,
     }));
 
     await this.prisma.eventSlot.createMany({ data: slots });
-    this.logger.log(`Added ${count} slots to event ${eventId}`);
+    this.logger.log(`Added ${count} slots to event ${eventId}${roleKey ? ` (role: ${roleKey})` : ''}`);
+  }
+
+  /**
+   * Reconcile slots per role when roleConfig changes.
+   * For each role: adds missing slots (with correct roleKey) or removes surplus empty slots.
+   * Call this instead of adjustSlotsForMaxParticipants when the event has a roleConfig.
+   */
+  async reconcileSlotsForRoleConfig(
+    eventId: string,
+    roleConfig: SlotRoleConfig,
+  ): Promise<void> {
+    for (const role of roleConfig.roles) {
+      const existing = await this.prisma.eventSlot.count({
+        where: { eventId, roleKey: role.key },
+      });
+      const diff = role.slots - existing;
+
+      if (diff > 0) {
+        await this.addSlots(eventId, diff, role.key);
+      } else if (diff < 0) {
+        const toRemove = await this.prisma.eventSlot.findMany({
+          where: { eventId, roleKey: role.key, participationId: null },
+          select: { id: true },
+          orderBy: { locked: 'asc' },
+          take: Math.abs(diff),
+        });
+        if (toRemove.length > 0) {
+          await this.prisma.eventSlot.deleteMany({
+            where: { id: { in: toRemove.map((s) => s.id) } },
+          });
+        }
+      }
+    }
+
+    this.logger.log(
+      `Reconciled role slots for event ${eventId}: ${roleConfig.roles.map((r) => `${r.key}:${r.slots}`).join(', ')}`,
+    );
   }
 
   /**

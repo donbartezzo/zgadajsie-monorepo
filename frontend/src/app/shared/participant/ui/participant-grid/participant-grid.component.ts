@@ -154,10 +154,16 @@ export class ParticipantGridComponent {
   ): SlotItem[] {
     if (allSlots.length > 0) {
       const roleSlots = roleKey ? allSlots.filter((s) => s.roleKey === roleKey) : allSlots;
-      return roleSlots.map((slot) => ({
+      const items = roleSlots.map((slot) => ({
         slotData: { slotId: slot.id, locked: slot.locked, slot },
         participant: participants.find((p) => slot.participationId === p.id) ?? null,
       }));
+      // Sort: occupied slots first, then empty slots
+      return items.sort((a, b) => {
+        if (a.participant && !b.participant) return -1;
+        if (!a.participant && b.participant) return 1;
+        return 0;
+      });
     }
 
     // Fallback: no real slot data — synthesize from participants + empty placeholders

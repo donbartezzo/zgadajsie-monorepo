@@ -48,24 +48,17 @@ import {
           />
         }
 
-        <div class="mx-auto max-w-lg">
+        <div class="mx-auto max-w-lg mt-2 justify-center">
           <!-- Payment CTA (highlighted) -->
           @if (needsPayment()) {
-            <div class="rounded-xl border-2 border-warning-200 bg-warning-50 p-4">
-              <div class="flex items-start gap-3">
-                <div
-                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning-50"
-                >
-                  <app-icon name="dollar-sign" size="md" class="text-warning-400"></app-icon>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-bold text-warning-400">Wymagana płatność</p>
-                  <p class="text-xs text-warning-400 mt-0.5">
-                    Opłać {{ _event?.costPerPerson }} zł, aby potwierdzić swój udział.
-                  </p>
-                </div>
+            <div class="rounded-xl border-2 border-danger-200">
+              <div class="p-2">
+                <p class="text-sm font-bold text-danger-400 text-center">Wymagana płatność</p>
+                <p class="text-xs text-danger-400 mt-0.5 text-center">
+                  Opłać {{ _event?.costPerPerson }} zł, aby potwierdzić swój udział.
+                </p>
               </div>
-              <div class="mt-3">
+              <div>
                 <app-link-list [items]="paymentLinks()" (itemClicked)="payRequested.emit()" />
               </div>
             </div>
@@ -73,25 +66,19 @@ import {
 
           <!-- Rejoin CTA for withdrawn users -->
           @if (isWithdrawnOrRejected() && canRejoin()) {
-            <div class="rounded-xl border-2 border-primary-200 bg-primary-50 p-4">
-              <div class="flex items-start gap-3">
-                <div
-                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100"
-                >
-                  <app-icon name="user-plus" size="md" class="text-primary-500"></app-icon>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-bold text-primary-600">Chcesz wrócić?</p>
-                  <p class="text-xs text-primary-500 mt-0.5">
-                    Możesz ponownie dołączyć do tego wydarzenia.
-                  </p>
-                </div>
+            <div class="rounded-xl border-2 border-primary-200 mt-2">
+              <div class="p-2">
+                <p class="text-sm font-bold text-primary-600 text-center">Chcesz wrócić?</p>
+                <p class="text-xs text-primary-500 mt-0.5 text-center">
+                  Możesz ponownie dołączyć do tego wydarzenia.
+                </p>
               </div>
-              <div class="mt-3">
+              <div>
                 <app-link-list [items]="rejoinLinks()" (itemClicked)="rejoinRequested.emit()" />
               </div>
             </div>
           }
+
           <!-- Participant options (hidden for withdrawn/rejected) -->
           @if (!isWithdrawnOrRejected()) {
             <div class="mt-2">
@@ -196,8 +183,8 @@ export class JoinConfirmOverlayComponent {
       label: 'Opłać udział',
       icon: 'dollar-sign',
       value: 'pay',
-      color: 'primary',
-      iconColor: 'primary',
+      color: 'success',
+      iconColor: 'success',
       iconBackground: true,
       loading: this.loading(),
     },

@@ -26,7 +26,9 @@ export class EventUserParticipantsComponent {
   readonly userParticipations = computed(() => {
     const uid = this.currentUserId();
     if (!uid) return [];
-    return this.participants().filter((p) => p.userId === uid);
+    return this.participants().filter(
+      (p) => (!p.isGuest && p.userId === uid) || (p.isGuest && p.addedByUserId === uid),
+    );
   });
 
   readonly withoutSlotCount = computed(

@@ -257,17 +257,23 @@ export class EventsService {
     if (dto.startsAt) data.startsAt = new Date(dto.startsAt);
     if (dto.endsAt) data.endsAt = new Date(dto.endsAt);
 
-    // Validate and sync slots if maxParticipants is changing
-    if (dto.maxParticipants !== undefined) {
-      const newMaxParticipants = dto.maxParticipants;
+    // Validate and sync slots if maxParticipants or roleConfig is changing
+    const newRoleConfig = (dto.roleConfig as { roles: Array<{ key: string; slots: number }> } | undefined) ??
+      (event.roleConfig as { roles: Array<{ key: string; slots: number }> } | null);
+    const isRoleBased = newRoleConfig?.roles && newRoleConfig.roles.length > 0;
 
-      // Validate the change
-      const validationError = await this.slotService.validateMaxParticipantsChange(
-        id,
-        newMaxParticipants,
-      );
-      if (validationError) {
-        throw new BadRequestException(validationError);
+    if (dto.maxParticipants !== undefined || dto.roleConfig !== undefined) {
+      const newMaxParticipants = dto.maxParticipants ?? event.maxParticipants;
+
+      // Validate the change (total occupied vs new max)
+      if (dto.maxParticipants !== undefined) {
+        const validationError = await this.slotService.validateMaxParticipantsChange(
+          id,
+          newMaxParticipants,
+        );
+        if (validationError) {
+          throw new BadRequestException(validationError);
+        }
       }
 
       // Update event first
@@ -277,12 +283,16 @@ export class EventsService {
         include: { discipline: true, facility: true, level: true, city: true },
       });
 
-      // Then sync slots
-      await this.slotService.adjustSlotsForMaxParticipants(
-        id,
-        event.maxParticipants,
-        newMaxParticipants,
-      );
+      // Then sync slots — use per-role reconciliation for role-based events
+      if (isRoleBased) {
+        await this.slotService.reconcileSlotsForRoleConfig(id, newRoleConfig!);
+      } else if (dto.maxParticipants !== undefined) {
+        await this.slotService.adjustSlotsForMaxParticipants(
+          id,
+          event.maxParticipants,
+          newMaxParticipants,
+        );
+      }
 
       this.eventRealtime.invalidateEvent(id, 'all');
 
