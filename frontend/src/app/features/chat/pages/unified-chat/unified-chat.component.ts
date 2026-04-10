@@ -22,9 +22,11 @@ import { BaseChatComponent } from '../base-chat.component';
         [typingUser]="typingUser()"
         [inactiveUsers]="inactiveUsers()"
         [disabled]="!isPrivate && chatDisabled()"
+        [accessDenied]="isPrivate && chatAccessDenied()"
         [eventId]="eventId"
         [organizerId]="organizerId()"
         [citySlug]="event()?.city?.slug || ''"
+        [isPrivate]="isPrivate"
         (messageSent)="send($event)"
         (typing)="onTyping()"
       ></app-chat-view>
@@ -38,7 +40,7 @@ import { BaseChatComponent } from '../base-chat.component';
         [otherUserId]="isPrivate ? otherUserId : ''"
         [currentUserId]="currentUserId"
         (closed)="showMembers.set(false)"
-        ></app-chat-members-overlay>
+      ></app-chat-members-overlay>
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

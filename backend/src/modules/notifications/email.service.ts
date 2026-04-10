@@ -13,6 +13,9 @@ export class EmailService {
       host: this.configService.get<string>('SMTP_HOST', 'localhost'),
       port: this.configService.get<number>('SMTP_PORT', 587),
       secure: this.configService.get<string>('SMTP_SECURE', 'false') === 'true',
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 15_000,
       auth: {
         user: this.configService.get<string>('SMTP_USER', ''),
         pass: this.configService.get<string>('SMTP_PASS', ''),

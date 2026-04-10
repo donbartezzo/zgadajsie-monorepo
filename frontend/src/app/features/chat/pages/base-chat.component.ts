@@ -25,6 +25,7 @@ export abstract class BaseChatComponent implements OnDestroy {
   readonly loading = signal(true);
   readonly typingUser = signal<string | null>(null);
   readonly chatDisabled = signal(false);
+  readonly chatAccessDenied = signal(false);
   readonly showMembers = signal(false);
   readonly memberCount = signal(0);
   readonly inactiveUsers = signal<Map<string, 'banned' | 'withdrawn'>>(new Map());
@@ -114,7 +115,7 @@ export abstract class BaseChatComponent implements OnDestroy {
         this.loading.set(false);
         const msg = err?.error?.message || 'Brak dostępu do tego czatu';
         this.snackbar.error(msg);
-        this.chatDisabled.set(true);
+        this.chatAccessDenied.set(true);
       },
     });
 

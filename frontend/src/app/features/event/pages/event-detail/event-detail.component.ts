@@ -95,6 +95,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly canJoin = this.eventArea.canJoin;
   readonly isCancelled = this.eventArea.isCancelled;
   readonly participantCount = this.eventArea.participantCount;
+  readonly slotCount = this.eventArea.slotCount;
   readonly notificationBars = this.eventArea.notificationBars;
   readonly visibleAvatars = this.eventArea.visibleAvatars;
   readonly lifecycleBannerVariant = this.eventArea.lifecycleBannerVariant;

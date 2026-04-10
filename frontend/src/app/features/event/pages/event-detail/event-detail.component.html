@@ -7,7 +7,6 @@
   @let _isParticipant = isParticipant();
   @let _isOrganizer = isOrganizer();
   @let _participants = participants();
-  @let _participantCount = participantCount();
   @let _phase = enrollmentPhase();
   @let _isPreEnrollment = _phase === 'PRE_ENROLLMENT';
   @let _visibleAvatars = visibleAvatars();
@@ -79,8 +78,8 @@
           }
           <div>
             <app-capacity-progress
-              class="w-40"
-              [current]="_participantCount"
+              class="w-50"
+              [current]="slotCount()"
               [max]="e.maxParticipants"
               unitKey="progress.participant"
               mode="compact"

@@ -150,6 +150,12 @@ export class EventAreaService {
 
   readonly participantCount = computed(() => this.participants().length);
 
+  /** Liczba uczestników z przydzielonym miejscem (APPROVED lub CONFIRMED). */
+  readonly slotCount = computed(
+    () =>
+      this.participants().filter((p) => p.status === 'APPROVED' || p.status === 'CONFIRMED').length,
+  );
+
   readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
 
   readonly lifecycleBannerVariant = computed(() => {
