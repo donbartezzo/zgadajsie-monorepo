@@ -64,20 +64,20 @@
           ? 'text-neutral-500'
           : 'text-primary-600';
 
-  <div class="-mx-4 -mt-4 rounded-t-2xl px-5 pb-4 pt-5 pr-12" [class]="_headerBg">
-    <div class="flex items-center gap-4">
-      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full" [class]="_iconBg">
+  <div [class]="'-mx-4 -mt-4 rounded-t-2xl px-5 pb-4 pt-5 pr-12 ' + _headerBg">
+    <div [class]="'flex items-center gap-4'">
+      <div [class]="'flex h-12 w-12 shrink-0 items-center justify-center rounded-full ' + _iconBg">
         <app-icon [name]="_config.icon" size="md" [class]="_iconColor" />
       </div>
       <div>
-        <h3 class="text-base font-bold leading-tight uppercase" [class]="_titleColor">
+        <h3 [class]="'text-base font-bold leading-tight uppercase ' + _titleColor">
           {{ _config.title }}
           @let _participantSlot = _participant?.slot;
           @if (_participantSlot && _participantSlot.roleKey) {
             - {{ 'dict.participant-role.' + _participantSlot.roleKey + '.title' | transloco | uppercase }}
           }
         </h3>
-        <p class="mt-0.5 text-xs" [class]="_descColor">{{ _config.description }}</p>
+        <p [class]="'mt-0.5 text-xs ' + _descColor">{{ _config.description }}</p>
       </div>
     </div>
   </div>

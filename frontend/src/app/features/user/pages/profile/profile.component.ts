@@ -36,48 +36,73 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
           }
         </app-user-profile-card>
 
-        <div class="grid grid-cols-2 gap-3">
-          <a routerLink="/profile/events">
+        @if (auth.currentUser()?.isActive) {
+          <div class="grid grid-cols-2 gap-3">
+            <a routerLink="/profile/events">
+              <app-card>
+                <div class="flex items-center gap-2">
+                  <app-icon name="calendar" size="sm" color="primary"></app-icon>
+                  <span class="text-sm font-medium text-neutral-700">Moje wydarzenia</span>
+                </div>
+              </app-card>
+            </a>
+
+            <a routerLink="/profile/participations">
+              <app-card>
+                <div class="flex items-center gap-2">
+                  <app-icon name="users" size="sm" color="primary"></app-icon>
+                  <span class="text-sm font-medium text-neutral-700">Uczestnictwa</span>
+                </div>
+              </app-card>
+            </a>
+
+            <!-- <a routerLink="/profile/gallery">
             <app-card>
               <div class="flex items-center gap-2">
-                <app-icon name="calendar" size="sm" color="primary"></app-icon>
-                <span class="text-sm font-medium text-neutral-700">Moje wydarzenia</span>
+                <app-icon name="image" size="sm" color="primary"></app-icon>
+                <span class="text-sm font-medium text-neutral-700">Galeria</span>
               </div>
             </app-card>
-          </a>
-          <a routerLink="/profile/participations">
-            <app-card>
-              <div class="flex items-center gap-2">
-                <app-icon name="users" size="sm" color="primary"></app-icon>
-                <span class="text-sm font-medium text-neutral-700">Uczestnictwa</span>
+          </a> -->
+
+            <a routerLink="/payments">
+              <app-card>
+                <div class="flex items-center gap-2">
+                  <app-icon name="credit-card" size="sm" color="primary"></app-icon>
+                  <span class="text-sm font-medium text-neutral-700">Moje płatności</span>
+                </div>
+              </app-card>
+            </a>
+
+            <a routerLink="/vouchers">
+              <app-card>
+                <div class="flex items-center gap-2">
+                  <app-icon name="wallet" size="sm" color="primary"></app-icon>
+                  <span class="text-sm font-medium text-neutral-700">Moje vouchery</span>
+                </div>
+              </app-card>
+            </a>
+          </div>
+        } @else {
+          <app-card class="bg-warning-50 border-warning-200">
+            <div class="flex items-start gap-3">
+              <app-icon name="alert-triangle" size="md" color="warning" class="mt-0.5"></app-icon>
+              <div class="flex-1">
+                <h3 class="text-sm font-semibold text-warning-800 mb-1">Konto niezweryfikowane</h3>
+                <p class="text-xs text-warning-700 mb-3">
+                  Dostęp do Twoich wydarzeń, uczestnictw, płatności i voucherów wymaga
+                  zweryfikowania konta. Sprawdź swoją skrzynkę email i kliknij w link aktywacyjny.
+                </p>
+                <button
+                  (click)="resendActivation()"
+                  class="text-xs text-warning-600 underline font-medium hover:text-warning-700"
+                >
+                  Wyślij link aktywacyjny ponownie
+                </button>
               </div>
-            </app-card>
-          </a>
-          <!-- <a routerLink="/profile/gallery">
-          <app-card>
-            <div class="flex items-center gap-2">
-              <app-icon name="image" size="sm" color="primary"></app-icon>
-              <span class="text-sm font-medium text-neutral-700">Galeria</span>
             </div>
           </app-card>
-        </a> -->
-          <a routerLink="/payments">
-            <app-card>
-              <div class="flex items-center gap-2">
-                <app-icon name="credit-card" size="sm" color="primary"></app-icon>
-                <span class="text-sm font-medium text-neutral-700">Moje płatności</span>
-              </div>
-            </app-card>
-          </a>
-          <a routerLink="/vouchers">
-            <app-card>
-              <div class="flex items-center gap-2">
-                <app-icon name="wallet" size="sm" color="primary"></app-icon>
-                <span class="text-sm font-medium text-neutral-700">Moje vouchery</span>
-              </div>
-            </app-card>
-          </a>
-        </div>
+        }
 
         <app-card>
           <div class="space-y-4">

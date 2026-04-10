@@ -114,7 +114,12 @@ export class AuthService {
   }
 
   async resendActivation(): Promise<void> {
-    await firstValueFrom(this.http.post(`${this.apiUrl}/resend-activation`, {}));
+    const email = this.currentUser()?.email;
+    await firstValueFrom(this.http.post(`${this.apiUrl}/resend-activation`, { email }));
+  }
+
+  async resendActivationToEmail(email: string): Promise<void> {
+    await firstValueFrom(this.http.post(`${this.apiUrl}/resend-activation`, { email }));
   }
 
   async forgotPassword(email: string): Promise<void> {
