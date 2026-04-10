@@ -9,10 +9,11 @@ export class EmailService {
   private transporter: Transporter;
 
   constructor(private configService: ConfigService) {
+    const smtpPort = this.configService.get<number>('SMTP_PORT', 587);
     this.transporter = createTransport({
       host: this.configService.get<string>('SMTP_HOST', 'localhost'),
-      port: this.configService.get<number>('SMTP_PORT', 587),
-      secure: this.configService.get<string>('SMTP_SECURE', 'false') === 'true',
+      port: smtpPort,
+      secure: smtpPort === 465,
       connectionTimeout: 10_000,
       greetingTimeout: 10_000,
       socketTimeout: 15_000,
