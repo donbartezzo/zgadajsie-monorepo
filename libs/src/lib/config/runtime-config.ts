@@ -13,9 +13,14 @@ const RUNTIME_CONFIG: RuntimeConfig = {
   maintenance: false,
   disableGoogleLogin: true,
   disableFacebookLogin: true,
-  disableEventCreation: false,
+  disableEventCreation: true,
   disableOnlinePayments: true,
 };
+
+// @TMP: konto wykluczone ze sprawdzania flag blokujących
+const OVERRIDE_ACCOUNT_EMAIL = 'donbartezzo@gmail.com';
+export const isOverrideAccount = (email?: string | null): boolean =>
+  email === OVERRIDE_ACCOUNT_EMAIL;
 
 // Wspólny helper dla frontend i backend
 // Zapewnia spójne API dla obu środowisk

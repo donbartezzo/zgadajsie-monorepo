@@ -21,7 +21,7 @@ import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { IsActiveGuard } from '../auth/guards/is-active.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
-import { RuntimeConfig, Role } from '@zgadajsie/shared';
+import { RuntimeConfig, Role, isOverrideAccount } from '@zgadajsie/shared';
 
 @Controller('events')
 export class EventsController {
@@ -30,7 +30,7 @@ export class EventsController {
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() dto: CreateEventDto) {
-    if (RuntimeConfig.isEventCreationEnabled() === false) {
+    if (!RuntimeConfig.isEventCreationEnabled() && !isOverrideAccount(user.email)) {
       throw new ForbiddenException(
         'Tworzenie nowych wydarzeń jest tymczasowo wyłączone. Przepraszamy za utrudnienia.',
       );

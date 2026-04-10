@@ -13,10 +13,11 @@ import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { UserService } from '../../../../core/services/user.service';
 import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { RuntimeConfig, EventStatus, EventTimeStatus } from '@zgadajsie/shared';
+import { RuntimeConfig, EventStatus, EventTimeStatus, isOverrideAccount } from '@zgadajsie/shared';
 import { Event as EventModel } from '../../../../shared/types';
 import {
   isEventJoinable,
@@ -133,6 +134,7 @@ import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm
 })
 export class MyEventsComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
   private readonly userService = inject(UserService);
   private readonly eventService = inject(EventService);
   private readonly snackbar = inject(SnackbarService);
@@ -140,7 +142,11 @@ export class MyEventsComponent implements OnInit {
 
   readonly events = signal<EventModel[]>([]);
   readonly loading = signal(true);
-  readonly canCreateEvents = computed(() => RuntimeConfig.isEventCreationEnabled());
+  readonly canCreateEvents = computed(
+    () =>
+      RuntimeConfig.isEventCreationEnabled() ||
+      isOverrideAccount(this.authService.currentUser()?.email),
+  );
 
   ngOnInit(): void {
     this.userService.getMyEvents().subscribe({
