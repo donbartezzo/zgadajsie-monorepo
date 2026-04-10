@@ -36,6 +36,7 @@ testem.log
 
 # Config directory
 config/env/.env.*
+!config/env/.env.example
 config/ops/.env.*
 
 # System Files
