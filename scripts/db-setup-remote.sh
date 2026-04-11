@@ -3,6 +3,7 @@ set -e
 
 SEED_TYPE="$1"
 RESET_FLAG="$2"
+FIX_MIGRATIONS_FLAG="$3"
 
 # Select operational configuration based on environment
 if [ "$SEED_TYPE" = "prod" ]; then
@@ -66,10 +67,22 @@ if [ "$SEED_TYPE" != "dev" ] && [ "$SEED_TYPE" != "prod" ]; then
   exit 1
 fi
 
-if [ -n "$RESET_FLAG" ] && [ "$RESET_FLAG" != "--reset" ]; then
+if [ -n "$RESET_FLAG" ] && [ "$RESET_FLAG" != "--reset" ] && [ "$RESET_FLAG" != "--fix-migrations" ]; then
   echo "Błąd: nieprawidłowy drugi parametr '$RESET_FLAG'"
-  echo "Dozwolone wartości: --reset"
+  echo "Dozwolone wartości: --reset, --fix-migrations"
   exit 1
+fi
+
+if [ -n "$FIX_MIGRATIONS_FLAG" ] && [ "$FIX_MIGRATIONS_FLAG" != "--fix-migrations" ]; then
+  echo "Błąd: nieprawidłowy trzeci parametr '$FIX_MIGRATIONS_FLAG'"
+  echo "Dozwolone wartości: --fix-migrations"
+  exit 1
+fi
+
+# Normalize: --fix-migrations can appear as 2nd or 3rd argument
+if [ "$RESET_FLAG" = "--fix-migrations" ]; then
+  FIX_MIGRATIONS_FLAG="--fix-migrations"
+  RESET_FLAG=""
 fi
 
 if [ "$SEED_TYPE" = "prod" ]; then
@@ -148,6 +161,23 @@ if [ "$RESET_FLAG" = "--reset" ]; then
   echo "🗑️  Czyszczę bazę danych (DROP/CREATE SCHEMA public)..."
   DATABASE_URL="$REMOTE_DATABASE_URL" npx prisma db execute --url "$REMOTE_DATABASE_URL" --stdin <<< "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
   echo "   Baza wyczyszczona."
+  echo ""
+fi
+
+if [ "$FIX_MIGRATIONS_FLAG" = "--fix-migrations" ]; then
+  echo "🔧 Naprawiam nieudane migracje (migrate resolve --applied)..."
+  # List migrations in the migrations directory and resolve each as applied
+  # (safe: marks existing schema as applied without re-running SQL)
+  MIGRATION_NAMES=$(ls backend/prisma/migrations/ | grep -v migration_lock.toml || true)
+  if [ -z "$MIGRATION_NAMES" ]; then
+    echo "   Brak migracji do naprawy."
+  else
+    for migration in $MIGRATION_NAMES; do
+      echo "   Oznaczam jako applied: $migration"
+      DATABASE_URL="$REMOTE_DATABASE_URL" sh -c "cd backend && npx prisma migrate resolve --applied $migration" 2>&1 || true
+    done
+    echo "   Gotowe."
+  fi
   echo ""
 fi
 
