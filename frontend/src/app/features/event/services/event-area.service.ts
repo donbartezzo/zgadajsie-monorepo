@@ -156,7 +156,7 @@ export class EventAreaService {
       this.participants().filter((p) => p.status === 'APPROVED' || p.status === 'CONFIRMED').length,
   );
 
-  /** Liczba wszystkich zgloszonych uczestników (w tym PENDING). */
+  /** Liczba wszystkich zgłoszonych uczestników (w tym PENDING). */
   readonly totalParticipations = computed(() => this.participants().length);
 
   /**

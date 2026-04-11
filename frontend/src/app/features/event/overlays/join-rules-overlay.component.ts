@@ -102,7 +102,16 @@ export class JoinRulesOverlayComponent {
 
   readonly currentUserDisplayName = computed(() => this.auth.currentUser()?.displayName ?? '');
 
-  readonly guestsRemaining = computed(() => this.wizardConfig()?.guestsRemaining ?? 0);
+  readonly guestsRemaining = computed(() => {
+    const currentUserId = this.auth.currentUser()?.id;
+    if (!currentUserId) return MAX_GUESTS_PER_USER;
+
+    const currentGuests = this.participants().filter(
+      (p) => p.isGuest && p.addedByUserId === currentUserId,
+    ).length;
+
+    return Math.max(0, MAX_GUESTS_PER_USER - currentGuests);
+  });
 
   readonly MAX_GUESTS = MAX_GUESTS_PER_USER;
 
@@ -117,6 +126,8 @@ export class JoinRulesOverlayComponent {
     }
     return true;
   });
+
+  readonly canAddGuest = computed(() => this.guestsRemaining() > 0);
 
   readonly isLoadingAny = computed(() => this.loading() || this.submitting());
 
@@ -221,6 +232,12 @@ export class JoinRulesOverlayComponent {
     const roleKey = this.selectedRoleKey() ?? undefined;
 
     if (type === 'guest') {
+      if (!this.canAddGuest()) {
+        this.snackbar.warning(
+          'Wykorzystano limit gości. Nie możesz dodać więcej gości do tego wydarzenia.',
+        );
+        return;
+      }
       this.guestConfirmed.emit({ displayName: name, roleKey });
       return;
     }

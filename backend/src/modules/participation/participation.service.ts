@@ -727,11 +727,15 @@ export class ParticipationService {
       wantsIn: boolean;
       userId: string;
       roleKey?: string | null;
+      slot?: { id: string } | null;
     },
   ): { isPaid: boolean; phase: ReturnType<typeof getEnrollmentPhase>; roleKey?: string } {
     const phase = this.assertJoinEligibility(event);
 
-    if (participation.wantsIn) {
+    // Block only if participant already has an active slot (CONFIRMED or APPROVED).
+    // PENDING participants (wantsIn=true, no slot) should be allowed to rejoin
+    // so they can be assigned a free slot.
+    if (participation.wantsIn && participation.slot) {
       throw new BadRequestException('Uczestnik już jest aktywny w tym wydarzeniu');
     }
 
