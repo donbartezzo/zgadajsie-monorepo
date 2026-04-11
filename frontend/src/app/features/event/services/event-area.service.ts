@@ -156,6 +156,17 @@ export class EventAreaService {
       this.participants().filter((p) => p.status === 'APPROVED' || p.status === 'CONFIRMED').length,
   );
 
+  /** Liczba wszystkich zgloszonych uczestników (w tym PENDING). */
+  readonly totalParticipations = computed(() => this.participants().length);
+
+  /**
+   * Global helper method to calculate slot count from any participants array.
+   * Used by event cards and other components that don't have full EventAreaService.
+   */
+  static calculateSlotCount(participants: { status: string }[]): number {
+    return participants.filter((p) => p.status === 'APPROVED' || p.status === 'CONFIRMED').length;
+  }
+
   readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
 
   readonly lifecycleBannerVariant = computed(() => {

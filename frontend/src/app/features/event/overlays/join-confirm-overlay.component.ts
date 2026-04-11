@@ -30,24 +30,6 @@ import {
     >
       @let _event = event();
       <div class="space-y-4 mx-auto">
-        <!-- Event info grid (compact selection via show config) -->
-        @if (_event) {
-          <app-event-info-grid
-            [event]="_event"
-            [show]="{
-              cost: false,
-              maxParticipants: false,
-              gender: false,
-              age: false,
-              enrollment: false,
-              city: false,
-              roles: false,
-              duration: false,
-            }"
-            [showHeader]="false"
-          />
-        }
-
         <div class="mx-auto max-w-lg mt-2 justify-center">
           <!-- Payment CTA (highlighted) -->
           @if (needsPayment()) {

@@ -181,7 +181,15 @@ export class EventsService {
           organizer: { select: { id: true, displayName: true, avatarUrl: true } },
           _count: {
             select: {
-              participations: { where: { wantsIn: true } },
+              participations: {
+                where: {
+                  wantsIn: true,
+                  OR: [
+                    { slot: { confirmed: true } },
+                    { slot: { confirmed: false, participationId: { not: null } } },
+                  ],
+                },
+              },
             },
           },
         },
@@ -258,7 +266,8 @@ export class EventsService {
     if (dto.endsAt) data.endsAt = new Date(dto.endsAt);
 
     // Validate and sync slots if maxParticipants or roleConfig is changing
-    const newRoleConfig = (dto.roleConfig as { roles: Array<{ key: string; slots: number }> } | undefined) ??
+    const newRoleConfig =
+      (dto.roleConfig as { roles: Array<{ key: string; slots: number }> } | undefined) ??
       (event.roleConfig as { roles: Array<{ key: string; slots: number }> } | null);
     const isRoleBased = newRoleConfig?.roles && newRoleConfig.roles.length > 0;
 

@@ -64,7 +64,7 @@
         [eventTimeStatus]="evt.eventTimeStatus ?? null"
         [isCancelled]="evt.status === 'CANCELLED'"
         [startsAt]="evt.startsAt"
-        [participantCount]="evt._count?.participations ?? 0"
+        [participantCount]="overlays.participants().length"
         [maxParticipants]="evt.maxParticipants"
         [costPerPerson]="evt.costPerPerson"
         [lotteryCountdown]="overlays.lotteryCountdown()"
