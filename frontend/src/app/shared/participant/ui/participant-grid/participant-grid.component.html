@@ -20,9 +20,7 @@
               {{ statusConfig.participant.title }}
             }
           </h4>
-          <div class="flex justify-center">
-            <app-capacity-progress [current]="group.occupiedCount" [max]="group.totalSlots" class="w-48" />
-          </div>
+          <app-capacity-progress [current]="group.occupiedCount" [max]="group.totalSlots" />
         </div>
         <div class="flex flex-wrap gap-3 justify-center">
           @for (item of group.items; track $index) {

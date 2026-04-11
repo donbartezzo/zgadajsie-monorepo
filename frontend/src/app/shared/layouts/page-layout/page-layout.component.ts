@@ -101,6 +101,8 @@ export class PageLayoutComponent {
     this.router.events.pipe(takeUntilDestroyed()).subscribe((e) => {
       if (e instanceof NavigationStart) {
         this.layoutConfig.reset();
+        // Close all active overlays when navigation starts
+        this.overlays.close();
       }
       if (e instanceof NavigationEnd) {
         // setTimeout ensures Angular CD completes first → child effects configure layout
