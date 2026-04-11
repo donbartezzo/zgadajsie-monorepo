@@ -125,6 +125,12 @@ export class EventDetailComponent implements OnInit, OnDestroy {
 
   readonly isPreEnrollment = computed(() => this.enrollmentPhase() === 'PRE_ENROLLMENT');
 
+  readonly rulesList = computed(() => {
+    const rules = this.event()?.rules;
+    if (!rules?.trim()) return [];
+    return rules.split('\n').filter((r) => r.trim());
+  });
+
   constructor() {
     // Sync lottery countdown to overlay service
     effect(() => {

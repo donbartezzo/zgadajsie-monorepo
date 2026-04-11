@@ -61,10 +61,12 @@ export const pl: Translation = {
       beach: 'na plaży',
     },
     level: {
-      'mixed-open': 'Mieszany (open)',
-      beginner: 'Początkujący',
-      amateur: 'Amatorski',
-      'semi-pro': 'Półprofesjonalny',
+      open: 'Open',
+      beginner: 'Poczytkujacy',
+      recreational: 'Rekreacyjny',
+      regular: 'Regularny',
+      solid: 'Solidny',
+      advanced: 'Zaawansowany',
       professional: 'Zawodowy',
     },
     'participant-role': {

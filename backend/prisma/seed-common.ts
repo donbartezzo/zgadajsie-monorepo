@@ -47,11 +47,13 @@ export const COMMON_SEED_DATA = {
 
   // Poziomy zaawansowania
   levels: [
-    { slug: 'mixed-open', weight: null },
+    { slug: 'open', weight: null },
     { slug: 'beginner', weight: 1 },
-    { slug: 'amateur', weight: 2 },
-    { slug: 'semi-pro', weight: 3 },
-    { slug: 'professional', weight: 4 },
+    { slug: 'recreational', weight: 2 },
+    { slug: 'regular', weight: 3 },
+    { slug: 'solid', weight: 4 },
+    { slug: 'advanced', weight: 5 },
+    { slug: 'professional', weight: 6 },
   ] as const,
 
   // Cover images per dyscyplina (zsynchronizowane z frontend/public/assets/covers/events/)

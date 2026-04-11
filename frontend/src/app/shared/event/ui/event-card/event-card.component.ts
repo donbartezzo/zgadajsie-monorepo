@@ -136,23 +136,6 @@ import { DateLabelsService } from '../../../services/date-labels.service';
           </span>
         </div>
 
-        <!-- @if (rulesList().length > 0) {
-          <div class="text-sm">
-            <div class="flex items-center gap-1 text-neutral-900 font-medium mb-1">
-              <app-icon name="check-circle" size="sm" color="neutral" muted="light" />
-              Zasady
-            </div>
-            <div class="text-neutral-500 text-xs space-y-0.5 ml-5">
-              @for (rule of rulesList().slice(0, 3); track $index) {
-                <div class="truncate">{{ rule }}</div>
-              }
-              @if (rulesList().length > 3) {
-                <div class="text-neutral-500">...</div>
-              }
-            </div>
-          </div>
-        } -->
-
         <div class="flex items-center justify-between">
           <app-capacity-progress
             class="w-60"
@@ -229,12 +212,6 @@ export class EventCardComponent implements OnDestroy {
     if (g === 'MALE') return 'Mężczyźni';
     if (g === 'FEMALE') return 'Kobiety';
     return g;
-  });
-
-  readonly rulesList = computed(() => {
-    const rules = this.event().rules;
-    if (!rules?.trim()) return [];
-    return rules.split('\n').filter((r) => r.trim());
   });
 
   readonly badgeLabel = computed(() => {
