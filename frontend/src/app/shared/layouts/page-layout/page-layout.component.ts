@@ -108,19 +108,10 @@ export class PageLayoutComponent {
       }
     });
 
-    // ── Validate cover image URL ──
+    // ── Reset cover error state when URL changes ──
     effect(() => {
-      const url = this.coverUrl();
-      if (!url) {
-        this.coverImageValid.set(false);
-        return;
-      }
-
-      // Test if image exists by trying to load it
-      const img = new Image();
-      img.onload = () => this.coverImageValid.set(true);
-      img.onerror = () => this.coverImageValid.set(false);
-      img.src = url;
+      this.coverUrl(); // track dependency
+      this.coverImageError.set(false);
     });
   }
 
@@ -163,7 +154,7 @@ export class PageLayoutComponent {
 
   // ── Internal state ──
   readonly heroHidden = signal(false);
-  readonly coverImageValid = signal(false);
+  readonly coverImageError = signal(false);
   readonly currentYear = nowInZone().year;
 
   private observer: IntersectionObserver | null = null;
@@ -187,6 +178,10 @@ export class PageLayoutComponent {
     if (url) {
       this.router.navigateByUrl(url);
     }
+  }
+
+  onCoverImageError(): void {
+    this.coverImageError.set(true);
   }
 
   onNotifBellClick(): void {

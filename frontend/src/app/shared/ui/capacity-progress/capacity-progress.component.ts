@@ -78,7 +78,7 @@ export class CapacityProgressComponent {
   readonly barTextClass = 'text-[10px] font-semibold leading-none text-neutral-800'; // Ciemniejszy dla lepszej widoczności
   readonly subtitleClass = 'mt-1 text-[9px] leading-tight text-neutral-400';
   readonly rootClass = 'w-full';
-  readonly trackClass = 'mt-2 h-3 overflow-hidden rounded-full bg-neutral-200/70';
+  readonly trackClass = 'mt-2 h-3 overflow-hidden rounded-full bg-neutral-200/70 w-full';
 
   readonly barClass = computed(() => {
     return 'h-full rounded-full transition-all duration-300 ease-out';

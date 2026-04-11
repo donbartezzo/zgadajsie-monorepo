@@ -1,3 +1,21 @@
+// LQIP blur-up placeholder — tiny 20px base64 WebP widoczny natychmiastowo,
+// przykryty przez właściwy obraz po jego załadowaniu
+.sports-bg-lqip {
+  background: url('data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAADwAwCdASoUABoAPyV8s1OyqCSit/qoAlAkiWYAuzLyAFiArcYWLzB4AP7AMArVeYa3HTWebOfMeRXhher8yChNTGnJjHJ8H5Cg7oUEA0YwsQC7eUdIhTD3djslbpyAsGTAAA==')
+    center / cover no-repeat #111;
+
+  picture {
+    display: contents;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
 .home-animate {
   animation: homeSlideUp 0.8s ease-out;
 }

@@ -130,29 +130,26 @@ import { DateLabelsService } from '../../../services/date-labels.service';
               event().startsAt | eventDuration: event().endsAt
             }})
           </span>
-          <span class="flex items-center gap-1">
-            <app-icon name="users" size="xs" color="neutral" muted="light" />
-            {{ genderLabel() }}
-          </span>
         </div>
 
         <div class="flex items-center justify-between">
           <app-capacity-progress
-            class="w-60"
+            class="flex-1 max-w-[250px]"
             [current]="_event._count?.participations ?? 0"
             [max]="_event.maxParticipants ?? 0"
           />
-          @if (_event.costPerPerson > 0) {
-            <span class="flex items-center gap-1 text-sm font-semibold text-success-400">
-              <app-icon name="dollar-sign" size="xs" color="success" />
+
+          <span
+            class="flex items-center gap-1 text-sm font-semibold text-success-400 w-24 justify-end"
+          >
+            @if (_event.costPerPerson > 0) {
+              <app-icon name="credit-card" size="xs" color="success" />
               {{ _event.costPerPerson | number: '1.0-2' }} zł
-            </span>
-          } @else {
-            <span class="flex items-center gap-1 text-sm font-semibold text-success-400">
+            } @else {
               <app-icon name="check-circle" size="xs" color="success" />
               Bezpłatne
-            </span>
-          }
+            }
+          </span>
         </div>
       </div>
     </button>
@@ -204,14 +201,6 @@ export class EventCardComponent implements OnDestroy {
     const cd = this.countdown();
     if (!cd) return '';
     return this.dateLabels.formatCountdownLabel(cd);
-  });
-
-  readonly genderLabel = computed(() => {
-    const g = this.event().gender;
-    if (!g || g === 'ANY') return 'Wszyscy';
-    if (g === 'MALE') return 'Mężczyźni';
-    if (g === 'FEMALE') return 'Kobiety';
-    return g;
   });
 
   readonly badgeLabel = computed(() => {
