@@ -158,10 +158,18 @@ export class ParticipantGridComponent {
         slotData: { slotId: slot.id, locked: slot.locked, slot },
         participant: participants.find((p) => slot.participationId === p.id) ?? null,
       }));
-      // Sort: occupied slots first, then empty slots
+      // Sort: occupied slots first, then empty slots, then locked slots
       return items.sort((a, b) => {
+        // Occupied slots first
         if (a.participant && !b.participant) return -1;
         if (!a.participant && b.participant) return 1;
+
+        // Both empty - locked slots go last
+        if (!a.participant && !b.participant) {
+          if (a.slotData.locked && !b.slotData.locked) return 1;
+          if (!a.slotData.locked && b.slotData.locked) return -1;
+        }
+
         return 0;
       });
     }
