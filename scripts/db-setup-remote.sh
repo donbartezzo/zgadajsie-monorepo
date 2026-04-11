@@ -4,11 +4,18 @@ set -e
 SEED_TYPE="$1"
 RESET_FLAG="$2"
 
-# Load operational configuration
-OPS_CONFIG="config/ops/.env.ops.dev"
+# Select operational configuration based on environment
+if [ "$SEED_TYPE" = "prod" ]; then
+  OPS_CONFIG="config/ops/.env.ops.prod"
+  OPS_CONFIG_EXAMPLE="config/ops/.env.ops.prod.example"
+else
+  OPS_CONFIG="config/ops/.env.ops.dev"
+  OPS_CONFIG_EXAMPLE="config/ops/.env.ops.dev.example"
+fi
+
 if [ ! -f "$OPS_CONFIG" ]; then
   echo "Błąd: Brak pliku konfiguracyjnego $OPS_CONFIG"
-  echo "Skopiuj config/ops/.env.ops.dev.example → config/ops/.env.ops.dev"
+  echo "Skopiuj ${OPS_CONFIG_EXAMPLE} → ${OPS_CONFIG}"
   exit 1
 fi
 
@@ -77,8 +84,14 @@ else
   SEED_WARN="  ⚠ UWAGA: CZYŚCI całą bazę przed seedowaniem!"
 fi
 
+if [ "$SEED_TYPE" = "prod" ]; then
+  ENV_LABEL="zgadajsie.pl (PRODUKCJA)"
+else
+  ENV_LABEL="dev.zgadajsie.pl"
+fi
+
 echo "=================================="
-echo " Setup zdalnej bazy: dev.zgadajsie.pl"
+echo " Setup zdalnej bazy: ${ENV_LABEL}"
 echo " Seed: ${SEED_LABEL}"
 echo "${SEED_DESC}"
 echo "${SEED_WARN}"
