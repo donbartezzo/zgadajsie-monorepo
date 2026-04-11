@@ -35,7 +35,7 @@
             }
           ]
         },
-        "dev": {
+        "production": {
           "budgets": [
             {
               "type": "initial",
@@ -52,33 +52,12 @@
           "fileReplacements": [
             {
               "replace": "frontend/src/environments/environment.ts",
-              "with": "frontend/src/environments/environment.dev.ts"
-            }
-          ]
-        },
-        "prod": {
-          "budgets": [
-            {
-              "type": "initial",
-              "maximumWarning": "500kb",
-              "maximumError": "1mb"
-            },
-            {
-              "type": "anyComponentStyle",
-              "maximumWarning": "4kb",
-              "maximumError": "8kb"
-            }
-          ],
-          "outputHashing": "all",
-          "fileReplacements": [
-            {
-              "replace": "frontend/src/environments/environment.ts",
-              "with": "frontend/src/environments/environment.prod.ts"
+              "with": "frontend/src/environments/environment.production.ts"
             }
           ]
         }
       },
-      "defaultConfiguration": "prod"
+      "defaultConfiguration": "production"
     },
     "serve": {
       "continuous": true,
@@ -87,11 +66,8 @@
         "port": 4300
       },
       "configurations": {
-        "prod": {
-          "buildTarget": "frontend:build:prod"
-        },
-        "dev": {
-          "buildTarget": "frontend:build:dev"
+        "production": {
+          "buildTarget": "frontend:build:production"
         },
         "local": {
           "buildTarget": "frontend:build:local"

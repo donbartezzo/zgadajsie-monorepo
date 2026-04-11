@@ -1,8 +1,7 @@
 # ─── Stage 1: Build ──────────────────────────────────────────────────────────
 FROM node:24-slim AS builder
 
-# Force rebuild: 2026-04-02 15:54
-ARG BUILD_CONFIGURATION=dev
+ARG BUILD_CONFIGURATION=production
 ARG FRONTEND_VERSION=unknown
 
 ENV FRONTEND_VERSION=${FRONTEND_VERSION}
@@ -21,6 +20,14 @@ RUN pnpm nx build frontend --configuration=$BUILD_CONFIGURATION
 FROM nginx:alpine AS runner
 
 COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
+# nginx.conf jako szablon — ${BACKEND_URL} zostanie podstawiony przez entrypoint
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf.template
+
+# Entrypoint: envsubst + start nginx
+COPY frontend/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 80
+
+ENTRYPOINT ["/docker-entrypoint.sh"]

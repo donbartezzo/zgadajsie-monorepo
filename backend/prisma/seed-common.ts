@@ -1,4 +1,4 @@
-import { EventDiscipline, EventFacility, EventLevel, City } from '@prisma/client';
+import { CoverImage, EventDiscipline, EventFacility, EventLevel, City } from '@prisma/client';
 
 // Wspólne dane dla seed.prod.ts i seed.nonprod.ts
 export const COMMON_SEED_DATA = {
@@ -53,6 +53,19 @@ export const COMMON_SEED_DATA = {
     { slug: 'semi-pro', weight: 3 },
     { slug: 'professional', weight: 4 },
   ] as const,
+
+  // Cover images per dyscyplina (zsynchronizowane z frontend/public/assets/covers/events/)
+  coverImages: {
+    football: [
+      '2035b9af-9e1d-479b-92b1-94bad6c9a0bb.webp',
+      '2e661925-1a14-4608-9484-5ed1bc7e50ae.webp',
+      '5b953bd3-313f-4a72-ba5d-3fd3862b57e2.webp',
+      '6c61dd0d-89ab-4b9a-b628-585fe1ede620.webp',
+      'ac570d55-76d2-442d-9aa0-156c40932822.webp',
+      'c928d017-d6e2-42d6-be7c-d93fc11a5ca6.webp',
+      'f6b092ca-bac9-497e-a217-d1cb3ccd5444.webp',
+    ],
+  } as Record<string, string[]>,
 } as const;
 
 // Funkcje pomocnicze do tworzenia danych
@@ -108,6 +121,30 @@ export async function createLevels(prisma: any): Promise<EventLevel[]> {
   );
 }
 
+export async function createCoverImages(prisma: any): Promise<CoverImage[]> {
+  console.log('Tworzę cover images...');
+  const created: CoverImage[] = [];
+
+  for (const [disciplineSlug, filenames] of Object.entries(COMMON_SEED_DATA.coverImages)) {
+    const existing = await prisma.coverImage.findMany({
+      where: { disciplineSlug },
+      select: { filename: true },
+    });
+    const existingFilenames = new Set(existing.map((c: { filename: string }) => c.filename));
+
+    for (const filename of filenames) {
+      if (!existingFilenames.has(filename)) {
+        const record = await prisma.coverImage.create({
+          data: { filename, disciplineSlug },
+        });
+        created.push(record);
+      }
+    }
+  }
+
+  return created;
+}
+
 // Funkcja do tworzenia wszystkich wspólnych danych
 export async function createCommonSeedData(prisma: any) {
   const [cities, disciplines, facilities, levels] = await Promise.all([
@@ -117,5 +154,7 @@ export async function createCommonSeedData(prisma: any) {
     createLevels(prisma),
   ]);
 
-  return { cities, disciplines, facilities, levels };
+  const coverImages = await createCoverImages(prisma);
+
+  return { cities, disciplines, facilities, levels, coverImages };
 }

@@ -39,10 +39,10 @@ jobs:
         id: get_short_sha
         run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Build frontend (dev)
+      - name: Build frontend
         env:
           FRONTEND_VERSION: ${{ github.event.release.tag_name || steps.get_short_sha.outputs.sha }}
-        run: pnpm nx build frontend --configuration=dev
+        run: pnpm nx build frontend --configuration=production
 
       - name: Test backend
         run: pnpm nx test backend --passWithNoTests
@@ -95,7 +95,7 @@ jobs:
           push: true
           provenance: false
           build-args: |
-            BUILD_CONFIGURATION=dev
+            BUILD_CONFIGURATION=production
             FRONTEND_VERSION=${{ steps.get_short_sha_dev.outputs.sha }}
           tags: |
             ${{ env.FRONTEND_IMAGE }}:dev
@@ -182,7 +182,7 @@ jobs:
           push: true
           provenance: false
           build-args: |
-            BUILD_CONFIGURATION=prod
+            BUILD_CONFIGURATION=production
             FRONTEND_VERSION=${{ github.event.release.tag_name }}
           tags: |
             ${{ env.FRONTEND_IMAGE }}:stable
