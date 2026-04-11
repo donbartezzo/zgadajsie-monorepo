@@ -175,6 +175,7 @@ CREATE TABLE "EventSlot" (
     "assignedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "roleKey" TEXT,
+    "locked" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "EventSlot_pkey" PRIMARY KEY ("id")
 );
@@ -574,4 +575,3 @@ ALTER TABLE "CitySubscription" ADD CONSTRAINT "CitySubscription_citySlug_fkey" F
 
 -- AddForeignKey
 ALTER TABLE "CitySubscription" ADD CONSTRAINT "CitySubscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-

@@ -2,6 +2,7 @@
 set -e
 
 SEED_TYPE="$1"
+RESET_FLAG="$2"
 
 # Load operational configuration
 OPS_CONFIG="config/ops/.env.ops.dev"
@@ -58,6 +59,12 @@ if [ "$SEED_TYPE" != "dev" ] && [ "$SEED_TYPE" != "prod" ]; then
   exit 1
 fi
 
+if [ -n "$RESET_FLAG" ] && [ "$RESET_FLAG" != "--reset" ]; then
+  echo "Błąd: nieprawidłowy drugi parametr '$RESET_FLAG'"
+  echo "Dozwolone wartości: --reset"
+  exit 1
+fi
+
 if [ "$SEED_TYPE" = "prod" ]; then
   SEED_FILE="backend/prisma/seed.prod.ts"
   SEED_LABEL="PRODUKCYJNY (seed.prod.ts)"
@@ -79,7 +86,12 @@ echo "=================================="
 echo ""
 
 if [ "$SEED_TYPE" = "prod" ]; then
-  read -p "Czy na pewno chcesz uruchomić seed produkcyjny na zdalnej bazie? [tak/N] " confirm
+  if [ "$RESET_FLAG" = "--reset" ]; then
+    echo "⚠️  UWAGA: Tryb --reset usuwa WSZYSTKIE dane z bazy produkcyjnej!"
+    read -p "Czy na pewno chcesz WYCZYŚCIĆ I PRZEBUDOWAĆ bazę produkcyjną? [tak/N] " confirm
+  else
+    read -p "Czy na pewno chcesz uruchomić seed produkcyjny na zdalnej bazie? [tak/N] " confirm
+  fi
   if [ "$confirm" != "tak" ]; then
     echo "Anulowano."
     exit 0
@@ -118,6 +130,13 @@ if [ -z "$DATABASE_URL" ]; then
 fi
 
 REMOTE_DATABASE_URL="$(build_tunnel_database_url "$DATABASE_URL" "$TUNNEL_PORT")"
+
+if [ "$RESET_FLAG" = "--reset" ]; then
+  echo "🗑️  Czyszczę bazę danych (DROP/CREATE SCHEMA public)..."
+  DATABASE_URL="$REMOTE_DATABASE_URL" npx prisma db execute --url "$REMOTE_DATABASE_URL" --stdin <<< "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+  echo "   Baza wyczyszczona."
+  echo ""
+fi
 
 DATABASE_URL="$REMOTE_DATABASE_URL" sh -c 'cd backend && npx prisma migrate deploy'
 

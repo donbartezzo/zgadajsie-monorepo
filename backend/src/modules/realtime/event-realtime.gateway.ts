@@ -10,7 +10,10 @@ import {
 import { Server, Socket } from 'socket.io';
 import { EventRealtimeRoomPayload } from '@zgadajsie/shared';
 
-@WebSocketGateway({ namespace: '/events', cors: { origin: '*' } })
+@WebSocketGateway({
+  namespace: '/events',
+  cors: { origin: process.env['FRONTEND_URL']?.split(',') ?? '*', credentials: true },
+})
 export class EventRealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
