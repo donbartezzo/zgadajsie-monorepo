@@ -9,13 +9,8 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { IconComponent } from '../../../shared/ui/icon/icon.component';
-import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { TranslocoService } from '@jsverse/transloco';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
-import { EventCriteriaDescriptionComponent } from '../ui/event-criteria-description/event-criteria-description.component';
-import { EventUserParticipantsComponent } from '../../../shared/participant/ui/event-user-participants/event-user-participants.component';
 import { UnverifiedAccountPageComponent } from '../../auth/pages/unverified-account/unverified-account-page.component';
 import { Event as EventModel, Participation } from '../../../shared/types';
 import { JoinWizardConfig } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
@@ -24,20 +19,20 @@ import { UserService } from '../../../core/services/user.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 import { ConfirmModalService } from '../../../shared/ui/confirm-modal/confirm-modal.service';
 import { MAX_GUESTS_PER_USER, MAX_GUESTS_PER_ORGANIZER, DisciplineRole } from '@zgadajsie/shared';
+import { JoinRulesMyParticipantsStepComponent } from './join-rules/join-rules-my-participants-step.component';
+import { JoinRulesAcceptanceStepComponent } from './join-rules/join-rules-acceptance-step.component';
+import { JoinRulesParticipantStepComponent } from './join-rules/join-rules-participant-step.component';
 
 const WITHOUT_SLOT_STATUSES = ['PENDING', 'WITHDRAWN', 'REJECTED'] as const;
 
 @Component({
   selector: 'app-join-rules-overlay',
   imports: [
-    FormsModule,
-    TranslocoPipe,
-    IconComponent,
-    ButtonComponent,
     BottomOverlayComponent,
-    EventCriteriaDescriptionComponent,
-    EventUserParticipantsComponent,
     UnverifiedAccountPageComponent,
+    JoinRulesMyParticipantsStepComponent,
+    JoinRulesAcceptanceStepComponent,
+    JoinRulesParticipantStepComponent,
   ],
   templateUrl: './join-rules-overlay.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -110,6 +105,40 @@ export class JoinRulesOverlayComponent {
   });
 
   readonly currentUserDisplayName = computed(() => this.auth.currentUser()?.displayName ?? '');
+
+  readonly headerCopy = computed(() => {
+    if (!this.isAccountVerified()) {
+      return {
+        title: '',
+        description: '',
+      };
+    }
+
+    if (this.isRoleChangeMode()) {
+      return {
+        title: 'Ustaw rolę',
+        description: 'Wybierz rolę dla swojego uczestnictwa.',
+      };
+    }
+
+    switch (this.currentStep()) {
+      case 0:
+        return {
+          title: 'Twoi uczestnicy bez miejsca',
+          description: 'Kliknij uczestnika, aby ponownie go zapisać, lub dodaj nowy zapis.',
+        };
+      case 1:
+        return {
+          title: 'Chcesz dołączyć?',
+          description: 'Zapoznaj się z poniższymi danymi i organizacją tego wydarzenia.',
+        };
+      default:
+        return {
+          title: 'Zgłoś uczestnictwo',
+          description: 'Wybierz w czyim imieniu zgłaszasz uczestnictwo.',
+        };
+    }
+  });
 
   readonly guestsRemaining = computed(() => {
     const currentUserId = this.auth.currentUser()?.id;
@@ -243,9 +272,9 @@ export class JoinRulesOverlayComponent {
     if (preselectedRole && participantRole !== preselectedRole) {
       const preselectedTitle = this.transloco.translate(
         `dict.participant-role.${preselectedRole}.title`,
-      );
+      ) as string;
       const participantTitle = participantRole
-        ? this.transloco.translate(`dict.participant-role.${participantRole}.title`)
+        ? (this.transloco.translate(`dict.participant-role.${participantRole}.title`) as string)
         : null;
 
       const message = participantTitle

@@ -1,0 +1,156 @@
+<div class="space-y-4">
+  @let _type = participantType();
+  @let _roles = availableRoles();
+  @let _showForm = showForm();
+  @let _showNameField = showNameField();
+  @let _showGuestInfo = showGuestInfo();
+  @let _showRoleSelection = showRoleSelection();
+  @let _loading = loading();
+  @let _canSubmit = canSubmit();
+  @let _primaryButtonLabel = primaryButtonLabel();
+
+  @if (!isRoleChange()) {
+    <div>
+      <p class="mb-2 text-sm font-semibold text-neutral-700">Zgłaszam jako:</p>
+      <div class="flex overflow-hidden rounded-xl border border-neutral-200">
+        <button
+          type="button"
+          [class]="
+            'flex-1 py-2 text-sm font-medium transition-colors ' +
+            (_type === 'self' ? 'bg-primary-500 text-white' : 'bg-white text-neutral-600 hover:bg-neutral-50')
+          "
+          (click)="participantTypeChange.emit('self')"
+        >
+          JA
+        </button>
+        <button
+          type="button"
+          [class]="
+            'flex-1 border-l border-neutral-200 py-2 text-sm font-medium transition-colors ' +
+            (_type === 'guest' ? 'bg-primary-500 text-white' : 'bg-white text-neutral-600 hover:bg-neutral-50')
+          "
+          (click)="participantTypeChange.emit('guest')"
+        >
+          OSOBA TOWARZYSZĄCA
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (_showGuestInfo) {
+    <div class="rounded-xl border border-secondary-200 bg-secondary-50 p-3">
+      <div class="flex items-start gap-3">
+        <app-icon name="help-circle" size="sm" class="shrink-0 mt-0.5 text-secondary-500" />
+        <div class="space-y-2 text-xs text-secondary-800">
+          <p>
+            <strong>Zasady dodawania osoby towarzyszącej:</strong> Dodana osoba uzyska własne miejsce i będzie widoczna
+            na liście uczestników.
+          </p>
+          <p>
+            Jako osoba zapraszająca w pełni zarządzasz uczestnictwem swojego gościa. Wszystkie powiadomienia będą
+            wysyłane bezpośrednio do Ciebie.
+          </p>
+          <p>
+            Odpowiadasz za każdą dodaną w ten sposób osobę oraz ponosisz konsekwencje w przypadku naruszenia przez nich
+            regulaminu.
+          </p>
+          @if (canAddGuest()) {
+            @if (canShowGuestLimitSummary()) {
+              <div class="rounded-lg border border-primary-200 bg-primary-50 px-3 py-2">
+                <p class="text-sm font-medium text-primary-700">
+                  <app-icon name="users" size="sm" class="mr-1" />
+                  Możesz dodać jeszcze maksymalnie
+                  <strong class="text-primary-900">{{ guestsRemaining() }}</strong> gości
+                </p>
+              </div>
+            }
+          } @else {
+            <div class="rounded-lg border border-danger-200 bg-danger-50 px-3 py-2">
+              <p class="text-sm font-medium text-danger-700">
+                <app-icon name="alert-triangle" size="sm" class="mr-1" />
+                Wykorzystano limit
+                <strong class="text-danger-900">{{ maxGuests() }}</strong> możliwych gości
+              </p>
+              <p class="mt-1 text-xs text-danger-600">Nie możesz dodać więcej gości do tego wydarzenia</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (_showForm) {
+    @if (_showNameField) {
+      <div>
+        <label for="participantNameInput" class="mb-1 block text-sm font-medium text-neutral-700">
+          Nazwa uczestnika
+          <span class="ml-0.5 text-danger-500">*</span>
+        </label>
+        <input
+          id="participantNameInput"
+          type="text"
+          [ngModel]="participantName()"
+          (ngModelChange)="participantNameChange.emit($event)"
+          class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-hidden focus:ring-1 focus:ring-primary-500"
+          [placeholder]="participantNamePlaceholder()"
+          (keyup.enter)="submitRequested.emit()"
+        />
+        <p class="mt-1 text-xs text-neutral-500">
+          {{ participantNameHint() }}
+        </p>
+      </div>
+    }
+
+    @if (_showRoleSelection) {
+      <div>
+        <h3 class="mb-2 font-bold text-neutral-900">Wybierz swoją rolę:</h3>
+        <div class="space-y-2">
+          @for (role of _roles; track role.key) {
+            <label
+              [class]="
+                selectedRoleKey() === role.key
+                  ? 'flex cursor-pointer items-center gap-3 rounded-lg border border-primary-300 bg-primary-50 p-3 transition-colors'
+                  : 'flex cursor-pointer items-center gap-3 rounded-lg border border-neutral-200 p-3 transition-colors hover:border-neutral-300'
+              "
+            >
+              <input
+                type="radio"
+                name="roleSelection"
+                [value]="role.key"
+                [checked]="selectedRoleKey() === role.key"
+                (change)="selectedRoleKeyChange.emit(role.key)"
+                class="h-4 w-4 text-primary-500 accent-primary-500"
+              />
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-medium text-neutral-900">
+                    {{ 'dict.participant-role.' + role.key + '.title' | transloco }}
+                  </span>
+                  @if ('dict.participant-role.' + role.key + '.desc' | transloco) {
+                    <span class="text-xs text-neutral-500"
+                      >- {{ 'dict.participant-role.' + role.key + '.desc' | transloco }}</span
+                    >
+                  }
+                </div>
+              </div>
+            </label>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="mx-auto max-w-lg">
+      <app-button
+        appearance="solid"
+        color="primary"
+        [fullWidth]="true"
+        [loading]="_loading"
+        [disabled]="!_canSubmit"
+        (clicked)="submitRequested.emit()"
+      >
+        <app-icon name="check" size="sm" />
+        {{ _primaryButtonLabel }}
+      </app-button>
+    </div>
+  }
+</div>

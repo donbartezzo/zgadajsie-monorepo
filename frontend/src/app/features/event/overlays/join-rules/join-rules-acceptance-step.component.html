@@ -1,0 +1,93 @@
+<div class="space-y-4">
+  @let _event = event();
+  @let _hasRules = hasRules();
+  @let _showNewUserNotice = showNewUserNotice();
+  @let _showOrganizerNotice = showOrganizerNotice();
+  @let _rulesAccepted = rulesAccepted();
+  @let _canProceed = canProceed();
+
+  @if (_event) {
+    <div>
+      <h3 class="mb-2 font-bold text-neutral-900">Szczegóły wydarzenia i kryteria uczestnictwa:</h3>
+      <app-event-criteria-description [event]="_event" />
+    </div>
+
+    @if (_hasRules) {
+      <div>
+        <h3 class="mb-2 font-bold text-neutral-900">Zasady ogólne wyznaczone przez organizatora:</h3>
+        <ol class="list-inside list-decimal space-y-1.5 text-sm text-neutral-600">
+          @for (rule of rules(); track $index) {
+            <li>{{ rule }}</li>
+          }
+        </ol>
+      </div>
+    }
+
+    @if (_showNewUserNotice) {
+      <div class="rounded-lg border border-warning-200 bg-warning-50 p-3">
+        <div class="flex items-start gap-3">
+          <app-icon name="help-circle" size="sm" class="mt-0.5 text-warning-400" />
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-warning-700">To Twój pierwszy raz? :)</p>
+            <p class="mt-1 text-xs text-warning-600">
+              Jako nowy uczestnik w wydarzeniach u tego organizatora Twoje zgłoszenie musi zostać najpierw
+              zweryfikowane (przez organizatora) przed przydzieleniem miejsca. To samo dotyczy gości, których
+              dodasz — do czasu weryfikacji Twojego konta trafią do kolejki oczekujących.
+            </p>
+            <a
+              href="/faq#new-user-verification"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-2 inline-flex items-center gap-1 text-xs text-warning-700 underline hover:text-warning-800"
+            >
+              <app-icon name="help-circle" size="xs" />
+              Dowiedz się więcej w FAQ
+            </a>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (_showOrganizerNotice) {
+      <div class="rounded-lg border border-info-200 bg-info-50 p-3">
+        <div class="flex items-start gap-3">
+          <app-icon name="shield" size="sm" class="mt-0.5 text-info-400" />
+          <div>
+            <p class="text-sm font-semibold text-info-700">Jesteś organizatorem tego wydarzenia</p>
+            <p class="mt-1 text-xs text-info-600">
+              Jako organizator automatycznie dostaniesz status "Zaakceptowano" i nie musisz płacić za udział.
+            </p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <label [class]="checkboxClass()">
+      <input
+        type="checkbox"
+        class="h-5 w-5 shrink-0 cursor-pointer rounded border-neutral-300 text-primary-500 accent-highlight"
+        [checked]="_rulesAccepted"
+        (change)="rulesAcceptedChange.emit(!_rulesAccepted)"
+      />
+      <span class="text-sm text-neutral-700">
+        Oświadczam, że zapoznałem się z powyższymi informacjami i spełniam kryteria uczestnictwa
+        @if (_hasRules) {
+          oraz akceptuję wyznaczone zasady
+        }
+      </span>
+    </label>
+
+    <div class="mx-auto max-w-lg">
+      <app-button
+        appearance="solid"
+        color="primary"
+        [fullWidth]="true"
+        [disabled]="!_canProceed"
+        (clicked)="proceed.emit()"
+      >
+        <app-icon name="arrow-right" size="sm" />
+        Akceptuję
+      </app-button>
+    </div>
+  }
+</div>

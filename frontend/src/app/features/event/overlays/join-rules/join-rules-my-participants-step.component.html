@@ -1,0 +1,9 @@
+<div class="space-y-4">
+  <app-event-user-participants
+    [participants]="participants()"
+    [currentUserId]="currentUserId()"
+    [preselectedRoleKey]="preselectedRoleKey()"
+    (participantClicked)="participantClicked.emit($event)"
+    (addNewParticipant)="addNewParticipant.emit()"
+  />
+</div>
