@@ -86,7 +86,7 @@ export class EnrollmentLotteryCron {
 
       for (const participation of shuffled) {
         const freeSlot = await tx.eventSlot.findFirst({
-          where: { eventId: event.id, participationId: null },
+          where: { eventId: event.id, participationId: null, locked: false },
         });
         if (!freeSlot) break;
         await tx.eventSlot.update({

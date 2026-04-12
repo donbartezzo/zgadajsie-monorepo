@@ -186,6 +186,14 @@ export class ParticipationService {
       }
     }
 
+    // Check host eligibility once (fixes double-check race and missing ban check)
+    const [isHostBanned, isHostNew] = isOrganizer
+      ? [false, false]
+      : await Promise.all([
+          this.eligibility.isBannedByOrganizer(addedByUserId, event.organizerId),
+          this.eligibility.isNewUser(addedByUserId, event.organizerId),
+        ]);
+
     const guestUser = await this.prisma.user.create({
       data: {
         email: `guest-${Date.now()}-${Math.random().toString(36).slice(2)}@guest.zgadajsie.pl`,
@@ -195,52 +203,46 @@ export class ParticipationService {
     });
 
     // In open enrollment with free slots → assign slot (confirmed=false, user must confirm)
-    if (phase === 'OPEN_ENROLLMENT') {
-      // Validate roleKey if roleConfig exists
+    if (phase === 'OPEN_ENROLLMENT' && !isHostBanned && !isHostNew) {
       const roleConfig = event.roleConfig as unknown as EventRoleConfig | null;
       const validatedRoleKey = this.validateRoleKey(roleConfig, roleKey);
       const freeSlots = await this.slotService.getFreeSlotCount(eventId, validatedRoleKey);
       if (freeSlots > 0) {
-        // If the user adding the guest is a new user, the guest should be pending approval
-        const isNewUser = await this.eligibility.isNewUser(addedByUserId, event.organizerId);
-
-        if (!isNewUser) {
-          const result = await this.prisma.$transaction(async (tx) => {
-            const participation = await tx.eventParticipation.create({
-              data: {
-                eventId,
-                userId: guestUser.id,
-                addedByUserId,
-                wantsIn: true,
-                roleKey: validatedRoleKey,
-              },
-              include: { user: { select: USER_SELECT } },
-            });
-            // confirmed=false because user (host) must confirm
-            await this.slotService.assignSlot(
+        const result = await this.prisma.$transaction(async (tx) => {
+          const participation = await tx.eventParticipation.create({
+            data: {
               eventId,
-              participation.id,
-              false,
-              tx,
-              validatedRoleKey,
-            );
-            const withSlot = await tx.eventParticipation.findUnique({
-              where: { id: participation.id },
-              include: { user: { select: USER_SELECT }, slot: true },
-            });
-            if (!withSlot) {
-              throw new Error('Nie udało się odczytać zgłoszenia po przydzieleniu miejsca');
-            }
-            return withDerivedStatus(withSlot);
+              userId: guestUser.id,
+              addedByUserId,
+              wantsIn: true,
+              roleKey: validatedRoleKey,
+            },
+            include: { user: { select: USER_SELECT } },
           });
-          this.notifyEventChanged(eventId, 'participants');
-          return result;
-        }
+          // confirmed=false because user (host) must confirm
+          await this.slotService.assignSlot(eventId, participation.id, false, tx, validatedRoleKey);
+          const withSlot = await tx.eventParticipation.findUnique({
+            where: { id: participation.id },
+            include: { user: { select: USER_SELECT }, slot: true },
+          });
+          if (!withSlot) {
+            throw new Error('Nie udało się odczytać zgłoszenia po przydzieleniu miejsca');
+          }
+          return withDerivedStatus(withSlot);
+        });
+        this.notifyEventChanged(eventId, 'participants');
+        return result;
       }
     }
 
-    // No free slots, pre-enrollment, or added by a new user → waiting list
-    const isNewUser = await this.eligibility.isNewUser(addedByUserId, event.organizerId);
+    // No free slots, pre-enrollment, banned host, or new host → waiting list
+    const waitingReason = isHostBanned
+      ? 'BANNED'
+      : isHostNew
+        ? 'NEW_USER'
+        : phase === 'PRE_ENROLLMENT'
+          ? 'PRE_ENROLLMENT'
+          : 'NO_SLOTS';
 
     const participation = await this.prisma.eventParticipation.create({
       data: {
@@ -249,11 +251,7 @@ export class ParticipationService {
         addedByUserId,
         wantsIn: true,
         roleKey,
-        waitingReason: isNewUser
-          ? 'NEW_USER'
-          : phase === 'PRE_ENROLLMENT'
-            ? 'PRE_ENROLLMENT'
-            : 'NO_SLOTS',
+        waitingReason,
       },
       include: { user: { select: USER_SELECT }, slot: true },
     });
@@ -889,7 +887,42 @@ export class ParticipationService {
       };
     }
 
-    // Rejoin skips eligibility check — user was already accepted before
+    // Re-check eligibility on rejoin — user status may have changed since they left
+    const [isBanned, isNew] = await Promise.all([
+      this.eligibility.isBannedByOrganizer(userId, event.organizerId),
+      this.eligibility.isNewUser(userId, event.organizerId),
+    ]);
+
+    if (isBanned) {
+      const withReason = await this.prisma.eventParticipation.update({
+        where: { id: participationId },
+        data: { waitingReason: 'BANNED' },
+        include: { user: { select: USER_SELECT }, slot: true },
+      });
+      this.notifyEventChanged(event.id, 'participants');
+      return {
+        ...withDerivedStatus(withReason),
+        isPaid,
+        costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0,
+        waitingReason: 'BANNED' as const,
+      };
+    }
+
+    if (isNew) {
+      const withReason = await this.prisma.eventParticipation.update({
+        where: { id: participationId },
+        data: { waitingReason: 'NEW_USER' },
+        include: { user: { select: USER_SELECT }, slot: true },
+      });
+      this.notifyEventChanged(event.id, 'participants');
+      return {
+        ...withDerivedStatus(withReason),
+        isPaid,
+        costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0,
+        waitingReason: 'NEW_USER' as const,
+      };
+    }
+
     // Check slot availability (role-specific if roleKey provided)
     const freeSlots = await this.slotService.getFreeSlotCount(event.id, roleKey);
     if (freeSlots === 0) {
@@ -1012,18 +1045,42 @@ export class ParticipationService {
       });
     }
 
+    // Re-check eligibility — user status may have changed
+    const [isBannedCR, isNewCR] = await Promise.all([
+      this.eligibility.isBannedByOrganizer(participation.userId, event.organizerId),
+      this.eligibility.isNewUser(participation.userId, event.organizerId),
+    ]);
+
     // Try to assign slot for the new role
     if (phase === 'OPEN_ENROLLMENT') {
-      const freeSlots = await this.slotService.getFreeSlotCount(event.id, validatedRoleKey);
-      if (freeSlots > 0) {
-        await this.slotService.assignSlot(event.id, participationId, !isPaid, undefined, validatedRoleKey);
-      } else {
-        const allFreeSlots = await this.slotService.getFreeSlotCount(event.id);
-        const waitingReason = allFreeSlots > 0 ? 'NO_SLOTS_FOR_ROLE' : 'NO_SLOTS';
+      if (isBannedCR) {
         await this.prisma.eventParticipation.update({
           where: { id: participationId },
-          data: { waitingReason },
+          data: { waitingReason: 'BANNED' },
         });
+      } else if (isNewCR) {
+        await this.prisma.eventParticipation.update({
+          where: { id: participationId },
+          data: { waitingReason: 'NEW_USER' },
+        });
+      } else {
+        const freeSlots = await this.slotService.getFreeSlotCount(event.id, validatedRoleKey);
+        if (freeSlots > 0) {
+          await this.slotService.assignSlot(
+            event.id,
+            participationId,
+            !isPaid,
+            undefined,
+            validatedRoleKey,
+          );
+        } else {
+          const allFreeSlots = await this.slotService.getFreeSlotCount(event.id);
+          const waitingReason = allFreeSlots > 0 ? 'NO_SLOTS_FOR_ROLE' : 'NO_SLOTS';
+          await this.prisma.eventParticipation.update({
+            where: { id: participationId },
+            data: { waitingReason },
+          });
+        }
       }
     } else {
       await this.prisma.eventParticipation.update({
