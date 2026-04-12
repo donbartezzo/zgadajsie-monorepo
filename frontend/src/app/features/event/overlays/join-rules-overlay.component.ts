@@ -16,6 +16,7 @@ import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { EventCriteriaDescriptionComponent } from '../ui/event-criteria-description/event-criteria-description.component';
 import { EventUserParticipantsComponent } from '../../../shared/participant/ui/event-user-participants/event-user-participants.component';
+import { UnverifiedAccountPageComponent } from '../../auth/pages/unverified-account/unverified-account-page.component';
 import { Event as EventModel, Participation } from '../../../shared/types';
 import { JoinWizardConfig } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -36,6 +37,7 @@ const WITHOUT_SLOT_STATUSES = ['PENDING', 'WITHDRAWN', 'REJECTED'] as const;
     BottomOverlayComponent,
     EventCriteriaDescriptionComponent,
     EventUserParticipantsComponent,
+    UnverifiedAccountPageComponent,
   ],
   templateUrl: './join-rules-overlay.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,6 +61,9 @@ export class JoinRulesOverlayComponent {
   readonly guestConfirmed = output<{ displayName: string; roleKey?: string }>();
   readonly rejoinParticipantConfirmed = output<Participation>();
   readonly roleChangeConfirmed = output<{ participationId: string; roleKey: string }>();
+
+  // ── Account verification guard ──
+  readonly isAccountVerified = computed(() => this.auth.isActive());
 
   // ── Step 0 state ──
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);

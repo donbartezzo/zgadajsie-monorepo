@@ -117,12 +117,23 @@ export class ParticipantGridItemComponent {
     return 'waitingReason' in participant && participant.waitingReason === 'BANNED';
   });
 
+  readonly isNewUserPending = computed(() => {
+    const participant = this.participant();
+    return 'waitingReason' in participant && participant.waitingReason === 'NEW_USER';
+  });
+
+  readonly isAccountUnverified = computed(() => {
+    const p = this.participant();
+    if (p.isGuest) return false;
+    return p.user?.isActive === false || p.user?.isEmailVerified === false;
+  });
+
   readonly needsPayment = computed(
     () => this.participant().payment === null && this.participant().status === 'APPROVED',
   );
 
   readonly showPending = computed(
-    () => this.participant().status === 'PENDING' && !this.isBanned(),
+    () => this.participant().status === 'PENDING' && !this.isBanned() && !this.isNewUserPending(),
   );
 
   readonly avatarStatus = computed<SemanticColor | null>(() => {
@@ -143,12 +154,24 @@ export class ParticipantGridItemComponent {
       indicators.push({ icon: 'clock', tooltip: 'Oczekuje na zatwierdzenie', color: 'warning' });
     }
 
+    if (this.isNewUserPending()) {
+      indicators.push({
+        icon: 'help-circle',
+        tooltip: 'Nowy uczestnik — wymaga weryfikacji organizatora',
+        color: 'info',
+      });
+    }
+
     if (this.isCurrentUserGuest()) {
       indicators.push({ icon: 'user-plus', tooltip: 'Gość dodany przez ciebie', color: 'info' });
     }
 
     if (this.isBanned()) {
       indicators.push({ icon: 'shield-alert', tooltip: 'Zbanowany', color: 'danger' });
+    }
+
+    if (this.isAccountUnverified()) {
+      indicators.push({ icon: 'alert-triangle', tooltip: 'Konto niezweryfikowane', color: 'warning' });
     }
 
     const avatarStatus = this.avatarStatus();

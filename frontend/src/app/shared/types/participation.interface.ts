@@ -60,5 +60,12 @@ export interface Participation {
     status: string;
     city?: { slug: string };
   };
-  user: { id: string; displayName: string; avatarUrl: string | null; email: string };
+  user: {
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+    email: string;
+    isActive?: boolean;
+    isEmailVerified?: boolean;
+  };
 }

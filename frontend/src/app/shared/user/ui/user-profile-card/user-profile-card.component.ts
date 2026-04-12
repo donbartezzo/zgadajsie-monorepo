@@ -6,7 +6,7 @@ import { IconComponent } from '../../../ui/icon/icon.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { User } from '../../../types/user.interface';
 import { UserBrief } from '../../../types/common.interface';
-import { ParticipationStatus } from '../../../types/participation.interface';
+import { ParticipationStatus, WaitingReason } from '../../../types/participation.interface';
 import { Payment } from '../../../types/payment.interface';
 import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../types/colors';
 
@@ -35,6 +35,7 @@ export class UserProfileCardComponent {
   readonly user = input.required<User | UserBrief>();
   readonly context = input<ProfileCardContext>('profile');
   readonly participationStatus = input<ParticipationStatus | null>(null);
+  readonly waitingReason = input<WaitingReason | null>(null);
   readonly paymentInfo = input<Payment | null>(null);
   readonly isGuest = input(false);
   readonly variant = input<ProfileCardVariant>('default');
@@ -145,6 +146,39 @@ export class UserProfileCardComponent {
   });
   readonly showPending = computed(() => this.participationStatus() === 'PENDING');
 
+  readonly additionalBadges = computed<{ label: string; color: SemanticColor; icon: string }[]>(
+    () => {
+      const ctx = this.context();
+      if (ctx !== 'participant' && ctx !== 'organizer') return [];
+
+      const badges: { label: string; color: SemanticColor; icon: string }[] = [];
+
+      const reason = this.waitingReason();
+      if (reason === 'NEW_USER') {
+        badges.push({
+          label: 'Nowy uczestnik — wymaga weryfikacji organizatora',
+          color: 'info',
+          icon: 'help-circle',
+        });
+      }
+
+      if (!this.isGuest()) {
+        const user = this.user();
+        const isActive = 'isActive' in user ? user.isActive : undefined;
+        const isEmailVerified = 'isEmailVerified' in user ? user.isEmailVerified : undefined;
+        if (isActive === false || isEmailVerified === false) {
+          badges.push({
+            label: 'Konto niezweryfikowane',
+            color: 'warning',
+            icon: 'alert-triangle',
+          });
+        }
+      }
+
+      return badges;
+    },
+  );
+
   readonly avatarSize = computed(() => {
     const sizes: Record<ProfileCardVariant, 'lg' | 'xl' | '2xl'> = {
       compact: 'lg',
@@ -176,6 +210,10 @@ export class UserProfileCardComponent {
     const color = this.statusBadgeColor();
     return `${SEMANTIC_COLOR_CLASSES.surface[color]} ${SEMANTIC_COLOR_CLASSES.textStrong[color]}`;
   });
+
+  badgeClass(color: SemanticColor): string {
+    return `${SEMANTIC_COLOR_CLASSES.surface[color]} ${SEMANTIC_COLOR_CLASSES.textStrong[color]}`;
+  }
 
   readonly canEditName = computed(() => {
     const userId = this.currentUserId();

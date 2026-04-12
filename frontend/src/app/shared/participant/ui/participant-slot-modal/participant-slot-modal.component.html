@@ -6,6 +6,7 @@
   @let _isActive = isActiveStatus();
   @let _isWithdrawn = isWithdrawnStatus();
   @let _isBanned = isBanned();
+  @let _waitingReason = waitingReason();
   @let _isPaid = isPaidEvent();
   @let _payment = paymentInfo();
   @let _loading = loading();
@@ -92,6 +93,7 @@
           [user]="_participant.user!"
           [context]="_isOrganizer ? 'organizer' : 'participant'"
           [participationStatus]="_participant.status"
+          [waitingReason]="_waitingReason"
           [paymentInfo]="null"
           [isGuest]="_participant.isGuest"
           [participationId]="_participant.id"

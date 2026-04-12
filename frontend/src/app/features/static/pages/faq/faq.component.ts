@@ -116,13 +116,13 @@ export class FaqComponent {
       anchor: 'join-flow',
       question: 'Jak dołączyć do wydarzenia?',
       answer:
-        'Otwórz kartę wydarzenia i kliknij przycisk"Dołącz". Jeśli organizator wymaga akceptacji, Twoje zgłoszenie będzie oczekiwać na zatwierdzenie.',
+        'Otwórz kartę wydarzenia i kliknij przycisk "Dołącz". Jeśli organizator wymaga akceptacji, Twoje zgłoszenie będzie oczekiwać na zatwierdzenie.',
     },
     {
       anchor: 'leave-flow',
       question: 'Czy mogę anulować uczestnictwo?',
       answer:
-        'Tak - wejdź w szczegóły wydarzenia i kliknij"Wypisz się". Jeśli wydarzenie jest płatne, zwrot zależy od czasu pozostałego do rozpoczęcia.',
+        'Tak - wejdź w szczegóły wydarzenia i kliknij "Wypisz się". Jeśli wydarzenie jest płatne, zwrot zależy od czasu pozostałego do rozpoczęcia.',
     },
     {
       anchor: 'wallet',

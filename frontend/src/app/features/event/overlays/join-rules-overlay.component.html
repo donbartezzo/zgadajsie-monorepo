@@ -1,24 +1,28 @@
 <app-bottom-overlay
   [open]="open()"
-  icon="list"
+  [icon]="isAccountVerified() ? 'list' : null"
   iconColor="info"
   [title]="
-    isRoleChangeMode()
-      ? 'Ustaw rolę'
-      : currentStep() === 0
-        ? 'Twoi uczestnicy bez miejsca'
-        : currentStep() === 1
-          ? 'Chcesz dołączyć?'
-          : 'Zgłoś uczestnictwo'
+    !isAccountVerified()
+      ? ''
+      : isRoleChangeMode()
+        ? 'Ustaw rolę'
+        : currentStep() === 0
+          ? 'Twoi uczestnicy bez miejsca'
+          : currentStep() === 1
+            ? 'Chcesz dołączyć?'
+            : 'Zgłoś uczestnictwo'
   "
   [description]="
-    isRoleChangeMode()
-      ? 'Wybierz rolę dla swojego uczestnictwa.'
-      : currentStep() === 0
-        ? 'Kliknij uczestnika, aby ponownie go zapisać, lub dodaj nowy zapis.'
-        : currentStep() === 1
-          ? 'Zapoznaj się z poniższymi danymi i organizacją tego wydarzenia.'
-          : 'Wybierz w czyim imieniu zgłaszasz uczestnictwo.'
+    !isAccountVerified()
+      ? ''
+      : isRoleChangeMode()
+        ? 'Wybierz rolę dla swojego uczestnictwa.'
+        : currentStep() === 0
+          ? 'Kliknij uczestnika, aby ponownie go zapisać, lub dodaj nowy zapis.'
+          : currentStep() === 1
+            ? 'Zapoznaj się z poniższymi danymi i organizacją tego wydarzenia.'
+            : 'Wybierz w czyim imieniu zgłaszasz uczestnictwo.'
   "
   (closed)="closed.emit()"
 >
@@ -31,6 +35,14 @@
   @let _isRoleChange = isRoleChangeMode();
 
   @if (_event) {
+    <!-- ════════════════════════════════════════
+         UNVERIFIED ACCOUNT GUARD
+    ════════════════════════════════════════ -->
+    @if (!isAccountVerified()) {
+      <app-unverified-account-page />
+    }
+
+    @if (isAccountVerified()) {
     <!-- ════════════════════════════════════════
          STEP 0: Uczestnicy bez miejsca
     ════════════════════════════════════════ -->
@@ -308,5 +320,6 @@
         }
       </div>
     }
+    } <!-- end @if (isAccountVerified()) -->
   }
 </app-bottom-overlay>

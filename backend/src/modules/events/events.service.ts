@@ -531,7 +531,16 @@ export class EventsService {
     const participations = await this.prisma.eventParticipation.findMany({
       where: { eventId },
       include: {
-        user: { select: { id: true, displayName: true, avatarUrl: true, email: true } },
+        user: {
+          select: {
+            id: true,
+            displayName: true,
+            avatarUrl: true,
+            email: true,
+            isActive: true,
+            isEmailVerified: true,
+          },
+        },
         slot: true,
         payments: {
           orderBy: { createdAt: 'desc' },

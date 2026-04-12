@@ -54,7 +54,14 @@ export interface ParticipantManageItem {
   roleKey?: string | null;
   slot?: EventSlotInfo | null;
   createdAt: string;
-  user: { id: string; displayName: string; avatarUrl: string | null; email: string };
+  user: {
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+    email: string;
+    isActive?: boolean;
+    isEmailVerified?: boolean;
+  };
   payment: ParticipantPaymentInfo | null;
 }
 

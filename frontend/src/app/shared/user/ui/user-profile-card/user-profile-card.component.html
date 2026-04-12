@@ -13,6 +13,7 @@
 @let _hasChanges = hasChanges();
 @let _showPaymentWarning = showPaymentWarning();
 @let _showPending = showPending();
+@let _additionalBadges = additionalBadges();
 @let _stats = stats();
 @let _description = description();
 
@@ -87,9 +88,21 @@
       @if (_statusBadgeIcon) {
         <app-icon [name]="$any(_statusBadgeIcon)" size="xs" />
       }
-
       {{ _statusBadge }}
     </span>
+  }
+  @if (_additionalBadges.length > 0 && !_editingMode) {
+    <div class="mt-1.5 flex flex-col items-center gap-1">
+      @for (badge of _additionalBadges; track badge.label) {
+        <span
+          class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+          [ngClass]="badgeClass(badge.color)"
+        >
+          <app-icon [name]="$any(badge.icon)" size="xs" />
+          {{ badge.label }}
+        </span>
+      }
+    </div>
   }
   @if (_editingMode) {
     <div class="mt-4 flex gap-2">

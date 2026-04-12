@@ -119,6 +119,10 @@ export class ParticipantSlotModalComponent {
     () => (this.participant() as Participation)?.waitingReason === 'BANNED',
   );
 
+  readonly waitingReason = computed(
+    () => (this.participant() as Participation)?.waitingReason ?? null,
+  );
+
   readonly slotId = computed(() => this.slot()?.id ?? null);
   readonly slotLocked = computed(() => this.slot()?.locked ?? false);
 

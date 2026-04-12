@@ -23,11 +23,12 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         link aktywacyjny ponownie.
       </p>
 
-      <div class="mt-8 flex flex-col gap-3">
+      <div class="mt-8 flex flex-col gap-3 max-w-xs mx-auto">
         <app-button
           appearance="solid"
           color="primary"
           size="lg"
+          [fullWidth]="true"
           [loading]="sending()"
           (clicked)="resendActivation()"
         >
@@ -36,7 +37,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
         </app-button>
 
         <a routerLink="/profile">
-          <app-button appearance="outline" color="neutral" size="lg" class="w-full">
+          <app-button appearance="outline" color="neutral" size="lg" [fullWidth]="true">
             <app-icon name="user" size="sm"></app-icon>
             Przejdź do profilu
           </app-button>
