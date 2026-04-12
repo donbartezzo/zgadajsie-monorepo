@@ -8,7 +8,6 @@ import {
   signal,
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { BadgeComponent } from '../../../ui/badge/badge.component';
 import { Participation } from '../../../types';
 import { ParticipationStatus } from '../../../types/common.interface';
 import { ParticipantGridItemComponent } from '../participant-grid/participant-grid-item.component';
@@ -20,12 +19,7 @@ const WITHOUT_SLOT_STATUSES: ParticipationStatus[] = ['PENDING', 'WITHDRAWN', 'R
 
 @Component({
   selector: 'app-event-user-participants',
-  imports: [
-    ParticipantGridItemComponent,
-    ParticipantGridItemEmptyComponent,
-    TranslocoPipe,
-    BadgeComponent,
-  ],
+  imports: [ParticipantGridItemComponent, ParticipantGridItemEmptyComponent, TranslocoPipe],
   templateUrl: './event-user-participants.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

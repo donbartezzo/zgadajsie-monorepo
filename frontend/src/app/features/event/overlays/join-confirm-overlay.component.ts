@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { IconComponent, IconName } from '../../../shared/ui/icon/icon.component';
-import { EventInfoGridComponent } from '../../../shared/ui/event-info-grid/event-info-grid.component';
+import { IconName } from '../../../shared/ui/icon/icon.component';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { SemanticColor } from '../../../shared/types/colors';
@@ -18,7 +17,7 @@ import {
 
 @Component({
   selector: 'app-join-confirm-overlay',
-  imports: [IconComponent, BottomOverlayComponent, LinkListComponent, EventInfoGridComponent],
+  imports: [BottomOverlayComponent, LinkListComponent],
   template: `
     <app-bottom-overlay
       [open]="open()"
