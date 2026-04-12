@@ -19,7 +19,7 @@ import {
   ParticipationStatus,
   WaitingReason,
 } from '../../../shared/types';
-import { MAX_GUESTS_PER_USER, EventTimeStatus } from '@zgadajsie/shared';
+import { MAX_GUESTS_PER_USER, MAX_GUESTS_PER_ORGANIZER, EventTimeStatus } from '@zgadajsie/shared';
 import { getEnrollmentPhase } from '../../../shared/utils/enrollment-phase.util';
 import { isEventJoinable } from '../../../shared/utils/event-time-status.util';
 import {
@@ -525,12 +525,16 @@ export class EventAreaService {
       this.autoRefreshPausedByOverlay = this.overlays.active() !== null;
       if (this.initialized) {
         this.syncAutoRefresh();
+        // Skip the post-close refresh when a join action is in progress —
+        // the action's own success handler will update participants after the POST completes.
+        // This prevents a stale GET (fired before the POST) from racing with the fresh GET.
         if (
           wasOverlayOpen &&
           !this.autoRefreshPausedByOverlay &&
           !this.autoRefreshPausedByVisibility &&
           !this.refreshQueued &&
-          !this.refreshInFlight
+          !this.refreshInFlight &&
+          !this.joining()
         ) {
           this.requestRefresh({ force: true });
         }
@@ -601,11 +605,14 @@ export class EventAreaService {
     const currentUserId = this.auth.currentUser()?.id;
     if (!currentUserId) return MAX_GUESTS_PER_USER;
 
+    const isOrganizer = this.isOrganizer();
+    const maxGuests = isOrganizer ? MAX_GUESTS_PER_ORGANIZER : MAX_GUESTS_PER_USER;
+
     const currentGuests = this.participants().filter(
       (p) => p.isGuest && p.addedByUserId === currentUserId && p.wantsIn,
     ).length;
 
-    return Math.max(0, MAX_GUESTS_PER_USER - currentGuests);
+    return Math.max(0, maxGuests - currentGuests);
   }
 
   openManageGuests(): void {
@@ -654,8 +661,8 @@ export class EventAreaService {
     const participationId = this.currentParticipationId();
     if (!participationId) return;
 
-    this.overlays.close();
     this.joining.set(true);
+    this.overlays.close();
 
     this.eventService.leaveParticipation(participationId).subscribe({
       next: () => {
@@ -672,8 +679,8 @@ export class EventAreaService {
   }
 
   confirmJoin(roleKey?: string): void {
-    this.overlays.close();
     this.joining.set(true);
+    this.overlays.close();
 
     this.eventService
       .joinEvent(this._eventId, roleKey)
@@ -686,6 +693,7 @@ export class EventAreaService {
           this.eventService.getParticipants(this._eventId).subscribe({
             next: (participants) => {
               this.participants.set(participants);
+              this.refreshCompletedSubject.next();
               this.router.navigate(['/w', this._citySlug, this._eventId, 'participants']);
             },
           });
@@ -705,8 +713,8 @@ export class EventAreaService {
   }
 
   private confirmRejoinParticipant(p: Participation): void {
-    this.overlays.close();
     this.joining.set(true);
+    this.overlays.close();
 
     // Always rejoin by participation ID to avoid creating a new User entity for guests.
     // joinGuest / joinEvent would create a duplicate record for guests.
@@ -720,6 +728,7 @@ export class EventAreaService {
         this.eventService.getParticipants(this._eventId).subscribe({
           next: (participants) => {
             this.participants.set(participants);
+            this.refreshCompletedSubject.next();
             this.router.navigate(['/w', this._citySlug, this._eventId, 'participants']);
           },
         });
@@ -731,8 +740,8 @@ export class EventAreaService {
   }
 
   confirmJoinGuest(displayName: string, roleKey?: string): void {
-    this.overlays.close();
     this.joining.set(true);
+    this.overlays.close();
 
     this.eventService
       .joinGuest(this._eventId, displayName, roleKey)
@@ -745,6 +754,7 @@ export class EventAreaService {
           this.eventService.getParticipants(this._eventId).subscribe({
             next: (participants) => {
               this.participants.set(participants);
+              this.refreshCompletedSubject.next();
               this.router.navigate(['/w', this._citySlug, this._eventId, 'participants'], {
                 queryParams: { newUserId: p.userId },
               });

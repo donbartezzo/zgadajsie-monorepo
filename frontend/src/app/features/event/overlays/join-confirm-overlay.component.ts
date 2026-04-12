@@ -148,18 +148,6 @@ export class JoinConfirmOverlayComponent {
     return isEventJoinable(e.startsAt, e.status);
   });
 
-  readonly hasGuests = computed(() => {
-    const participants = this.participants();
-
-    return participants.some((p) => p.isGuest && p.addedByUserId && p.wantsIn);
-  });
-
-  readonly guestCount = computed(() => {
-    const participants = this.participants();
-
-    return participants.filter((p) => p.isGuest && p.addedByUserId && p.wantsIn).length;
-  });
-
   readonly paymentLinks = computed<LinkListItem[]>(() => [
     {
       label: 'Opłać udział',
@@ -186,7 +174,6 @@ export class JoinConfirmOverlayComponent {
 
   readonly participantLinks = computed<LinkListItem[]>(() => {
     const organizerName = this.event()?.organizer?.displayName || 'organizatorem wydarzenia';
-    const guestCount = this.guestCount();
 
     const links: LinkListItem[] = [
       {
@@ -207,19 +194,8 @@ export class JoinConfirmOverlayComponent {
       },
     ];
 
-    if (this.hasGuests()) {
-      links.push({
-        label: `Osoby towarzyszące (${guestCount})`,
-        description: 'Przeglądaj i zarządzaj dodanymi gośćmi',
-        icon: 'users',
-        value: 'manage-guests',
-        iconColor: 'neutral',
-        iconBackground: true,
-      });
-    }
-
     links.push({
-      label: this.hasGuests() ? 'Dodaj kolejną osobę towarzyszącą' : 'Dodaj osobę towarzyszącą',
+      label: 'Dodaj osobę towarzyszącą',
       description: 'Zgłoś do wydarzenia także swego znajomego',
       icon: 'user-plus',
       value: 'add-guest',

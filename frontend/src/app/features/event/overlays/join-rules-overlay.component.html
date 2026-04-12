@@ -167,19 +167,21 @@
                   nich regulaminu.
                 </p>
                 @if (canAddGuest()) {
-                  <div class="rounded-lg bg-primary-50 border border-primary-200 px-3 py-2">
-                    <p class="text-sm font-medium text-primary-700">
-                      <app-icon name="users" size="sm" class="mr-1" />
-                      Możesz dododać jeszcze maksymalnie
-                      <strong class="text-primary-900">{{ guestsRemaining() }}</strong> gości
-                    </p>
-                  </div>
+                  @if (guestsRemaining() <= MAX_GUESTS_PER_USER) {
+                    <div class="rounded-lg bg-primary-50 border border-primary-200 px-3 py-2">
+                      <p class="text-sm font-medium text-primary-700">
+                        <app-icon name="users" size="sm" class="mr-1" />
+                        Możesz dodać jeszcze maksymalnie
+                        <strong class="text-primary-900">{{ guestsRemaining() }}</strong> gości
+                      </p>
+                    </div>
+                  }
                 } @else {
                   <div class="rounded-lg bg-danger-50 border border-danger-200 px-3 py-2">
                     <p class="text-sm font-medium text-danger-700">
                       <app-icon name="alert-triangle" size="sm" class="mr-1" />
                       Wykorzystano limit
-                      <strong class="text-danger-900">{{ MAX_GUESTS }}</strong> możliwych gości
+                      <strong class="text-danger-900">{{ MAX_GUESTS() }}</strong> możliwych gości
                     </p>
                     <p class="text-xs text-danger-600 mt-1">Nie możesz dodać więcej gości do tego wydarzenia</p>
                   </div>

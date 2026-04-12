@@ -21,7 +21,7 @@ import { JoinWizardConfig } from '../../../shared/overlay/ui/bottom-overlays/bot
 import { AuthService } from '../../../core/auth/auth.service';
 import { UserService } from '../../../core/services/user.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
-import { MAX_GUESTS_PER_USER, DisciplineRole } from '@zgadajsie/shared';
+import { MAX_GUESTS_PER_USER, MAX_GUESTS_PER_ORGANIZER, DisciplineRole } from '@zgadajsie/shared';
 
 const WITHOUT_SLOT_STATUSES = ['PENDING', 'WITHDRAWN', 'REJECTED'] as const;
 
@@ -106,14 +106,21 @@ export class JoinRulesOverlayComponent {
     const currentUserId = this.auth.currentUser()?.id;
     if (!currentUserId) return MAX_GUESTS_PER_USER;
 
+    const isOrganizer = this.isOrganizer();
+    const maxGuests = isOrganizer ? MAX_GUESTS_PER_ORGANIZER : MAX_GUESTS_PER_USER;
+
     const currentGuests = this.participants().filter(
       (p) => p.isGuest && p.addedByUserId === currentUserId,
     ).length;
 
-    return Math.max(0, MAX_GUESTS_PER_USER - currentGuests);
+    return Math.max(0, maxGuests - currentGuests);
   });
 
-  readonly MAX_GUESTS = MAX_GUESTS_PER_USER;
+  readonly MAX_GUESTS = computed(() =>
+    this.isOrganizer() ? MAX_GUESTS_PER_ORGANIZER : MAX_GUESTS_PER_USER,
+  );
+
+  readonly MAX_GUESTS_PER_USER = MAX_GUESTS_PER_USER;
 
   readonly isNameValid = computed(() => this.participantName().trim().length >= 3);
 
