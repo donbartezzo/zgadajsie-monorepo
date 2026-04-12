@@ -92,7 +92,7 @@ export class ModerationService {
       },
     });
 
-    // 2. Set isBanned flag in OrganizerUserRelation
+    // 2. Set isBanned flag in OrganizerUserRelation (also clears trust)
     await this.prisma.organizerUserRelation.upsert({
       where: {
         organizerUserId_targetUserId: {
@@ -104,10 +104,16 @@ export class ModerationService {
         organizerUserId,
         targetUserId: dto.userId,
         isBanned: true,
+        bannedAt: new Date(),
+        isTrusted: false,
+        trustedAt: null,
         note: dto.reason,
       },
       update: {
         isBanned: true,
+        bannedAt: new Date(),
+        isTrusted: false,
+        trustedAt: null,
         note: dto.reason,
       },
     });
@@ -158,7 +164,7 @@ export class ModerationService {
     // 1. Clear isBanned flag
     await this.prisma.organizerUserRelation.update({
       where: { id: relation.id },
-      data: { isBanned: false },
+      data: { isBanned: false, bannedAt: null },
     });
 
     // 2. Clear waitingReason=BANNED from active participations with this organizer
@@ -184,9 +190,11 @@ export class ModerationService {
         organizerUserId,
         targetUserId,
         isTrusted: true,
+        trustedAt: new Date(),
       },
       update: {
         isTrusted: true,
+        trustedAt: new Date(),
       },
     });
   }
@@ -202,7 +210,7 @@ export class ModerationService {
     }
     return this.prisma.organizerUserRelation.update({
       where: { id: relation.id },
-      data: { isTrusted: false },
+      data: { isTrusted: false, trustedAt: null },
     });
   }
 

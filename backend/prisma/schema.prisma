@@ -388,16 +388,18 @@ model Reprimand {
 }
 
 model OrganizerUserRelation {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   organizerUserId String
   targetUserId    String
-  isBanned        Boolean  @default(false)
-  isTrusted       Boolean  @default(false)
+  isBanned        Boolean   @default(false)
+  isTrusted       Boolean   @default(false)
+  bannedAt        DateTime?
+  trustedAt       DateTime?
   note            String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  organizer       User     @relation("OrgRelOrganizer", fields: [organizerUserId], references: [id])
-  targetUser      User     @relation("OrgRelTarget", fields: [targetUserId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  organizer       User      @relation("OrgRelOrganizer", fields: [organizerUserId], references: [id])
+  targetUser      User      @relation("OrgRelTarget", fields: [targetUserId], references: [id])
 
   @@unique([organizerUserId, targetUserId])
 }

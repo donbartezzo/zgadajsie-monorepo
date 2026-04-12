@@ -331,6 +331,36 @@ export class ParticipationService {
       },
     });
 
+    // Auto-trust: mark real user as trusted upon first organizer-approved slot assignment.
+    // Guests (addedByUserId != null) are virtual accounts — trust does not apply to them.
+    // Non-critical: failure must not roll back the slot assignment already committed above.
+    if (!participation.addedByUserId) {
+      this.prisma.organizerUserRelation
+        .upsert({
+          where: {
+            organizerUserId_targetUserId: {
+              organizerUserId: organizerUserId,
+              targetUserId: participation.userId,
+            },
+          },
+          create: {
+            organizerUserId,
+            targetUserId: participation.userId,
+            isTrusted: true,
+            trustedAt: new Date(),
+          },
+          update: {
+            isTrusted: true,
+            trustedAt: new Date(),
+          },
+        })
+        .catch((err: unknown) => {
+          this.logger.error(
+            `Auto-trust upsert failed for user ${participation.userId} / organizer ${organizerUserId}: ${(err as Error).message}`,
+          );
+        });
+    }
+
     this.notifyEventChanged(participation.eventId, 'all');
 
     // Notify only in OPEN_ENROLLMENT (not during pre-enrollment)

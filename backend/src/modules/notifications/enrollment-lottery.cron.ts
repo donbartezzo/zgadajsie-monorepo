@@ -45,7 +45,7 @@ export class EnrollmentLotteryCron {
     title: string;
   }): Promise<void> {
     const result = await this.prisma.$transaction(async (tx) => {
-      // Atomic lock - only one cron instance processes this event
+      // Atomic lock — only one cron instance processes this event
       const locked = await tx.event.updateMany({
         where: { id: event.id, lotteryExecutedAt: null },
         data: { lotteryExecutedAt: new Date() },
@@ -54,116 +54,49 @@ export class EnrollmentLotteryCron {
         return null; // Already processed by another instance
       }
 
-      // Get all waiting participants (wantsIn=true, no slot)
+      // Only real users (no guests) in the waiting list
       const pendingParticipations = await tx.eventParticipation.findMany({
-        where: { eventId: event.id, wantsIn: true, slot: null },
-        include: {
-          user: { select: { id: true, isActive: true } },
-        },
+        where: { eventId: event.id, wantsIn: true, slot: null, addedByUserId: null },
       });
 
-      // Check bans
-      const banMap = new Map<string, boolean>();
+      if (pendingParticipations.length === 0) {
+        return { assignedIds: [], eligible: [] };
+      }
+
       const uniqueUserIds = [...new Set(pendingParticipations.map((p) => p.userId))];
-      if (uniqueUserIds.length > 0) {
-        const bans = await tx.organizerUserRelation.findMany({
-          where: {
-            organizerUserId: event.organizerId,
-            targetUserId: { in: uniqueUserIds },
-            isBanned: true,
-          },
-          select: { targetUserId: true },
-        });
-        for (const ban of bans) {
-          banMap.set(ban.targetUserId, true);
-        }
-      }
 
-      const unbannedParticipations = pendingParticipations.filter((p) => !banMap.get(p.userId));
+      // Fetch trust and ban relations in one batch query
+      const relations = await tx.organizerUserRelation.findMany({
+        where: {
+          organizerUserId: event.organizerId,
+          targetUserId: { in: uniqueUserIds },
+        },
+        select: { targetUserId: true, isTrusted: true, isBanned: true },
+      });
+      const relationMap = new Map(relations.map((r) => [r.targetUserId, r]));
 
-      // Check "new user" status for tier separation
-      const newUserMap = new Map<string, boolean>();
-      for (const userId of uniqueUserIds) {
-        if (banMap.get(userId)) {
-          continue;
-        }
-        const trusted = await tx.organizerUserRelation.findUnique({
-          where: {
-            organizerUserId_targetUserId: {
-              organizerUserId: event.organizerId,
-              targetUserId: userId,
-            },
-          },
-          select: { isTrusted: true },
-        });
-        if (trusted?.isTrusted) {
-          newUserMap.set(userId, false);
-          continue;
-        }
-        // Count past participations with slot (confirmed attendance)
-        const pastCount = await tx.eventParticipation.count({
-          where: {
-            userId,
-            slot: { isNot: null },
-            event: {
-              organizerId: event.organizerId,
-              status: { not: 'CANCELLED' },
-              endsAt: { lt: new Date() },
-            },
-          },
-        });
-        newUserMap.set(userId, pastCount === 0);
-      }
+      // Lottery is open only to trusted, non-banned participants
+      const eligible = pendingParticipations.filter((p) => {
+        const rel = relationMap.get(p.userId);
+        return rel?.isTrusted === true && rel?.isBanned !== true;
+      });
 
-      // 3-tier split: veterans, guests, newcomers
-      const veterans = unbannedParticipations.filter(
-        (p) => p.addedByUserId === null && newUserMap.get(p.userId) === false,
-      );
-      const guests = unbannedParticipations.filter((p) => p.addedByUserId !== null);
-      const newcomers = unbannedParticipations.filter(
-        (p) => p.addedByUserId === null && newUserMap.get(p.userId) === true,
-      );
-
-      let remaining = event.maxParticipants;
-      const selected: string[] = [];
-
-      for (const tier of [veterans, guests, newcomers]) {
-        const shuffled = shuffleArray(tier);
-        const take = Math.min(remaining, shuffled.length);
-        for (let i = 0; i < take; i++) {
-          selected.push(shuffled[i].id);
-        }
-        remaining -= take;
-        if (remaining <= 0) {
-          break;
-        }
-      }
-
-      const allSelectedIds = selected;
-      const notSelectedIds = pendingParticipations
-        .filter((p) => !allSelectedIds.includes(p.id))
-        .map((p) => p.id);
-
-      // Assign slots to selected participants
+      const shuffled = shuffleArray(eligible);
       const assignedIds: string[] = [];
-      for (const participationId of allSelectedIds) {
-        // Find a free slot
+
+      for (const participation of shuffled) {
         const freeSlot = await tx.eventSlot.findFirst({
           where: { eventId: event.id, participationId: null },
         });
-        if (freeSlot) {
-          await tx.eventSlot.update({
-            where: { id: freeSlot.id },
-            data: { participationId, assignedAt: new Date() },
-          });
-          assignedIds.push(participationId);
-        }
+        if (!freeSlot) break;
+        await tx.eventSlot.update({
+          where: { id: freeSlot.id },
+          data: { participationId: participation.id, assignedAt: new Date() },
+        });
+        assignedIds.push(participation.id);
       }
 
-      // Not selected stay as waiting (wantsIn=true, no slot)
-      // They can still get a slot in open enrollment if one becomes free
-
-      return { assignedIds, notSelectedIds, pendingParticipations };
+      return { assignedIds, eligible };
     });
 
     if (!result) {
@@ -172,39 +105,28 @@ export class EnrollmentLotteryCron {
 
     this.eventRealtime.invalidateEvent(event.id, 'all');
 
-    // Notifications - fire-and-forget, AFTER successful commit
-    const { assignedIds, pendingParticipations } = result;
+    // Notify eligible participants about lottery outcome
+    const { assignedIds, eligible } = result;
 
-    for (const p of pendingParticipations) {
+    for (const p of eligible) {
       const gotSlot = assignedIds.includes(p.id);
-      const recipientId = p.addedByUserId ?? p.userId;
-
       try {
-        if (gotSlot) {
-          await this.pushService.notifyParticipationStatus(
-            recipientId,
-            event.title,
-            'SLOT_ASSIGNED',
-            event.id,
-          );
-        } else {
-          await this.pushService.notifyParticipationStatus(
-            recipientId,
-            event.title,
-            'LOTTERY_NOT_SELECTED',
-            event.id,
-          );
-        }
+        await this.pushService.notifyParticipationStatus(
+          p.userId,
+          event.title,
+          gotSlot ? 'SLOT_ASSIGNED' : 'LOTTERY_NOT_SELECTED',
+          event.id,
+        );
       } catch (err) {
         this.logger.error(
-          `Lottery notification failed for user ${recipientId}, event ${event.id}: ${err}`,
+          `Lottery notification failed for user ${p.userId}, event ${event.id}: ${err}`,
         );
       }
     }
 
     this.logger.log(
       `Lottery completed for event "${event.title}": ${assignedIds.length} slots assigned, ` +
-        `${pendingParticipations.length - assignedIds.length} waiting`,
+        `${eligible.length - assignedIds.length} eligible but not selected`,
     );
   }
 }

@@ -6,34 +6,13 @@ export class EnrollmentEligibilityService {
   constructor(private prisma: PrismaService) {}
 
   async isNewUser(userId: string, organizerId: string): Promise<boolean> {
-    const trusted = await this.prisma.organizerUserRelation.findUnique({
+    const relation = await this.prisma.organizerUserRelation.findUnique({
       where: {
         organizerUserId_targetUserId: { organizerUserId: organizerId, targetUserId: userId },
       },
       select: { isTrusted: true },
     });
-    if (trusted?.isTrusted) {
-      return false;
-    }
-
-    // Check if user has any participations (current or past) with this organizer
-    const anyParticipation = await this.prisma.eventParticipation.count({
-      where: {
-        userId,
-        event: {
-          organizerId,
-          status: { not: 'CANCELLED' },
-        },
-      },
-    });
-
-    if (anyParticipation > 0) {
-      return false;
-    }
-
-    // This check is now redundant but kept for clarity
-    // Past participations with assigned slot are already included in anyParticipation
-    return true;
+    return !relation?.isTrusted;
   }
 
   async isBannedByOrganizer(userId: string, organizerId: string): Promise<boolean> {
