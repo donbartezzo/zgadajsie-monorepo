@@ -28,9 +28,11 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
             name="password"
             required
             minlength="8"
+            maxlength="60"
             class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
             placeholder="Min. 8 znaków"
           />
+          <p class="mt-1 text-xs text-neutral-400">Co najmniej 8 znaków.</p>
         </div>
         <div>
           <label for="confirmPassword" class="block text-sm font-medium text-neutral-700 mb-1"

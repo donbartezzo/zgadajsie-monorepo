@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import { hashPassword, comparePassword } from '../../common/utils/password.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { AdminUpdateUserDto } from './dto/admin-update-user.dto';
@@ -38,11 +38,11 @@ export class UsersService {
       if (!user?.passwordHash) {
         throw new BadRequestException('Konto nie ma ustawionego hasła');
       }
-      const valid = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+      const valid = await comparePassword(dto.currentPassword, user.passwordHash);
       if (!valid) {
         throw new BadRequestException('Nieprawidłowe aktualne hasło');
       }
-      data.passwordHash = await bcrypt.hash(dto.newPassword, 10);
+      data.passwordHash = await hashPassword(dto.newPassword);
     }
 
     return this.prisma.user.update({

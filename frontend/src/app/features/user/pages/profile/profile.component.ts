@@ -120,6 +120,24 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
                 class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
               />
             </div>
+            @if (newPassword) {
+              <div>
+                <label
+                  for="profile-current-password"
+                  class="block text-xs font-medium text-neutral-600 mb-1"
+                >
+                  Aktualne hasło
+                </label>
+                <input
+                  id="profile-current-password"
+                  type="password"
+                  [(ngModel)]="currentPassword"
+                  name="currentPassword"
+                  placeholder="Aktualne hasło"
+                  class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            }
             <div>
               <label
                 for="profile-new-password"
@@ -131,9 +149,15 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
                 id="profile-new-password"
                 type="password"
                 [(ngModel)]="newPassword"
+                name="newPassword"
+                minlength="8"
+                maxlength="60"
                 placeholder="Zostaw puste jeśli bez zmian"
                 class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
               />
+              @if (newPassword) {
+                <p class="mt-1 text-xs text-neutral-400">Co najmniej 12 znaków.</p>
+              }
             </div>
             <div class="flex justify-end gap-3">
               <app-button
@@ -165,6 +189,7 @@ export class ProfileComponent implements OnInit {
 
   editName = '';
   newPassword = '';
+  currentPassword = '';
   readonly saving = signal(false);
 
   ngOnInit(): void {
@@ -183,8 +208,13 @@ export class ProfileComponent implements OnInit {
 
   saveProfile(): void {
     this.saving.set(true);
-    const data: { displayName: string; newPassword?: string } = { displayName: this.editName };
-    if (this.newPassword) data.newPassword = this.newPassword;
+    const data: { displayName: string; newPassword?: string; currentPassword?: string } = {
+      displayName: this.editName,
+    };
+    if (this.newPassword) {
+      data.newPassword = this.newPassword;
+      data.currentPassword = this.currentPassword;
+    }
     this.userService.updateProfile(data).subscribe({
       next: (updatedUser) => {
         // Update currentUser in AuthService to reflect changes immediately
@@ -192,6 +222,7 @@ export class ProfileComponent implements OnInit {
         this.snackbar.success('Profil zaktualizowany');
         this.saving.set(false);
         this.newPassword = '';
+        this.currentPassword = '';
       },
       error: (err) => {
         this.snackbar.error(err?.error?.message || 'Błąd zapisu');

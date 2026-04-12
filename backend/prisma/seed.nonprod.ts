@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import { hashPasswordForSeed } from '../src/common/utils/password.util';
 import { createCommonSeedData } from './seed-common';
 import { syncCoverImagesFromFilesystem } from '../src/modules/cover-images/cover-images-sync.util';
 
@@ -56,7 +56,7 @@ async function main() {
 
   // ─── Admin ───────────────────────────────────────────────────────────────
   console.log('Tworzę konto admina...');
-  const passwordHash = await bcrypt.hash('Admin123!', 10);
+  const passwordHash = await hashPasswordForSeed('Admin123!');
   const admin = await prisma.user.create({
     data: {
       email: APP_BRAND.CONTACT_EMAIL,
@@ -71,7 +71,7 @@ async function main() {
 
   // ─── Użytkownicy testowi ───────────────────────────────────────────────
   console.log('Tworzę użytkowników testowych...');
-  const userHash = await bcrypt.hash('Test1234!', 10);
+  const userHash = await hashPasswordForSeed('Test1234!');
 
   const jan = await prisma.user.create({
     data: {

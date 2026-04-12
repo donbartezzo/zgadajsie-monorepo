@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { MILLISECONDS_PER_HOUR, SocialProvider } from '@zgadajsie/shared';
 import { hoursFromNow } from '../../common/utils/date.util';
+import { hashPassword, comparePassword } from '../../common/utils/password.util';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
@@ -32,7 +32,7 @@ export class AuthService {
       throw new ConflictException('Użytkownik z tym adresem email już istnieje');
     }
 
-    const passwordHash = await bcrypt.hash(dto.password, 10);
+    const passwordHash = await hashPassword(dto.password);
     const activationToken = uuidv4();
     const activationTokenExpiresAt = hoursFromNow(24);
 
@@ -59,7 +59,7 @@ export class AuthService {
       throw new UnauthorizedException('Nieprawidłowy email lub hasło');
     }
 
-    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
+    const isPasswordValid = await comparePassword(dto.password, user.passwordHash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Nieprawidłowy email lub hasło');
     }
@@ -162,7 +162,7 @@ export class AuthService {
       throw new BadRequestException('Nieprawidłowy lub wygasły token resetu hasła');
     }
 
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const passwordHash = await hashPassword(newPassword);
     await this.prisma.user.update({
       where: { id: user.id },
       data: {
