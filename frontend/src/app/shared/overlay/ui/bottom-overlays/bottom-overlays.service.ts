@@ -27,6 +27,8 @@ export interface JoinWizardConfig {
   type: 'self' | 'guest';
   guestsRemaining?: number;
   preselectedRoleKey?: string;
+  mode?: 'roleChange';
+  participationId?: string;
 }
 
 @Injectable({
@@ -56,6 +58,9 @@ export class BottomOverlaysService {
   private manageGuestsCallback: (() => void) | null = null;
   private cancelPaymentCallback: ((options: CancelPaymentRequest) => void) | null = null;
   private addGuestRequestedCallback: (() => void) | null = null;
+  private changeRoleCallback:
+    | ((data: { participationId: string; roleKey: string }) => void)
+    | null = null;
 
   private readonly lotteryCountdownSignal = signal<EventCountdown | null>(null);
   readonly lotteryCountdown = this.lotteryCountdownSignal.asReadonly();
@@ -87,6 +92,17 @@ export class BottomOverlaysService {
       type: config?.type ?? 'self',
       guestsRemaining: config?.guestsRemaining,
       preselectedRoleKey: config?.preselectedRoleKey,
+    });
+    this.open('joinRules');
+  }
+
+  openChangeRoleWizard(participationId: string, currentRoleKey?: string | null): void {
+    this.wizardConfigSignal.set({
+      startStep: 2,
+      type: 'self',
+      mode: 'roleChange',
+      participationId,
+      preselectedRoleKey: currentRoleKey ?? undefined,
     });
     this.open('joinRules');
   }
@@ -181,6 +197,12 @@ export class BottomOverlaysService {
     this.cancelPaymentCallback = callback;
   }
 
+  onRoleChangeConfirmed(
+    callback: (data: { participationId: string; roleKey: string }) => void,
+  ): void {
+    this.changeRoleCallback = callback;
+  }
+
   openCancelPayment(payment: ParticipantPaymentInfo, userName: string): void {
     this.cancelPaymentSignal.set(payment);
     this.cancelPaymentUserNameSignal.set(userName);
@@ -239,6 +261,10 @@ export class BottomOverlaysService {
     this.cancelPaymentCallback?.(options);
   }
 
+  handleRoleChangeConfirmed(data: { participationId: string; roleKey: string }): void {
+    this.changeRoleCallback?.(data);
+  }
+
   clearCallbacks(): void {
     this.joinCallback = null;
     this.joinGuestCallback = null;
@@ -252,5 +278,6 @@ export class BottomOverlaysService {
     this.addGuestRequestedCallback = null;
     this.manageGuestsCallback = null;
     this.cancelPaymentCallback = null;
+    this.changeRoleCallback = null;
   }
 }

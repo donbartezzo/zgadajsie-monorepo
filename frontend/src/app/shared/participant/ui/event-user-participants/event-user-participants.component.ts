@@ -1,27 +1,56 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { BadgeComponent } from '../../../ui/badge/badge.component';
 import { Participation } from '../../../types';
 import { ParticipationStatus } from '../../../types/common.interface';
 import { ParticipantGridItemComponent } from '../participant-grid/participant-grid-item.component';
 import { ParticipantGridItemEmptyComponent } from '../participant-grid/participant-grid-item-empty.component';
 
-type ParticipantFilter = 'all' | 'without-slot';
+type ParticipantFilter = 'all' | 'without-slot' | 'role';
 
 const WITHOUT_SLOT_STATUSES: ParticipationStatus[] = ['PENDING', 'WITHDRAWN', 'REJECTED'];
 
 @Component({
   selector: 'app-event-user-participants',
-  imports: [ParticipantGridItemComponent, ParticipantGridItemEmptyComponent],
+  imports: [
+    ParticipantGridItemComponent,
+    ParticipantGridItemEmptyComponent,
+    TranslocoPipe,
+    BadgeComponent,
+  ],
   templateUrl: './event-user-participants.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventUserParticipantsComponent {
   readonly participants = input<Participation[]>([]);
   readonly currentUserId = input<string | null>(null);
+  readonly preselectedRoleKey = input<string | null>(null);
 
   readonly participantClicked = output<Participation>();
   readonly addNewParticipant = output<void>();
 
   readonly filter = signal<ParticipantFilter>('without-slot');
+
+  private hasInitializedRoleFilter = false;
+
+  constructor() {
+    // Set default filter to 'role' when role is preselected (only on first initialization)
+    effect(() => {
+      const roleKey = this.preselectedRoleKey();
+      if (roleKey && !this.hasInitializedRoleFilter) {
+        this.filter.set('role');
+        this.hasInitializedRoleFilter = true;
+      }
+    });
+  }
 
   readonly userParticipations = computed(() => {
     const uid = this.currentUserId();
@@ -35,10 +64,30 @@ export class EventUserParticipantsComponent {
     () => this.userParticipations().filter((p) => WITHOUT_SLOT_STATUSES.includes(p.status)).length,
   );
 
+  readonly roleCount = computed(() => {
+    const roleKey = this.preselectedRoleKey();
+    if (!roleKey) return 0;
+    return this.userParticipations().filter((p) => {
+      const participantRoleKey = p.slot?.roleKey ?? p.roleKey ?? null;
+      return participantRoleKey === roleKey;
+    }).length;
+  });
+
   readonly filteredParticipations = computed(() => {
     const all = this.userParticipations();
-    if (this.filter() === 'all') return all;
-    return all.filter((p) => WITHOUT_SLOT_STATUSES.includes(p.status));
+    const filter = this.filter();
+
+    if (filter === 'all') return all;
+    if (filter === 'without-slot')
+      return all.filter((p) => WITHOUT_SLOT_STATUSES.includes(p.status));
+
+    // filter === 'role'
+    const roleKey = this.preselectedRoleKey();
+    if (!roleKey) return all;
+    return all.filter((p) => {
+      const participantRoleKey = p.slot?.roleKey ?? p.roleKey ?? null;
+      return participantRoleKey === roleKey;
+    });
   });
 
   setFilter(f: ParticipantFilter): void {

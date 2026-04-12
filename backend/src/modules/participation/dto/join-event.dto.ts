@@ -15,3 +15,8 @@ export class JoinGuestDto extends BaseJoinEventDto {
   @MinLength(2)
   displayName: string;
 }
+
+export class ChangeRoleDto {
+  @IsString()
+  roleKey: string;
+}

@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.component';
+import { BadgeComponent } from '../../../ui/badge/badge.component';
 import { EventSlotInfo } from '../../../types/payment.interface';
 import { Participation, ParticipantManageItem } from '../../../types';
 import { SemanticColor } from '../../../types/colors';
@@ -21,7 +23,7 @@ export interface SlotItem {
 
 @Component({
   selector: 'app-participant-grid-item',
-  imports: [IconComponent, UserAvatarComponent],
+  imports: [IconComponent, UserAvatarComponent, TranslocoPipe, BadgeComponent],
   template: `
     @let _statusIndicators = statusIndicators();
 
@@ -64,6 +66,18 @@ export interface SlotItem {
           >
             {{ displayName() }}
           </span>
+
+          @if (showRole() && roleKey()) {
+            <app-badge
+              variant="outline"
+              color="neutral"
+              muted="light"
+              size="xs"
+              class="truncate w-full max-w-[88px]"
+            >
+              {{ 'dict.participant-role.' + roleKey() + '.title' | transloco }}
+            </app-badge>
+          }
         </div>
       </button>
     </div>
@@ -73,6 +87,7 @@ export interface SlotItem {
 export class ParticipantGridItemComponent {
   readonly participant = input.required<ParticipantItem>();
   readonly currentUserId = input<string | null>(null);
+  readonly showRole = input(false);
   readonly clicked = output<void>();
 
   readonly displayName = computed(() => this.participant().user?.displayName ?? 'Uczestnik');
@@ -164,6 +179,11 @@ export class ParticipantGridItemComponent {
     if (status === 'pending') return `${base} focus:ring-2 focus:ring-warning-200`;
     if (status === 'withdrawn') return `${base} focus:ring-2 focus:ring-neutral-200`;
     return `${base} focus:ring-2 focus:ring-primary-200`;
+  });
+
+  readonly roleKey = computed<string | null>(() => {
+    const p = this.participant();
+    return p.slot?.roleKey ?? p.roleKey ?? null;
   });
 
   readonly nameClass = computed(() => {

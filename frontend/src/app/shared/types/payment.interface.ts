@@ -51,6 +51,7 @@ export interface ParticipantManageItem {
   status: ParticipationStatus;
   isGuest: boolean;
   addedByUserId?: string;
+  roleKey?: string | null;
   slot?: EventSlotInfo | null;
   createdAt: string;
   user: { id: string; displayName: string; avatarUrl: string | null; email: string };

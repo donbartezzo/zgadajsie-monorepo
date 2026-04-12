@@ -555,6 +555,9 @@ export class EventAreaService {
     this.overlays.onRejoinParticipantRequested((p) => this.confirmRejoinParticipant(p));
     this.overlays.onAddGuestRequested(() => this.openAddGuest());
     this.overlays.onManageGuests(() => this.openManageGuests());
+    this.overlays.onRoleChangeConfirmed((data) =>
+      this.handleRoleChange(data.participationId, data.roleKey),
+    );
   }
 
   openJoinConfirmOverlay(): void {
@@ -710,6 +713,51 @@ export class EventAreaService {
    */
   rejoinParticipantDirect(p: Participation): void {
     this.confirmRejoinParticipant(p);
+  }
+
+  /**
+   * Opens the role-change wizard for a given participation.
+   * Preselects the participant's current role.
+   */
+  openChangeRoleWizardForParticipant(p: Participation): void {
+    const currentRoleKey = p.slot?.roleKey ?? p.roleKey;
+    this.overlays.openChangeRoleWizard(p.id, currentRoleKey);
+  }
+
+  private handleRoleChange(participationId: string, roleKey: string): void {
+    this.joining.set(true);
+    this.overlays.close();
+
+    this.eventService
+      .changeParticipationRole(participationId, roleKey)
+      .pipe(finalize(() => this.joining.set(false)))
+      .subscribe({
+        next: (result) => {
+          const toastMsg = this.getRoleChangeSuccessMessage(result.status);
+          this.snackbar.success(toastMsg);
+          this.eventService.getParticipants(this._eventId).subscribe({
+            next: (participants) => {
+              this.participants.set(participants);
+              this.refreshCompletedSubject.next();
+            },
+          });
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.snackbar.error(err.error?.message ?? 'Nie udało się zmienić roli');
+        },
+      });
+  }
+
+  private getRoleChangeSuccessMessage(status: string): string {
+    switch (status) {
+      case 'CONFIRMED':
+      case 'APPROVED':
+        return 'Rola zmieniona — masz przydzielone miejsce';
+      case 'PENDING':
+        return 'Rola zmieniona — oczekujesz na przydzielenie miejsca';
+      default:
+        return 'Rola zmieniona';
+    }
   }
 
   private confirmRejoinParticipant(p: Participation): void {

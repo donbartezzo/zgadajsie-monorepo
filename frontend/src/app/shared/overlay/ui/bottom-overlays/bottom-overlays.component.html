@@ -23,6 +23,7 @@
       (joinConfirmed)="overlays.confirmJoin($event)"
       (guestConfirmed)="overlays.confirmJoinGuest($event)"
       (rejoinParticipantConfirmed)="overlays.handleRejoinParticipant($event)"
+      (roleChangeConfirmed)="overlays.handleRoleChangeConfirmed($event)"
     />
   }
   @case ('joinConfirm') {

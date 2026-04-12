@@ -108,6 +108,16 @@ export class EventService {
     );
   }
 
+  changeParticipationRole(
+    participationId: string,
+    roleKey: string,
+  ): Observable<Participation & { isPaid?: boolean; costPerPerson?: number }> {
+    return this.http.patch<Participation & { isPaid?: boolean; costPerPerson?: number }>(
+      `${environment.apiUrl}/participations/${participationId}/role`,
+      { roleKey },
+    );
+  }
+
   rejoinParticipation(participationId: string): Observable<Participation> {
     return this.http.post<Participation>(
       `${environment.apiUrl}/participations/${participationId}/rejoin`,

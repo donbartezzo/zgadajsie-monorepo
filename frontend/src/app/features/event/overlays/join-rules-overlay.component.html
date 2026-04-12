@@ -3,18 +3,22 @@
   icon="list"
   iconColor="info"
   [title]="
-    currentStep() === 0
-      ? 'Twoi uczestnicy bez miejsca'
-      : currentStep() === 1
-        ? 'Chcesz dołączyć?'
-        : 'Zgłoś uczestnictwo'
+    isRoleChangeMode()
+      ? 'Ustaw rolę'
+      : currentStep() === 0
+        ? 'Twoi uczestnicy bez miejsca'
+        : currentStep() === 1
+          ? 'Chcesz dołączyć?'
+          : 'Zgłoś uczestnictwo'
   "
   [description]="
-    currentStep() === 0
-      ? 'Kliknij uczestnika, aby ponownie go zapisać, lub dodaj nowy zapis.'
-      : currentStep() === 1
-        ? 'Zapoznaj się z poniższymi danymi i organizacją tego wydarzenia.'
-        : 'Wybierz w czyim imieniu zgłaszasz uczestnictwo.'
+    isRoleChangeMode()
+      ? 'Wybierz rolę dla swojego uczestnictwa.'
+      : currentStep() === 0
+        ? 'Kliknij uczestnika, aby ponownie go zapisać, lub dodaj nowy zapis.'
+        : currentStep() === 1
+          ? 'Zapoznaj się z poniższymi danymi i organizacją tego wydarzenia.'
+          : 'Wybierz w czyim imieniu zgłaszasz uczestnictwo.'
   "
   (closed)="closed.emit()"
 >
@@ -24,6 +28,7 @@
   @let _roles = availableRoles();
   @let _rules = rulesList();
   @let _loading = isLoadingAny();
+  @let _isRoleChange = isRoleChangeMode();
 
   @if (_event) {
     <!-- ════════════════════════════════════════
@@ -34,6 +39,7 @@
         <app-event-user-participants
           [participants]="participants()"
           [currentUserId]="currentUserId()"
+          [preselectedRoleKey]="selectedRoleKey()"
           (participantClicked)="onRejoinParticipant($event)"
           (addNewParticipant)="onAddNewParticipant()"
         />
@@ -121,32 +127,34 @@
     ════════════════════════════════════════ -->
     @if (_step === 2) {
       <div class="space-y-4">
-        <!-- Type toggle -->
-        <div>
-          <p class="text-sm font-semibold text-neutral-700 mb-2">Zgłaszam jako:</p>
-          <div class="flex rounded-xl border border-neutral-200 overflow-hidden">
-            <button
-              type="button"
-              [class]="
-                'flex-1 py-2 text-sm font-medium transition-colors ' +
-                (_type === 'self' ? 'bg-primary-500 text-white' : 'bg-white text-neutral-600 hover:bg-neutral-50')
-              "
-              (click)="setParticipantType('self')"
-            >
-              JA
-            </button>
-            <button
-              type="button"
-              [class]="
-                'flex-1 py-2 text-sm font-medium transition-colors border-l border-neutral-200 ' +
-                (_type === 'guest' ? 'bg-primary-500 text-white' : 'bg-white text-neutral-600 hover:bg-neutral-50')
-              "
-              (click)="setParticipantType('guest')"
-            >
-              OSOBA TOWARZYSZĄCA
-            </button>
+        <!-- Type toggle (hidden in role change mode) -->
+        @if (!_isRoleChange) {
+          <div>
+            <p class="text-sm font-semibold text-neutral-700 mb-2">Zgłaszam jako:</p>
+            <div class="flex rounded-xl border border-neutral-200 overflow-hidden">
+              <button
+                type="button"
+                [class]="
+                  'flex-1 py-2 text-sm font-medium transition-colors ' +
+                  (_type === 'self' ? 'bg-primary-500 text-white' : 'bg-white text-neutral-600 hover:bg-neutral-50')
+                "
+                (click)="setParticipantType('self')"
+              >
+                JA
+              </button>
+              <button
+                type="button"
+                [class]="
+                  'flex-1 py-2 text-sm font-medium transition-colors border-l border-neutral-200 ' +
+                  (_type === 'guest' ? 'bg-primary-500 text-white' : 'bg-white text-neutral-600 hover:bg-neutral-50')
+                "
+                (click)="setParticipantType('guest')"
+              >
+                OSOBA TOWARZYSZĄCA
+              </button>
+            </div>
           </div>
-        </div>
+        }
 
         <!-- Guest rules info (only when type = guest) -->
         @if (_type === 'guest') {
@@ -191,30 +199,32 @@
           </div>
         }
 
-        @if (_type === 'self' || canAddGuest()) {
-          <!-- Participant name field -->
-          <div>
-            <label for="participantNameInput" class="block text-sm font-medium text-neutral-700 mb-1">
-              Nazwa uczestnika
-              <span class="text-danger-500 ml-0.5">*</span>
-            </label>
-            <input
-              id="participantNameInput"
-              type="text"
-              [ngModel]="participantName()"
-              (ngModelChange)="participantName.set($event)"
-              class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-hidden"
-              [placeholder]="_type === 'guest' ? 'np. Jan Kowalski' : 'Twoja nazwa'"
-              (keyup.enter)="onSubmit()"
-            />
-            <p class="mt-1 text-xs text-neutral-500">
-              @if (_type === 'self') {
-                Możesz zmienić nazwę - zostanie zaktualizowana w Twoim profilu.
-              } @else {
-                Minimalna długość: 3 znaki.
-              }
-            </p>
-          </div>
+        @if (_isRoleChange || _type === 'self' || canAddGuest()) {
+          <!-- Participant name field (hidden in role change mode) -->
+          @if (!_isRoleChange) {
+            <div>
+              <label for="participantNameInput" class="block text-sm font-medium text-neutral-700 mb-1">
+                Nazwa uczestnika
+                <span class="text-danger-500 ml-0.5">*</span>
+              </label>
+              <input
+                id="participantNameInput"
+                type="text"
+                [ngModel]="participantName()"
+                (ngModelChange)="participantName.set($event)"
+                class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-hidden"
+                [placeholder]="_type === 'guest' ? 'np. Jan Kowalski' : 'Twoja nazwa'"
+                (keyup.enter)="onSubmit()"
+              />
+              <p class="mt-1 text-xs text-neutral-500">
+                @if (_type === 'self') {
+                  Możesz zmienić nazwę - zostanie zaktualizowana w Twoim profilu.
+                } @else {
+                  Minimalna długość: 3 znaki.
+                }
+              </p>
+            </div>
+          }
 
           <!-- Role selection (only if event has roles) -->
           @if (_roles.length > 0) {
@@ -266,7 +276,7 @@
               (clicked)="onSubmit()"
             >
               <app-icon name="check" size="sm" />
-              Zgłaszam chęć udziału
+              {{ _isRoleChange ? 'Zmień rolę' : 'Zgłaszam chęć udziału' }}
             </app-button>
           </div>
         }

@@ -72,9 +72,9 @@
       <div>
         <h3 [class]="'text-base font-bold leading-tight uppercase ' + _titleColor">
           {{ _config.title }}
-          @let _participantSlot = _participant?.slot;
-          @if (_participantSlot && _participantSlot.roleKey) {
-            - {{ 'dict.participant-role.' + _participantSlot.roleKey + '.title' | transloco | uppercase }}
+          @let _roleKey = _participant?.slot?.roleKey ?? _participant?.roleKey;
+          @if (_roleKey) {
+            - {{ 'dict.participant-role.' + _roleKey + '.title' | transloco | uppercase }}
           }
         </h3>
         <p [class]="'mt-0.5 text-xs ' + _descColor">{{ _config.description }}</p>
@@ -143,36 +143,52 @@
     <!-- ═══════════════════════════════════
          PUBLIC / PARTICIPANT ACTIONS
     ═══════════════════════════════════ -->
-    <div class="mt-4 space-y-3">
-      <!-- Free slot: Join button -->
-      @if (canJoinPublic()) {
-        <app-button appearance="solid" color="primary" [fullWidth]="true" (clicked)="onJoin()">
-          <app-icon name="user-plus" size="sm" />
-          Zapisz się
-        </app-button>
-      }
+    <div class="mt-4">
+      <div class="flex flex-col gap-2">
+        <!-- Free slot: Join button -->
+        @if (canJoinPublic()) {
+          <app-button appearance="solid" color="primary" [fullWidth]="true" (clicked)="onJoin()">
+            <app-icon name="user-plus" size="sm" />
+            Zapisz się
+          </app-button>
+        }
 
-      <!-- Own slot / own participation: Leave button -->
-      @if (isCurrentUserParticipant() && !_isWithdrawn) {
-        <app-button appearance="outline" color="danger" [fullWidth]="true" [loading]="_loading" (clicked)="onLeave()">
-          <app-icon name="user-x" size="sm" />
-          Wypisz się z wydarzenia
-        </app-button>
-      }
+        <!-- Own participation: Change role button (PENDING / APPROVED / CONFIRMED) -->
+        @if (canChangeRole()) {
+          <app-button
+            appearance="outline"
+            color="primary"
+            [fullWidth]="true"
+            [loading]="_loading"
+            (clicked)="onChangeRole()"
+          >
+            <app-icon name="edit" size="sm" />
+            Zmień rolę
+          </app-button>
+        }
 
-      <!-- Guest host: Remove guest button -->
-      @if (isGuestHost() && !_isWithdrawn) {
-        <app-button
-          appearance="soft"
-          color="danger"
-          [fullWidth]="true"
-          [loading]="_loading"
-          (clicked)="onRemoveGuest()"
-        >
-          <app-icon name="user-x" size="sm" />
-          Wypisz gościa z wydarzenia
-        </app-button>
-      }
+        <!-- Own slot / own participation: Leave button -->
+        @if (isCurrentUserParticipant() && !_isWithdrawn) {
+          <app-button appearance="outline" color="danger" [fullWidth]="true" [loading]="_loading" (clicked)="onLeave()">
+            <app-icon name="user-x" size="sm" />
+            Wypisz się z wydarzenia
+          </app-button>
+        }
+
+        <!-- Guest host: Remove guest button -->
+        @if (isGuestHost() && !_isWithdrawn) {
+          <app-button
+            appearance="soft"
+            color="danger"
+            [fullWidth]="true"
+            [loading]="_loading"
+            (clicked)="onRemoveGuest()"
+          >
+            <app-icon name="user-x" size="sm" />
+            Wypisz gościa z wydarzenia
+          </app-button>
+        }
+      </div>
 
       <!-- Locked slot (non-organizer): Contact organizer -->
       @if (_slotLocked && !_participant) {

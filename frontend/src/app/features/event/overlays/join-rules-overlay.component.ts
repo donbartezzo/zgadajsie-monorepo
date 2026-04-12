@@ -10,7 +10,7 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
@@ -21,6 +21,7 @@ import { JoinWizardConfig } from '../../../shared/overlay/ui/bottom-overlays/bot
 import { AuthService } from '../../../core/auth/auth.service';
 import { UserService } from '../../../core/services/user.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
+import { ConfirmModalService } from '../../../shared/ui/confirm-modal/confirm-modal.service';
 import { MAX_GUESTS_PER_USER, MAX_GUESTS_PER_ORGANIZER, DisciplineRole } from '@zgadajsie/shared';
 
 const WITHOUT_SLOT_STATUSES = ['PENDING', 'WITHDRAWN', 'REJECTED'] as const;
@@ -43,6 +44,8 @@ export class JoinRulesOverlayComponent {
   private readonly auth = inject(AuthService);
   private readonly userService = inject(UserService);
   private readonly snackbar = inject(SnackbarService);
+  private readonly confirmModal = inject(ConfirmModalService);
+  private readonly transloco = inject(TranslocoService);
 
   readonly open = input(false);
   readonly event = input<EventModel | null>(null);
@@ -55,6 +58,7 @@ export class JoinRulesOverlayComponent {
   readonly joinConfirmed = output<string | undefined>();
   readonly guestConfirmed = output<{ displayName: string; roleKey?: string }>();
   readonly rejoinParticipantConfirmed = output<Participation>();
+  readonly roleChangeConfirmed = output<{ participationId: string; roleKey: string }>();
 
   // ── Step 0 state ──
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
@@ -126,7 +130,12 @@ export class JoinRulesOverlayComponent {
 
   readonly canProceedStep1 = computed(() => this.rulesAccepted());
 
+  readonly isRoleChangeMode = computed(() => this.wizardConfig()?.mode === 'roleChange');
+
   readonly canSubmitStep2 = computed(() => {
+    if (this.isRoleChangeMode()) {
+      return !!this.selectedRoleKey();
+    }
     if (!this.isNameValid()) return false;
     if (this.availableRoles().length > 0) {
       return !!this.selectedRoleKey();
@@ -167,7 +176,10 @@ export class JoinRulesOverlayComponent {
           this.selectedRoleKey.set(preselectedRole);
         }
 
-        if (step === 2) {
+        if (config?.mode === 'roleChange') {
+          // Role change mode: skip rules & participant selection, go straight to role picker
+          this.currentStep.set(2);
+        } else if (step === 2) {
           // Direct to step 2 (e.g., add guest forced)
           this.currentStep.set(2);
           this.syncNameFromType(type);
@@ -219,7 +231,37 @@ export class JoinRulesOverlayComponent {
     this.syncNameFromType(this.participantType());
   }
 
-  onRejoinParticipant(p: Participation): void {
+  async onRejoinParticipant(p: Participation): Promise<void> {
+    const preselectedRole = this.selectedRoleKey();
+    const participantRole = p.slot?.roleKey ?? p.roleKey ?? null;
+
+    if (preselectedRole && participantRole !== preselectedRole) {
+      const preselectedTitle = this.transloco.translate(
+        `dict.participant-role.${preselectedRole}.title`,
+      );
+      const participantTitle = participantRole
+        ? this.transloco.translate(`dict.participant-role.${participantRole}.title`)
+        : null;
+
+      const message = participantTitle
+        ? `Uczestnik jest zapisany na rolę „${participantTitle}", a wybrany slot przeznaczony jest dla roli „${preselectedTitle}". Uczestnik zostanie zapisany na rolę „${preselectedTitle}".`
+        : `Uczestnik nie ma przypisanej roli, a wybrany slot przeznaczony jest dla roli „${preselectedTitle}". Uczestnik zostanie zapisany na tę rolę.`;
+
+      const confirmed = await this.confirmModal.confirm({
+        title: 'Zmiana roli uczestnika',
+        message,
+        confirmLabel: 'Tak, zapisz',
+        cancelLabel: 'Anuluj',
+        color: 'warning',
+      });
+
+      if (!confirmed) return;
+
+      // Role change confirmed — use changeRole flow (handles WITHDRAWN correctly)
+      this.roleChangeConfirmed.emit({ participationId: p.id, roleKey: preselectedRole });
+      return;
+    }
+
     this.rejoinParticipantConfirmed.emit(p);
   }
 
@@ -233,6 +275,16 @@ export class JoinRulesOverlayComponent {
 
   onSubmit(): void {
     if (!this.canSubmitStep2() || this.isLoadingAny()) return;
+
+    // Role change mode — emit dedicated output
+    if (this.isRoleChangeMode()) {
+      const config = this.wizardConfig();
+      const roleKey = this.selectedRoleKey();
+      if (config?.participationId && roleKey) {
+        this.roleChangeConfirmed.emit({ participationId: config.participationId, roleKey });
+      }
+      return;
+    }
 
     const type = this.participantType();
     const name = this.participantName().trim();

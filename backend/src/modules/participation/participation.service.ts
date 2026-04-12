@@ -870,6 +870,107 @@ export class ParticipationService {
   }
 
   /**
+   * Change the role of an existing participation.
+   * Handles all statuses:
+   * - WITHDRAWN/REJECTED: rejoin with new role
+   * - PENDING: update roleKey, try to get a slot for new role
+   * - APPROVED/CONFIRMED: release current slot, update roleKey, try to get new slot
+   */
+  async changeRole(participationId: string, currentUserId: string, newRoleKey: string) {
+    const participation = await this.prisma.eventParticipation.findUnique({
+      where: { id: participationId },
+      include: { event: true, slot: true },
+    });
+    if (!participation) {
+      throw new NotFoundException('Zgłoszenie nie znalezione');
+    }
+
+    this.assertCanActOnParticipation(participation, currentUserId);
+
+    const event = participation.event;
+    const roleConfig = event.roleConfig as unknown as EventRoleConfig | null;
+
+    if (!roleConfig) {
+      throw new BadRequestException('To wydarzenie nie ma zdefiniowanych ról');
+    }
+
+    const validatedRoleKey = this.validateRoleKey(roleConfig, newRoleKey);
+    if (!validatedRoleKey) {
+      throw new BadRequestException('Nieprawidłowa rola');
+    }
+
+    const isPaid = event.costPerPerson.toNumber() > 0;
+    const status = deriveStatus(participation);
+
+    const phase = this.assertJoinEligibility(event);
+
+    // WITHDRAWN/REJECTED → rejoin with new roleKey
+    if (status === 'WITHDRAWN' || status === 'REJECTED') {
+      return this.handleRejoin(
+        participationId,
+        event,
+        participation.userId,
+        isPaid,
+        phase,
+        validatedRoleKey,
+      );
+    }
+
+    // APPROVED/CONFIRMED → release current slot first, then try to get new one
+    const hadSlot = !!participation.slot;
+    if (hadSlot) {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.eventParticipation.update({
+          where: { id: participationId },
+          data: { roleKey: validatedRoleKey },
+        });
+        await this.slotService.releaseSlot(participationId, tx);
+      });
+    } else {
+      // PENDING → just update roleKey
+      await this.prisma.eventParticipation.update({
+        where: { id: participationId },
+        data: { roleKey: validatedRoleKey, waitingReason: null },
+      });
+    }
+
+    // Try to assign slot for the new role
+    if (phase === 'OPEN_ENROLLMENT') {
+      const freeSlots = await this.slotService.getFreeSlotCount(event.id, validatedRoleKey);
+      if (freeSlots > 0) {
+        await this.slotService.assignSlot(event.id, participationId, !isPaid, undefined, validatedRoleKey);
+      } else {
+        const allFreeSlots = await this.slotService.getFreeSlotCount(event.id);
+        const waitingReason = allFreeSlots > 0 ? 'NO_SLOTS_FOR_ROLE' : 'NO_SLOTS';
+        await this.prisma.eventParticipation.update({
+          where: { id: participationId },
+          data: { waitingReason },
+        });
+      }
+    } else {
+      await this.prisma.eventParticipation.update({
+        where: { id: participationId },
+        data: { waitingReason: 'PRE_ENROLLMENT' },
+      });
+    }
+
+    const updated = await this.prisma.eventParticipation.findUnique({
+      where: { id: participationId },
+      include: { user: { select: USER_SELECT }, slot: true },
+    });
+
+    if (hadSlot) {
+      this.notifyWaitingAboutFreeSlot(event.id, event.title);
+    }
+
+    this.notifyEventChanged(event.id, 'all');
+
+    return updated
+      ? { ...withDerivedStatus(updated), isPaid, costPerPerson: event.costPerPerson.toNumber() }
+      : null;
+  }
+
+  /**
    * Rejoin an existing participation by its ID (for withdrawn/pending participants).
    * Used by the frontend when re-adding a guest or rejoining as a user
    * — prevents creating a new User entity and bypassing the unique constraint.

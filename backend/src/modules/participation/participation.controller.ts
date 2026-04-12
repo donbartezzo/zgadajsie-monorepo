@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Param, Body, UseGuards, Patch } from '@nestjs/common';
 import { ParticipationService } from './participation.service';
 import { SlotService } from '../slots/slot.service';
-import { JoinEventDto, JoinGuestDto } from './dto/join-event.dto';
+import { JoinEventDto, JoinGuestDto, ChangeRoleDto } from './dto/join-event.dto';
 import { UpdateGuestDto } from './dto/update-guest.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { IsActiveGuard } from '../auth/guards/is-active.guard';
@@ -56,6 +56,15 @@ export class ParticipationController {
   @Post('participations/:id/release-slot')
   releaseSlot(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.participationService.releaseSlotFromParticipant(id, user.id);
+  }
+
+  @Patch('participations/:id/role')
+  changeRole(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+    @Body() dto: ChangeRoleDto,
+  ) {
+    return this.participationService.changeRole(id, user.id, dto.roleKey);
   }
 
   @Post('participations/:id/rejoin')

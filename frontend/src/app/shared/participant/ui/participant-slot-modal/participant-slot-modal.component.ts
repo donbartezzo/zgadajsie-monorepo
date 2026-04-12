@@ -185,6 +185,19 @@ export class ParticipantSlotModalComponent {
     return this.eventArea.canJoin();
   });
 
+  readonly eventHasRoles = computed(() => {
+    const roles = this.event()?.roleConfig?.roles;
+    return Array.isArray(roles) && roles.length > 0;
+  });
+
+  readonly canChangeRole = computed(() => {
+    const canAct = this.isCurrentUserParticipant() || this.isGuestHost();
+    if (!canAct) return false;
+    if (!this.eventHasRoles()) return false;
+    const s = this.participant()?.status;
+    return s === 'PENDING' || s === 'APPROVED' || s === 'CONFIRMED';
+  });
+
   readonly canGuestRejoin = computed(() => {
     if (!this.isGuestHost()) return false;
     if (!this.isWithdrawnStatus()) return false;
@@ -433,14 +446,22 @@ export class ParticipantSlotModalComponent {
     const p = this.participant() as Participation;
     if (!p) return;
     this.modalService.close();
-    this.eventArea.rejoinParticipantDirect(p);
+    if (this.eventHasRoles()) {
+      this.eventArea.openChangeRoleWizardForParticipant(p);
+    } else {
+      this.eventArea.rejoinParticipantDirect(p);
+    }
   }
 
   onRejoinGuest(): void {
     const p = this.participant() as Participation;
     if (!p) return;
     this.modalService.close();
-    this.eventArea.rejoinParticipantDirect(p);
+    if (this.eventHasRoles()) {
+      this.eventArea.openChangeRoleWizardForParticipant(p);
+    } else {
+      this.eventArea.rejoinParticipantDirect(p);
+    }
   }
 
   async onLeave(): Promise<void> {
@@ -471,6 +492,24 @@ export class ParticipantSlotModalComponent {
         this.snackbar.error(getErrorMessage(err, 'Nie udało się wypisać gościa'));
       },
     });
+  }
+
+  async onChangeRole(): Promise<void> {
+    const p = this.participant();
+    if (!p) return;
+    if (this.isActiveStatus()) {
+      const confirmed = await this.confirmModal.confirm({
+        title: 'Zmienić rolę?',
+        message:
+          'Zmiana roli zwolni Twoje obecne miejsce. Jeśli nie ma wolnych slotów dla nowej roli, trafisz na listę oczekujących.',
+        confirmLabel: 'Zmień rolę',
+        cancelLabel: 'Anuluj',
+        color: 'warning',
+      });
+      if (!confirmed) return;
+    }
+    this.modalService.close();
+    this.eventArea.openChangeRoleWizardForParticipant(p as Participation);
   }
 
   onContactOrganizer(): void {
