@@ -11,7 +11,13 @@ import {
   ViewChild,
 } from '@angular/core';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
-import { NavigationEnd, NavigationStart, Router } from '@angular/router';
+import {
+  NavigationCancel,
+  NavigationEnd,
+  NavigationError,
+  NavigationStart,
+  Router,
+} from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { IconComponent } from '../../ui/icon/icon.component';
@@ -98,15 +104,39 @@ export class PageLayoutComponent {
       this.layoutConfig.subtitle.set(data.subtitle ?? '');
     });
 
+    let readyTimer: ReturnType<typeof setTimeout> | null = null;
+
     this.router.events.pipe(takeUntilDestroyed()).subscribe((e) => {
       if (e instanceof NavigationStart) {
+        // Cancel any pending markReady from previous navigation (race condition fix)
+        if (readyTimer) {
+          clearTimeout(readyTimer);
+          readyTimer = null;
+        }
         this.layoutConfig.reset();
         // Close all active overlays when navigation starts
         this.overlays.close();
       }
       if (e instanceof NavigationEnd) {
         // setTimeout ensures Angular CD completes first → child effects configure layout
-        setTimeout(() => this.layoutConfig.markReady());
+        readyTimer = setTimeout(() => {
+          readyTimer = null;
+          this.layoutConfig.markReady();
+        });
+      }
+      if (e instanceof NavigationError) {
+        // Lazy chunk load failure etc. — show content instead of infinite spinner
+        this.layoutConfig.markReady();
+      }
+      if (e instanceof NavigationCancel) {
+        // Guards normally trigger a redirect (new NavigationStart follows).
+        // Defensive fallback: if no new navigation starts within 50ms, unblock UI.
+        readyTimer = setTimeout(() => {
+          readyTimer = null;
+          if (!this.layoutConfig.isReady()) {
+            this.layoutConfig.markReady();
+          }
+        }, 50);
       }
     });
 
