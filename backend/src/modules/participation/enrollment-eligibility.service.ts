@@ -33,6 +33,7 @@ export class EnrollmentEligibilityService {
 
     // This check is now redundant but kept for clarity
     // Past participations with assigned slot are already included in anyParticipation
+    return true;
   }
 
   async isBannedByOrganizer(userId: string, organizerId: string): Promise<boolean> {
