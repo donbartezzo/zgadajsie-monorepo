@@ -124,21 +124,39 @@ export class PushService {
     status: string,
     eventId: string,
   ): Promise<void> {
-    const statusText =
-      status === 'APPROVED'
-        ? 'zatwierdzone - potwierdź uczestnictwo'
-        : status === 'CONFIRMED'
-          ? 'potwierdzone'
-          : 'odrzucone';
+    const templates: Record<string, { title: string; body: string }> = {
+      SLOT_ASSIGNED: {
+        title: 'Przydzielono miejsce',
+        body: `Masz miejsce na "${eventTitle}" - potwierdź uczestnictwo`,
+      },
+      APPROVAL_REMINDER: {
+        title: 'Potwierdź uczestnictwo',
+        body: `Przypomnienie: potwierdź uczestnictwo w "${eventTitle}"`,
+      },
+      CONFIRMED: {
+        title: 'Uczestnictwo potwierdzone',
+        body: `Twoje uczestnictwo w "${eventTitle}" zostało potwierdzone`,
+      },
+      REMOVED: {
+        title: 'Usunięto z wydarzenia',
+        body: `Twoje uczestnictwo w "${eventTitle}" zostało anulowane`,
+      },
+      SPOT_AVAILABLE: {
+        title: 'Wolne miejsce',
+        body: `Pojawiło się wolne miejsce w "${eventTitle}"`,
+      },
+      LOTTERY_NOT_SELECTED: {
+        title: 'Wynik loterii',
+        body: `Nie zostałeś wylosowany do "${eventTitle}" - czekasz na wolne miejsce`,
+      },
+      REJECTED: {
+        title: 'Zgłoszenie odrzucone',
+        body: `Twoje zgłoszenie do "${eventTitle}" zostało odrzucone`,
+      },
+    };
+    const config = templates[status] ?? templates['REJECTED'];
     const url = await this.getEventUrl(eventId);
-    await this.notifyUser(
-      userId,
-      'PARTICIPATION_STATUS',
-      `Zgłoszenie ${statusText}`,
-      `Twoje zgłoszenie do "${eventTitle}" zostało ${statusText}`,
-      eventId,
-      url,
-    );
+    await this.notifyUser(userId, 'PARTICIPATION_STATUS', config.title, config.body, eventId, url);
   }
 
   async notifyEventCancelled(userId: string, eventTitle: string, eventId: string): Promise<void> {

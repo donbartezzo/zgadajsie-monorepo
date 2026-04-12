@@ -57,18 +57,35 @@ export class EmailService implements OnModuleInit {
     eventTitle: string,
     status: string,
   ): Promise<void> {
-    const statusText =
-      status === 'APPROVED'
-        ? 'zatwierdzone - potwierdź uczestnictwo'
-        : status === 'CONFIRMED'
-          ? 'potwierdzone'
-          : 'odrzucone';
+    const templates: Record<string, { subject: string; body: string }> = {
+      SLOT_ASSIGNED: {
+        subject: `Przydzielono miejsce - ${eventTitle}`,
+        body: `Masz przydzielone miejsce na wydarzeniu <strong>${eventTitle}</strong>. Potwierdź swoje uczestnictwo na stronie wydarzenia.`,
+      },
+      APPROVAL_REMINDER: {
+        subject: `Przypomnienie o potwierdzeniu - ${eventTitle}`,
+        body: `Przypominamy, że masz przydzielone miejsce na wydarzeniu <strong>${eventTitle}</strong>. Potwierdź swoje uczestnictwo, aby nie stracić miejsca.`,
+      },
+      CONFIRMED: {
+        subject: `Uczestnictwo potwierdzone - ${eventTitle}`,
+        body: `Twoje uczestnictwo w wydarzeniu <strong>${eventTitle}</strong> zostało potwierdzone. Do zobaczenia!`,
+      },
+      REMOVED: {
+        subject: `Usunięcie z wydarzenia - ${eventTitle}`,
+        body: `Twoje uczestnictwo w wydarzeniu <strong>${eventTitle}</strong> zostało anulowane przez organizatora.`,
+      },
+      REJECTED: {
+        subject: `Zgłoszenie odrzucone - ${eventTitle}`,
+        body: `Twoje zgłoszenie do wydarzenia <strong>${eventTitle}</strong> zostało odrzucone.`,
+      },
+    };
+    const config = templates[status] ?? templates['REJECTED'];
     await this.send(
       email,
-      `Zmiana statusu uczestnictwa – ${eventTitle}`,
+      config.subject,
       `
       <h2>Hej ${displayName}!</h2>
-      <p>Twoje zgłoszenie do wydarzenia <strong>${eventTitle}</strong> zostało <strong>${statusText}</strong>.</p>
+      <p>${config.body}</p>
     `,
     );
   }
