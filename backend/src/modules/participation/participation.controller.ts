@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body, UseGuards, Patch } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Param, Body, UseGuards, Patch } from '@nestjs/common';
 import { ParticipationService } from './participation.service';
 import { SlotService } from '../slots/slot.service';
 import { JoinEventDto, JoinGuestDto, ChangeRoleDto } from './dto/join-event.dto';
@@ -70,6 +70,11 @@ export class ParticipationController {
   @Post('participations/:id/rejoin')
   rejoin(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.participationService.rejoinById(id, user.id);
+  }
+
+  @Delete('participations/:id')
+  deleteParticipation(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.participationService.deleteParticipation(id, user.id);
   }
 
   @Post('participations/:id/leave')

@@ -244,6 +244,10 @@ export class ParticipantSlotModalComponent {
     if (isBanned) {
       actions.push({ value: 'unban', label: 'Zdejmij bana' });
     }
+    const hasCompletedPayment = payment?.status === 'COMPLETED';
+    if (!hasCompletedPayment) {
+      actions.push({ value: 'deleteParticipation', label: 'Usuń zgłoszenie' });
+    }
 
     return actions;
   });
@@ -269,6 +273,8 @@ export class ParticipantSlotModalComponent {
         return this.onBan();
       case 'unban':
         return this.onUnban();
+      case 'deleteParticipation':
+        return this.onDeleteParticipation();
     }
   }
 
@@ -422,6 +428,32 @@ export class ParticipantSlotModalComponent {
       error: (err: unknown) => {
         this.loading.set(false);
         this.snackbar.error(getErrorMessage(err, 'Nie udało się zdjąć bana'));
+      },
+    });
+  }
+
+  private async onDeleteParticipation(): Promise<void> {
+    const p = this.participant();
+    if (!p) return;
+    const name = p.user?.displayName ?? 'uczestnika';
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Usunąć zgłoszenie?',
+      message: `Zgłoszenie użytkownika ${name} zostanie trwale usunięte. Tej operacji nie można cofnąć. Możliwe tylko dla zgłoszeń bez historii płatności.`,
+      confirmLabel: 'Usuń zgłoszenie',
+      cancelLabel: 'Anuluj',
+      color: 'danger',
+    });
+    if (!confirmed) return;
+    this.loading.set(true);
+    this.eventService.deleteParticipation(p.id).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.snackbar.info('Zgłoszenie zostało usunięte');
+        this.closeAndRefresh();
+      },
+      error: (err: unknown) => {
+        this.loading.set(false);
+        this.snackbar.error(getErrorMessage(err, 'Nie udało się usunąć zgłoszenia'));
       },
     });
   }

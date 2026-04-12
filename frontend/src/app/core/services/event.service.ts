@@ -153,6 +153,10 @@ export class EventService {
     );
   }
 
+  deleteParticipation(participationId: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/participations/${participationId}`);
+  }
+
   getMyGuests(eventId: string): Observable<Participation[]> {
     return this.http.get<Participation[]>(`${this.apiUrl}/${eventId}/my-guests`);
   }

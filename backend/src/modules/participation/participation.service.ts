@@ -439,6 +439,54 @@ export class ParticipationService {
   }
 
   /**
+   * Organizer permanently deletes a participation record.
+   * Blocked when Payment records exist (financial audit trail must be preserved).
+   */
+  async deleteParticipation(participationId: string, organizerUserId: string) {
+    const participation = await this.prisma.eventParticipation.findUnique({
+      where: { id: participationId },
+      include: { event: true, slot: true, payments: true },
+    });
+
+    if (!participation) {
+      throw new NotFoundException('Zgłoszenie nie znalezione');
+    }
+    if (participation.event.organizerId !== organizerUserId) {
+      throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+    }
+    if (participation.payments.length > 0) {
+      throw new BadRequestException(
+        'Nie można usunąć zgłoszenia z historią płatności. Użyj opcji odrzucenia uczestnika.',
+      );
+    }
+
+    const { eventId } = participation;
+    const hadSlot = !!participation.slot;
+    const slotWasLocked = participation.slot?.locked ?? false;
+    const isGuest = !!participation.addedByUserId;
+    const guestUserId = isGuest ? participation.userId : null;
+
+    // Clean up payment intents (restores vouchers if any were reserved)
+    await this.paymentsService.cleanupIntents(participationId, organizerUserId);
+
+    await this.prisma.$transaction(async (tx) => {
+      if (hadSlot) {
+        await this.slotService.releaseSlot(participationId, tx);
+      }
+      await tx.eventParticipation.delete({ where: { id: participationId } });
+      if (guestUserId) {
+        await tx.user.delete({ where: { id: guestUserId } });
+      }
+    });
+
+    if (hadSlot && !slotWasLocked) {
+      this.notifyWaitingAboutFreeSlot(eventId, participation.event.title);
+    }
+
+    this.notifyEventChanged(eventId, 'all');
+  }
+
+  /**
    * User leaves the event voluntarily.
    */
   async leave(participationId: string, currentUserId: string) {
