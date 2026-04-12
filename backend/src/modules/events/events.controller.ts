@@ -46,8 +46,8 @@ export class EventsController {
 
   @UseGuards(OptionalJwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.eventsService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser() user: AuthUser | null) {
+    return this.eventsService.findOne(id, user?.id);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { EventsController } from './events.controller';
 import { EventsService } from './events.service';
+import { EnrollmentEligibilityService } from '../participation/enrollment-eligibility.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { VouchersModule } from '../vouchers/vouchers.module';
 import { CoverImagesModule } from '../cover-images/cover-images.module';
@@ -18,7 +19,7 @@ import { EventRealtimeModule } from '../realtime/event-realtime.module';
     EventRealtimeModule,
   ],
   controllers: [EventsController],
-  providers: [EventsService],
+  providers: [EventsService, EnrollmentEligibilityService],
   exports: [EventsService],
 })
 export class EventsModule {}

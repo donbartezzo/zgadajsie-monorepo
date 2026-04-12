@@ -313,11 +313,18 @@ export class EventAreaService {
   private loadData(resolvedEvent?: EventModel): void {
     if (resolvedEvent) {
       this.event.set(resolvedEvent);
+
+      // Resolver runs in SSR context where localStorage is unavailable, so the
+      // JWT cannot be attached to the request and currentUserAccess comes back null.
+      // On the client, if the user is logged in but currentUserAccess is missing,
+      // do a full event + participants refresh to get the correct isNewUser flag.
+      const needsFullRefresh = this.auth.isLoggedIn() && !resolvedEvent.currentUserAccess;
+
       this.requestRefresh({
         force: true,
         emitCompletion: false,
         markLoading: true,
-        participantsOnly: true,
+        participantsOnly: !needsFullRefresh,
       });
       return;
     }

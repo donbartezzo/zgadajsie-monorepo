@@ -11,11 +11,7 @@ import { CoverImage } from './cover-image.interface';
 export type EnrollmentPhase = 'PRE_ENROLLMENT' | 'LOTTERY_PENDING' | 'OPEN_ENROLLMENT';
 
 export interface CurrentUserAccess {
-  isParticipant: boolean;
-  isOrganizer: boolean;
-  participationStatus: string | null;
-  participationId: string | null;
-  isBannedByOrganizer?: boolean;
+  isNewUser: boolean;
 }
 
 export interface EventRoleConfig {
@@ -56,6 +52,8 @@ export interface Event
   parentEventId?: string;
   createdAt: string;
   updatedAt: string;
+
+  currentUserAccess?: CurrentUserAccess | null;
 
   roleConfig?: EventRoleConfig | null;
 

@@ -69,6 +69,31 @@
           </div>
         }
 
+        <!-- New user notice -->
+        @if (_event.currentUserAccess?.isNewUser && !isOrganizer()) {
+          <div class="rounded-lg border border-warning-200 bg-warning-50 p-3">
+            <div class="flex items-start gap-3">
+              <app-icon name="help-circle" size="sm" class="text-warning-400 mt-0.5" />
+              <div class="flex-1">
+                <p class="text-sm font-semibold text-warning-700">To Twój pierwszy raz? :)</p>
+                <p class="mt-1 text-xs text-warning-600">
+                  Jako nowy uczestnik w wydarzeniach u tego organizatora Twoje zgłoszenie musi zostać najpierw
+                  zweryfikowane (przez organizatora) przed przydzieleniem miejsca.
+                </p>
+                <a
+                  href="/faq#new-user-verification"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-1 mt-2 text-xs text-warning-700 hover:text-warning-800 underline"
+                >
+                  <app-icon name="help-circle" size="xs" />
+                  Dowiedz się więcej w FAQ
+                </a>
+              </div>
+            </div>
+          </div>
+        }
+
         <!-- Organizer notice (paid event) -->
         @if (isOrganizer() && _event.costPerPerson > 0) {
           <div class="rounded-lg border border-info-200 bg-info-50 p-3">

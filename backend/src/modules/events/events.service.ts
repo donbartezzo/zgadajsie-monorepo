@@ -19,6 +19,7 @@ import { CoverImagesService } from '../cover-images/cover-images.service';
 import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptions.service';
 import { SlotService } from '../slots/slot.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
+import { EnrollmentEligibilityService } from '../participation/enrollment-eligibility.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
@@ -41,6 +42,7 @@ export class EventsService {
     private citySubscriptionsService: CitySubscriptionsService,
     private slotService: SlotService,
     private eventRealtime: EventRealtimeService,
+    private eligibility: EnrollmentEligibilityService,
   ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
@@ -200,7 +202,7 @@ export class EventsService {
     return { data: events, total, page, limit };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, userId?: string) {
     const event = await this.prisma.event.findUnique({
       where: { id },
       include: {
@@ -217,10 +219,17 @@ export class EventsService {
     const eventTimeStatus = getEventTimeStatus(event);
     const enrollmentPhase = getEnrollmentPhase(event);
 
+    const isOrganizer = !!userId && event.organizerId === userId;
+    const currentUserAccess =
+      userId && !isOrganizer
+        ? { isNewUser: await this.eligibility.isNewUser(userId, event.organizerId) }
+        : null;
+
     return {
       ...event,
       eventTimeStatus,
       enrollmentPhase,
+      currentUserAccess,
     };
   }
 
