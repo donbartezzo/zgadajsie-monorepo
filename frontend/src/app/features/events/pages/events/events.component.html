@@ -53,14 +53,13 @@
 
           <div class="flex flex-col gap-3">
             @for (event of group.events; track event.id) {
-              <div [class]="group.isPast ? 'opacity-50 grayscale-[30%]' : ''">
-                <app-event-card
-                  [event]="event"
-                  [isOngoing]="group.isOngoing"
-                  [dateLabel]="group.shortLabel"
-                  (selected)="onEventSelected($event)"
-                ></app-event-card>
-              </div>
+              <app-event-card
+                [event]="event"
+                [isOngoing]="group.isOngoing"
+                [isDimmed]="group.isPast || event.status === 'CANCELLED'"
+                [dateLabel]="group.shortLabel"
+                (selected)="onEventSelected($event)"
+              ></app-event-card>
             }
           </div>
         </div>

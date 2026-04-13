@@ -63,7 +63,6 @@ interface DateGroup {
     LayoutSlotDirective,
   ],
   templateUrl: './events.component.html',
-  styleUrls: ['./events.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventsComponent implements OnInit, OnDestroy {
