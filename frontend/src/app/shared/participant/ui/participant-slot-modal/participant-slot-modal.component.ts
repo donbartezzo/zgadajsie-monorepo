@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
+import { firstValueFrom, Observable } from 'rxjs';
 import { Router } from '@angular/router';
 import { UpperCasePipe } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -15,12 +24,12 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { EventService } from '../../../../core/services/event.service';
 import { UserService } from '../../../../core/services/user.service';
 import { ModerationService } from '../../../../core/services/moderation.service';
-import { SnackbarService } from '../../../ui/snackbar/snackbar.service';
+import { SnackbarService, SnackbarType } from '../../../ui/snackbar/snackbar.service';
 import { ConfirmModalService } from '../../../ui/confirm-modal/confirm-modal.service';
 import { BottomOverlaysService } from '../../../overlay/ui/bottom-overlays/bottom-overlays.service';
 import { EventAreaService } from '../../../../features/event/services/event-area.service';
 import { ProfileBroadcastService } from '../../../../core/services/profile-broadcast.service';
-import { Participation, ParticipantManageItem } from '../../../types';
+import { Participation, ParticipantManageItem, OrganizerUserRelation } from '../../../types';
 import { Event } from '../../../types/event.interface';
 import { EventSlotInfo } from '../../../types/payment.interface';
 import { formatDateTime } from '@zgadajsie/shared';
@@ -81,6 +90,33 @@ export class ParticipantSlotModalComponent {
 
   readonly loading = signal(false);
   readonly selectedOrganizerAction = signal('');
+  readonly organizerRelation = signal<OrganizerUserRelation | null | undefined>(undefined);
+
+  constructor() {
+    effect((onCleanup) => {
+      const participant = this.participant();
+      const userId = participant?.userId;
+      const currentUserId = this.currentUserId();
+      const isOrganizer = this.isOrganizer();
+
+      if (!isOrganizer || !userId || userId === currentUserId) {
+        this.organizerRelation.set(undefined);
+        return;
+      }
+
+      this.organizerRelation.set(undefined);
+      const request = this.moderationService.getRelation(userId).subscribe({
+        next: (relation) => {
+          this.organizerRelation.set(relation);
+        },
+        error: () => {
+          this.organizerRelation.set(null);
+        },
+      });
+
+      onCleanup(() => request.unsubscribe());
+    });
+  }
 
   readonly event = computed(() => this.data()?.event ?? null);
   readonly participant = computed(() => this.data()?.participant ?? null);
@@ -210,6 +246,19 @@ export class ParticipantSlotModalComponent {
 
   readonly isPaidEvent = computed(() => (this.event()?.costPerPerson ?? 0) > 0);
 
+  readonly trustStatus = computed(() => {
+    const relation = this.organizerRelation();
+    if (relation === undefined) return null;
+    const isTrusted = relation?.isTrusted ?? false;
+    return {
+      isTrusted,
+      label: isTrusted ? 'Uczestnik oznaczony jako zaufany' : 'Brak statusu zaufania',
+      class: isTrusted
+        ? 'border-success-200 bg-success-50 text-success-700'
+        : 'border-neutral-200 bg-neutral-100 text-neutral-600',
+    };
+  });
+
   // ── Organizer action select ──
 
   readonly organizerActions = computed(() => {
@@ -222,6 +271,7 @@ export class ParticipantSlotModalComponent {
     const payment = this.paymentInfo();
     const slotId = this.slotId();
     const slotLocked = this.slotLocked();
+    const isTrusted = this.trustStatus()?.isTrusted ?? false;
 
     if (p?.status === 'PENDING' && !isBanned) {
       actions.push({ value: 'approve', label: 'Zatwierdź uczestnika' });
@@ -247,6 +297,12 @@ export class ParticipantSlotModalComponent {
     }
     if (isBanned) {
       actions.push({ value: 'unban', label: 'Zdejmij bana' });
+    }
+    if (this.trustStatus()) {
+      actions.push({
+        value: isTrusted ? 'untrust' : 'trust',
+        label: isTrusted ? 'Cofnij zaufanie' : 'Oznacz jako zaufanego',
+      });
     }
     const hasCompletedPayment = payment?.status === 'COMPLETED';
     if (!hasCompletedPayment) {
@@ -277,6 +333,10 @@ export class ParticipantSlotModalComponent {
         return this.onBan();
       case 'unban':
         return this.onUnban();
+      case 'trust':
+        return this.updateTrustStatus(true);
+      case 'untrust':
+        return this.updateTrustStatus(false);
       case 'deleteParticipation':
         return this.onDeleteParticipation();
     }
@@ -284,38 +344,25 @@ export class ParticipantSlotModalComponent {
 
   // ── Organizer actions ──
 
-  private onApprove(): void {
+  private async onApprove(): Promise<void> {
     const p = this.participant();
     if (!p) return;
-    this.loading.set(true);
-    this.eventService.assignSlot(p.id).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.snackbar.success('Zatwierdzono uczestnika');
-        this.closeAndRefresh();
-      },
-      error: (err: unknown) => {
-        this.loading.set(false);
-        this.snackbar.error(getErrorMessage(err, 'Nie udało się zatwierdzić'));
-      },
-    });
+    await this.executeAction(
+      this.eventService.assignSlot(p.id),
+      'Zatwierdzono uczestnika',
+      'Nie udało się zatwierdzić',
+    );
   }
 
-  private onReject(): void {
+  private async onReject(): Promise<void> {
     const p = this.participant();
     if (!p) return;
-    this.loading.set(true);
-    this.eventService.releaseSlot(p.id).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.snackbar.info('Odrzucono uczestnika');
-        this.closeAndRefresh();
-      },
-      error: (err: unknown) => {
-        this.loading.set(false);
-        this.snackbar.error(getErrorMessage(err, 'Nie udało się odrzucić'));
-      },
-    });
+    await this.executeAction(
+      this.eventService.releaseSlot(p.id),
+      'Odrzucono uczestnika',
+      'Nie udało się odrzucić',
+      'info',
+    );
   }
 
   private async onMarkPaid(): Promise<void> {
@@ -329,18 +376,11 @@ export class ParticipantSlotModalComponent {
       color: 'info',
     });
     if (!confirmed) return;
-    this.loading.set(true);
-    this.eventService.markAsPaid(e.id, p.id).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.snackbar.success('Oznaczono jako opłacone');
-        this.closeAndRefresh();
-      },
-      error: (err: unknown) => {
-        this.loading.set(false);
-        this.snackbar.error(getErrorMessage(err, 'Nie udało się oznaczyć'));
-      },
-    });
+    await this.executeAction(
+      this.eventService.markAsPaid(e.id, p.id),
+      'Oznaczono jako opłacone',
+      'Nie udało się oznaczyć',
+    );
   }
 
   private onCancelPayment(): void {
@@ -351,38 +391,24 @@ export class ParticipantSlotModalComponent {
     this.modalService.requestRefresh();
   }
 
-  private onLockSlot(): void {
+  private async onLockSlot(): Promise<void> {
     const slotId = this.slotId();
     if (!slotId) return;
-    this.loading.set(true);
-    this.eventService.lockSlot(slotId).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.snackbar.success('Slot zablokowany');
-        this.closeAndRefresh();
-      },
-      error: (err: unknown) => {
-        this.loading.set(false);
-        this.snackbar.error(getErrorMessage(err, 'Nie udało się zablokować slotu'));
-      },
-    });
+    await this.executeAction(
+      this.eventService.lockSlot(slotId),
+      'Slot zablokowany',
+      'Nie udało się zablokować slotu',
+    );
   }
 
-  private onUnlockSlot(): void {
+  private async onUnlockSlot(): Promise<void> {
     const slotId = this.slotId();
     if (!slotId) return;
-    this.loading.set(true);
-    this.eventService.unlockSlot(slotId).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.snackbar.success('Slot odblokowany');
-        this.closeAndRefresh();
-      },
-      error: (err: unknown) => {
-        this.loading.set(false);
-        this.snackbar.error(getErrorMessage(err, 'Nie udało się odblokować slotu'));
-      },
-    });
+    await this.executeAction(
+      this.eventService.unlockSlot(slotId),
+      'Slot odblokowany',
+      'Nie udało się odblokować slotu',
+    );
   }
 
   private async onBan(): Promise<void> {
@@ -397,18 +423,12 @@ export class ParticipantSlotModalComponent {
       color: 'danger',
     });
     if (!confirmed) return;
-    this.loading.set(true);
-    this.moderationService.banUser(p.userId, 'Ban od organizatora').subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.snackbar.info('Uczestnik zbanowany');
-        this.closeAndRefresh();
-      },
-      error: (err: unknown) => {
-        this.loading.set(false);
-        this.snackbar.error(getErrorMessage(err, 'Nie udało się zbanować'));
-      },
-    });
+    await this.executeAction(
+      this.moderationService.banUser(p.userId, 'Ban od organizatora'),
+      'Uczestnik zbanowany',
+      'Nie udało się zbanować',
+      'info',
+    );
   }
 
   private async onUnban(): Promise<void> {
@@ -422,18 +442,36 @@ export class ParticipantSlotModalComponent {
       color: 'primary',
     });
     if (!confirmed) return;
-    this.loading.set(true);
-    this.moderationService.unbanUser(p.userId).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.snackbar.info('Ban zdjęty');
-        this.closeAndRefresh();
-      },
-      error: (err: unknown) => {
-        this.loading.set(false);
-        this.snackbar.error(getErrorMessage(err, 'Nie udało się zdjąć bana'));
-      },
+    await this.executeAction(
+      this.moderationService.unbanUser(p.userId),
+      'Ban zdjęty',
+      'Nie udało się zdjąć bana',
+      'info',
+    );
+  }
+
+  private async updateTrustStatus(shouldTrust: boolean): Promise<void> {
+    const p = this.participant();
+    if (!p) return;
+    const name = p.user?.displayName ?? 'uczestnika';
+    const confirmed = await this.confirmModal.confirm({
+      title: shouldTrust ? 'Oznaczyć jako zaufanego?' : 'Cofnąć status zaufanego?',
+      message: shouldTrust
+        ? `Użytkownik ${name} zostanie oznaczony jako zaufany w Twoich wydarzeniach.`
+        : `Użytkownik ${name} straci status zaufanego w Twoich wydarzeniach.`,
+      confirmLabel: shouldTrust ? 'Oznacz' : 'Cofnij',
+      cancelLabel: 'Anuluj',
+      color: shouldTrust ? 'success' : 'warning',
     });
+    if (!confirmed) return;
+    await this.executeAction(
+      shouldTrust
+        ? this.moderationService.trustUser(p.userId)
+        : this.moderationService.untrustUser(p.userId),
+      shouldTrust ? 'Uczestnik oznaczony jako zaufany' : 'Status zaufania cofnięty',
+      shouldTrust ? 'Nie udało się oznaczyć jako zaufanego' : 'Nie udało się cofnąć zaufania',
+      'success',
+    );
   }
 
   private async onDeleteParticipation(): Promise<void> {
@@ -448,18 +486,12 @@ export class ParticipantSlotModalComponent {
       color: 'danger',
     });
     if (!confirmed) return;
-    this.loading.set(true);
-    this.eventService.deleteParticipation(p.id).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.snackbar.info('Zgłoszenie zostało usunięte');
-        this.closeAndRefresh();
-      },
-      error: (err: unknown) => {
-        this.loading.set(false);
-        this.snackbar.error(getErrorMessage(err, 'Nie udało się usunąć zgłoszenia'));
-      },
-    });
+    await this.executeAction(
+      this.eventService.deleteParticipation(p.id),
+      'Zgłoszenie zostało usunięte',
+      'Nie udało się usunąć zgłoszenia',
+      'info',
+    );
   }
 
   private onChat(): void {
@@ -516,18 +548,12 @@ export class ParticipantSlotModalComponent {
       color: 'danger',
     });
     if (!confirmed) return;
-    this.loading.set(true);
-    this.eventService.leaveParticipation(p.id).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.snackbar.info('Gość wypisany z wydarzenia');
-        this.closeAndRefresh();
-      },
-      error: (err: unknown) => {
-        this.loading.set(false);
-        this.snackbar.error(getErrorMessage(err, 'Nie udało się wypisać gościa'));
-      },
-    });
+    await this.executeAction(
+      this.eventService.leaveParticipation(p.id),
+      'Gość wypisany z wydarzenia',
+      'Nie udało się wypisać gościa',
+      'info',
+    );
   }
 
   async onChangeRole(): Promise<void> {
@@ -589,6 +615,24 @@ export class ParticipantSlotModalComponent {
         this.loading.set(false);
       },
     });
+  }
+
+  private async executeAction(
+    request$: Observable<unknown>,
+    successMsg: string,
+    errorMsg: string,
+    successType: SnackbarType = 'success',
+  ): Promise<void> {
+    this.loading.set(true);
+    try {
+      await firstValueFrom(request$);
+      this.snackbar.show(successMsg, successType);
+      this.closeAndRefresh();
+    } catch (err: unknown) {
+      this.snackbar.error(getErrorMessage(err, errorMsg));
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   private closeAndRefresh(): void {

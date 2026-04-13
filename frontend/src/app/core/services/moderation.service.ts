@@ -2,6 +2,10 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import {
+  OrganizerUserRelation,
+  OrganizerUserRelationListResponse,
+} from '../../shared/types/moderation.interface';
 
 @Injectable({ providedIn: 'root' })
 export class ModerationService {
@@ -24,19 +28,21 @@ export class ModerationService {
     return this.http.delete(`${this.apiUrl}/ban/${targetUserId}`);
   }
 
-  trustUser(targetUserId: string): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/trust/${targetUserId}`, {});
+  trustUser(targetUserId: string): Observable<OrganizerUserRelation> {
+    return this.http.post<OrganizerUserRelation>(`${this.apiUrl}/trust/${targetUserId}`, {});
   }
 
-  untrustUser(targetUserId: string): Observable<unknown> {
-    return this.http.delete(`${this.apiUrl}/trust/${targetUserId}`);
+  untrustUser(targetUserId: string): Observable<OrganizerUserRelation> {
+    return this.http.delete<OrganizerUserRelation>(`${this.apiUrl}/trust/${targetUserId}`);
   }
 
-  getRelations(page = 1, limit = 20): Observable<unknown> {
-    return this.http.get(`${this.apiUrl}/relations`, { params: { page, limit } });
+  getRelations(page = 1, limit = 20): Observable<OrganizerUserRelationListResponse> {
+    return this.http.get<OrganizerUserRelationListResponse>(`${this.apiUrl}/relations`, {
+      params: { page, limit },
+    });
   }
 
-  getRelation(targetUserId: string): Observable<unknown> {
-    return this.http.get(`${this.apiUrl}/relation/${targetUserId}`);
+  getRelation(targetUserId: string): Observable<OrganizerUserRelation | null> {
+    return this.http.get<OrganizerUserRelation | null>(`${this.apiUrl}/relation/${targetUserId}`);
   }
 }

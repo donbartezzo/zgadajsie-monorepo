@@ -16,6 +16,8 @@
   @let _status = slotDisplayStatus();
   @let _canRejoin = canRejoin();
   @let _canGuestRejoin = canGuestRejoin();
+  @let _trustStatus = trustStatus();
+  @let _actions = organizerActions();
 
   <!-- ═══════════════════════════════════
        HEADER (zawsze widoczny)
@@ -121,6 +123,19 @@
                 <app-icon name="clock" size="sm" class="text-warning-400" />
                 <span class="text-warning-500">Oczekuje na płatność</span>
               }
+            </div>
+          }
+
+          <!-- Trust status (for organizer) -->
+          @if (_trustStatus) {
+            <div class="mt-3 flex justify-center">
+              <span
+                [class]="
+                  'inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ' + _trustStatus.class
+                "
+              >
+                {{ _trustStatus.label }}
+              </span>
             </div>
           }
         </app-user-profile-card>
@@ -249,14 +264,14 @@
       <!-- ═══════════════════════════════════
            ORGANIZER ACTIONS
       ═══════════════════════════════════ -->
-      @if (_isOrganizer && organizerActions().length > 0) {
+      @if (_isOrganizer && _actions.length > 0) {
         <select
           class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 focus:border-primary-500 focus:outline-hidden focus:ring-1 focus:ring-primary-500"
           [value]="selectedOrganizerAction()"
           (change)="onOrganizerAction($any($event.target).value)"
         >
           <option value="" disabled>Akcje organizatora...</option>
-          @for (action of organizerActions(); track action.value) {
+          @for (action of _actions; track action.value) {
             <option [value]="action.value">{{ action.label }}</option>
           }
         </select>
