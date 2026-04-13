@@ -262,54 +262,85 @@ export class ParticipantSlotModalComponent {
   // ── Organizer action select ──
 
   readonly organizerActions = computed(() => {
-    const actions: { value: string; label: string }[] = [];
     const p = this.participant();
-    const isBanned = this.isBanned();
-    const isActive = this.isActiveStatus();
+    if (!p) return [];
+
+    const status = p.status;
+    const isActive = status === 'APPROVED' || status === 'CONFIRMED';
     const isWithdrawn = this.isWithdrawnStatus();
+    const isBanned = this.isBanned();
     const isPaid = this.isPaidEvent();
     const payment = this.paymentInfo();
     const slotId = this.slotId();
     const slotLocked = this.slotLocked();
-    const isTrusted = this.trustStatus()?.isTrusted ?? false;
+    const trustStatus = this.trustStatus();
+    const isTrusted = trustStatus?.isTrusted ?? false;
 
-    if (p?.status === 'PENDING' && !isBanned) {
-      actions.push({ value: 'approve', label: 'Zatwierdź uczestnika' });
-      actions.push({ value: 'reject', label: 'Odrzuć uczestnika' });
+    type Action = { value: string; label: string };
+
+    const transitions: Action[] = [];
+    if (status === 'PENDING' && !isBanned) {
+      transitions.push({ value: 'approve', label: 'Zatwierdź uczestnika' });
+      transitions.push({ value: 'reject', label: 'Odrzuć uczestnika' });
     }
     if (isActive) {
-      actions.push({ value: 'chat', label: 'Napisz wiadomość' });
+      transitions.push({ value: 'kick', label: 'Wypisz uczestnika' });
     }
-    if (isActive && isPaid && !payment && p?.status === 'APPROVED') {
-      actions.push({ value: 'markPaid', label: 'Oznacz jako opłacone' });
+    if (isWithdrawn && !isBanned) {
+      transitions.push({ value: 'rejoinParticipant', label: 'Przywróć uczestnika' });
+    }
+    if (this.eventHasRoles() && (isActive || status === 'PENDING') && !isBanned) {
+      transitions.push({ value: 'changeRole', label: 'Zmień rolę uczestnika' });
+    }
+
+    const communication: Action[] = [];
+    if (isActive) {
+      communication.push({ value: 'chat', label: 'Napisz wiadomość' });
+    }
+
+    const payments: Action[] = [];
+    if (isPaid && !payment && status === 'APPROVED') {
+      payments.push({ value: 'markPaid', label: 'Oznacz jako opłacone' });
     }
     if (payment?.status === 'COMPLETED') {
-      actions.push({ value: 'cancelPayment', label: 'Anuluj płatność' });
+      payments.push({ value: 'cancelPayment', label: 'Anuluj płatność' });
     }
+
+    const slotActions: Action[] = [];
     if (slotId && !slotLocked) {
-      actions.push({ value: 'lockSlot', label: 'Zablokuj slot' });
+      slotActions.push({ value: 'lockSlot', label: 'Zablokuj slot' });
     }
     if (slotId && slotLocked) {
-      actions.push({ value: 'unlockSlot', label: 'Odblokuj slot' });
+      slotActions.push({ value: 'unlockSlot', label: 'Odblokuj slot' });
     }
+
+    const moderation: Action[] = [];
     if (!isWithdrawn && !isBanned) {
-      actions.push({ value: 'ban', label: 'Zbanuj uczestnika' });
+      moderation.push({ value: 'ban', label: 'Zbanuj uczestnika' });
     }
     if (isBanned) {
-      actions.push({ value: 'unban', label: 'Zdejmij bana' });
+      moderation.push({ value: 'unban', label: 'Zdejmij bana' });
     }
-    if (this.trustStatus()) {
-      actions.push({
+    if (trustStatus) {
+      moderation.push({
         value: isTrusted ? 'untrust' : 'trust',
         label: isTrusted ? 'Cofnij zaufanie' : 'Oznacz jako zaufanego',
       });
     }
-    const hasCompletedPayment = payment?.status === 'COMPLETED';
-    if (!hasCompletedPayment) {
-      actions.push({ value: 'deleteParticipation', label: 'Usuń zgłoszenie' });
+
+    const destructive: Action[] = [];
+    if (payment?.status !== 'COMPLETED') {
+      destructive.push({ value: 'deleteParticipation', label: 'Usuń zgłoszenie' });
     }
 
-    return actions;
+    return [
+      { label: 'Uczestnictwo', actions: transitions },
+      { label: 'Komunikacja', actions: communication },
+      { label: 'Płatności', actions: payments },
+      { label: 'Slot', actions: slotActions },
+      { label: 'Moderacja', actions: moderation },
+      { label: 'Zaawansowane', actions: destructive },
+    ].filter((g) => g.actions.length > 0);
   });
 
   async onOrganizerAction(value: string): Promise<void> {
@@ -319,6 +350,12 @@ export class ParticipantSlotModalComponent {
         return this.onApprove();
       case 'reject':
         return this.onReject();
+      case 'kick':
+        return this.onKick();
+      case 'rejoinParticipant':
+        return this.onOrganizerRejoin();
+      case 'changeRole':
+        return this.onOrganizerChangeRole();
       case 'chat':
         return this.onChat();
       case 'markPaid':
@@ -361,6 +398,26 @@ export class ParticipantSlotModalComponent {
       this.eventService.releaseSlot(p.id),
       'Odrzucono uczestnika',
       'Nie udało się odrzucić',
+      'info',
+    );
+  }
+
+  private async onKick(): Promise<void> {
+    const p = this.participant();
+    if (!p) return;
+    const name = p.user?.displayName ?? 'uczestnika';
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Wypisać uczestnika?',
+      message: `Użytkownik ${name} zostanie wypisany z wydarzenia, a jego miejsce zwolnione.`,
+      confirmLabel: 'Wypisz',
+      cancelLabel: 'Anuluj',
+      color: 'danger',
+    });
+    if (!confirmed) return;
+    await this.executeAction(
+      this.eventService.releaseSlot(p.id),
+      'Uczestnik wypisany z wydarzenia',
+      'Nie udało się wypisać uczestnika',
       'info',
     );
   }
@@ -448,6 +505,32 @@ export class ParticipantSlotModalComponent {
       'Nie udało się zdjąć bana',
       'info',
     );
+  }
+
+  private async onOrganizerRejoin(): Promise<void> {
+    const p = this.participant();
+    if (!p) return;
+    const name = p.user?.displayName ?? 'uczestnika';
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Przywrócić uczestnika?',
+      message: `Użytkownik ${name} zostanie ponownie dołączony do wydarzenia.`,
+      confirmLabel: 'Przywróć',
+      cancelLabel: 'Anuluj',
+      color: 'primary',
+    });
+    if (!confirmed) return;
+    await this.executeAction(
+      this.eventService.rejoinParticipation(p.id),
+      'Uczestnik przywrócony',
+      'Nie udało się przywrócić uczestnika',
+    );
+  }
+
+  private onOrganizerChangeRole(): void {
+    const p = this.participant();
+    if (!p) return;
+    this.modalService.close();
+    this.eventArea.openChangeRoleWizardForParticipant(p as Participation);
   }
 
   private async updateTrustStatus(shouldTrust: boolean): Promise<void> {
