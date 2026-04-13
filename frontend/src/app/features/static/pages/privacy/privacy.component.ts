@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { APP_BRAND } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-privacy',
@@ -9,28 +10,29 @@ import { CommonModule } from '@angular/common';
       <!-- Privacy Content -->
       <div>
         <div class="bg-white rounded-2xl shadow-xs p-6 mb-4">
-          <p class="text-xs text-success-400 mb-4">Ostatnia aktualizacja: 15 lutego 2026</p>
+          <p class="text-xs text-success-400 mb-4">Ostatnia aktualizacja: 13 kwietnia 2026</p>
           <p class="text-sm text-neutral-600">
-            Niniejsza Polityka Prywatności opisuje, jak aplikacja "zgadajsie" zbiera, używa, chroni
-            i udostępnia Twoje dane osobowe w związku z korzystaniem z naszej platformy wydarzeń.
+            Niniejsza Polityka Prywatności opisuje, jak serwis {{ brandName }} zbiera, używa, chroni
+            i udostępnia Twoje dane osobowe w związku z korzystaniem z naszej platformy wydarzeń
+            sportowych.
           </p>
         </div>
 
         <div class="bg-white rounded-2xl shadow-xs p-6">
-          <h2 class="text-xl font-bold mb-0">1. Administrator danych</h2>
-          <p class="text-xs text-success-400 mb-6">Ostatnia aktualizacja: 15 lutego 2026</p>
+          <h3 class="text-lg font-semibold mb-3">1. Administrator danych osobowych</h3>
           <p class="text-sm text-neutral-600 mb-6">
-            Niniejsza Polityka Prywatności opisuje, jak aplikacja"zgadajsie" zbiera, używa, chroni i
-            udostępnia Twoje dane osobowe w związku z korzystaniem z naszej platformy wydarzeń.
-          </p>
-
-          <h3 class="text-lg font-semibold mb-3">1. Administrator danych</h3>
-          <p class="text-sm text-neutral-600 mb-6">
-            Administratorem Twoich danych osobowych jest:<br />
-            • ZgadajSię - platforma wydarzeń sportowych<br />
-            • Kontakt: privacy@zgadajsie.pl<br />
-            • Strona: zgadajsie.pl<br /><br />
-            Jesteśmy odpowiedzialni za bezpieczne przetwarzanie Twoich danych zgodnie z RODO.
+            Administratorem Twoich danych osobowych w rozumieniu Rozporządzenia Parlamentu
+            Europejskiego i Rady (UE) 2016/679 z dnia 27 kwietnia 2016 r. (RODO) jest:<br /><br />
+            <strong>{{ APP_BRAND.BUSINESS_NAME }}</strong
+            ><br />
+            prowadzący działalność gospodarczą wpisaną do Centralnej Ewidencji i Informacji o
+            Działalności Gospodarczej (CEiDG)<br />
+            Adres: {{ APP_BRAND.BUSINESS_ADDRESS }}<br />
+            NIP: {{ APP_BRAND.BUSINESS_NIP }}<br />
+            REGON: {{ APP_BRAND.BUSINESS_REGON }}<br /><br />
+            Kontakt w sprawach ochrony danych osobowych:<br />
+            • E-mail: {{ APP_BRAND.BUSINESS_EMAIL }}<br />
+            • Adres korespondencyjny: {{ APP_BRAND.BUSINESS_ADDRESS }}
           </p>
 
           <h3 class="text-lg font-semibold mb-3">2. Zakres zbieranych danych</h3>
@@ -166,4 +168,7 @@ import { CommonModule } from '@angular/common';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PrivacyComponent {}
+export class PrivacyComponent {
+  protected readonly APP_BRAND = APP_BRAND;
+  readonly brandName = APP_BRAND.NAME;
+}

@@ -22,6 +22,13 @@ export const APP_BRAND = {
 
   /** Full description */
   DESCRIPTION: 'Zgadaj się na wspólną grę – organizuj i dołączaj do wydarzeń',
+
+  /** Business registration data */
+  BUSINESS_NAME: 'BARTOSZ KONDRACKI',
+  BUSINESS_NIP: '7191515982',
+  BUSINESS_REGON: '387866225',
+  BUSINESS_ADDRESS: 'ul. Porzeczkowa 50/4, 65-790 Zielona Góra',
+  BUSINESS_EMAIL: 'bartosz@kondracki.dev',
 } as const;
 
 /** Export type for type safety */
