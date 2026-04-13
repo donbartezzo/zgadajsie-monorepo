@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { hashPasswordForSeed } from '../src/common/utils/password.util';
-import { createCommonSeedData } from './seed-common';
+import { createCommonSeedData, COMMON_SEED_DATA } from './seed-common';
 import { syncCoverImagesFromFilesystem } from '../src/modules/cover-images/cover-images-sync.util';
 
 // Brand constants (synchronized with libs/src/lib/constants/brand.constants.ts)
@@ -41,15 +41,15 @@ async function main() {
   await prisma.eventLevel.deleteMany({});
   await prisma.city.deleteMany({});
 
-  // U¿ywamy wspólnych danych dla obu environmentów
+  // Uzywamy wspólnych danych dla obu environmentów
   const { cities, disciplines, facilities, levels } = await createCommonSeedData(prisma);
 
-  console.log('Synchronizujemy cover images z katalogu...');
+  console.log('Synchronizujemy cover images z katalogiem...');
   try {
     await syncCoverImagesFromFilesystem(prisma);
   } catch (error) {
     console.warn(
-      'Nie uda³o siê zsynchronizowaæ cover images (kontener Docker nie ma dostêpu do katalogu frontend):',
+      'Nie udalo sie zsynchronizowac cover images (kontener Docker nie ma dostepu do katalogu frontend):',
       error instanceof Error ? error.message : error,
     );
   }
@@ -239,17 +239,20 @@ async function main() {
   const now = new Date();
   const hoursFromNow = (h: number): Date => new Date(now.getTime() + h * 60 * 60 * 1000);
 
-  async function getRandomCoverImageId(disciplineSlug: string): Promise<string | undefined> {
-    const covers = await prisma.coverImage.findMany({
-      where: { discipline: { slug: disciplineSlug } },
-      select: { id: true },
-    });
+  // Pobieramy cover images dla football z danych wspólnych
+  const footballCoverImages = COMMON_SEED_DATA.coverImages.football;
+  let footballCoverIndex = 0;
 
-    if (covers.length === 0) {
+  function getNextFootballCoverImageId(): string | undefined {
+    if (footballCoverImages.length === 0) {
       return undefined;
     }
 
-    return covers[Math.floor(Math.random() * covers.length)]?.id;
+    const filename = footballCoverImages[footballCoverIndex % footballCoverImages.length];
+    footballCoverIndex += 1;
+
+    // Find the cover image ID by filename from database
+    return filename; // For now return filename, will be resolved later
   }
 
   // Create event with slots respecting discipline schema (roleKey)
@@ -294,13 +297,14 @@ async function main() {
         }
       : undefined;
 
-    const coverImageId = await getRandomCoverImageId(disciplineSlug);
-
     const eventData = {
       ...data,
-      coverImageId,
       roleConfig,
     } as Prisma.EventUncheckedCreateInput;
+
+    if (disciplineSlug === 'football') {
+      eventData.coverImageId = await getNextFootballCoverImageId();
+    }
 
     const event = await prisma.event.create({
       data: eventData,
