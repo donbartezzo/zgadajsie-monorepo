@@ -239,20 +239,26 @@ async function main() {
   const now = new Date();
   const hoursFromNow = (h: number): Date => new Date(now.getTime() + h * 60 * 60 * 1000);
 
-  // Pobieramy cover images dla football z danych wspólnych
-  const footballCoverImages = COMMON_SEED_DATA.coverImages.football;
+  // Pobieramy cover images dla football z danych wspólnych i bazy danych
+  const footballCoverFilenames = COMMON_SEED_DATA.coverImages.football;
+  const footballCoverImagesFromDb = await prisma.coverImage.findMany({
+    where: { discipline: { slug: 'football' } },
+    select: { id: true, filename: true },
+  });
+
   let footballCoverIndex = 0;
 
   function getNextFootballCoverImageId(): string | undefined {
-    if (footballCoverImages.length === 0) {
+    if (footballCoverFilenames.length === 0) {
       return undefined;
     }
 
-    const filename = footballCoverImages[footballCoverIndex % footballCoverImages.length];
+    const filename = footballCoverFilenames[footballCoverIndex % footballCoverFilenames.length];
     footballCoverIndex += 1;
 
     // Find the cover image ID by filename from database
-    return filename; // For now return filename, will be resolved later
+    const coverImage = footballCoverImagesFromDb.find((img) => img.filename === filename);
+    return coverImage?.id;
   }
 
   // Create event with slots respecting discipline schema (roleKey)
