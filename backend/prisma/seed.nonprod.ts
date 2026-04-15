@@ -551,7 +551,7 @@ async function main() {
 
   // 3) Odwołane - koszykówka
   const cancelled1 = await createEventWithSlots({
-    title: 'Koszykówka 3v3 - odwołana',
+    title: 'Koszykówka 3v3',
     description: 'Odwołane z powodu złych warunków pogodowych.',
     disciplineSlug: disciplines[2].slug,
     facilitySlug: facilities[1].slug,
@@ -574,7 +574,7 @@ async function main() {
 
   // 4) Odwołane - squash jutro miał być
   await createEventWithSlots({
-    title: 'Squash dla początkujących - odwołany',
+    title: 'Squash dla początkujących',
     description: 'Organizator odwołał z przyczyn osobistych.',
     disciplineSlug: disciplines[5].slug,
     facilitySlug: facilities[1].slug,
@@ -599,7 +599,7 @@ async function main() {
 
   // 5) W trakcie - football
   const ongoing1 = await createEventWithSlots({
-    title: 'Football w hali - trwa!',
+    title: 'Football w hali',
     description: 'Wydarzenie footballowe w trakcie - dołącz jako widz!',
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[1].slug,
@@ -641,7 +641,7 @@ async function main() {
 
   // 6) W trakcie - bieganie
   const ongoing2 = await createEventWithSlots({
-    title: 'Poranny bieg w parku - trwa!',
+    title: 'Poranny bieg w parku',
     description: 'Bieg rekreacyjny po parku Piastowskim.',
     disciplineSlug: disciplines[6].slug,
     facilitySlug: facilities[6].slug,
@@ -671,7 +671,7 @@ async function main() {
 
   // 7) Otwarte zapisy - football za 5h
   const openEnroll1 = await createEventWithSlots({
-    title: 'Football na korcie - otwarte zapisy!',
+    title: 'Football na korcie',
     description: 'Losowanie za nami, ale wciąż zostały wolne miejsca.',
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[0].slug,
@@ -699,7 +699,7 @@ async function main() {
 
   // 8) Otwarte zapisy - football jutro
   const openEnroll2 = await createEventWithSlots({
-    title: 'Football jutro wieczorem - zapisy otwarte',
+    title: 'Football wieczorny',
     description: 'Losowanie zakończone, ale są jeszcze miejsca!',
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[0].slug,
@@ -756,7 +756,7 @@ async function main() {
 
   // 9) Otwarte zapisy - badminton pełne
   const openEnroll3 = await createEventWithSlots({
-    title: 'Badminton debel - zapisy zamknięte (pełne)',
+    title: 'Badminton debel',
     description: 'Wszystkie miejsca zajęte po losowaniu.',
     disciplineSlug: disciplines[4].slug,
     facilitySlug: facilities[1].slug,
@@ -791,7 +791,7 @@ async function main() {
 
   // 10) Pre-zapisy - football za 4 dni
   const preEnroll1 = await createEventWithSlots({
-    title: 'Football weekend - pre-zapisy',
+    title: 'Football weekendowy',
     description: 'Wydarzenie za 4 dni. Trwają wstępne zapisy!',
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[4].slug,
@@ -820,7 +820,7 @@ async function main() {
 
   // 11) Pre-zapisy - koszykówka za 5 dni
   const preEnroll2 = await createEventWithSlots({
-    title: 'Koszykówka 5v5 - pre-zapisy otwarte',
+    title: 'Koszykówka 5v5',
     description: 'Szukamy chętnych na koszykówkę.',
     disciplineSlug: disciplines[2].slug,
     facilitySlug: facilities[1].slug,
@@ -844,7 +844,7 @@ async function main() {
 
   // 12) Pre-zapisy - pływanie za tydzień
   const preEnroll3 = await createEventWithSlots({
-    title: 'Trening pływacki - pre-zapisy',
+    title: 'Trening pływacki',
     description: 'Darmowy trening pływacki na basenie olimpijskim.',
     disciplineSlug: disciplines[8].slug,
     facilitySlug: facilities[1].slug,
@@ -874,7 +874,7 @@ async function main() {
 
   // 13) Loteria - football pojutrze
   const lotteryPend1 = await createEventWithSlots({
-    title: 'Football pojutrze - losowanie lada moment!',
+    title: 'Football pojutrze',
     description: 'Pre-zapisy zamknięte, losowanie miejsc zaraz nastąpi.',
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[1].slug,
@@ -901,7 +901,7 @@ async function main() {
 
   // 14) Loteria - kolarstwo za ~40h
   const lotteryPend2 = await createEventWithSlots({
-    title: 'Kolarstwo grupowe - oczekiwanie na losowanie',
+    title: 'Kolarstwo grupowe',
     description: 'Rajd rowerowy po okolicach. Losowanie miejsc niedługo!',
     disciplineSlug: disciplines[7].slug,
     facilitySlug: facilities[6].slug,
@@ -930,7 +930,7 @@ async function main() {
 
   // 15) Szybkie zapisy - football za 3h
   const quickOpen1 = await createEventWithSlots({
-    title: 'Football last-minute - dołącz teraz!',
+    title: 'Football last-minute',
     description: 'Szybkie wydarzenie footballowe - bez pre-zapisów!',
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[0].slug,
@@ -957,7 +957,7 @@ async function main() {
 
   // 16) Szybkie zapisy - bieganie dziś wieczorem
   await createEventWithSlots({
-    title: 'Wieczorny bieg - otwarte zapisy',
+    title: 'Wieczorny bieg',
     description: 'Wieczorny bieg po mieście. Zapisz się i biegnij z nami!',
     disciplineSlug: disciplines[6].slug,
     facilitySlug: facilities[6].slug,
@@ -1053,11 +1053,95 @@ async function main() {
     },
   });
 
+  const extraFootball1 = await createEventWithSlots({
+    title: 'Turniej footballowy',
+    description: 'Amatorski turniej footballowy z nagrodami.',
+    disciplineSlug: disciplines[0].slug,
+    facilitySlug: facilities[2].slug,
+    levelSlug: levels[1].slug,
+    citySlug: cities[0].slug,
+    organizerId: anna.id,
+    startsAt: hoursFromNow(12),
+    endsAt: hoursFromNow(13.5),
+    costPerPerson: 25,
+    maxParticipants: 12,
+    lotteryExecutedAt: hoursFromNow(-4),
+    gender: 'ANY',
+    visibility: 'PUBLIC',
+    status: 'ACTIVE',
+    address: 'ul. Wroc³awska 15, Zielona Góra',
+    lat: 51.937,
+    lng: 15.511,
+  });
+  await addConfirmedParticipant(extraFootball1.id, marek.id);
+  await addConfirmedParticipant(extraFootball1.id, kasia.id);
+  await addConfirmedParticipant(extraFootball1.id, tomek.id);
+  await addConfirmedParticipant(extraFootball1.id, ola.id);
+  await addConfirmedParticipant(extraFootball1.id, piotr.id);
+  await addApprovedParticipant(extraFootball1.id, magda.id);
+  await addWaitingParticipant(extraFootball1.id, natalia.id);
+
+  const extraFootball2 = await createEventWithSlots({
+    title: 'Sobota na boisku',
+    description: 'Rekreacyjna gra w piłkę nożną w sobotę.',
+    disciplineSlug: disciplines[0].slug,
+    facilitySlug: facilities[3].slug,
+    levelSlug: levels[2].slug,
+    citySlug: cities[0].slug,
+    organizerId: marek.id,
+    startsAt: hoursFromNow(18),
+    endsAt: hoursFromNow(19.5),
+    costPerPerson: 15,
+    maxParticipants: 10,
+    lotteryExecutedAt: hoursFromNow(-6),
+    gender: 'ANY',
+    visibility: 'PUBLIC',
+    status: 'ACTIVE',
+    address: 'ul. Legnicka 8, Zielona Góra',
+    lat: 51.936,
+    lng: 15.509,
+  });
+  await addConfirmedParticipant(extraFootball2.id, anna.id);
+  await addConfirmedParticipant(extraFootball2.id, kasia.id);
+  await addConfirmedParticipant(extraFootball2.id, tomek.id);
+  await addApprovedParticipant(extraFootball2.id, piotr.id);
+  await addApprovedParticipant(extraFootball2.id, magda.id);
+  await addWaitingParticipant(extraFootball2.id, wojtek.id);
+
+  const extraFootball3 = await createEventWithSlots({
+    title: 'Football amatorski',
+    description: 'Spotkanie dla miłośników piłki nożnej.',
+    disciplineSlug: disciplines[0].slug,
+    facilitySlug: facilities[4].slug,
+    levelSlug: levels[0].slug,
+    citySlug: cities[0].slug,
+    organizerId: kasia.id,
+    startsAt: hoursFromNow(30),
+    endsAt: hoursFromNow(31.5),
+    costPerPerson: 20,
+    maxParticipants: 14,
+    lotteryExecutedAt: hoursFromNow(-2),
+    gender: 'ANY',
+    visibility: 'PUBLIC',
+    status: 'ACTIVE',
+    address: 'ul. G³ogowska 22, Zielona Góra',
+    lat: 51.939,
+    lng: 15.507,
+  });
+  await addConfirmedParticipant(extraFootball3.id, anna.id);
+  await addConfirmedParticipant(extraFootball3.id, marek.id);
+  await addConfirmedParticipant(extraFootball3.id, tomek.id);
+  await addConfirmedParticipant(extraFootball3.id, ola.id);
+  await addConfirmedParticipant(extraFootball3.id, piotr.id);
+  await addApprovedParticipant(extraFootball3.id, magda.id);
+  await addApprovedParticipant(extraFootball3.id, kuba.id);
+  await addWaitingParticipant(extraFootball3.id, natalia.id);
+
   console.log('Seed zakończony sukcesem!');
   console.log('');
   console.log('=== Podsumowanie ===');
   console.log(
-    `Użytkownicy: ${APP_BRAND.CONTACT_EMAIL} (Admin123!), jan.kowalski@example.com (Test1234!)`,
+    `Uzytkownicy: ${APP_BRAND.CONTACT_EMAIL} (Admin123!), jan.kowalski@example.com (Test1234!)`,
   );
   console.log('             anna.nowak@example.com, marek.wisniewski@example.com,');
   console.log(
@@ -1068,8 +1152,11 @@ async function main() {
   console.log('  Zakończone (2): #1 football, #2 football');
   console.log('  Odwołane (2):   #3 koszykówka, #4 squash');
   console.log('  W trakcie (2):  #5 football, #6 bieg');
-  console.log('  OPEN_ENROLLMENT (5): #7 football 5h, #8 football jutro, #9 badminton pełne,');
-  console.log('                       #15 football last-minute 3h, #16 bieg wieczorem');
+  console.log('  OPEN_ENROLLMENT (8): #7 football 5h, #8 football jutro, #9 badminton pełne,');
+  console.log('                       #15 football last-minute 3h, #16 bieg wieczorem,');
+  console.log(
+    '                       #17 turniej footballowy (Anna), #18 sobota na boisku (Marek), #19 football amatorski (Kasia)',
+  );
   console.log('  PRE_ENROLLMENT (3):  #10 football 4d, #11 koszykówka 5d, #12 pływanie 7d');
   console.log('  LOTTERY_PENDING (2): #13 football ~47h, #14 kolarstwo ~40h');
 }
