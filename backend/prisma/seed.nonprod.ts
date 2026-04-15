@@ -1035,6 +1035,53 @@ async function main() {
     },
   });
 
+  // Jan Kowalski jest zaufanym u wszystkich organizatorów wydarstw
+  // (automatyczne przydzielanie slotów przy zapisach)
+  await prisma.organizerUserRelation.create({
+    data: {
+      organizerUserId: jan.id,
+      targetUserId: jan.id,
+      isTrusted: true,
+      note: 'Auto-zaufanie dla siebie samego',
+    },
+  });
+
+  await prisma.organizerUserRelation.create({
+    data: {
+      organizerUserId: admin.id,
+      targetUserId: jan.id,
+      isTrusted: true,
+      note: 'Zaufany uczestnik - punktualny i niezawodny',
+    },
+  });
+
+  await prisma.organizerUserRelation.create({
+    data: {
+      organizerUserId: anna.id,
+      targetUserId: jan.id,
+      isTrusted: true,
+      note: 'Zawsze pomocny i fair play',
+    },
+  });
+
+  await prisma.organizerUserRelation.create({
+    data: {
+      organizerUserId: marek.id,
+      targetUserId: jan.id,
+      isTrusted: true,
+      note: 'Dobry team player',
+    },
+  });
+
+  await prisma.organizerUserRelation.create({
+    data: {
+      organizerUserId: kasia.id,
+      targetUserId: jan.id,
+      isTrusted: true,
+      note: 'Solidny uczestnik',
+    },
+  });
+
   console.log('Seed zakończony sukcesem!');
   console.log('');
   console.log('=== Podsumowanie ===');
