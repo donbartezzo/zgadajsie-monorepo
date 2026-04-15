@@ -25,6 +25,7 @@ import {
   MILLISECONDS_PER_HOUR,
   nowInZone,
   isSameDay,
+  EventStatus,
 } from '@zgadajsie/shared';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { EventDurationPipe } from '../../../pipes/event-duration.pipe';
@@ -167,14 +168,21 @@ export class EventCardComponent implements OnDestroy {
   private readonly dateLabels = inject(DateLabelsService);
 
   readonly event = input.required<EventListItem>();
-  readonly isOngoing = input(false);
   readonly isDimmed = input(false);
   readonly dateLabel = input<string | null>(null);
   readonly selected = output<EventListItem>();
 
-  readonly isCancelled = computed(() => this.event().status === 'CANCELLED');
+  readonly isCancelled = computed(() => this.event().status === EventStatus.CANCELLED);
 
   private readonly now = signal(nowInZone().toJSDate());
+
+  readonly isOngoing = computed(() => {
+    if (this.isCancelled()) return false;
+    const start = new Date(this.event().startsAt).getTime();
+    const end = new Date(this.event().endsAt).getTime();
+    const nowMs = this.now().getTime();
+    return nowMs >= start && nowMs < end;
+  });
   private intervalId?: number;
 
   readonly coverUrl = computed(() => getEventCoverUrl(this.event()));
@@ -222,10 +230,12 @@ export class EventCardComponent implements OnDestroy {
     effect(() => {
       const evt = this.event();
       const start = new Date(evt.startsAt).getTime();
+      const end = new Date(evt.endsAt).getTime();
       const nowMs = this.now().getTime();
       const hoursUntil = (start - nowMs) / MILLISECONDS_PER_HOUR;
+      const isCurrentlyOngoing = nowMs >= start && nowMs < end;
 
-      if (hoursUntil > 0 && hoursUntil <= 24) {
+      if ((hoursUntil > 0 && hoursUntil <= 24) || isCurrentlyOngoing) {
         this.startCountdown();
       } else {
         this.stopCountdown();

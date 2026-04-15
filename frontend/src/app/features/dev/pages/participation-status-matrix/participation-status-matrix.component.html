@@ -1,0 +1,378 @@
+<div class="min-h-screen bg-neutral-100">
+  <header class="sticky top-0 z-10 border-b border-neutral-200 bg-white/95 backdrop-blur">
+    <div class="mx-auto max-w-app px-4 py-3">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Dev / analiza biznesowa</p>
+      <div class="mt-1 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 class="text-xl font-bold text-neutral-900">Matryca statusów uczestnictwa</h1>
+          <p class="mt-1 text-sm text-neutral-500">
+            Pełna mapa tego, co może dostać użytkownik po zgłoszeniu do wydarzenia.
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <app-badge variant="soft" color="primary">5 statusów uczestnictwa</app-badge>
+          <app-badge variant="soft" color="warning">5 powodów waiting</app-badge>
+          <app-badge variant="soft" color="info">DEV only</app-badge>
+        </div>
+      </div>
+    </div>
+    <div class="mx-auto flex max-w-app gap-2 overflow-x-auto px-4 pb-3">
+      @for (section of sections; track section.id) {
+        <button
+          class="whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium transition-colors"
+          [class.border-primary-500]="activeSection() === section.id"
+          [class.bg-primary-500]="activeSection() === section.id"
+          [class.text-white]="activeSection() === section.id"
+          [class.border-neutral-200]="activeSection() !== section.id"
+          [class.bg-white]="activeSection() !== section.id"
+          [class.text-neutral-500]="activeSection() !== section.id"
+          [class.hover:text-neutral-900]="activeSection() !== section.id"
+          (click)="setSection(section.id)"
+        >
+          {{ section.label }}
+        </button>
+      }
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-app space-y-8 px-4 py-6">
+    @if (activeSection() === 'overview') {
+      <section class="space-y-4">
+        <article class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs">
+          <div class="flex items-center gap-2">
+            <app-icon name="help-circle" class="h-5 w-5 text-info-600" />
+            <h2 class="text-lg font-semibold text-neutral-900">Jak system podejmuje decyzję</h2>
+          </div>
+          <ol class="mt-4 space-y-3 text-sm text-neutral-700">
+            <li class="flex gap-3">
+              <span
+                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+              >
+                1
+              </span>
+              <div>
+                <p class="font-medium text-neutral-900">Status wydarzenia</p>
+                <p>`ACTIVE` dopuszcza logikę zapisów. `CANCELLED` kończy proces i blokuje nowe zgłoszenia.</p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <span
+                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+              >
+                2
+              </span>
+              <div>
+                <p class="font-medium text-neutral-900">Status czasu wydarzenia</p>
+                <p>`UPCOMING` pozwala na wejście. `ONGOING` i `ENDED` blokują nowe zgłoszenia.</p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <span
+                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+              >
+                3
+              </span>
+              <div>
+                <p class="font-medium text-neutral-900">Faza zapisów</p>
+                <p>
+                  `PRE_ENROLLMENT`, `LOTTERY_PENDING` albo `OPEN_ENROLLMENT` określają, czy zgłoszenie w ogóle może
+                  powstać i czy dostanie slot.
+                </p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <span
+                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+              >
+                4
+              </span>
+              <div>
+                <p class="font-medium text-neutral-900">Eligibility użytkownika</p>
+                <p>Ban oraz status „nowy u organizatora” mogą przenieść użytkownika do `PENDING`.</p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <span
+                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+              >
+                5
+              </span>
+              <div>
+                <p class="font-medium text-neutral-900">Wolne miejsca i rola</p>
+                <p>
+                  Brak slotu nie blokuje samego wpisu do systemu — zwykle daje `PENDING` z odpowiednim `waitingReason`.
+                </p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <span
+                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+              >
+                6
+              </span>
+              <div>
+                <p class="font-medium text-neutral-900">Płatność</p>
+                <p>
+                  Dla wydarzeń płatnych status często startuje jako `APPROVED`, a po sukcesie płatności przechodzi do
+                  `CONFIRMED`.
+                </p>
+              </div>
+            </li>
+          </ol>
+        </article>
+
+        <article class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs">
+          <div class="flex items-center gap-2">
+            <app-icon name="list" class="h-5 w-5 text-success-600" />
+            <h2 class="text-lg font-semibold text-neutral-900">Szybki skrót stanów</h2>
+          </div>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            @for (card of statusCards; track card.status) {
+              <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <app-badge variant="soft" [color]="card.color">{{ card.status }}</app-badge>
+                    <h3 class="mt-2 text-base font-semibold text-neutral-900">{{ card.title }}</h3>
+                  </div>
+                  <app-icon [name]="card.icon" class="h-5 w-5" [color]="card.color" />
+                </div>
+                <p class="mt-2 text-sm text-neutral-600">{{ card.summary }}</p>
+              </div>
+            }
+          </div>
+        </article>
+      </section>
+
+      <section class="space-y-4">
+        <article class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs">
+          <div class="flex items-center gap-2">
+            <app-icon name="clock" class="h-5 w-5 text-warning-600" />
+            <h2 class="text-lg font-semibold text-neutral-900">Warianty wydarzenia, które mają znaczenie</h2>
+          </div>
+          <div class="mt-4 space-y-3 text-sm text-neutral-700">
+            <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+              <p class="font-semibold text-neutral-900">`ACTIVE` + przed startem + `PRE_ENROLLMENT`</p>
+              <p class="mt-1">Dołączasz, ale trafiasz na listę oczekujących z `waitingReason=PRE_ENROLLMENT`.</p>
+            </div>
+            <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+              <p class="font-semibold text-neutral-900">`ACTIVE` + przed startem + `LOTTERY_PENDING`</p>
+              <p class="mt-1">Dołączenie jest zablokowane, bo trwa losowanie miejsc.</p>
+            </div>
+            <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+              <p class="font-semibold text-neutral-900">`ACTIVE` + przed startem + `OPEN_ENROLLMENT`</p>
+              <p class="mt-1">To normalna faza zapisów — wynik zależy od miejsc, roli i eligibility.</p>
+            </div>
+            <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+              <p class="font-semibold text-neutral-900">`ACTIVE` + `ONGOING` / `ENDED`</p>
+              <p class="mt-1">Nowe zgłoszenie jest blokowane, nawet jeśli technicznie event nadal jest aktywny.</p>
+            </div>
+            <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+              <p class="font-semibold text-neutral-900">`CANCELLED`</p>
+              <p class="mt-1">Nowe zgłoszenie nie powstaje, a istniejące aktywne zgłoszenia kończą jako `REJECTED`.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs">
+          <div class="flex items-center gap-2">
+            <app-icon name="shield-alert" class="h-5 w-5 text-danger-600" />
+            <h2 class="text-lg font-semibold text-neutral-900">Reguły graniczne</h2>
+          </div>
+          <ul class="mt-4 space-y-3 text-sm text-neutral-700">
+            <li class="flex gap-3">
+              <span class="mt-1 h-2.5 w-2.5 rounded-full bg-danger-500"></span>
+              <span>Jeśli wydarzenie jest odwołane, wolne miejsca przestają mieć znaczenie.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="mt-1 h-2.5 w-2.5 rounded-full bg-warning-500"></span>
+              <span>Jeśli użytkownik jest nowy lub zbanowany, status ląduje w `PENDING` niezależnie od slotów.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="mt-1 h-2.5 w-2.5 rounded-full bg-info-500"></span>
+              <span>W wydarzeniach z rolami brak slotu dla konkretnej roli może dać `NO_SLOTS_FOR_ROLE`.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="mt-1 h-2.5 w-2.5 rounded-full bg-success-500"></span>
+              <span>W darmowym wydarzeniu wolny slot kończy się od razu jako `CONFIRMED`.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="mt-1 h-2.5 w-2.5 rounded-full bg-info-500"></span>
+              <span>W płatnym wydarzeniu wolny slot kończy jako `APPROVED`, a dopiero potem `CONFIRMED`.</span>
+            </li>
+          </ul>
+        </article>
+      </section>
+    }
+
+    @if (activeSection() === 'statuses') {
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900">Pełna lista możliwych statusów uczestnictwa</h2>
+        <div class="mt-4 space-y-4">
+          @for (card of statusCards; track card.status) {
+            <article class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <app-badge variant="soft" [color]="card.color">{{ card.status }}</app-badge>
+                  <h3 class="mt-3 text-xl font-semibold text-neutral-900">{{ card.title }}</h3>
+                  <p class="mt-2 text-sm text-neutral-600">{{ card.summary }}</p>
+                </div>
+                <app-icon [name]="card.icon" class="h-6 w-6" [color]="card.color" />
+              </div>
+
+              <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Najczęstsze wyzwalacze</p>
+                  <ul class="mt-2 space-y-2 text-sm text-neutral-700">
+                    @for (trigger of card.triggers; track trigger) {
+                      <li class="flex gap-2">
+                        <span class="mt-1 h-2 w-2 rounded-full bg-primary-500"></span>
+                        <span>{{ trigger }}</span>
+                      </li>
+                    }
+                  </ul>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Ważne uwagi</p>
+                  <ul class="mt-2 space-y-2 text-sm text-neutral-700">
+                    @for (note of card.notes; track note) {
+                      <li class="flex gap-2">
+                        <span class="mt-1 h-2 w-2 rounded-full bg-neutral-400"></span>
+                        <span>{{ note }}</span>
+                      </li>
+                    }
+                  </ul>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    @if (activeSection() === 'reasons') {
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900">Powody, dla których `PENDING` może wyglądać inaczej</h2>
+        <p class="mt-2 max-w-3xl text-sm text-neutral-600">
+          To jedyny status uczestnictwa, który niesie dodatkowy `waitingReason`. Dzięki temu UI może odróżnić
+          pre-zapisy, nowego użytkownika, bana i zwykłą kolejkę oczekujących.
+        </p>
+        <div class="mt-4 space-y-4">
+          @for (reason of waitingReasonCards; track reason.title) {
+            <article class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <app-badge variant="soft" [color]="reason.color">
+                    {{ reason.reason ?? 'LEGACY / brak reasonu' }}
+                  </app-badge>
+                  <h3 class="mt-3 text-xl font-semibold text-neutral-900">{{ reason.title }}</h3>
+                  <p class="mt-2 text-sm text-neutral-600">{{ reason.summary }}</p>
+                </div>
+                <app-icon [name]="reason.icon" class="h-6 w-6" [color]="reason.color" />
+              </div>
+              <ul class="mt-4 space-y-2 text-sm text-neutral-700">
+                @for (detail of reason.details; track detail) {
+                  <li class="flex gap-2">
+                    <span class="mt-1 h-2 w-2 rounded-full bg-neutral-400"></span>
+                    <span>{{ detail }}</span>
+                  </li>
+                }
+              </ul>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    @if (activeSection() === 'matrix') {
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900">
+          Macierz wejścia: co dostaje użytkownik po kliknięciu „Dołącz”
+        </h2>
+        <div class="mt-4 grid gap-4">
+          @for (row of joinMatrixRows; track row.id) {
+            <article class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Scenariusz</p>
+                  <h3 class="mt-1 text-lg font-semibold text-neutral-900">{{ row.condition }}</h3>
+                </div>
+                <app-badge variant="soft" [color]="row.color">{{ row.status }}</app-badge>
+              </div>
+
+              <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div class="rounded-xl bg-neutral-50 p-4">
+                  <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Czy powstaje rekord?</p>
+                  <p class="mt-2 text-sm font-medium text-neutral-900">{{ row.recordCreated }}</p>
+                </div>
+                <div class="rounded-xl bg-neutral-50 p-4">
+                  <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Natychmiastowy wynik</p>
+                  <p class="mt-2 text-sm font-medium text-neutral-900">{{ row.immediateResult }}</p>
+                </div>
+                <div class="rounded-xl bg-neutral-50 p-4">
+                  <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">waitingReason</p>
+                  <p class="mt-2 text-sm font-medium text-neutral-900">{{ row.waitingReason }}</p>
+                </div>
+                <div class="rounded-xl bg-neutral-50 p-4">
+                  <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Slot i płatność</p>
+                  <p class="mt-2 text-sm font-medium text-neutral-900">{{ row.slotAndPayment }}</p>
+                </div>
+                <div class="rounded-xl bg-neutral-50 p-4 md:col-span-2 xl:col-span-2">
+                  <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Dodatkowa uwaga</p>
+                  <p class="mt-2 text-sm font-medium text-neutral-900">{{ row.note }}</p>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    @if (activeSection() === 'transitions') {
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900">Najważniejsze przejścia między stanami</h2>
+        <div class="mt-4 space-y-3">
+          @for (transition of transitionRows; track transition.from + transition.to + transition.trigger) {
+            <article class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs">
+              <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div class="space-y-2">
+                  <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Stan początkowy</p>
+                  <p class="text-base font-semibold text-neutral-900">{{ transition.from }}</p>
+                </div>
+                <app-icon name="arrow-right" class="h-5 w-5 self-start text-neutral-400 lg:self-center" />
+                <div class="space-y-2">
+                  <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Wyzwalacz</p>
+                  <p class="text-sm text-neutral-700">{{ transition.trigger }}</p>
+                </div>
+                <app-icon name="arrow-right" class="h-5 w-5 self-start text-neutral-400 lg:self-center" />
+                <div class="space-y-2">
+                  <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Stan docelowy</p>
+                  <app-badge variant="soft" [color]="transition.color">{{ transition.to }}</app-badge>
+                  <p class="text-sm text-neutral-700">{{ transition.note }}</p>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    @if (activeSection() === 'sources') {
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900">Źródła prawdy użyte do tej analizy</h2>
+        <p class="mt-2 max-w-3xl text-sm text-neutral-600">
+          Ta strona jest mapą zachowania systemu — nie osobną logiką biznesową. Dlatego opiera się na kodzie backendu i
+          współdzielonych utilach frontendu.
+        </p>
+        <div class="mt-4 space-y-4">
+          @for (source of sourceRows; track source.file) {
+            <article class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs">
+              <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Plik</p>
+              <h3 class="mt-2 text-base font-semibold text-neutral-900">{{ source.file }}</h3>
+              <p class="mt-3 text-sm text-neutral-600">{{ source.purpose }}</p>
+            </article>
+          }
+        </div>
+      </section>
+    }
+  </main>
+</div>

@@ -37,7 +37,7 @@
             <span
               [class]="
                 'inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold ' +
-                (group.isOngoing
+                (group.dateKey === '__ongoing'
                   ? 'bg-success-400 text-white'
                   : group.isToday
                     ? 'bg-primary-500 text-white'
@@ -55,7 +55,6 @@
             @for (event of group.events; track event.id) {
               <app-event-card
                 [event]="event"
-                [isOngoing]="group.isOngoing"
                 [isDimmed]="group.isPast || event.status === 'CANCELLED'"
                 [dateLabel]="group.shortLabel"
                 (selected)="onEventSelected($event)"

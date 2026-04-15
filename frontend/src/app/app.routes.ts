@@ -476,6 +476,19 @@ export const appRoutes: Route[] = [
             showHeader: false,
           },
         },
+        {
+          path: 'dev/participation-status-matrix',
+          loadComponent: () =>
+            import('./features/dev/pages/participation-status-matrix/participation-status-matrix.component').then(
+              (m) => m.ParticipationStatusMatrixComponent,
+            ),
+          data: {
+            title: 'Matryca statusów uczestnictwa',
+            showBorder: false,
+            showFooter: false,
+            showHeader: false,
+          },
+        },
       ]
     : []),
 

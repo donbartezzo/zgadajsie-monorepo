@@ -41,7 +41,6 @@ interface EventGroup {
   shortLabel: string | null;
   isToday: boolean;
   isPast: boolean;
-  isOngoing: boolean;
   events: EventListItem[];
 }
 
@@ -141,14 +140,13 @@ export class EventsComponent implements OnInit, OnDestroy {
         shortLabel: null,
         isToday: false,
         isPast: false,
-        isOngoing: true,
         events: ongoing,
       });
     }
 
-    const upcomingByDate = this.groupByDate([...ongoing, ...upcoming], todayStart.toJSDate());
+    const upcomingByDate = this.groupByDate(upcoming, todayStart.toJSDate());
     for (const g of upcomingByDate) {
-      groups.push({ ...g, isPast: false, isOngoing: false });
+      groups.push({ ...g, isPast: false });
     }
 
     if (past.length > 0) {
@@ -158,7 +156,6 @@ export class EventsComponent implements OnInit, OnDestroy {
         shortLabel: null,
         isToday: false,
         isPast: true,
-        isOngoing: false,
         events: past,
       });
     }
