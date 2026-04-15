@@ -14,7 +14,7 @@ const RUNTIME_CONFIG: RuntimeConfig = {
   disableGoogleLogin: true,
   disableFacebookLogin: true,
   disableEventCreation: true,
-  disableOnlinePayments: true,
+  disableOnlinePayments: false,
 };
 
 // @TMP: konto wykluczone ze sprawdzania flag blokujących

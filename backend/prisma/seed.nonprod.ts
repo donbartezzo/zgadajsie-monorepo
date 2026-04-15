@@ -1054,8 +1054,8 @@ async function main() {
   });
 
   const extraFootball1 = await createEventWithSlots({
-    title: 'Turniej footballowy',
-    description: 'Amatorski turniej footballowy z nagrodami.',
+    title: 'Turniej piłkarski',
+    description: 'Amatorski turniej piłkarski z nagrodami.',
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[2].slug,
     levelSlug: levels[1].slug,
@@ -1069,7 +1069,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Wroc³awska 15, Zielona Góra',
+    address: 'ul. Wrocławska 15, Zielona Góra',
     lat: 51.937,
     lng: 15.511,
   });
@@ -1109,7 +1109,7 @@ async function main() {
   await addWaitingParticipant(extraFootball2.id, wojtek.id);
 
   const extraFootball3 = await createEventWithSlots({
-    title: 'Football amatorski',
+    title: 'Amatorski mecz piłkarski',
     description: 'Spotkanie dla miłośników piłki nożnej.',
     disciplineSlug: disciplines[0].slug,
     facilitySlug: facilities[4].slug,
@@ -1124,7 +1124,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. G³ogowska 22, Zielona Góra',
+    address: 'ul. Głogowska 22, Zielona Góra',
     lat: 51.939,
     lng: 15.507,
   });
@@ -1141,7 +1141,7 @@ async function main() {
   console.log('');
   console.log('=== Podsumowanie ===');
   console.log(
-    `Uzytkownicy: ${APP_BRAND.CONTACT_EMAIL} (Admin123!), jan.kowalski@example.com (Test1234!)`,
+    `Użytkownicy: ${APP_BRAND.CONTACT_EMAIL} (Admin123!), jan.kowalski@example.com (Test1234!)`,
   );
   console.log('             anna.nowak@example.com, marek.wisniewski@example.com,');
   console.log(
@@ -1155,7 +1155,7 @@ async function main() {
   console.log('  OPEN_ENROLLMENT (8): #7 football 5h, #8 football jutro, #9 badminton pełne,');
   console.log('                       #15 football last-minute 3h, #16 bieg wieczorem,');
   console.log(
-    '                       #17 turniej footballowy (Anna), #18 sobota na boisku (Marek), #19 football amatorski (Kasia)',
+    '                       #17 turniej piłkarski (Anna), #18 sobota na boisku (Marek), #19 amatorski mecz piłkarski (Kasia)',
   );
   console.log('  PRE_ENROLLMENT (3):  #10 football 4d, #11 koszykówka 5d, #12 pływanie 7d');
   console.log('  LOTTERY_PENDING (2): #13 football ~47h, #14 kolarstwo ~40h');
