@@ -542,21 +542,8 @@ async function main() {
     lat: 51.9412,
     lng: 15.5089,
   });
-  await addConfirmedParticipant(ended2.id, jan.id);
   await addConfirmedParticipant(ended2.id, anna.id);
   await addConfirmedParticipant(ended2.id, marek.id);
-  await addPayment(
-    (
-      await prisma.eventParticipation.findUniqueOrThrow({
-        where: { eventId_userId: { eventId: ended2.id, userId: jan.id } },
-      })
-    ).id,
-    jan.id,
-    ended2.id,
-    15,
-    'REFUNDED',
-    'cash',
-  );
 
   // ═══════════════════════════════════════════════════════════════════════════
   // ODWOŁANE (2 szt.)
@@ -631,7 +618,6 @@ async function main() {
     lat: 51.9412,
     lng: 15.5089,
   });
-  await addConfirmedParticipant(ongoing1.id, jan.id);
   await addConfirmedParticipant(ongoing1.id, anna.id);
   await addConfirmedParticipant(ongoing1.id, kasia.id);
   await addConfirmedParticipant(ongoing1.id, marek.id);
@@ -639,16 +625,6 @@ async function main() {
   await addConfirmedParticipant(ongoing1.id, ola.id);
   await addApprovedParticipant(ongoing1.id, piotr.id);
   await addWaitingParticipant(ongoing1.id, magda.id);
-  await addPayment(
-    (
-      await prisma.eventParticipation.findUniqueOrThrow({
-        where: { eventId_userId: { eventId: ongoing1.id, userId: jan.id } },
-      })
-    ).id,
-    jan.id,
-    ongoing1.id,
-    15,
-  );
   await addPayment(
     (
       await prisma.eventParticipation.findUniqueOrThrow({
@@ -799,7 +775,6 @@ async function main() {
     lat: 51.9412,
     lng: 15.5089,
   });
-  await addConfirmedParticipant(openEnroll3.id, jan.id);
   await addConfirmedParticipant(openEnroll3.id, marek.id);
   await addConfirmedParticipant(openEnroll3.id, kasia.id);
   await addConfirmedParticipant(openEnroll3.id, tomek.id);
@@ -863,7 +838,6 @@ async function main() {
     lat: 51.9412,
     lng: 15.5089,
   });
-  await addWaitingParticipant(preEnroll2.id, jan.id);
   await addWaitingParticipant(preEnroll2.id, anna.id);
   await addWaitingParticipant(preEnroll2.id, kuba.id);
   await addWaitingParticipant(preEnroll2.id, natalia.id);
@@ -888,7 +862,6 @@ async function main() {
     lat: 51.9345,
     lng: 15.5135,
   });
-  await addWaitingParticipant(preEnroll3.id, jan.id);
   await addWaitingParticipant(preEnroll3.id, marek.id);
   await addWaitingParticipant(preEnroll3.id, kasia.id);
   await addWaitingParticipant(preEnroll3.id, tomek.id);
@@ -919,7 +892,6 @@ async function main() {
     lat: 51.9412,
     lng: 15.5089,
   });
-  await addWaitingParticipant(lotteryPend1.id, jan.id);
   await addWaitingParticipant(lotteryPend1.id, anna.id);
   await addWaitingParticipant(lotteryPend1.id, marek.id);
   await addWaitingParticipant(lotteryPend1.id, kasia.id);
@@ -977,7 +949,6 @@ async function main() {
     lat: 51.938,
     lng: 15.512,
   });
-  await addApprovedParticipant(quickOpen1.id, jan.id);
   await addConfirmedParticipant(quickOpen1.id, anna.id);
   await addConfirmedParticipant(quickOpen1.id, marek.id);
   await addApprovedParticipant(quickOpen1.id, kasia.id);
