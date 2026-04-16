@@ -7,6 +7,7 @@ import {
 import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay.component';
 import { ChatMessage, PrivateChatMessage } from '../../../../shared/types';
 import { BaseChatComponent } from '../base-chat.component';
+import { isChatAccessDeniedError, isChatAccessDeniedMessage } from '../../../../shared/utils';
 
 @Component({
   selector: 'app-unified-chat',
@@ -22,7 +23,7 @@ import { BaseChatComponent } from '../base-chat.component';
         [typingUser]="typingUser()"
         [inactiveUsers]="inactiveUsers()"
         [disabled]="!isPrivate && chatDisabled()"
-        [accessDenied]="isPrivate && chatAccessDenied()"
+        [accessDenied]="chatAccessDenied()"
         [eventId]="eventId"
         [organizerId]="organizerId()"
         [citySlug]="event()?.city?.slug || ''"
@@ -152,29 +153,39 @@ export class UnifiedChatComponent extends BaseChatComponent implements OnInit {
       next: (res) => {
         this.groupMessages.set(res.data);
         this.loading.set(false);
+
+        this.chatService.connect(this.eventId);
+
+        this.msgSub = this.chatService.onMessage().subscribe((msg) => {
+          this.groupMessages.update((prev) => [...prev, msg]);
+        });
+
+        this.typingSub = this.chatService.onTyping().subscribe((data) => {
+          if (data.userId !== this.currentUserId) {
+            this.handleTypingIndicator(data);
+          }
+        });
+
+        this.errorSub = this.chatService.onErrorMessage().subscribe((data) => {
+          if (data.message) {
+            if (isChatAccessDeniedMessage(data.message)) {
+              this.chatAccessDenied.set(true);
+              return;
+            }
+
+            this.snackbar.error(data.message);
+          }
+        });
       },
-      error: () => {
+      error: (err) => {
         this.loading.set(false);
-        this.snackbar.error('Nie udało się załadować czatu');
+        if (isChatAccessDeniedError(err)) {
+          this.chatAccessDenied.set(true);
+          return;
+        }
+
+        this.snackbar.error(err?.error?.message || 'Nie udało się załadować czatu');
       },
-    });
-
-    this.chatService.connect(this.eventId);
-
-    this.msgSub = this.chatService.onMessage().subscribe((msg) => {
-      this.groupMessages.update((prev) => [...prev, msg]);
-    });
-
-    this.typingSub = this.chatService.onTyping().subscribe((data) => {
-      if (data.userId !== this.currentUserId) {
-        this.handleTypingIndicator(data);
-      }
-    });
-
-    this.errorSub = this.chatService.onErrorMessage().subscribe((data) => {
-      if (data.message) {
-        this.snackbar.error(data.message);
-      }
     });
   }
 

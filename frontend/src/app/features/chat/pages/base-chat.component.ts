@@ -7,6 +7,7 @@ import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 import { PrivateChatMessage } from '../../../shared/types';
 import { ChatViewMessage } from '../../../shared/chat/ui/chat-view/chat-view.component';
 import { EventAreaService } from '../../event/services/event-area.service';
+import { isChatAccessDeniedError } from '../../../shared/utils';
 
 @Directive()
 export abstract class BaseChatComponent implements OnDestroy {
@@ -109,24 +110,27 @@ export abstract class BaseChatComponent implements OnDestroy {
       next: (res) => {
         this.privateMessages.set(res.data);
         this.loading.set(false);
+        this.chatService.connectPrivate(this.eventId, otherUserId);
+
+        this.msgSub = this.chatService.onPrivateMessage().subscribe((msg) => {
+          this.privateMessages.update((prev) => [...prev, msg]);
+        });
+
+        this.typingSub = this.chatService.onPrivateTyping().subscribe((data) => {
+          this.handleTypingIndicator(data);
+        });
+
         onHistoryLoaded?.(res.data);
       },
       error: (err) => {
         this.loading.set(false);
-        const msg = err?.error?.message || 'Brak dostępu do tego czatu';
-        this.snackbar.error(msg);
-        this.chatAccessDenied.set(true);
+        if (isChatAccessDeniedError(err)) {
+          this.chatAccessDenied.set(true);
+          return;
+        }
+
+        this.snackbar.error(err?.error?.message || 'Nie udało się załadować czatu');
       },
-    });
-
-    this.chatService.connectPrivate(this.eventId, otherUserId);
-
-    this.msgSub = this.chatService.onPrivateMessage().subscribe((msg) => {
-      this.privateMessages.update((prev) => [...prev, msg]);
-    });
-
-    this.typingSub = this.chatService.onPrivateTyping().subscribe((data) => {
-      this.handleTypingIndicator(data);
     });
   }
 }

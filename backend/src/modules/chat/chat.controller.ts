@@ -13,15 +13,16 @@ export class ChatController {
   @Get('messages')
   getMessages(
     @Param('eventId') eventId: string,
+    @CurrentUser() user: AuthUser,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    return this.chatService.getMessages(eventId, page ? +page : 1, limit ? +limit : 50);
+    return this.chatService.getMessages(eventId, user.id, page ? +page : 1, limit ? +limit : 50);
   }
 
   @Get('messages/count')
-  getMessageCount(@Param('eventId') eventId: string) {
-    return this.chatService.getMessageCount(eventId);
+  getMessageCount(@Param('eventId') eventId: string, @CurrentUser() user: AuthUser) {
+    return this.chatService.getMessageCount(eventId, user.id);
   }
 
   @Get('members')

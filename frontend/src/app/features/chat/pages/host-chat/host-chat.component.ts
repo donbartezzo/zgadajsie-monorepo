@@ -99,6 +99,10 @@ import { BaseChatComponent } from '../base-chat.component';
           [loading]="loading()"
           [typingUser]="typingUser()"
           [disabled]="chatDisabled()"
+          [accessDenied]="chatAccessDenied()"
+          [isPrivate]="true"
+          [eventId]="eventId"
+          [citySlug]="event()?.city?.slug || ''"
           (messageSent)="send($event)"
           (typing)="onTyping()"
         ></app-chat-view>

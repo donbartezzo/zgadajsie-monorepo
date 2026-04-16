@@ -11,7 +11,9 @@ export class ChatService {
 
   // ─── Group Chat ─────────────────────────────────────────────────────────────
 
-  async getMessages(eventId: string, page = 1, limit = 50) {
+  async getMessages(eventId: string, userId: string, page = 1, limit = 50) {
+    await this.ensureGroupChatAccess(eventId, userId);
+
     const [messages, total] = await Promise.all([
       this.prisma.eventGroupMessage.findMany({
         where: { eventId },
@@ -25,7 +27,9 @@ export class ChatService {
     return { data: messages.reverse(), total, page, limit };
   }
 
-  async getMessageCount(eventId: string): Promise<{ count: number }> {
+  async getMessageCount(eventId: string, userId: string): Promise<{ count: number }> {
+    await this.ensureGroupChatAccess(eventId, userId);
+
     const count = await this.prisma.eventGroupMessage.count({
       where: { eventId },
     });
@@ -232,7 +236,7 @@ export class ChatService {
 
   // ─── Access checks ─────────────────────────────────────────────────────────
 
-  private async hasEventAccess(eventId: string, userId: string): Promise<boolean> {
+  async hasEventAccess(eventId: string, userId: string): Promise<boolean> {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) return false;
 
@@ -244,9 +248,18 @@ export class ChatService {
     });
 
     if (!participation) return false;
-    if (!participation.wantsIn) return false;
+
+    // Banned by organizer — no access
+    if (!participation.wantsIn && participation.withdrawnBy === 'ORGANIZER') return false;
 
     return true;
+  }
+
+  private async ensureGroupChatAccess(eventId: string, userId: string): Promise<void> {
+    const hasAccess = await this.hasEventAccess(eventId, userId);
+    if (!hasAccess) {
+      throw new ForbiddenException('Brak dostępu do czatu grupowego');
+    }
   }
 
   private async validatePrivateChatAccess(
@@ -299,7 +312,8 @@ export class ChatService {
       throw new ForbiddenException('Użytkownik nie jest uczestnikiem tego wydarzenia');
     }
 
-    if (!participation.wantsIn) {
+    // Banned by organizer — no access
+    if (!participation.wantsIn && participation.withdrawnBy === 'ORGANIZER') {
       throw new ForbiddenException('Użytkownik nie jest uczestnikiem tego wydarzenia');
     }
   }

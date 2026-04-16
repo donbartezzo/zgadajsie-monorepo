@@ -7,7 +7,6 @@ import { paymentRedirectGuard } from './features/payments/guards/payment-redirec
 import { eventResolver } from './core/guards/event.resolver';
 import { setEventResolvedTitle } from './core/guards/event-seo-title.resolver';
 import { verifiedUserGuard } from './core/guards/verified-user.guard';
-import { chatAccessGuard } from './core/guards/chat-access.guard';
 import { organizerGuard } from './core/guards/organizer.guard';
 import { eventCreationGuard } from './core/guards/event-creation.guard';
 
@@ -132,7 +131,7 @@ export const appRoutes: Route[] = [
             (m) => m.UnifiedChatComponent,
           ),
         resolve: setEventResolvedTitle('Czat grupowy'),
-        canActivate: [verifiedUserGuard, chatAccessGuard],
+        canActivate: [verifiedUserGuard],
         data: {
           showFooter: false,
           showBorder: false,

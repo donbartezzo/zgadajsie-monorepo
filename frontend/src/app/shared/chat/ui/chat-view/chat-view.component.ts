@@ -64,22 +64,30 @@ export interface ChatViewMessage {
         <div class="flex items-center justify-center w-14 h-14 rounded-full bg-warning-50">
           <app-icon name="lock" size="lg" class="text-warning-300"></app-icon>
         </div>
-        <h3 class="text-lg font-semibold text-neutral-900">Brak dostępu do czatu</h3>
+        <h3 class="text-lg font-semibold text-neutral-900">
+          @if (isPrivate()) {
+            Aby napisać do organizatora, dołącz do wydarzenia
+          } @else {
+            Aby pisać na czacie, dołącz do wydarzenia
+          }
+        </h3>
         <p class="text-sm text-neutral-500 max-w-xs">
           @if (isPrivate()) {
-            Nie masz dostępu do tego czatu prywatnego.
+            Prywatny kontakt z organizatorem jest dostępny tylko dla uczestników. Dołącz do
+            wydarzenia, a potem wróć do rozmowy.
           } @else {
-            Tylko uczestnicy wydarzenia mają dostęp do czatu grupowego.
+            Czat grupowy wydarzenia jest dostępny wyłącznie dla uczestników. Dołącz do wydarzenia,
+            aby rozmawiać z organizatorem i innymi uczestnikami.
           }
         </p>
-        @if (!isPrivate() && eventId()) {
+        @if (eventId()) {
           <button
             type="button"
             class="mt-2 inline-flex items-center gap-2 rounded-xl bg-primary-500 px-5 py-2.5 text-sm font-medium text-white shadow-xs hover:bg-primary-500/90 transition-colors"
             (click)="navigateToEvent()"
           >
             <app-icon name="calendar" size="sm"></app-icon>
-            Zobacz wydarzenie
+            Przejdź do wydarzenia
           </button>
         }
       </div>

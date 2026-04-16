@@ -31,7 +31,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // ─── Group Chat ──────────────────────────────────────────────────────────────
 
   @SubscribeMessage('joinRoom')
-  handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() data: { eventId: string }) {
+  async handleJoinRoom(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { eventId: string },
+  ) {
+    const userId = client.handshake.auth?.userId;
+    if (userId) {
+      const hasAccess = await this.chatService.hasEventAccess(data.eventId, userId);
+      if (!hasAccess) {
+        client.emit('errorMessage', {
+          type: 'joinRoom',
+          message: 'Brak dostępu do czatu grupowego',
+        });
+        return;
+      }
+    }
+
     client.join(`event-${data.eventId}`);
     return { event: 'joinedRoom', data: { eventId: data.eventId } };
   }
