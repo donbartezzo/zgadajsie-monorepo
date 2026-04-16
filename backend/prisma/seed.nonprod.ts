@@ -1109,6 +1109,7 @@ async function main() {
   await addWaitingParticipant(extraFootball2.id, wojtek.id);
 
   const extraFootball3 = await createEventWithSlots({
+    id: 'a6e3d86e-0a65-4ba2-8db7-3a0698d57608', // Jedyne wydarzenie o stałym ID dla różnych testerów
     title: 'Amatorski mecz piłkarski',
     description: 'Spotkanie dla miłośników piłki nożnej.',
     disciplineSlug: disciplines[0].slug,
