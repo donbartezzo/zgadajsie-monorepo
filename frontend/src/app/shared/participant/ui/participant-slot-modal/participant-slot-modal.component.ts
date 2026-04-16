@@ -262,8 +262,28 @@ export class ParticipantSlotModalComponent {
   // ── Organizer action select ──
 
   readonly organizerActions = computed(() => {
+    type Action = { value: string; label: string };
+
     const p = this.participant();
-    if (!p) return [];
+    const slotId = this.slotId();
+
+    if (!this.isOrganizer()) return [];
+
+    // Brak uczestnika - tylko akcje na slotach dla organizatora
+    if (!p) {
+      if (!slotId) return [];
+
+      const slotLocked = this.slotLocked();
+
+      const slotActions: Action[] = [];
+      if (!slotLocked) {
+        slotActions.push({ value: 'lockSlot', label: 'Zablokuj slot' });
+      } else {
+        slotActions.push({ value: 'unlockSlot', label: 'Odblokuj slot' });
+      }
+
+      return slotActions.length > 0 ? [{ label: 'Slot', actions: slotActions }] : [];
+    }
 
     const status = p.status;
     const isActive = status === 'APPROVED' || status === 'CONFIRMED';
@@ -271,12 +291,9 @@ export class ParticipantSlotModalComponent {
     const isBanned = this.isBanned();
     const isPaid = this.isPaidEvent();
     const payment = this.paymentInfo();
-    const slotId = this.slotId();
     const slotLocked = this.slotLocked();
     const trustStatus = this.trustStatus();
     const isTrusted = trustStatus?.isTrusted ?? false;
-
-    type Action = { value: string; label: string };
 
     const transitions: Action[] = [];
     if (status === 'PENDING' && !isBanned) {
