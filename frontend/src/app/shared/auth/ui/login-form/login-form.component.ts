@@ -14,7 +14,7 @@ import { IconComponent } from '../../../ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { RuntimeConfig } from '@zgadajsie/shared';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-login-form',
@@ -152,8 +152,8 @@ export class LoginFormComponent {
   readonly returnUrl = input<string | null>(null);
   readonly authenticated = output<void>();
 
-  readonly showGoogleLogin = computed(() => RuntimeConfig.isGoogleLoginEnabled());
-  readonly showFacebookLogin = computed(() => RuntimeConfig.isFacebookLoginEnabled());
+  readonly showGoogleLogin = computed(() => environment.enableGoogleLogin);
+  readonly showFacebookLogin = computed(() => environment.enableFacebookLogin);
   readonly showSocialLogin = computed(() => this.showGoogleLogin() || this.showFacebookLogin());
 
   readonly googleLoginUrl = computed(() => {

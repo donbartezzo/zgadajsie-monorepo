@@ -4,7 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Profile, Strategy } from 'passport-facebook';
 import { MemoryStateStore } from './memory-state-store';
-import { RuntimeConfig } from '@zgadajsie/shared';
+import { featureFlags } from '../../../common/config/feature-flags';
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
@@ -27,7 +27,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     });
 
     if (
-      !RuntimeConfig.isFacebookLoginEnabled() ||
+      !featureFlags.enableFacebookLogin ||
       clientID === 'disabled' ||
       clientSecret === 'disabled'
     ) {

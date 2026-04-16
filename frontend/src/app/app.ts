@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { APP_BRAND, RuntimeConfig } from '@zgadajsie/shared';
+import { APP_BRAND } from '@zgadajsie/shared';
 import { BottomNavComponent } from './layout/footer/bottom-nav.component';
 import { SnackbarComponent } from './shared/ui/snackbar/snackbar.component';
 import { BottomOverlaysComponent } from './shared/overlay/ui/bottom-overlays/bottom-overlays.component';
 import { ConfirmModalComponent } from './shared/ui/confirm-modal/confirm-modal.component';
 import { ModalHostComponent } from './shared/ui/modal/modal-host.component';
 import { PageLayoutComponent } from './shared/layouts/page-layout/page-layout.component';
+import { environment } from '../environments/environment';
 
 @Component({
   imports: [
@@ -27,6 +28,6 @@ export class App {
   readonly contactEmail = APP_BRAND.CONTACT_EMAIL;
 
   get maintenance(): boolean {
-    return RuntimeConfig.isMaintenanceEnabled();
+    return environment.maintenance;
   }
 }

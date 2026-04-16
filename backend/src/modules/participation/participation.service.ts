@@ -16,7 +16,8 @@ import { isEventJoinable } from '../events/event-time-status.util';
 import { getEnrollmentPhase } from '../events/enrollment-phase.util';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { EventRoleConfig, AvailableRole } from '../slots/slot.types';
-import { EventRealtimeScope, RuntimeConfig, MAX_GUESTS_PER_USER } from '@zgadajsie/shared';
+import { EventRealtimeScope, MAX_GUESTS_PER_USER } from '@zgadajsie/shared';
+import { featureFlags } from '../../common/config/feature-flags';
 
 const USER_SELECT = { id: true, displayName: true, avatarUrl: true, email: true };
 
@@ -577,7 +578,7 @@ export class ParticipationService {
     participationId: string,
     currentUserId: string,
   ): Promise<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
-    if (RuntimeConfig.isOnlinePaymentsEnabled() === false) {
+    if (!featureFlags.enableOnlinePayments) {
       throw new ForbiddenException(
         'Płatności online są tymczasowo wyłączone. Skontaktuj się z organizatorem w sprawie płatności gotówką.',
       );

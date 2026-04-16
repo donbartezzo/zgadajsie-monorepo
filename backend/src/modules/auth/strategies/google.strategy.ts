@@ -4,7 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Profile, Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { MemoryStateStore } from './memory-state-store';
-import { RuntimeConfig } from '@zgadajsie/shared';
+import { featureFlags } from '../../../common/config/feature-flags';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -24,11 +24,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       store: MemoryStateStore.getInstance(),
     });
 
-    if (
-      !RuntimeConfig.isGoogleLoginEnabled() ||
-      clientID === 'disabled' ||
-      clientSecret === 'disabled'
-    ) {
+    if (!featureFlags.enableGoogleLogin || clientID === 'disabled' || clientSecret === 'disabled') {
       new Logger(GoogleStrategy.name).warn(
         'Google OAuth2 credentials not configured or disabled - Google login disabled',
       );
