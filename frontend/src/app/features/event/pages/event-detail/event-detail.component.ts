@@ -42,6 +42,7 @@ import { EventAnnouncementsComponent } from '../../ui/event-announcements/event-
 import { NotificationStatusService } from '../../../../core/services/notification-status.service';
 import { EventAreaService } from '../../services/event-area.service';
 import { formatEventAddress } from '../../../../shared/utils/event-format.utils';
+import { ClarityService } from '../../../../core/services/clarity.service';
 import { TimeUnitPipe } from '../../../../shared/pipes/time-unit.pipe';
 
 @Component({
@@ -81,6 +82,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   private readonly confirmModal = inject(ConfirmModalService);
   private readonly notifStatus = inject(NotificationStatusService);
   protected readonly eventArea = inject(EventAreaService);
+  private readonly clarity = inject(ClarityService);
 
   // ── Delegated from EventAreaService ──
   readonly event = this.eventArea.event;
@@ -341,5 +343,9 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     const url = new URL(window.location.href);
     url.searchParams.delete('openJoin');
     history.replaceState({}, '', url.toString());
+  }
+
+  onDonationClick(): void {
+    this.clarity.trackEvent('donation_click');
   }
 }

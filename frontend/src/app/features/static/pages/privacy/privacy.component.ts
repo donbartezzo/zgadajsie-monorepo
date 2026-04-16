@@ -10,7 +10,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
       <!-- Privacy Content -->
       <div>
         <div class="bg-white rounded-2xl shadow-xs p-6 mb-4">
-          <p class="text-xs text-success-400 mb-4">Ostatnia aktualizacja: 13 kwietnia 2026</p>
+          <p class="text-xs text-success-400 mb-4">Ostatnia aktualizacja: 16 kwietnia 2026</p>
           <p class="text-sm text-neutral-600">
             Niniejsza Polityka Prywatności opisuje, jak serwis {{ brandName }} zbiera, używa, chroni
             i udostępnia Twoje dane osobowe w związku z korzystaniem z naszej platformy wydarzeń
@@ -98,6 +98,9 @@ import { APP_BRAND } from '@zgadajsie/shared';
             • Organizatorom wydarzeń (tylko niezbędne dane do realizacji wydarzenia)<br />
             • Dostawcom usług płatniczych (Tpay - do przetwarzania płatności)<br />
             • Podmiotom technicznym (hosting, wsparcie IT)<br />
+            • Microsoft Corporation — w zakresie anonimowych danych behawioralnych zbieranych przez
+            narzędzie Microsoft Clarity (wyłącznie po udzieleniu zgody na pliki cookie analityczne;
+            dane są przetwarzane zgodnie z polityką prywatności Microsoft)<br />
             • Organom ścigania (wyłącznie na podstawie prawnych żądań)<br /><br />
 
             Nigdy nie sprzedajemy Twoich danych osobowych stronom trzecim w celach marketingowych
@@ -141,15 +144,34 @@ import { APP_BRAND } from '@zgadajsie/shared';
             Pomimo stosowanych środków, pamiętaj że żadne systemy nie są 100% bezpieczne.
           </p>
 
-          <h3 class="text-lg font-semibold mb-3">9. Pliki cookies</h3>
+          <h3 class="text-lg font-semibold mb-3">9. Pliki cookies i narzędzia analityczne</h3>
           <p class="text-sm text-neutral-600 mb-6">
             Używamy plików cookies w celu:<br />
             • Utrzymania sesji logowania<br />
-            • Pamiętania preferencji<br />
+            • Pamiętania preferencji użytkownika<br />
             • Analizy ruchu w aplikacji<br />
             • Personalizacji treści<br /><br />
 
-            Możesz zarządzać cookies w ustawieniach przeglądarki.
+            <strong>Cookies analityczne — Microsoft Clarity</strong><br />
+            Za Twoją zgodą korzystamy z narzędzia Microsoft Clarity dostarczanego przez Microsoft
+            Corporation. Narzędzie to rejestruje anonimowe dane behawioralne (m.in. ruchy kursora,
+            kliknięcia, mapy cieplne) w celu poprawy użyteczności serwisu. Treści wiadomości
+            prywatnych oraz dane wprowadzane w formularzach są chronione przed przechwyceniem przez
+            to narzędzie.<br /><br />
+
+            Clarity może ustawiać własne pliki cookie (m.in. <em>_clck</em>, <em>_clsk</em>)
+            umożliwiające identyfikację sesji przeglądarki. Więcej informacji znajdziesz w
+            polityce prywatności Microsoft:
+            <a
+              href="https://privacy.microsoft.com/pl-pl/privacystatement"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-primary-500 underline"
+              >privacy.microsoft.com</a
+            >.<br /><br />
+
+            Możesz w dowolnym momencie wycofać zgodę na cookies analityczne, korzystając z opcji
+            dostępnych w ustawieniach przeglądarki lub kontaktując się z nami.
           </p>
 
           <h3 class="text-lg font-semibold mb-3">10. Zmiany w polityce</h3>

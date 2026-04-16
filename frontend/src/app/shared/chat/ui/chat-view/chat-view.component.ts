@@ -108,6 +108,7 @@ export interface ChatViewMessage {
               [class.opacity-40]="isInactive"
             ></app-user-avatar>
             <div
+              data-clarity-mask="True"
               [class]="
                 msg.senderId === currentUserId()
                   ? 'bg-primary-500 text-white rounded-2xl rounded-tr-sm px-3 py-2 max-w-[75%]'

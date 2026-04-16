@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { APP_BRAND } from '@zgadajsie/shared';
 import { BottomNavComponent } from './layout/footer/bottom-nav.component';
@@ -7,6 +7,8 @@ import { BottomOverlaysComponent } from './shared/overlay/ui/bottom-overlays/bot
 import { ConfirmModalComponent } from './shared/ui/confirm-modal/confirm-modal.component';
 import { ModalHostComponent } from './shared/ui/modal/modal-host.component';
 import { PageLayoutComponent } from './shared/layouts/page-layout/page-layout.component';
+import { CookieConsentBannerComponent } from './shared/ui/cookie-consent-banner/cookie-consent-banner.component';
+import { ClarityService } from './core/services/clarity.service';
 import { environment } from '../environments/environment';
 
 @Component({
@@ -18,6 +20,7 @@ import { environment } from '../environments/environment';
     ConfirmModalComponent,
     ModalHostComponent,
     PageLayoutComponent,
+    CookieConsentBannerComponent,
   ],
   selector: 'app-root',
   templateUrl: './app.html',
@@ -26,6 +29,10 @@ import { environment } from '../environments/environment';
 export class App {
   protected title = APP_BRAND.NAME;
   readonly contactEmail = APP_BRAND.CONTACT_EMAIL;
+
+  // Inject to ensure the service is instantiated and its effect runs
+  // ClarityService uses effect() in constructor to automatically load Microsoft Clarity script when consent is given
+  private readonly _clarity = inject(ClarityService);
 
   get maintenance(): boolean {
     return environment.maintenance;

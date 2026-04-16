@@ -268,6 +268,7 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 class="inline-flex items-center gap-2 rounded-xl border border-warning-300 bg-warning-100 px-3 py-2 text-xs font-semibold text-warning-800 transition-colors hover:bg-warning-200"
+                (click)="onDonationClick()"
               >
                 <app-icon name="coffee" size="sm"></app-icon>
                 Postaw kawę
@@ -282,7 +283,12 @@
               Jeśli uważasz, że <strong>{{ _organizerName }}</strong> robi dobrą robotę jako organizator tego
               wydarzenia, doceniasz jego działania i zaangażowanie lub po prostu często uczestniczysz w jego
               inicjatywach, wesprzyj go i wyraź swoją aprobatę, stawiając mu tzw.
-              <a [href]="_organizerDonationUrl" target="_blank" rel="noopener noreferrer" class="underline"
+              <a
+                [href]="_organizerDonationUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="underline"
+                (click)="onDonationClick()"
                 >wirtualną kawę</a
               ><app-icon name="coffee" size="sm" class="mx-1"></app-icon> Dzięki!
             </p>

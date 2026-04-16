@@ -5,5 +5,6 @@ export const baseEnvironment = {
   version: APP_VERSION?.trim() || null,
   production: false,
   apiUrl: '/api',
+  clarityProjectId: null as string | null,
   ...DEV_FEATURE_FLAGS,
 };
