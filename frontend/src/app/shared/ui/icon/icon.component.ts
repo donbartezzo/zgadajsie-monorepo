@@ -72,7 +72,8 @@ export type IconName =
   | 'hanger'
   | 'toilet'
   | 'ball'
-  | 'bookmark';
+  | 'bookmark'
+  | 'coffee';
 
 export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
 
@@ -459,6 +460,13 @@ export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
           }
           @case ('bookmark') {
             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+          }
+          @case ('coffee') {
+            <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+            <line x1="6" y1="1" x2="6" y2="4" />
+            <line x1="10" y1="1" x2="10" y2="4" />
+            <line x1="14" y1="1" x2="14" y2="4" />
           }
           @default {
             <!-- empty icon -->

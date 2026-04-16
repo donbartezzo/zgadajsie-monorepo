@@ -180,7 +180,7 @@ export class EventsService {
           level: true,
           city: true,
           coverImage: true,
-          organizer: { select: { id: true, displayName: true, avatarUrl: true } },
+          organizer: { select: { id: true, displayName: true, avatarUrl: true, donationUrl: true } },
           _count: {
             select: {
               participations: {
@@ -211,7 +211,7 @@ export class EventsService {
         level: true,
         city: true,
         coverImage: true,
-        organizer: { select: { id: true, displayName: true, avatarUrl: true } },
+        organizer: { select: { id: true, displayName: true, avatarUrl: true, donationUrl: true } },
       },
     });
     if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
@@ -242,7 +242,7 @@ export class EventsService {
         level: true,
         city: true,
         coverImage: true,
-        organizer: { select: { id: true, displayName: true, avatarUrl: true } },
+        organizer: { select: { id: true, displayName: true, avatarUrl: true, donationUrl: true } },
       },
     });
 

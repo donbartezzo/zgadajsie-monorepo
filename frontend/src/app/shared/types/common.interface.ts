@@ -1,24 +1,15 @@
-export type ParticipationStatus =
-  | 'PENDING'
-  | 'APPROVED'
-  | 'CONFIRMED'
-  | 'WITHDRAWN'
-  | 'REJECTED';
+import type { User } from './user.interface';
+
+export type ParticipationStatus = 'PENDING' | 'APPROVED' | 'CONFIRMED' | 'WITHDRAWN' | 'REJECTED';
 
 /** Typ dla URL awatara użytkownika. */
 export type AvatarUrl = string | null | undefined;
 
 /** Skrócona reprezentacja użytkownika (id + displayName + avatar). */
-export interface UserBrief {
-  id: string;
-  displayName: string;
-  avatarUrl?: AvatarUrl;
-}
+export type UserBrief = Pick<User, 'id' | 'displayName' | 'avatarUrl' | 'donationUrl'>;
 
 /** Skrócona reprezentacja użytkownika z adresem email. */
-export interface UserBriefWithEmail extends UserBrief {
-  email: string;
-}
+export type UserBriefWithEmail = UserBrief & Pick<User, 'email'>;
 
 /** Skrócona referencja do wydarzenia (id + title). */
 export interface EventRef {

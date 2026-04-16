@@ -16,6 +16,7 @@ export class UsersService {
         email: true,
         displayName: true,
         avatarUrl: true,
+        donationUrl: true,
         role: true,
         isActive: true,
         isEmailVerified: true,
@@ -29,6 +30,7 @@ export class UsersService {
     if (dto.displayName) data.displayName = dto.displayName;
     if (dto.avatarUrl !== undefined) data.avatarUrl = dto.avatarUrl;
     if (dto.email) data.email = dto.email;
+    if (dto.donationUrl !== undefined) data.donationUrl = dto.donationUrl || null;
 
     if (dto.newPassword) {
       if (!dto.currentPassword) {
@@ -53,6 +55,7 @@ export class UsersService {
         email: true,
         displayName: true,
         avatarUrl: true,
+        donationUrl: true,
         role: true,
         isActive: true,
         isEmailVerified: true,

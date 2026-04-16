@@ -4,3 +4,4 @@ export * from './event-time-status.util';
 export * from './enrollment-phase.util';
 export * from './pluralization.utils';
 export * from './payment.utils';
+export * from './support-url.utils';

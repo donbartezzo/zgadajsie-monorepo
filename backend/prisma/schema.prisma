@@ -108,6 +108,7 @@ model User {
   createdAt                   DateTime                @default(now())
   updatedAt                   DateTime                @updatedAt
   tpayMerchantId              String?
+  donationUrl                 String?
   announcementReceipts        AnnouncementReceipt[]
   groupChatMessages           EventGroupMessage[]
   citySubscriptions           CitySubscription[]

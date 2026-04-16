@@ -8,6 +8,7 @@ interface UpdateProfileData {
   displayName?: string;
   avatarUrl?: AvatarUrl;
   email?: string;
+  donationUrl?: string | null;
   currentPassword?: string;
   newPassword?: string;
 }
