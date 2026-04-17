@@ -4,6 +4,7 @@ import { IconComponent } from '../../../ui/icon/icon.component';
 import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.component';
 import { BadgeComponent } from '../../../ui/badge/badge.component';
 import { EventSlotInfo } from '../../../types/payment.interface';
+import { DisciplineRole } from '@zgadajsie/shared';
 import { Participation, ParticipantManageItem } from '../../../types';
 import { SemanticColor } from '../../../types/colors';
 import { SlotDisplayStatus } from '../../slot-status-config';
@@ -19,6 +20,13 @@ export interface SlotData {
 export interface SlotItem {
   slotData: SlotData;
   participant: ParticipantItem | null;
+}
+
+export interface SlotGroup {
+  role: DisciplineRole | null;
+  items: SlotItem[];
+  occupiedCount: number;
+  totalSlots: number;
 }
 
 @Component({

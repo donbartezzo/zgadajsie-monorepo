@@ -72,6 +72,5 @@ export class EventHeroSlotsComponent {
       this.layoutConfig.coverImageUrl.set(coverUrl || '');
       this.layoutConfig.title.set(e?.title || '');
     });
-    this.layoutConfig.contentClass.set('bg-white');
   }
 }

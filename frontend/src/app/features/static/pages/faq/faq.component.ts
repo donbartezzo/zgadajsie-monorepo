@@ -1,10 +1,11 @@
-import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  PLATFORM_ID,
   inject,
+  Injector,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -105,7 +106,7 @@ export class FaqComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
-  private readonly platformId = inject(PLATFORM_ID);
+  private readonly injector = inject(Injector);
 
   readonly openIndex = signal<number | null>(null);
   readonly searchQuery = signal('');
@@ -117,6 +118,24 @@ export class FaqComponent {
       question: 'Jak dołączyć do wydarzenia?',
       answer:
         'Otwórz kartę wydarzenia i kliknij przycisk "Dołącz". Jeśli organizator wymaga akceptacji, Twoje zgłoszenie będzie oczekiwać na zatwierdzenie.',
+    },
+    {
+      anchor: 'participant-status',
+      question: 'Co oznacza status „Uczestnik"?',
+      answer:
+        'Status „Uczestnik" oznacza, że masz potwierdzone miejsce w tym wydarzeniu — Twoja obecność jest zarezerwowana, a opłata (jeśli dotyczy) pobrana lub zarezerwowana z portfela. Możesz zrezygnować z udziału, klikając swój awatar na liście uczestników i wybierając opcję wypisania. Opcja ta jest dostępna do momentu zamknięcia listy przez organizatora.',
+    },
+    {
+      anchor: 'pending-status',
+      question: 'Co oznacza status "Oczekujący"?',
+      answer:
+        'Na liście oczekujących możesz się znaleźć z kilku powodów: wszystkie miejsca są zajęte i czekasz na zwolnienie slotu; organizator wymaga ręcznego zatwierdzania uczestników i Twoje zgłoszenie jest w kolejce; lub jesteś nową osobą u tego organizatora i zgłoszenie trafia do wstępnej weryfikacji. Gdy status zmieni się na „Uczestnik", otrzymasz powiadomienie. W dowolnym momencie możesz wycofać zgłoszenie.',
+    },
+    {
+      anchor: 'withdrawn-status',
+      question: 'Co oznacza status „Wypisany"?',
+      answer:
+        'Status „Wypisany" oznacza, że nie uczestniczysz w tym wydarzeniu. Może to wynikać z Twojej własnej rezygnacji, odrzucenia zgłoszenia przez organizatora lub usunięcia z listy uczestników. Jeśli chcesz ponownie dołączyć do otwartego wydarzenia, skorzystaj z przycisku dołączenia. Pamiętaj, że organizator może ograniczyć możliwość ponownego zapisu.',
     },
     {
       anchor: 'leave-flow',
@@ -186,10 +205,6 @@ export class FaqComponent {
   }
 
   private focusFaqItem(anchor: string): void {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
-
     const itemIndex = this.items.findIndex((item) => item.anchor === anchor);
     if (itemIndex < 0) {
       return;
@@ -199,9 +214,19 @@ export class FaqComponent {
     this.filteredItems.set(this.items);
     this.openIndex.set(itemIndex);
 
-    setTimeout(() => {
-      const element = this.document.getElementById(anchor);
-      element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    afterNextRender(
+      () => {
+        setTimeout(() => {
+          const el = this.document.getElementById(anchor);
+          const win = this.document.defaultView;
+          if (!el || !win) return;
+          win.scrollTo({
+            top: el.getBoundingClientRect().top + win.scrollY,
+            behavior: 'instant',
+          });
+        });
+      },
+      { injector: this.injector },
+    );
   }
 }

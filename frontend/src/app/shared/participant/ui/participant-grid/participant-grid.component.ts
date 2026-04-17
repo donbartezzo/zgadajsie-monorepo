@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { Participation, ParticipantManageItem, EventRoleConfig } from '../../../types';
-import { DisciplineRole } from '@zgadajsie/shared';
 import { EventSlotInfo } from '../../../types/payment.interface';
 import { Event, EnrollmentPhase } from '../../../types/event.interface';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -12,30 +11,15 @@ import {
   ParticipantModalData,
 } from '../participant-slot-modal/participant-slot-modal.component';
 import { type SlotStatusConfig, SLOT_STATUS_CONFIG } from '../../slot-status-config';
-import { SlotItem, ParticipantItem } from './participant-grid-item.component';
+import { SlotItem, SlotGroup, ParticipantItem } from './participant-grid-item.component';
 import { ParticipantGridSectionComponent } from './participant-grid-section.component';
 
-interface SlotGroup {
-  role: DisciplineRole | null;
-  items: SlotItem[];
-  occupiedCount: number;
-  totalSlots: number;
-}
-
-interface SlotGroupsSection {
-  type: 'slot-groups';
+interface GridSection {
+  type: 'participant' | 'pending' | 'withdrawn';
   groups: SlotGroup[];
   config: SlotStatusConfig;
+  count: number | null;
 }
-
-interface StatusItemsSection {
-  type: 'pending-section' | 'withdrawn-section';
-  items: SlotItem[];
-  config: SlotStatusConfig;
-  count: number;
-}
-
-type GridSection = SlotGroupsSection | StatusItemsSection;
 
 // Participants who occupy a slot (have guaranteed place)
 const SLOT_STATUSES = ['APPROVED', 'CONFIRMED'];
@@ -112,17 +96,19 @@ export class ParticipantGridComponent {
     })),
   );
 
-  // Unified sections data for template
+  // ── Sections ──
+
   readonly sections = computed<GridSection[]>(() => {
     const sections: GridSection[] = [];
 
-    // Slot groups (participants with confirmed/approved status)
+    // Participant section — all role groups inside one card
     const groups = this.slotGroups();
     if (groups.length > 0) {
       sections.push({
-        type: 'slot-groups' as const,
+        type: 'participant',
         groups,
         config: this.statusConfig.participant,
+        count: null,
       });
     }
 
@@ -130,8 +116,15 @@ export class ParticipantGridComponent {
     const pending = this.pendingParticipants();
     if (pending.length > 0) {
       sections.push({
-        type: 'pending-section' as const,
-        items: this.pendingSlotItems(),
+        type: 'pending',
+        groups: [
+          {
+            role: null,
+            items: this.pendingSlotItems(),
+            occupiedCount: pending.length,
+            totalSlots: 0,
+          },
+        ],
         config: this.statusConfig.pending,
         count: pending.length,
       });
@@ -141,8 +134,15 @@ export class ParticipantGridComponent {
     const withdrawn = this.withdrawnParticipants();
     if (withdrawn.length > 0) {
       sections.push({
-        type: 'withdrawn-section' as const,
-        items: this.withdrawnSlotItems(),
+        type: 'withdrawn',
+        groups: [
+          {
+            role: null,
+            items: this.withdrawnSlotItems(),
+            occupiedCount: withdrawn.length,
+            totalSlots: 0,
+          },
+        ],
         config: this.statusConfig.withdrawn,
         count: withdrawn.length,
       });
@@ -201,23 +201,17 @@ export class ParticipantGridComponent {
         slotData: { slotId: slot.id, locked: slot.locked, slot },
         participant: participants.find((p) => slot.participationId === p.id) ?? null,
       }));
-      // Sort: occupied slots first, then empty slots, then locked slots
       return items.sort((a, b) => {
-        // Occupied slots first
         if (a.participant && !b.participant) return -1;
         if (!a.participant && b.participant) return 1;
-
-        // Both empty - locked slots go last
         if (!a.participant && !b.participant) {
           if (a.slotData.locked && !b.slotData.locked) return 1;
           if (!a.slotData.locked && b.slotData.locked) return -1;
         }
-
         return 0;
       });
     }
 
-    // Fallback: no real slot data — synthesize from participants + empty placeholders
     const items: SlotItem[] = participants.map((p) => ({
       slotData: { slotId: undefined, locked: false, slot: null },
       participant: p,

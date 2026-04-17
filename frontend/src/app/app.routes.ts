@@ -76,6 +76,7 @@ export const appRoutes: Route[] = [
         resolve: setEventResolvedTitle('Szczegóły wydarzenia'),
         data: {
           breadcrumb: { parent: '/w/:citySlug', label: 'Lista wydarzeń' }, // Nadpisuje domyślne z parenta!
+          contentClass: 'bg-white',
         },
       },
       // Participants list
@@ -90,7 +91,6 @@ export const appRoutes: Route[] = [
         data: {
           showFooter: false,
           showBorder: false,
-          contentClass: 'bg-white',
         },
       },
       // Chat with organizer (participant view) / Conversation list (organizer view)

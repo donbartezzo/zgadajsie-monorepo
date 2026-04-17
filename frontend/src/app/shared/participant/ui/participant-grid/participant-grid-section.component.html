@@ -1,0 +1,81 @@
+@let _config = config();
+@let _count = count();
+@let _colors = colors();
+@let _groups = groups();
+@let _totalOccupied = totalOccupied();
+@let _totalSlots = totalSlots();
+
+<div [class]="'rounded-2xl shadow-xs overflow-hidden border-2 mb-4 ' + _colors.sectionCardBorder">
+  <!-- Header band -->
+  <div [class]="'flex items-center gap-2 px-4 py-2.5 ' + _colors.headerBg">
+    <app-icon [name]="_config.icon" size="xs" [class]="_colors.sectionIcon" />
+    <h4 [class]="'text-xs font-semibold uppercase tracking-widest ' + _colors.sectionTitle">
+      {{ _config.title }}
+      @if (_count !== null) {
+        ({{ _count }})
+      } @else if (_totalSlots > 0) {
+        ({{ _totalOccupied }}/{{ _totalSlots }})
+      }
+    </h4>
+  </div>
+
+  <!-- Subheader band — section note + FAQ link -->
+  @if (_config.sectionNote) {
+    <div [class]="'flex flex-col items-center gap-1 px-3 py-1.5 ' + _colors.subheaderBg">
+      <p class="text-center text-xs leading-tight text-neutral-500">
+        {{ _config.sectionNote }}
+        @if (_config.faqAnchor) {
+          <span class="mx-1">-</span>
+          <a
+            href="/faq#{{ _config.faqAnchor }}"
+            class="text-primary-500 hover:text-primary-600 underline inline-flex items-center"
+          >
+            czytaj więcej
+          </a>
+        }
+      </p>
+    </div>
+  }
+
+  <!-- Card body -->
+  <div class="bg-white px-4 pt-3 pb-4 space-y-3">
+    <!-- Role groups (one per role, or single group for no-role sections) -->
+    @for (group of _groups; track group.role?.key ?? '__all'; let isLast = $last) {
+      <div [class]="!isLast ? 'border-b border-neutral-100 pb-3' : ''">
+        <!-- Role label with capacity progress -->
+        @if (_groups.length > 1 && group.role) {
+          <div class="mb-3 flex flex-wrap items-center gap-2">
+            <p class="text-sm font-bold uppercase tracking-wide text-neutral-600 min-w-24 shrink-0">
+              {{ 'dict.participant-role.' + group.role.key + '.title' | transloco }}
+            </p>
+            @if (group.totalSlots > 0) {
+              <app-capacity-progress [current]="group.occupiedCount" [max]="group.totalSlots" class="min-w-28 flex-1" />
+            }
+          </div>
+        } @else if (group.totalSlots > 0) {
+          <div class="mb-3">
+            <app-capacity-progress [current]="group.occupiedCount" [max]="group.totalSlots" class="w-full" />
+          </div>
+        }
+
+        <!-- Items grid -->
+        <div class="flex flex-wrap justify-center gap-1">
+          @for (item of group.items; track $index) {
+            @if (item.participant) {
+              <app-participant-grid-item
+                [participant]="item.participant"
+                [currentUserId]="currentUserId()"
+                (clicked)="itemClicked.emit(item)"
+              />
+            } @else {
+              <app-participant-grid-item-empty
+                [variant]="item.slotData.locked ? 'locked' : 'free'"
+                (clicked)="itemClicked.emit(item)"
+              />
+            }
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>
