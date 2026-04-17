@@ -27,6 +27,12 @@ export interface AvailableRole {
   freeSlots: number;
 }
 
+export interface AddedByUser {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+}
+
 export interface Participation {
   id: string;
   eventId: string;
@@ -34,6 +40,7 @@ export interface Participation {
   wantsIn: boolean;
   withdrawnBy?: string | null;
   addedByUserId?: string;
+  addedByUser?: AddedByUser | null;
   isGuest: boolean;
   roleKey?: string | null;
   createdAt: string;

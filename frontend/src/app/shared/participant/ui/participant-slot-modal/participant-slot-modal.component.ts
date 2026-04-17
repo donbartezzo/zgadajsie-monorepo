@@ -19,7 +19,14 @@ import {
 } from '../../../user/ui/user-profile-card/user-profile-card.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
-import { SlotDisplayStatus, SlotStatusConfig, SLOT_STATUS_CONFIG } from '../../slot-status-config';
+import {
+  SlotDisplayStatus,
+  SlotStatusConfig,
+  SlotColorClasses,
+  SLOT_STATUS_CONFIG,
+  getSlotColorClasses,
+} from '../../slot-status-config';
+import { LinkedParticipantChipComponent } from '../linked-participant-chip/linked-participant-chip.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { EventService } from '../../../../core/services/event.service';
 import { UserService } from '../../../../core/services/user.service';
@@ -34,10 +41,18 @@ import { Event } from '../../../types/event.interface';
 import { EventSlotInfo } from '../../../types/payment.interface';
 import { formatDateTime } from '@zgadajsie/shared';
 
+export interface ParticipantModalUserInfo {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+}
+
 export interface ParticipantModalData {
   participant: Participation | ParticipantManageItem | null;
   slot: EventSlotInfo | null;
   event: Event;
+  allParticipants?: (Participation | ParticipantManageItem)[];
+  userInfo?: ParticipantModalUserInfo | null;
 }
 
 type ParticipantItem = Participation | ParticipantManageItem;
@@ -69,6 +84,7 @@ function getErrorMessage(err: unknown, fallback: string): string {
     IconComponent,
     UpperCasePipe,
     TranslocoPipe,
+    LinkedParticipantChipComponent,
   ],
   templateUrl: './participant-slot-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -121,6 +137,30 @@ export class ParticipantSlotModalComponent {
   readonly event = computed(() => this.data()?.event ?? null);
   readonly participant = computed(() => this.data()?.participant ?? null);
   readonly slot = computed(() => this.data()?.slot ?? null);
+  readonly allParticipants = computed(() => this.data()?.allParticipants ?? []);
+  readonly modalUserInfo = computed(() => this.data()?.userInfo ?? null);
+
+  readonly isNonParticipantView = computed(() => !this.participant() && !!this.modalUserInfo());
+
+  readonly hostParticipant = computed(() => {
+    const p = this.participant();
+    if (!p?.isGuest || !p.addedByUserId) return null;
+    return this.allParticipants().find((ap) => ap.userId === p.addedByUserId) ?? null;
+  });
+
+  readonly hostUserInfo = computed(() => {
+    if (this.hostParticipant()) return null;
+    const p = this.participant();
+    if (!p?.isGuest) return null;
+    const added = (p as Participation).addedByUser ?? (p as ParticipantManageItem).addedByUser;
+    return added ?? null;
+  });
+
+  readonly guestParticipants = computed(() => {
+    const p = this.participant();
+    if (!p || p.isGuest) return [];
+    return this.allParticipants().filter((ap) => ap.isGuest && ap.addedByUserId === p.userId);
+  });
 
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
 
@@ -190,7 +230,9 @@ export class ParticipantSlotModalComponent {
 
   readonly slotDisplayStatus = computed<SlotDisplayStatus>(() => {
     const p = this.participant();
-    if (!p) return 'free';
+    if (!p) {
+      return this.modalUserInfo() ? 'non-participant' : 'free';
+    }
     const s = p.status;
     if (s === 'PENDING') return 'pending';
     if (s === 'WITHDRAWN' || s === 'REJECTED') return 'withdrawn';
@@ -199,6 +241,10 @@ export class ParticipantSlotModalComponent {
 
   readonly slotStatusConfig = computed<SlotStatusConfig>(
     () => SLOT_STATUS_CONFIG[this.slotDisplayStatus()],
+  );
+
+  readonly colorClasses = computed<SlotColorClasses>(() =>
+    getSlotColorClasses(this.slotStatusConfig()),
   );
 
   readonly participationUpdatedAt = computed(() => {
@@ -213,7 +259,8 @@ export class ParticipantSlotModalComponent {
 
   readonly canJoinPublic = computed(() => {
     if (this.isCurrentUserParticipant()) return false;
-    if (this.participant()) return false; // ← blokuj jeśli uczestnik istnieje
+    if (this.participant()) return false;
+    if (this.isNonParticipantView()) return false;
     if (!this.slotIsEmpty()) return false;
     return this.eventArea.canJoin();
   });
@@ -242,6 +289,15 @@ export class ParticipantSlotModalComponent {
     if (!this.isGuestHost()) return false;
     if (!this.isWithdrawnStatus()) return false;
     return this.eventArea.canJoin();
+  });
+
+  readonly isViewOnlyParticipant = computed(() => {
+    if (!this.participant()) return false;
+    if (this.isWithdrawnStatus()) return false;
+    if (this.isCurrentUserParticipant()) return false;
+    if (this.isGuestHost()) return false;
+    if (this.slotLocked()) return false;
+    return true;
   });
 
   readonly isPaidEvent = computed(() => (this.event()?.costPerPerson ?? 0) > 0);

@@ -180,7 +180,9 @@ export class EventsService {
           level: true,
           city: true,
           coverImage: true,
-          organizer: { select: { id: true, displayName: true, avatarUrl: true, donationUrl: true } },
+          organizer: {
+            select: { id: true, displayName: true, avatarUrl: true, donationUrl: true },
+          },
           _count: {
             select: {
               participations: {
@@ -541,6 +543,13 @@ export class EventsService {
             isEmailVerified: true,
           },
         },
+        addedBy: {
+          select: {
+            id: true,
+            displayName: true,
+            avatarUrl: true,
+          },
+        },
         slot: true,
         payments: {
           orderBy: { createdAt: 'desc' },
@@ -574,6 +583,7 @@ export class EventsService {
         status,
         waitingReason: status === 'PENDING' ? p.waitingReason : null,
         addedByUserId: p.addedByUserId,
+        addedByUser: p.addedBy ?? null,
         isGuest: p.addedByUserId !== null,
         payment: p.payments[0] ?? null,
       };

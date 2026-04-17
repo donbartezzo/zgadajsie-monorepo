@@ -13,74 +13,38 @@
   @let _slotLocked = slotLocked();
   @let _currentUserId = currentUserId();
   @let _config = slotStatusConfig();
-  @let _status = slotDisplayStatus();
   @let _canRejoin = canRejoin();
   @let _canGuestRejoin = canGuestRejoin();
   @let _trustStatus = trustStatus();
   @let _actions = organizerActions();
+  @let _hostParticipant = hostParticipant();
+  @let _hostUserInfo = hostUserInfo();
+  @let _guestParticipants = guestParticipants();
+  @let _allParticipants = allParticipants();
+  @let _event = event();
+  @let _modalUserInfo = modalUserInfo();
+  @let _isNonParticipant = isNonParticipantView();
+  @let _isViewOnly = isViewOnlyParticipant();
 
   <!-- ═══════════════════════════════════
        HEADER (zawsze widoczny)
   ═══════════════════════════════════ -->
-  @let _headerBg =
-    _status === 'participant'
-      ? 'bg-success-50 border-b border-success-200'
-      : _status === 'pending'
-        ? 'bg-warning-50 border-b border-warning-200'
-        : _status === 'withdrawn'
-          ? 'bg-neutral-100 border-b border-neutral-200'
-          : 'bg-primary-50 border-b border-primary-200';
+  @let _colors = colorClasses();
 
-  @let _iconBg =
-    _status === 'participant'
-      ? 'bg-success-100'
-      : _status === 'pending'
-        ? 'bg-warning-100'
-        : _status === 'withdrawn'
-          ? 'bg-neutral-200'
-          : 'bg-primary-100';
-
-  @let _iconColor =
-    _status === 'participant'
-      ? 'text-success-600'
-      : _status === 'pending'
-        ? 'text-warning-600'
-        : _status === 'withdrawn'
-          ? 'text-neutral-500'
-          : 'text-primary-600';
-
-  @let _titleColor =
-    _status === 'participant'
-      ? 'text-success-800'
-      : _status === 'pending'
-        ? 'text-warning-800'
-        : _status === 'withdrawn'
-          ? 'text-neutral-700'
-          : 'text-primary-800';
-
-  @let _descColor =
-    _status === 'participant'
-      ? 'text-success-600'
-      : _status === 'pending'
-        ? 'text-warning-600'
-        : _status === 'withdrawn'
-          ? 'text-neutral-500'
-          : 'text-primary-600';
-
-  <div [class]="'-mx-4 -mt-4 rounded-t-2xl px-5 pb-4 pt-5 pr-12 ' + _headerBg">
+  <div [class]="'-mx-4 -mt-4 rounded-t-2xl px-5 pb-4 pt-5 pr-12 ' + _colors.headerBg">
     <div [class]="'flex items-center gap-4'">
-      <div [class]="'flex h-12 w-12 shrink-0 items-center justify-center rounded-full ' + _iconBg">
-        <app-icon [name]="_config.icon" size="md" [class]="_iconColor" />
+      <div [class]="'flex h-12 w-12 shrink-0 items-center justify-center rounded-full ' + _colors.iconBg">
+        <app-icon [name]="_config.icon" size="md" [class]="_colors.iconColor" />
       </div>
       <div>
-        <h3 [class]="'text-base font-bold leading-tight uppercase ' + _titleColor">
+        <h3 [class]="'text-base font-bold leading-tight uppercase ' + _colors.titleColor">
           {{ _config.title }}
           @let _roleKey = _participant?.slot?.roleKey ?? _participant?.roleKey;
           @if (_roleKey) {
             - {{ 'dict.participant-role.' + _roleKey + '.title' | transloco | uppercase }}
           }
         </h3>
-        <p [class]="'mt-0.5 text-xs ' + _descColor">{{ _config.description }}</p>
+        <p [class]="'mt-0.5 text-xs ' + _colors.descColor">{{ _config.description }}</p>
       </div>
     </div>
   </div>
@@ -138,7 +102,69 @@
               </span>
             </div>
           }
+
+          <!-- Added by (for guests) -->
+          @if (_hostParticipant && _event) {
+            <div class="mt-3">
+              <p class="mb-1.5 text-xs text-neutral-500">Dodany przez</p>
+              <div class="flex justify-center">
+                <app-linked-participant-chip
+                  [participant]="_hostParticipant"
+                  [event]="_event"
+                  [allParticipants]="_allParticipants"
+                />
+              </div>
+            </div>
+          } @else if (_hostUserInfo && _event) {
+            <div class="mt-3">
+              <p class="mb-1.5 text-xs text-neutral-500">Dodany przez</p>
+              <div class="flex justify-center">
+                <app-linked-participant-chip
+                  [userInfo]="_hostUserInfo"
+                  [event]="_event"
+                  [allParticipants]="_allParticipants"
+                />
+              </div>
+            </div>
+          }
+
+          <!-- Guests of this participant -->
+          @if (_guestParticipants.length > 0 && _event) {
+            <div class="mt-3">
+              <p class="mb-1.5 text-xs text-neutral-500">Goście ({{ _guestParticipants.length }})</p>
+              <div class="flex flex-wrap justify-center gap-2">
+                @for (guest of _guestParticipants; track guest.id) {
+                  <app-linked-participant-chip
+                    [participant]="guest"
+                    [event]="_event"
+                    [allParticipants]="_allParticipants"
+                  />
+                }
+              </div>
+            </div>
+          }
         </app-user-profile-card>
+      </div>
+    } @else if (_isNonParticipant && _modalUserInfo) {
+      <!-- Non-participant user view -->
+      <div class="pt-4">
+        <app-user-profile-card
+          [user]="{
+            id: _modalUserInfo.id,
+            displayName: _modalUserInfo.displayName,
+            avatarUrl: _modalUserInfo.avatarUrl,
+            email: '',
+          }"
+          context="participant"
+          [isGuest]="false"
+          [participationId]="null"
+          [currentUserId]="_currentUserId"
+          [isOrganizer]="false"
+          [loading]="false"
+          [addedByUserId]="null"
+          variant="overlay"
+        />
+        <div class="mt-3 py-2 text-center text-sm text-neutral-400">Użytkownik nie uczestniczy w tym wydarzeniu</div>
       </div>
     } @else if (_slot && _slot.roleKey) {
       <!-- Wolny slot z informacjami o roli -->
@@ -158,64 +184,58 @@
     }
 
     <!-- ═══════════════════════════════════
-         PUBLIC / PARTICIPANT ACTIONS
+         ACTIONS
     ═══════════════════════════════════ -->
-    <div class="mt-4">
-      <div class="flex flex-col gap-2">
-        <!-- Free slot: Join button -->
-        @if (canJoinPublic()) {
-          <app-button appearance="solid" color="primary" [fullWidth]="true" (clicked)="onJoin()">
-            <app-icon name="user-plus" size="sm" />
-            Zapisz się
-          </app-button>
-        }
-
-        <!-- Own participation: Change role button (PENDING / APPROVED / CONFIRMED) -->
-        @if (canChangeRole()) {
-          <app-button
-            appearance="outline"
-            color="primary"
-            [fullWidth]="true"
-            [loading]="_loading"
-            (clicked)="onChangeRole()"
-          >
-            <app-icon name="edit" size="sm" />
-            Zmień rolę
-          </app-button>
-        }
-
-        <!-- Own slot / own participation: Leave button -->
-        @if (isCurrentUserParticipant() && !_isWithdrawn) {
-          <app-button appearance="outline" color="danger" [fullWidth]="true" [loading]="_loading" (clicked)="onLeave()">
-            <app-icon name="user-x" size="sm" />
-            Wypisz się z wydarzenia
-          </app-button>
-        }
-
-        <!-- Guest host: Remove guest button -->
-        @if (isGuestHost() && !_isWithdrawn) {
-          <app-button
-            appearance="soft"
-            color="danger"
-            [fullWidth]="true"
-            [loading]="_loading"
-            (clicked)="onRemoveGuest()"
-          >
-            <app-icon name="user-x" size="sm" />
-            Wypisz gościa z wydarzenia
-          </app-button>
-        }
-      </div>
-
-      <!-- Locked slot (non-organizer): Contact organizer -->
-      @if (_slotLocked && !_participant) {
+    <div class="mt-4 flex flex-col gap-2">
+      <!-- ── Free slot ── -->
+      @if (canJoinPublic()) {
+        <app-button appearance="solid" color="primary" [fullWidth]="true" (clicked)="onJoin()">
+          <app-icon name="user-plus" size="sm" />
+          Zapisz się
+        </app-button>
+      } @else if (_slotLocked && !_participant) {
         <app-button appearance="outline" color="neutral" [fullWidth]="true" (clicked)="onContactOrganizer()">
           <app-icon name="message-circle" size="sm" />
           Napisz do organizatora
         </app-button>
       }
 
-      <!-- Withdrawn / view only -->
+      <!-- ── Own participation (active) ── -->
+      @if (canChangeRole()) {
+        <app-button
+          appearance="outline"
+          color="primary"
+          [fullWidth]="true"
+          [loading]="_loading"
+          (clicked)="onChangeRole()"
+        >
+          <app-icon name="edit" size="sm" />
+          Zmień rolę
+        </app-button>
+      }
+
+      @if (isCurrentUserParticipant() && !_isWithdrawn) {
+        <app-button appearance="outline" color="danger" [fullWidth]="true" [loading]="_loading" (clicked)="onLeave()">
+          <app-icon name="user-x" size="sm" />
+          Wypisz się z wydarzenia
+        </app-button>
+      }
+
+      <!-- ── Guest host (active) ── -->
+      @if (isGuestHost() && !_isWithdrawn) {
+        <app-button
+          appearance="soft"
+          color="danger"
+          [fullWidth]="true"
+          [loading]="_loading"
+          (clicked)="onRemoveGuest()"
+        >
+          <app-icon name="user-x" size="sm" />
+          Wypisz gościa z wydarzenia
+        </app-button>
+      }
+
+      <!-- ── Withdrawn ── -->
       @if (_isWithdrawn) {
         <div class="py-2 text-center text-sm text-neutral-400">
           @if (_participant?.status === 'REJECTED') {
@@ -240,15 +260,8 @@
         }
       }
 
-      <!-- Non-participant, no actions (just viewing) -->
-      @if (
-        !isCurrentUserParticipant() &&
-        !isGuestHost() &&
-        !canJoinPublic() &&
-        !_slotLocked &&
-        _participant &&
-        !_isWithdrawn
-      ) {
+      <!-- ── View-only (other user's participation) ── -->
+      @if (_isViewOnly) {
         <div class="py-2 text-center text-sm text-neutral-400">
           @if (_isBanned) {
             <div class="flex items-center justify-center gap-2 text-danger-500">
@@ -261,9 +274,7 @@
         </div>
       }
 
-      <!-- ═══════════════════════════════════
-           ORGANIZER ACTIONS
-      ═══════════════════════════════════ -->
+      <!-- ── Organizer actions ── -->
       @if (_isOrganizer && _actions.length > 0) {
         <select
           class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 mt-2 text-sm text-neutral-700 focus:border-primary-500 focus:outline-hidden focus:ring-1 focus:ring-primary-500"

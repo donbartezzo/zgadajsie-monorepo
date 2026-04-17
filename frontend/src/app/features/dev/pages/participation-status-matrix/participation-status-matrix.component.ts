@@ -7,6 +7,13 @@ import {
 } from '../../../../shared/types/participation.interface';
 import { type SemanticColor } from '../../../../shared/types/colors';
 import { getParticipationStatusConfig, getWaitingReasonMessages } from '../../../../shared/utils';
+import {
+  SLOT_STATUS_CONFIG,
+  SLOT_COLOR_CLASSES,
+  type SlotDisplayStatus,
+  type SlotStatusConfig,
+  type SlotColorClasses,
+} from '../../../../shared/participant/slot-status-config';
 
 interface SectionItem {
   id: string;
@@ -68,12 +75,27 @@ export class ParticipationStatusMatrixComponent {
 
   readonly sections: SectionItem[] = [
     { id: 'overview', label: 'Przegląd' },
+    { id: 'slot-display', label: 'Widok slotu' },
     { id: 'statuses', label: 'Statusy' },
     { id: 'reasons', label: 'Powody PENDING' },
     { id: 'matrix', label: 'Macierz wejścia' },
     { id: 'transitions', label: 'Przejścia' },
     { id: 'sources', label: 'Źródła' },
   ];
+
+  readonly slotDisplayStatuses: {
+    key: SlotDisplayStatus;
+    config: SlotStatusConfig;
+    colors: SlotColorClasses;
+    example: string;
+  }[] = (Object.entries(SLOT_STATUS_CONFIG) as [SlotDisplayStatus, SlotStatusConfig][]).map(
+    ([key, config]) => ({
+      key,
+      config,
+      colors: SLOT_COLOR_CLASSES[config.color],
+      example: this.getSlotExample(key),
+    }),
+  );
 
   readonly statusCards: StatusCard[] = [
     {
@@ -448,5 +470,20 @@ export class ParticipationStatusMatrixComponent {
 
   setSection(sectionId: string): void {
     this.activeSection.set(sectionId);
+  }
+
+  private getSlotExample(key: SlotDisplayStatus): string {
+    switch (key) {
+      case 'participant':
+        return 'Jan Kowalski — CONFIRMED, slot potwierdzony, wydarzenie darmowe';
+      case 'pending':
+        return 'Anna Nowak — PENDING, czeka na wolne miejsce (NO_SLOTS)';
+      case 'withdrawn':
+        return 'Piotr Zieliński — WITHDRAWN, sam zrezygnował z udziału';
+      case 'free':
+        return 'Wolny slot — brak przypisanego uczestnika, slot dostępny do zajęcia';
+      case 'non-participant':
+        return 'Użytkownik, który dodał gościa, ale sam nie dołączył do wydarzenia';
+    }
   }
 }

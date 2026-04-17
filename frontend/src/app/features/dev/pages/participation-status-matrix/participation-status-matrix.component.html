@@ -204,6 +204,60 @@
       </section>
     }
 
+    @if (activeSection() === 'slot-display') {
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900">Warianty wyświetlania slotu w modalu uczestnika</h2>
+        <p class="mt-2 max-w-3xl text-sm text-neutral-600">
+          Każdy status slotu ma przypisany kolor semantyczny, który steruje kolorystyką nagłówka modala, ikony, tytułu i
+          opisu. Konfiguracja pochodzi z <code class="text-xs">slot-status-config.ts</code>.
+        </p>
+        <div class="mt-6 space-y-6">
+          @for (item of slotDisplayStatuses; track item.key) {
+            <article class="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xs">
+              <!-- Symulacja nagłówka modala -->
+              <div [class]="'px-5 pb-4 pt-5 ' + item.colors.headerBg">
+                <div class="flex items-center gap-4">
+                  <div
+                    [class]="'flex h-12 w-12 shrink-0 items-center justify-center rounded-full ' + item.colors.iconBg"
+                  >
+                    <app-icon [name]="item.config.icon" size="md" [class]="item.colors.iconColor" />
+                  </div>
+                  <div>
+                    <h3 [class]="'text-base font-bold leading-tight uppercase ' + item.colors.titleColor">
+                      {{ item.config.title }}
+                    </h3>
+                    <p [class]="'mt-0.5 text-xs ' + item.colors.descColor">
+                      {{ item.config.description }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Metadane -->
+              <div class="space-y-3 p-5">
+                <div class="flex flex-wrap items-center gap-2">
+                  <app-badge variant="soft" [color]="item.config.color">{{ item.key }}</app-badge>
+                  <span class="text-xs text-neutral-400">color: {{ item.config.color }}</span>
+                </div>
+                <div class="rounded-xl bg-neutral-50 p-4">
+                  <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Przykład</p>
+                  <p class="mt-2 text-sm text-neutral-700">{{ item.example }}</p>
+                </div>
+
+                <!-- Podgląd klas sekcji grida -->
+                <div class="flex items-center gap-3 rounded-xl border border-neutral-200 p-4">
+                  <app-icon [name]="item.config.icon" size="sm" [class]="item.colors.sectionIcon" />
+                  <span [class]="'text-sm font-bold uppercase ' + item.colors.sectionTitle">
+                    {{ item.config.title }} (sekcja grida)
+                  </span>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
     @if (activeSection() === 'statuses') {
       <section>
         <h2 class="text-lg font-semibold text-neutral-900">Pełna lista możliwych statusów uczestnictwa</h2>

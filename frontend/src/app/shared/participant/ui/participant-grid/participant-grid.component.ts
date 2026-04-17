@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslocoPipe } from '@jsverse/transloco';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { Participation, ParticipantManageItem, EventRoleConfig } from '../../../types';
 import { DisciplineRole } from '@zgadajsie/shared';
@@ -12,14 +11,9 @@ import {
   ParticipantSlotModalComponent,
   ParticipantModalData,
 } from '../participant-slot-modal/participant-slot-modal.component';
-import { SLOT_STATUS_CONFIG } from '../../slot-status-config';
-import {
-  ParticipantGridItemComponent,
-  SlotItem,
-  ParticipantItem,
-} from './participant-grid-item.component';
-import { ParticipantGridItemEmptyComponent } from './participant-grid-item-empty.component';
-import { CapacityProgressComponent } from '../../../ui/capacity-progress/capacity-progress.component';
+import { type SlotStatusConfig, SLOT_STATUS_CONFIG } from '../../slot-status-config';
+import { SlotItem, ParticipantItem } from './participant-grid-item.component';
+import { ParticipantGridSectionComponent } from './participant-grid-section.component';
 
 interface SlotGroup {
   role: DisciplineRole | null;
@@ -27,6 +21,21 @@ interface SlotGroup {
   occupiedCount: number;
   totalSlots: number;
 }
+
+interface SlotGroupsSection {
+  type: 'slot-groups';
+  groups: SlotGroup[];
+  config: SlotStatusConfig;
+}
+
+interface StatusItemsSection {
+  type: 'pending-section' | 'withdrawn-section';
+  items: SlotItem[];
+  config: SlotStatusConfig;
+  count: number;
+}
+
+type GridSection = SlotGroupsSection | StatusItemsSection;
 
 // Participants who occupy a slot (have guaranteed place)
 const SLOT_STATUSES = ['APPROVED', 'CONFIRMED'];
@@ -37,13 +46,7 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
 
 @Component({
   selector: 'app-participant-grid',
-  imports: [
-    IconComponent,
-    TranslocoPipe,
-    CapacityProgressComponent,
-    ParticipantGridItemComponent,
-    ParticipantGridItemEmptyComponent,
-  ],
+  imports: [IconComponent, ParticipantGridSectionComponent],
   templateUrl: './participant-grid.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -109,6 +112,45 @@ export class ParticipantGridComponent {
     })),
   );
 
+  // Unified sections data for template
+  readonly sections = computed<GridSection[]>(() => {
+    const sections: GridSection[] = [];
+
+    // Slot groups (participants with confirmed/approved status)
+    const groups = this.slotGroups();
+    if (groups.length > 0) {
+      sections.push({
+        type: 'slot-groups' as const,
+        groups,
+        config: this.statusConfig.participant,
+      });
+    }
+
+    // Pending section
+    const pending = this.pendingParticipants();
+    if (pending.length > 0) {
+      sections.push({
+        type: 'pending-section' as const,
+        items: this.pendingSlotItems(),
+        config: this.statusConfig.pending,
+        count: pending.length,
+      });
+    }
+
+    // Withdrawn section
+    const withdrawn = this.withdrawnParticipants();
+    if (withdrawn.length > 0) {
+      sections.push({
+        type: 'withdrawn-section' as const,
+        items: this.withdrawnSlotItems(),
+        config: this.statusConfig.withdrawn,
+        count: withdrawn.length,
+      });
+    }
+
+    return sections;
+  });
+
   readonly slotGroups = computed<SlotGroup[]>(() => {
     const config = this.roleConfig();
     const allSlots = this.slots();
@@ -135,6 +177,7 @@ export class ParticipantGridComponent {
       participant: item.participant,
       slot,
       event: this.event(),
+      allParticipants: this.participants(),
     };
     this.modalService.open(ParticipantSlotModalComponent, { data });
   }
