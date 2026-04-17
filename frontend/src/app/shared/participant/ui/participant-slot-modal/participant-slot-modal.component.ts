@@ -144,8 +144,9 @@ export class ParticipantSlotModalComponent {
 
   readonly hostParticipant = computed(() => {
     const p = this.participant();
-    if (!p?.isGuest || !p.addedByUserId) return null;
-    return this.allParticipants().find((ap) => ap.userId === p.addedByUserId) ?? null;
+    if (!p?.isGuest || !p.addedByUser?.id) return null;
+    const addedByUserId = p.addedByUser.id;
+    return this.allParticipants().find((ap) => ap.userId === addedByUserId) ?? null;
   });
 
   readonly hostUserInfo = computed(() => {
@@ -159,7 +160,7 @@ export class ParticipantSlotModalComponent {
   readonly guestParticipants = computed(() => {
     const p = this.participant();
     if (!p || p.isGuest) return [];
-    return this.allParticipants().filter((ap) => ap.isGuest && ap.addedByUserId === p.userId);
+    return this.allParticipants().filter((ap) => ap.isGuest && ap.addedByUser?.id === p.userId);
   });
 
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
@@ -178,7 +179,7 @@ export class ParticipantSlotModalComponent {
   readonly isGuestHost = computed(() => {
     const p = this.participant();
     if (!p?.isGuest) return false;
-    return p.addedByUserId === this.currentUserId();
+    return p.addedByUser?.id === this.currentUserId();
   });
 
   readonly isActiveStatus = computed(() => {

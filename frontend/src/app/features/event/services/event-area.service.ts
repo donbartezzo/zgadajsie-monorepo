@@ -619,7 +619,7 @@ export class EventAreaService {
     const maxGuests = isOrganizer ? MAX_GUESTS_PER_ORGANIZER : MAX_GUESTS_PER_USER;
 
     const currentGuests = this.participants().filter(
-      (p) => p.isGuest && p.addedByUserId === currentUserId && p.wantsIn,
+      (p) => p.isGuest && p.addedByUser?.id === currentUserId && p.wantsIn,
     ).length;
 
     return Math.max(0, maxGuests - currentGuests);

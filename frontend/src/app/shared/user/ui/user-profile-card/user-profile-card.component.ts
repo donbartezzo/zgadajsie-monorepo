@@ -45,7 +45,7 @@ export class UserProfileCardComponent {
   readonly currentUserId = input<string | null>(null);
   readonly isOrganizer = input(false);
   readonly loading = input(false);
-  readonly addedByUserId = input<string | null>(null);
+  readonly isOwnGuest = input(false);
 
   readonly profileUpdated = output<ProfileEditData>();
   readonly guestUpdated = output<{ participationId: string; displayName: string }>();
@@ -243,14 +243,6 @@ export class UserProfileCardComponent {
     };
     return sizes[this.variant()];
   });
-
-  isOwnGuest(): boolean {
-    const currentUserId = this.currentUserId();
-    const addedByUserId = this.addedByUserId();
-    const isGuest = this.isGuest();
-
-    return isGuest && !!addedByUserId && addedByUserId === currentUserId;
-  }
 
   startEditing(): void {
     this.tempDisplayName.set(this.displayName());

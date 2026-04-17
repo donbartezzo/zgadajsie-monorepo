@@ -66,7 +66,7 @@
           [currentUserId]="_currentUserId"
           [isOrganizer]="_isOrganizer"
           [loading]="_loading"
-          [addedByUserId]="_participant.addedByUserId ?? null"
+          [isOwnGuest]="isGuestHost()"
           variant="overlay"
           (profileUpdated)="onProfileUpdated($event)"
           (guestUpdated)="onGuestUpdated($event)"
@@ -161,7 +161,7 @@
           [currentUserId]="_currentUserId"
           [isOrganizer]="false"
           [loading]="false"
-          [addedByUserId]="null"
+          [isOwnGuest]="false"
           variant="overlay"
         />
         <div class="mt-3 py-2 text-center text-sm text-neutral-400">Użytkownik nie uczestniczy w tym wydarzeniu</div>

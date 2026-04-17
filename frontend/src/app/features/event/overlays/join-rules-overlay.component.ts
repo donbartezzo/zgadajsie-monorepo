@@ -68,7 +68,7 @@ export class JoinRulesOverlayComponent {
     if (!uid) return [];
     return this.participants().filter(
       (p) =>
-        ((!p.isGuest && p.userId === uid) || (p.isGuest && p.addedByUserId === uid)) &&
+        ((!p.isGuest && p.userId === uid) || (p.isGuest && p.addedByUser?.id === uid)) &&
         (WITHOUT_SLOT_STATUSES as readonly string[]).includes(p.status),
     );
   });
@@ -148,7 +148,7 @@ export class JoinRulesOverlayComponent {
     const maxGuests = isOrganizer ? MAX_GUESTS_PER_ORGANIZER : MAX_GUESTS_PER_USER;
 
     const currentGuests = this.participants().filter(
-      (p) => p.isGuest && p.addedByUserId === currentUserId,
+      (p) => p.isGuest && p.addedByUser?.id === currentUserId,
     ).length;
 
     return Math.max(0, maxGuests - currentGuests);

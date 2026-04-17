@@ -103,7 +103,7 @@ export class ParticipantGridItemComponent {
   readonly isCurrentUserGuest = computed(() => {
     const participant = this.participant();
     if (!participant.isGuest) return false;
-    return participant.addedByUserId === this.currentUserId();
+    return participant.addedByUser?.id === this.currentUserId();
   });
 
   readonly isCurrentUser = computed(() => this.participant().userId === this.currentUserId());
@@ -171,7 +171,11 @@ export class ParticipantGridItemComponent {
     }
 
     if (this.isAccountUnverified()) {
-      indicators.push({ icon: 'alert-triangle', tooltip: 'Konto niezweryfikowane', color: 'warning' });
+      indicators.push({
+        icon: 'alert-triangle',
+        tooltip: 'Konto niezweryfikowane',
+        color: 'warning',
+      });
     }
 
     const avatarStatus = this.avatarStatus();

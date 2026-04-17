@@ -50,7 +50,7 @@ export class EventUserParticipantsComponent {
     const uid = this.currentUserId();
     if (!uid) return [];
     return this.participants().filter(
-      (p) => (!p.isGuest && p.userId === uid) || (p.isGuest && p.addedByUserId === uid),
+      (p) => (!p.isGuest && p.userId === uid) || (p.isGuest && p.addedByUser?.id === uid),
     );
   });
 
