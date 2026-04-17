@@ -43,11 +43,13 @@ import { ParticipantGridItemComponent, SlotItem } from './participant-grid-item.
         </h4>
 
         @if (showCapacity()) {
-          <app-capacity-progress [current]="current()" [max]="max()" />
+          <div class="mx-8">
+            <app-capacity-progress [current]="current()" [max]="max()" />
+          </div>
         }
       </div>
 
-      <div class="flex flex-wrap justify-center gap-3">
+      <div class="flex flex-wrap justify-center gap-1">
         @for (item of items(); track $index) {
           @if (item.participant) {
             <app-participant-grid-item

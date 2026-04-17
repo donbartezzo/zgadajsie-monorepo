@@ -98,13 +98,13 @@ export const SLOT_STATUS_CONFIG: Record<SlotDisplayStatus, SlotStatusConfig> = {
     title: 'Oczekujący',
     description: 'Czeka na wolne miejsce lub zatwierdzenie przez organizatora',
     icon: 'clock',
-    color: 'warning',
+    color: 'info',
   },
   withdrawn: {
     title: 'Wypisany',
     description: 'Zrezygnował z udziału lub został odrzucony',
     icon: 'user-x',
-    color: 'neutral',
+    color: 'danger',
   },
   free: {
     title: 'Wolne miejsce',
@@ -116,6 +116,6 @@ export const SLOT_STATUS_CONFIG: Record<SlotDisplayStatus, SlotStatusConfig> = {
     title: 'Nie uczestniczy',
     description: 'Użytkownik nie bierze udziału w tym wydarzeniu',
     icon: 'user',
-    color: 'danger',
+    color: 'neutral',
   },
 };
