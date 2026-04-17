@@ -47,11 +47,15 @@ export class ModerationController {
     @CurrentUser() user: AuthUser,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortDir') sortDir?: string,
   ) {
     return this.moderationService.getRelationsForOrganizer(
       user.id,
       page ? +page : 1,
       limit ? +limit : 20,
+      sortBy,
+      sortDir,
     );
   }
 

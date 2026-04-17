@@ -312,13 +312,21 @@ export class EnrollmentSlotModalComponent {
     const relation = this.organizerRelation();
     if (relation === undefined) return null;
     const isTrusted = relation?.isTrusted ?? false;
+    const trustedAt = relation?.trustedAt ?? null;
     return {
       isTrusted,
+      trustedAt: trustedAt ? formatDateTime(trustedAt) : null,
       label: isTrusted ? 'Uczestnik oznaczony jako zaufany' : 'Brak statusu zaufania',
       class: isTrusted
         ? 'border-success-200 bg-success-50 text-success-700'
         : 'border-neutral-200 bg-neutral-100 text-neutral-600',
     };
+  });
+
+  readonly banDate = computed(() => {
+    const relation = this.organizerRelation();
+    if (!relation?.bannedAt) return null;
+    return formatDateTime(relation.bannedAt);
   });
 
   readonly organizerActions = computed(() => {

@@ -222,13 +222,26 @@ export class ModerationService {
     });
   }
 
-  async getRelationsForOrganizer(organizerUserId: string, page = 1, limit = 20) {
+  async getRelationsForOrganizer(
+    organizerUserId: string,
+    page = 1,
+    limit = 20,
+    sortBy?: string,
+    sortDir?: string,
+  ) {
+    type SortableField = 'updatedAt' | 'createdAt' | 'trustedAt' | 'bannedAt';
+    const allowedFields: SortableField[] = ['updatedAt', 'createdAt', 'trustedAt', 'bannedAt'];
+    const field: SortableField = allowedFields.includes(sortBy as SortableField)
+      ? (sortBy as SortableField)
+      : 'updatedAt';
+    const direction = sortDir === 'asc' ? ('asc' as const) : ('desc' as const);
+
     const [data, total] = await Promise.all([
       this.prisma.organizerUserRelation.findMany({
         where: { organizerUserId },
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { [field]: direction },
         include: {
           targetUser: { select: { id: true, displayName: true, avatarUrl: true } },
         },

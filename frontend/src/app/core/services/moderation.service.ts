@@ -36,10 +36,16 @@ export class ModerationService {
     return this.http.delete<OrganizerUserRelation>(`${this.apiUrl}/trust/${targetUserId}`);
   }
 
-  getRelations(page = 1, limit = 20): Observable<OrganizerUserRelationListResponse> {
-    return this.http.get<OrganizerUserRelationListResponse>(`${this.apiUrl}/relations`, {
-      params: { page, limit },
-    });
+  getRelations(
+    page = 1,
+    limit = 20,
+    sortBy?: 'updatedAt' | 'createdAt' | 'trustedAt' | 'bannedAt',
+    sortDir?: 'asc' | 'desc',
+  ): Observable<OrganizerUserRelationListResponse> {
+    const params: Record<string, string | number> = { page, limit };
+    if (sortBy) { params['sortBy'] = sortBy; }
+    if (sortDir) { params['sortDir'] = sortDir; }
+    return this.http.get<OrganizerUserRelationListResponse>(`${this.apiUrl}/relations`, { params });
   }
 
   getRelation(targetUserId: string): Observable<OrganizerUserRelation | null> {

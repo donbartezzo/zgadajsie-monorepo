@@ -92,7 +92,8 @@
 
           <!-- Trust status (for organizer) -->
           @if (_trustStatus) {
-            <div class="mt-3 flex justify-center">
+            @let _banDate = banDate();
+            <div class="mt-3 flex flex-col items-center gap-1">
               <span
                 [class]="
                   'inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ' + _trustStatus.class
@@ -100,6 +101,12 @@
               >
                 {{ _trustStatus.label }}
               </span>
+              @if (_trustStatus.trustedAt) {
+                <span class="text-xs text-neutral-400">Zaufany od {{ _trustStatus.trustedAt }}</span>
+              }
+              @if (_banDate) {
+                <span class="text-xs text-danger-500">Zbanowany {{ _banDate }}</span>
+              }
             </div>
           }
 
