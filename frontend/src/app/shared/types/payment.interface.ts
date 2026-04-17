@@ -1,8 +1,8 @@
-import { UserBriefWithEmail, EventRef, ParticipationStatus } from './common.interface';
+import { UserBriefWithEmail, EventRef, EnrollmentStatus } from './common.interface';
 
 export interface Payment {
   id: string;
-  participationId: string;
+  enrollmentId: string;
   userId: string;
   eventId: string;
   amount: number;
@@ -45,10 +45,10 @@ export interface ParticipantPaymentInfo {
   paidAt: string | null;
 }
 
-export interface ParticipantManageItem {
+export interface EnrolleeManageItem {
   id: string;
   userId: string;
-  status: ParticipationStatus;
+  status: EnrollmentStatus;
   isGuest: boolean;
   addedByUserId?: string;
   addedByUser?: { id: string; displayName: string; avatarUrl: string | null } | null;
@@ -70,7 +70,7 @@ export interface EventSlotInfo {
   id: string;
   locked: boolean;
   roleKey: string | null;
-  participationId: string | null;
+  enrollmentId: string | null;
   confirmed: boolean;
   assignedAt: string | null;
   createdAt: string;
@@ -95,3 +95,6 @@ export interface CancelPaymentRequest {
 export interface LockSlotResponse {
   success: boolean;
 }
+
+/** @deprecated Use EnrolleeManageItem */
+export type ParticipantManageItem = EnrolleeManageItem;

@@ -21,7 +21,7 @@ import { featureFlags } from '../../common/config/feature-flags';
 
 const USER_SELECT = { id: true, displayName: true, avatarUrl: true, email: true };
 
-type ParticipationWithSlot = {
+type EnrollmentWithSlot = {
   wantsIn: boolean;
   withdrawnBy?: string | null;
   slot?: { confirmed: boolean } | null;
@@ -34,7 +34,7 @@ type JoinEventLike = {
   status: string;
 };
 
-function deriveStatus(p: ParticipationWithSlot): string {
+function deriveStatus(p: EnrollmentWithSlot): string {
   if (!p.wantsIn) {
     return p.withdrawnBy === 'ORGANIZER' ? 'REJECTED' : 'WITHDRAWN';
   }
@@ -44,13 +44,13 @@ function deriveStatus(p: ParticipationWithSlot): string {
   return 'PENDING';
 }
 
-function withDerivedStatus<T extends ParticipationWithSlot>(p: T): T & { status: string } {
+function withDerivedStatus<T extends EnrollmentWithSlot>(p: T): T & { status: string } {
   return { ...p, status: deriveStatus(p) };
 }
 
 @Injectable()
-export class ParticipationService {
-  private readonly logger = new Logger(ParticipationService.name);
+export class EnrollmentService {
+  private readonly logger = new Logger(EnrollmentService.name);
 
   constructor(
     private prisma: PrismaService,
@@ -77,7 +77,7 @@ export class ParticipationService {
     // Validate roleKey if event has roles
     const validatedRoleKey = this.validateRoleKey(roleConfig, roleKey);
 
-    const existing = await this.prisma.eventParticipation.findUnique({
+    const existing = await this.prisma.eventEnrollment.findUnique({
       where: { eventId_userId: { eventId, userId } },
       include: { slot: true },
     });
@@ -93,12 +93,12 @@ export class ParticipationService {
     // Organizer auto-confirmed with slot
     if (event.organizerId === userId) {
       const result = await this.prisma.$transaction(async (tx) => {
-        const participation = await tx.eventParticipation.create({
+        const participation = await tx.eventEnrollment.create({
           data: { eventId, userId, wantsIn: true, roleKey: validatedRoleKey },
           include: { user: { select: USER_SELECT } },
         });
         await this.slotService.assignSlot(eventId, participation.id, true, tx, validatedRoleKey);
-        const withSlot = await tx.eventParticipation.findUnique({
+        const withSlot = await tx.eventEnrollment.findUnique({
           where: { id: participation.id },
           include: { user: { select: USER_SELECT }, slot: true },
         });
@@ -210,7 +210,7 @@ export class ParticipationService {
       const freeSlots = await this.slotService.getFreeSlotCount(eventId, validatedRoleKey);
       if (freeSlots > 0) {
         const result = await this.prisma.$transaction(async (tx) => {
-          const participation = await tx.eventParticipation.create({
+          const participation = await tx.eventEnrollment.create({
             data: {
               eventId,
               userId: guestUser.id,
@@ -222,7 +222,7 @@ export class ParticipationService {
           });
           // confirmed=false because user (host) must confirm
           await this.slotService.assignSlot(eventId, participation.id, false, tx, validatedRoleKey);
-          const withSlot = await tx.eventParticipation.findUnique({
+          const withSlot = await tx.eventEnrollment.findUnique({
             where: { id: participation.id },
             include: { user: { select: USER_SELECT }, slot: true },
           });
@@ -245,7 +245,7 @@ export class ParticipationService {
           ? 'PRE_ENROLLMENT'
           : 'NO_SLOTS';
 
-    const participation = await this.prisma.eventParticipation.create({
+    const participation = await this.prisma.eventEnrollment.create({
       data: {
         eventId,
         userId: guestUser.id,
@@ -261,7 +261,7 @@ export class ParticipationService {
   }
 
   async updateGuestName(participationId: string, addedByUserId: string, displayName: string) {
-    const participation = await this.prisma.eventParticipation.findUnique({
+    const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: {
         user: true,
@@ -293,7 +293,7 @@ export class ParticipationService {
     };
   }
   async assignSlotToParticipant(participationId: string, organizerUserId: string) {
-    const participation = await this.prisma.eventParticipation.findUnique({
+    const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
     });
@@ -320,7 +320,7 @@ export class ParticipationService {
     // Assign slot (confirmed=false, user must confirm) and clear waitingReason
     await this.slotService.assignSlot(participation.eventId, participationId, false);
 
-    const updated = await this.prisma.eventParticipation.update({
+    const updated = await this.prisma.eventEnrollment.update({
       where: { id: participationId },
       data: { waitingReason: null },
       include: {
@@ -375,7 +375,7 @@ export class ParticipationService {
    * User confirms their slot (acknowledges they want to participate).
    */
   async confirmSlot(participationId: string, currentUserId: string) {
-    const participation = await this.prisma.eventParticipation.findUnique({
+    const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
     });
@@ -397,7 +397,7 @@ export class ParticipationService {
 
     await this.slotService.confirmSlot(participationId);
 
-    const updated = await this.prisma.eventParticipation.findUnique({
+    const updated = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: {
         user: { select: USER_SELECT },
@@ -414,7 +414,7 @@ export class ParticipationService {
    * Organizer releases a participant's slot (removes them from event).
    */
   async releaseSlotFromParticipant(participationId: string, organizerUserId: string) {
-    const participation = await this.prisma.eventParticipation.findUnique({
+    const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
     });
@@ -430,7 +430,7 @@ export class ParticipationService {
 
     // Transaction: set wantsIn=false + release slot
     await this.prisma.$transaction(async (tx) => {
-      await tx.eventParticipation.update({
+      await tx.eventEnrollment.update({
         where: { id: participationId },
         data: { wantsIn: false, withdrawnBy: 'ORGANIZER' },
       });
@@ -442,7 +442,7 @@ export class ParticipationService {
     // Cleanup payment intents
     await this.paymentsService.cleanupIntents(participationId, participation.event.organizerId);
 
-    const updated = await this.prisma.eventParticipation.findUnique({
+    const updated = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: {
         user: { select: USER_SELECT },
@@ -472,7 +472,7 @@ export class ParticipationService {
    * Blocked when Payment records exist (financial audit trail must be preserved).
    */
   async deleteParticipation(participationId: string, organizerUserId: string) {
-    const participation = await this.prisma.eventParticipation.findUnique({
+    const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true, payments: true },
     });
@@ -502,7 +502,7 @@ export class ParticipationService {
       if (hadSlot) {
         await this.slotService.releaseSlot(participationId, tx);
       }
-      await tx.eventParticipation.delete({ where: { id: participationId } });
+      await tx.eventEnrollment.delete({ where: { id: participationId } });
       if (guestUserId) {
         await tx.user.delete({ where: { id: guestUserId } });
       }
@@ -519,7 +519,7 @@ export class ParticipationService {
    * User leaves the event voluntarily.
    */
   async leave(participationId: string, currentUserId: string) {
-    const participation = await this.prisma.eventParticipation.findUnique({
+    const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
     });
@@ -538,7 +538,7 @@ export class ParticipationService {
 
     // Transaction: set wantsIn=false + release slot
     await this.prisma.$transaction(async (tx) => {
-      await tx.eventParticipation.update({
+      await tx.eventEnrollment.update({
         where: { id: participationId },
         data: { wantsIn: false, withdrawnBy: 'USER' },
       });
@@ -557,14 +557,14 @@ export class ParticipationService {
 
     this.notifyEventChanged(participation.eventId, 'all');
 
-    return this.prisma.eventParticipation.findUnique({
+    return this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { slot: true },
     });
   }
 
   async getActiveGuestsForHost(eventId: string, hostUserId: string) {
-    return this.prisma.eventParticipation.findMany({
+    return this.prisma.eventEnrollment.findMany({
       where: {
         eventId,
         addedByUserId: hostUserId,
@@ -584,7 +584,7 @@ export class ParticipationService {
       );
     }
 
-    const participation = await this.prisma.eventParticipation.findUnique({
+    const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
     });
@@ -670,7 +670,7 @@ export class ParticipationService {
     roleKey?: string,
     availableRoles?: AvailableRole[],
   ) {
-    const participation = await this.prisma.eventParticipation.create({
+    const participation = await this.prisma.eventEnrollment.create({
       data: { eventId, userId, wantsIn: true, roleKey, waitingReason },
       include: { user: { select: USER_SELECT }, slot: true },
     });
@@ -767,7 +767,7 @@ export class ParticipationService {
 
     // Eligible + free slot → assign slot (confirmed=true for free events, false for paid)
     const result = await this.prisma.$transaction(async (tx) => {
-      const participation = await tx.eventParticipation.create({
+      const participation = await tx.eventEnrollment.create({
         data: { eventId, userId, wantsIn: true, roleKey },
         include: { user: { select: USER_SELECT } },
       });
@@ -776,7 +776,7 @@ export class ParticipationService {
       const confirmed = !isPaid;
       await this.slotService.assignSlot(eventId, participation.id, confirmed, tx, roleKey);
 
-      const withSlot = await tx.eventParticipation.findUnique({
+      const withSlot = await tx.eventEnrollment.findUnique({
         where: { id: participation.id },
         include: { user: { select: USER_SELECT }, slot: true },
       });
@@ -848,7 +848,7 @@ export class ParticipationService {
     const roleConfig = event.roleConfig as unknown as EventRoleConfig | null;
 
     // Reset to wanting-in state (update roleKey if provided)
-    await this.prisma.eventParticipation.update({
+    await this.prisma.eventEnrollment.update({
       where: { id: participationId },
       data: { wantsIn: true, withdrawnBy: null, roleKey },
       include: { user: { select: USER_SELECT }, slot: true },
@@ -857,7 +857,7 @@ export class ParticipationService {
     // Organizer always gets auto-confirmed slot on rejoin
     if (event.organizerId === userId) {
       await this.slotService.assignSlot(event.id, participationId, true, undefined, roleKey);
-      const withSlot = await this.prisma.eventParticipation.findUnique({
+      const withSlot = await this.prisma.eventEnrollment.findUnique({
         where: { id: participationId },
         include: { user: { select: USER_SELECT }, slot: true },
       });
@@ -874,7 +874,7 @@ export class ParticipationService {
 
     // In pre-enrollment, stay as waiting
     if (phase !== 'OPEN_ENROLLMENT') {
-      const withReason = await this.prisma.eventParticipation.update({
+      const withReason = await this.prisma.eventEnrollment.update({
         where: { id: participationId },
         data: { waitingReason: 'PRE_ENROLLMENT' },
         include: { user: { select: USER_SELECT }, slot: true },
@@ -895,7 +895,7 @@ export class ParticipationService {
     ]);
 
     if (isBanned) {
-      const withReason = await this.prisma.eventParticipation.update({
+      const withReason = await this.prisma.eventEnrollment.update({
         where: { id: participationId },
         data: { waitingReason: 'BANNED' },
         include: { user: { select: USER_SELECT }, slot: true },
@@ -910,7 +910,7 @@ export class ParticipationService {
     }
 
     if (isNew) {
-      const withReason = await this.prisma.eventParticipation.update({
+      const withReason = await this.prisma.eventEnrollment.update({
         where: { id: participationId },
         data: { waitingReason: 'NEW_USER' },
         include: { user: { select: USER_SELECT }, slot: true },
@@ -931,7 +931,7 @@ export class ParticipationService {
       if (roleKey && roleConfig) {
         const availableRoles = await this.slotService.getAvailableRoles(event.id, roleConfig);
         if (availableRoles.length > 0) {
-          const withReason = await this.prisma.eventParticipation.update({
+          const withReason = await this.prisma.eventEnrollment.update({
             where: { id: participationId },
             data: { waitingReason: 'NO_SLOTS_FOR_ROLE' },
             include: { user: { select: USER_SELECT }, slot: true },
@@ -946,7 +946,7 @@ export class ParticipationService {
           };
         }
       }
-      const withReason = await this.prisma.eventParticipation.update({
+      const withReason = await this.prisma.eventEnrollment.update({
         where: { id: participationId },
         data: { waitingReason: 'NO_SLOTS' },
         include: { user: { select: USER_SELECT }, slot: true },
@@ -964,7 +964,7 @@ export class ParticipationService {
     const confirmed = !isPaid;
     await this.slotService.assignSlot(event.id, participationId, confirmed, undefined, roleKey);
 
-    const withSlot = await this.prisma.eventParticipation.findUnique({
+    const withSlot = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { user: { select: USER_SELECT }, slot: true },
     });
@@ -989,7 +989,7 @@ export class ParticipationService {
    * - APPROVED/CONFIRMED: release current slot, update roleKey, try to get new slot
    */
   async changeRole(participationId: string, currentUserId: string, newRoleKey: string) {
-    const participation = await this.prisma.eventParticipation.findUnique({
+    const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
     });
@@ -1032,7 +1032,7 @@ export class ParticipationService {
     const hadSlot = !!participation.slot;
     if (hadSlot) {
       await this.prisma.$transaction(async (tx) => {
-        await tx.eventParticipation.update({
+        await tx.eventEnrollment.update({
           where: { id: participationId },
           data: { roleKey: validatedRoleKey },
         });
@@ -1040,7 +1040,7 @@ export class ParticipationService {
       });
     } else {
       // PENDING → just update roleKey
-      await this.prisma.eventParticipation.update({
+      await this.prisma.eventEnrollment.update({
         where: { id: participationId },
         data: { roleKey: validatedRoleKey, waitingReason: null },
       });
@@ -1055,12 +1055,12 @@ export class ParticipationService {
     // Try to assign slot for the new role
     if (phase === 'OPEN_ENROLLMENT') {
       if (isBannedCR) {
-        await this.prisma.eventParticipation.update({
+        await this.prisma.eventEnrollment.update({
           where: { id: participationId },
           data: { waitingReason: 'BANNED' },
         });
       } else if (isNewCR) {
-        await this.prisma.eventParticipation.update({
+        await this.prisma.eventEnrollment.update({
           where: { id: participationId },
           data: { waitingReason: 'NEW_USER' },
         });
@@ -1077,20 +1077,20 @@ export class ParticipationService {
         } else {
           const allFreeSlots = await this.slotService.getFreeSlotCount(event.id);
           const waitingReason = allFreeSlots > 0 ? 'NO_SLOTS_FOR_ROLE' : 'NO_SLOTS';
-          await this.prisma.eventParticipation.update({
+          await this.prisma.eventEnrollment.update({
             where: { id: participationId },
             data: { waitingReason },
           });
         }
       }
     } else {
-      await this.prisma.eventParticipation.update({
+      await this.prisma.eventEnrollment.update({
         where: { id: participationId },
         data: { waitingReason: 'PRE_ENROLLMENT' },
       });
     }
 
-    const updated = await this.prisma.eventParticipation.findUnique({
+    const updated = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { user: { select: USER_SELECT }, slot: true },
     });
@@ -1112,7 +1112,7 @@ export class ParticipationService {
    * — prevents creating a new User entity and bypassing the unique constraint.
    */
   async rejoinById(participationId: string, currentUserId: string) {
-    const participation = await this.prisma.eventParticipation.findUnique({
+    const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
     });
@@ -1218,7 +1218,7 @@ export class ParticipationService {
   private notifyWaitingAboutFreeSlot(eventId: string, eventTitle: string): void {
     setImmediate(async () => {
       try {
-        const waiting = await this.prisma.eventParticipation.findMany({
+        const waiting = await this.prisma.eventEnrollment.findMany({
           where: {
             eventId,
             wantsIn: true,

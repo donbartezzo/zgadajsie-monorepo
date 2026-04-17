@@ -62,13 +62,13 @@
         <div class="flex flex-wrap justify-center gap-1">
           @for (item of group.items; track $index) {
             @if (item.participant) {
-              <app-participant-grid-item
+              <app-enrollment-grid-item
                 [participant]="item.participant"
                 [currentUserId]="currentUserId()"
                 (clicked)="itemClicked.emit(item)"
               />
             } @else {
-              <app-participant-grid-item-empty
+              <app-enrollment-grid-item-empty
                 [variant]="item.slotData.locked ? 'locked' : 'free'"
                 (clicked)="itemClicked.emit(item)"
               />

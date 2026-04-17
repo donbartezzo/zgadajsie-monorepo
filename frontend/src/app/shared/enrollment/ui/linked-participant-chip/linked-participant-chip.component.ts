@@ -3,9 +3,9 @@ import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.co
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { ModalService } from '../../../ui/modal/modal.service';
 import {
-  ParticipantSlotModalComponent,
-  ParticipantModalData,
-} from '../participant-slot-modal/participant-slot-modal.component';
+  EnrollmentSlotModalComponent,
+  EnrollmentModalData,
+} from '../enrollment-slot-modal/enrollment-slot-modal.component';
 import { Participation, ParticipantManageItem } from '../../../types';
 import { Event } from '../../../types/event.interface';
 import { EventSlotInfo } from '../../../types/payment.interface';
@@ -64,20 +64,20 @@ export class LinkedParticipantChipComponent {
 
     if (p && e) {
       const slot = this.resolveSlot(p);
-      const data: ParticipantModalData = {
+      const data: EnrollmentModalData = {
         participant: p,
         slot,
         event: e,
         allParticipants: this.allParticipants(),
       };
       this.modalService.close();
-      this.modalService.open(ParticipantSlotModalComponent, { data });
+      this.modalService.open(EnrollmentSlotModalComponent, { data });
       return;
     }
 
     const user = this.userInfo();
     if (user && e) {
-      const data: ParticipantModalData = {
+      const data: EnrollmentModalData = {
         participant: null,
         slot: null,
         event: e,
@@ -85,7 +85,7 @@ export class LinkedParticipantChipComponent {
         userInfo: user,
       };
       this.modalService.close();
-      this.modalService.open(ParticipantSlotModalComponent, { data });
+      this.modalService.open(EnrollmentSlotModalComponent, { data });
     }
   }
 

@@ -24,7 +24,7 @@ export class ApprovalReminderCron {
     );
 
     // Find participations with slot assigned ~24h ago but not yet confirmed (pending payment)
-    const participations = await this.prisma.eventParticipation.findMany({
+    const participations = await this.prisma.eventEnrollment.findMany({
       where: {
         wantsIn: true,
         slot: {

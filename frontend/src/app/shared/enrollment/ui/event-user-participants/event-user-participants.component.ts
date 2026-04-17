@@ -10,8 +10,8 @@ import {
 import { TranslocoPipe } from '@jsverse/transloco';
 import { Participation } from '../../../types';
 import { ParticipationStatus } from '../../../types/common.interface';
-import { ParticipantGridItemComponent } from '../participant-grid/participant-grid-item.component';
-import { ParticipantGridItemEmptyComponent } from '../participant-grid/participant-grid-item-empty.component';
+import { EnrollmentGridItemComponent } from '../enrollment-grid/enrollment-grid-item.component';
+import { EnrollmentGridItemEmptyComponent } from '../enrollment-grid/enrollment-grid-item-empty.component';
 
 type ParticipantFilter = 'all' | 'without-slot' | 'role';
 
@@ -19,7 +19,7 @@ const WITHOUT_SLOT_STATUSES: ParticipationStatus[] = ['PENDING', 'WITHDRAWN', 'R
 
 @Component({
   selector: 'app-event-user-participants',
-  imports: [ParticipantGridItemComponent, ParticipantGridItemEmptyComponent, TranslocoPipe],
+  imports: [EnrollmentGridItemComponent, EnrollmentGridItemEmptyComponent, TranslocoPipe],
   templateUrl: './event-user-participants.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

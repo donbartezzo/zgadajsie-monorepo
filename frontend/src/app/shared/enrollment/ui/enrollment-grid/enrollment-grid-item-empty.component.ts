@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 import { IconComponent } from '../../../ui/icon/icon.component';
 
 @Component({
-  selector: 'app-participant-grid-item-empty',
+  selector: 'app-enrollment-grid-item-empty',
   imports: [IconComponent],
   template: `
     @let _icon = resolvedIcon();
@@ -31,7 +31,7 @@ import { IconComponent } from '../../../ui/icon/icon.component';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParticipantGridItemEmptyComponent {
+export class EnrollmentGridItemEmptyComponent {
   readonly icon = input<string | null>(null);
   readonly variant = input<'add' | 'free' | 'locked'>('free');
   readonly iconSize = input<'xs' | 'sm' | 'md' | 'lg'>('lg');

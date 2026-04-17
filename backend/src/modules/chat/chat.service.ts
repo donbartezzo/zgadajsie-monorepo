@@ -200,7 +200,7 @@ export class ChatService {
     if (!event) {
       throw new NotFoundException('Wydarzenie nie istnieje');
     }
-    const participations = await this.prisma.eventParticipation.findMany({
+    const participations = await this.prisma.eventEnrollment.findMany({
       where: { eventId },
       include: { user: { select: USER_SELECT }, slot: true },
     });
@@ -243,7 +243,7 @@ export class ChatService {
     // Organizer always has access
     if (event.organizerId === userId) return true;
 
-    const participation = await this.prisma.eventParticipation.findUnique({
+    const participation = await this.prisma.eventEnrollment.findUnique({
       where: { eventId_userId: { eventId, userId } },
     });
 
@@ -293,7 +293,7 @@ export class ChatService {
 
     // If user is organizer, check that other user is a participant
     if (isOrganizer) {
-      const otherParticipation = await this.prisma.eventParticipation.findUnique({
+      const otherParticipation = await this.prisma.eventEnrollment.findUnique({
         where: { eventId_userId: { eventId, userId: otherUserId } },
       });
       if (!otherParticipation) {
@@ -304,7 +304,7 @@ export class ChatService {
     }
 
     // If user is participant, check their participation status
-    const participation = await this.prisma.eventParticipation.findUnique({
+    const participation = await this.prisma.eventEnrollment.findUnique({
       where: { eventId_userId: { eventId, userId } },
     });
 

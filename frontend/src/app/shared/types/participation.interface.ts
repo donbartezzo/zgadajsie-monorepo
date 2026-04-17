@@ -1,11 +1,11 @@
 import { ParticipantPaymentInfo, EventSlotInfo } from './payment.interface';
-export type { ParticipationStatus } from './common.interface';
-import type { ParticipationStatus } from './common.interface';
+export type { EnrollmentStatus, ParticipationStatus } from './common.interface';
+import type { EnrollmentStatus } from './common.interface';
 
 export interface EventSlot {
   id: string;
   eventId: string;
-  participationId: string | null;
+  enrollmentId: string | null;
   roleKey: string | null;
   confirmed: boolean;
   assignedAt: string | null;
@@ -33,7 +33,7 @@ export interface AddedByUser {
   avatarUrl: string | null;
 }
 
-export interface Participation {
+export interface Enrollment {
   id: string;
   eventId: string;
   userId: string;
@@ -45,17 +45,13 @@ export interface Participation {
   createdAt: string;
   updatedAt: string;
 
-  // Derived status (computed by backend, always present in API responses)
-  status: ParticipationStatus;
+  status: EnrollmentStatus;
   slot?: EventSlotInfo | null;
 
-  // Reason why user is waiting (only present when status is PENDING)
   waitingReason?: WaitingReason | null;
 
-  // Payment info (for organizer view)
   payment: ParticipantPaymentInfo | null;
 
-  // Available roles when waitingReason is NO_SLOTS_FOR_ROLE
   availableRoles?: AvailableRole[] | null;
 
   event?: {
@@ -75,3 +71,6 @@ export interface Participation {
     isEmailVerified?: boolean;
   };
 }
+
+/** @deprecated Use Enrollment */
+export type Participation = Enrollment;

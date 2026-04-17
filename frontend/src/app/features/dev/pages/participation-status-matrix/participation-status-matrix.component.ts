@@ -13,7 +13,7 @@ import {
   type SlotDisplayStatus,
   type SlotStatusConfig,
   type SlotColorClasses,
-} from '../../../../shared/participant/slot-status-config';
+} from '../../../../shared/enrollment/slot-status-config';
 
 interface SectionItem {
   id: string;
@@ -474,7 +474,7 @@ export class ParticipationStatusMatrixComponent {
 
   private getSlotExample(key: SlotDisplayStatus): string {
     switch (key) {
-      case 'participant':
+      case 'assigned':
         return 'Jan Kowalski — CONFIRMED, slot potwierdzony, wydarzenie darmowe';
       case 'pending':
         return 'Anna Nowak — PENDING, czeka na wolne miejsce (NO_SLOTS)';

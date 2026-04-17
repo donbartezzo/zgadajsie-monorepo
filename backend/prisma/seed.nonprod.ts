@@ -25,7 +25,7 @@ async function main() {
   await prisma.payment.deleteMany({});
   await prisma.organizerVoucher.deleteMany({});
   await prisma.eventSlot.deleteMany({});
-  await prisma.eventParticipation.deleteMany({});
+  await prisma.eventEnrollment.deleteMany({});
   await prisma.reprimand.deleteMany({});
   await prisma.organizerUserRelation.deleteMany({});
   await prisma.notification.deleteMany({});
@@ -371,16 +371,16 @@ async function main() {
 
   // Add participant with confirmed slot
   async function addConfirmedParticipant(eventId: string, userId: string) {
-    const p = await prisma.eventParticipation.create({
+    const p = await prisma.eventEnrollment.create({
       data: { eventId, userId, wantsIn: true },
     });
     const slot = await prisma.eventSlot.findFirst({
-      where: { eventId, participationId: null },
+      where: { eventId, enrollmentId: null },
     });
     if (slot) {
       await prisma.eventSlot.update({
         where: { id: slot.id },
-        data: { participationId: p.id, confirmed: true, assignedAt: new Date() },
+        data: { enrollmentId: p.id, confirmed: true, assignedAt: new Date() },
       });
     }
     return p;
@@ -388,16 +388,16 @@ async function main() {
 
   // Add participant with unconfirmed slot (APPROVED)
   async function addApprovedParticipant(eventId: string, userId: string) {
-    const p = await prisma.eventParticipation.create({
+    const p = await prisma.eventEnrollment.create({
       data: { eventId, userId, wantsIn: true },
     });
     const slot = await prisma.eventSlot.findFirst({
-      where: { eventId, participationId: null },
+      where: { eventId, enrollmentId: null },
     });
     if (slot) {
       await prisma.eventSlot.update({
         where: { id: slot.id },
-        data: { participationId: p.id, confirmed: false, assignedAt: new Date() },
+        data: { enrollmentId: p.id, confirmed: false, assignedAt: new Date() },
       });
     }
     return p;
@@ -405,7 +405,7 @@ async function main() {
 
   // Add waiting participant (no slot)
   async function addWaitingParticipant(eventId: string, userId: string) {
-    return prisma.eventParticipation.create({
+    return prisma.eventEnrollment.create({
       data: { eventId, userId, wantsIn: true },
     });
   }
@@ -416,13 +416,13 @@ async function main() {
     userId: string,
     by: 'USER' | 'ORGANIZER' = 'USER',
   ) {
-    return prisma.eventParticipation.create({
+    return prisma.eventEnrollment.create({
       data: { eventId, userId, wantsIn: false, withdrawnBy: by },
     });
   }
 
   async function addBannedParticipant(eventId: string, userId: string, reason: string) {
-    const participant = await prisma.eventParticipation.create({
+    const participant = await prisma.eventEnrollment.create({
       data: { eventId, userId, wantsIn: false, withdrawnBy: 'ORGANIZER' },
     });
 
@@ -439,7 +439,7 @@ async function main() {
   }
 
   async function addPayment(
-    participationId: string,
+    enrollmentId: string,
     userId: string,
     eventId: string,
     amount: number,
@@ -449,7 +449,7 @@ async function main() {
   ) {
     return prisma.payment.create({
       data: {
-        participationId,
+        enrollmentId,
         userId,
         eventId,
         amount,
@@ -499,7 +499,7 @@ async function main() {
   await addConfirmedParticipant(ended1.id, tomek.id);
   await addPayment(
     (
-      await prisma.eventParticipation.findUniqueOrThrow({
+      await prisma.eventEnrollment.findUniqueOrThrow({
         where: { eventId_userId: { eventId: ended1.id, userId: anna.id } },
       })
     ).id,
@@ -509,7 +509,7 @@ async function main() {
   );
   await addPayment(
     (
-      await prisma.eventParticipation.findUniqueOrThrow({
+      await prisma.eventEnrollment.findUniqueOrThrow({
         where: { eventId_userId: { eventId: ended1.id, userId: marek.id } },
       })
     ).id,
@@ -627,7 +627,7 @@ async function main() {
   await addWaitingParticipant(ongoing1.id, magda.id);
   await addPayment(
     (
-      await prisma.eventParticipation.findUniqueOrThrow({
+      await prisma.eventEnrollment.findUniqueOrThrow({
         where: { eventId_userId: { eventId: ongoing1.id, userId: anna.id } },
       })
     ).id,
@@ -732,7 +732,7 @@ async function main() {
   await addWaitingParticipant(openEnroll2.id, sebastian.id);
   await addPayment(
     (
-      await prisma.eventParticipation.findUniqueOrThrow({
+      await prisma.eventEnrollment.findUniqueOrThrow({
         where: { eventId_userId: { eventId: openEnroll2.id, userId: anna.id } },
       })
     ).id,
@@ -742,7 +742,7 @@ async function main() {
   );
   await addPayment(
     (
-      await prisma.eventParticipation.findUniqueOrThrow({
+      await prisma.eventEnrollment.findUniqueOrThrow({
         where: { eventId_userId: { eventId: openEnroll2.id, userId: marek.id } },
       })
     ).id,

@@ -7,7 +7,7 @@ import { PrismaModule } from '../modules/prisma/prisma.module';
 import { AuthModule } from '../modules/auth/auth.module';
 import { UsersModule } from '../modules/users/users.module';
 import { EventsModule } from '../modules/events/events.module';
-import { ParticipationModule } from '../modules/participation/participation.module';
+import { EnrollmentModule } from '../modules/enrollment/enrollment.module';
 import { PaymentsModule } from '../modules/payments/payments.module';
 import { ChatModule } from '../modules/chat/chat.module';
 import { MediaModule } from '../modules/media/media.module';
@@ -29,7 +29,7 @@ import { SlotModule } from '../modules/slots/slot.module';
     AuthModule,
     UsersModule,
     EventsModule,
-    ParticipationModule,
+    EnrollmentModule,
     PaymentsModule,
     ChatModule,
     MediaModule,

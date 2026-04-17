@@ -82,8 +82,8 @@ export class EventsController {
   }
 
   @UseGuards(OptionalJwtAuthGuard)
-  @Get(':id/participants')
-  getParticipants(@Param('id') id: string) {
+  @Get(':id/enrollments')
+  getEnrollments(@Param('id') id: string) {
     return this.eventsService.getParticipants(id);
   }
 
@@ -93,13 +93,13 @@ export class EventsController {
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
-  @Post(':id/mark-paid/:participationId')
+  @Post(':id/mark-paid/:enrollmentId')
   markPaid(
     @Param('id') id: string,
-    @Param('participationId', ParseUUIDPipe) participationId: string,
+    @Param('enrollmentId', ParseUUIDPipe) enrollmentId: string,
     @CurrentUser() user: AuthUser,
   ) {
-    return this.eventsService.markPaid(id, participationId, user.id);
+    return this.eventsService.markPaid(id, enrollmentId, user.id);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)

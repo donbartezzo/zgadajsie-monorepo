@@ -39,7 +39,7 @@ export class EnrollmentEligibilityService {
   }
 
   async getGuestCount(eventId: string, addedByUserId: string): Promise<number> {
-    return this.prisma.eventParticipation.count({
+    return this.prisma.eventEnrollment.count({
       where: {
         eventId,
         addedByUserId,

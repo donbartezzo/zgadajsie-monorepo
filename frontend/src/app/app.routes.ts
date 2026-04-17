@@ -84,8 +84,8 @@ export const appRoutes: Route[] = [
       {
         path: 'participants',
         loadComponent: () =>
-          import('./features/event/pages/event-participants/event-participants.component').then(
-            (m) => m.EventParticipantsComponent,
+          import('./features/event/pages/event-enrollments/event-enrollments.component').then(
+            (m) => m.EventEnrollmentsComponent,
           ),
         canActivate: [verifiedUserGuard],
         resolve: setEventResolvedTitle('Lista uczestników wydarzenia'),

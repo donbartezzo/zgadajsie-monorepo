@@ -10,7 +10,7 @@ export class ActivityRankService {
     const thirtyDaysAgo = daysFromNow(-30);
 
     // Count participations with assigned slot (active participants)
-    const participationCount = await this.prisma.eventParticipation.count({
+    const participationCount = await this.prisma.eventEnrollment.count({
       where: {
         userId,
         wantsIn: true,

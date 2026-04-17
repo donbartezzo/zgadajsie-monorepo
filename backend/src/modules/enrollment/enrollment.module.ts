@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ParticipationController } from './participation.controller';
-import { ParticipationService } from './participation.service';
+import { EnrollmentController } from './enrollment.controller';
+import { EnrollmentService } from './enrollment.service';
 import { EnrollmentEligibilityService } from './enrollment-eligibility.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PaymentsModule } from '../payments/payments.module';
@@ -9,8 +9,8 @@ import { EventRealtimeModule } from '../realtime/event-realtime.module';
 
 @Module({
   imports: [NotificationsModule, PaymentsModule, SlotModule, EventRealtimeModule],
-  controllers: [ParticipationController],
-  providers: [ParticipationService, EnrollmentEligibilityService],
-  exports: [ParticipationService, EnrollmentEligibilityService],
+  controllers: [EnrollmentController],
+  providers: [EnrollmentService, EnrollmentEligibilityService],
+  exports: [EnrollmentService, EnrollmentEligibilityService],
 })
-export class ParticipationModule {}
+export class EnrollmentModule {}

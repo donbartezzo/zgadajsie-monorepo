@@ -21,7 +21,7 @@ export class PaymentsService {
 
   async cleanupIntents(participationId: string, organizerId: string) {
     const intents = await this.prisma.paymentIntent.findMany({
-      where: { participationId },
+      where: { enrollmentId: participationId },
     });
 
     for (const intent of intents) {
@@ -60,7 +60,7 @@ export class PaymentsService {
     if (voucherBalance >= amount) {
       const payment = await this.prisma.payment.create({
         data: {
-          participationId,
+          enrollmentId: participationId,
           userId,
           eventId,
           amount: new Decimal(amount),
@@ -76,7 +76,7 @@ export class PaymentsService {
 
       // Confirm the slot after successful payment
       await this.prisma.eventSlot.updateMany({
-        where: { participationId },
+        where: { enrollmentId: participationId },
         data: { confirmed: true },
       });
 
@@ -91,7 +91,7 @@ export class PaymentsService {
 
     const intent = await this.prisma.paymentIntent.create({
       data: {
-        participationId,
+        enrollmentId: participationId,
         userId,
         eventId,
         amount: new Decimal(amount),
@@ -139,7 +139,7 @@ export class PaymentsService {
     const intent = await this.prisma.paymentIntent.findFirst({
       where: { operatorTxId: verification.transactionId },
       include: {
-        participation: { include: { event: true } },
+        enrollment: { include: { event: true } },
       },
     });
 
@@ -159,7 +159,7 @@ export class PaymentsService {
       await this.prisma.$transaction(async (tx) => {
         await tx.payment.create({
           data: {
-            participationId: intent.participationId,
+            enrollmentId: intent.enrollmentId,
             userId: intent.userId,
             eventId: intent.eventId,
             amount: intent.amount,
@@ -174,7 +174,7 @@ export class PaymentsService {
 
         // Confirm the slot after successful payment
         await tx.eventSlot.updateMany({
-          where: { participationId: intent.participationId },
+          where: { enrollmentId: intent.enrollmentId },
           data: { confirmed: true },
         });
       });
@@ -191,7 +191,7 @@ export class PaymentsService {
       if (voucherReserved > 0) {
         await this.vouchersService.restoreVoucher(
           intent.userId,
-          intent.participation.event.organizerId,
+          intent.enrollment.event.organizerId,
           voucherReserved,
         );
       }
@@ -227,12 +227,12 @@ export class PaymentsService {
     const intent = await this.prisma.paymentIntent.findUnique({
       where: { id: intentId },
       select: {
-        participationId: true,
+        enrollmentId: true,
         userId: true,
         amount: true,
         voucherReserved: true,
         createdAt: true,
-        participation: {
+        enrollment: {
           select: {
             event: { select: { id: true, title: true, city: { select: { slug: true } } } },
           },
@@ -250,7 +250,7 @@ export class PaymentsService {
 
     // Check if a finalized Payment already exists for this participation
     const payment = await this.prisma.payment.findFirst({
-      where: { participationId: intent.participationId },
+      where: { enrollmentId: intent.enrollmentId },
       select: {
         id: true,
         status: true,
@@ -275,7 +275,7 @@ export class PaymentsService {
       voucherAmountUsed: intent.voucherReserved,
       paidAt: null,
       createdAt: intent.createdAt,
-      event: intent.participation.event,
+      event: intent.enrollment.event,
     };
   }
 
@@ -327,7 +327,7 @@ export class PaymentsService {
         event: {
           select: { id: true, title: true, organizerId: true, city: { select: { slug: true } } },
         },
-        participation: { select: { id: true, wantsIn: true }, include: { slot: true } },
+        enrollment: { select: { id: true, wantsIn: true }, include: { slot: true } },
       },
     });
     if (!payment) {
@@ -340,7 +340,7 @@ export class PaymentsService {
   async simulateSuccessfulPayment(intentId: string) {
     const intent = await this.prisma.paymentIntent.findUnique({
       where: { id: intentId },
-      include: { participation: { include: { event: true } } },
+      include: { enrollment: { include: { event: true } } },
     });
 
     if (!intent) {
@@ -349,7 +349,7 @@ export class PaymentsService {
 
     // Check if already processed (idempotent)
     const existing = await this.prisma.payment.findFirst({
-      where: { participationId: intent.participationId },
+      where: { enrollmentId: intent.enrollmentId },
     });
     if (existing) {
       return existing;
@@ -358,7 +358,7 @@ export class PaymentsService {
     const payment = await this.prisma.$transaction(async (tx) => {
       const payment = await tx.payment.create({
         data: {
-          participationId: intent.participationId,
+          enrollmentId: intent.enrollmentId,
           userId: intent.userId,
           eventId: intent.eventId,
           amount: intent.amount,
@@ -374,7 +374,7 @@ export class PaymentsService {
 
       // Confirm the slot after successful payment
       await tx.eventSlot.updateMany({
-        where: { participationId: intent.participationId },
+        where: { enrollmentId: intent.enrollmentId },
         data: { confirmed: true },
       });
 

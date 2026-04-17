@@ -51,7 +51,7 @@ W przypadku rozbieżności nadrzędne są:
 - `GET /users/me` - `auth`
 - `PATCH /users/me` - `auth`
 - `GET /users/me/events` - `auth + active`
-- `GET /users/me/participations` - `auth + active`
+- `GET /users/me/enrollments` - `auth + active`
 - `GET /users/me/reprimands` - `auth + active`
 
 ### Administracja użytkownikami
@@ -83,7 +83,7 @@ Publiczne endpointy słownikowe:
 
 - `GET /events`
 - `GET /events/:id` - `optional-auth`
-- `GET /events/:id/participants`
+- `GET /events/:id/enrollments`
 
 ### Dla zalogowanego aktywnego użytkownika
 
@@ -92,24 +92,24 @@ Publiczne endpointy słownikowe:
 - `DELETE /events/:id`
 - `POST /events/:id/cancel`
 - `POST /events/:id/duplicate`
-- `GET /events/:id/participants/manage`
-- `POST /events/:id/mark-paid/:participationId`
+- `GET /events/:id/enrollments/manage`
+- `POST /events/:id/mark-paid/:enrollmentId`
 - `POST /events/:id/cancel-payment/:paymentId`
 - `POST /events/series`
 - `PATCH /events/:id/series`
 
-## Participation (`/api`)
+## Enrollment (`/api`)
 
-Kontroler participation nie ma własnego prefixu kontrolera - endpointy są wystawiane bezpośrednio pod `/api/...`.
+Kontroler enrollment nie ma własnego prefixu kontrolera - endpointy są wystawiane bezpośrednio pod `/api/...`.
 
 - `POST /events/:eventId/join` - `auth + active`
 - `POST /events/:eventId/join-guest` - `auth + active`
 - `GET /events/:eventId/my-guests` - `auth + active`
-- `POST /participations/:id/assign-slot` - `auth + active`
-- `POST /participations/:id/confirm-slot` - `auth + active`
-- `POST /participations/:id/release-slot` - `auth + active`
-- `POST /participations/:id/leave` - `auth + active`
-- `POST /participations/:id/pay` - `auth + active`
+- `POST /enrollments/:id/assign-slot` - `auth + active`
+- `POST /enrollments/:id/confirm-slot` - `auth + active`
+- `POST /enrollments/:id/release-slot` - `auth + active`
+- `POST /enrollments/:id/leave` - `auth + active`
+- `POST /enrollments/:id/pay` - `auth + active`
 
 ## Chat (`/api/events/:eventId/chat`)
 

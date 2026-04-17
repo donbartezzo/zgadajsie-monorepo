@@ -72,7 +72,7 @@ export class UsersService {
   }
 
   async getMyParticipations(userId: string) {
-    return this.prisma.eventParticipation.findMany({
+    return this.prisma.eventEnrollment.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       include: {

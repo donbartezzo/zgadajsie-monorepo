@@ -109,7 +109,7 @@ export class EventAreaService {
     return this.currentUserParticipation()?.id ?? null;
   });
 
-  readonly isParticipant = computed(() => {
+  readonly isEnrolled = computed(() => {
     const p = this.currentUserParticipation();
     if (!p) return false;
     return p.status === 'PENDING' || p.status === 'APPROVED' || p.status === 'CONFIRMED';
@@ -148,22 +148,20 @@ export class EventAreaService {
 
   readonly maxSlots = computed(() => this.event()?.maxParticipants ?? 0);
 
-  readonly participantCount = computed(() => this.participants().length);
+  /** Liczba wszystkich zgłoszonych (wszystkie statusy). */
+  readonly enrollmentCount = computed(() => this.participants().length);
 
   /** Liczba uczestników z przydzielonym miejscem (APPROVED lub CONFIRMED). */
-  readonly slotCount = computed(
+  readonly participantCount = computed(
     () =>
       this.participants().filter((p) => p.status === 'APPROVED' || p.status === 'CONFIRMED').length,
   );
 
-  /** Liczba wszystkich zgłoszonych uczestników (w tym PENDING). */
-  readonly totalParticipations = computed(() => this.participants().length);
-
   /**
-   * Global helper method to calculate slot count from any participants array.
+   * Global helper method to calculate participant count (with assigned slot) from any participants array.
    * Used by event cards and other components that don't have full EventAreaService.
    */
-  static calculateSlotCount(participants: { status: string }[]): number {
+  static calculateParticipantCount(participants: { status: string }[]): number {
     return participants.filter((p) => p.status === 'APPROVED' || p.status === 'CONFIRMED').length;
   }
 
@@ -182,7 +180,7 @@ export class EventAreaService {
     const status = this.participantStatus();
     const isEnded = this.eventTimeStatus() === 'ENDED' || this.isCancelled();
 
-    if (this.isParticipant()) {
+    if (this.isEnrolled()) {
       bars.push(this.getParticipantBarConfig(status, isEnded));
     }
 
@@ -199,7 +197,7 @@ export class EventAreaService {
       });
     }
 
-    if (!this.isParticipant() && this.canJoin()) {
+    if (!this.isEnrolled() && this.canJoin()) {
       const phase = this.enrollmentPhase();
       bars.push({
         id: 'join',
@@ -523,7 +521,7 @@ export class EventAreaService {
     });
 
     // Setup overlay sync effects in injection context
-    effect(() => this.overlays.setEventContext(this.event(), this.isParticipant()));
+    effect(() => this.overlays.setEventContext(this.event(), this.isEnrolled()));
     effect(() => this.overlays.setIsOrganizer(this.isOrganizer()));
     effect(() => this.overlays.setLoading(this.joining()));
     effect(() => this.overlays.setParticipants(this.participants()));
@@ -575,7 +573,7 @@ export class EventAreaService {
 
   openJoinSheet(): void {
     if (this.auth.isLoggedIn()) {
-      if (this.isParticipant()) {
+      if (this.isEnrolled()) {
         this.openJoinConfirmOverlay();
       } else {
         this.overlays.open('joinRules');

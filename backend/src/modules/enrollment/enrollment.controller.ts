@@ -1,5 +1,5 @@
 import { Controller, Post, Get, Delete, Param, Body, UseGuards, Patch } from '@nestjs/common';
-import { ParticipationService } from './participation.service';
+import { EnrollmentService } from './enrollment.service';
 import { SlotService } from '../slots/slot.service';
 import { JoinEventDto, JoinGuestDto, ChangeRoleDto } from './dto/join-event.dto';
 import { UpdateGuestDto } from './dto/update-guest.dto';
@@ -10,9 +10,9 @@ import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
 @UseGuards(JwtAuthGuard, IsActiveGuard)
 @Controller()
-export class ParticipationController {
+export class EnrollmentController {
   constructor(
-    private participationService: ParticipationService,
+    private enrollmentService: EnrollmentService,
     private slotService: SlotService,
   ) {}
 
@@ -22,7 +22,7 @@ export class ParticipationController {
     @CurrentUser() user: AuthUser,
     @Body() dto: JoinEventDto,
   ) {
-    return this.participationService.join(eventId, user.id, dto.roleKey);
+    return this.enrollmentService.join(eventId, user.id, dto.roleKey);
   }
 
   @Post('events/:eventId/join-guest')
@@ -31,65 +31,65 @@ export class ParticipationController {
     @CurrentUser() user: AuthUser,
     @Body() dto: JoinGuestDto,
   ) {
-    return this.participationService.joinGuest(eventId, user.id, dto.displayName, dto.roleKey);
+    return this.enrollmentService.joinGuest(eventId, user.id, dto.displayName, dto.roleKey);
   }
 
-  @Patch('participations/:id/update-guest')
+  @Patch('enrollments/:id/update-guest')
   updateGuest(
-    @Param('id') participationId: string,
+    @Param('id') enrollmentId: string,
     @CurrentUser() user: AuthUser,
     @Body() dto: UpdateGuestDto,
   ) {
-    return this.participationService.updateGuestName(participationId, user.id, dto.displayName);
+    return this.enrollmentService.updateGuestName(enrollmentId, user.id, dto.displayName);
   }
 
-  @Post('participations/:id/assign-slot')
+  @Post('enrollments/:id/assign-slot')
   assignSlot(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.assignSlotToParticipant(id, user.id);
+    return this.enrollmentService.assignSlotToParticipant(id, user.id);
   }
 
-  @Post('participations/:id/confirm-slot')
+  @Post('enrollments/:id/confirm-slot')
   confirmSlot(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.confirmSlot(id, user.id);
+    return this.enrollmentService.confirmSlot(id, user.id);
   }
 
-  @Post('participations/:id/release-slot')
+  @Post('enrollments/:id/release-slot')
   releaseSlot(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.releaseSlotFromParticipant(id, user.id);
+    return this.enrollmentService.releaseSlotFromParticipant(id, user.id);
   }
 
-  @Patch('participations/:id/role')
+  @Patch('enrollments/:id/role')
   changeRole(
     @Param('id') id: string,
     @CurrentUser() user: AuthUser,
     @Body() dto: ChangeRoleDto,
   ) {
-    return this.participationService.changeRole(id, user.id, dto.roleKey);
+    return this.enrollmentService.changeRole(id, user.id, dto.roleKey);
   }
 
-  @Post('participations/:id/rejoin')
+  @Post('enrollments/:id/rejoin')
   rejoin(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.rejoinById(id, user.id);
+    return this.enrollmentService.rejoinById(id, user.id);
   }
 
-  @Delete('participations/:id')
-  deleteParticipation(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.deleteParticipation(id, user.id);
+  @Delete('enrollments/:id')
+  deleteEnrollment(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.enrollmentService.deleteParticipation(id, user.id);
   }
 
-  @Post('participations/:id/leave')
+  @Post('enrollments/:id/leave')
   leave(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.leave(id, user.id);
+    return this.enrollmentService.leave(id, user.id);
   }
 
-  @Post('participations/:id/pay')
+  @Post('enrollments/:id/pay')
   pay(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.initiateEventPayment(id, user.id);
+    return this.enrollmentService.initiateEventPayment(id, user.id);
   }
 
   @Get('events/:eventId/my-guests')
   getActiveGuests(@Param('eventId') eventId: string, @CurrentUser() user: AuthUser) {
-    return this.participationService.getActiveGuestsForHost(eventId, user.id);
+    return this.enrollmentService.getActiveGuestsForHost(eventId, user.id);
   }
 
   @Post('slots/:slotId/lock')
@@ -102,12 +102,12 @@ export class ParticipationController {
     return this.slotService.unlockSlotByOrganizer(slotId, user.id);
   }
 
-  @Post('slots/:slotId/assign-participant/:participationId')
+  @Post('slots/:slotId/assign-to-slot/:enrollmentId')
   assignToLockedSlot(
     @Param('slotId') slotId: string,
-    @Param('participationId') participationId: string,
+    @Param('enrollmentId') enrollmentId: string,
     @CurrentUser() user: AuthUser,
   ) {
-    return this.slotService.assignParticipantToLockedSlot(slotId, participationId, user.id);
+    return this.slotService.assignParticipantToLockedSlot(slotId, enrollmentId, user.id);
   }
 }

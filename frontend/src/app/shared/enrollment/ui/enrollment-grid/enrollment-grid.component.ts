@@ -1,47 +1,44 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IconComponent } from '../../../ui/icon/icon.component';
-import { Participation, ParticipantManageItem, EventRoleConfig } from '../../../types';
+import { Enrollment, EnrolleeManageItem, EventRoleConfig } from '../../../types';
 import { EventSlotInfo } from '../../../types/payment.interface';
 import { Event, EnrollmentPhase } from '../../../types/event.interface';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ModalService } from '../../../ui/modal/modal.service';
 import {
-  ParticipantSlotModalComponent,
-  ParticipantModalData,
-} from '../participant-slot-modal/participant-slot-modal.component';
+  EnrollmentSlotModalComponent,
+  EnrollmentModalData,
+} from '../enrollment-slot-modal/enrollment-slot-modal.component';
 import { type SlotStatusConfig, SLOT_STATUS_CONFIG } from '../../slot-status-config';
-import { SlotItem, SlotGroup, ParticipantItem } from './participant-grid-item.component';
-import { ParticipantGridSectionComponent } from './participant-grid-section.component';
+import { EnrollmentItem, SlotItem, SlotGroup } from './enrollment-grid-item.component';
+import { EnrollmentGridSectionComponent } from './enrollment-grid-section.component';
 
 interface GridSection {
-  type: 'participant' | 'pending' | 'withdrawn';
+  type: 'assigned' | 'pending' | 'withdrawn';
   groups: SlotGroup[];
   config: SlotStatusConfig;
   count: number | null;
 }
 
-// Participants who occupy a slot (have guaranteed place)
 const SLOT_STATUSES = ['APPROVED', 'CONFIRMED'];
-// Participants waiting for approval (no guaranteed place yet)
 const PENDING_STATUSES = ['PENDING'];
-// Participants who left or were removed
 const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
 
 @Component({
-  selector: 'app-participant-grid',
-  imports: [IconComponent, ParticipantGridSectionComponent],
-  templateUrl: './participant-grid.component.html',
+  selector: 'app-enrollment-grid',
+  imports: [IconComponent, EnrollmentGridSectionComponent],
+  templateUrl: './enrollment-grid.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParticipantGridComponent {
+export class EnrollmentGridComponent {
   private readonly auth = inject(AuthService);
   private readonly modalService = inject(ModalService);
 
   protected readonly statusConfig = SLOT_STATUS_CONFIG;
 
   readonly event = input.required<Event>();
-  readonly participants = input<ParticipantItem[]>([]);
+  readonly participants = input<EnrollmentItem[]>([]);
   readonly slots = input<EventSlotInfo[]>([]);
 
   readonly refreshNeeded = output<void>();
@@ -52,8 +49,6 @@ export class ParticipantGridComponent {
     });
   }
 
-  // ── Computed from event ──
-
   readonly enrollmentPhase = computed<EnrollmentPhase | null>(
     () => this.event().enrollmentPhase ?? null,
   );
@@ -63,8 +58,6 @@ export class ParticipantGridComponent {
   readonly roleConfig = computed<EventRoleConfig | null>(() => this.event().roleConfig ?? null);
 
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
-
-  // ── Derived computed ──
 
   readonly isPreEnrollment = computed(() => this.enrollmentPhase() === 'PRE_ENROLLMENT');
 
@@ -96,23 +89,19 @@ export class ParticipantGridComponent {
     })),
   );
 
-  // ── Sections ──
-
   readonly sections = computed<GridSection[]>(() => {
     const sections: GridSection[] = [];
 
-    // Participant section — all role groups inside one card
     const groups = this.slotGroups();
     if (groups.length > 0) {
       sections.push({
-        type: 'participant',
+        type: 'assigned',
         groups,
-        config: this.statusConfig.participant,
+        config: this.statusConfig.assigned,
         count: null,
       });
     }
 
-    // Pending section
     const pending = this.pendingParticipants();
     if (pending.length > 0) {
       sections.push({
@@ -130,7 +119,6 @@ export class ParticipantGridComponent {
       });
     }
 
-    // Withdrawn section
     const withdrawn = this.withdrawnParticipants();
     if (withdrawn.length > 0) {
       sections.push({
@@ -158,7 +146,7 @@ export class ParticipantGridComponent {
 
     if (config?.roles && config.roles.length > 1) {
       return config.roles.map((role) => {
-        const roleParticipants = occupied.filter((p) => this.getParticipantRoleKey(p) === role.key);
+        const roleParticipants = occupied.filter((p) => this.getEnrollmentRoleKey(p) === role.key);
         const items = this.buildSlotItems(allSlots, roleParticipants, role.slots || 0, role.key);
         return { role, items, occupiedCount: roleParticipants.length, totalSlots: role.slots || 0 };
       });
@@ -171,27 +159,27 @@ export class ParticipantGridComponent {
 
   onSlotItemClick(item: SlotItem): void {
     const slot = item.participant
-      ? this.findSlotForParticipant(item.participant)
+      ? this.findSlotForEnrollment(item.participant)
       : item.slotData.slot;
-    const data: ParticipantModalData = {
+    const data: EnrollmentModalData = {
       participant: item.participant,
       slot,
       event: this.event(),
       allParticipants: this.participants(),
     };
-    this.modalService.open(ParticipantSlotModalComponent, { data });
+    this.modalService.open(EnrollmentSlotModalComponent, { data });
   }
 
-  private getParticipantRoleKey(p: ParticipantItem): string | null | undefined {
-    if ('slot' in p && (p as ParticipantManageItem).slot?.roleKey) {
-      return (p as ParticipantManageItem).slot?.roleKey;
+  private getEnrollmentRoleKey(p: EnrollmentItem): string | null | undefined {
+    if ('slot' in p && (p as EnrolleeManageItem).slot?.roleKey) {
+      return (p as EnrolleeManageItem).slot?.roleKey;
     }
-    return (p as Participation).roleKey;
+    return (p as Enrollment).roleKey;
   }
 
   private buildSlotItems(
     allSlots: EventSlotInfo[],
-    participants: ParticipantItem[],
+    participants: EnrollmentItem[],
     totalSlots: number,
     roleKey: string | null,
   ): SlotItem[] {
@@ -199,7 +187,7 @@ export class ParticipantGridComponent {
       const roleSlots = roleKey ? allSlots.filter((s) => s.roleKey === roleKey) : allSlots;
       const items = roleSlots.map((slot) => ({
         slotData: { slotId: slot.id, locked: slot.locked, slot },
-        participant: participants.find((p) => slot.participationId === p.id) ?? null,
+        participant: participants.find((p) => slot.enrollmentId === p.id) ?? null,
       }));
       return items.sort((a, b) => {
         if (a.participant && !b.participant) return -1;
@@ -223,12 +211,12 @@ export class ParticipantGridComponent {
     return items;
   }
 
-  private findSlotForParticipant(p: ParticipantItem): EventSlotInfo | null {
-    if ('slot' in p && (p as ParticipantManageItem).slot) {
-      return (p as ParticipantManageItem).slot ?? null;
+  private findSlotForEnrollment(p: EnrollmentItem): EventSlotInfo | null {
+    if ('slot' in p && (p as EnrolleeManageItem).slot) {
+      return (p as EnrolleeManageItem).slot ?? null;
     }
-    const participation = p as Participation;
-    if (participation.slot) return participation.slot;
-    return this.slots().find((s) => s.participationId === p.id) ?? null;
+    const enrollment = p as Enrollment;
+    if (enrollment.slot) return enrollment.slot;
+    return this.slots().find((s) => s.enrollmentId === p.id) ?? null;
   }
 }

@@ -114,8 +114,8 @@ model User {
   citySubscriptions           CitySubscription[]
   organizedEvents             Event[]                 @relation("OrganizerEvents")
   announcements               EventAnnouncement[]     @relation("OrganizerAnnouncements")
-  addedParticipants           EventParticipation[]    @relation("AddedByUser")
-  participations              EventParticipation[]    @relation("UserParticipations")
+  addedEnrollments            EventEnrollment[]       @relation("AddedByUser")
+  enrollments                 EventEnrollment[]       @relation("UserEnrollments")
   mediaFiles                  MediaFile[]
   notifications               Notification[]
   organizerRelations          OrganizerUserRelation[] @relation("OrgRelOrganizer")
@@ -221,7 +221,7 @@ model Event {
   parentEvent       Event?               @relation("RecurringEvents", fields: [parentEventId], references: [id])
   childEvents       Event[]              @relation("RecurringEvents")
   announcements     EventAnnouncement[]
-  participations    EventParticipation[]
+  enrollments       EventEnrollment[]
   slots             EventSlot[]
   notifications     Notification[]       @relation("NotificationEvent")
   issuedVouchers    OrganizerVoucher[]
@@ -233,7 +233,7 @@ model Event {
   @@index([citySlug, status, startsAt])
 }
 
-model EventParticipation {
+model EventEnrollment {
   id            String       @id @default(uuid())
   eventId       String
   userId        String
@@ -246,50 +246,51 @@ model EventParticipation {
   waitingReason String?
   addedBy       User?        @relation("AddedByUser", fields: [addedByUserId], references: [id])
   event         Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user          User         @relation("UserParticipations", fields: [userId], references: [id])
+  user          User         @relation("UserEnrollments", fields: [userId], references: [id])
   slot          EventSlot?
   payments      Payment[]
   paymentIntents PaymentIntent[]
 
   @@unique([eventId, userId])
+  @@map("EventParticipation")
 }
 
 model EventSlot {
-  id              String              @id @default(uuid())
-  eventId         String
-  participationId String?             @unique
-  confirmed       Boolean             @default(false)
-  locked          Boolean             @default(false)
-  assignedAt      DateTime?
-  createdAt       DateTime            @default(now())
-  roleKey         String?
-  event           Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  participation   EventParticipation? @relation(fields: [participationId], references: [id])
+  id           String          @id @default(uuid())
+  eventId      String
+  enrollmentId String?         @unique         @map("participationId")
+  confirmed    Boolean         @default(false)
+  locked       Boolean         @default(false)
+  assignedAt   DateTime?
+  createdAt    DateTime        @default(now())
+  roleKey      String?
+  event        Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  enrollment   EventEnrollment? @relation(fields: [enrollmentId], references: [id])
 
   @@index([eventId])
   @@index([eventId, roleKey])
 }
 
 model PaymentIntent {
-  id              String             @id @default(uuid())
-  participationId String
-  userId          String
-  eventId         String
-  amount          Decimal            @db.Decimal(10, 2)
-  voucherReserved Decimal            @default(0) @db.Decimal(10, 2)
-  operatorTxId    String?
-  createdAt       DateTime           @default(now())
-  event           Event              @relation("EventPaymentIntents", fields: [eventId], references: [id])
-  participation   EventParticipation @relation(fields: [participationId], references: [id])
-  user            User               @relation("UserPaymentIntents", fields: [userId], references: [id])
+  id           String          @id @default(uuid())
+  enrollmentId String                        @map("participationId")
+  userId       String
+  eventId      String
+  amount       Decimal         @db.Decimal(10, 2)
+  voucherReserved Decimal      @default(0) @db.Decimal(10, 2)
+  operatorTxId String?
+  createdAt    DateTime        @default(now())
+  event        Event           @relation("EventPaymentIntents", fields: [eventId], references: [id])
+  enrollment   EventEnrollment @relation(fields: [enrollmentId], references: [id])
+  user         User            @relation("UserPaymentIntents", fields: [userId], references: [id])
 
   @@index([operatorTxId])
-  @@index([participationId])
+  @@index([enrollmentId])
 }
 
 model Payment {
   id                String             @id @default(uuid())
-  participationId   String
+  enrollmentId      String                         @map("participationId")
   userId            String
   eventId           String
   amount            Decimal            @db.Decimal(10, 2)
@@ -306,12 +307,12 @@ model Payment {
   voucherAmountUsed Decimal            @default(0) @db.Decimal(10, 2)
   issuedVouchers    OrganizerVoucher[] @relation("VoucherSourcePayment")
   event             Event              @relation("EventPayments", fields: [eventId], references: [id])
-  participation     EventParticipation @relation(fields: [participationId], references: [id])
+  enrollment        EventEnrollment    @relation(fields: [enrollmentId], references: [id])
   user              User               @relation("UserPayments", fields: [userId], references: [id])
 
   @@index([eventId, status])
   @@index([userId, createdAt])
-  @@index([participationId, createdAt])
+  @@index([enrollmentId, createdAt])
 }
 
 model OrganizerVoucher {

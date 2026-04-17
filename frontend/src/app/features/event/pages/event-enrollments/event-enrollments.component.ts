@@ -12,37 +12,35 @@ import { Subscription } from 'rxjs';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
-import { ParticipantGridComponent } from '../../../../shared/participant/ui/participant-grid/participant-grid.component';
+import { EnrollmentGridComponent } from '../../../../shared/enrollment/ui/enrollment-grid/enrollment-grid.component';
 import { EventStickyNotificationBarComponent } from '../../ui/event-sticky-notification-bar/event-sticky-notification-bar.component';
 import { EventService } from '../../../../core/services/event.service';
 import { EventAreaService } from '../../services/event-area.service';
 import { EventSlotInfo } from '../../../../shared/types';
 
 @Component({
-  selector: 'app-event-participants',
+  selector: 'app-event-enrollments',
   imports: [
     LoadingSpinnerComponent,
     EventHeroSlotsComponent,
-    ParticipantGridComponent,
+    EnrollmentGridComponent,
     EventStickyNotificationBarComponent,
   ],
-  templateUrl: './event-participants.component.html',
+  templateUrl: './event-enrollments.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EventParticipantsComponent implements AfterViewInit {
+export class EventEnrollmentsComponent implements AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   public readonly auth = inject(AuthService);
   protected readonly eventArea = inject(EventAreaService);
   private readonly eventService = inject(EventService);
 
-  // ── Delegated from EventAreaService ──
   readonly event = this.eventArea.event;
   readonly participants = this.eventArea.participants;
   readonly loading = this.eventArea.loading;
   readonly notificationBars = this.eventArea.notificationBars;
 
-  // ── Local state ──
   readonly slots = signal<EventSlotInfo[]>([]);
   private slotsSubscription: Subscription | null = null;
 

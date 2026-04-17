@@ -3,26 +3,26 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { CapacityProgressComponent } from '../../../ui/capacity-progress/capacity-progress.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { SlotStatusConfig, SLOT_COLOR_CLASSES } from '../../slot-status-config';
-import { ParticipantGridItemEmptyComponent } from './participant-grid-item-empty.component';
+import { EnrollmentGridItemEmptyComponent } from './enrollment-grid-item-empty.component';
 import {
-  ParticipantGridItemComponent,
+  EnrollmentGridItemComponent,
   SlotGroup,
   SlotItem,
-} from './participant-grid-item.component';
+} from './enrollment-grid-item.component';
 
 @Component({
-  selector: 'app-participant-grid-section',
+  selector: 'app-enrollment-grid-section',
   imports: [
     IconComponent,
     TranslocoPipe,
     CapacityProgressComponent,
-    ParticipantGridItemComponent,
-    ParticipantGridItemEmptyComponent,
+    EnrollmentGridItemComponent,
+    EnrollmentGridItemEmptyComponent,
   ],
-  templateUrl: './participant-grid-section.component.html',
+  templateUrl: './enrollment-grid-section.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParticipantGridSectionComponent {
+export class EnrollmentGridSectionComponent {
   readonly config = input.required<SlotStatusConfig>();
   readonly groups = input<SlotGroup[]>([]);
   readonly currentUserId = input<string | null>(null);

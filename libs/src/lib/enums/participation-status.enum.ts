@@ -1,7 +1,2 @@
-export enum ParticipationStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  CONFIRMED = 'CONFIRMED',
-  REJECTED = 'REJECTED',
-  WITHDRAWN = 'WITHDRAWN',
-}
+/** @deprecated Import from enrollment-status.enum instead */
+export { EnrollmentStatus, EnrollmentStatus as ParticipationStatus } from './enrollment-status.enum';

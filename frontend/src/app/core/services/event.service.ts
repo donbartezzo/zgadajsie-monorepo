@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 import {
   Event,
   EventListItem,
-  Participation,
+  Enrollment,
   EventSlotInfo,
   JoinGuestRequest,
   UpdateGuestResponse,
@@ -49,7 +49,6 @@ export class EventService {
   }
 
   getEventForDuplication(id: string): Observable<Event> {
-    // Specjalny endpoint który weryfikuje, czy użytkownik jest właścicielem wydarzenia
     return this.http.get<Event>(`${this.apiUrl}/${id}/duplicate`);
   }
 
@@ -69,105 +68,137 @@ export class EventService {
     return this.http.post<Event>(`${this.apiUrl}/${id}/duplicate`, {});
   }
 
-  getParticipants(eventId: string): Observable<Participation[]> {
-    return this.http.get<Participation[]>(`${this.apiUrl}/${eventId}/participants`);
+  getEnrollments(eventId: string): Observable<Enrollment[]> {
+    return this.http.get<Enrollment[]>(`${this.apiUrl}/${eventId}/enrollments`);
+  }
+
+  /** @deprecated Use getEnrollments */
+  getParticipants(eventId: string): Observable<Enrollment[]> {
+    return this.getEnrollments(eventId);
   }
 
   joinEvent(
     eventId: string,
     roleKey?: string,
-  ): Observable<Participation & { isPaid?: boolean; costPerPerson?: number }> {
+  ): Observable<Enrollment & { isPaid?: boolean; costPerPerson?: number }> {
     const body = roleKey ? { roleKey } : {};
-    return this.http.post<Participation & { isPaid?: boolean; costPerPerson?: number }>(
+    return this.http.post<Enrollment & { isPaid?: boolean; costPerPerson?: number }>(
       `${this.apiUrl}/${eventId}/join`,
       body,
     );
   }
 
-  payParticipation(
-    participationId: string,
+  payEnrollment(
+    enrollmentId: string,
   ): Observable<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
     return this.http.post<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }>(
-      `${environment.apiUrl}/participations/${participationId}/pay`,
+      `${environment.apiUrl}/enrollments/${enrollmentId}/pay`,
       {},
     );
   }
 
-  joinGuest(eventId: string, displayName: string, roleKey?: string): Observable<Participation> {
+  /** @deprecated Use payEnrollment */
+  payParticipation(
+    enrollmentId: string,
+  ): Observable<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
+    return this.payEnrollment(enrollmentId);
+  }
+
+  joinGuest(eventId: string, displayName: string, roleKey?: string): Observable<Enrollment> {
     const body: JoinGuestRequest = { displayName };
     if (roleKey) {
       body.roleKey = roleKey;
     }
-    return this.http.post<Participation>(`${this.apiUrl}/${eventId}/join-guest`, body);
+    return this.http.post<Enrollment>(`${this.apiUrl}/${eventId}/join-guest`, body);
   }
 
-  updateGuestName(participationId: string, displayName: string): Observable<UpdateGuestResponse> {
+  updateGuestName(enrollmentId: string, displayName: string): Observable<UpdateGuestResponse> {
     return this.http.patch<UpdateGuestResponse>(
-      `${environment.apiUrl}/participations/${participationId}/update-guest`,
+      `${environment.apiUrl}/enrollments/${enrollmentId}/update-guest`,
       { displayName },
     );
   }
 
-  changeParticipationRole(
-    participationId: string,
+  changeEnrollmentRole(
+    enrollmentId: string,
     roleKey: string,
-  ): Observable<Participation & { isPaid?: boolean; costPerPerson?: number }> {
-    return this.http.patch<Participation & { isPaid?: boolean; costPerPerson?: number }>(
-      `${environment.apiUrl}/participations/${participationId}/role`,
+  ): Observable<Enrollment & { isPaid?: boolean; costPerPerson?: number }> {
+    return this.http.patch<Enrollment & { isPaid?: boolean; costPerPerson?: number }>(
+      `${environment.apiUrl}/enrollments/${enrollmentId}/role`,
       { roleKey },
     );
   }
 
-  rejoinParticipation(participationId: string): Observable<Participation> {
-    return this.http.post<Participation>(
-      `${environment.apiUrl}/participations/${participationId}/rejoin`,
+  /** @deprecated Use changeEnrollmentRole */
+  changeParticipationRole(
+    enrollmentId: string,
+    roleKey: string,
+  ): Observable<Enrollment & { isPaid?: boolean; costPerPerson?: number }> {
+    return this.changeEnrollmentRole(enrollmentId, roleKey);
+  }
+
+  rejoinEnrollment(enrollmentId: string): Observable<Enrollment> {
+    return this.http.post<Enrollment>(
+      `${environment.apiUrl}/enrollments/${enrollmentId}/rejoin`,
       {},
     );
   }
 
-  leaveParticipation(participationId: string): Observable<void> {
-    return this.http.post<void>(
-      `${environment.apiUrl}/participations/${participationId}/leave`,
+  /** @deprecated Use rejoinEnrollment */
+  rejoinParticipation(enrollmentId: string): Observable<Enrollment> {
+    return this.rejoinEnrollment(enrollmentId);
+  }
+
+  leaveEnrollment(enrollmentId: string): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}/enrollments/${enrollmentId}/leave`, {});
+  }
+
+  /** @deprecated Use leaveEnrollment */
+  leaveParticipation(enrollmentId: string): Observable<void> {
+    return this.leaveEnrollment(enrollmentId);
+  }
+
+  assignSlot(enrollmentId: string): Observable<Enrollment> {
+    return this.http.post<Enrollment>(
+      `${environment.apiUrl}/enrollments/${enrollmentId}/assign-slot`,
       {},
     );
   }
 
-  assignSlot(participationId: string): Observable<Participation> {
-    return this.http.post<Participation>(
-      `${environment.apiUrl}/participations/${participationId}/assign-slot`,
+  confirmSlot(enrollmentId: string): Observable<Enrollment> {
+    return this.http.post<Enrollment>(
+      `${environment.apiUrl}/enrollments/${enrollmentId}/confirm-slot`,
       {},
     );
   }
 
-  confirmSlot(participationId: string): Observable<Participation> {
-    return this.http.post<Participation>(
-      `${environment.apiUrl}/participations/${participationId}/confirm-slot`,
+  releaseSlot(enrollmentId: string): Observable<Enrollment> {
+    return this.http.post<Enrollment>(
+      `${environment.apiUrl}/enrollments/${enrollmentId}/release-slot`,
       {},
     );
   }
 
-  releaseSlot(participationId: string): Observable<Participation> {
-    return this.http.post<Participation>(
-      `${environment.apiUrl}/participations/${participationId}/release-slot`,
-      {},
-    );
+  deleteEnrollment(enrollmentId: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/enrollments/${enrollmentId}`);
   }
 
-  deleteParticipation(participationId: string): Observable<void> {
-    return this.http.delete<void>(`${environment.apiUrl}/participations/${participationId}`);
+  /** @deprecated Use deleteEnrollment */
+  deleteParticipation(enrollmentId: string): Observable<void> {
+    return this.deleteEnrollment(enrollmentId);
   }
 
-  getMyGuests(eventId: string): Observable<Participation[]> {
-    return this.http.get<Participation[]>(`${this.apiUrl}/${eventId}/my-guests`);
+  getMyGuests(eventId: string): Observable<Enrollment[]> {
+    return this.http.get<Enrollment[]>(`${this.apiUrl}/${eventId}/my-guests`);
   }
 
   deleteEvent(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  markAsPaid(eventId: string, participationId: string): Observable<Participation[]> {
-    return this.http.post<Participation[]>(
-      `${this.apiUrl}/${eventId}/mark-paid/${participationId}`,
+  markAsPaid(eventId: string, enrollmentId: string): Observable<Enrollment[]> {
+    return this.http.post<Enrollment[]>(
+      `${this.apiUrl}/${eventId}/mark-paid/${enrollmentId}`,
       {},
     );
   }
@@ -176,8 +207,8 @@ export class EventService {
     eventId: string,
     paymentId: string,
     options: CancelPaymentRequest,
-  ): Observable<Participation[]> {
-    return this.http.post<Participation[]>(
+  ): Observable<Enrollment[]> {
+    return this.http.post<Enrollment[]>(
       `${this.apiUrl}/${eventId}/cancel-payment/${paymentId}`,
       options,
     );
@@ -195,10 +226,15 @@ export class EventService {
     return this.http.post<LockSlotResponse>(`${environment.apiUrl}/slots/${slotId}/unlock`, {});
   }
 
-  assignParticipantToSlot(slotId: string, participationId: string): Observable<unknown> {
+  assignToSlot(slotId: string, enrollmentId: string): Observable<unknown> {
     return this.http.post(
-      `${environment.apiUrl}/slots/${slotId}/assign-participant/${participationId}`,
+      `${environment.apiUrl}/slots/${slotId}/assign-to-slot/${enrollmentId}`,
       {},
     );
+  }
+
+  /** @deprecated Use assignToSlot */
+  assignParticipantToSlot(slotId: string, enrollmentId: string): Observable<unknown> {
+    return this.assignToSlot(slotId, enrollmentId);
   }
 }

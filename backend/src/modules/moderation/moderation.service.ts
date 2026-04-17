@@ -119,7 +119,7 @@ export class ModerationService {
     });
 
     // 3. Find all organizer's events where this user has an active slot, release them
-    const activeParticipations = await this.prisma.eventParticipation.findMany({
+    const activeParticipations = await this.prisma.eventEnrollment.findMany({
       where: {
         userId: dto.userId,
         wantsIn: true,
@@ -133,11 +133,11 @@ export class ModerationService {
         // Release the slot
         await this.prisma.eventSlot.update({
           where: { id: participation.slot.id },
-          data: { participationId: null, assignedAt: null, confirmed: false },
+          data: { enrollmentId: null, assignedAt: null, confirmed: false },
         });
       }
       // Mark as BANNED in waitingReason
-      await this.prisma.eventParticipation.update({
+      await this.prisma.eventEnrollment.update({
         where: { id: participation.id },
         data: { waitingReason: 'BANNED' },
       });
@@ -168,7 +168,7 @@ export class ModerationService {
     });
 
     // 2. Clear waitingReason=BANNED from active participations with this organizer
-    await this.prisma.eventParticipation.updateMany({
+    await this.prisma.eventEnrollment.updateMany({
       where: {
         userId: targetUserId,
         wantsIn: true,

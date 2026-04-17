@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { EventUserParticipantsComponent } from '../../../../shared/participant/ui/event-user-participants/event-user-participants.component';
+import { EventUserParticipantsComponent } from '../../../../shared/enrollment/ui/event-user-participants/event-user-participants.component';
 import { Participation } from '../../../../shared/types';
 
 @Component({

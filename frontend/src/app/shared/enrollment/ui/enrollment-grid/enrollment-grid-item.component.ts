@@ -5,11 +5,14 @@ import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.co
 import { BadgeComponent } from '../../../ui/badge/badge.component';
 import { EventSlotInfo } from '../../../types/payment.interface';
 import { DisciplineRole } from '@zgadajsie/shared';
-import { Participation, ParticipantManageItem } from '../../../types';
+import { Enrollment, EnrolleeManageItem } from '../../../types';
 import { SemanticColor } from '../../../types/colors';
 import { SlotDisplayStatus } from '../../slot-status-config';
 
-export type ParticipantItem = Participation | ParticipantManageItem;
+export type EnrollmentItem = Enrollment | EnrolleeManageItem;
+
+/** @deprecated Use EnrollmentItem */
+export type ParticipantItem = EnrollmentItem;
 
 export interface SlotData {
   slotId: string | undefined;
@@ -19,7 +22,7 @@ export interface SlotData {
 
 export interface SlotItem {
   slotData: SlotData;
-  participant: ParticipantItem | null;
+  participant: EnrollmentItem | null;
 }
 
 export interface SlotGroup {
@@ -30,7 +33,7 @@ export interface SlotGroup {
 }
 
 @Component({
-  selector: 'app-participant-grid-item',
+  selector: 'app-enrollment-grid-item',
   imports: [IconComponent, UserAvatarComponent, TranslocoPipe, BadgeComponent],
   template: `
     @let _statusIndicators = statusIndicators();
@@ -92,8 +95,8 @@ export interface SlotGroup {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParticipantGridItemComponent {
-  readonly participant = input.required<ParticipantItem>();
+export class EnrollmentGridItemComponent {
+  readonly participant = input.required<EnrollmentItem>();
   readonly currentUserId = input<string | null>(null);
   readonly showRole = input(false);
   readonly clicked = output<void>();
@@ -105,7 +108,7 @@ export class ParticipantGridItemComponent {
     const status = this.participant().status;
     if (status === 'PENDING') return 'pending';
     if (status === 'WITHDRAWN' || status === 'REJECTED') return 'withdrawn';
-    return 'participant';
+    return 'assigned';
   });
 
   readonly isCurrentUserGuest = computed(() => {
@@ -206,7 +209,6 @@ export class ParticipantGridItemComponent {
       ' hover:bg-neutral-50 focus:outline-hidden';
     const status = this.slotDisplayStatus();
 
-    // Current user and their guests: unified green styling
     if (this.isCurrentUserOrGuest()) {
       return `${base} ring-2 ring-primary-100 ring-dashed`;
     }

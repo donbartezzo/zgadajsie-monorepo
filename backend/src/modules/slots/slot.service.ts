@@ -40,7 +40,7 @@ export class SlotService {
       const slots: Array<{
         id: string;
         eventId: string;
-        participationId: null;
+        enrollmentId: null;
         roleKey: string;
         confirmed: boolean;
         assignedAt: null;
@@ -51,7 +51,7 @@ export class SlotService {
           slots.push({
             id: crypto.randomUUID(),
             eventId,
-            participationId: null,
+            enrollmentId: null,
             roleKey: role.key,
             confirmed: false,
             assignedAt: null,
@@ -70,7 +70,7 @@ export class SlotService {
       const slots = Array.from({ length: count }, () => ({
         id: crypto.randomUUID(),
         eventId,
-        participationId: null,
+        enrollmentId: null,
         roleKey: null,
         confirmed: false,
         assignedAt: null,
@@ -156,9 +156,9 @@ export class SlotService {
     const client = tx ?? this.prisma;
 
     const result = await client.eventSlot.updateMany({
-      where: { participationId },
+      where: { enrollmentId: participationId },
       data: {
-        participationId: null,
+        enrollmentId: null,
         confirmed: false,
         assignedAt: null,
       },
@@ -175,7 +175,7 @@ export class SlotService {
     const client = tx ?? this.prisma;
 
     const result = await client.eventSlot.updateMany({
-      where: { participationId },
+      where: { enrollmentId: participationId },
       data: { confirmed: true },
     });
 
@@ -187,7 +187,7 @@ export class SlotService {
    * If roleKey is provided, counts only slots with that role.
    */
   async getFreeSlotCount(eventId: string, roleKey?: string | null): Promise<number> {
-    const where: Prisma.EventSlotWhereInput = { eventId, participationId: null, locked: false };
+    const where: Prisma.EventSlotWhereInput = { eventId, enrollmentId: null, locked: false };
     if (roleKey !== undefined) {
       where.roleKey = roleKey;
     }
@@ -201,7 +201,7 @@ export class SlotService {
   async getFreeSlotsByRole(eventId: string): Promise<Map<string, number>> {
     const slots = await this.prisma.eventSlot.groupBy({
       by: ['roleKey'],
-      where: { eventId, participationId: null, locked: false },
+      where: { eventId, enrollmentId: null, locked: false },
       _count: { id: true },
     });
 
@@ -217,7 +217,7 @@ export class SlotService {
    */
   async getOccupiedSlotCount(eventId: string): Promise<number> {
     return this.prisma.eventSlot.count({
-      where: { eventId, participationId: { not: null } },
+      where: { eventId, enrollmentId: { not: null } },
     });
   }
 
@@ -240,7 +240,7 @@ export class SlotService {
     const slots = Array.from({ length: count }, () => ({
       id: crypto.randomUUID(),
       eventId,
-      participationId: null,
+      enrollmentId: null,
       roleKey: roleKey ?? null,
       confirmed: false,
       assignedAt: null,
@@ -269,7 +269,7 @@ export class SlotService {
         await this.addSlots(eventId, diff, role.key);
       } else if (diff < 0) {
         const toRemove = await this.prisma.eventSlot.findMany({
-          where: { eventId, roleKey: role.key, participationId: null },
+          where: { eventId, roleKey: role.key, enrollmentId: null },
           select: { id: true },
           orderBy: { locked: 'asc' },
           take: Math.abs(diff),
@@ -298,7 +298,7 @@ export class SlotService {
 
     // Find IDs of empty slots to delete (prefer non-locked first)
     const emptySlots = await this.prisma.eventSlot.findMany({
-      where: { eventId, participationId: null },
+      where: { eventId, enrollmentId: null },
       select: { id: true },
       orderBy: { locked: 'asc' },
       take: count,
@@ -367,7 +367,7 @@ export class SlotService {
     roleKey: string | null;
   } | null> {
     return this.prisma.eventSlot.findUnique({
-      where: { participationId },
+      where: { enrollmentId: participationId },
       select: { id: true, confirmed: true, assignedAt: true, roleKey: true },
     });
   }
@@ -377,7 +377,7 @@ export class SlotService {
    */
   async hasSlot(participationId: string): Promise<boolean> {
     const slot = await this.prisma.eventSlot.findUnique({
-      where: { participationId },
+      where: { enrollmentId: participationId },
       select: { id: true },
     });
     return slot !== null;
@@ -390,7 +390,7 @@ export class SlotService {
     return this.prisma.eventSlot.findMany({
       where: { eventId },
       include: {
-        participation: {
+        enrollment: {
           include: {
             user: {
               select: { id: true, displayName: true, avatarUrl: true },
@@ -460,13 +460,13 @@ export class SlotService {
     if (!slot.locked) {
       throw new BadRequestException('Slot nie jest zablokowany — użyj standardowego przydzielania');
     }
-    if (slot.participationId) {
+    if (slot.enrollmentId) {
       throw new BadRequestException('Slot jest już zajęty');
     }
 
     await client.eventSlot.update({
       where: { id: slotId },
-      data: { participationId, confirmed, assignedAt: new Date() },
+      data: { enrollmentId: participationId, confirmed, assignedAt: new Date() },
     });
 
     this.eventRealtime.invalidateEvent(slot.eventId, 'all');
@@ -537,7 +537,7 @@ export class SlotService {
     participationId: string,
     organizerUserId: string,
   ) {
-    const participation = await this.prisma.eventParticipation.findUnique({
+    const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
     });
@@ -559,7 +559,7 @@ export class SlotService {
 
     await this.assignToLockedSlot(slotId, participationId, confirmed);
 
-    const updated = await this.prisma.eventParticipation.update({
+    const updated = await this.prisma.eventEnrollment.update({
       where: { id: participationId },
       data: { waitingReason: null },
       include: {

@@ -39,7 +39,7 @@ export class EventReminderCron {
         startsAt: { gte: from, lt: to },
       },
       include: {
-        participations: {
+        enrollments: {
           where: { wantsIn: true, slot: { isNot: null } },
           include: {
             user: { select: { id: true, email: true, displayName: true } },
@@ -49,7 +49,7 @@ export class EventReminderCron {
     });
 
     for (const event of events) {
-      for (const p of event.participations) {
+      for (const p of event.enrollments) {
         try {
           await this.pushService.notifyEventReminder(p.user.id, event.title, event.id, hoursLeft);
           await this.emailService.sendEventReminderEmail(
@@ -63,7 +63,7 @@ export class EventReminderCron {
         }
       }
       this.logger.log(
-        `Sent ${hoursLeft}h reminders for event "${event.title}" to ${event.participations.length} participants`,
+        `Sent ${hoursLeft}h reminders for event "${event.title}" to ${event.enrollments.length} participants`,
       );
     }
   }

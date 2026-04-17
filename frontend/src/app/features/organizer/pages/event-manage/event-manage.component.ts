@@ -28,8 +28,8 @@ import {
   EventAnnouncement,
   EventSlotInfo,
 } from '../../../../shared/types';
-import { ParticipantGridComponent } from '../../../../shared/participant/ui/participant-grid/participant-grid.component';
-import { ParticipantItem } from '../../../../shared/participant/ui/participant-grid/participant-grid-item.component';
+import { EnrollmentGridComponent } from '../../../../shared/enrollment/ui/enrollment-grid/enrollment-grid.component';
+import { EnrollmentItem } from '../../../../shared/enrollment/ui/enrollment-grid/enrollment-grid-item.component';
 import { EventStatus } from '@zgadajsie/shared';
 import {
   EventLifecycleBannerComponent,
@@ -51,7 +51,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
     FormsModule,
     EventLifecycleBannerComponent,
     EventAnnouncementsComponent,
-    ParticipantGridComponent,
+    EnrollmentGridComponent,
   ],
   template: `
     <div class="p-4">
@@ -157,7 +157,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
         }
 
         @if (eventData(); as _event) {
-          <app-participant-grid
+          <app-enrollment-grid
             [event]="_event"
             [participants]="manageParticipants()"
             [slots]="slots()"
@@ -227,7 +227,7 @@ export class EventManageComponent implements OnInit {
   private readonly overlays = inject(BottomOverlaysService);
   private readonly profileBroadcast = inject(ProfileBroadcastService);
 
-  readonly manageParticipants = signal<ParticipantItem[]>([]);
+  readonly manageParticipants = signal<EnrollmentItem[]>([]);
   readonly slots = signal<EventSlotInfo[]>([]);
   readonly announcements = signal<EventAnnouncement[]>([]);
   readonly loading = signal(true);

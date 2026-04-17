@@ -36,29 +36,35 @@ import { ConfirmModalService } from '../../../ui/confirm-modal/confirm-modal.ser
 import { BottomOverlaysService } from '../../../overlay/ui/bottom-overlays/bottom-overlays.service';
 import { EventAreaService } from '../../../../features/event/services/event-area.service';
 import { ProfileBroadcastService } from '../../../../core/services/profile-broadcast.service';
-import { Participation, ParticipantManageItem, OrganizerUserRelation } from '../../../types';
+import { Enrollment, EnrolleeManageItem, OrganizerUserRelation } from '../../../types';
 import { Event } from '../../../types/event.interface';
 import { EventSlotInfo } from '../../../types/payment.interface';
 import { formatDateTime } from '@zgadajsie/shared';
 
-export interface ParticipantModalUserInfo {
+export interface EnrollmentModalUserInfo {
   id: string;
   displayName: string;
   avatarUrl: string | null;
 }
 
-export interface ParticipantModalData {
-  participant: Participation | ParticipantManageItem | null;
+export interface EnrollmentModalData {
+  participant: Enrollment | EnrolleeManageItem | null;
   slot: EventSlotInfo | null;
   event: Event;
-  allParticipants?: (Participation | ParticipantManageItem)[];
-  userInfo?: ParticipantModalUserInfo | null;
+  allParticipants?: (Enrollment | EnrolleeManageItem)[];
+  userInfo?: EnrollmentModalUserInfo | null;
 }
 
-type ParticipantItem = Participation | ParticipantManageItem;
+/** @deprecated Use EnrollmentModalUserInfo */
+export type ParticipantModalUserInfo = EnrollmentModalUserInfo;
 
-function isManageItem(p: ParticipantItem): p is ParticipantManageItem {
-  return 'payment' in p && !!(p as ParticipantManageItem).user;
+/** @deprecated Use EnrollmentModalData */
+export type ParticipantModalData = EnrollmentModalData;
+
+type EnrollmentItem = Enrollment | EnrolleeManageItem;
+
+function isManageItem(p: EnrollmentItem): p is EnrolleeManageItem {
+  return 'payment' in p && !!(p as EnrolleeManageItem).user;
 }
 
 function getErrorMessage(err: unknown, fallback: string): string {
@@ -76,7 +82,7 @@ function getErrorMessage(err: unknown, fallback: string): string {
 }
 
 @Component({
-  selector: 'app-participant-slot-modal',
+  selector: 'app-enrollment-slot-modal',
   imports: [
     ModalComponent,
     UserProfileCardComponent,
@@ -86,10 +92,10 @@ function getErrorMessage(err: unknown, fallback: string): string {
     TranslocoPipe,
     LinkedParticipantChipComponent,
   ],
-  templateUrl: './participant-slot-modal.component.html',
+  templateUrl: './enrollment-slot-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParticipantSlotModalComponent {
+export class EnrollmentSlotModalComponent {
   private readonly router = inject(Router);
   protected readonly modalService = inject(ModalService);
   private readonly auth = inject(AuthService);
@@ -102,7 +108,7 @@ export class ParticipantSlotModalComponent {
   private readonly eventArea = inject(EventAreaService);
   private readonly profileBroadcast = inject(ProfileBroadcastService);
 
-  readonly data = input<ParticipantModalData | null>(null);
+  readonly data = input<EnrollmentModalData | null>(null);
 
   readonly loading = signal(false);
   readonly selectedOrganizerAction = signal('');
@@ -153,7 +159,7 @@ export class ParticipantSlotModalComponent {
     if (this.hostParticipant()) return null;
     const p = this.participant();
     if (!p?.isGuest) return null;
-    const added = (p as Participation).addedByUser ?? (p as ParticipantManageItem).addedByUser;
+    const added = (p as Enrollment).addedByUser ?? (p as EnrolleeManageItem).addedByUser;
     return added ?? null;
   });
 
@@ -193,11 +199,11 @@ export class ParticipantSlotModalComponent {
   });
 
   readonly isBanned = computed(
-    () => (this.participant() as Participation)?.waitingReason === 'BANNED',
+    () => (this.participant() as Enrollment)?.waitingReason === 'BANNED',
   );
 
   readonly waitingReason = computed(
-    () => (this.participant() as Participation)?.waitingReason ?? null,
+    () => (this.participant() as Enrollment)?.waitingReason ?? null,
   );
 
   readonly slotId = computed(() => this.slot()?.id ?? null);
@@ -226,7 +232,7 @@ export class ParticipantSlotModalComponent {
 
   readonly slotIsEmpty = computed(() => {
     const s = this.slot();
-    return !s || (!s.participationId && !s.locked);
+    return !s || (!s.enrollmentId && !s.locked);
   });
 
   readonly slotDisplayStatus = computed<SlotDisplayStatus>(() => {
@@ -237,7 +243,7 @@ export class ParticipantSlotModalComponent {
     const s = p.status;
     if (s === 'PENDING') return 'pending';
     if (s === 'WITHDRAWN' || s === 'REJECTED') return 'withdrawn';
-    return 'participant';
+    return 'assigned';
   });
 
   readonly slotStatusConfig = computed<SlotStatusConfig>(
@@ -251,7 +257,6 @@ export class ParticipantSlotModalComponent {
   readonly participationUpdatedAt = computed(() => {
     const p = this.participant();
     if (!p) return null;
-    // Sprawdź różne pola daty w zależności od typu
     if ('updatedAt' in p && p.updatedAt) return formatDateTime(p.updatedAt as string);
     if ('approvedAt' in p && p.approvedAt) return formatDateTime(p.approvedAt as string);
     if ('createdAt' in p && p.createdAt) return formatDateTime(p.createdAt as string);
@@ -316,8 +321,6 @@ export class ParticipantSlotModalComponent {
     };
   });
 
-  // ── Organizer action select ──
-
   readonly organizerActions = computed(() => {
     type Action = { value: string; label: string };
 
@@ -326,7 +329,6 @@ export class ParticipantSlotModalComponent {
 
     if (!this.isOrganizer()) return [];
 
-    // Brak uczestnika - tylko akcje na slotach dla organizatora
     if (!p) {
       if (!slotId) return [];
 
@@ -404,7 +406,7 @@ export class ParticipantSlotModalComponent {
 
     const destructive: Action[] = [];
     if (payment?.status !== 'COMPLETED') {
-      destructive.push({ value: 'deleteParticipation', label: 'Usuń zgłoszenie' });
+      destructive.push({ value: 'deleteEnrollment', label: 'Usuń zgłoszenie' });
     }
 
     return [
@@ -448,12 +450,10 @@ export class ParticipantSlotModalComponent {
         return this.updateTrustStatus(true);
       case 'untrust':
         return this.updateTrustStatus(false);
-      case 'deleteParticipation':
-        return this.onDeleteParticipation();
+      case 'deleteEnrollment':
+        return this.onDeleteEnrollment();
     }
   }
-
-  // ── Organizer actions ──
 
   private async onApprove(): Promise<void> {
     const p = this.participant();
@@ -594,7 +594,7 @@ export class ParticipantSlotModalComponent {
     });
     if (!confirmed) return;
     await this.executeAction(
-      this.eventService.rejoinParticipation(p.id),
+      this.eventService.rejoinEnrollment(p.id),
       'Uczestnik przywrócony',
       'Nie udało się przywrócić uczestnika',
     );
@@ -604,7 +604,7 @@ export class ParticipantSlotModalComponent {
     const p = this.participant();
     if (!p) return;
     this.modalService.close();
-    this.eventArea.openChangeRoleWizardForParticipant(p as Participation);
+    this.eventArea.openChangeRoleWizardForParticipant(p as Enrollment);
   }
 
   private async updateTrustStatus(shouldTrust: boolean): Promise<void> {
@@ -631,7 +631,7 @@ export class ParticipantSlotModalComponent {
     );
   }
 
-  private async onDeleteParticipation(): Promise<void> {
+  private async onDeleteEnrollment(): Promise<void> {
     const p = this.participant();
     if (!p) return;
     const name = p.user?.displayName ?? 'uczestnika';
@@ -644,7 +644,7 @@ export class ParticipantSlotModalComponent {
     });
     if (!confirmed) return;
     await this.executeAction(
-      this.eventService.deleteParticipation(p.id),
+      this.eventService.deleteEnrollment(p.id),
       'Zgłoszenie zostało usunięte',
       'Nie udało się usunąć zgłoszenia',
       'info',
@@ -659,8 +659,6 @@ export class ParticipantSlotModalComponent {
     this.router.navigate(['/w', e.city?.slug, e.id, 'host-chat', p.userId]);
   }
 
-  // ── Public / participant actions ──
-
   onJoin(): void {
     this.modalService.close();
     const roleKey = this.slot()?.roleKey ?? undefined;
@@ -668,7 +666,7 @@ export class ParticipantSlotModalComponent {
   }
 
   onRejoin(): void {
-    const p = this.participant() as Participation;
+    const p = this.participant() as Enrollment;
     if (!p) return;
     this.modalService.close();
     if (this.eventHasRoles()) {
@@ -679,7 +677,7 @@ export class ParticipantSlotModalComponent {
   }
 
   onRejoinGuest(): void {
-    const p = this.participant() as Participation;
+    const p = this.participant() as Enrollment;
     if (!p) return;
     this.modalService.close();
     if (this.eventHasRoles()) {
@@ -706,7 +704,7 @@ export class ParticipantSlotModalComponent {
     });
     if (!confirmed) return;
     await this.executeAction(
-      this.eventService.leaveParticipation(p.id),
+      this.eventService.leaveEnrollment(p.id),
       'Gość wypisany z wydarzenia',
       'Nie udało się wypisać gościa',
       'info',
@@ -728,15 +726,13 @@ export class ParticipantSlotModalComponent {
       if (!confirmed) return;
     }
     this.modalService.close();
-    this.eventArea.openChangeRoleWizardForParticipant(p as Participation);
+    this.eventArea.openChangeRoleWizardForParticipant(p as Enrollment);
   }
 
   onContactOrganizer(): void {
     this.modalService.close();
     this.eventArea.contactOrganizer();
   }
-
-  // ── Profile / guest update (from UserProfileCard) ──
 
   onProfileUpdated(data: ProfileEditData): void {
     this.loading.set(true);

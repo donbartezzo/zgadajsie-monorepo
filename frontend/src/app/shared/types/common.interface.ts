@@ -1,6 +1,9 @@
 import type { User } from './user.interface';
 
-export type ParticipationStatus = 'PENDING' | 'APPROVED' | 'CONFIRMED' | 'WITHDRAWN' | 'REJECTED';
+export type EnrollmentStatus = 'PENDING' | 'APPROVED' | 'CONFIRMED' | 'WITHDRAWN' | 'REJECTED';
+
+/** @deprecated Use EnrollmentStatus */
+export type ParticipationStatus = EnrollmentStatus;
 
 /** Typ dla URL awatara użytkownika. */
 export type AvatarUrl = string | null | undefined;

@@ -89,15 +89,15 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly participants = this.eventArea.participants;
   readonly joining = this.eventArea.joining;
   readonly isLoading = this.eventArea.loading;
-  readonly isParticipant = this.eventArea.isParticipant;
+  readonly isEnrolled = this.eventArea.isEnrolled;
   readonly isOrganizer = this.eventArea.isOrganizer;
   readonly participantStatus = this.eventArea.participantStatus;
   readonly enrollmentPhase = this.eventArea.enrollmentPhase;
   readonly eventTimeStatus = this.eventArea.eventTimeStatus;
   readonly canJoin = this.eventArea.canJoin;
   readonly isCancelled = this.eventArea.isCancelled;
+  readonly enrollmentCount = this.eventArea.enrollmentCount;
   readonly participantCount = this.eventArea.participantCount;
-  readonly slotCount = this.eventArea.slotCount;
   readonly notificationBars = this.eventArea.notificationBars;
   readonly visibleAvatars = this.eventArea.visibleAvatars;
   readonly lifecycleBannerVariant = this.eventArea.lifecycleBannerVariant;
@@ -142,7 +142,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     // Sync notification status for event
     effect(() => {
       const e = this.event();
-      const isPart = this.isParticipant();
+      const isPart = this.isEnrolled();
       if (e) {
         if (isPart) {
           this.notifStatus.setConfig({
@@ -165,7 +165,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     // Load chat message count when event is available and user has access
     effect(() => {
       const e = this.event();
-      if (e && (this.isParticipant() || this.isOrganizer())) {
+      if (e && (this.isEnrolled() || this.isOrganizer())) {
         this.loadChatMessageCount(e.id);
       } else {
         this.chatMessageCount.set(null);
@@ -330,7 +330,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
 
   private checkOpenJoinParam(): void {
     if (this.route.snapshot.queryParams['openJoin'] && this.auth.isLoggedIn()) {
-      if (this.isParticipant()) {
+      if (this.isEnrolled()) {
         this.eventArea.openJoinConfirmOverlay();
       } else {
         this.overlays.open('joinRules');

@@ -139,7 +139,7 @@ export class VouchersService {
     }
 
     // Find only ACTIVE participants (wantsIn=true) who have COMPLETED payments
-    const paidParticipations = await this.prisma.eventParticipation.findMany({
+    const paidParticipations = await this.prisma.eventEnrollment.findMany({
       where: {
         eventId,
         wantsIn: true,
@@ -172,15 +172,15 @@ export class VouchersService {
           data: { status: 'VOUCHER_REFUNDED', refundedAt: new Date() },
         });
 
-        await tx.eventParticipation.update({
+        await tx.eventEnrollment.update({
           where: { id: participation.id },
           data: { wantsIn: false, withdrawnBy: 'ORGANIZER' },
         });
 
         // Release slot
         await tx.eventSlot.updateMany({
-          where: { participationId: participation.id },
-          data: { participationId: null, confirmed: false, assignedAt: null },
+          where: { enrollmentId: participation.id },
+          data: { enrollmentId: null, confirmed: false, assignedAt: null },
         });
 
         await tx.organizerVoucher.create({

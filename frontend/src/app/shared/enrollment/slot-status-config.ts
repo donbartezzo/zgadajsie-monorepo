@@ -2,7 +2,7 @@ import { IconName } from '../ui/icon/icon.component';
 import { type SemanticColor } from '../types/colors';
 
 export type SlotDisplayStatus =
-  | 'participant'
+  | 'assigned'
   | 'pending'
   | 'withdrawn'
   | 'free'
@@ -120,7 +120,7 @@ export function getSlotColorClasses(config: SlotStatusConfig): SlotColorClasses 
 }
 
 export const SLOT_STATUS_CONFIG: Record<SlotDisplayStatus, SlotStatusConfig> = {
-  participant: {
+  assigned: {
     title: 'Uczestnik',
     description: 'Ma potwierdzone miejsce w wydarzeniu',
     icon: 'check-circle',

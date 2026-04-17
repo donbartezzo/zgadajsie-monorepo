@@ -55,7 +55,7 @@ export class EnrollmentLotteryCron {
       }
 
       // Only real users (no guests) in the waiting list
-      const pendingParticipations = await tx.eventParticipation.findMany({
+      const pendingParticipations = await tx.eventEnrollment.findMany({
         where: { eventId: event.id, wantsIn: true, slot: null, addedByUserId: null },
       });
 
@@ -86,12 +86,12 @@ export class EnrollmentLotteryCron {
 
       for (const participation of shuffled) {
         const freeSlot = await tx.eventSlot.findFirst({
-          where: { eventId: event.id, participationId: null, locked: false },
+          where: { eventId: event.id, enrollmentId: null, locked: false },
         });
         if (!freeSlot) break;
         await tx.eventSlot.update({
           where: { id: freeSlot.id },
-          data: { participationId: participation.id, assignedAt: new Date() },
+          data: { enrollmentId: participation.id, assignedAt: new Date() },
         });
         assignedIds.push(participation.id);
       }

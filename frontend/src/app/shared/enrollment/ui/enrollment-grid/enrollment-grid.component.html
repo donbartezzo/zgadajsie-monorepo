@@ -10,13 +10,13 @@
 } @else {
   <div class="space-y-4">
     @for (section of sections(); track section.type) {
-      <app-participant-grid-section
+      <app-enrollment-grid-section
         [config]="section.config"
         [groups]="section.groups"
         [currentUserId]="currentUserId()"
         [count]="section.count"
         (itemClicked)="onSlotItemClick($event)"
-      ></app-participant-grid-section>
+      ></app-enrollment-grid-section>
     }
   </div>
 }

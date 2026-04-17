@@ -19,7 +19,7 @@ import { CoverImagesService } from '../cover-images/cover-images.service';
 import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptions.service';
 import { SlotService } from '../slots/slot.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
-import { EnrollmentEligibilityService } from '../participation/enrollment-eligibility.service';
+import { EnrollmentEligibilityService } from '../enrollment/enrollment-eligibility.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
@@ -185,12 +185,12 @@ export class EventsService {
           },
           _count: {
             select: {
-              participations: {
+              enrollments: {
                 where: {
                   wantsIn: true,
                   OR: [
                     { slot: { confirmed: true } },
-                    { slot: { confirmed: false, participationId: { not: null } } },
+                    { slot: { confirmed: false, enrollmentId: { not: null } } },
                   ],
                 },
               },
@@ -350,7 +350,7 @@ export class EventsService {
         });
 
         // Refund paid participants via vouchers (those with wantsIn=true and completed payment)
-        const paidParticipations = await tx.eventParticipation.findMany({
+        const paidParticipations = await tx.eventEnrollment.findMany({
           where: {
             eventId: id,
             wantsIn: true,
@@ -373,14 +373,14 @@ export class EventsService {
             where: { id: payment.id },
             data: { status: 'VOUCHER_REFUNDED', refundedAt: new Date() },
           });
-          await tx.eventParticipation.update({
+          await tx.eventEnrollment.update({
             where: { id: participation.id },
             data: { wantsIn: false, withdrawnBy: 'ORGANIZER' },
           });
           // Release slot
           await tx.eventSlot.updateMany({
-            where: { participationId: participation.id },
-            data: { participationId: null, confirmed: false, assignedAt: null },
+            where: { enrollmentId: participation.id },
+            data: { enrollmentId: null, confirmed: false, assignedAt: null },
           });
           await tx.organizerVoucher.create({
             data: {
@@ -397,14 +397,14 @@ export class EventsService {
         }
 
         // Cleanup pending payment intents (restore reserved vouchers)
-        const waitingParticipations = await tx.eventParticipation.findMany({
+        const waitingParticipations = await tx.eventEnrollment.findMany({
           where: { eventId: id, wantsIn: true },
         });
 
         let cleanedIntents = 0;
         for (const participation of waitingParticipations) {
           const intents = await tx.paymentIntent.findMany({
-            where: { participationId: participation.id },
+            where: { enrollmentId: participation.id },
           });
           for (const intent of intents) {
             const reserved = intent.voucherReserved.toNumber();
@@ -423,14 +423,14 @@ export class EventsService {
             await tx.paymentIntent.delete({ where: { id: intent.id } });
             cleanedIntents++;
           }
-          await tx.eventParticipation.update({
+          await tx.eventEnrollment.update({
             where: { id: participation.id },
             data: { wantsIn: false, withdrawnBy: 'ORGANIZER' },
           });
           // Release slot
           await tx.eventSlot.updateMany({
-            where: { participationId: participation.id },
-            data: { participationId: null, confirmed: false, assignedAt: null },
+            where: { enrollmentId: participation.id },
+            data: { enrollmentId: null, confirmed: false, assignedAt: null },
           });
         }
 
@@ -440,7 +440,7 @@ export class EventsService {
 
     // Notifications (fire-and-forget, outside transaction)
     const notificationErrors: string[] = [];
-    const participants = await this.prisma.eventParticipation.findMany({
+    const participants = await this.prisma.eventEnrollment.findMany({
       where: { eventId: id },
       include: { user: { select: { id: true, email: true, displayName: true } } },
     });
@@ -512,7 +512,7 @@ export class EventsService {
       if (event.organizerId !== userId) {
         throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
       }
-      const participantCount = await this.prisma.eventParticipation.count({
+      const participantCount = await this.prisma.eventEnrollment.count({
         where: { eventId: id },
       });
       if (participantCount > 0) {
@@ -530,7 +530,7 @@ export class EventsService {
   }
 
   async getParticipants(eventId: string) {
-    const participations = await this.prisma.eventParticipation.findMany({
+    const participations = await this.prisma.eventEnrollment.findMany({
       where: { eventId },
       include: {
         user: {
@@ -597,7 +597,7 @@ export class EventsService {
         id: true,
         locked: true,
         roleKey: true,
-        participationId: true,
+        enrollmentId: true,
         confirmed: true,
         assignedAt: true,
         createdAt: true,
@@ -615,7 +615,7 @@ export class EventsService {
       throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
     }
 
-    const participation = await this.prisma.eventParticipation.findFirst({
+    const participation = await this.prisma.eventEnrollment.findFirst({
       where: { id: participationId, eventId },
       include: { slot: true },
     });
@@ -633,7 +633,7 @@ export class EventsService {
 
     await this.prisma.payment.create({
       data: {
-        participationId,
+        enrollmentId: participationId,
         userId: participation.userId,
         eventId,
         amount: new Decimal(amount),
@@ -667,7 +667,7 @@ export class EventsService {
 
     const payment = await this.prisma.payment.findFirst({
       where: { id: paymentId, eventId },
-      include: { participation: true },
+      include: { enrollment: true },
     });
     if (!payment) {
       throw new NotFoundException('Płatność nie znaleziona');
@@ -710,7 +710,7 @@ export class EventsService {
 
       // Slot stays assigned, but confirmed=false (user must re-confirm after re-paying)
       await tx.eventSlot.updateMany({
-        where: { participationId: payment.participationId },
+        where: { enrollmentId: payment.enrollmentId },
         data: { confirmed: false },
       });
     });

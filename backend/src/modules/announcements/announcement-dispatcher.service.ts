@@ -39,7 +39,7 @@ export class AnnouncementDispatcherService {
       select: { id: true, title: true, organizerId: true, city: { select: { slug: true } } },
     });
 
-    const participants = await this.prisma.eventParticipation.findMany({
+    const participants = await this.prisma.eventEnrollment.findMany({
       where: { eventId, wantsIn: true },
       include: { user: { select: { id: true, email: true, displayName: true } } },
     });
