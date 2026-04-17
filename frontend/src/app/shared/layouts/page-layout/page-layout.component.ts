@@ -40,6 +40,7 @@ export interface RouteLayoutData {
   showBorder?: boolean;
   centerContent?: boolean;
   contentClass?: string;
+  layoutClass?: string;
   heroVariant?: HeroVariant;
   title?: string;
   subtitle?: string;
@@ -51,6 +52,7 @@ const DEFAULT_ROUTE_DATA: RouteLayoutData = {
   showBorder: false,
   centerContent: false,
   contentClass: '',
+  layoutClass: '',
   heroVariant: 'compact',
   title: '',
   subtitle: '',
@@ -173,6 +175,7 @@ export class PageLayoutComponent {
   });
   readonly centerContent = computed(() => this.routeData().centerContent === true);
   readonly contentClass = computed(() => this.routeData().contentClass || '');
+  readonly layoutClass = computed(() => this.routeData().layoutClass || '');
   readonly showBorder = computed(() => this.routeData().showBorder === true);
 
   // ── Derived from LayoutConfigService ──

@@ -10,12 +10,13 @@ import { verifiedUserGuard } from './core/guards/verified-user.guard';
 import { organizerGuard } from './core/guards/organizer.guard';
 import { eventCreationGuard } from './core/guards/event-creation.guard';
 
-const BARE_LAYOUT = {
+const WHITE_BARE_LAYOUT = {
   showBorder: false,
   showFooter: false,
   showHeader: false,
   centerContent: true,
-  contentClass: 'bg-white',
+  layoutClass: 'bg-white',
+  contentClass: 'bg-transparent',
 } as const;
 
 const BREADCRUMB_TO_HOME = {
@@ -45,7 +46,7 @@ export const appRoutes: Route[] = [
       import('./features/events/pages/events/events.component').then((m) => m.EventsComponent),
     data: {
       breadcrumb: BREADCRUMB_TO_HOME,
-      showBorder: true,
+      showBorder: false,
       showHeader: true,
       heroVariant: 'extended',
     },
@@ -190,7 +191,7 @@ export const appRoutes: Route[] = [
       ),
     data: {
       title: 'Potwierdzenie komunikatu',
-      ...BARE_LAYOUT,
+      ...WHITE_BARE_LAYOUT,
     },
   },
 
@@ -204,7 +205,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Nie znaleziono',
       breadcrumb: BREADCRUMB_TO_HOME,
-      ...BARE_LAYOUT,
+      ...WHITE_BARE_LAYOUT,
     },
   },
   {
@@ -213,7 +214,7 @@ export const appRoutes: Route[] = [
       import('./features/auth/pages/unverified-account/unverified-account-page.component').then(
         (m) => m.UnverifiedAccountPageComponent,
       ),
-    data: { title: 'Konto niezweryfikowane', ...BARE_LAYOUT },
+    data: { title: 'Konto niezweryfikowane', ...WHITE_BARE_LAYOUT },
   },
 
   // ── Auth ──
@@ -221,19 +222,19 @@ export const appRoutes: Route[] = [
     path: 'auth/login',
     loadComponent: () =>
       import('./features/auth/pages/login/login.component').then((m) => m.LoginComponent),
-    data: { title: 'Logowanie', ...BARE_LAYOUT },
+    data: { title: 'Logowanie', ...WHITE_BARE_LAYOUT },
   },
   {
     path: 'auth/register',
     loadComponent: () =>
       import('./features/auth/pages/register/register.component').then((m) => m.RegisterComponent),
-    data: { title: 'Rejestracja', ...BARE_LAYOUT },
+    data: { title: 'Rejestracja', ...WHITE_BARE_LAYOUT },
   },
   {
     path: 'auth/activate',
     loadComponent: () =>
       import('./features/auth/pages/activate/activate.component').then((m) => m.ActivateComponent),
-    data: { title: 'Aktywacja', ...BARE_LAYOUT },
+    data: { title: 'Aktywacja', ...WHITE_BARE_LAYOUT },
   },
   {
     path: 'auth/forgot-password',
@@ -241,7 +242,7 @@ export const appRoutes: Route[] = [
       import('./features/auth/pages/forgot-password/forgot-password.component').then(
         (m) => m.ForgotPasswordComponent,
       ),
-    data: { title: 'Odzyskiwanie hasła', ...BARE_LAYOUT },
+    data: { title: 'Odzyskiwanie hasła', ...WHITE_BARE_LAYOUT },
   },
   {
     path: 'auth/reset-password',
@@ -249,7 +250,7 @@ export const appRoutes: Route[] = [
       import('./features/auth/pages/reset-password/reset-password.component').then(
         (m) => m.ResetPasswordComponent,
       ),
-    data: { title: 'Reset hasła', ...BARE_LAYOUT },
+    data: { title: 'Reset hasła', ...WHITE_BARE_LAYOUT },
   },
 
   // ── User ──

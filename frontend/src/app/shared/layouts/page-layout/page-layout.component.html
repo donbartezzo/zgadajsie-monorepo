@@ -3,6 +3,7 @@
 @let _heroHidden = heroHidden();
 @let _centerContent = centerContent();
 @let _contentClass = contentClass();
+@let _layoutClass = layoutClass();
 @let _showBorder = showBorder();
 @let _heroHeight = heroHeight();
 @let _isReady = layoutConfig.isReady();
@@ -15,7 +16,7 @@
     <div class="h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-500"></div>
   </div>
 } @else {
-  <div class="flex flex-1 flex-col animate-fade-in">
+  <div [ngClass]="['flex flex-1 flex-col animate-fade-in', _layoutClass || 'bg-neutral-100']">
     <!-- ═══════════════════════════════════════════════════
    PAGE HEADER (hero area)
    ═══════════════════════════════════════════════════ -->
