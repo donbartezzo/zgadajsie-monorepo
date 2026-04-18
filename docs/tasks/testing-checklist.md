@@ -3,7 +3,7 @@
 > Plik do śledzenia postępu wdrożenia według `docs/tasks/testing-strategy.md`.
 > Aktualizuj po każdym ukończonym checkpoincie.
 >
-> **Ostatnia aktualizacja:** 2026-04-18 (sesja 2 — kompletna)
+> **Ostatnia aktualizacja:** 2026-04-18 (sesja 3 — brakujące guardy 3.3)
 
 ---
 
@@ -81,7 +81,7 @@
 |---|---|---|---|
 | **3.1** | `core/auth/auth.service.spec.ts` | `[x]` | 16 testów ✓ |
 | **3.2** | `core/services/event.service.spec.ts` | `[x]` | 8 testów ✓ |
-| **3.3** | `core/auth/auth.guard.spec.ts` + 2 inne guardy | `[x]` | 6 testów (authGuard, adminGuard, activeGuard) ✓ |
+| **3.3** | `core/auth/auth.guard.spec.ts` + 4 inne guardy | `[x]` | 11 testów (authGuard, adminGuard, activeGuard, verifiedUserGuard, organizerGuard, eventCreationGuard) ✓ |
 | **3.4** | `core/auth/auth.interceptor.spec.ts` | `[x]` | 5 testów ✓ |
 | **3.5** | `core/services/chat.service.spec.ts` | `[x]` | 7 testów HTTP ✓ |
 
