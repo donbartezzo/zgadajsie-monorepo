@@ -3,7 +3,7 @@
 > Plik do śledzenia postępu wdrożenia według `docs/tasks/testing-strategy.md`.
 > Aktualizuj po każdym ukończonym checkpoincie.
 >
-> **Ostatnia aktualizacja:** 2026-04-18
+> **Ostatnia aktualizacja:** 2026-04-18 (sesja 2 — kompletna)
 
 ---
 
@@ -53,9 +53,9 @@
 
 | Checkpoint | Plik | Status | Uwagi |
 |---|---|---|---|
-| **1.5a** | `__tests__/enrollment-payment.integration.spec.ts` | `[ ]` | Flow: join → payment → webhook |
-| **1.5b** | `__tests__/enrollment-moderation.integration.spec.ts` | `[ ]` | Flow: ban/trust + eligibility |
-| **1.5c** | `__tests__/enrollment-lottery.integration.spec.ts` | `[ ]` | Flow: PRE_ENROLLMENT → OPEN |
+| **1.5a** | `__tests__/enrollment-payment.integration.spec.ts` | `[x]` | 3 testy ✓ join+BANNED+rejoin |
+| **1.5b** | `__tests__/enrollment-moderation.integration.spec.ts` | `[x]` | 7 testów ✓ ban/trust+eligibility |
+| **1.5c** | `__tests__/enrollment-lottery.integration.spec.ts` | `[x]` | 4 testy ✓ PRE_ENROLLMENT→OPEN |
 
 ---
 
@@ -91,11 +91,11 @@
 
 | Checkpoint | Komponent | Status | Uwagi |
 |---|---|---|---|
-| **4.1** | `auth/pages/register/register.component.spec.ts` | `[ ]` | |
-| **4.2** | `events/pages/event-form/event-form.component.spec.ts` | `[ ]` | Najbardziej złożony formularz |
-| **4.3** | `enrollment/ui/enrollment-grid/*.component.spec.ts` | `[ ]` | 4 komponenty grid |
+| **4.1** | `auth/pages/register/register.component.spec.ts` | `[x]` | 6 testów ✓ |
+| **4.2** | `events/pages/event-form/event-form.component.spec.ts` | `[x]` | 12 testów ✓ overrideTemplate |
+| **4.3** | `enrollment/ui/enrollment-grid/*.component.spec.ts` | `[x]` | 53 testy ✓ (15+20+6+12) |
 | **4.4** | `shared/auth/ui/login-form/login-form.component.spec.ts` | `[x]` | 8 testów ✓ |
-| **4.5** | `event/pages/event-detail/event-detail.component.spec.ts` | `[ ]` | Computed signals |
+| **4.5** | `event/pages/event-detail/event-detail.component.spec.ts` | `[x]` | 16 testów ✓ EventAreaService |
 
 ---
 
@@ -105,12 +105,12 @@
 
 | Checkpoint | Plik | Tag | Status | Uwagi |
 |---|---|---|---|---|
-| **5.1** | `frontend-e2e/src/auth.spec.ts` | `@smoke` | `[ ]` | Rejestracja + logowanie |
-| **5.2** | `frontend-e2e/src/enrollment.spec.ts` | `@smoke` | `[ ]` | Przeglądanie + dołączanie |
-| **5.3** | `frontend-e2e/src/organizer.spec.ts` | — | `[ ]` | Zarządzanie eventem |
-| **5.4** | `frontend-e2e/src/payment.spec.ts` | `@smoke` | `[ ]` | Happy path płatności |
-| **5.5** | `frontend-e2e/src/chat.spec.ts` | — | `[ ]` | Chat grupowy + prywatny |
-| **POM** | `frontend-e2e/src/pages/*.ts` | — | `[ ]` | Page Objects dla e2e |
+| **5.1** | `frontend-e2e/src/auth.spec.ts` | `@smoke` | `[x]` | 6 scenariuszy, wymaga działającego env |
+| **5.2** | `frontend-e2e/src/enrollment.spec.ts` | `@smoke` | `[x]` | 4 scenariusze, wymaga seed danych |
+| **5.3** | `frontend-e2e/src/organizer.spec.ts` | — | `[x]` | 4 scenariusze, wymaga TEST_ORGANIZER_EVENT_ID |
+| **5.4** | `frontend-e2e/src/payment.spec.ts` | `@smoke` | `[x]` | 3 scenariusze, wymaga Tpay sandbox |
+| **5.5** | `frontend-e2e/src/chat.spec.ts` | — | `[x]` | 3 scenariusze, wymaga TEST_CHAT_EVENT_ID |
+| **POM** | `frontend-e2e/src/pages/*.ts` | — | `[x]` | LoginPage, RegisterPage, EventsPage, EventDetailPage |
 | **setup** | `frontend-e2e/src/auth.setup.ts` | — | `[x]` | Stworzono plik setupu auth |
 
 ---
@@ -133,10 +133,10 @@
 
 | Metryka | Target | Aktualny stan |
 |---|---|---|
-| Pokrycie `auth`, `enrollment`, `events`, `payments` | > 70% | backend: 270 testów ✓ |
+| Pokrycie `auth`, `enrollment`, `events`, `payments` | > 70% | backend: 270 testów ✓ + 14 integracyjnych |
 | Pokrycie `*.util.ts`, `*.validator.ts` | > 90% | 13+8+8+14+7+7+6 testów ✓ |
-| Pokrycie `core/auth/`, `core/services/` | > 60% | frontend: 86 testów ✓ |
-| Smoke e2e czas | < 5 min | brak (ETAP 5 nie wdrożony) |
+| Pokrycie `core/auth/`, `core/services/` | > 60% | frontend: ~183 testy ✓ |
+| Smoke e2e czas | < 5 min | pliki gotowe, wymaga działającego env |
 | Unit tests czas backend | < 30 s | ~14 s ✓ |
 | Unit tests czas frontend | < 30 s | ~6 s ✓ |
 
