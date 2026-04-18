@@ -198,7 +198,7 @@ const IMAGE_CROPPER_CONFIGS: Record<ImageCropperType, ImageCropperConfig> = {
           margin: 0 auto !important;
         }
 
-        // Disable ALL resize points and lines - no resizing allowed
+        /* Disable ALL resize points and lines - no resizing allowed */
         .ngx-ic-cropper-point {
           display: none !important;
         }
@@ -207,7 +207,7 @@ const IMAGE_CROPPER_CONFIGS: Record<ImageCropperType, ImageCropperConfig> = {
           display: none !important;
         }
 
-        // Keep only move cursor for the cropper area
+        /* Keep only move cursor for the cropper area */
         .ngx-ic-cropper {
           cursor: move !important;
         }
