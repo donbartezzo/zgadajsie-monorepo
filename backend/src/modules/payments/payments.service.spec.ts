@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Decimal } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
 import { TpayService } from './tpay.service';
@@ -18,7 +18,7 @@ function buildPrismaMock() {
   const tx = buildTxMock();
   return {
     event: { findUnique: jest.fn() },
-    payment: { create: jest.fn(), findFirst: jest.fn() },
+    payment: { create: jest.fn(), findFirst: jest.fn(), findUnique: jest.fn() },
     paymentIntent: {
       findMany: jest.fn(),
       findFirst: jest.fn(),
@@ -328,11 +328,127 @@ describe('PaymentsService', () => {
   });
 
   describe('simulateSuccessfulPayment()', () => {
+    const mockIntent = {
+      id: 'intent1',
+      enrollmentId: 'p1',
+      userId: 'user1',
+      eventId: 'event1',
+      amount: new Decimal(50),
+      voucherReserved: new Decimal(0),
+      operatorTxId: 'TX1',
+      enrollment: { event: { organizerId: 'org1' } },
+    };
+
     it('rzuca NotFoundException dla nieistniejącego intentId', async () => {
       (prisma.paymentIntent.findUnique as jest.Mock).mockResolvedValue(null);
 
       await expect(service.simulateSuccessfulPayment('nonexistent')).rejects.toThrow(
         NotFoundException,
+      );
+    });
+
+    it('tworzy Payment COMPLETED i potwierdza slot', async () => {
+      (prisma.paymentIntent.findUnique as jest.Mock).mockResolvedValue(mockIntent);
+      (prisma.payment.findFirst as jest.Mock).mockResolvedValue(null);
+      tx.payment.create.mockResolvedValue({ id: 'pay1' });
+      tx.eventSlot.updateMany.mockResolvedValue({});
+
+      await service.simulateSuccessfulPayment('intent1');
+
+      expect(tx.payment.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: 'COMPLETED', enrollmentId: 'p1' }),
+        }),
+      );
+      expect(tx.eventSlot.updateMany).toHaveBeenCalledWith({
+        where: { enrollmentId: 'p1' },
+        data: { confirmed: true },
+      });
+    });
+
+    it('idempotentność — zwraca istniejącą płatność bez tworzenia nowej', async () => {
+      (prisma.paymentIntent.findUnique as jest.Mock).mockResolvedValue(mockIntent);
+      (prisma.payment.findFirst as jest.Mock).mockResolvedValue({ id: 'existing-pay1' });
+
+      const result = await service.simulateSuccessfulPayment('intent1');
+
+      expect(result).toEqual({ id: 'existing-pay1' });
+      expect(tx.payment.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getPaymentStatus()', () => {
+    it('zwraca płatność po id', async () => {
+      (prisma.payment.findUnique as jest.Mock).mockResolvedValue({
+        id: 'pay1',
+        status: 'COMPLETED',
+        amount: new Decimal(50),
+        voucherAmountUsed: new Decimal(0),
+        paidAt: new Date(),
+        createdAt: new Date(),
+        event: { id: 'event1', title: 'Test', city: { slug: 'warszawa' } },
+      });
+
+      const result = await service.getPaymentStatus('pay1');
+
+      expect(result.id).toBe('pay1');
+      expect(result.status).toBe('COMPLETED');
+    });
+
+    it('rzuca NotFoundException gdy płatność nie istnieje', async () => {
+      (prisma.payment.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.getPaymentStatus('nonexistent')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('getIntentPaymentStatus()', () => {
+    const mockIntent = {
+      enrollmentId: 'p1',
+      userId: 'user1',
+      amount: new Decimal(50),
+      voucherReserved: new Decimal(0),
+      createdAt: new Date(),
+      enrollment: { event: { id: 'event1', title: 'Test', city: { slug: 'warszawa' } } },
+    };
+
+    it('zwraca PENDING gdy brak finalizowanej płatności', async () => {
+      (prisma.paymentIntent.findUnique as jest.Mock).mockResolvedValue(mockIntent);
+      (prisma.payment.findFirst as jest.Mock).mockResolvedValue(null);
+
+      const result = await service.getIntentPaymentStatus('intent1');
+
+      expect(result.status).toBe('PENDING');
+    });
+
+    it('zwraca finalizowaną płatność gdy istnieje', async () => {
+      (prisma.paymentIntent.findUnique as jest.Mock).mockResolvedValue(mockIntent);
+      (prisma.payment.findFirst as jest.Mock).mockResolvedValue({
+        id: 'pay1',
+        status: 'COMPLETED',
+        amount: new Decimal(50),
+        voucherAmountUsed: new Decimal(0),
+        paidAt: new Date(),
+        createdAt: new Date(),
+        event: { id: 'event1', title: 'Test', city: { slug: 'warszawa' } },
+      });
+
+      const result = await service.getIntentPaymentStatus('intent1');
+
+      expect(result.status).toBe('COMPLETED');
+    });
+
+    it('rzuca NotFoundException gdy intent nie istnieje', async () => {
+      (prisma.paymentIntent.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.getIntentPaymentStatus('nonexistent')).rejects.toThrow(NotFoundException);
+    });
+
+    it('rzuca ForbiddenException gdy userId nie pasuje do intentu', async () => {
+      (prisma.paymentIntent.findUnique as jest.Mock).mockResolvedValue(mockIntent);
+
+      await expect(service.getIntentPaymentStatus('intent1', 'wrong-user')).rejects.toThrow(
+        ForbiddenException,
       );
     });
   });

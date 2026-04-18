@@ -31,6 +31,8 @@ function buildPrismaMock() {
   return {
     event: {
       findUnique: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -271,6 +273,103 @@ describe('EventsService', () => {
       await expect(service.update('event1', 'org1', { maxParticipants: 5 } as any)).rejects.toThrow(
         BadRequestException,
       );
+    });
+  });
+
+  // ─── findAll() ────────────────────────────────────────────────────────────
+
+  describe('findAll()', () => {
+    beforeEach(() => {
+      (prisma.event.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.event.count as jest.Mock).mockResolvedValue(0);
+    });
+
+    it('zwraca events bez filtrów', async () => {
+      (prisma.event.findMany as jest.Mock).mockResolvedValue([makeEvent()]);
+      (prisma.event.count as jest.Mock).mockResolvedValue(1);
+
+      const result = await service.findAll({} as any);
+
+      expect(result.data).toHaveLength(1);
+      expect(result.total).toBe(1);
+    });
+
+    it('filtruje po citySlug gdy city istnieje', async () => {
+      (prisma.city.findUnique as jest.Mock).mockResolvedValue({ slug: 'warszawa' });
+
+      await service.findAll({ citySlug: 'warszawa' } as any);
+
+      expect(prisma.event.findMany as jest.Mock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ city: { slug: 'warszawa' } }),
+        }),
+      );
+    });
+
+    it('rzuca NotFoundException dla nieznanego citySlug', async () => {
+      (prisma.city.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.findAll({ citySlug: 'nieznane' } as any)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('filtruje po disciplineSlug', async () => {
+      await service.findAll({ disciplineSlug: 'pilka-nozna' } as any);
+
+      expect(prisma.event.findMany as jest.Mock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ discipline: { slug: 'pilka-nozna' } }),
+        }),
+      );
+    });
+
+    it('sortuje po createdAt desc gdy sortBy=newest', async () => {
+      await service.findAll({ sortBy: 'newest' } as any);
+
+      expect(prisma.event.findMany as jest.Mock).toHaveBeenCalledWith(
+        expect.objectContaining({ orderBy: { createdAt: 'desc' } }),
+      );
+    });
+  });
+
+  // ─── findOne() ────────────────────────────────────────────────────────────
+
+  describe('findOne()', () => {
+    it('zwraca wydarzenie z eventTimeStatus i enrollmentPhase', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent());
+
+      const result = await service.findOne('event1');
+
+      expect(result.eventTimeStatus).toBeDefined();
+      expect(result.enrollmentPhase).toBeDefined();
+    });
+
+    it('zwraca currentUserAccess gdy userId podany i nie jest organizatorem', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent({ organizerId: 'org1' }));
+      const eligibilityMock = { isBannedByOrganizer: jest.fn(), isNewUser: jest.fn().mockResolvedValue(false) };
+      service = new EventsService(
+        prisma as PrismaService,
+        { sendNewApplicationEmail: jest.fn(), sendEventCancelledEmail: jest.fn().mockResolvedValue(undefined) } as any,
+        { notifyNewEventInCity: jest.fn().mockResolvedValue(undefined), notifyEventCancelled: jest.fn().mockResolvedValue(undefined) } as any,
+        notifications,
+        buildCoverImagesMock(),
+        buildCitySubsMock(),
+        slots,
+        realtime,
+        eligibilityMock as any,
+      );
+
+      const result = await service.findOne('event1', 'user1');
+
+      expect(result.currentUserAccess).not.toBeNull();
+      expect(eligibilityMock.isNewUser).toHaveBeenCalledWith('user1', 'org1');
+    });
+
+    it('rzuca NotFoundException gdy event nie istnieje', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.findOne('nonexistent')).rejects.toThrow(NotFoundException);
     });
   });
 

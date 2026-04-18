@@ -3,7 +3,7 @@
 > Plik do śledzenia postępu wdrożenia według `docs/tasks/testing-strategy.md`.
 > Aktualizuj po każdym ukończonym checkpoincie.
 >
-> **Ostatnia aktualizacja:** 2026-04-18 (sesja 4 — EventValidators 2.7, event-detail 4.5, data-testid)
+> **Ostatnia aktualizacja:** 2026-04-18 (sesja 5 — brakujące testy: joinGuest, rejoinById, changeRole, initiateEventPayment, getPaymentStatus, getIntentPaymentStatus, simulateSuccessfulPayment, findAll, findOne)
 
 ---
 
@@ -33,10 +33,10 @@
 | Checkpoint | Serwis | Plik spec | Status | Uwagi |
 |---|---|---|---|---|
 | **1.1** | `AuthService` | `auth/auth.service.spec.ts` | `[x]` | 28 testów ✓ |
-| **1.2** | `EnrollmentService` | `enrollment/enrollment.service.spec.ts` | `[x]` | 45 testów ✓ |
+| **1.2** | `EnrollmentService` | `enrollment/enrollment.service.spec.ts` | `[x]` | 68 testów ✓ (+ joinGuest, rejoinById, changeRole, initiateEventPayment) |
 | **1.3** | `EnrollmentEligibilityService` | `enrollment/enrollment-eligibility.service.spec.ts` | `[x]` | 13 testów ✓ |
-| **1.4** | `EventsService` | `events/events.service.spec.ts` | `[x]` | 25 testów ✓ |
-| **1.5** | `PaymentsService` | `payments/payments.service.spec.ts` | `[x]` | 13 testów ✓ |
+| **1.4** | `EventsService` | `events/events.service.spec.ts` | `[x]` | 33 testów ✓ (+ findAll, findOne) |
+| **1.5** | `PaymentsService` | `payments/payments.service.spec.ts` | `[x]` | 25 testów ✓ (+ getPaymentStatus, getIntentPaymentStatus, simulateSuccessfulPayment) |
 | **1.6** | `ModerationService` | `moderation/moderation.service.spec.ts` | `[x]` | 9 testów ✓ |
 | **1.7** | `ChatService` | `chat/chat.service.spec.ts` | `[x]` | 14 testów ✓ |
 | **1.8** | `VouchersService` | `vouchers/vouchers.service.spec.ts` | `[x]` | 9 testów ✓ |
@@ -133,7 +133,7 @@
 
 | Metryka | Target | Aktualny stan |
 |---|---|---|
-| Pokrycie `auth`, `enrollment`, `events`, `payments` | > 70% | backend: 270 testów ✓ + 14 integracyjnych |
+| Pokrycie `auth`, `enrollment`, `events`, `payments` | > 70% | backend: 317 testów ✓ + 14 integracyjnych |
 | Pokrycie `*.util.ts`, `*.validator.ts` | > 90% | 13+8+8+14+7+7+6 testów ✓ |
 | Pokrycie `core/auth/`, `core/services/` | > 60% | frontend: ~183 testy ✓ |
 | Smoke e2e czas | < 5 min | pliki gotowe, wymaga działającego env |

@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Decimal } from '@prisma/client/runtime/library';
+import { featureFlags } from '../../common/config/feature-flags';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
@@ -775,6 +776,272 @@ describe('EnrollmentService', () => {
       await expect(service.updateGuestName('p1', 'host1', 'Name')).rejects.toThrow(
         ForbiddenException,
       );
+    });
+  });
+
+  // ─── joinGuest() ─────────────────────────────────────────────────────────
+
+  describe('joinGuest()', () => {
+    const openEvent = makeEvent({ lotteryExecutedAt: new Date(), costPerPerson: new Decimal(0) });
+
+    beforeEach(() => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(openEvent);
+      (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(false);
+      (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
+      (eligibility.getGuestCount as jest.Mock).mockResolvedValue(0);
+      (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
+      (prisma.user.create as jest.Mock).mockResolvedValue({ id: 'guest1', displayName: 'Gość' });
+    });
+
+    it('tworzy gościa i zwraca enrollment ze statusem APPROVED gdy jest wolny slot', async () => {
+      const guestEnrollment = makeEnrollment({
+        id: 'pg1',
+        userId: 'guest1',
+        addedByUserId: 'host1',
+        wantsIn: true,
+        slot: { id: 'slot1', confirmed: false },
+      });
+      tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
+      tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
+
+      const result = await service.joinGuest('event1', 'host1', 'Gość');
+
+      expect(prisma.user.create as jest.Mock).toHaveBeenCalled();
+      expect(result.status).toBe('APPROVED');
+    });
+
+    it('rzuca BadRequestException gdy host przekroczył limit gości', async () => {
+      (eligibility.getGuestCount as jest.Mock).mockResolvedValue(2); // MAX_GUESTS_PER_USER = 2
+
+      await expect(service.joinGuest('event1', 'host1', 'Gość')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('organizator może dodać gościa bez limitu (limit gości nie dotyczy organizatora)', async () => {
+      (eligibility.getGuestCount as jest.Mock).mockResolvedValue(10);
+      const guestEnrollment = makeEnrollment({
+        id: 'pg1',
+        userId: 'guest1',
+        addedByUserId: 'org1',
+        wantsIn: true,
+        slot: { id: 'slot1', confirmed: false },
+      });
+      tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
+      tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
+
+      await expect(service.joinGuest('event1', 'org1', 'Gość')).resolves.toBeDefined();
+    });
+
+    it('zbanowany host → gość na liście oczekujących z waitingReason=BANNED', async () => {
+      (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(true);
+      const guestEnrollment = makeEnrollment({
+        userId: 'guest1',
+        addedByUserId: 'host1',
+        wantsIn: true,
+        slot: null,
+        waitingReason: 'BANNED',
+      });
+      (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(guestEnrollment);
+
+      const result = await service.joinGuest('event1', 'host1', 'Gość');
+
+      expect(result.waitingReason).toBe('BANNED');
+    });
+
+    it('nowy host → gość na liście oczekujących z waitingReason=NEW_USER', async () => {
+      (eligibility.isNewUser as jest.Mock).mockResolvedValue(true);
+      const guestEnrollment = makeEnrollment({
+        userId: 'guest1',
+        addedByUserId: 'host1',
+        wantsIn: true,
+        slot: null,
+        waitingReason: 'NEW_USER',
+      });
+      (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(guestEnrollment);
+
+      const result = await service.joinGuest('event1', 'host1', 'Gość');
+
+      expect(result.waitingReason).toBe('NEW_USER');
+    });
+  });
+
+  // ─── rejoinById() ────────────────────────────────────────────────────────
+
+  describe('rejoinById()', () => {
+    it('ponownie dołącza wycofanego uczestnika', async () => {
+      const openEvent = makeEvent({ lotteryExecutedAt: new Date() });
+      const withdrawnEnrollment = makeEnrollment({ wantsIn: false, withdrawnBy: 'USER', slot: null, event: openEvent });
+      (prisma.eventEnrollment.findUnique as jest.Mock)
+        .mockResolvedValueOnce(withdrawnEnrollment)
+        .mockResolvedValue(makeEnrollment({ wantsIn: true }));
+      (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue(makeEnrollment({ wantsIn: true }));
+      (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(false);
+      (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
+      (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
+
+      await service.rejoinById('p1', 'user1');
+
+      expect(prisma.eventEnrollment.update as jest.Mock).toHaveBeenCalled();
+    });
+
+    it('rzuca ForbiddenException gdy inny użytkownik próbuje ponownie dołączyć', async () => {
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(
+        makeEnrollment({ userId: 'user1', addedByUserId: null, wantsIn: false }),
+      );
+
+      await expect(service.rejoinById('p1', 'intruder')).rejects.toThrow(ForbiddenException);
+    });
+
+    it('rzuca BadRequestException gdy uczestnik już ma aktywny slot', async () => {
+      const openEvent = makeEvent({ lotteryExecutedAt: new Date() });
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(
+        makeEnrollment({ wantsIn: true, slot: { id: 'slot1', confirmed: true }, event: openEvent }),
+      );
+
+      await expect(service.rejoinById('p1', 'user1')).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  // ─── changeRole() ────────────────────────────────────────────────────────
+
+  describe('changeRole()', () => {
+    const roleConfig = { roles: [{ key: 'atakujacy', slots: 5, isDefault: true }, { key: 'bramkarz', slots: 5, isDefault: false }] };
+    const openEvent = makeEvent({ lotteryExecutedAt: new Date(), roleConfig });
+
+    it('rzuca BadRequestException gdy wydarzenie nie ma zdefiniowanych ról', async () => {
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(
+        makeEnrollment({ event: makeEvent({ roleConfig: null }) }),
+      );
+
+      await expect(service.changeRole('p1', 'user1', 'bramkarz')).rejects.toThrow(BadRequestException);
+    });
+
+    it('rzuca BadRequestException gdy rola nie istnieje w konfiguracji', async () => {
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(
+        makeEnrollment({ event: openEvent, slot: null }),
+      );
+
+      await expect(service.changeRole('p1', 'user1', 'nieistniejaca-rola')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('PENDING → aktualizuje roleKey bez zwalniania slotu', async () => {
+      (prisma.eventEnrollment.findUnique as jest.Mock)
+        .mockResolvedValueOnce(makeEnrollment({ event: openEvent, slot: null, roleKey: 'atakujacy' }))
+        .mockResolvedValue(makeEnrollment({ event: openEvent, slot: null, roleKey: 'bramkarz' }));
+      (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue({});
+      (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(false);
+      (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
+      (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
+
+      await service.changeRole('p1', 'user1', 'bramkarz');
+
+      expect(prisma.eventEnrollment.update as jest.Mock).toHaveBeenCalled();
+      expect(slots.releaseSlot as jest.Mock).not.toHaveBeenCalled();
+    });
+
+    it('APPROVED → zwalnia stary slot i próbuje przypisać nowy', async () => {
+      const participationWithSlot = makeEnrollment({
+        event: openEvent,
+        wantsIn: true,
+        slot: { id: 'slot1', confirmed: false },
+        roleKey: 'atakujacy',
+      });
+      (prisma.eventEnrollment.findUnique as jest.Mock)
+        .mockResolvedValueOnce(participationWithSlot)
+        .mockResolvedValue(makeEnrollment({ event: openEvent, slot: null }));
+      tx.eventEnrollment.update.mockResolvedValue({});
+      (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue({});
+      (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(false);
+      (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
+      (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
+
+      await service.changeRole('p1', 'user1', 'bramkarz');
+
+      expect(slots.releaseSlot as jest.Mock).toHaveBeenCalled();
+      expect(slots.assignSlot as jest.Mock).toHaveBeenCalled();
+    });
+  });
+
+  // ─── initiateEventPayment() ───────────────────────────────────────────────
+
+  describe('initiateEventPayment()', () => {
+    const paidEvent = makeEvent({ costPerPerson: new Decimal(50) });
+
+    it('rzuca BadRequestException gdy uczestnik nie ma slotu', async () => {
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(
+        makeEnrollment({ wantsIn: true, slot: null, event: paidEvent }),
+      );
+
+      await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(BadRequestException);
+    });
+
+    it('rzuca BadRequestException gdy wydarzenie jest odwołane', async () => {
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(
+        makeEnrollment({
+          wantsIn: true,
+          slot: { id: 'slot1', confirmed: false },
+          event: makeEvent({ status: 'CANCELLED', costPerPerson: new Decimal(50) }),
+        }),
+      );
+
+      await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(BadRequestException);
+    });
+
+    it('rzuca BadRequestException gdy wydarzenie jest bezpłatne', async () => {
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(
+        makeEnrollment({
+          wantsIn: true,
+          slot: { id: 'slot1', confirmed: false },
+          event: makeEvent({ costPerPerson: new Decimal(0) }),
+        }),
+      );
+
+      await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(BadRequestException);
+    });
+
+    it('deleguje do paymentsService z userId hosta gdy gość (addedByUserId)', async () => {
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(
+        makeEnrollment({
+          userId: 'guest1',
+          addedByUserId: 'host1',
+          wantsIn: true,
+          slot: { id: 'slot1', confirmed: false },
+          event: paidEvent,
+        }),
+      );
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 'host1',
+        email: 'host@test.com',
+        displayName: 'Host',
+      });
+      (payments.initiatePayment as jest.Mock).mockResolvedValue({ paymentUrl: 'https://pay.tpay.com/TX1' });
+
+      const result = await service.initiateEventPayment('p1', 'host1');
+
+      expect(payments.initiatePayment as jest.Mock).toHaveBeenCalledWith(
+        'p1',
+        paidEvent.id,
+        'host1',
+        50,
+        'host@test.com',
+        'Host',
+        expect.any(String),
+        expect.any(String),
+      );
+      expect(result.paymentUrl).toBe('https://pay.tpay.com/TX1');
+    });
+
+    it('rzuca ForbiddenException gdy feature flag płatności online jest wyłączony', async () => {
+      const original = featureFlags.enableOnlinePayments;
+      (featureFlags as any).enableOnlinePayments = false;
+      try {
+        await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(ForbiddenException);
+      } finally {
+        (featureFlags as any).enableOnlinePayments = original;
+      }
     });
   });
 });
