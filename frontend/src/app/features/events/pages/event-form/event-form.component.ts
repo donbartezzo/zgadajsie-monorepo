@@ -8,13 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-  AbstractControl,
-  ValidationErrors,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
@@ -42,37 +36,11 @@ import {
   fromLocalInputValue,
 } from '@zgadajsie/shared';
 import { isEventJoinable } from '../../../../shared/utils/event-time-status.util';
+import { EventValidators } from '../../validators/event.validators';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 interface DuplicateQueryParams {
   duplicateId?: string;
-}
-
-// Custom walidatory
-class EventValidators {
-  static startDateInFuture(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) return null;
-
-    const startUtc = fromLocalInputValue(control.value);
-    const nowUtc = nowInZone().toISO()!;
-
-    return startUtc <= nowUtc ? { startDateInPast: true } : null;
-  }
-
-  static endDateAfterStart(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) return null;
-
-    const form = control.parent;
-    if (!form) return null;
-
-    const startDateStr = form.get('startsAt')?.value;
-    if (!startDateStr) return null;
-
-    const startUtc = fromLocalInputValue(startDateStr);
-    const endUtc = fromLocalInputValue(control.value);
-
-    return endUtc <= startUtc ? { endDateBeforeStart: true } : null;
-  }
 }
 
 @Component({

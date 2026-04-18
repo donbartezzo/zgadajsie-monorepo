@@ -3,7 +3,7 @@
 > Plik do śledzenia postępu wdrożenia według `docs/tasks/testing-strategy.md`.
 > Aktualizuj po każdym ukończonym checkpoincie.
 >
-> **Ostatnia aktualizacja:** 2026-04-18 (sesja 3 — brakujące guardy 3.3)
+> **Ostatnia aktualizacja:** 2026-04-18 (sesja 4 — EventValidators 2.7, event-detail 4.5, data-testid)
 
 ---
 
@@ -71,7 +71,7 @@
 | **2.4** | `common/validators/password.validator.spec.ts` | `[x]` | 7 testów ✓ |
 | **2.5** | DTO validation specs | `[x]` | `create-event.dto` (10 testów), `register.dto` (7), `join-event.dto` (6) ✓ |
 | **2.6** | `pipes/event-duration.pipe.spec.ts` + `time-unit.pipe.spec.ts` | `[x]` | 2+5 testów ✓ |
-| **2.7** | `events/validators/event.validators.spec.ts` | `[!]` | Pominięty — brak oddzielnego pliku walidatorów, logika w komponencie |
+| **2.7** | `events/validators/event.validators.spec.ts` | `[x]` | 8 testów ✓ — wyodrębniono `EventValidators` do `features/events/validators/event.validators.ts` |
 
 ---
 
@@ -95,7 +95,7 @@
 | **4.2** | `events/pages/event-form/event-form.component.spec.ts` | `[x]` | 12 testów ✓ overrideTemplate |
 | **4.3** | `enrollment/ui/enrollment-grid/*.component.spec.ts` | `[x]` | 53 testy ✓ (15+20+6+12) |
 | **4.4** | `shared/auth/ui/login-form/login-form.component.spec.ts` | `[x]` | 8 testów ✓ |
-| **4.5** | `event/pages/event-detail/event-detail.component.spec.ts` | `[x]` | 16 testów ✓ EventAreaService |
+| **4.5** | `event/pages/event-detail/event-detail.component.spec.ts` | `[x]` | 17 testów ✓ (rulesList, isPreEnrollment, cancelEvent, confirmAnnouncement, confirmAll, openChat, onAuthSuccess, ngOnDestroy) |
 
 ---
 
@@ -125,7 +125,7 @@
 | Playwright `storageState` skonfigurowany | `[x]` | projekty: setup / authenticated / unauthenticated |
 | `playwright/.auth/` dodany do `.gitignore` | `[x]` | |
 | Skrypty testowe w `package.json` | `[x]` | `test:unit`, `test:integration`, `test:e2e:smoke` |
-| `data-testid` na elementach interaktywnych | `[ ]` | Dodawać przy implementacji e2e |
+| `data-testid` na elementach interaktywnych | `[x]` | `[attr.data-testid]="bar.id + '-button'"` w `EventInlineNotificationBarsComponent` → `data-testid="join-button"` ✓ |
 
 ---
 
