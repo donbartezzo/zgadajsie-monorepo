@@ -1,4 +1,4 @@
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatService } from './chat.service';
 
@@ -20,9 +20,13 @@ function buildPrismaMock() {
       findMany: jest.fn(),
       count: jest.fn(),
       create: jest.fn(),
+      findFirst: jest.fn(),
     },
     eventSlot: {
       findUnique: jest.fn(),
+    },
+    user: {
+      findMany: jest.fn(),
     },
   } as unknown as PrismaService;
 }
@@ -153,6 +157,25 @@ describe('ChatService', () => {
     });
   });
 
+  describe('getMessages()', () => {
+    it('zwraca paginowane wiadomości z łączną liczbą', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({
+        id: 'event1',
+        organizerId: 'org1',
+      });
+      (prisma.eventGroupMessage.findMany as jest.Mock).mockResolvedValue([
+        { id: 'msg1', content: 'Hello', createdAt: new Date() },
+      ]);
+      (prisma.eventGroupMessage.count as jest.Mock).mockResolvedValue(1);
+
+      const result = await service.getMessages('event1', 'org1', 1, 50);
+
+      expect(result.data).toHaveLength(1);
+      expect(result.total).toBe(1);
+      expect(result.page).toBe(1);
+    });
+  });
+
   describe('createSystemMessage()', () => {
     it('tworzy wiadomość bez sprawdzania dostępu (bypass dla systemu)', async () => {
       (prisma.eventGroupMessage.create as jest.Mock).mockResolvedValue({ id: 'sys1' });
@@ -214,6 +237,23 @@ describe('ChatService', () => {
         service.createPrivateMessage('event1', 'user1', 'org1', 'Hi'),
       ).rejects.toThrow(ForbiddenException);
     });
+
+    it('uczestnik → organizator: OK', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({
+        id: 'event1',
+        organizerId: 'org1',
+      });
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue({
+        id: 'p1',
+        wantsIn: true,
+        withdrawnBy: null,
+      });
+      (prisma.privateChatMessage.create as jest.Mock).mockResolvedValue({ id: 'pm2' });
+
+      const result = await service.createPrivateMessage('event1', 'user1', 'org1', 'Hi organizer');
+
+      expect(result.id).toBe('pm2');
+    });
   });
 
   describe('getOrganizerConversations()', () => {
@@ -226,6 +266,90 @@ describe('ChatService', () => {
       await expect(
         service.getOrganizerConversations('event1', 'different-user'),
       ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('zwraca listę konwersacji organizatora', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({ organizerId: 'org1' });
+      (prisma.privateChatMessage.findMany as jest.Mock).mockResolvedValue([
+        { senderId: 'user1', recipientId: 'org1' },
+      ]);
+      (prisma.user as any).findMany.mockResolvedValue([
+        { id: 'user1', displayName: 'User 1', avatarUrl: null },
+      ]);
+      (prisma.privateChatMessage.findFirst as jest.Mock).mockResolvedValue({
+        content: 'Hello',
+        createdAt: new Date(),
+        senderId: 'user1',
+      });
+      (prisma.privateChatMessage.count as jest.Mock).mockResolvedValue(0);
+
+      const result = await service.getOrganizerConversations('event1', 'org1');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].participant.id).toBe('user1');
+    });
+
+    it('zwraca [] gdy brak konwersacji', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({ organizerId: 'org1' });
+      (prisma.privateChatMessage.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await service.getOrganizerConversations('event1', 'org1');
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('getChatMembers()', () => {
+    it('zwraca organizatora i listę członków z statusami', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({
+        organizerId: 'org1',
+        organizer: { id: 'org1', displayName: 'Organizer', avatarUrl: null },
+      });
+      (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: 'p1',
+          userId: 'user1',
+          wantsIn: true,
+          withdrawnBy: null,
+          slot: { confirmed: true },
+          user: { id: 'user1', displayName: 'User 1', avatarUrl: null },
+        },
+      ]);
+
+      const result = await service.getChatMembers('event1');
+
+      expect(result.organizer.id).toBe('org1');
+      expect(result.organizer.isOrganizer).toBe(true);
+      expect(result.members).toHaveLength(1);
+      expect(result.members[0].status).toBe('CONFIRMED');
+    });
+
+    it('wypisany uczestnik ma isActive=false i status=WITHDRAWN', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({
+        organizerId: 'org1',
+        organizer: { id: 'org1', displayName: 'Organizer', avatarUrl: null },
+      });
+      (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: 'p1',
+          userId: 'user1',
+          wantsIn: false,
+          withdrawnBy: 'USER',
+          slot: null,
+          user: { id: 'user1', displayName: 'User 1', avatarUrl: null },
+        },
+      ]);
+
+      const result = await service.getChatMembers('event1');
+
+      expect(result.members[0].isActive).toBe(false);
+      expect(result.members[0].status).toBe('WITHDRAWN');
+    });
+
+    it('rzuca NotFoundException gdy event nie istnieje', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.getChatMembers('nonexistent')).rejects.toThrow(NotFoundException);
     });
   });
 });

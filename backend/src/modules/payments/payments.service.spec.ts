@@ -248,6 +248,34 @@ describe('PaymentsService', () => {
         `${baseParams.backendBaseUrl}/api/payments/tpay-webhook`,
       );
     });
+
+    it('częściowe pokrycie voucherem → deductVoucher + pomniejszona kwota Tpay', async () => {
+      (vouchers.getBalance as jest.Mock).mockResolvedValue(20);
+      (prisma.paymentIntent.create as jest.Mock).mockResolvedValue({
+        id: 'intent1',
+        userId: 'user1',
+      });
+      (prisma.paymentIntent.update as jest.Mock).mockResolvedValue({});
+      (tpay.createTransaction as jest.Mock).mockResolvedValue({
+        transactionId: 'TX1',
+        paymentUrl: 'https://pay.tpay.com/TX1',
+      });
+
+      await service.initiatePayment(
+        baseParams.participationId,
+        baseParams.eventId,
+        baseParams.userId,
+        baseParams.amount,
+        baseParams.payerEmail,
+        baseParams.payerName,
+        baseParams.frontendBaseUrl,
+        baseParams.backendBaseUrl,
+      );
+
+      expect(vouchers.deductVoucher as jest.Mock).toHaveBeenCalledWith('user1', 'org1', 20);
+      const tpayCall = (tpay.createTransaction as jest.Mock).mock.calls[0][0];
+      expect(tpayCall.amount).toBe(30);
+    });
   });
 
   describe('handleWebhook()', () => {
@@ -322,6 +350,20 @@ describe('PaymentsService', () => {
       (prisma.payment.findFirst as jest.Mock).mockResolvedValue({ id: 'pay1' });
 
       await service.handleWebhook({ tr_id: 'TX1' } as any, 'valid-sig');
+
+      expect(tx.payment.create).not.toHaveBeenCalled();
+    });
+
+    it('nieznany transactionId (brak intenta i płatności) → noop', async () => {
+      (tpay.verifyWebhook as jest.Mock).mockResolvedValue({
+        valid: true,
+        transactionId: 'UNKNOWN_TX',
+        status: 'TRUE',
+      });
+      (prisma.paymentIntent.findFirst as jest.Mock).mockResolvedValue(null);
+      (prisma.payment.findFirst as jest.Mock).mockResolvedValue(null);
+
+      await service.handleWebhook({ tr_id: 'UNKNOWN_TX' } as any, 'valid-sig');
 
       expect(tx.payment.create).not.toHaveBeenCalled();
     });

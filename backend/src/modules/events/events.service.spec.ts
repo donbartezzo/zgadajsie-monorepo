@@ -209,6 +209,29 @@ describe('EventsService', () => {
 
       await expect(service.create('org1', dto)).rejects.toThrow(BadRequestException);
     });
+
+    it('ustawia lotteryExecutedAt=now gdy event zaczyna się w ciągu 48h', async () => {
+      const nearFuture = new Date(Date.now() + 60 * 60 * 1000);
+      const dto = makeCreateEventDto({
+        startsAt: nearFuture.toISOString(),
+        endsAt: new Date(nearFuture.getTime() + 3600000).toISOString(),
+      });
+      (prisma.event.create as jest.Mock).mockResolvedValue(makeEvent({ startsAt: nearFuture }));
+
+      await service.create('org1', dto);
+
+      const createCall = (prisma.event.create as jest.Mock).mock.calls[0][0];
+      expect(createCall.data.lotteryExecutedAt).toBeTruthy();
+    });
+
+    it('ustawia lotteryExecutedAt=null gdy event zaczyna się po ponad 48h', async () => {
+      (prisma.event.create as jest.Mock).mockResolvedValue(makeEvent());
+
+      await service.create('org1', makeCreateEventDto());
+
+      const createCall = (prisma.event.create as jest.Mock).mock.calls[0][0];
+      expect(createCall.data.lotteryExecutedAt).toBeNull();
+    });
   });
 
   // ─── update() ─────────────────────────────────────────────────────────────
@@ -274,6 +297,30 @@ describe('EventsService', () => {
         BadRequestException,
       );
     });
+
+    it('odrzuca edycję eventu ze statusem CANCELLED (BadRequestException)', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent({ status: 'CANCELLED' }));
+
+      await expect(service.update('event1', 'org1', {} as any)).rejects.toThrow(BadRequestException);
+    });
+
+    it('wywołuje reconcileSlotsForRoleConfig przy zmianie roleConfig', async () => {
+      const roleConfig = {
+        roles: [
+          { key: 'a', slots: 5, isDefault: true },
+          { key: 'b', slots: 5, isDefault: false },
+        ],
+      };
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent({ roleConfig }));
+      (prisma.event.update as jest.Mock).mockResolvedValue(makeEvent({ roleConfig }));
+
+      await service.update('event1', 'org1', { roleConfig } as any);
+
+      expect(slots.reconcileSlotsForRoleConfig as jest.Mock).toHaveBeenCalledWith(
+        'event1',
+        roleConfig,
+      );
+    });
   });
 
   // ─── findAll() ────────────────────────────────────────────────────────────
@@ -329,6 +376,18 @@ describe('EventsService', () => {
 
       expect(prisma.event.findMany as jest.Mock).toHaveBeenCalledWith(
         expect.objectContaining({ orderBy: { createdAt: 'desc' } }),
+      );
+    });
+
+    it('domyślnie filtruje po statusach ACTIVE i CANCELLED', async () => {
+      await service.findAll({} as any);
+
+      expect(prisma.event.findMany as jest.Mock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: { in: ['ACTIVE', 'CANCELLED'] },
+          }),
+        }),
       );
     });
   });
@@ -422,6 +481,90 @@ describe('EventsService', () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(null);
 
       await expect(service.cancel('nonexistent', 'org1')).rejects.toThrow(NotFoundException);
+    });
+
+    it('zwraca statystyki refundedParticipants i cleanedUpIntents', async () => {
+      const event = makeEvent({ costPerPerson: new Decimal(50) });
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);
+      tx.event.update.mockResolvedValue({ ...event, status: 'CANCELLED', id: 'event1' });
+      tx.eventEnrollment.findMany
+        .mockResolvedValueOnce([
+          {
+            id: 'p1',
+            userId: 'user1',
+            payments: [{ id: 'pay1', amount: new Decimal(50), status: 'COMPLETED' }],
+          },
+        ])
+        .mockResolvedValueOnce([]);
+      tx.payment.update.mockResolvedValue({});
+      tx.eventEnrollment.update.mockResolvedValue({});
+      tx.eventSlot.updateMany.mockResolvedValue({});
+      tx.organizerVoucher.create.mockResolvedValue({});
+      (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await service.cancel('event1', 'org1');
+
+      expect(result.refundedParticipants).toBe(1);
+      expect(result.cleanedUpIntents).toBe(0);
+    });
+
+    it('czyści paymentIntenty dla oczekujących uczestników', async () => {
+      const event = makeEvent();
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);
+      tx.event.update.mockResolvedValue({ ...event, status: 'CANCELLED' });
+      tx.eventEnrollment.findMany
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([{ id: 'p1', userId: 'user1' }]);
+      tx.paymentIntent.findMany.mockResolvedValue([
+        { id: 'intent1', voucherReserved: new Decimal(0) },
+      ]);
+      tx.paymentIntent.delete.mockResolvedValue({});
+      tx.eventEnrollment.update.mockResolvedValue({});
+      tx.eventSlot.updateMany.mockResolvedValue({});
+      (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await service.cancel('event1', 'org1');
+
+      expect(tx.paymentIntent.delete).toHaveBeenCalledWith({ where: { id: 'intent1' } });
+      expect(result.cleanedUpIntents).toBe(1);
+    });
+
+    it('wysyła powiadomienia push i email do uczestników', async () => {
+      const pushMock = {
+        notifyEventCancelled: jest.fn().mockResolvedValue(undefined),
+        notifyNewEventInCity: jest.fn(),
+      };
+      const emailMock = {
+        sendEventCancelledEmail: jest.fn().mockResolvedValue(undefined),
+        sendNewApplicationEmail: jest.fn(),
+      };
+      service = new EventsService(
+        prisma as PrismaService,
+        emailMock as any,
+        pushMock as any,
+        notifications,
+        buildCoverImagesMock(),
+        buildCitySubsMock(),
+        slots,
+        realtime,
+        { isBannedByOrganizer: jest.fn(), isNewUser: jest.fn() } as any,
+      );
+      const event = makeEvent();
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);
+      tx.event.update.mockResolvedValue({ ...event, status: 'CANCELLED' });
+      tx.eventEnrollment.findMany.mockResolvedValue([]);
+      (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([
+        { user: { id: 'user1', email: 'user@test.com', displayName: 'User 1' } },
+      ]);
+
+      await service.cancel('event1', 'org1');
+
+      expect(pushMock.notifyEventCancelled).toHaveBeenCalledWith('user1', event.title, 'event1');
+      expect(emailMock.sendEventCancelledEmail).toHaveBeenCalledWith(
+        'user@test.com',
+        'User 1',
+        event.title,
+      );
     });
   });
 
@@ -566,6 +709,33 @@ describe('EventsService', () => {
       await expect(
         service.cancelPayment('event1', 'pay1', 'not-org', {}),
       ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('gotówka smart default (pusty dto): usuwa bez powiadomienia', async () => {
+      const cashPayment = { ...completedPayment, method: 'cash' };
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent());
+      (prisma.payment.findFirst as jest.Mock).mockResolvedValue(cashPayment);
+      tx.payment.delete.mockResolvedValue({});
+      tx.eventSlot.updateMany.mockResolvedValue({});
+      (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([]);
+
+      await service.cancelPayment('event1', 'pay1', 'org1', {});
+
+      expect(notifications.create as jest.Mock).not.toHaveBeenCalled();
+    });
+
+    it('tpay smart default (pusty dto): voucher refund + powiadomienie', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent());
+      (prisma.payment.findFirst as jest.Mock).mockResolvedValue(completedPayment);
+      tx.payment.update.mockResolvedValue({});
+      tx.organizerVoucher.create.mockResolvedValue({});
+      tx.eventSlot.updateMany.mockResolvedValue({});
+      (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([]);
+
+      await service.cancelPayment('event1', 'pay1', 'org1', {});
+
+      expect(tx.organizerVoucher.create).toHaveBeenCalled();
+      expect(notifications.create as jest.Mock).toHaveBeenCalled();
     });
   });
 });

@@ -369,6 +369,47 @@ describe('EnrollmentService', () => {
       expect(result.waitingReason).toBe('NO_SLOTS');
     });
 
+    it('brak slotów dla wybranej roli → PENDING z waitingReason=NO_SLOTS_FOR_ROLE', async () => {
+      const roleConfig = {
+        roles: [
+          { key: 'a', slots: 5, isDefault: true },
+          { key: 'b', slots: 0, isDefault: false },
+        ],
+      };
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(
+        makeEvent({ lotteryExecutedAt: new Date(), roleConfig }),
+      );
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(null);
+      (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(false);
+      (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
+      (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(0);
+      (slots.getAvailableRoles as jest.Mock).mockResolvedValue([{ key: 'a', slots: 5 }]);
+      const participation = makeEnrollment({ waitingReason: 'NO_SLOTS_FOR_ROLE', slot: null });
+      (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+
+      const result = await service.join('event1', 'user1', 'b');
+
+      expect(result.waitingReason).toBe('NO_SLOTS_FOR_ROLE');
+    });
+
+    it('rzuca BadRequestException gdy podana rola nie istnieje w konfiguracji', async () => {
+      const roleConfig = {
+        roles: [
+          { key: 'a', slots: 5, isDefault: true },
+          { key: 'b', slots: 5, isDefault: false },
+        ],
+      };
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(
+        makeEvent({ lotteryExecutedAt: new Date(), roleConfig }),
+      );
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.join('event1', 'user1', 'unknown-role')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
     it('organizator dołącza → slot auto-confirmed=true', async () => {
       const participationWithSlot = makeEnrollment({
         userId: 'org1',
@@ -528,6 +569,38 @@ describe('EnrollmentService', () => {
       );
     });
 
+    it('wysyła push do uczestnika w OPEN_ENROLLMENT po przydzieleniu slotu', async () => {
+      const participation = makeEnrollment({
+        wantsIn: true,
+        slot: null,
+        event: makeEvent({ lotteryExecutedAt: new Date() }),
+      });
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(participation);
+      (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
+      (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue({
+        ...participation,
+        waitingReason: null,
+        slot: { confirmed: false },
+        eventId: 'event1',
+        addedByUserId: null,
+        event: { id: 'event1', title: 'Test Event' },
+      });
+      (prisma.organizerUserRelation.upsert as jest.Mock).mockResolvedValue({});
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        email: 'user@test.com',
+        displayName: 'User 1',
+      });
+
+      await service.assignSlotToParticipant('p1', 'org1');
+
+      expect(push.notifyParticipationStatus as jest.Mock).toHaveBeenCalledWith(
+        'user1',
+        'Test Event',
+        'SLOT_ASSIGNED',
+        'event1',
+      );
+    });
+
     it('NIE oznacza gościa jako zaufanego (addedByUserId != null)', async () => {
       const guestParticipation = makeEnrollment({
         wantsIn: true,
@@ -646,6 +719,38 @@ describe('EnrollmentService', () => {
 
       await expect(service.releaseSlotFromParticipant('p1', 'org1')).rejects.toThrow(
         NotFoundException,
+      );
+    });
+
+    it('wysyła powiadomienie REMOVED do uczestnika po zwolnieniu slotu', async () => {
+      const participation = makeEnrollment({
+        wantsIn: true,
+        slot: { id: 'slot1', confirmed: false, locked: false },
+        event: makeEvent(),
+      });
+      (prisma.eventEnrollment.findUnique as jest.Mock)
+        .mockResolvedValueOnce(participation)
+        .mockResolvedValue({
+          ...participation,
+          wantsIn: false,
+          withdrawnBy: 'ORGANIZER',
+          addedByUserId: null,
+          eventId: 'event1',
+          event: { id: 'event1', title: 'Test Event' },
+        });
+      tx.eventEnrollment.update.mockResolvedValue({});
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        email: 'user@test.com',
+        displayName: 'User 1',
+      });
+
+      await service.releaseSlotFromParticipant('p1', 'org1');
+
+      expect(push.notifyParticipationStatus as jest.Mock).toHaveBeenCalledWith(
+        'user1',
+        'Test Event',
+        'REMOVED',
+        'event1',
       );
     });
   });
