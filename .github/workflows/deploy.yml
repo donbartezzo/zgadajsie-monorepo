@@ -32,6 +32,15 @@ jobs:
       - name: Generate Prisma client
         run: pnpm prisma:generate
 
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Unit tests
+        run: pnpm test:ci
+
       - name: Build backend
         run: pnpm nx build backend
 
@@ -43,12 +52,6 @@ jobs:
         env:
           FRONTEND_VERSION: ${{ github.event.release.tag_name || steps.get_short_sha.outputs.sha }}
         run: pnpm nx build frontend --configuration=production
-
-      - name: Test backend
-        run: pnpm nx test backend --passWithNoTests
-
-      - name: Test frontend
-        run: pnpm nx test frontend --passWithNoTests
 
   deploy-dev:
     needs: ci
