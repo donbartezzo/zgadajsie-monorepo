@@ -15,7 +15,6 @@ function runGuard(
 
 describe('authGuard', () => {
   let mockAuthService: { isLoggedIn: jest.Mock; isAdmin: jest.Mock; isActive: jest.Mock };
-  let router: Router;
 
   beforeEach(() => {
     mockAuthService = {
@@ -29,12 +28,11 @@ describe('authGuard', () => {
         {
           provide: Router,
           useValue: {
-            createUrlTree: jest.fn((commands: any[]) => commands),
+            createUrlTree: jest.fn((commands: string[]) => commands),
           },
         },
       ],
     });
-    router = TestBed.inject(Router);
   });
 
   it('zwraca true gdy użytkownik zalogowany', () => {
@@ -46,13 +44,13 @@ describe('authGuard', () => {
   it('przekierowuje do /auth/login gdy niezalogowany', () => {
     mockAuthService.isLoggedIn.mockReturnValue(false);
 
-    expect(router.createUrlTree).toHaveBeenCalledWith(['/auth/login']);
+    const result = runGuard(authGuard);
+    expect(result).toEqual(['/auth/login']);
   });
 });
 
 describe('adminGuard', () => {
   let mockAuthService: { isLoggedIn: jest.Mock; isAdmin: jest.Mock; isActive: jest.Mock };
-  let router: Router;
 
   beforeEach(() => {
     mockAuthService = {
@@ -65,11 +63,10 @@ describe('adminGuard', () => {
         { provide: AuthService, useValue: mockAuthService },
         {
           provide: Router,
-          useValue: { createUrlTree: jest.fn((commands: any[]) => commands) },
+          useValue: { createUrlTree: jest.fn((commands: string[]) => commands) },
         },
       ],
     });
-    router = TestBed.inject(Router);
   });
 
   it('zwraca true gdy użytkownik jest adminem', () => {
@@ -81,13 +78,13 @@ describe('adminGuard', () => {
   it('przekierowuje do / gdy nie admin', () => {
     mockAuthService.isAdmin.mockReturnValue(false);
 
-    expect(router.createUrlTree).toHaveBeenCalledWith(['/']);
+    const result = runGuard(adminGuard);
+    expect(result).toEqual(['/']);
   });
 });
 
 describe('activeGuard', () => {
   let mockAuthService: { isLoggedIn: jest.Mock; isAdmin: jest.Mock; isActive: jest.Mock };
-  let router: Router;
 
   beforeEach(() => {
     mockAuthService = {
@@ -100,11 +97,10 @@ describe('activeGuard', () => {
         { provide: AuthService, useValue: mockAuthService },
         {
           provide: Router,
-          useValue: { createUrlTree: jest.fn((commands: any[]) => commands) },
+          useValue: { createUrlTree: jest.fn((commands: string[]) => commands) },
         },
       ],
     });
-    router = TestBed.inject(Router);
   });
 
   it('zwraca true gdy użytkownik aktywny', () => {
@@ -116,6 +112,7 @@ describe('activeGuard', () => {
   it('przekierowuje do /profile gdy nieaktywny', () => {
     mockAuthService.isActive.mockReturnValue(false);
 
-    expect(router.createUrlTree).toHaveBeenCalledWith(['/profile']);
+    const result = runGuard(activeGuard);
+    expect(result).toEqual(['/profile']);
   });
 });
