@@ -5,7 +5,7 @@ export class EventsPage {
   readonly eventCards: Locator;
   readonly searchInput: Locator;
 
-  constructor(page: Page, citySlug = 'warszawa') {
+  constructor(page: Page, _citySlug = 'warszawa') {
     this.page = page;
     this.eventCards = page.locator('[data-testid="event-card"], .event-card').first();
     this.searchInput = page.locator('[data-testid="search"], input[type="search"]').first();

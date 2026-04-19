@@ -62,7 +62,6 @@ describe('EnrollmentGridSectionComponent — computed signals', () => {
       const { fixture, c } = create();
       fixture.componentRef.setInput('config', SLOT_STATUS_CONFIG.pending);
       const assignedColors = SLOT_STATUS_CONFIG.assigned;
-      const pendingColors = SLOT_STATUS_CONFIG.pending;
       expect(c.colors()).not.toEqual(assignedColors);
       expect(c.colors()).toBeDefined();
     });

@@ -83,9 +83,9 @@ describe('UsersService', () => {
     });
 
     it('rzuca BadRequestException gdy newPassword podane bez currentPassword', async () => {
-      await expect(
-        service.updateProfile('user1', { newPassword: 'NewPass123!' }),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.updateProfile('user1', { newPassword: 'NewPass123!' })).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('rzuca BadRequestException gdy currentPassword nieprawidłowe', async () => {
@@ -120,7 +120,7 @@ describe('UsersService', () => {
     it('może zmieniać role i status użytkownika', async () => {
       (prisma.user.update as jest.Mock).mockResolvedValue({ ...baseUser, role: 'ADMIN' });
 
-      const result = await service.adminUpdate('user1', { role: 'ADMIN', isActive: true });
+      await service.adminUpdate('user1', { role: 'ADMIN', isActive: true });
 
       const call = (prisma.user.update as jest.Mock).mock.calls[0][0];
       expect(call.data.role).toBe('ADMIN');

@@ -11,8 +11,10 @@ const TEST_CITY = process.env['TEST_CITY_SLUG'] ?? 'warszawa';
 test.describe('Organizer — zarządzanie wydarzeniem', () => {
   test.skip(!TEST_EVENT_ID, 'Wymaga TEST_ORGANIZER_EVENT_ID w env');
 
-  test.beforeEach(async ({}, testInfo) => {
-    const backendAvailable = await fetch('http://localhost:3000').then(() => true).catch(() => false);
+  test.beforeEach(async (testInfo) => {
+    const backendAvailable = await fetch('http://localhost:3000')
+      .then(() => true)
+      .catch(() => false);
     testInfo.skip(!backendAvailable, 'Backend niedostępny');
     testInfo.skip(testInfo.project.name === 'unauthenticated', 'Wymaga zalogowanego użytkownika');
   });
@@ -20,7 +22,9 @@ test.describe('Organizer — zarządzanie wydarzeniem', () => {
   test('organizer widzi panel zarządzania na stronie wydarzenia', async ({ page }) => {
     await page.goto(`/w/${TEST_CITY}/${TEST_EVENT_ID}`);
 
-    const managementPanel = page.locator('[data-testid="organizer-panel"], .organizer-actions').first();
+    const managementPanel = page
+      .locator('[data-testid="organizer-panel"], .organizer-actions')
+      .first();
     await expect(managementPanel).toBeVisible({ timeout: 5_000 });
   });
 

@@ -294,6 +294,9 @@ importers:
       eslint-config-prettier:
         specifier: ^10.0.0
         version: 10.1.8(eslint@8.57.1)
+      eslint-plugin-playwright:
+        specifier: ^2.10.1
+        version: 2.10.1(eslint@8.57.1)
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -6532,6 +6535,12 @@ packages:
     peerDependencies:
       eslint: '>=7.0.0'
 
+  eslint-plugin-playwright@2.10.1:
+    resolution: {integrity: sha512-qea3UxBOb8fTwJ77FMApZKvRye5DOluDHcev0LDJwID3RELeun0JlqzrNIXAB/SXCyB/AesCW/6sZfcT9q3Edg==}
+    engines: {node: '>=16.9.0'}
+    peerDependencies:
+      eslint: '>=8.40.0'
+
   eslint-scope@5.1.1:
     resolution: {integrity: sha512-2NxwbF/hZ0KpepYN0cNbo+FN6XoK7GaHlQhgx/hIZl6Va0bF45RQOOwhLIy8lQDbuCiadSLCBnH2CFYquit5bw==}
     engines: {node: '>=8.0.0'}
@@ -6951,6 +6960,10 @@ packages:
 
   globals@15.15.0:
     resolution: {integrity: sha512-7ACyT3wmyp3I61S4fG682L0VA2RGD9otkqGJIwNUMF1SWUombIIk+af1unuDYgMm082aHYwD+mzJvv9Iu8dsgg==}
+    engines: {node: '>=18'}
+
+  globals@17.5.0:
+    resolution: {integrity: sha512-qoV+HK2yFl/366t2/Cb3+xxPUo5BuMynomoDmiaZBIdbs+0pYbjfZU+twLhGKp4uCZ/+NbtpVepH5bGCxRyy2g==}
     engines: {node: '>=18'}
 
   globby@12.2.0:
@@ -18914,6 +18927,11 @@ snapshots:
     dependencies:
       eslint: 8.57.1
 
+  eslint-plugin-playwright@2.10.1(eslint@8.57.1):
+    dependencies:
+      eslint: 8.57.1
+      globals: 17.5.0
+
   eslint-scope@5.1.1:
     dependencies:
       esrecurse: 4.3.0
@@ -19535,6 +19553,8 @@ snapshots:
       type-fest: 0.20.2
 
   globals@15.15.0: {}
+
+  globals@17.5.0: {}
 
   globby@12.2.0:
     dependencies:

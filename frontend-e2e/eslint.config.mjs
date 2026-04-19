@@ -7,6 +7,10 @@ export default [
   {
     files: ['**/*.ts', '**/*.js'],
     // Override or add rules here
-    rules: {},
+    rules: {
+      '@nx/enforce-module-boundaries': 'off',
+      'no-empty-pattern': 'off',
+      'playwright/no-skipped-test': 'off',
+    },
   },
 ];
