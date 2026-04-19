@@ -11,7 +11,7 @@ const TEST_CITY = process.env['TEST_CITY_SLUG'] ?? 'warszawa';
 test.describe('Organizer — zarządzanie wydarzeniem', () => {
   test.skip(!TEST_EVENT_ID, 'Wymaga TEST_ORGANIZER_EVENT_ID w env');
 
-  test.beforeEach(async (testInfo) => {
+  test.beforeEach(async (_args, testInfo) => {
     const backendAvailable = await fetch('http://localhost:3000')
       .then(() => true)
       .catch(() => false);

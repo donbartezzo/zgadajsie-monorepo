@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Decimal } from '@prisma/client/runtime/library';
 import { featureFlags } from '../../common/config/feature-flags';
 import { PrismaService } from '../prisma/prisma.service';
@@ -16,7 +12,12 @@ import { EnrollmentService } from './enrollment.service';
 
 function buildTxMock() {
   return {
-    eventEnrollment: { create: jest.fn(), update: jest.fn(), findUnique: jest.fn(), delete: jest.fn() },
+    eventEnrollment: {
+      create: jest.fn(),
+      update: jest.fn(),
+      findUnique: jest.fn(),
+      delete: jest.fn(),
+    },
     user: { delete: jest.fn() },
   };
 }
@@ -174,25 +175,42 @@ describe('EnrollmentService', () => {
 
     it('wantsIn=true, slot.confirmed=false → APPROVED', () => {
       const p = makeEnrollment({ wantsIn: true, slot: { confirmed: false } });
-      const withStatus = { ...p, status: p.wantsIn && p.slot ? (p.slot.confirmed ? 'CONFIRMED' : 'APPROVED') : 'PENDING' };
+      const withStatus = {
+        ...p,
+        status: p.wantsIn && p.slot ? (p.slot.confirmed ? 'CONFIRMED' : 'APPROVED') : 'PENDING',
+      };
       expect(withStatus.status).toBe('APPROVED');
     });
 
     it('wantsIn=true, slot.confirmed=true → CONFIRMED', () => {
       const p = makeEnrollment({ wantsIn: true, slot: { confirmed: true } });
-      const status = p.wantsIn ? (p.slot ? (p.slot.confirmed ? 'CONFIRMED' : 'APPROVED') : 'PENDING') : 'WITHDRAWN';
+      const status = p.wantsIn
+        ? p.slot
+          ? p.slot.confirmed
+            ? 'CONFIRMED'
+            : 'APPROVED'
+          : 'PENDING'
+        : 'WITHDRAWN';
       expect(status).toBe('CONFIRMED');
     });
 
     it('wantsIn=false, withdrawnBy=USER → WITHDRAWN', () => {
       const p = makeEnrollment({ wantsIn: false, withdrawnBy: 'USER' });
-      const status = !p.wantsIn ? (p.withdrawnBy === 'ORGANIZER' ? 'REJECTED' : 'WITHDRAWN') : 'PENDING';
+      const status = !p.wantsIn
+        ? p.withdrawnBy === 'ORGANIZER'
+          ? 'REJECTED'
+          : 'WITHDRAWN'
+        : 'PENDING';
       expect(status).toBe('WITHDRAWN');
     });
 
     it('wantsIn=false, withdrawnBy=ORGANIZER → REJECTED', () => {
       const p = makeEnrollment({ wantsIn: false, withdrawnBy: 'ORGANIZER' });
-      const status = !p.wantsIn ? (p.withdrawnBy === 'ORGANIZER' ? 'REJECTED' : 'WITHDRAWN') : 'PENDING';
+      const status = !p.wantsIn
+        ? p.withdrawnBy === 'ORGANIZER'
+          ? 'REJECTED'
+          : 'WITHDRAWN'
+        : 'PENDING';
       expect(status).toBe('REJECTED');
     });
   });
@@ -240,9 +258,7 @@ describe('EnrollmentService', () => {
     });
 
     it('odrzuca jeśli event CANCELLED (BadRequestException)', async () => {
-      (prisma.event.findUnique as jest.Mock).mockResolvedValue(
-        makeEvent({ status: 'CANCELLED' }),
-      );
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent({ status: 'CANCELLED' }));
 
       await expect(service.join('event1', 'user1')).rejects.toThrow(BadRequestException);
     });
@@ -450,7 +466,7 @@ describe('EnrollmentService', () => {
         .mockResolvedValueOnce(makeEnrollment({ wantsIn: false, withdrawnBy: 'USER' }))
         .mockResolvedValue(withSlot);
 
-      const result = await service.join('event1', 'user1');
+      await service.join('event1', 'user1');
 
       expect(prisma.eventEnrollment.update as jest.Mock).toHaveBeenCalled();
     });
@@ -666,7 +682,12 @@ describe('EnrollmentService', () => {
 
     it('odrzuca jeśli nieautoryzowany użytkownik (ForbiddenException)', async () => {
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(
-        makeEnrollment({ userId: 'user1', addedByUserId: null, wantsIn: true, slot: { id: 'slot1', confirmed: false } }),
+        makeEnrollment({
+          userId: 'user1',
+          addedByUserId: null,
+          wantsIn: true,
+          slot: { id: 'slot1', confirmed: false },
+        }),
       );
 
       await expect(service.confirmSlot('p1', 'intruder')).rejects.toThrow(ForbiddenException);
@@ -804,7 +825,9 @@ describe('EnrollmentService', () => {
         makeEnrollment({ event: makeEvent({ organizerId: 'org1' }), payments: [] }),
       );
 
-      await expect(service.deleteParticipation('p1', 'not-org')).rejects.toThrow(ForbiddenException);
+      await expect(service.deleteParticipation('p1', 'not-org')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -856,7 +879,7 @@ describe('EnrollmentService', () => {
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(guest);
       (prisma.user.update as jest.Mock).mockResolvedValue({ displayName: 'New Name' });
 
-      const result = await service.updateGuestName('p1', 'host1', 'New Name');
+      await service.updateGuestName('p1', 'host1', 'New Name');
 
       expect(prisma.user.update as jest.Mock).toHaveBeenCalledWith(
         expect.objectContaining({ data: { displayName: 'New Name' } }),
@@ -976,11 +999,18 @@ describe('EnrollmentService', () => {
   describe('rejoinById()', () => {
     it('ponownie dołącza wycofanego uczestnika', async () => {
       const openEvent = makeEvent({ lotteryExecutedAt: new Date() });
-      const withdrawnEnrollment = makeEnrollment({ wantsIn: false, withdrawnBy: 'USER', slot: null, event: openEvent });
+      const withdrawnEnrollment = makeEnrollment({
+        wantsIn: false,
+        withdrawnBy: 'USER',
+        slot: null,
+        event: openEvent,
+      });
       (prisma.eventEnrollment.findUnique as jest.Mock)
         .mockResolvedValueOnce(withdrawnEnrollment)
         .mockResolvedValue(makeEnrollment({ wantsIn: true }));
-      (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue(makeEnrollment({ wantsIn: true }));
+      (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue(
+        makeEnrollment({ wantsIn: true }),
+      );
       (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(false);
       (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
       (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
@@ -1011,7 +1041,12 @@ describe('EnrollmentService', () => {
   // ─── changeRole() ────────────────────────────────────────────────────────
 
   describe('changeRole()', () => {
-    const roleConfig = { roles: [{ key: 'atakujacy', slots: 5, isDefault: true }, { key: 'bramkarz', slots: 5, isDefault: false }] };
+    const roleConfig = {
+      roles: [
+        { key: 'atakujacy', slots: 5, isDefault: true },
+        { key: 'bramkarz', slots: 5, isDefault: false },
+      ],
+    };
     const openEvent = makeEvent({ lotteryExecutedAt: new Date(), roleConfig });
 
     it('rzuca BadRequestException gdy wydarzenie nie ma zdefiniowanych ról', async () => {
@@ -1019,7 +1054,9 @@ describe('EnrollmentService', () => {
         makeEnrollment({ event: makeEvent({ roleConfig: null }) }),
       );
 
-      await expect(service.changeRole('p1', 'user1', 'bramkarz')).rejects.toThrow(BadRequestException);
+      await expect(service.changeRole('p1', 'user1', 'bramkarz')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('rzuca BadRequestException gdy rola nie istnieje w konfiguracji', async () => {
@@ -1034,7 +1071,9 @@ describe('EnrollmentService', () => {
 
     it('PENDING → aktualizuje roleKey bez zwalniania slotu', async () => {
       (prisma.eventEnrollment.findUnique as jest.Mock)
-        .mockResolvedValueOnce(makeEnrollment({ event: openEvent, slot: null, roleKey: 'atakujacy' }))
+        .mockResolvedValueOnce(
+          makeEnrollment({ event: openEvent, slot: null, roleKey: 'atakujacy' }),
+        )
         .mockResolvedValue(makeEnrollment({ event: openEvent, slot: null, roleKey: 'bramkarz' }));
       (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue({});
       (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(false);
@@ -1080,7 +1119,9 @@ describe('EnrollmentService', () => {
         makeEnrollment({ wantsIn: true, slot: null, event: paidEvent }),
       );
 
-      await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(BadRequestException);
+      await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('rzuca BadRequestException gdy wydarzenie jest odwołane', async () => {
@@ -1092,7 +1133,9 @@ describe('EnrollmentService', () => {
         }),
       );
 
-      await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(BadRequestException);
+      await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('rzuca BadRequestException gdy wydarzenie jest bezpłatne', async () => {
@@ -1104,7 +1147,9 @@ describe('EnrollmentService', () => {
         }),
       );
 
-      await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(BadRequestException);
+      await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('deleguje do paymentsService z userId hosta gdy gość (addedByUserId)', async () => {
@@ -1122,7 +1167,9 @@ describe('EnrollmentService', () => {
         email: 'host@test.com',
         displayName: 'Host',
       });
-      (payments.initiatePayment as jest.Mock).mockResolvedValue({ paymentUrl: 'https://pay.tpay.com/TX1' });
+      (payments.initiatePayment as jest.Mock).mockResolvedValue({
+        paymentUrl: 'https://pay.tpay.com/TX1',
+      });
 
       const result = await service.initiateEventPayment('p1', 'host1');
 
@@ -1143,7 +1190,9 @@ describe('EnrollmentService', () => {
       const original = featureFlags.enableOnlinePayments;
       (featureFlags as any).enableOnlinePayments = false;
       try {
-        await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(ForbiddenException);
+        await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(
+          ForbiddenException,
+        );
       } finally {
         (featureFlags as any).enableOnlinePayments = original;
       }

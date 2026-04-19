@@ -1,9 +1,8 @@
-import { TestBed, fakeAsync, tick, flushMicrotasks } from '@angular/core/testing';
+import { TestBed, fakeAsync, flushMicrotasks } from '@angular/core/testing';
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
 import { authInterceptor } from './auth.interceptor';
-import { firstValueFrom } from 'rxjs';
 
 describe('authInterceptor', () => {
   let httpMock: HttpTestingController;
@@ -71,7 +70,7 @@ describe('authInterceptor', () => {
     mockAuthService.getAccessToken.mockReturnValue('expired-token');
     mockAuthService.refreshToken.mockResolvedValue('new-token');
 
-    http.get('/api/data').subscribe({ error: () => {} });
+    http.get('/api/data').subscribe({ error: () => undefined });
 
     // Original request returns 401
     const firstReq = httpMock.expectOne('/api/data');
@@ -90,7 +89,7 @@ describe('authInterceptor', () => {
     mockAuthService.getAccessToken.mockReturnValue('expired-token');
     mockAuthService.refreshToken.mockResolvedValue(null);
 
-    http.get('/api/data').subscribe({ error: () => {} });
+    http.get('/api/data').subscribe({ error: () => undefined });
 
     const req = httpMock.expectOne('/api/data');
     req.error(new ErrorEvent('error'), { status: 401 });

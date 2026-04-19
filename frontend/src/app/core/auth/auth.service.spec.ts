@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { NotificationService } from '../services/notification.service';
 import { ProfileBroadcastService } from '../services/profile-broadcast.service';
-import { EMPTY, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 
 const mockRouter = { navigate: jest.fn().mockResolvedValue(true) };
 const mockNotificationService = { initPushSubscription: jest.fn() };
