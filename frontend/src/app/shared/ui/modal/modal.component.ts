@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  inject,
-  output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, output } from '@angular/core';
 import { IconComponent } from '../icon/icon.component';
 
 @Component({

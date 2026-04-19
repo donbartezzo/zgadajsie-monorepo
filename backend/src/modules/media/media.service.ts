@@ -6,7 +6,10 @@ import 'multer';
 
 @Injectable()
 export class MediaService {
-  constructor(private prisma: PrismaService, private r2: R2StorageService) {}
+  constructor(
+    private prisma: PrismaService,
+    private r2: R2StorageService,
+  ) {}
 
   async upload(userId: string, file: Express.Multer.File) {
     const count = await this.prisma.mediaFile.count({ where: { userId } });

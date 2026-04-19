@@ -11,14 +11,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../ui/icon/icon.component';
-import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-login-form',
-  imports: [CommonModule, FormsModule, RouterLink, IconComponent, ButtonComponent],
+  imports: [CommonModule, FormsModule, RouterLink, IconComponent],
   template: `
     <form (ngSubmit)="onSubmit()" class="space-y-4">
       <div>
@@ -27,6 +26,7 @@ import { environment } from '../../../../../environments/environment';
         >
         <input
           id="login-email"
+          data-testid="email"
           type="email"
           [(ngModel)]="email"
           name="email"
@@ -43,6 +43,7 @@ import { environment } from '../../../../../environments/environment';
         <div class="relative">
           <input
             id="login-password"
+            data-testid="password"
             [type]="showPassword() ? 'text' : 'password'"
             [(ngModel)]="password"
             name="password"
@@ -71,16 +72,38 @@ import { environment } from '../../../../../environments/environment';
         >
       </div>
 
-      <app-button
+      <button
+        data-testid="submit"
         type="submit"
-        appearance="solid"
-        color="primary"
-        [fullWidth]="true"
-        [loading]="loading()"
+        class="flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-hidden focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 text-sm gap-2 bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-300 shadow-xs hover:shadow-sm w-full"
+        [disabled]="loading()"
       >
-        <app-icon name="log-in" size="sm"></app-icon>
+        @if (loading()) {
+          <svg
+            class="animate-spin h-4 w-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+        } @else {
+          <app-icon name="log-in" size="sm"></app-icon>
+        }
         Zaloguj się
-      </app-button>
+      </button>
     </form>
 
     @if (showSocialLogin()) {

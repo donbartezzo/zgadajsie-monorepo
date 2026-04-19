@@ -32,47 +32,48 @@ import { User } from '../../../../shared/types';
         />
       </div>
       @if (loading()) {
-      <app-loading-spinner></app-loading-spinner>
+        <app-loading-spinner></app-loading-spinner>
       } @else {
-      <div class="space-y-2">
-        @for (u of users(); track u.id) {
-        <a [routerLink]="['/admin/users', u.id]">
-          <app-card>
-            <div class="flex items-center gap-3">
-              <app-user-avatar
-                [avatarUrl]="u.avatarUrl"
-                [displayName]="u.displayName"
-                size="sm"
-              ></app-user-avatar>
-              <div class="flex-1">
-                <p class="text-sm font-medium text-neutral-900">
-                  {{ u.displayName }}
-                </p>
-                <p class="text-xs text-neutral-500">{{ u.email }}</p>
-              </div>
-              <span
-                [class]="
-                  'text-xs px-2 py-0.5 rounded-full ' +
-                  (u.role === 'ADMIN'
-                    ? 'bg-danger-50 text-danger-500'
-                    : 'bg-neutral-100 text-neutral-600')
-                "
-                >{{ u.role }}</span
-              >
-            </div>
-          </app-card>
-        </a>
+        <div class="space-y-2">
+          @for (u of users(); track u.id) {
+            <a [routerLink]="['/admin/users', u.id]">
+              <app-card>
+                <div class="flex items-center gap-3">
+                  <app-user-avatar
+                    [avatarUrl]="u.avatarUrl"
+                    [displayName]="u.displayName"
+                    size="sm"
+                  ></app-user-avatar>
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-neutral-900">
+                      {{ u.displayName }}
+                    </p>
+                    <p class="text-xs text-neutral-500">{{ u.email }}</p>
+                  </div>
+                  <span
+                    [class]="
+                      'text-xs px-2 py-0.5 rounded-full ' +
+                      (u.role === 'ADMIN'
+                        ? 'bg-danger-50 text-danger-500'
+                        : 'bg-neutral-100 text-neutral-600')
+                    "
+                    >{{ u.role }}</span
+                  >
+                </div>
+              </app-card>
+            </a>
+          }
+        </div>
+        @if (totalPages() > 1) {
+          <div class="mt-4">
+            <app-pagination
+              [currentPage]="page()"
+              [totalPages]="totalPages()"
+              (pageChange)="onPageChange($event)"
+            ></app-pagination>
+          </div>
         }
-      </div>
-      @if (totalPages() > 1) {
-      <div class="mt-4">
-        <app-pagination
-          [currentPage]="page()"
-          [totalPages]="totalPages()"
-          (pageChange)="onPageChange($event)"
-        ></app-pagination>
-      </div>
-      } }
+      }
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

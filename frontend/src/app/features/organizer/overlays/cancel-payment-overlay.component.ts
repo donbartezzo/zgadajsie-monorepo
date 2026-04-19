@@ -22,7 +22,7 @@ export interface CancelPaymentResult {
       (closed)="close()"
     >
       <p class="mb-4 text-sm text-neutral-500 text-center">
-        {{ userName() }} &mdash; {{ payment().amount | number : '1.2-2' }} zł
+        {{ userName() }} &mdash; {{ payment().amount | number: '1.2-2' }} zł
         <span class="text-neutral-400">({{ paymentMethodLabel(payment().method, '-') }})</span>
       </p>
 
@@ -33,7 +33,7 @@ export interface CancelPaymentResult {
           (change)="refundAsVoucher.set(!refundAsVoucher())"
           class="h-4 w-4 rounded border-neutral-300 text-primary-500 focus:ring-primary-500"
         />
-        Zwróć kwotę na voucher organizatora ({{ payment().amount | number : '1.2-2' }} zł)
+        Zwróć kwotę na voucher organizatora ({{ payment().amount | number: '1.2-2' }} zł)
       </label>
 
       <label class="mb-5 flex items-center gap-3 text-sm text-neutral-700">

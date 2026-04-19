@@ -160,8 +160,8 @@ import { APP_BRAND } from '@zgadajsie/shared';
             to narzędzie.<br /><br />
 
             Clarity może ustawiać własne pliki cookie (m.in. <em>_clck</em>, <em>_clsk</em>)
-            umożliwiające identyfikację sesji przeglądarki. Więcej informacji znajdziesz w
-            polityce prywatności Microsoft:
+            umożliwiające identyfikację sesji przeglądarki. Więcej informacji znajdziesz w polityce
+            prywatności Microsoft:
             <a
               href="https://privacy.microsoft.com/pl-pl/privacystatement"
               target="_blank"

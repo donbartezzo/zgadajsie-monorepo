@@ -39,6 +39,9 @@ config/env/.env.*
 !config/env/.env.example
 config/ops/.env.*
 
+# E2E test environment overrides (defaults come from backend/prisma/e2e-constants.ts)
+.env.test.e2e
+
 # System Files
 .DS_Store
 Thumbs.db
@@ -53,3 +56,6 @@ frontend/src/environments/version.ts
 
 .angular
 .ignored
+
+# Playwright auth state
+playwright/.auth/

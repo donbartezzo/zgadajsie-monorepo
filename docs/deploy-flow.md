@@ -57,10 +57,11 @@ developer → git push origin main
           2. setup pnpm + Node 24
           3. pnpm install --frozen-lockfile
           4. pnpm prisma:generate
-          5. pnpm nx build backend
-          6. pnpm nx build frontend --configuration=dev
-          7. pnpm nx test backend --passWithNoTests
-          8. pnpm nx test frontend --passWithNoTests
+          5. pnpm lint                         ← ESLint backend + frontend + libs
+          6. pnpm format:check                 ← Prettier
+          7. pnpm test:ci                      ← unit testy (--skip-nx-cache)
+          8. pnpm nx build backend
+          9. pnpm nx build frontend --configuration=production
                │
                │  (CI musi przejść)
                ▼
@@ -304,6 +305,35 @@ Workflow używa mechanizmu `concurrency` dla kontroli równoległych deployów:
 - grupa: `deploy-prod`
 - strategia: jeden deploy na raz, bez anulowania
 - kolejny deploy czeka na zakończenie poprzedniego (bezpieczeństwo produkcji)
+
+---
+
+## Skrypty testowe — lokalne i CI
+
+### Lokalne (codzienna praca)
+
+| Skrypt                  | Co robi                                               | Kiedy używać                       |
+| ----------------------- | ----------------------------------------------------- | ---------------------------------- |
+| `pnpm test`             | Unit testy (backend + frontend + libs), z cache Nx    | Po zmianach kodu, szybki feedback  |
+| `pnpm test:integration` | Testy integracyjne backendu (wymaga test DB na :5434) | Po zmianach logiki biznesowej      |
+| `pnpm test:e2e`         | E2E Playwright (wymaga działającego full stacku)      | Przed PR, manualne                 |
+| `pnpm test:e2e:smoke`   | Tylko krytyczne E2E (@smoke)                          | Szybka weryfikacja kluczowych flow |
+| `pnpm test:all`         | Unit + integration + E2E sekwencyjnie                 | Przed ważnym commitem              |
+| `pnpm validate`         | Lint + format + unit (no cache) + build               | Pre-push gate                      |
+
+### CI (GitHub Actions)
+
+| Skrypt              | Co robi                                     | Gdzie używany       |
+| ------------------- | ------------------------------------------- | ------------------- |
+| `pnpm test:ci`      | Unit testy bez cache Nx (`--skip-nx-cache`) | Job CI w deploy.yml |
+| `pnpm lint`         | ESLint backend + frontend + libs            | Job CI w deploy.yml |
+| `pnpm format:check` | Sprawdzenie formatowania Prettier           | Job CI w deploy.yml |
+
+### Architektura testów
+
+- **Unit testy** (`*.spec.ts` z wyłączeniem `*.integration.spec.ts`) — nie wymagają infrastruktury, korzystają z cache Nx
+- **Integration testy** (`*.integration.spec.ts`) — wymagają testowej bazy PostgreSQL (`docker-compose.test.yml`, port 5434)
+- **E2E testy** (Playwright, `frontend-e2e/src/`) — wymagają działającego frontendu + backendu, **cache Nx wyłączony** (zawsze świeże uruchomienie)
 
 ---
 

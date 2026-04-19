@@ -47,14 +47,22 @@
 
     <!-- Participants section -->
     @if (_isPreEnrollment) {
-      <a [routerLink]="['/w', e.city?.slug, e.id, 'participants']" class="my-2 flex items-center gap-3">
+      <a
+        data-testid="participant-grid"
+        [routerLink]="['/w', e.city?.slug, e.id, 'participants']"
+        class="my-2 flex items-center gap-3"
+      >
         <div class="flex items-center gap-2">
           <app-icon name="users" size="sm" class="text-info-400"></app-icon>
           <span class="text-xs text-neutral-500">Trwają wstępne zapisy</span>
         </div>
       </a>
     } @else {
-      <a [routerLink]="['/w', e.city?.slug, e.id, 'participants']" class="my-2 flex items-center gap-3 w-full">
+      <a
+        data-testid="participant-grid"
+        [routerLink]="['/w', e.city?.slug, e.id, 'participants']"
+        class="my-2 flex items-center gap-3 w-full"
+      >
         <div class="flex items-center gap-2 w-full">
           @if (_participants.length > 0) {
             <div class="flex items-center -space-x-3 mr-3">
@@ -249,10 +257,12 @@
           </div>
           <div class="flex shrink-0 items-center gap-2">
             @if (_isOrganizer) {
-              <app-button appearance="outline" color="primary" size="sm" (clicked)="eventArea.openOrganizerChats()">
-                <app-icon name="message-circle" size="sm"></app-icon>
-                Konwersacje
-              </app-button>
+              <div data-testid="organizer-panel" class="flex items-center gap-2">
+                <app-button appearance="outline" color="primary" size="sm" (clicked)="eventArea.openOrganizerChats()">
+                  <app-icon name="message-circle" size="sm"></app-icon>
+                  Konwersacje
+                </app-button>
+              </div>
             } @else {
               @if (_auth) {
                 <app-button appearance="outline" color="primary" size="sm" (clicked)="contactOrganizer()">

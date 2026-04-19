@@ -75,6 +75,14 @@
         "passWithNoTests": true
       }
     },
+    "test:integration": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "backend/jest.integration.config.ts",
+        "passWithNoTests": true
+      }
+    },
     "with-db": {
       "executor": "nx:run-commands",
       "options": {

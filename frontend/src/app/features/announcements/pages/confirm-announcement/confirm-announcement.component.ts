@@ -10,31 +10,31 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
   template: `
     <div class="flex min-h-[60vh] items-center justify-center px-4">
       @if (loading()) {
-      <app-loading-spinner></app-loading-spinner>
+        <app-loading-spinner></app-loading-spinner>
       } @else if (confirmed()) {
-      <div class="text-center">
-        <div
-          class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success-50"
-        >
-          <app-icon name="check" size="lg" [class]="'text-success-600'"></app-icon>
+        <div class="text-center">
+          <div
+            class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success-50"
+          >
+            <app-icon name="check" size="lg" [class]="'text-success-600'"></app-icon>
+          </div>
+          <h1 class="text-lg font-bold text-neutral-900">Potwierdzono odbiór</h1>
+          <p class="mt-2 text-sm text-neutral-500">
+            Dziękujemy za potwierdzenie odebrania komunikatu organizatora.
+          </p>
         </div>
-        <h1 class="text-lg font-bold text-neutral-900">Potwierdzono odbiór</h1>
-        <p class="mt-2 text-sm text-neutral-500">
-          Dziękujemy za potwierdzenie odebrania komunikatu organizatora.
-        </p>
-      </div>
       } @else {
-      <div class="text-center">
-        <div
-          class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-danger-50"
-        >
-          <app-icon name="alert-triangle" size="lg" [class]="'text-danger-600'"></app-icon>
+        <div class="text-center">
+          <div
+            class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-danger-50"
+          >
+            <app-icon name="alert-triangle" size="lg" [class]="'text-danger-600'"></app-icon>
+          </div>
+          <h1 class="text-lg font-bold text-neutral-900">Nieprawidłowy link</h1>
+          <p class="mt-2 text-sm text-neutral-500">
+            Link potwierdzenia jest nieprawidłowy lub wygasł.
+          </p>
         </div>
-        <h1 class="text-lg font-bold text-neutral-900">Nieprawidłowy link</h1>
-        <p class="mt-2 text-sm text-neutral-500">
-          Link potwierdzenia jest nieprawidłowy lub wygasł.
-        </p>
-      </div>
       }
     </div>
   `,

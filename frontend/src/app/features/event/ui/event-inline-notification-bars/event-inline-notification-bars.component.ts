@@ -63,6 +63,7 @@ const BOTTOM_NAV_HEIGHT = 120;
                 size="sm"
                 (clicked)="barAction.emit(bar.id)"
                 class="shrink-0"
+                [attr.data-testid]="bar.id + '-button'"
               >
                 {{ bar.buttonLabel }}
               </app-button>

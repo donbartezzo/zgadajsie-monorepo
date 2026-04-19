@@ -10,7 +10,7 @@ readonly isNewUser = computed(() => {
   const uid = this.currentUserId();
   const e = this.event();
   if (!uid || !e) return false;
-  
+
   // Check if user has any participations with this organizer
   return !this.participants().some(
     (p) => (!p.isGuest && p.userId === uid) || (p.isGuest && p.addedByUserId === uid),
@@ -68,12 +68,14 @@ Backend powinien zwracaæ flagê `isNewUser` bezpo¶rednio w odpowiedzi API.
 
 ```typescript
 // backend/src/modules/events/events.service.ts
-const currentUserAccess = userId ? {
-  isParticipant: !!existingParticipation,
-  isOrganizer: event.organizerId === userId,
-  participationStatus: existingParticipation?.status,
-  isNewUser: await this.eligibility.isNewUser(userId, event.organizerId),
-} : null;
+const currentUserAccess = userId
+  ? {
+      isParticipant: !!existingParticipation,
+      isOrganizer: event.organizerId === userId,
+      participationStatus: existingParticipation?.status,
+      isNewUser: await this.eligibility.isNewUser(userId, event.organizerId),
+    }
+  : null;
 ```
 
 ### Frontend
@@ -88,7 +90,7 @@ export interface CurrentUserAccess {
   isParticipant: boolean;
   isOrganizer: boolean;
   participationStatus?: string;
-  isNewUser?: boolean;  // <- nowe pole
+  isNewUser?: boolean; // <- nowe pole
 }
 ```
 

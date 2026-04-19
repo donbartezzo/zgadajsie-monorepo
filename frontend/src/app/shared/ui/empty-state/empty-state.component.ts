@@ -11,7 +11,7 @@ import { IconComponent, IconName } from '../icon/icon.component';
       </div>
       <h3 class="text-lg font-semibold text-neutral-900 mb-1">{{ title() }}</h3>
       @if (message()) {
-      <p class="text-sm text-neutral-500 max-w-xs">{{ message() }}</p>
+        <p class="text-sm text-neutral-500 max-w-xs">{{ message() }}</p>
       }
       <div class="mt-4">
         <ng-content />

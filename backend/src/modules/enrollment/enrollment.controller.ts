@@ -59,11 +59,7 @@ export class EnrollmentController {
   }
 
   @Patch('enrollments/:id/role')
-  changeRole(
-    @Param('id') id: string,
-    @CurrentUser() user: AuthUser,
-    @Body() dto: ChangeRoleDto,
-  ) {
+  changeRole(@Param('id') id: string, @CurrentUser() user: AuthUser, @Body() dto: ChangeRoleDto) {
     return this.enrollmentService.changeRole(id, user.id, dto.roleKey);
   }
 

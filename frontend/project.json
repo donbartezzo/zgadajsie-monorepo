@@ -86,6 +86,7 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
+      "dependsOn": ["frontend:version:ci"],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "frontend/jest.config.ts",

@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, effect, inject, ViewContainerRef } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  ViewContainerRef,
+} from '@angular/core';
 import { ModalService } from './modal.service';
 
 @Component({

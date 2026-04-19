@@ -7,7 +7,14 @@
     "start": "pnpm backend:start:db && concurrently --kill-others-on-fail -n FRONTEND,BACKEND -c blue,green \"pnpm frontend:serve\" \"pnpm backend:serve\"",
     "start:remote": "concurrently --kill-others -n TUNNEL,FRONTEND,BACKEND -c yellow,blue,green \"ssh -L 5454:10.0.1.2:5432 root@204.168.205.171 -N -o ExitOnForwardFailure=yes\" \"pnpm frontend:serve\" \"sleep 2 && dotenv -e config/env/.env.dev -- nx serve backend\"",
     "build": "pnpm frontend:build && pnpm backend:build",
-    "test": "pnpm frontend:test && pnpm backend:test",
+    "test": "nx run-many --target=test --parallel=4",
+    "test:integration": "nx run-many --target=test:integration --parallel=2",
+    "test:e2e": "nx run frontend-e2e:e2e",
+    "test:e2e:smoke": "nx run frontend-e2e:e2e --grep @smoke",
+    "test:all": "pnpm test && pnpm test:integration && pnpm test:e2e",
+    "test:ci": "nx run-many --target=test --skip-nx-cache --parallel=4",
+    "test:coverage": "nx run-many --target=test --coverage",
+    "validate": "pnpm lint && pnpm format:check && pnpm test:ci && pnpm build",
     "frontend:version:ci": "GENERATE_FRONTEND_VERSION=true node scripts/generate-frontend-version.mjs",
     "frontend:serve": "cd frontend && npx -y @angular/cli@21.2.5 serve",
     "frontend:build": "cd frontend && npx -y @angular/cli@21.2.5 build",
@@ -28,7 +35,8 @@
     "prisma:studio": "cd backend && prisma studio",
     "prisma:seed:prod": "cd backend && tsx prisma/seed.prod.ts",
     "db:reset:local": "pnpm prisma:migrate:reset && pnpm backend:db:seed",
-    "db:reset:remote": "bash scripts/db-setup-remote.sh"
+    "db:reset:remote": "bash scripts/db-setup-remote.sh",
+    "prepare": "husky"
   },
   "engines": {
     "node": ">=24.4.1",
@@ -96,6 +104,7 @@
     "@angular/compiler-cli": "~21.2.6",
     "@angular/language-service": "~21.2.6",
     "@angular/ssr": "~21.2.5",
+    "@golevelup/ts-jest": "^3.0.0",
     "@nestjs/cli": "^11.0.10",
     "@nestjs/testing": "^11.0.0",
     "@nx/angular": "^21.6.4",
@@ -132,9 +141,12 @@
     "dotenv-cli": "^10.0.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.0.0",
+    "eslint-plugin-playwright": "^2.10.1",
+    "husky": "^9.1.7",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0",
     "jest-preset-angular": "~16.1.1",
+    "lint-staged": "^16.4.0",
     "nx": "21.6.4",
     "postcss": "^8.5.6",
     "prettier": "^3.3.3",
@@ -149,5 +161,14 @@
   },
   "prisma": {
     "seed": "tsx prisma/seed.nonprod.ts"
+  },
+  "lint-staged": {
+    "*.{ts,js,mjs}": [
+      "eslint --fix --no-warn-ignored",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,scss,css,html}": [
+      "prettier --write"
+    ]
   }
 }

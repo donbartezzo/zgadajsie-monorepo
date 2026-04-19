@@ -197,10 +197,7 @@ export class EventService {
   }
 
   markAsPaid(eventId: string, enrollmentId: string): Observable<Enrollment[]> {
-    return this.http.post<Enrollment[]>(
-      `${this.apiUrl}/${eventId}/mark-paid/${enrollmentId}`,
-      {},
-    );
+    return this.http.post<Enrollment[]>(`${this.apiUrl}/${eventId}/mark-paid/${enrollmentId}`, {});
   }
 
   cancelPayment(

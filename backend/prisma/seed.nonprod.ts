@@ -2,6 +2,7 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import { hashPasswordForSeed } from '../src/common/utils/password.util';
 import { createCommonSeedData, COMMON_SEED_DATA } from './seed-common';
 import { syncCoverImagesFromFilesystem } from '../src/modules/cover-images/cover-images-sync.util';
+import { E2E_SEED } from './e2e-constants';
 
 // Brand constants (synchronized with libs/src/lib/constants/brand.constants.ts)
 const APP_BRAND = {
@@ -71,11 +72,11 @@ async function main() {
 
   // ─── Użytkownicy testowi ───────────────────────────────────────────────
   console.log('Tworzę użytkowników testowych...');
-  const userHash = await hashPasswordForSeed('Test1234!');
+  const userHash = await hashPasswordForSeed(E2E_SEED.user.password);
 
   const jan = await prisma.user.create({
     data: {
-      email: 'jan.kowalski@example.com',
+      email: E2E_SEED.user.email,
       passwordHash: userHash,
       displayName: 'Jan Kowalski',
       role: 'USER',
@@ -697,8 +698,9 @@ async function main() {
   await addWaitingParticipant(openEnroll1.id, ola.id);
   await addWaitingParticipant(openEnroll1.id, piotr.id);
 
-  // 8) Otwarte zapisy - football jutro
+  // 8) Otwarte zapisy - football jutro (stały UUID dla testów e2e)
   const openEnroll2 = await createEventWithSlots({
+    id: E2E_SEED.events.organizer,
     title: 'Football wieczorny',
     description: 'Losowanie zakończone, ale są jeszcze miejsca!',
     disciplineSlug: disciplines[0].slug,
@@ -1109,7 +1111,7 @@ async function main() {
   await addWaitingParticipant(extraFootball2.id, wojtek.id);
 
   const extraFootball3 = await createEventWithSlots({
-    id: 'a6e3d86e-0a65-4ba2-8db7-3a0698d57608', // Jedyne wydarzenie o stałym ID dla różnych testerów
+    id: E2E_SEED.events.enrollment, // stały UUID — używany przez testy e2e (enrollment + chat)
     title: 'Amatorski mecz piłkarski',
     description: 'Spotkanie dla miłośników piłki nożnej.',
     disciplineSlug: disciplines[0].slug,

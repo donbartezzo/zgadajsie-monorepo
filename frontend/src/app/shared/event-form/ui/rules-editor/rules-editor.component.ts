@@ -23,57 +23,57 @@ interface Rule {
 
       <div class="border border-neutral-300 rounded-xl p-3 bg-white min-h-[100px]">
         @if (rules().length === 0) {
-        <div class="text-neutral-500 text-sm text-center py-4">
-          Brak zasad. Kliknij"Dodaj zasadę", aby rozpocząć.
-        </div>
-        } @else {
-        <div class="space-y-2">
-          @for (rule of rules(); track rule.id; let index = $index) {
-          <div class="flex items-start gap-2 group" [style.margin-left.px]="rule.indent * 20">
-            <span class="text-neutral-500 text-xs mt-2.5 min-w-[20px]"> {{ index + 1 }}. </span>
-
-            <input
-              type="text"
-              [(ngModel)]="rule.text"
-              (ngModelChange)="onRuleChange()"
-              placeholder="Wpisz zasadę..."
-              class="flex-1 rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-1 focus:ring-primary-500"
-            />
-
-            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <app-button
-                appearance="ghost"
-                color="neutral"
-                size="xs"
-                (click)="indentRule(rule.id)"
-                title="Zwiększ wcięcie"
-              >
-                <app-icon name="arrow-right" size="xs"></app-icon>
-              </app-button>
-
-              <app-button
-                appearance="ghost"
-                color="neutral"
-                size="xs"
-                (click)="unindentRule(rule.id)"
-                title="Zmniejsz wcięcie"
-              >
-                <app-icon name="arrow-left" size="xs"></app-icon>
-              </app-button>
-
-              <app-button
-                appearance="ghost"
-                color="neutral"
-                size="xs"
-                (click)="deleteRule(rule.id)"
-                title="Usuń zasadę"
-              >
-                <app-icon name="trash" size="xs"></app-icon>
-              </app-button>
-            </div>
+          <div class="text-neutral-500 text-sm text-center py-4">
+            Brak zasad. Kliknij"Dodaj zasadę", aby rozpocząć.
           </div>
-          }
-        </div>
+        } @else {
+          <div class="space-y-2">
+            @for (rule of rules(); track rule.id; let index = $index) {
+              <div class="flex items-start gap-2 group" [style.margin-left.px]="rule.indent * 20">
+                <span class="text-neutral-500 text-xs mt-2.5 min-w-[20px]"> {{ index + 1 }}. </span>
+
+                <input
+                  type="text"
+                  [(ngModel)]="rule.text"
+                  (ngModelChange)="onRuleChange()"
+                  placeholder="Wpisz zasadę..."
+                  class="flex-1 rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-1 focus:ring-primary-500"
+                />
+
+                <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <app-button
+                    appearance="ghost"
+                    color="neutral"
+                    size="xs"
+                    (click)="indentRule(rule.id)"
+                    title="Zwiększ wcięcie"
+                  >
+                    <app-icon name="arrow-right" size="xs"></app-icon>
+                  </app-button>
+
+                  <app-button
+                    appearance="ghost"
+                    color="neutral"
+                    size="xs"
+                    (click)="unindentRule(rule.id)"
+                    title="Zmniejsz wcięcie"
+                  >
+                    <app-icon name="arrow-left" size="xs"></app-icon>
+                  </app-button>
+
+                  <app-button
+                    appearance="ghost"
+                    color="neutral"
+                    size="xs"
+                    (click)="deleteRule(rule.id)"
+                    title="Usuń zasadę"
+                  >
+                    <app-icon name="trash" size="xs"></app-icon>
+                  </app-button>
+                </div>
+              </div>
+            }
+          </div>
         }
       </div>
 

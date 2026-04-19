@@ -3,14 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
-import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { APP_BRAND } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, FormsModule, RouterLink, IconComponent, ButtonComponent],
+  imports: [CommonModule, FormsModule, RouterLink, IconComponent],
   template: `
     <div class="p-6 max-w-md mx-auto">
       <div class="text-center mb-6">
@@ -27,6 +26,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
           >
           <input
             id="displayName"
+            data-testid="displayName"
             type="text"
             [(ngModel)]="displayName"
             name="displayName"
@@ -40,6 +40,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
           <label for="email" class="block text-sm font-medium text-neutral-700 mb-1">Email</label>
           <input
             id="email"
+            data-testid="email"
             type="email"
             [(ngModel)]="email"
             name="email"
@@ -55,6 +56,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
           >
           <input
             id="password"
+            data-testid="password"
             type="password"
             [(ngModel)]="password"
             name="password"
@@ -64,7 +66,9 @@ import { APP_BRAND } from '@zgadajsie/shared';
             class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
             placeholder="Min. 8 znaków"
           />
-          <p class="mt-1 text-xs text-neutral-400">Co najmniej 8 znaków. Możesz używać spacji i znaków specjalnych.</p>
+          <p class="mt-1 text-xs text-neutral-400">
+            Co najmniej 8 znaków. Możesz używać spacji i znaków specjalnych.
+          </p>
         </div>
 
         <div>
@@ -73,6 +77,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
           >
           <input
             id="confirmPassword"
+            data-testid="confirmPassword"
             type="password"
             [(ngModel)]="confirmPassword"
             name="confirmPassword"
@@ -83,16 +88,38 @@ import { APP_BRAND } from '@zgadajsie/shared';
         </div>
 
         <div class="mt-4">
-          <app-button
+          <button
+            data-testid="submit"
             type="submit"
-            appearance="solid"
-            color="primary"
-            [fullWidth]="true"
-            [loading]="loading()"
+            class="flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-hidden focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 text-sm gap-2 bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-300 shadow-xs hover:shadow-sm w-full"
+            [disabled]="loading()"
           >
-            <app-icon name="user-plus" size="sm"></app-icon>
+            @if (loading()) {
+              <svg
+                class="animate-spin h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+            } @else {
+              <app-icon name="user-plus" size="sm"></app-icon>
+            }
             Utwórz konto
-          </app-button>
+          </button>
         </div>
       </form>
 

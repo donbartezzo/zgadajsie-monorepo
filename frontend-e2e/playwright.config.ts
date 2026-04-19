@@ -1,28 +1,41 @@
 import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
+import * as fs from 'fs';
+import * as path from 'path';
+import { E2E_SEED } from '../backend/prisma/e2e-constants';
 
-// For CI, you may want to set BASE_URL to the deployed application.
+// Load environment overrides from .env.test.e2e (optional — only for CI or local overrides)
+const envPath = path.join(workspaceRoot, '.env.test.e2e');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf-8');
+  envContent.split('\n').forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) return;
+    const [key, ...values] = trimmed.split('=');
+    if (key && values.length > 0) {
+      process.env[key.trim()] = values.join('=').trim();
+    }
+  });
+}
+
+// Defaults from seed constants — single source of truth with backend/prisma/e2e-constants.ts
+process.env['TEST_USER_EMAIL'] ??= E2E_SEED.user.email;
+process.env['TEST_USER_PASSWORD'] ??= E2E_SEED.user.password;
+process.env['TEST_CITY_SLUG'] ??= E2E_SEED.city;
+process.env['TEST_EVENT_ID'] ??= E2E_SEED.events.enrollment;
+process.env['TEST_ORGANIZER_EVENT_ID'] ??= E2E_SEED.events.organizer;
+process.env['TEST_CHAT_EVENT_ID'] ??= E2E_SEED.events.chat;
+process.env['TEST_PAID_EVENT_ID'] ??= E2E_SEED.events.paid;
+
 const baseURL = process.env['BASE_URL'] || 'http://localhost:4300';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
-
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
 export default defineConfig({
   ...nxE2EPreset(__filename, { testDir: './src' }),
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     baseURL,
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },
-  /* Run your local dev server before starting the tests */
   webServer: {
     command: 'pnpm exec nx run frontend:serve',
     url: 'http://localhost:4300',
@@ -31,38 +44,28 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'setup',
+      testMatch: '**/auth.setup.ts',
     },
-
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-
-    // Uncomment for mobile browsers support
-    /* {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
+      use: {
+        ...devices['Desktop Firefox'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
     },
     {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    }, */
-
-    // Uncomment for branded browsers
-    /* {
-      name: 'Microsoft Edge',
-      use: { ...devices['Desktop Edge'], channel: 'msedge' },
+      name: 'unauthenticated',
+      use: { ...devices['Desktop Chrome'] },
     },
-    {
-      name: 'Google Chrome',
-      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    } */
   ],
 });
