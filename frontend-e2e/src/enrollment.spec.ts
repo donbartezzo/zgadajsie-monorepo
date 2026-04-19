@@ -48,6 +48,9 @@ test.describe('Enrollment — dołączanie do wydarzenia @smoke', () => {
   });
 
   test('strona szczegółów wyświetla siatkę uczestników', async ({ page }) => {
+    const backendAvailable = await fetch('http://localhost:3000').then(() => true).catch(() => false);
+    test.skip(!backendAvailable, 'Backend niedostępny');
+
     const detailPage = new EventDetailPage(page);
     await detailPage.goto(TEST_CITY, TEST_EVENT_ID);
 
