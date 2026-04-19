@@ -1,4 +1,4 @@
-import { APP_VERSION } from './version.js';
+import { APP_VERSION } from './version';
 import { DEV_FEATURE_FLAGS } from '@zgadajsie/shared';
 
 export const baseEnvironment = {
