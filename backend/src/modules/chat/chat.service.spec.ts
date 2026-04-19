@@ -190,9 +190,9 @@ describe('ChatService', () => {
 
   describe('validatePrivateChatAccess() — przez createPrivateMessage', () => {
     it('self-message (userId === otherUserId): ForbiddenException', async () => {
-      await expect(
-        service.createPrivateMessage('event1', 'user1', 'user1', 'Hi'),
-      ).rejects.toThrow(ForbiddenException);
+      await expect(service.createPrivateMessage('event1', 'user1', 'user1', 'Hi')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('uczestnik → uczestnik: ForbiddenException (tylko org↔participant)', async () => {
@@ -201,9 +201,9 @@ describe('ChatService', () => {
         organizerId: 'org1',
       });
 
-      await expect(
-        service.createPrivateMessage('event1', 'user1', 'user2', 'Hi'),
-      ).rejects.toThrow(ForbiddenException);
+      await expect(service.createPrivateMessage('event1', 'user1', 'user2', 'Hi')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('organizator → uczestnik: OK', async () => {
@@ -233,9 +233,9 @@ describe('ChatService', () => {
         withdrawnBy: 'ORGANIZER',
       });
 
-      await expect(
-        service.createPrivateMessage('event1', 'user1', 'org1', 'Hi'),
-      ).rejects.toThrow(ForbiddenException);
+      await expect(service.createPrivateMessage('event1', 'user1', 'org1', 'Hi')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('uczestnik → organizator: OK', async () => {
@@ -263,9 +263,9 @@ describe('ChatService', () => {
         organizerId: 'org1',
       });
 
-      await expect(
-        service.getOrganizerConversations('event1', 'different-user'),
-      ).rejects.toThrow(ForbiddenException);
+      await expect(service.getOrganizerConversations('event1', 'different-user')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('zwraca listę konwersacji organizatora', async () => {

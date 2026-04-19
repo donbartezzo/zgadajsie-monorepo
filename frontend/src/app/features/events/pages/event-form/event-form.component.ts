@@ -68,7 +68,12 @@ interface DuplicateQueryParams {
           <div class="p-4 space-y-4">
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-1">Tytuł</label>
-              <input id="title" formControlName="title" appFormControlError placeholder="Nazwa wydarzenia" />
+              <input
+                id="title"
+                formControlName="title"
+                appFormControlError
+                placeholder="Nazwa wydarzenia"
+              />
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-1">Opis</label>

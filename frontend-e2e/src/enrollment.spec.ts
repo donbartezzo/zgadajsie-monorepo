@@ -43,12 +43,16 @@ test.describe('Enrollment — dołączanie do wydarzenia @smoke', () => {
     const joinVisible = await detailPage.joinButton.isVisible();
     if (joinVisible) {
       await detailPage.join();
-      await expect(page.locator('text=/dołączono|zapisano|zapisany/i').first()).toBeVisible({ timeout: 5_000 });
+      await expect(page.locator('text=/dołączono|zapisano|zapisany/i').first()).toBeVisible({
+        timeout: 5_000,
+      });
     }
   });
 
   test('strona szczegółów wyświetla siatkę uczestników', async ({ page }) => {
-    const backendAvailable = await fetch('http://localhost:3000').then(() => true).catch(() => false);
+    const backendAvailable = await fetch('http://localhost:3000')
+      .then(() => true)
+      .catch(() => false);
     test.skip(!backendAvailable, 'Backend niedostępny');
 
     const detailPage = new EventDetailPage(page);

@@ -53,7 +53,10 @@ describe('EventAreaService — computed signals', () => {
         EventAreaService,
         provideRouter([]),
         { provide: EventService, useValue: { getEvent: jest.fn(), getEnrollments: jest.fn() } },
-        { provide: EventRealtimeService, useValue: { connect: jest.fn(), disconnect: jest.fn(), events$: new Subject() } },
+        {
+          provide: EventRealtimeService,
+          useValue: { connect: jest.fn(), disconnect: jest.fn(), events$: new Subject() },
+        },
         {
           provide: AuthService,
           useValue: {

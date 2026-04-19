@@ -1,12 +1,7 @@
 import { IconName } from '../ui/icon/icon.component';
 import { type SemanticColor } from '../types/colors';
 
-export type SlotDisplayStatus =
-  | 'assigned'
-  | 'pending'
-  | 'withdrawn'
-  | 'free'
-  | 'non-participant';
+export type SlotDisplayStatus = 'assigned' | 'pending' | 'withdrawn' | 'free' | 'non-participant';
 
 export interface SlotColorClasses {
   headerBg: string;

@@ -54,12 +54,14 @@ cp config/ops/.env.ops.dev.example config/ops/.env.ops.dev
 ## Usage
 
 ### Local Development
+
 ```bash
 # Uses config/env/.env.local
 pnpm start
 ```
 
 ### Remote Database Setup
+
 ```bash
 # Uses config/ops/.env.ops.dev
 pnpm db:reset:remote dev

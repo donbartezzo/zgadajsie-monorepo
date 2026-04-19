@@ -12,9 +12,7 @@ function buildRoute(id: string | null): ActivatedRouteSnapshot {
 }
 
 function runGuard(route: ActivatedRouteSnapshot) {
-  return TestBed.runInInjectionContext(() =>
-    organizerGuard(route, {} as RouterStateSnapshot),
-  );
+  return TestBed.runInInjectionContext(() => organizerGuard(route, {} as RouterStateSnapshot));
 }
 
 describe('organizerGuard', () => {
@@ -40,7 +38,9 @@ describe('organizerGuard', () => {
 
     (runGuard(buildRoute('event-1')) as any).subscribe((result: boolean) => {
       expect(result).toBe(false);
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/not-found'], { skipLocationChange: true });
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/not-found'], {
+        skipLocationChange: true,
+      });
       done();
     });
   });
@@ -50,7 +50,9 @@ describe('organizerGuard', () => {
 
     (runGuard(buildRoute(null)) as any).subscribe((result: boolean) => {
       expect(result).toBe(false);
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/not-found'], { skipLocationChange: true });
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/not-found'], {
+        skipLocationChange: true,
+      });
       done();
     });
   });
@@ -71,7 +73,9 @@ describe('organizerGuard', () => {
 
     (runGuard(buildRoute('event-1')) as any).subscribe((result: boolean) => {
       expect(result).toBe(false);
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/not-found'], { skipLocationChange: true });
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/not-found'], {
+        skipLocationChange: true,
+      });
       done();
     });
   });
@@ -82,7 +86,9 @@ describe('organizerGuard', () => {
 
     (runGuard(buildRoute('event-1')) as any).subscribe((result: boolean) => {
       expect(result).toBe(false);
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/not-found'], { skipLocationChange: true });
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/not-found'], {
+        skipLocationChange: true,
+      });
       done();
     });
   });

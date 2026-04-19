@@ -6,12 +6,17 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { ModalService } from '../../../ui/modal/modal.service';
 import { EnrollmentItem } from './enrollment-grid-item.component';
 
-function makeParticipant(
-  id: string,
-  status: string,
-  userId = 'u1',
-): EnrollmentItem {
-  return { id, userId, status, isGuest: false, payment: null, user: null, slot: null, roleKey: null } as any;
+function makeParticipant(id: string, status: string, userId = 'u1'): EnrollmentItem {
+  return {
+    id,
+    userId,
+    status,
+    isGuest: false,
+    payment: null,
+    user: null,
+    slot: null,
+    roleKey: null,
+  } as any;
 }
 
 function makeEvent(overrides: Record<string, unknown> = {}) {

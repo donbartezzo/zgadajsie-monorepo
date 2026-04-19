@@ -244,9 +244,7 @@ describe('PaymentsService', () => {
       );
 
       const tpayCall = (tpay.createTransaction as jest.Mock).mock.calls[0][0];
-      expect(tpayCall.callbackUrl).toBe(
-        `${baseParams.backendBaseUrl}/api/payments/tpay-webhook`,
-      );
+      expect(tpayCall.callbackUrl).toBe(`${baseParams.backendBaseUrl}/api/payments/tpay-webhook`);
     });
 
     it('częściowe pokrycie voucherem → deductVoucher + pomniejszona kwota Tpay', async () => {
@@ -282,9 +280,9 @@ describe('PaymentsService', () => {
     it('odrzuca nieprawidłowy podpis (BadRequestException)', async () => {
       (tpay.verifyWebhook as jest.Mock).mockResolvedValue({ valid: false });
 
-      await expect(
-        service.handleWebhook({ tr_id: 'TX1' } as any, 'bad-sig'),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.handleWebhook({ tr_id: 'TX1' } as any, 'bad-sig')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('status TRUE → tworzy Payment COMPLETED + potwierdza slot', async () => {
@@ -483,7 +481,9 @@ describe('PaymentsService', () => {
     it('rzuca NotFoundException gdy intent nie istnieje', async () => {
       (prisma.paymentIntent.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(service.getIntentPaymentStatus('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.getIntentPaymentStatus('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('rzuca ForbiddenException gdy userId nie pasuje do intentu', async () => {

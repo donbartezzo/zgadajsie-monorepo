@@ -2,8 +2,7 @@
  * Test integracyjny: ban/trust + eligibility
  * Wymaga działającej bazy testowej (docker-compose.test.yml, port 5434)
  */
-process.env.DATABASE_URL =
-  'postgresql://test:test@localhost:5434/zgadajsie_test?schema=public';
+process.env.DATABASE_URL = 'postgresql://test:test@localhost:5434/zgadajsie_test?schema=public';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaModule } from '../modules/prisma/prisma.module';
@@ -51,7 +50,9 @@ describe('[Integration] Moderation → Eligibility', () => {
   });
 
   afterAll(async () => {
-    await prisma.organizerUserRelation.deleteMany({ where: { organizerUserId: { startsWith: TEST_PREFIX } } });
+    await prisma.organizerUserRelation.deleteMany({
+      where: { organizerUserId: { startsWith: TEST_PREFIX } },
+    });
     await prisma.reprimand.deleteMany({ where: { fromUserId: { startsWith: TEST_PREFIX } } });
     await prisma.user.deleteMany({ where: { email: { startsWith: TEST_PREFIX } } });
     await module.close();

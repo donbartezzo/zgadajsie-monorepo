@@ -10,9 +10,15 @@ export class EventDetailPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.joinButton = page.locator('[data-testid="join-button"], button:has-text("Dołącz")').first();
-    this.leaveButton = page.locator('[data-testid="leave-button"], button:has-text("Wycofaj")').first();
-    this.participantGrid = page.locator('[data-testid="participant-grid"], app-enrollment-grid').first();
+    this.joinButton = page
+      .locator('[data-testid="join-button"], button:has-text("Dołącz")')
+      .first();
+    this.leaveButton = page
+      .locator('[data-testid="leave-button"], button:has-text("Wycofaj")')
+      .first();
+    this.participantGrid = page
+      .locator('[data-testid="participant-grid"], app-enrollment-grid')
+      .first();
     this.eventTitle = page.locator('[data-testid="event-title"], h1').first();
     this.enrollmentCount = page.locator('[data-testid="enrollment-count"]').first();
   }

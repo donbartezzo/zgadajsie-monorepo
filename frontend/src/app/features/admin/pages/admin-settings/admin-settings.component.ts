@@ -32,61 +32,68 @@ interface Setting {
       <h1 class="text-xl font-bold text-neutral-900 mb-4">Ustawienia systemowe</h1>
 
       @if (loading()) {
-      <app-loading-spinner></app-loading-spinner>
+        <app-loading-spinner></app-loading-spinner>
       } @else {
-      <app-card>
-        <div class="space-y-3">
-          <h3 class="text-sm font-semibold text-neutral-900">Parametry</h3>
-          @for (s of settings(); track s.key) {
-          <div class="flex items-center gap-2">
-            <label class="text-xs text-neutral-600 w-40">{{ s.key }}</label>
-            <input
-              [(ngModel)]="s.value"
-              class="flex-1 rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-900"
-            />
-            <app-button appearance="outline" color="neutral" size="sm" (clicked)="saveSetting(s)"
-              ><app-icon name="check" size="sm"></app-icon
-            ></app-button>
-          </div>
-          }
-        </div>
-      </app-card>
-
-      <h2 class="text-sm font-semibold text-neutral-900 mt-6 mb-3">Słowniki</h2>
-      @for (dict of dictTypes; track dict.type) {
-      <app-card>
-        <div class="mb-3">
-          <h3 class="text-sm font-semibold text-neutral-900 mb-2">
-            {{ dict.label }}
-          </h3>
-          <div class="space-y-1">
-            @for (item of dict.items(); track item.slug) {
-            <div class="flex items-center gap-2 text-sm">
-              <span class="flex-1 text-neutral-700">{{ dict.translateKey + '.' + item.slug | transloco }}</span>
-              <span class="text-[11px] text-neutral-400 font-mono">{{ item.slug }}</span>
-              <app-button
-                appearance="soft"
-                color="danger"
-                size="sm"
-                (clicked)="deleteDict(dict.type, item.slug, dict.items)"
-                ><app-icon name="trash" size="sm"></app-icon
-              ></app-button>
-            </div>
+        <app-card>
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold text-neutral-900">Parametry</h3>
+            @for (s of settings(); track s.key) {
+              <div class="flex items-center gap-2">
+                <label class="text-xs text-neutral-600 w-40">{{ s.key }}</label>
+                <input
+                  [(ngModel)]="s.value"
+                  class="flex-1 rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-900"
+                />
+                <app-button
+                  appearance="outline"
+                  color="neutral"
+                  size="sm"
+                  (clicked)="saveSetting(s)"
+                  ><app-icon name="check" size="sm"></app-icon
+                ></app-button>
+              </div>
             }
           </div>
-          <div class="flex gap-2 mt-2">
-            <input
-              [(ngModel)]="dict.newSlug"
-              placeholder="Nowy slug (np. volleyball)"
-              class="flex-1 rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-900"
-            />
-            <app-button appearance="soft" color="primary" size="sm" (clicked)="addDict(dict)"
-              ><app-icon name="plus" size="sm"></app-icon
-            ></app-button>
-          </div>
-        </div>
-      </app-card>
-      } }
+        </app-card>
+
+        <h2 class="text-sm font-semibold text-neutral-900 mt-6 mb-3">Słowniki</h2>
+        @for (dict of dictTypes; track dict.type) {
+          <app-card>
+            <div class="mb-3">
+              <h3 class="text-sm font-semibold text-neutral-900 mb-2">
+                {{ dict.label }}
+              </h3>
+              <div class="space-y-1">
+                @for (item of dict.items(); track item.slug) {
+                  <div class="flex items-center gap-2 text-sm">
+                    <span class="flex-1 text-neutral-700">{{
+                      dict.translateKey + '.' + item.slug | transloco
+                    }}</span>
+                    <span class="text-[11px] text-neutral-400 font-mono">{{ item.slug }}</span>
+                    <app-button
+                      appearance="soft"
+                      color="danger"
+                      size="sm"
+                      (clicked)="deleteDict(dict.type, item.slug, dict.items)"
+                      ><app-icon name="trash" size="sm"></app-icon
+                    ></app-button>
+                  </div>
+                }
+              </div>
+              <div class="flex gap-2 mt-2">
+                <input
+                  [(ngModel)]="dict.newSlug"
+                  placeholder="Nowy slug (np. volleyball)"
+                  class="flex-1 rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-900"
+                />
+                <app-button appearance="soft" color="primary" size="sm" (clicked)="addDict(dict)"
+                  ><app-icon name="plus" size="sm"></app-icon
+                ></app-button>
+              </div>
+            </div>
+          </app-card>
+        }
+      }
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -162,11 +169,7 @@ export class AdminSettingsComponent implements OnInit {
     });
   }
 
-  deleteDict(
-    type: string,
-    slug: string,
-    items: ReturnType<typeof signal<DictionaryItem[]>>,
-  ): void {
+  deleteDict(type: string, slug: string, items: ReturnType<typeof signal<DictionaryItem[]>>): void {
     this.adminService.deleteDictionary(type, slug).subscribe({
       next: () => {
         items.update((prev) => prev.filter((i) => i.slug !== slug));

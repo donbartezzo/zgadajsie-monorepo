@@ -144,9 +144,7 @@ export class ModerationService {
     }
 
     // 4. Notify user
-    await this.pushService
-      .notifyReprimand(dto.userId, '', dto.reason, '')
-      .catch(() => undefined);
+    await this.pushService.notifyReprimand(dto.userId, '', dto.reason, '').catch(() => undefined);
 
     return { success: true };
   }

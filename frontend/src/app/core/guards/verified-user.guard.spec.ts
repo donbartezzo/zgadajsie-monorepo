@@ -3,7 +3,9 @@ import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@a
 import { AuthService } from '../auth/auth.service';
 import { verifiedUserGuard } from './verified-user.guard';
 
-function runGuard(state: Partial<RouterStateSnapshot> = {}): boolean | UrlTree | Promise<boolean | UrlTree> {
+function runGuard(
+  state: Partial<RouterStateSnapshot> = {},
+): boolean | UrlTree | Promise<boolean | UrlTree> {
   return TestBed.runInInjectionContext(() =>
     verifiedUserGuard(
       {} as ActivatedRouteSnapshot,
@@ -45,10 +47,9 @@ describe('verifiedUserGuard', () => {
 
     runGuard({ url: '/moja-strona' });
 
-    expect(mockRouter.createUrlTree).toHaveBeenCalledWith(
-      ['/auth/login'],
-      { queryParams: { returnUrl: '/moja-strona' } },
-    );
+    expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/auth/login'], {
+      queryParams: { returnUrl: '/moja-strona' },
+    });
   });
 
   it('nawiguje do /unverified i zwraca false dla nieaktywnego konta', () => {

@@ -2,8 +2,7 @@
  * Test integracyjny: PRE_ENROLLMENT → loteria → OPEN_ENROLLMENT
  * Wymaga działającej bazy testowej (docker-compose.test.yml, port 5434)
  */
-process.env.DATABASE_URL =
-  'postgresql://test:test@localhost:5434/zgadajsie_test?schema=public';
+process.env.DATABASE_URL = 'postgresql://test:test@localhost:5434/zgadajsie_test?schema=public';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaModule } from '../modules/prisma/prisma.module';
@@ -45,17 +44,37 @@ describe('[Integration] EnrollmentLotteryCron — lottery flow', () => {
 
   beforeAll(async () => {
     await Promise.all([
-      prisma.city.upsert({ where: { slug: 'test-city' }, create: { slug: 'test-city', name: 'Test City', isActive: true }, update: {} }),
-      prisma.eventDiscipline.upsert({ where: { slug: 'football' }, create: { slug: 'football' }, update: {} }),
-      prisma.eventFacility.upsert({ where: { slug: 'pitch' }, create: { slug: 'pitch' }, update: {} }),
-      prisma.eventLevel.upsert({ where: { slug: 'mixed-open' }, create: { slug: 'mixed-open' }, update: {} }),
+      prisma.city.upsert({
+        where: { slug: 'test-city' },
+        create: { slug: 'test-city', name: 'Test City', isActive: true },
+        update: {},
+      }),
+      prisma.eventDiscipline.upsert({
+        where: { slug: 'football' },
+        create: { slug: 'football' },
+        update: {},
+      }),
+      prisma.eventFacility.upsert({
+        where: { slug: 'pitch' },
+        create: { slug: 'pitch' },
+        update: {},
+      }),
+      prisma.eventLevel.upsert({
+        where: { slug: 'mixed-open' },
+        create: { slug: 'mixed-open' },
+        update: {},
+      }),
     ]);
   });
 
   afterAll(async () => {
     await prisma.eventSlot.deleteMany({ where: { event: { title: { startsWith: TEST_PREFIX } } } });
-    await prisma.eventEnrollment.deleteMany({ where: { event: { title: { startsWith: TEST_PREFIX } } } });
-    await prisma.organizerUserRelation.deleteMany({ where: { organizerUserId: { startsWith: TEST_PREFIX } } });
+    await prisma.eventEnrollment.deleteMany({
+      where: { event: { title: { startsWith: TEST_PREFIX } } },
+    });
+    await prisma.organizerUserRelation.deleteMany({
+      where: { organizerUserId: { startsWith: TEST_PREFIX } },
+    });
     await prisma.event.deleteMany({ where: { title: { startsWith: TEST_PREFIX } } });
     await prisma.user.deleteMany({ where: { email: { startsWith: TEST_PREFIX } } });
     await module.close();
@@ -179,7 +198,13 @@ describe('[Integration] EnrollmentLotteryCron — lottery flow', () => {
 
     await prisma.eventSlot.create({ data: { eventId: event.id, roleKey: null } });
     await prisma.organizerUserRelation.create({
-      data: { organizerUserId: organizer.id, targetUserId: user.id, isTrusted: true, trustedAt: new Date(), isBanned: false },
+      data: {
+        organizerUserId: organizer.id,
+        targetUserId: user.id,
+        isTrusted: true,
+        trustedAt: new Date(),
+        isBanned: false,
+      },
     });
 
     const enrollment = await prisma.eventEnrollment.create({

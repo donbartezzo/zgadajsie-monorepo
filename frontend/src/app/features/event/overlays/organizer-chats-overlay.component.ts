@@ -28,62 +28,67 @@ import { OrganizerConversation } from '../../../shared/types';
   template: `
     <app-bottom-overlay [open]="true" title="Konwersacje prywatne" (closed)="closed.emit()">
       @if (loading()) {
-      <div class="py-8 flex justify-center">
-        <app-loading-spinner></app-loading-spinner>
-      </div>
+        <div class="py-8 flex justify-center">
+          <app-loading-spinner></app-loading-spinner>
+        </div>
       } @else if (conversations().length === 0) {
-      <div class="text-center py-8">
-        <app-icon name="message-circle" size="lg" class="text-neutral-300 mx-auto mb-3"></app-icon>
-        <p class="text-sm text-neutral-500">Brak prywatnych konwersacji z uczestnikami</p>
-      </div>
-      } @else {
-      <div class="space-y-1 max-w-lg mx-auto">
-        @for (conv of conversations(); track conv.participant.id) {
-        <button
-          type="button"
-          class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-50 transition-colors text-left"
-          (click)="openChat(conv.participant.id)"
-        >
-          <app-user-avatar
-            [avatarUrl]="conv.participant.avatarUrl"
-            [displayName]="conv.participant.displayName"
-            size="sm"
-          ></app-user-avatar>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between">
-              <p class="text-sm font-medium text-neutral-900 truncate">
-                {{ conv.participant.displayName }}
-              </p>
-              @if (conv.lastMessage) {
-              <span class="text-[10px] text-neutral-400 flex-shrink-0">
-                {{ conv.lastMessage.createdAt | date : 'dd.MM, HH:mm' }}
-              </span>
-              }
-            </div>
-            @if (conv.lastMessage) {
-            <p class="text-xs text-neutral-500 truncate">
-              @if (conv.lastMessage.isFromOrganizer) {
-              <span class="text-neutral-400">Ty: </span>
-              }
-              {{ conv.lastMessage.content }}
-            </p>
-            } @if (conv.messageCount > 0) {
-            <span
-              class="inline-block mt-0.5 text-[10px] bg-primary-50 text-primary-500 px-1.5 py-0.5 rounded-full"
-            >
-              {{ conv.messageCount }}
-              {{ conv.messageCount === 1 ? 'wiadomość' : 'wiadomości' }}
-            </span>
-            }
-          </div>
+        <div class="text-center py-8">
           <app-icon
-            name="chevron-right"
-            size="sm"
-            class="text-neutral-300 flex-shrink-0"
+            name="message-circle"
+            size="lg"
+            class="text-neutral-300 mx-auto mb-3"
           ></app-icon>
-        </button>
-        }
-      </div>
+          <p class="text-sm text-neutral-500">Brak prywatnych konwersacji z uczestnikami</p>
+        </div>
+      } @else {
+        <div class="space-y-1 max-w-lg mx-auto">
+          @for (conv of conversations(); track conv.participant.id) {
+            <button
+              type="button"
+              class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-50 transition-colors text-left"
+              (click)="openChat(conv.participant.id)"
+            >
+              <app-user-avatar
+                [avatarUrl]="conv.participant.avatarUrl"
+                [displayName]="conv.participant.displayName"
+                size="sm"
+              ></app-user-avatar>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <p class="text-sm font-medium text-neutral-900 truncate">
+                    {{ conv.participant.displayName }}
+                  </p>
+                  @if (conv.lastMessage) {
+                    <span class="text-[10px] text-neutral-400 flex-shrink-0">
+                      {{ conv.lastMessage.createdAt | date: 'dd.MM, HH:mm' }}
+                    </span>
+                  }
+                </div>
+                @if (conv.lastMessage) {
+                  <p class="text-xs text-neutral-500 truncate">
+                    @if (conv.lastMessage.isFromOrganizer) {
+                      <span class="text-neutral-400">Ty: </span>
+                    }
+                    {{ conv.lastMessage.content }}
+                  </p>
+                }
+                @if (conv.messageCount > 0) {
+                  <span
+                    class="inline-block mt-0.5 text-[10px] bg-primary-50 text-primary-500 px-1.5 py-0.5 rounded-full"
+                  >
+                    {{ conv.messageCount }}
+                    {{ conv.messageCount === 1 ? 'wiadomość' : 'wiadomości' }}
+                  </span>
+                }
+              </div>
+              <app-icon
+                name="chevron-right"
+                size="sm"
+                class="text-neutral-300 flex-shrink-0"
+              ></app-icon>
+            </button>
+          }
+        </div>
       }
     </app-bottom-overlay>
   `,

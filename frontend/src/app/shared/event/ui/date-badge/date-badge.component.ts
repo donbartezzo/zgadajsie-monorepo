@@ -29,28 +29,28 @@ type DateBadgeSize = 'sm' | 'md' | 'lg';
         >{{ day() }}</span
       >
       @if (time()) {
-      <span
-        [class]="
-          'block font-light leading-none ' +
-          (size() === 'sm'
-            ? 'pb-px text-[8px] text-neutral-400'
-            : size() === 'md'
-            ? 'text-[9px] text-neutral-400'
-            : 'text-[10px] text-neutral-400')
-        "
-        >{{ 'time.hour' | transloco }}</span
-      >
-      <span
-        [class]="
-          'block font-medium leading-tight ' +
-          (size() === 'sm'
-            ? 'pb-0.5 text-[10px] text-neutral-500'
-            : size() === 'md'
-            ? 'text-xs text-neutral-600'
-            : 'text-sm text-neutral-700')
-        "
-        >{{ time() }}</span
-      >
+        <span
+          [class]="
+            'block font-light leading-none ' +
+            (size() === 'sm'
+              ? 'pb-px text-[8px] text-neutral-400'
+              : size() === 'md'
+                ? 'text-[9px] text-neutral-400'
+                : 'text-[10px] text-neutral-400')
+          "
+          >{{ 'time.hour' | transloco }}</span
+        >
+        <span
+          [class]="
+            'block font-medium leading-tight ' +
+            (size() === 'sm'
+              ? 'pb-0.5 text-[10px] text-neutral-500'
+              : size() === 'md'
+                ? 'text-xs text-neutral-600'
+                : 'text-sm text-neutral-700')
+          "
+          >{{ time() }}</span
+        >
       }
     </div>
   `,

@@ -18,10 +18,7 @@ describe('ChatService — HTTP', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [
-        ChatService,
-        { provide: AuthService, useValue: mockAuthService },
-      ],
+      providers: [ChatService, { provide: AuthService, useValue: mockAuthService }],
     });
     service = TestBed.inject(ChatService);
     httpMock = TestBed.inject(HttpTestingController);

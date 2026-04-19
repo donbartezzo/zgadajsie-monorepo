@@ -104,9 +104,7 @@ describe('AuthService', () => {
     it('hashuje hasło przed zapisem (plain text nie trafia do DB)', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
-      const hashSpy = jest
-        .spyOn(passwordUtil, 'hashPassword')
-        .mockResolvedValue('hashed-value');
+      const hashSpy = jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed-value');
 
       await service.register({
         email: 'user@example.com',
@@ -179,9 +177,9 @@ describe('AuthService', () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(baseUser);
       jest.spyOn(passwordUtil, 'comparePassword').mockResolvedValue(false);
 
-      await expect(
-        service.login({ email: 'user@example.com', password: 'wrong' }),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.login({ email: 'user@example.com', password: 'wrong' })).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('rzuca UnauthorizedException dla nieistniejącego użytkownika', async () => {
@@ -255,9 +253,9 @@ describe('AuthService', () => {
     it('rzuca UnauthorizedException dla nieistniejącego userId', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(
-        service.refreshToken('nonexistent', 'user@example.com'),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.refreshToken('nonexistent', 'user@example.com')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 
@@ -367,9 +365,9 @@ describe('AuthService', () => {
     it('rzuca BadRequestException dla wygasłego tokenu resetowania', async () => {
       (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
 
-      await expect(
-        service.resetPassword('expired-token', 'NewPassword123!'),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.resetPassword('expired-token', 'NewPassword123!')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('unieważnia token po użyciu (passwordResetToken=null)', async () => {

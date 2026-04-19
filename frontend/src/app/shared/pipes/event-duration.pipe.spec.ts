@@ -11,10 +11,7 @@ describe('EventDurationPipe', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        EventDurationPipe,
-        { provide: DateLabelsService, useValue: mockDateLabels },
-      ],
+      providers: [EventDurationPipe, { provide: DateLabelsService, useValue: mockDateLabels }],
     });
     pipe = TestBed.inject(EventDurationPipe);
     jest.clearAllMocks();

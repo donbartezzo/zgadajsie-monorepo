@@ -75,9 +75,7 @@ describe('EventDetailComponent', () => {
   };
 
   const mockAnnouncement = {
-    getAnnouncements: jest
-      .fn()
-      .mockReturnValue(of({ announcements: [], hasAnnouncements: false })),
+    getAnnouncements: jest.fn().mockReturnValue(of({ announcements: [], hasAnnouncements: false })),
     confirmManual: jest.fn(),
     confirmAllForEvent: jest.fn(),
   };

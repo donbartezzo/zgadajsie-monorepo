@@ -37,18 +37,14 @@ describe('getEnrollmentPhase()', () => {
     const startsAt = new Date(now.getTime() + 24 * HOUR).toISOString();
     const lotteryExecutedAt = new Date().toISOString();
 
-    expect(getEnrollmentPhase(startsAt, lotteryExecutedAt, 'ACTIVE', now)).toBe(
-      'OPEN_ENROLLMENT',
-    );
+    expect(getEnrollmentPhase(startsAt, lotteryExecutedAt, 'ACTIVE', now)).toBe('OPEN_ENROLLMENT');
   });
 
   it('edge case: dokładnie na granicy threshold (48h przed startem)', () => {
     const startsAt = new Date(Date.now() + PRE_ENROLLMENT_HOURS * HOUR);
     const now = new Date(); // now === threshold
 
-    expect(getEnrollmentPhase(startsAt.toISOString(), null, 'ACTIVE', now)).toBe(
-      'LOTTERY_PENDING',
-    );
+    expect(getEnrollmentPhase(startsAt.toISOString(), null, 'ACTIVE', now)).toBe('LOTTERY_PENDING');
   });
 });
 

@@ -1,9 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA, Pipe, PipeTransform } from '@angular/core';
-import {
-  EnrollmentGridItemComponent,
-  EnrollmentItem,
-} from './enrollment-grid-item.component';
+import { EnrollmentGridItemComponent, EnrollmentItem } from './enrollment-grid-item.component';
 
 @Pipe({ name: 'transloco', standalone: true })
 class MockTranslocoPipe implements PipeTransform {
@@ -19,7 +16,13 @@ function makeParticipant(overrides: Partial<EnrollmentItem> = {}): EnrollmentIte
     status: 'APPROVED',
     isGuest: false,
     payment: { id: 'pay1' } as any,
-    user: { id: 'user1', displayName: 'Jan Kowalski', avatarUrl: null, isActive: true, isEmailVerified: true } as any,
+    user: {
+      id: 'user1',
+      displayName: 'Jan Kowalski',
+      avatarUrl: null,
+      isActive: true,
+      isEmailVerified: true,
+    } as any,
     slot: null,
     roleKey: null,
     ...overrides,
@@ -121,14 +124,19 @@ describe('EnrollmentGridItemComponent — computed signals', () => {
     });
 
     it('PENDING bez waitingReason → wskaźnik clock', () => {
-      const { c } = create(makeParticipant({ status: 'PENDING', payment: null, waitingReason: null } as any));
+      const { c } = create(
+        makeParticipant({ status: 'PENDING', payment: null, waitingReason: null } as any),
+      );
       const icons = c.statusIndicators().map((i) => i.icon);
       expect(icons).toContain('clock');
     });
 
     it('CONFIRMED z payment → brak wskaźników ostrzegawczych', () => {
       const { c } = create(makeParticipant({ status: 'CONFIRMED', payment: { id: 'p' } as any }));
-      const warnIcons = c.statusIndicators().filter((i) => i.color === 'warning').map((i) => i.icon);
+      const warnIcons = c
+        .statusIndicators()
+        .filter((i) => i.color === 'warning')
+        .map((i) => i.icon);
       expect(warnIcons).not.toContain('credit-card');
       expect(warnIcons).not.toContain('clock');
     });

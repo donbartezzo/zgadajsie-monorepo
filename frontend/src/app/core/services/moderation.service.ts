@@ -43,8 +43,12 @@ export class ModerationService {
     sortDir?: 'asc' | 'desc',
   ): Observable<OrganizerUserRelationListResponse> {
     const params: Record<string, string | number> = { page, limit };
-    if (sortBy) { params['sortBy'] = sortBy; }
-    if (sortDir) { params['sortDir'] = sortDir; }
+    if (sortBy) {
+      params['sortBy'] = sortBy;
+    }
+    if (sortDir) {
+      params['sortDir'] = sortDir;
+    }
     return this.http.get<OrganizerUserRelationListResponse>(`${this.apiUrl}/relations`, { params });
   }
 

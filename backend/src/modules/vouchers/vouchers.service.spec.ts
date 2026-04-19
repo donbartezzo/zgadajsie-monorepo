@@ -161,7 +161,7 @@ describe('VouchersService', () => {
       (prisma.organizerVoucher.findMany as jest.Mock).mockResolvedValue([voucher]);
       (prisma.organizerVoucher.update as jest.Mock).mockResolvedValue({});
 
-      await service.deductVoucher('user1', 'org1', 0.30);
+      await service.deductVoucher('user1', 'org1', 0.3);
 
       const updateCall = (prisma.organizerVoucher.update as jest.Mock).mock.calls[0][0];
       expect(updateCall.data.remainingAmount.toNumber()).toBe(0);
@@ -170,7 +170,13 @@ describe('VouchersService', () => {
     it('wystawia nowy voucher przy anulowaniu eventu', async () => {
       (prisma.organizerVoucher.create as jest.Mock).mockResolvedValue({});
 
-      await service.createVoucher('user1', 'org1', 'event1', 99.99, VoucherSource.EVENT_CANCELLATION);
+      await service.createVoucher(
+        'user1',
+        'org1',
+        'event1',
+        99.99,
+        VoucherSource.EVENT_CANCELLATION,
+      );
 
       expect(prisma.organizerVoucher.create as jest.Mock).toHaveBeenCalledWith({
         data: expect.objectContaining({

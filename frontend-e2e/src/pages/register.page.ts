@@ -13,7 +13,9 @@ export class RegisterPage {
     this.displayNameInput = page.locator('#displayName, [data-testid="displayName"]').first();
     this.emailInput = page.locator('#email, [data-testid="email"]').first();
     this.passwordInput = page.locator('#password, [data-testid="password"]').first();
-    this.confirmPasswordInput = page.locator('#confirmPassword, [data-testid="confirmPassword"]').first();
+    this.confirmPasswordInput = page
+      .locator('#confirmPassword, [data-testid="confirmPassword"]')
+      .first();
     this.submitButton = page.locator('[data-testid="submit"], button[type="submit"]').first();
   }
 

@@ -34,7 +34,9 @@ test.describe('Auth — logowanie @smoke', () => {
 
     await loginPage.login(TEST_USER_EMAIL, 'wrong-password');
 
-    await expect(page.locator('text=/nieprawidłowe|błąd|error/i').first()).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator('text=/nieprawidłowe|błąd|error/i').first()).toBeVisible({
+      timeout: 5_000,
+    });
   });
 
   test('strona logowania renderuje formularz', async ({ page }) => {
@@ -77,12 +79,23 @@ test.describe('Auth — rejestracja @smoke', () => {
     const registerPage = new RegisterPage(page);
     await registerPage.goto();
 
-    await registerPage.page.locator('#displayName, [data-testid="displayName"]').first().fill('Test');
-    await registerPage.page.locator('#email, [data-testid="email"]').first().fill(`mismatch_${uniqueSuffix}@test.pl`);
+    await registerPage.page
+      .locator('#displayName, [data-testid="displayName"]')
+      .first()
+      .fill('Test');
+    await registerPage.page
+      .locator('#email, [data-testid="email"]')
+      .first()
+      .fill(`mismatch_${uniqueSuffix}@test.pl`);
     await registerPage.page.locator('#password, [data-testid="password"]').first().fill('Pass123!');
-    await registerPage.page.locator('#confirmPassword, [data-testid="confirmPassword"]').first().fill('Different!');
+    await registerPage.page
+      .locator('#confirmPassword, [data-testid="confirmPassword"]')
+      .first()
+      .fill('Different!');
     await registerPage.submitButton.click({ force: true });
 
-    await expect(page.locator('text=/identyczne|zgodne|mismatch/i').first()).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator('text=/identyczne|zgodne|mismatch/i').first()).toBeVisible({
+      timeout: 5_000,
+    });
   });
 });

@@ -179,9 +179,7 @@ describe('EnrollmentLotteryCron', () => {
         { targetUserId: 'u3', isTrusted: true, isBanned: false },
       ]);
       // Only 1 free slot available
-      tx.eventSlot.findFirst
-        .mockResolvedValueOnce({ id: 'slot1' })
-        .mockResolvedValueOnce(null);
+      tx.eventSlot.findFirst.mockResolvedValueOnce({ id: 'slot1' }).mockResolvedValueOnce(null);
       tx.eventSlot.update.mockResolvedValue({});
 
       await cron.executeLotteryForEvent(event);
@@ -201,9 +199,7 @@ describe('EnrollmentLotteryCron', () => {
         { targetUserId: 'u2', isTrusted: true, isBanned: false },
       ]);
       // Only 1 slot — one gets it, one doesn't
-      tx.eventSlot.findFirst
-        .mockResolvedValueOnce({ id: 'slot1' })
-        .mockResolvedValueOnce(null);
+      tx.eventSlot.findFirst.mockResolvedValueOnce({ id: 'slot1' }).mockResolvedValueOnce(null);
       tx.eventSlot.update.mockResolvedValue({});
 
       await cron.executeLotteryForEvent(event);

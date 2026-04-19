@@ -247,7 +247,9 @@ export class SlotService {
     }));
 
     await this.prisma.eventSlot.createMany({ data: slots });
-    this.logger.log(`Added ${count} slots to event ${eventId}${roleKey ? ` (role: ${roleKey})` : ''}`);
+    this.logger.log(
+      `Added ${count} slots to event ${eventId}${roleKey ? ` (role: ${roleKey})` : ''}`,
+    );
   }
 
   /**
@@ -255,10 +257,7 @@ export class SlotService {
    * For each role: adds missing slots (with correct roleKey) or removes surplus empty slots.
    * Call this instead of adjustSlotsForMaxParticipants when the event has a roleConfig.
    */
-  async reconcileSlotsForRoleConfig(
-    eventId: string,
-    roleConfig: SlotRoleConfig,
-  ): Promise<void> {
+  async reconcileSlotsForRoleConfig(eventId: string, roleConfig: SlotRoleConfig): Promise<void> {
     for (const role of roleConfig.roles) {
       const existing = await this.prisma.eventSlot.count({
         where: { eventId, roleKey: role.key },

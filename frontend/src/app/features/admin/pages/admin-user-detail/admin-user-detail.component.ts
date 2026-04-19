@@ -34,67 +34,71 @@ interface PaymentListItem {
   template: `
     <div class="p-4">
       @if (loading()) {
-      <app-loading-spinner></app-loading-spinner>
+        <app-loading-spinner></app-loading-spinner>
       } @else if (user(); as u) {
-      <div class="text-center mb-6">
-        <app-user-avatar
-          [avatarUrl]="u.avatarUrl"
-          [displayName]="u.displayName"
-          size="lg"
-        ></app-user-avatar>
-        <h1 class="mt-3 text-xl font-bold text-neutral-900">{{ u.displayName }}</h1>
-        <p class="text-sm text-neutral-500">{{ u.email }}</p>
-        <span
-          [class]="
-            'text-xs px-2 py-0.5 rounded-full mt-1 inline-block ' +
-            (u.role === 'ADMIN'
-              ? 'bg-danger-50 text-danger-500'
-              : 'bg-neutral-100 text-neutral-600')
-          "
-          >{{ u.role }}</span
-        >
-      </div>
-
-      <app-card>
-        <div class="space-y-3">
-          <h3 class="text-sm font-semibold text-neutral-900">Edycja</h3>
-          <input
-            [(ngModel)]="editName"
-            placeholder="Nazwa"
-            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm text-neutral-900"
-          />
-          <app-button appearance="soft" color="primary" [loading]="saving()" (clicked)="saveUser()"
-            >Zapisz</app-button
+        <div class="text-center mb-6">
+          <app-user-avatar
+            [avatarUrl]="u.avatarUrl"
+            [displayName]="u.displayName"
+            size="lg"
+          ></app-user-avatar>
+          <h1 class="mt-3 text-xl font-bold text-neutral-900">{{ u.displayName }}</h1>
+          <p class="text-sm text-neutral-500">{{ u.email }}</p>
+          <span
+            [class]="
+              'text-xs px-2 py-0.5 rounded-full mt-1 inline-block ' +
+              (u.role === 'ADMIN'
+                ? 'bg-danger-50 text-danger-500'
+                : 'bg-neutral-100 text-neutral-600')
+            "
+            >{{ u.role }}</span
           >
         </div>
-      </app-card>
 
-      <app-card>
-        <div class="space-y-3 mt-4">
-          <h3 class="text-sm font-semibold text-neutral-900">Płatności</h3>
-          @for (p of payments(); track p.id) {
-          <div class="flex justify-between text-xs py-1 border-b border-neutral-100">
-            <span
-              >{{ p.event?.title || 'Wydarzenie' }}
-              <span class="text-neutral-400">{{ p.createdAt | date : 'd MMM' }}</span></span
-            >
-            <span
-              [class]="
-                p.status === 'COMPLETED'
-                  ? 'text-success-400'
-                  : p.status === 'REFUNDED'
-                  ? 'text-warning-300'
-                  : 'text-neutral-500'
-              "
-              >{{ p.amount | number : '1.2-2' }} zł
-              <span class="text-[10px]">{{ p.status }}</span></span
+        <app-card>
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold text-neutral-900">Edycja</h3>
+            <input
+              [(ngModel)]="editName"
+              placeholder="Nazwa"
+              class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm text-neutral-900"
+            />
+            <app-button
+              appearance="soft"
+              color="primary"
+              [loading]="saving()"
+              (clicked)="saveUser()"
+              >Zapisz</app-button
             >
           </div>
-          } @empty {
-          <p class="text-xs text-neutral-400">Brak płatności</p>
-          }
-        </div>
-      </app-card>
+        </app-card>
+
+        <app-card>
+          <div class="space-y-3 mt-4">
+            <h3 class="text-sm font-semibold text-neutral-900">Płatności</h3>
+            @for (p of payments(); track p.id) {
+              <div class="flex justify-between text-xs py-1 border-b border-neutral-100">
+                <span
+                  >{{ p.event?.title || 'Wydarzenie' }}
+                  <span class="text-neutral-400">{{ p.createdAt | date: 'd MMM' }}</span></span
+                >
+                <span
+                  [class]="
+                    p.status === 'COMPLETED'
+                      ? 'text-success-400'
+                      : p.status === 'REFUNDED'
+                        ? 'text-warning-300'
+                        : 'text-neutral-500'
+                  "
+                  >{{ p.amount | number: '1.2-2' }} zł
+                  <span class="text-[10px]">{{ p.status }}</span></span
+                >
+              </div>
+            } @empty {
+              <p class="text-xs text-neutral-400">Brak płatności</p>
+            }
+          </div>
+        </app-card>
       }
     </div>
   `,

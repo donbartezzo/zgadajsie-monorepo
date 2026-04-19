@@ -32,31 +32,43 @@ type BadgeVariant =
   ],
   template: `
     <div [class]="containerClass()">
-      @switch (variant()) { @case ('ongoing') {
-      <span class="relative flex h-2 w-2 shrink-0">
-        <span
-          class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"
-        ></span>
-        <span class="relative inline-flex h-2 w-2 rounded-full bg-white"></span>
-      </span>
-      } @case ('countdown-urgent') {
-      <span class="relative flex shrink-0" style="width: 12px; height: 12px">
-        <span class="absolute inset-0 flex animate-soft-ping">
-          <app-icon name="clock" size="xs" class="text-white" style="display: flex" />
-        </span>
-        <span class="relative flex">
-          <app-icon name="clock" size="xs" class="text-white" style="display: flex" />
-        </span>
-      </span>
-      } @case ('countdown-soon') {
-      <app-icon name="clock" size="xs" class="shrink-0 text-white" style="display: flex" />
-      } @case ('date') {
-      <app-icon name="calendar" size="xs" class="shrink-0 text-neutral-500" style="display: flex" />
-      } @case ('ended') {
-      <app-icon name="clock" size="xs" class="shrink-0 text-white" style="display: flex" />
-      } @case ('cancelled') {
-      <app-icon name="x" size="xs" class="shrink-0 text-white" style="display: flex" />
-      } }
+      @switch (variant()) {
+        @case ('ongoing') {
+          <span class="relative flex h-2 w-2 shrink-0">
+            <span
+              class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"
+            ></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-white"></span>
+          </span>
+        }
+        @case ('countdown-urgent') {
+          <span class="relative flex shrink-0" style="width: 12px; height: 12px">
+            <span class="absolute inset-0 flex animate-soft-ping">
+              <app-icon name="clock" size="xs" class="text-white" style="display: flex" />
+            </span>
+            <span class="relative flex">
+              <app-icon name="clock" size="xs" class="text-white" style="display: flex" />
+            </span>
+          </span>
+        }
+        @case ('countdown-soon') {
+          <app-icon name="clock" size="xs" class="shrink-0 text-white" style="display: flex" />
+        }
+        @case ('date') {
+          <app-icon
+            name="calendar"
+            size="xs"
+            class="shrink-0 text-neutral-500"
+            style="display: flex"
+          />
+        }
+        @case ('ended') {
+          <app-icon name="clock" size="xs" class="shrink-0 text-white" style="display: flex" />
+        }
+        @case ('cancelled') {
+          <app-icon name="x" size="xs" class="shrink-0 text-white" style="display: flex" />
+        }
+      }
       <span [class]="textClass()">{{ label() }}</span>
     </div>
   `,

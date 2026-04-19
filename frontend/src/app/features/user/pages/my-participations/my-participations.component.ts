@@ -28,52 +28,59 @@ import { Participation } from '../../../../shared/types';
       <h1 class="text-xl font-bold text-neutral-900 mb-4">Moje uczestnictwa</h1>
 
       @if (loading()) {
-      <app-loading-spinner></app-loading-spinner>
+        <app-loading-spinner></app-loading-spinner>
       } @else if (participations().length === 0) {
-      <app-empty-state
-        icon="users"
-        title="Brak uczestnictw"
-        message="Nie dołączyłeś jeszcze do żadnego wydarzenia."
-      ></app-empty-state>
+        <app-empty-state
+          icon="users"
+          title="Brak uczestnictw"
+          message="Nie dołączyłeś jeszcze do żadnego wydarzenia."
+        ></app-empty-state>
       } @else {
-      <div class="space-y-3">
-        @for (p of participations(); track p.id) {
-        <app-card>
-          <div class="flex items-center justify-between">
-            <div>
-              <a
-                [routerLink]="['/w', p.event?.city?.slug, p.eventId]"
-                class="text-sm font-semibold text-neutral-900 hover:text-primary-500"
-              >
-                {{ p.event?.title || 'Wydarzenie' }}
-              </a>
-              <p class="text-xs text-neutral-500">
-                {{ p.event?.startsAt | date : 'd MMM yyyy, HH:mm' }}
-              </p>
-              <span
-                [class]="
-                  'text-xs mt-1 inline-block px-2 py-0.5 rounded-full ' +
-                  (p.status === 'CONFIRMED'
-                    ? 'bg-success-50 text-success-600'
-                    : p.status === 'APPROVED'
-                    ? 'bg-info-50 text-info-600'
-                    : p.status === 'PENDING'
-                    ? 'bg-warning-50 text-warning-400'
-                    : 'bg-neutral-100 text-neutral-600')
-                "
-              >
-                {{ statusLabel(p.status) }}
-              </span>
-            </div>
-            @if (p.status === 'PENDING' || p.status === 'APPROVED' || p.status === 'CONFIRMED') {
-            <app-button appearance="outline" color="neutral" size="sm" (clicked)="onLeave(p.id)">
-              <app-icon name="user-x" size="sm"></app-icon>
-            </app-button>
-            }
-          </div>
-        </app-card>
-        }
-      </div>
+        <div class="space-y-3">
+          @for (p of participations(); track p.id) {
+            <app-card>
+              <div class="flex items-center justify-between">
+                <div>
+                  <a
+                    [routerLink]="['/w', p.event?.city?.slug, p.eventId]"
+                    class="text-sm font-semibold text-neutral-900 hover:text-primary-500"
+                  >
+                    {{ p.event?.title || 'Wydarzenie' }}
+                  </a>
+                  <p class="text-xs text-neutral-500">
+                    {{ p.event?.startsAt | date: 'd MMM yyyy, HH:mm' }}
+                  </p>
+                  <span
+                    [class]="
+                      'text-xs mt-1 inline-block px-2 py-0.5 rounded-full ' +
+                      (p.status === 'CONFIRMED'
+                        ? 'bg-success-50 text-success-600'
+                        : p.status === 'APPROVED'
+                          ? 'bg-info-50 text-info-600'
+                          : p.status === 'PENDING'
+                            ? 'bg-warning-50 text-warning-400'
+                            : 'bg-neutral-100 text-neutral-600')
+                    "
+                  >
+                    {{ statusLabel(p.status) }}
+                  </span>
+                </div>
+                @if (
+                  p.status === 'PENDING' || p.status === 'APPROVED' || p.status === 'CONFIRMED'
+                ) {
+                  <app-button
+                    appearance="outline"
+                    color="neutral"
+                    size="sm"
+                    (clicked)="onLeave(p.id)"
+                  >
+                    <app-icon name="user-x" size="sm"></app-icon>
+                  </app-button>
+                }
+              </div>
+            </app-card>
+          }
+        </div>
       }
     </div>
   `,

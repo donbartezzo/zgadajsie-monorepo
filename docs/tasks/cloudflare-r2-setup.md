@@ -16,10 +16,10 @@ Env vars do uzupełnienia: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCES
 
 **R2 → Create bucket** (dwa osobne — izolacja danych prod/dev):
 
-| Pole | Prod | Dev |
-|---|---|---|
+| Pole        | Prod              | Dev                   |
+| ----------- | ----------------- | --------------------- |
 | Bucket name | `zgadajsie-media` | `zgadajsie-media-dev` |
-| Location | Automatic | Automatic |
+| Location    | Automatic         | Automatic             |
 
 ## Krok 3 — Publiczny dostęp
 
@@ -43,11 +43,13 @@ Settings → **Public Access → Allow Access** → wygeneruje URL w stylu `pub-
 **R2 → Manage R2 API Tokens → Create API Token** — utwórz dwa tokeny:
 
 **Token prod:**
+
 - Token name: `zgadajsie-media-prod`
 - Permissions: **Object Read & Write**
 - Specify bucket: `zgadajsie-media`
 
 **Token dev:**
+
 - Token name: `zgadajsie-media-dev`
 - Permissions: **Object Read & Write**
 - Specify bucket: `zgadajsie-media-dev`
@@ -128,6 +130,7 @@ Secret Key: <Secret Access Key>
 Kliknij **Validate** — Coolify przetestuje połączenie.
 
 Następnie: **Coolify → zgadajsie-prod → zgadajsie-prod-db → Backups → New Scheduled Backup:**
+
 - Frequency: `0 3 * * *` (codziennie o 3:00)
 - S3: wybierz skonfigurowany storage
 

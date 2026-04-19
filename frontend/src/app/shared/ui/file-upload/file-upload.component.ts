@@ -35,9 +35,13 @@ import { IconComponent } from '../icon/icon.component';
       />
 
       @if (preview()) {
-      <img [src]="preview()" class="w-24 h-24 mx-auto rounded-lg object-cover mb-3" alt="Preview" />
+        <img
+          [src]="preview()"
+          class="w-24 h-24 mx-auto rounded-lg object-cover mb-3"
+          alt="Preview"
+        />
       } @else {
-      <app-icon name="upload" size="lg" color="neutral" muted="light" class="mb-3" />
+        <app-icon name="upload" size="lg" color="neutral" muted="light" class="mb-3" />
       }
 
       <p class="text-sm text-neutral-600">

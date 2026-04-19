@@ -2,8 +2,7 @@
  * Test integracyjny: join → payment → confirm
  * Wymaga działającej bazy testowej (docker-compose.test.yml, port 5434)
  */
-process.env.DATABASE_URL =
-  'postgresql://test:test@localhost:5434/zgadajsie_test?schema=public';
+process.env.DATABASE_URL = 'postgresql://test:test@localhost:5434/zgadajsie_test?schema=public';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaModule } from '../modules/prisma/prisma.module';
@@ -69,10 +68,26 @@ describe('[Integration] Enrollment join flow', () => {
     await module.init();
 
     await Promise.all([
-      prisma.city.upsert({ where: { slug: 'test-city' }, create: { slug: 'test-city', name: 'Test City', isActive: true }, update: {} }),
-      prisma.eventDiscipline.upsert({ where: { slug: 'football' }, create: { slug: 'football' }, update: {} }),
-      prisma.eventFacility.upsert({ where: { slug: 'pitch' }, create: { slug: 'pitch' }, update: {} }),
-      prisma.eventLevel.upsert({ where: { slug: 'mixed-open' }, create: { slug: 'mixed-open' }, update: {} }),
+      prisma.city.upsert({
+        where: { slug: 'test-city' },
+        create: { slug: 'test-city', name: 'Test City', isActive: true },
+        update: {},
+      }),
+      prisma.eventDiscipline.upsert({
+        where: { slug: 'football' },
+        create: { slug: 'football' },
+        update: {},
+      }),
+      prisma.eventFacility.upsert({
+        where: { slug: 'pitch' },
+        create: { slug: 'pitch' },
+        update: {},
+      }),
+      prisma.eventLevel.upsert({
+        where: { slug: 'mixed-open' },
+        create: { slug: 'mixed-open' },
+        update: {},
+      }),
     ]);
   });
 
@@ -82,7 +97,9 @@ describe('[Integration] Enrollment join flow', () => {
     await prisma.organizerUserRelation.deleteMany({
       where: { OR: [{ organizerUserId: { in: userIds } }, { targetUserId: { in: userIds } }] },
     });
-    await prisma.eventEnrollment.deleteMany({ where: { event: { title: { startsWith: TEST_PREFIX } } } });
+    await prisma.eventEnrollment.deleteMany({
+      where: { event: { title: { startsWith: TEST_PREFIX } } },
+    });
     await prisma.event.deleteMany({ where: { title: { startsWith: TEST_PREFIX } } });
     await prisma.user.deleteMany({ where: { email: { startsWith: TEST_PREFIX } } });
     await module.close();

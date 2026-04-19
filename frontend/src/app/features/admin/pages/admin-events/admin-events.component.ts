@@ -27,44 +27,45 @@ import { EventStatus } from '@zgadajsie/shared';
     <div class="p-4">
       <h1 class="text-xl font-bold text-neutral-900 mb-4">Wydarzenia (admin)</h1>
       @if (loading()) {
-      <app-loading-spinner></app-loading-spinner>
+        <app-loading-spinner></app-loading-spinner>
       } @else {
-      <div class="space-y-2">
-        @for (e of events(); track e.id) {
-        <app-card>
-          <div class="flex items-center justify-between">
-            <div>
-              <a
-                [routerLink]="['/w', e.city?.slug, e.id]"
-                class="text-sm font-semibold text-neutral-900 hover:text-primary-500"
-                >{{ e.title }}</a
-              >
-              <p class="text-xs text-neutral-500">
-                {{ e.startsAt | date : 'd MMM yyyy, HH:mm' }} · {{ e.status }}
-              </p>
-            </div>
-            <div class="flex gap-1">
-              <a [routerLink]="['/o', 'w', e.id, 'edit']"
-                ><app-button appearance="outline" color="neutral" size="sm"
-                  ><app-icon name="edit" size="sm"></app-icon></app-button
-              ></a>
-              <app-button appearance="soft" color="danger" size="sm" (clicked)="onCancel(e.id)"
-                ><app-icon name="x" size="sm"></app-icon
-              ></app-button>
-            </div>
+        <div class="space-y-2">
+          @for (e of events(); track e.id) {
+            <app-card>
+              <div class="flex items-center justify-between">
+                <div>
+                  <a
+                    [routerLink]="['/w', e.city?.slug, e.id]"
+                    class="text-sm font-semibold text-neutral-900 hover:text-primary-500"
+                    >{{ e.title }}</a
+                  >
+                  <p class="text-xs text-neutral-500">
+                    {{ e.startsAt | date: 'd MMM yyyy, HH:mm' }} · {{ e.status }}
+                  </p>
+                </div>
+                <div class="flex gap-1">
+                  <a [routerLink]="['/o', 'w', e.id, 'edit']"
+                    ><app-button appearance="outline" color="neutral" size="sm"
+                      ><app-icon name="edit" size="sm"></app-icon></app-button
+                  ></a>
+                  <app-button appearance="soft" color="danger" size="sm" (clicked)="onCancel(e.id)"
+                    ><app-icon name="x" size="sm"></app-icon
+                  ></app-button>
+                </div>
+              </div>
+            </app-card>
+          }
+        </div>
+        @if (totalPages() > 1) {
+          <div class="mt-4">
+            <app-pagination
+              [currentPage]="page()"
+              [totalPages]="totalPages()"
+              (pageChange)="onPageChange($event)"
+            ></app-pagination>
           </div>
-        </app-card>
         }
-      </div>
-      @if (totalPages() > 1) {
-      <div class="mt-4">
-        <app-pagination
-          [currentPage]="page()"
-          [totalPages]="totalPages()"
-          (pageChange)="onPageChange($event)"
-        ></app-pagination>
-      </div>
-      } }
+      }
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

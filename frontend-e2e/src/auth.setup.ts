@@ -10,7 +10,9 @@ setup('authenticate', async ({ page }) => {
     fs.mkdirSync(authDir, { recursive: true });
   }
 
-  const backendAvailable = await fetch('http://localhost:3000').then(() => true).catch(() => false);
+  const backendAvailable = await fetch('http://localhost:3000')
+    .then(() => true)
+    .catch(() => false);
   if (!backendAvailable) {
     fs.writeFileSync(authFile, JSON.stringify({ cookies: [], origins: [] }));
     return;

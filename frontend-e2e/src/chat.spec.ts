@@ -17,7 +17,9 @@ test.describe('Chat — czat grupowy', () => {
     const chatTab = page.locator('[data-testid="chat-tab"], a:has-text("Czat")').first();
     if (await chatTab.isVisible()) {
       await chatTab.click();
-      await expect(page.locator('[data-testid="chat-input"], textarea[placeholder*="wiadom"]').first()).toBeVisible({ timeout: 5_000 });
+      await expect(
+        page.locator('[data-testid="chat-input"], textarea[placeholder*="wiadom"]').first(),
+      ).toBeVisible({ timeout: 5_000 });
     }
   });
 
@@ -41,7 +43,9 @@ test.describe('Chat — czat prywatny', () => {
   test('lista konwersacji prywatnych wyświetla się dla organizatora', async ({ page }) => {
     await page.goto(`/w/${TEST_CITY}/${TEST_CHAT_EVENT_ID}`);
 
-    const privateTab = page.locator('[data-testid="private-chat-tab"], a:has-text("Prywatne")').first();
+    const privateTab = page
+      .locator('[data-testid="private-chat-tab"], a:has-text("Prywatne")')
+      .first();
     if (await privateTab.isVisible()) {
       await privateTab.click();
       await expect(page.locator('body')).toBeVisible();

@@ -89,9 +89,7 @@ describe('TpayService', () => {
 
       const payload = { ...baseWebhookPayload };
       const expectedMd5 = createHash('md5')
-        .update(
-          `${payload.id}${payload.tr_id}${payload.tr_amount}${payload.tr_crc}${securityCode}`,
-        )
+        .update(`${payload.id}${payload.tr_id}${payload.tr_amount}${payload.tr_crc}${securityCode}`)
         .digest('hex');
       payload.md5sum = expectedMd5;
 
@@ -114,10 +112,7 @@ describe('TpayService', () => {
 
     it('zwraca false dla JWS header bez pola x5u', async () => {
       const headerNoX5u = Buffer.from(JSON.stringify({ alg: 'RS256' })).toString('base64url');
-      const result = await service.verifyWebhook(
-        baseWebhookPayload,
-        `${headerNoX5u}.payload.sig`,
-      );
+      const result = await service.verifyWebhook(baseWebhookPayload, `${headerNoX5u}.payload.sig`);
       expect(result.valid).toBe(false);
     });
 
@@ -125,10 +120,7 @@ describe('TpayService', () => {
       const headerBadUrl = Buffer.from(
         JSON.stringify({ alg: 'RS256', x5u: 'https://evil.com/cert.pem' }),
       ).toString('base64url');
-      const result = await service.verifyWebhook(
-        baseWebhookPayload,
-        `${headerBadUrl}.payload.sig`,
-      );
+      const result = await service.verifyWebhook(baseWebhookPayload, `${headerBadUrl}.payload.sig`);
       expect(result.valid).toBe(false);
     });
   });
@@ -153,7 +145,8 @@ describe('TpayService', () => {
       };
 
       // First call (auth token), second call (create transaction)
-      global.fetch = jest.fn()
+      global.fetch = jest
+        .fn()
         .mockResolvedValueOnce({
           ok: true,
           json: jest.fn().mockResolvedValue({
@@ -174,7 +167,8 @@ describe('TpayService', () => {
     });
 
     it('zwraca URL do płatności po pomyślnej transakcji', async () => {
-      global.fetch = jest.fn()
+      global.fetch = jest
+        .fn()
         .mockResolvedValueOnce({
           ok: true,
           json: jest.fn().mockResolvedValue({

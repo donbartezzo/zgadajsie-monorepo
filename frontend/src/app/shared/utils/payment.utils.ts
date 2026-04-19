@@ -5,5 +5,5 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 };
 
 export function paymentMethodLabel(method: string | null, fallback = ''): string {
-  return method ? PAYMENT_METHOD_LABELS[method] ?? method : fallback;
+  return method ? (PAYMENT_METHOD_LABELS[method] ?? method) : fallback;
 }

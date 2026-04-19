@@ -4,11 +4,7 @@ import { CapacityProgressComponent } from '../../../ui/capacity-progress/capacit
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { SlotStatusConfig, SLOT_COLOR_CLASSES } from '../../slot-status-config';
 import { EnrollmentGridItemEmptyComponent } from './enrollment-grid-item-empty.component';
-import {
-  EnrollmentGridItemComponent,
-  SlotGroup,
-  SlotItem,
-} from './enrollment-grid-item.component';
+import { EnrollmentGridItemComponent, SlotGroup, SlotItem } from './enrollment-grid-item.component';
 
 @Component({
   selector: 'app-enrollment-grid-section',

@@ -29,27 +29,27 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
       </div>
 
       @if (loading()) {
-      <app-loading-spinner></app-loading-spinner>
+        <app-loading-spinner></app-loading-spinner>
       } @else if (files().length === 0) {
-      <app-empty-state
-        icon="image"
-        title="Brak zdjęć"
-        message="Nie masz jeszcze żadnych zdjęć w galerii."
-      ></app-empty-state>
+        <app-empty-state
+          icon="image"
+          title="Brak zdjęć"
+          message="Nie masz jeszcze żadnych zdjęć w galerii."
+        ></app-empty-state>
       } @else {
-      <div class="grid grid-cols-3 gap-2">
-        @for (f of files(); track f.id) {
-        <div class="relative group aspect-square rounded-xl overflow-hidden bg-neutral-100">
-          <img [src]="f.url" [alt]="f.originalName" class="w-full h-full object-cover" />
-          <button
-            (click)="onDelete(f.id)"
-            class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-danger-300 text-white rounded-full p-1"
-          >
-            <app-icon name="trash" size="sm"></app-icon>
-          </button>
+        <div class="grid grid-cols-3 gap-2">
+          @for (f of files(); track f.id) {
+            <div class="relative group aspect-square rounded-xl overflow-hidden bg-neutral-100">
+              <img [src]="f.url" [alt]="f.originalName" class="w-full h-full object-cover" />
+              <button
+                (click)="onDelete(f.id)"
+                class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-danger-300 text-white rounded-full p-1"
+              >
+                <app-icon name="trash" size="sm"></app-icon>
+              </button>
+            </div>
+          }
         </div>
-        }
-      </div>
       }
     </div>
   `,

@@ -53,28 +53,23 @@ Jeśli fragment jest **domenowy, ale współdzielony** (np. karta wydarzenia, av
 Dla zadania „oprzyj się na pliku X.html” stosuj **zawsze tę samą sekwencję kroków**:
 
 1. **Analiza struktury**
-
    - Zidentyfikuj sekcje: nagłówek, lista, formularz, bottom nav, itd.
    - Zmapuj sekcje na komponenty Angulara (feature + ewentualne `shared/ui`).
 
 2. **Usunięcie zależności od Bootstrapa**
-
    - Zignoruj `<link ... bootstrap.css>` i `<script ... bootstrap.js>`.
    - W HTML usuń wszystkie klasy Bootstrap (`container`, `row`, `col-*`, `btn`, `btn-*`, `d-flex`, `text-*`, `mt-*`, `mb-*`, itd.).
 
 3. **Przepisanie layoutu na Tailwind**
-
    - Mapuj typowe wzorce Bootstrapa na Tailwind (szczegóły w sekcji 4).
    - Dodaj klasy Tailwind **bezpośrednio** do elementów HTML.
 
 4. **Ikony**
-
    - Zamień `<i class="bi bi-..."></i>` lub inne font icons na użycie `IconComponent`:
      - Ustal semantyczną nazwę ikony (`"home"`, `"calendar"`, `"user"` itp.).
      - Użyj: `<app-icon name="home" class="w-6 h-6 text-neutral-900" />` lub odpowiedniego aliasu `IconComponent`.
 
 5. **Interakcje i logika**
-
    - Uprość czysty HTML do struktury komponentów Angulara.
    - Przenieś logikę (toggle, modale, dropdowny) na Angular + ewentualnie Angular Material/CDK.
 
@@ -508,19 +503,16 @@ Podczas migracji **NIE WOLNO** bezrefleksyjnie kopiować klas z pliku szablonu H
 Zamiast tego **zawsze**:
 
 1. **Używaj Tailwinda jako pierwszego wyboru**
-
    - layout, spacing, kolory, typografia, animacje – realizuj klasami Tailwind (`flex`, `grid`, `rounded-*`, `shadow-*`, `text-*`, `bg-*`, `animate-*`, itp.);
    - jeśli w szablonie występuje np. `class="header header-fixed header-logo-center"`, w Angularze zastąp to np. `class="fixed inset-x-0 top-0 z-50 bg-white/95 shadow-sm"`.
 
 2. **Customowe klasy tylko wtedy, gdy są uzasadnione**
-
    - dopuszczalne jest wprowadzenie customowej klasy (np. `.app-shell`, `.page-content-shell`) **tylko wtedy**, gdy:
      - ma ona konkretną definicję w powiązanym pliku `.scss` danego komponentu **lub** w świadomie zarządzanym globalnym arkuszu (`styles.scss`), **i**
      - jest faktycznie używana w więcej niż jednym miejscu albo istotnie upraszcza kod;
    - nie wolno tworzyć klas, które nie mają żadnej definicji w CSS/SCSS – to są "martwe" klasy i należy je usunąć zamiast przenosić.
 
 3. **Przy refaktorach istniejących komponentów**
-
    - jeżeli komponent posiada klasy pochodzące ze starego szablonu (np. `header-clear-small`, `footer-bar-1`, `spinner-border`), należy:
      - sprawdzić, czy mają definicję w CSS/SCSS;
      - jeżeli są powiązane tylko z oryginalnym szablonem i nie są potrzebne – przepisać zachowanie na Tailwind i klasę usunąć;

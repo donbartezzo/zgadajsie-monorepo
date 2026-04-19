@@ -12,5 +12,4 @@ export class AdminUpdateUserDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
-
 }

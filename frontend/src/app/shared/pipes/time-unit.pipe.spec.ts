@@ -11,10 +11,7 @@ describe('TimeUnitPipe', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        TimeUnitPipe,
-        { provide: TranslocoService, useValue: mockTransloco },
-      ],
+      providers: [TimeUnitPipe, { provide: TranslocoService, useValue: mockTransloco }],
     });
     pipe = TestBed.inject(TimeUnitPipe);
     jest.clearAllMocks();

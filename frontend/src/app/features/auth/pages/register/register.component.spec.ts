@@ -92,7 +92,9 @@ describe('RegisterComponent', () => {
   it('ustawia loading=true podczas rejestracji i false po zakończeniu', fakeAsync(async () => {
     let resolveRegister: () => void;
     mockAuth.register.mockReturnValue(
-      new Promise<void>((resolve) => { resolveRegister = resolve; }),
+      new Promise<void>((resolve) => {
+        resolveRegister = resolve;
+      }),
     );
 
     component.displayName = 'Jan';

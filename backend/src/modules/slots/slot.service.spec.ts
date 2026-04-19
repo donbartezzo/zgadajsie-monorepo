@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { SlotService } from './slot.service';
@@ -64,7 +59,12 @@ describe('SlotService', () => {
 
     it('tworzy sloty per rola z roleConfig (roleKey ustawiony)', async () => {
       (prisma.eventSlot.createMany as jest.Mock).mockResolvedValue({ count: 4 });
-      const roleConfig = { roles: [{ key: 'player', slots: 3 }, { key: 'referee', slots: 1 }] };
+      const roleConfig = {
+        roles: [
+          { key: 'player', slots: 3 },
+          { key: 'referee', slots: 1 },
+        ],
+      };
 
       await service.createSlotsForEvent('event1', 4, roleConfig);
 
@@ -78,7 +78,12 @@ describe('SlotService', () => {
 
     it('poprawna suma slotów = maxParticipants', async () => {
       (prisma.eventSlot.createMany as jest.Mock).mockResolvedValue({ count: 10 });
-      const roleConfig = { roles: [{ key: 'a', slots: 7 }, { key: 'b', slots: 3 }] };
+      const roleConfig = {
+        roles: [
+          { key: 'a', slots: 7 },
+          { key: 'b', slots: 3 },
+        ],
+      };
 
       await service.createSlotsForEvent('event1', 10, roleConfig);
 
@@ -255,9 +260,9 @@ describe('SlotService', () => {
         enrollmentId: null,
       });
 
-      await expect(
-        service.assignToLockedSlot('slot1', 'participation1', false),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.assignToLockedSlot('slot1', 'participation1', false)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('rzuca BadRequestException jeśli slot już zajęty', async () => {
@@ -267,17 +272,17 @@ describe('SlotService', () => {
         enrollmentId: 'existing-participant',
       });
 
-      await expect(
-        service.assignToLockedSlot('slot1', 'participation1', false),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.assignToLockedSlot('slot1', 'participation1', false)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('rzuca NotFoundException jeśli slot nie istnieje', async () => {
       (prisma.eventSlot.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(
-        service.assignToLockedSlot('slot1', 'participation1', false),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.assignToLockedSlot('slot1', 'participation1', false)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -398,9 +403,9 @@ describe('SlotService', () => {
         slot: null,
       });
 
-      await expect(
-        service.assignParticipantToLockedSlot('slot1', 'p1', 'org1'),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.assignParticipantToLockedSlot('slot1', 'p1', 'org1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('rzuca BadRequestException jeśli uczestnik już ma slot', async () => {
@@ -411,9 +416,9 @@ describe('SlotService', () => {
         slot: { id: 'existing-slot' },
       });
 
-      await expect(
-        service.assignParticipantToLockedSlot('slot1', 'p1', 'org1'),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.assignParticipantToLockedSlot('slot1', 'p1', 'org1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('rzuca ForbiddenException jeśli nie-organizator', async () => {
