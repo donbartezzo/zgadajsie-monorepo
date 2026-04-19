@@ -452,10 +452,12 @@ describe('SlotService', () => {
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue({
         id: 'p1',
         wantsIn: true,
+        roleKey: null,
         event: { organizerId: 'org1', costPerPerson: { toNumber: () => 0 } },
         slot: null,
       });
       (prisma.eventSlot.findUnique as jest.Mock)
+        .mockResolvedValueOnce({ roleKey: null }) // role check
         .mockResolvedValueOnce(slot) // assignToLockedSlot check
         .mockResolvedValueOnce(updatedSlot); // assignToLockedSlot return
       (prisma.eventSlot.update as jest.Mock).mockResolvedValue(updatedSlot);
@@ -467,6 +469,58 @@ describe('SlotService', () => {
       expect(prisma.eventSlot.update as jest.Mock).toHaveBeenCalledWith(
         expect.objectContaining({ data: expect.objectContaining({ confirmed: true }) }),
       );
+    });
+
+    it('rzuca BadRequestException jeśli slot ma inną rolę niż uczestnik', async () => {
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue({
+        id: 'p1',
+        wantsIn: true,
+        roleKey: 'bramkarz',
+        event: { organizerId: 'org1', costPerPerson: { toNumber: () => 0 } },
+        slot: null,
+      });
+      (prisma.eventSlot.findUnique as jest.Mock).mockResolvedValueOnce({ roleKey: 'pilkarz' });
+
+      await expect(service.assignParticipantToLockedSlot('slot1', 'p1', 'org1')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('przypisuje slot jeśli role uczestnika i slotu są zgodne', async () => {
+      const slot = {
+        id: 'slot1',
+        eventId: 'event1',
+        locked: true,
+        enrollmentId: null,
+        roleKey: 'bramkarz',
+      };
+      const updatedSlot = {
+        id: 'slot1',
+        confirmed: true,
+        assignedAt: new Date(),
+        roleKey: 'bramkarz',
+      };
+
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue({
+        id: 'p1',
+        wantsIn: true,
+        roleKey: 'bramkarz',
+        event: { organizerId: 'org1', costPerPerson: { toNumber: () => 0 } },
+        slot: null,
+      });
+      (prisma.eventSlot.findUnique as jest.Mock)
+        .mockResolvedValueOnce({ roleKey: 'bramkarz' }) // role check
+        .mockResolvedValueOnce(slot) // assignToLockedSlot check
+        .mockResolvedValueOnce(updatedSlot); // assignToLockedSlot return
+      (prisma.eventSlot.update as jest.Mock).mockResolvedValue(updatedSlot);
+      (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue({
+        id: 'p1',
+        waitingReason: null,
+      });
+
+      await expect(
+        service.assignParticipantToLockedSlot('slot1', 'p1', 'org1'),
+      ).resolves.not.toThrow();
     });
   });
 });

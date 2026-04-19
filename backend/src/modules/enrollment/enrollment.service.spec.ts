@@ -511,10 +511,75 @@ describe('EnrollmentService', () => {
 
       await service.assignSlotToParticipant('p1', 'org1');
 
-      expect(slots.assignSlot as jest.Mock).toHaveBeenCalledWith('event1', 'p1', false);
+      expect(slots.getFreeSlotCount as jest.Mock).toHaveBeenCalledWith('event1', null);
+      expect(slots.assignSlot as jest.Mock).toHaveBeenCalledWith(
+        'event1',
+        'p1',
+        false,
+        undefined,
+        null,
+      );
       expect(prisma.eventEnrollment.update as jest.Mock).toHaveBeenCalledWith(
         expect.objectContaining({ data: expect.objectContaining({ waitingReason: null }) }),
       );
+    });
+
+    it('przypisuje slot uwzględniając roleKey uczestnika', async () => {
+      const participation = makeEnrollment({
+        wantsIn: true,
+        slot: null,
+        roleKey: 'bramkarz',
+        event: makeEvent({ lotteryExecutedAt: new Date() }),
+      });
+      (prisma.eventEnrollment.findUnique as jest.Mock)
+        .mockResolvedValueOnce(participation)
+        .mockResolvedValue({ ...participation, slot: { confirmed: false }, waitingReason: null });
+      (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
+      (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue({
+        ...participation,
+        waitingReason: null,
+        slot: { confirmed: false },
+        event: { id: 'event1', title: 'Test Event' },
+      });
+      (prisma.organizerUserRelation.upsert as jest.Mock).mockResolvedValue({});
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await service.assignSlotToParticipant('p1', 'org1');
+
+      expect(slots.getFreeSlotCount as jest.Mock).toHaveBeenCalledWith('event1', 'bramkarz');
+      expect(slots.assignSlot as jest.Mock).toHaveBeenCalledWith(
+        'event1',
+        'p1',
+        false,
+        undefined,
+        'bramkarz',
+      );
+    });
+
+    it('odrzuca z sugestią ról jeśli brak wolnych slotów dla danej roli (BadRequestException)', async () => {
+      const roleConfig = {
+        disciplineSlug: 'football',
+        roles: [
+          { key: 'bramkarz', title: 'Bramkarz', desc: '', slots: 1, isDefault: false },
+          { key: 'pilkarz', title: 'Piłkarz', desc: '', slots: 10, isDefault: true },
+        ],
+      };
+      const participation = makeEnrollment({
+        wantsIn: true,
+        slot: null,
+        roleKey: 'bramkarz',
+        event: makeEvent({ lotteryExecutedAt: new Date(), roleConfig }),
+      });
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(participation);
+      (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(0);
+      (slots.getAvailableRoles as jest.Mock).mockResolvedValue([
+        { key: 'pilkarz', title: 'Piłkarz', freeSlots: 5 },
+      ]);
+
+      await expect(service.assignSlotToParticipant('p1', 'org1')).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.assignSlotToParticipant('p1', 'org1')).rejects.toThrow('Piłkarz');
     });
 
     it('odrzuca jeśli nie-organizator (ForbiddenException)', async () => {

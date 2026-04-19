@@ -556,6 +556,22 @@ export class SlotService {
     const isPaid = participation.event.costPerPerson.toNumber() > 0;
     const confirmed = !isPaid;
 
+    // Validate that the target slot's role matches the participant's registered role
+    const targetSlot = await this.prisma.eventSlot.findUnique({
+      where: { id: slotId },
+      select: { roleKey: true },
+    });
+    if (
+      targetSlot &&
+      participation.roleKey &&
+      targetSlot.roleKey &&
+      participation.roleKey !== targetSlot.roleKey
+    ) {
+      throw new BadRequestException(
+        `Uczestnik zapisał się jako "${participation.roleKey}", a wybrany slot jest dla roli "${targetSlot.roleKey}"`,
+      );
+    }
+
     await this.assignToLockedSlot(slotId, participationId, confirmed);
 
     const updated = await this.prisma.eventEnrollment.update({

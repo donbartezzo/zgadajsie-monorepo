@@ -310,15 +310,35 @@ export class EnrollmentService {
       throw new BadRequestException('Uczestnik już ma przydzielone miejsce');
     }
 
-    const freeSlots = await this.slotService.getFreeSlotCount(participation.eventId);
+    const roleKey = participation.roleKey;
+    const freeSlots = await this.slotService.getFreeSlotCount(participation.eventId, roleKey);
     if (freeSlots === 0) {
-      throw new BadRequestException('Brak wolnych (odblokowanych) miejsc');
+      if (roleKey && participation.event.roleConfig) {
+        const roleConfig = participation.event.roleConfig as unknown as EventRoleConfig;
+        const availableRoles = await this.slotService.getAvailableRoles(
+          participation.eventId,
+          roleConfig,
+        );
+        if (availableRoles.length > 0) {
+          const suggestion = availableRoles.map((r) => `${r.title} (${r.freeSlots})`).join(', ');
+          throw new BadRequestException(
+            `Brak wolnych miejsc dla tej roli. Dostępne miejsca w: ${suggestion}`,
+          );
+        }
+      }
+      throw new BadRequestException('Brak wolnych (odblokowanych) miejsc dla tej roli');
     }
 
     const phase = getEnrollmentPhase(participation.event);
 
-    // Assign slot (confirmed=false, user must confirm) and clear waitingReason
-    await this.slotService.assignSlot(participation.eventId, participationId, false);
+    // Assign slot matching participant's registered role (confirmed=false, user must confirm)
+    await this.slotService.assignSlot(
+      participation.eventId,
+      participationId,
+      false,
+      undefined,
+      roleKey,
+    );
 
     const updated = await this.prisma.eventEnrollment.update({
       where: { id: participationId },
