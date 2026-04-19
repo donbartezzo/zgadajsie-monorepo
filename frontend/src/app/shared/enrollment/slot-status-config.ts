@@ -104,6 +104,8 @@ export interface SlotStatusConfig {
   icon: IconName;
   /** Semantic color name used to derive Tailwind classes */
   color: SemanticColor;
+  /** Plural form of title used in section header */
+  sectionHeader: string;
   /** Short note shown in the grid section header (section-level context) */
   sectionNote?: string;
   /** Anchor linking to the relevant FAQ entry */
@@ -120,6 +122,7 @@ export const SLOT_STATUS_CONFIG: Record<SlotDisplayStatus, SlotStatusConfig> = {
     description: 'Ma potwierdzone miejsce w wydarzeniu',
     icon: 'check-circle',
     color: 'success',
+    sectionHeader: 'Uczestnicy',
     sectionNote:
       'Potwierdzeni uczestnicy z zarezerwowanym miejscem. Tylko oni biorą udział w tym wydarzeniu',
     faqAnchor: 'participant-status',
@@ -129,6 +132,7 @@ export const SLOT_STATUS_CONFIG: Record<SlotDisplayStatus, SlotStatusConfig> = {
     description: 'Czeka na wolne miejsce lub zatwierdzenie przez organizatora',
     icon: 'clock',
     color: 'info',
+    sectionHeader: 'Oczekujący',
     sectionNote: 'Osoby czekające na wolny slot lub wymagające zatwierdzenia przez organizatora',
     faqAnchor: 'pending-status',
   },
@@ -137,6 +141,7 @@ export const SLOT_STATUS_CONFIG: Record<SlotDisplayStatus, SlotStatusConfig> = {
     description: 'Zrezygnował z udziału lub został odrzucony',
     icon: 'user-x',
     color: 'danger',
+    sectionHeader: 'Wypisani',
     sectionNote:
       'Osoby, które zrezygnowały z udziału lub zostały odrzucone/zbanowane przez organizatora',
     faqAnchor: 'withdrawn-status',
@@ -146,11 +151,13 @@ export const SLOT_STATUS_CONFIG: Record<SlotDisplayStatus, SlotStatusConfig> = {
     description: 'Slot jest dostępny do zajęcia',
     icon: 'plus',
     color: 'primary',
+    sectionHeader: 'Wolne miejsca',
   },
   'non-participant': {
     title: 'Nie uczestniczy',
     description: 'Użytkownik nie bierze udziału w tym wydarzeniu',
     icon: 'user',
     color: 'neutral',
+    sectionHeader: 'Nie uczestniczą',
   },
 };

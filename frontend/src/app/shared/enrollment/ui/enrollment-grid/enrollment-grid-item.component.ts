@@ -205,7 +205,7 @@ export class EnrollmentGridItemComponent {
 
   readonly buttonClass = computed(() => {
     const base =
-      'flex flex-col items-center w-full h-full p-2 rounded-xl transition-colors' +
+      'flex flex-col items-center w-full h-full p-1 rounded-xl transition-colors' +
       ' hover:bg-neutral-50 focus:outline-hidden';
     const status = this.slotDisplayStatus();
 

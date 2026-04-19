@@ -10,7 +10,7 @@
   <div [class]="'flex items-center gap-2 px-4 py-2.5 ' + _colors.headerBg">
     <app-icon [name]="_config.icon" size="xs" [class]="_colors.sectionIcon" />
     <h4 [class]="'text-xs font-semibold uppercase tracking-widest ' + _colors.sectionTitle">
-      {{ _config.title }}
+      {{ _config.sectionHeader }}
       @if (_count !== null) {
         ({{ _count }})
       } @else if (_totalSlots > 0) {
