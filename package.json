@@ -35,7 +35,8 @@
     "prisma:studio": "cd backend && prisma studio",
     "prisma:seed:prod": "cd backend && tsx prisma/seed.prod.ts",
     "db:reset:local": "pnpm prisma:migrate:reset && pnpm backend:db:seed",
-    "db:reset:remote": "bash scripts/db-setup-remote.sh"
+    "db:reset:remote": "bash scripts/db-setup-remote.sh",
+    "prepare": "husky"
   },
   "engines": {
     "node": ">=24.4.1",
@@ -140,9 +141,11 @@
     "dotenv-cli": "^10.0.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.0.0",
+    "husky": "^9.1.7",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0",
     "jest-preset-angular": "~16.1.1",
+    "lint-staged": "^16.4.0",
     "nx": "21.6.4",
     "postcss": "^8.5.6",
     "prettier": "^3.3.3",
@@ -157,5 +160,14 @@
   },
   "prisma": {
     "seed": "tsx prisma/seed.nonprod.ts"
+  },
+  "lint-staged": {
+    "*.{ts,js,mjs}": [
+      "eslint --fix --no-warn-ignored",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,scss,css,html}": [
+      "prettier --write"
+    ]
   }
 }

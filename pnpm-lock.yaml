@@ -164,10 +164,10 @@ importers:
     devDependencies:
       '@angular-devkit/build-angular':
         specifier: ~21.2.5
-        version: 21.2.5(00f42922c5f9a3ff55727a28713116e4)
+        version: 21.2.5(9777c77778b82a916a45c7184cdd21db)
       '@angular/build':
         specifier: ~21.2.5
-        version: 21.2.5(3222f9c99f582571e15989b5c74301e2)
+        version: 21.2.5(08d8a7f604a9cb6f2e917d5910833d03)
       '@angular/cli':
         specifier: ~21.2.5
         version: 21.2.5(@types/node@20.19.9)(chokidar@4.0.3)
@@ -194,7 +194,7 @@ importers:
         version: 11.1.17(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@11.1.6)(@nestjs/platform-express@11.1.6)
       '@nx/angular':
         specifier: ^21.6.4
-        version: 21.6.5(@angular-devkit/build-angular@21.2.5(00f42922c5f9a3ff55727a28713116e4))(@angular-devkit/core@21.2.5(chokidar@4.0.3))(@angular-devkit/schematics@21.2.5(chokidar@4.0.3))(@angular/build@21.2.5(3222f9c99f582571e15989b5c74301e2))(@babel/traverse@7.29.0)(@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@rspack/core@1.5.8(@swc/helpers@0.5.17))(@schematics/angular@21.2.5(chokidar@4.0.3))(@swc/helpers@0.5.17)(@types/express@5.0.3)(@zkochan/js-yaml@0.0.7)(eslint@8.57.1)(html-webpack-plugin@5.6.4(@rspack/core@1.5.8(@swc/helpers@0.5.17))(webpack@5.105.2))(less@4.4.2)(lightningcss@1.32.0)(nx@21.6.4)(react-dom@18.3.1(react@18.3.1))(react-refresh@0.11.0)(react@18.3.1)(rxjs@7.8.2)(typescript@5.9.3)(webpack-cli@5.1.4)
+        version: 21.6.5(@angular-devkit/build-angular@21.2.5(9777c77778b82a916a45c7184cdd21db))(@angular-devkit/core@21.2.5(chokidar@4.0.3))(@angular-devkit/schematics@21.2.5(chokidar@4.0.3))(@angular/build@21.2.5(08d8a7f604a9cb6f2e917d5910833d03))(@babel/traverse@7.29.0)(@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@rspack/core@1.5.8(@swc/helpers@0.5.17))(@schematics/angular@21.2.5(chokidar@4.0.3))(@swc/helpers@0.5.17)(@types/express@5.0.3)(@zkochan/js-yaml@0.0.7)(eslint@8.57.1)(html-webpack-plugin@5.6.4(@rspack/core@1.5.8(@swc/helpers@0.5.17))(webpack@5.105.2))(less@4.4.2)(lightningcss@1.32.0)(nx@21.6.4)(react-dom@18.3.1(react@18.3.1))(react-refresh@0.11.0)(react@18.3.1)(rxjs@7.8.2)(typescript@5.9.3)(webpack-cli@5.1.4)
       '@nx/devkit':
         specifier: 21.6.4
         version: 21.6.4(nx@21.6.4)
@@ -294,6 +294,9 @@ importers:
       eslint-config-prettier:
         specifier: ^10.0.0
         version: 10.1.8(eslint@8.57.1)
+      husky:
+        specifier: ^9.1.7
+        version: 9.1.7
       jest:
         specifier: ^30.3.0
         version: 30.3.0(@types/node@20.19.9)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.19.9)(typescript@5.9.3))
@@ -303,6 +306,9 @@ importers:
       jest-preset-angular:
         specifier: ~16.1.1
         version: 16.1.1(9c72d61b4da0ff97c73d725f3041520e)
+      lint-staged:
+        specifier: ^16.4.0
+        version: 16.4.0
       nx:
         specifier: 21.6.4
         version: 21.6.4
@@ -5878,6 +5884,10 @@ packages:
     resolution: {integrity: sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==}
     engines: {node: '>=16'}
 
+  commander@14.0.3:
+    resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
+    engines: {node: '>=20'}
+
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
 
@@ -7111,6 +7121,11 @@ packages:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
     engines: {node: '>=10.17.0'}
 
+  husky@9.1.7:
+    resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   hyperdyperid@1.2.0:
     resolution: {integrity: sha512-Y93lCzHYgGWdrJ66yIktxiaGULYc6oGiABxhcO5AufBeOyoIdZF7bIfLaOrbM0iGIOXQQgxxRrFEnb+Y6w1n4A==}
     engines: {node: '>=10.18'}
@@ -7892,6 +7907,11 @@ packages:
   lines-and-columns@2.0.3:
     resolution: {integrity: sha512-cNOjgCnLB+FnvWWtyRTzmB3POJ+cXxTA81LoW7u8JdmhfXzriropYwpjShnz1QLLWsQwY7nIxoDmcPTwphDK9w==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  lint-staged@16.4.0:
+    resolution: {integrity: sha512-lBWt8hujh/Cjysw5GYVmZpFHXDCgZzhrOm8vbcUdobADZNOK/bRshr2kM3DfgrrtR1DQhfupW9gnIXOfiFi+bw==}
+    engines: {node: '>=20.17'}
+    hasBin: true
 
   listr2@9.0.5:
     resolution: {integrity: sha512-ME4Fb83LgEgwNw96RKNvKV4VTLuXfoKudAmm2lP8Kk87KaMK0/Xrx/aAkMWmT8mDb+3MlFDspfbCs7adjRxA2g==}
@@ -9702,6 +9722,10 @@ packages:
     resolution: {integrity: sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==}
     engines: {node: '>=10.0.0'}
 
+  string-argv@0.3.2:
+    resolution: {integrity: sha512-aqD2Q0144Z+/RqG52NeHEkZauTAUWJO8c6yTftGJKO3Tja5tUgIfmIl6kExvhtxSDP7fXB6DvzkfMpCd/F3G+Q==}
+    engines: {node: '>=0.6.19'}
+
   string-length@4.0.2:
     resolution: {integrity: sha512-+l6rNN5fYHNhZZy41RXsYptCjA2Igmq4EG7kZAYFQI1E1VTXarr6ZPXBg6eq7Y6eK4FEhY6AJlyuFIb/v/S0VQ==}
     engines: {node: '>=10'}
@@ -9890,6 +9914,10 @@ packages:
 
   thunky@1.1.0:
     resolution: {integrity: sha512-eHY7nBftgThBqOyHGVN+l8gF0BucP09fMo0oO/Lb0w1OF80dJv+lDVpXG60WMQvkcxAkNybKsrEIE3ZtKGmPrA==}
+
+  tinyexec@1.1.1:
+    resolution: {integrity: sha512-VKS/ZaQhhkKFMANmAOhhXVoIfBXblQxGX1myCQ2faQrfmobMftXeJPcZGp0gS07ocvGJWDLZGyOZDadDBqYIJg==}
+    engines: {node: '>=18'}
 
   tinyglobby@0.2.15:
     resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
@@ -10554,6 +10582,11 @@ packages:
     engines: {node: '>= 14.6'}
     hasBin: true
 
+  yaml@2.8.3:
+    resolution: {integrity: sha512-AvbaCLOO2Otw/lW5bmh9d/WEdcDFdQp2Z2ZUH3pX9U2ihyUY0nvLv7J6TrWowklRGPYbB/IuIMfYgxaCPg5Bpg==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
+
   yargs-parser@21.1.1:
     resolution: {integrity: sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==}
     engines: {node: '>=12'}
@@ -10708,13 +10741,13 @@ snapshots:
     transitivePeerDependencies:
       - chokidar
 
-  '@angular-devkit/build-angular@21.2.5(00f42922c5f9a3ff55727a28713116e4)':
+  '@angular-devkit/build-angular@21.2.5(9777c77778b82a916a45c7184cdd21db)':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@angular-devkit/architect': 0.2102.5(chokidar@4.0.3)
       '@angular-devkit/build-webpack': 0.2102.5(chokidar@4.0.3)(webpack-dev-server@5.2.3)(webpack@5.105.2)
       '@angular-devkit/core': 21.2.5(chokidar@4.0.3)
-      '@angular/build': 21.2.5(3222f9c99f582571e15989b5c74301e2)
+      '@angular/build': 21.2.5(08d8a7f604a9cb6f2e917d5910833d03)
       '@angular/compiler-cli': 21.2.6(@angular/compiler@21.2.6)(typescript@5.9.3)
       '@babel/core': 7.29.0
       '@babel/generator': 7.29.1
@@ -10975,7 +11008,7 @@ snapshots:
       '@angular/core': 21.2.6(@angular/compiler@21.2.6)(rxjs@7.8.2)(zone.js@0.16.1)
       tslib: 2.8.1
 
-  '@angular/build@21.2.5(3222f9c99f582571e15989b5c74301e2)':
+  '@angular/build@21.2.5(08d8a7f604a9cb6f2e917d5910833d03)':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@angular-devkit/architect': 0.2102.5(chokidar@4.0.3)
@@ -10985,7 +11018,7 @@ snapshots:
       '@babel/helper-annotate-as-pure': 7.27.3
       '@babel/helper-split-export-declaration': 7.24.7
       '@inquirer/confirm': 5.1.21(@types/node@20.19.9)
-      '@vitejs/plugin-basic-ssl': 2.1.4(vite@7.3.1(@types/node@20.19.9)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.1))
+      '@vitejs/plugin-basic-ssl': 2.1.4(vite@7.3.1(@types/node@20.19.9)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.3))
       beasties: 0.4.1
       browserslist: 4.26.3
       esbuild: 0.27.3
@@ -11006,7 +11039,7 @@ snapshots:
       tslib: 2.8.1
       typescript: 5.9.3
       undici: 7.24.4
-      vite: 7.3.1(@types/node@20.19.9)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(sass-embedded@1.93.2)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite: 7.3.1(@types/node@20.19.9)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(sass-embedded@1.93.2)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.3)
       watchpack: 2.5.1
     optionalDependencies:
       '@angular/core': 21.2.6(@angular/compiler@21.2.6)(rxjs@7.8.2)(zone.js@0.16.1)
@@ -15198,7 +15231,7 @@ snapshots:
     dependencies:
       consola: 3.4.2
 
-  '@nx/angular@21.6.5(@angular-devkit/build-angular@21.2.5(00f42922c5f9a3ff55727a28713116e4))(@angular-devkit/core@21.2.5(chokidar@4.0.3))(@angular-devkit/schematics@21.2.5(chokidar@4.0.3))(@angular/build@21.2.5(3222f9c99f582571e15989b5c74301e2))(@babel/traverse@7.29.0)(@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@rspack/core@1.5.8(@swc/helpers@0.5.17))(@schematics/angular@21.2.5(chokidar@4.0.3))(@swc/helpers@0.5.17)(@types/express@5.0.3)(@zkochan/js-yaml@0.0.7)(eslint@8.57.1)(html-webpack-plugin@5.6.4(@rspack/core@1.5.8(@swc/helpers@0.5.17))(webpack@5.105.2))(less@4.4.2)(lightningcss@1.32.0)(nx@21.6.4)(react-dom@18.3.1(react@18.3.1))(react-refresh@0.11.0)(react@18.3.1)(rxjs@7.8.2)(typescript@5.9.3)(webpack-cli@5.1.4)':
+  '@nx/angular@21.6.5(@angular-devkit/build-angular@21.2.5(9777c77778b82a916a45c7184cdd21db))(@angular-devkit/core@21.2.5(chokidar@4.0.3))(@angular-devkit/schematics@21.2.5(chokidar@4.0.3))(@angular/build@21.2.5(08d8a7f604a9cb6f2e917d5910833d03))(@babel/traverse@7.29.0)(@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@rspack/core@1.5.8(@swc/helpers@0.5.17))(@schematics/angular@21.2.5(chokidar@4.0.3))(@swc/helpers@0.5.17)(@types/express@5.0.3)(@zkochan/js-yaml@0.0.7)(eslint@8.57.1)(html-webpack-plugin@5.6.4(@rspack/core@1.5.8(@swc/helpers@0.5.17))(webpack@5.105.2))(less@4.4.2)(lightningcss@1.32.0)(nx@21.6.4)(react-dom@18.3.1(react@18.3.1))(react-refresh@0.11.0)(react@18.3.1)(rxjs@7.8.2)(typescript@5.9.3)(webpack-cli@5.1.4)':
     dependencies:
       '@angular-devkit/core': 21.2.5(chokidar@4.0.3)
       '@angular-devkit/schematics': 21.2.5(chokidar@4.0.3)
@@ -15222,8 +15255,8 @@ snapshots:
       tslib: 2.8.1
       webpack-merge: 5.10.0
     optionalDependencies:
-      '@angular-devkit/build-angular': 21.2.5(00f42922c5f9a3ff55727a28713116e4)
-      '@angular/build': 21.2.5(3222f9c99f582571e15989b5c74301e2)
+      '@angular-devkit/build-angular': 21.2.5(9777c77778b82a916a45c7184cdd21db)
+      '@angular/build': 21.2.5(08d8a7f604a9cb6f2e917d5910833d03)
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@module-federation/enhanced'
@@ -17267,9 +17300,9 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
 
-  '@vitejs/plugin-basic-ssl@2.1.4(vite@7.3.1(@types/node@20.19.9)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.1))':
+  '@vitejs/plugin-basic-ssl@2.1.4(vite@7.3.1(@types/node@20.19.9)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.3))':
     dependencies:
-      vite: 7.3.1(@types/node@20.19.9)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite: 7.3.1(@types/node@20.19.9)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.3)
 
   '@webassemblyjs/ast@1.14.1':
     dependencies:
@@ -18165,6 +18198,8 @@ snapshots:
   commander@10.0.1: {}
 
   commander@11.1.0: {}
+
+  commander@14.0.3: {}
 
   commander@2.20.3: {}
 
@@ -19742,6 +19777,8 @@ snapshots:
 
   human-signals@2.1.0: {}
 
+  husky@9.1.7: {}
+
   hyperdyperid@1.2.0: {}
 
   iconv-lite@0.4.24:
@@ -20195,7 +20232,7 @@ snapshots:
       jest-regex-util: 30.0.1
       jest-util: 30.3.0
       jest-worker: 30.3.0
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       walker: 1.0.8
     optionalDependencies:
       fsevents: 2.3.3
@@ -20243,7 +20280,7 @@ snapshots:
       '@types/stack-utils': 2.0.3
       chalk: 4.1.2
       graceful-fs: 4.2.11
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       pretty-format: 30.3.0
       slash: 3.0.0
       stack-utils: 2.0.6
@@ -20508,7 +20545,7 @@ snapshots:
       chalk: 4.1.2
       ci-info: 4.3.1
       graceful-fs: 4.2.11
-      picomatch: 4.0.3
+      picomatch: 4.0.4
 
   jest-validate@30.2.0:
     dependencies:
@@ -20851,6 +20888,15 @@ snapshots:
   lines-and-columns@1.2.4: {}
 
   lines-and-columns@2.0.3: {}
+
+  lint-staged@16.4.0:
+    dependencies:
+      commander: 14.0.3
+      listr2: 9.0.5
+      picomatch: 4.0.4
+      string-argv: 0.3.2
+      tinyexec: 1.1.1
+      yaml: 2.8.3
 
   listr2@9.0.5:
     dependencies:
@@ -22879,6 +22925,8 @@ snapshots:
 
   streamsearch@1.1.0: {}
 
+  string-argv@0.3.2: {}
+
   string-length@4.0.2:
     dependencies:
       char-regex: 1.0.2
@@ -23076,6 +23124,8 @@ snapshots:
       tslib: 2.8.1
 
   thunky@1.1.0: {}
+
+  tinyexec@1.1.1: {}
 
   tinyglobby@0.2.15:
     dependencies:
@@ -23377,7 +23427,7 @@ snapshots:
 
   vary@1.1.2: {}
 
-  vite@7.3.1(@types/node@20.19.9)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.1):
+  vite@7.3.1(@types/node@20.19.9)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.3):
     dependencies:
       esbuild: 0.27.3
       fdir: 6.5.0(picomatch@4.0.4)
@@ -23395,9 +23445,9 @@ snapshots:
       sass-embedded: 1.93.2
       terser: 5.46.0
       tsx: 4.20.6
-      yaml: 2.8.1
+      yaml: 2.8.3
 
-  vite@7.3.1(@types/node@20.19.9)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(sass-embedded@1.93.2)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.1):
+  vite@7.3.1(@types/node@20.19.9)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(sass-embedded@1.93.2)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.3):
     dependencies:
       esbuild: 0.27.3
       fdir: 6.5.0(picomatch@4.0.4)
@@ -23415,7 +23465,7 @@ snapshots:
       sass-embedded: 1.93.2
       terser: 5.46.0
       tsx: 4.20.6
-      yaml: 2.8.1
+      yaml: 2.8.3
 
   w3c-xmlserializer@5.0.0:
     dependencies:
@@ -23820,6 +23870,8 @@ snapshots:
   yaml@1.10.2: {}
 
   yaml@2.8.1: {}
+
+  yaml@2.8.3: {}
 
   yargs-parser@21.1.1: {}
 
