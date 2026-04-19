@@ -127,9 +127,11 @@ export class EventsComponent implements OnInit, OnDestroy {
 
     const byStartAsc = (a: EventListItem, b: EventListItem) =>
       new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
+    const byStartDesc = (a: EventListItem, b: EventListItem) =>
+      new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime();
     ongoing.sort(byStartAsc);
     upcoming.sort(byStartAsc);
-    past.sort(byStartAsc);
+    past.sort(byStartDesc);
 
     const groups: EventGroup[] = [];
 
