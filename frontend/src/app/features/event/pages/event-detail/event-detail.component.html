@@ -10,28 +10,38 @@
   @let _phase = enrollmentPhase();
   @let _isPreEnrollment = _phase === 'PRE_ENROLLMENT';
   @let _visibleAvatars = visibleAvatars();
-  @let _fullAddress = fullAddress();
   @let _countdown = countdown();
   @let _notificationBars = notificationBars();
 
   <div class="px-4 pt-3 pb-5">
-    <!-- Date and location row -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
-      <!-- Date label -->
-      <span class="text-[10px] font-light uppercase tracking-wide text-primary-500">
-        {{ e.startsAt | date: 'd MMMM yyyy - HH:mm' }}
-      </span>
+    <div class="flex w-full flex-wrap items-center justify-between gap-1">
+      <div class="min-w-0">
+        <!-- Date label -->
+        <app-event-info-item
+          color="primary"
+          icon="calendar"
+          label="Termin rozpoczęcia"
+          [value]="
+            (e.startsAt | date: 'EEEE' | titlecase) +
+            ' (' +
+            (e.startsAt | date: 'dd.MM') +
+            ') godz. ' +
+            (e.startsAt | date: 'HH:mm')
+          "
+        />
+      </div>
 
       <!-- Location (clickable → opens map sheet) -->
-      @if (_fullAddress) {
-        <button
-          type="button"
-          class="flex items-center gap-1.5 pb-2 text-[11px] text-neutral-400 hover:text-primary-500 transition-colors sm:pb-0"
-          (click)="overlays.open('map')"
-        >
-          <app-icon name="map-pin" size="sm" color="neutral" muted="light"></app-icon>
-          <span>{{ _fullAddress }}</span>
-        </button>
+      @if (fullAddress()) {
+        <div class="min-w-0">
+          <button
+            type="button"
+            class="inline-flex max-w-full text-left transition-colors"
+            (click)="overlays.open('map')"
+          >
+            <app-event-info-item color="warning" icon="map-pin" label="Lokalizacja" [value]="fullAddress()" />
+          </button>
+        </div>
       }
     </div>
 

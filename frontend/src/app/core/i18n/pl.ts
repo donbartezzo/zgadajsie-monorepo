@@ -62,7 +62,7 @@ export const pl: Translation = {
     },
     level: {
       open: 'Open',
-      beginner: 'Poczytkujacy',
+      beginner: 'Początkujący',
       recreational: 'Rekreacyjny',
       regular: 'Regularny',
       solid: 'Solidny',

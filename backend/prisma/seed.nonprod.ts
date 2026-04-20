@@ -490,7 +490,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Sulechowska 30, Zielona Góra',
+    address: 'ul. Sulechowska 30',
     lat: 51.9356,
     lng: 15.5062,
   });
@@ -539,7 +539,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Wyspiańskiego 10, Zielona Góra',
+    address: 'ul. Wyspiańskiego 10',
     lat: 51.9412,
     lng: 15.5089,
   });
@@ -566,7 +566,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'CANCELLED',
-    address: 'ul. Wyspiańskiego 10, Zielona Góra',
+    address: 'ul. Wyspiańskiego 10',
     lat: 51.9412,
     lng: 15.5089,
   });
@@ -589,7 +589,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'CANCELLED',
-    address: 'ul. Botaniczna 5, Zielona Góra',
+    address: 'ul. Botaniczna 5',
     lat: 51.938,
     lng: 15.512,
   });
@@ -615,7 +615,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Wyspiańskiego 10, Zielona Góra',
+    address: 'ul. Wyspiańskiego 10',
     lat: 51.9412,
     lng: 15.5089,
   });
@@ -657,7 +657,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'Park Piastowski, Zielona Góra',
+    address: 'Park Piastowski',
     lat: 51.9401,
     lng: 15.4975,
   });
@@ -687,7 +687,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Botaniczna 5, Zielona Góra',
+    address: 'ul. Botaniczna 5',
     lat: 51.938,
     lng: 15.512,
   });
@@ -716,7 +716,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Sulechowska 30, Zielona Góra',
+    address: 'ul. Sulechowska 30',
     lat: 51.9356,
     lng: 15.5062,
   });
@@ -773,7 +773,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Wyspiańskiego 10, Zielona Góra',
+    address: 'ul. Wyspiańskiego 10',
     lat: 51.9412,
     lng: 15.5089,
   });
@@ -807,7 +807,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Sulechowska 30, Zielona Góra',
+    address: 'ul. Sulechowska 30',
     lat: 51.9356,
     lng: 15.5062,
   });
@@ -836,7 +836,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Wyspiańskiego 10, Zielona Góra',
+    address: 'ul. Wyspiańskiego 10',
     lat: 51.9412,
     lng: 15.5089,
   });
@@ -860,7 +860,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Urszuli 6, Zielona Góra',
+    address: 'ul. Urszuli 6',
     lat: 51.9345,
     lng: 15.5135,
   });
@@ -890,7 +890,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Wyspiańskiego 10, Zielona Góra',
+    address: 'ul. Wyspiańskiego 10',
     lat: 51.9412,
     lng: 15.5089,
   });
@@ -917,7 +917,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'Park Piastowski, Zielona Góra',
+    address: 'Park Piastowski',
     lat: 51.9401,
     lng: 15.4975,
   });
@@ -947,7 +947,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Botaniczna 5, Zielona Góra',
+    address: 'ul. Botaniczna 5',
     lat: 51.938,
     lng: 15.512,
   });
@@ -974,7 +974,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'Deptak, Zielona Góra',
+    address: 'Deptak',
     lat: 51.9365,
     lng: 15.5058,
   });
@@ -1071,7 +1071,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Wrocławska 15, Zielona Góra',
+    address: 'ul. Wrocławska 15',
     lat: 51.937,
     lng: 15.511,
   });
@@ -1099,7 +1099,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Legnicka 8, Zielona Góra',
+    address: 'ul. Legnicka 8',
     lat: 51.936,
     lng: 15.509,
   });
@@ -1127,7 +1127,7 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Głogowska 22, Zielona Góra',
+    address: 'ul. Głogowska 22',
     lat: 51.939,
     lng: 15.507,
   });

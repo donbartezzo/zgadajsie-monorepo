@@ -1,165 +1,126 @@
 @let e = event();
-@let _roles = roles();
 @let _ageRange = ageRange();
-@let _enrollmentLabel = enrollmentLabel();
-@let _eventDuration = e.startsAt | eventDuration: e.endsAt;
+@let _roles = roles();
+@let _participants = participantsLabel();
+@let _gender = genderLabel();
 
-@if (showHeader()) {
-  <h3 class="text-base font-bold text-neutral-900">Szczegóły wydarzenia</h3>
-}
+<div class="mt-1">
+  <div class="overflow-hidden">
+    <div class="space-y-2">
+      <!-- Terminarz -->
+      <div class="space-y-2">
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 py-1">
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-100">
+              <app-icon name="clock" color="neutral" size="sm" />
+            </span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap gap-x-4 gap-x-8">
+              <app-event-info-item
+                label="Rozpczęcie"
+                [value]="(e.startsAt | date: 'EEEE' | titlecase) + ' godz. ' + (e.startsAt | date: 'HH:mm')"
+              />
 
-<div class="rounded-2xl bg-white overflow-hidden" [class.mt-2]="showHeader()">
-  <div class="grid gap-0.5 grid-cols-[repeat(auto-fit,minmax(160px,max-content))]">
-    @if (isShown('date')) {
-      <div class="flex items-center gap-1 px-4 py-1">
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-          <app-icon name="calendar" size="sm" color="primary"></app-icon>
-        </span>
-        <div class="min-w-0">
-          <span class="block text-[10px] leading-tight text-neutral-400">Data</span>
-          <strong class="block text-xs font-semibold text-neutral-900 truncate">
-            {{ e.startsAt | date: 'EEEE, d MMMM' | titlecase }}
-          </strong>
-        </div>
-      </div>
-    }
+              <app-event-info-item
+                label="Zakończenie"
+                [value]="(e.endsAt | date: 'EEEE' | titlecase) + ' godz. ' + (e.endsAt | date: 'HH:mm')"
+              />
 
-    @if (isShown('time')) {
-      <div class="flex items-center gap-1 px-4 py-1">
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-          <app-icon name="clock" size="sm" color="primary"></app-icon>
-        </span>
-        <div class="min-w-0">
-          <span class="block text-[10px] leading-tight text-neutral-400">Godziny</span>
-          <strong class="block text-xs font-semibold text-neutral-900 truncate">
-            {{ e.startsAt | date: 'HH:mm' }} – {{ e.endsAt | date: 'HH:mm' }}
-          </strong>
-        </div>
-      </div>
-    }
-
-    @if (isShown('duration') && _eventDuration) {
-      <div class="flex items-center gap-1 px-4 py-1">
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-          <app-icon name="sun" size="sm" color="primary"></app-icon>
-        </span>
-        <div class="min-w-0">
-          <span class="block text-[10px] leading-tight text-neutral-400">Czas trwania</span>
-          <strong class="block text-xs font-semibold text-neutral-900">{{ _eventDuration }}</strong>
-        </div>
-      </div>
-    }
-
-    @if (isShown('location')) {
-      <button
-        type="button"
-        class="flex items-center gap-1 px-4 py-1 text-left transition-colors hover:bg-neutral-50 w-full"
-        (click)="onAddressClick()"
-      >
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-50">
-          <app-icon name="map-pin" size="sm" color="warning"></app-icon>
-        </span>
-        <div class="min-w-0">
-          <span class="block text-[10px] leading-tight text-neutral-400">Miejsce</span>
-          <strong class="block text-xs font-semibold text-neutral-900 truncate">
-            {{ fullAddress() || '—' }}
-          </strong>
-        </div>
-      </button>
-    }
-
-    @if (isShown('city') && e.city) {
-      <div class="flex items-center gap-1 px-4 py-1">
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-50">
-          <app-icon name="home" size="sm" color="warning"></app-icon>
-        </span>
-        <div class="min-w-0">
-          <span class="block text-[10px] leading-tight text-neutral-400">Miasto</span>
-          <strong class="block text-xs font-semibold text-neutral-900">{{ e.city!.name }}</strong>
-        </div>
-      </div>
-    }
-
-    @if (isShown('cost')) {
-      <div class="flex items-center gap-1 px-4 py-1">
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-50">
-          <app-icon name="credit-card" size="sm" color="success"></app-icon>
-        </span>
-        <div class="min-w-0">
-          <span class="block text-[10px] leading-tight text-neutral-400">Koszt</span>
-          <strong class="block text-xs font-semibold text-neutral-900">{{ costLabel() }}</strong>
-        </div>
-      </div>
-    }
-
-    @if (isShown('enrollment') && _enrollmentLabel) {
-      <div class="flex items-center gap-1 px-4 py-1">
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-50">
-          <app-icon name="check-circle" size="sm" color="success"></app-icon>
-        </span>
-        <div class="min-w-0">
-          <span class="block text-[10px] leading-tight text-neutral-400">Zapisy</span>
-          <strong class="block text-xs font-semibold text-neutral-900">{{ _enrollmentLabel }}</strong>
-        </div>
-      </div>
-    }
-
-    @if (isShown('maxParticipants') && e.maxParticipants) {
-      <div class="flex items-center gap-1 px-4 py-1">
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-50">
-          <app-icon name="users" size="sm" color="info"></app-icon>
-        </span>
-        <div class="min-w-0">
-          <span class="block text-[10px] leading-tight text-neutral-400">Maks. uczestników</span>
-          <strong class="block text-xs font-semibold text-neutral-900">{{ e.maxParticipants }}</strong>
-        </div>
-      </div>
-    }
-
-    @if (isShown('gender')) {
-      <div class="flex items-center gap-1 px-4 py-1">
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-50">
-          <app-icon name="user" size="sm" color="info"></app-icon>
-        </span>
-        <div class="min-w-0">
-          <span class="block text-[10px] leading-tight text-neutral-400">Płeć</span>
-          <strong class="block text-xs font-semibold text-neutral-900">{{ genderLabel() }}</strong>
-        </div>
-      </div>
-    }
-
-    @if (isShown('age') && _ageRange) {
-      <div class="flex items-center gap-1 px-4 py-1">
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-pink-50">
-          <app-icon name="filter" size="sm" color="warning"></app-icon>
-        </span>
-        <div class="min-w-0">
-          <span class="block text-[10px] leading-tight text-neutral-400">Wiek</span>
-          <strong class="block text-xs font-semibold text-neutral-900">{{ _ageRange }}</strong>
-        </div>
-      </div>
-    }
-
-    @if (isShown('roles') && _roles) {
-      <div class="flex items-center gap-1 px-4 py-1">
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-50">
-          <app-icon name="star" size="sm" color="info"></app-icon>
-        </span>
-        <div class="flex-1 min-w-0">
-          <span class="block text-[10px] leading-tight text-neutral-400 mb-1">Role uczestników</span>
-          <div class="flex gap-1">
-            @for (role of _roles; track role.key) {
-              <span
-                class="inline-flex items-center gap-0.5 text-[11px] px-1.5 py-0.5 rounded-full"
-                [ngClass]="role.isDefault ? 'bg-primary-100 text-primary-700' : 'bg-neutral-100 text-neutral-600'"
-              >
-                {{ 'dict.participant-role.' + role.key + '.title' | transloco }}
-                <span class="text-[9px] opacity-60">({{ role.slots }})</span>
-              </span>
-            }
+              <app-event-info-item label="Czas trwania" [value]="e.startsAt | eventDuration: e.endsAt" />
+            </div>
           </div>
         </div>
       </div>
-    }
+
+      <!-- Lokalizacja -->
+      <div class="space-y-2">
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 py-1">
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-100">
+              <app-icon name="map-pin" color="neutral" size="sm" />
+            </span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap gap-x-4 gap-x-8">
+              <app-event-info-item label="Adres" [value]="e.address" />
+              <app-event-info-item label="Miasto" [value]="cityName()" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Szczególy wydarzenia -->
+      <div class="space-y-2">
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 py-1">
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-100">
+              <app-icon name="flag" color="neutral" size="sm" />
+            </span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap gap-x-4 gap-x-8">
+              <app-event-info-item label="Dyscyplina" [value]="'dict.discipline.' + e.disciplineSlug | transloco" />
+              <app-event-info-item label="Poziom" [value]="'dict.level.' + e.levelSlug | transloco" />
+              <app-event-info-item label="Obiekt" [value]="'dict.facility.' + e.facilitySlug | transloco" />
+              <app-event-info-item label="Koszt" [value]="costLabel()" [highlight]="true" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Uczestnictwo -->
+      @if (_participants || _ageRange || _gender || _roles) {
+        <div class="space-y-2">
+          <div class="flex gap-4">
+            <div class="flex-shrink-0 py-1">
+              <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-100">
+                <app-icon name="users" color="neutral" size="sm" />
+              </span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-wrap gap-x-4 gap-x-8">
+                <app-event-info-item label="Limit miejsc" [value]="_participants" />
+
+                <app-event-info-item label="Wiek" [value]="_ageRange" />
+
+                @if (_gender) {
+                  <app-event-info-item label="Płeć" [value]="_gender" />
+                }
+
+                @if (_roles) {
+                  <app-event-info-item label="Dosępne role">
+                    <div class="flex flex-wrap gap-1">
+                      @for (role of _roles; track role.key) {
+                        <span
+                          class="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px]"
+                          [ngClass]="
+                            role.isDefault ? 'bg-primary-100 text-primary-700' : 'bg-neutral-100 text-neutral-600'
+                          "
+                        >
+                          {{ 'dict.participant-role.' + role.key + '.title' | transloco }}
+                          <span class="text-[9px] opacity-60">({{ role.slots }})</span>
+                        </span>
+                      }
+                    </div>
+                  </app-event-info-item>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Widoczność -->
+      <!-- <div class="space-y-2">
+        <div class="flex items-center gap-1.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+          <app-icon name="settings" color="neutral" size="sm" />
+          Ustawienia
+        </div>
+        <div class="flex flex-wrap items-start gap-x-4 gap-x-8">
+          <app-event-info-item label="Widoczność" [value]="e.visibility === 'PRIVATE' ? 'Prywatne' : 'Publiczne'" />
+        </div>
+      </div> -->
+    </div>
   </div>
 </div>

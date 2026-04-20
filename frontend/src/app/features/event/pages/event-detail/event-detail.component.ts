@@ -10,7 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { IconName, IconComponent } from '../../../../shared/ui/icon/icon.component';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
@@ -44,12 +44,12 @@ import { EventAreaService } from '../../services/event-area.service';
 import { formatEventAddress } from '../../../../shared/utils/event-format.utils';
 import { ClarityService } from '../../../../core/services/clarity.service';
 import { TimeUnitPipe } from '../../../../shared/pipes/time-unit.pipe';
+import { EventInfoItemComponent } from '../../../../shared/ui/event-info-item/event-info-item.component';
 
 @Component({
   selector: 'app-event-detail',
   imports: [
     CommonModule,
-    DatePipe,
     RouterLink,
     IconComponent,
     CapacityProgressComponent,
@@ -57,6 +57,7 @@ import { TimeUnitPipe } from '../../../../shared/pipes/time-unit.pipe';
     BadgeComponent,
     UserAvatarComponent,
     LoadingSpinnerComponent,
+    EventInfoItemComponent,
     EventInlineNotificationBarsComponent,
     EventAnnouncementsComponent,
     EnrollmentStatusBannerComponent,
@@ -109,7 +110,10 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly lotteryCountdown = signal<EventCountdown | null>(null);
   readonly chatMessageCount = signal<number | null>(null);
   readonly loginQueryParams = { returnUrl: inject(Router).url };
-  readonly fullAddress = computed(() => formatEventAddress(this.event()?.address));
+  readonly fullAddress = computed(() => {
+    const event = this.event();
+    return formatEventAddress(event?.address, event?.city?.name);
+  });
 
   // @TODO: Replace hardcoded amenities with data from backend (event edit form)
   readonly amenities: { icon: IconName; label: string }[] = [
