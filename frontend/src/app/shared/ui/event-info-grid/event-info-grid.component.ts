@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { Event as EventModel } from '../../types';
@@ -27,7 +27,6 @@ import { IconComponent } from '../icon/icon.component';
 export class EventInfoGridComponent {
   readonly event = input.required<EventModel>();
   readonly showHeader = input(true);
-  readonly addressClicked = output<void>();
 
   readonly cityName = computed(() => this.event()?.city?.name);
   readonly ageRange = computed(() => {
@@ -53,7 +52,4 @@ export class EventInfoGridComponent {
     const gender = this.event()?.gender;
     return gender ? formatEventGender(gender) : null;
   });
-  onAddressClick(): void {
-    this.addressClicked.emit();
-  }
 }

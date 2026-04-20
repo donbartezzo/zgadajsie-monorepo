@@ -43,8 +43,11 @@
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex flex-wrap gap-x-4 gap-x-8">
-              <app-event-info-item label="Adres" [value]="e.address" />
               <app-event-info-item label="Miasto" [value]="cityName()" />
+              <app-event-info-item label="Adres" [value]="e.address" />
+              @if (e.lat && e.lng) {
+                <app-event-info-item label="Wspólrzędne" [value]="e.lat + ', ' + e.lng" />
+              }
             </div>
           </div>
         </div>
