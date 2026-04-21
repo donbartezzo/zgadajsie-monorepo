@@ -35,7 +35,8 @@ import { getEventTimeStatus, isEventEnded } from './event-time-status.util';
 import { getEnrollmentPhase, shouldSkipPreEnrollment } from './enrollment-phase.util';
 import { daysFromNow } from '../../common/utils/date.util';
 import { Decimal } from '@prisma/client/runtime/library';
-import { AuthUserLike, resolveUserContext } from '../auth/utils/auth-user.util';
+import { resolveUserContext } from '../auth/utils/auth-user.util';
+import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
 @Injectable()
 export class EventsService {
@@ -239,7 +240,7 @@ export class EventsService {
     };
   }
 
-  async getEventForDuplication(id: string, user: string | AuthUserLike) {
+  async getEventForDuplication(id: string, user: AuthUser) {
     const { userId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({
       where: { id },
@@ -264,7 +265,7 @@ export class EventsService {
     return event;
   }
 
-  async update(id: string, user: string | AuthUserLike, dto: UpdateEventDto) {
+  async update(id: string, user: AuthUser, dto: UpdateEventDto) {
     const { userId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({ where: { id } });
     if (!event) throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
@@ -337,7 +338,7 @@ export class EventsService {
     return updatedEvent;
   }
 
-  async cancel(id: string, user: string | AuthUserLike) {
+  async cancel(id: string, user: AuthUser) {
     const { userId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({ where: { id } });
     if (!event) throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
@@ -493,7 +494,7 @@ export class EventsService {
     };
   }
 
-  async duplicate(id: string, user: string | AuthUserLike) {
+  async duplicate(id: string, user: AuthUser) {
     const { userId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({ where: { id } });
     if (!event) throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
@@ -517,7 +518,7 @@ export class EventsService {
     return newEvent;
   }
 
-  async remove(id: string, user: string | AuthUserLike) {
+  async remove(id: string, user: AuthUser) {
     const { userId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({ where: { id } });
     if (!event) throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
@@ -623,7 +624,7 @@ export class EventsService {
     });
   }
 
-  async markPaid(eventId: string, participationId: string, user: string | AuthUserLike) {
+  async markPaid(eventId: string, participationId: string, user: AuthUser) {
     const { userId: organizerUserId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
@@ -672,12 +673,7 @@ export class EventsService {
     return this.getParticipants(eventId);
   }
 
-  async cancelPayment(
-    eventId: string,
-    paymentId: string,
-    user: string | AuthUserLike,
-    dto: CancelPaymentDto,
-  ) {
+  async cancelPayment(eventId: string, paymentId: string, user: AuthUser, dto: CancelPaymentDto) {
     const { userId: organizerUserId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
@@ -852,7 +848,7 @@ export class EventsService {
     return parent;
   }
 
-  async updateSeries(id: string, user: string | AuthUserLike, dto: UpdateEventDto) {
+  async updateSeries(id: string, user: AuthUser, dto: UpdateEventDto) {
     const parent = await this.update(id, user, dto);
 
     // Update all child events in the series

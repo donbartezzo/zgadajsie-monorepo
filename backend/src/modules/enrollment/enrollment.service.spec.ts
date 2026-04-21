@@ -9,6 +9,7 @@ import { SlotService } from '../slots/slot.service';
 import { EnrollmentEligibilityService } from './enrollment-eligibility.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { EnrollmentService } from './enrollment.service';
+import { mockAuthUser } from '../../tests/test-helpers';
 
 function buildTxMock() {
   return {
@@ -168,7 +169,7 @@ describe('EnrollmentService', () => {
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      const result = await service.join('event1', 'user1');
+      const result = await service.join('event1', mockAuthUser('user1'));
 
       expect(result.status).toBe('PENDING');
     });
@@ -227,7 +228,7 @@ describe('EnrollmentService', () => {
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      const result = await service.join('event1', 'user1');
+      const result = await service.join('event1', mockAuthUser('user1'));
 
       expect(result.status).toBe('PENDING');
       expect(result.waitingReason).toBe('PRE_ENROLLMENT');
@@ -245,7 +246,7 @@ describe('EnrollmentService', () => {
         displayName: 'Organizer',
       });
 
-      await service.join('event1', 'user1');
+      await service.join('event1', mockAuthUser('user1'));
 
       expect(push.notifyNewApplication as jest.Mock).toHaveBeenCalled();
       expect(email.sendNewApplicationEmail as jest.Mock).toHaveBeenCalled();
@@ -254,13 +255,17 @@ describe('EnrollmentService', () => {
     it('odrzuca jeśli event nie istnieje (NotFoundException)', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(service.join('nonexistent', 'user1')).rejects.toThrow(NotFoundException);
+      await expect(service.join('nonexistent', mockAuthUser('user1'))).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('odrzuca jeśli event CANCELLED (BadRequestException)', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent({ status: 'CANCELLED' }));
 
-      await expect(service.join('event1', 'user1')).rejects.toThrow(BadRequestException);
+      await expect(service.join('event1', mockAuthUser('user1'))).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('odrzuca jeśli event już się rozpoczął (BadRequestException)', async () => {
@@ -268,7 +273,9 @@ describe('EnrollmentService', () => {
         makeEvent({ startsAt: new Date(Date.now() - 1000) }),
       );
 
-      await expect(service.join('event1', 'user1')).rejects.toThrow(BadRequestException);
+      await expect(service.join('event1', mockAuthUser('user1'))).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('odrzuca jeśli użytkownik już uczestniczy (BadRequestException)', async () => {
@@ -277,7 +284,9 @@ describe('EnrollmentService', () => {
         makeEnrollment({ wantsIn: true }),
       );
 
-      await expect(service.join('event1', 'user1')).rejects.toThrow(BadRequestException);
+      await expect(service.join('event1', mockAuthUser('user1'))).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('odrzuca w fazie LOTTERY_PENDING (BadRequestException)', async () => {
@@ -285,7 +294,9 @@ describe('EnrollmentService', () => {
         makeEvent({ startsAt: FUTURE_NEAR, lotteryExecutedAt: null }),
       );
 
-      await expect(service.join('event1', 'user1')).rejects.toThrow(BadRequestException);
+      await expect(service.join('event1', mockAuthUser('user1'))).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -314,7 +325,7 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.create.mockResolvedValue(participationWithSlot);
       tx.eventEnrollment.findUnique.mockResolvedValue(participationWithSlot);
 
-      const result = await service.join('event1', 'user1');
+      const result = await service.join('event1', mockAuthUser('user1'));
 
       expect(slots.assignSlot as jest.Mock).toHaveBeenCalledWith(
         'event1',
@@ -341,7 +352,7 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.create.mockResolvedValue(participationWithSlot);
       tx.eventEnrollment.findUnique.mockResolvedValue(participationWithSlot);
 
-      await service.join('event1', 'user1');
+      await service.join('event1', mockAuthUser('user1'));
 
       expect(slots.assignSlot as jest.Mock).toHaveBeenCalledWith(
         'event1',
@@ -358,7 +369,7 @@ describe('EnrollmentService', () => {
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      const result = await service.join('event1', 'user1');
+      const result = await service.join('event1', mockAuthUser('user1'));
 
       expect(result.waitingReason).toBe('NEW_USER');
     });
@@ -369,7 +380,7 @@ describe('EnrollmentService', () => {
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      const result = await service.join('event1', 'user1');
+      const result = await service.join('event1', mockAuthUser('user1'));
 
       expect(result.waitingReason).toBe('BANNED');
     });
@@ -380,7 +391,7 @@ describe('EnrollmentService', () => {
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      const result = await service.join('event1', 'user1');
+      const result = await service.join('event1', mockAuthUser('user1'));
 
       expect(result.waitingReason).toBe('NO_SLOTS');
     });
@@ -404,7 +415,7 @@ describe('EnrollmentService', () => {
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      const result = await service.join('event1', 'user1', 'b');
+      const result = await service.join('event1', mockAuthUser('user1'), 'b');
 
       expect(result.waitingReason).toBe('NO_SLOTS_FOR_ROLE');
     });
@@ -421,7 +432,7 @@ describe('EnrollmentService', () => {
       );
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(service.join('event1', 'user1', 'unknown-role')).rejects.toThrow(
+      await expect(service.join('event1', mockAuthUser('user1'), 'unknown-role')).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -435,7 +446,7 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.create.mockResolvedValue(participationWithSlot);
       tx.eventEnrollment.findUnique.mockResolvedValue(participationWithSlot);
 
-      const result = await service.join('event1', 'org1');
+      const result = await service.join('event1', mockAuthUser('org1'));
 
       expect(slots.assignSlot as jest.Mock).toHaveBeenCalledWith(
         'event1',
@@ -466,7 +477,7 @@ describe('EnrollmentService', () => {
         .mockResolvedValueOnce(makeEnrollment({ wantsIn: false, withdrawnBy: 'USER' }))
         .mockResolvedValue(withSlot);
 
-      await service.join('event1', 'user1');
+      await service.join('event1', mockAuthUser('user1'));
 
       expect(prisma.eventEnrollment.update as jest.Mock).toHaveBeenCalled();
     });
@@ -481,7 +492,7 @@ describe('EnrollmentService', () => {
         .mockResolvedValueOnce(makeEnrollment()) // first update: reset wantsIn
         .mockResolvedValue(makeEnrollment({ waitingReason: 'PRE_ENROLLMENT' })); // second: set waitingReason
 
-      const result = await service.join('event1', 'user1');
+      const result = await service.join('event1', mockAuthUser('user1'));
 
       expect(result.waitingReason).toBe('PRE_ENROLLMENT');
     });
@@ -509,7 +520,7 @@ describe('EnrollmentService', () => {
       (prisma.organizerUserRelation.upsert as jest.Mock).mockResolvedValue({});
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await service.assignSlotToParticipant('p1', 'org1');
+      await service.assignSlotToParticipant('p1', mockAuthUser('org1'));
 
       expect(slots.getFreeSlotCount as jest.Mock).toHaveBeenCalledWith('event1', null);
       expect(slots.assignSlot as jest.Mock).toHaveBeenCalledWith(
@@ -544,7 +555,7 @@ describe('EnrollmentService', () => {
       (prisma.organizerUserRelation.upsert as jest.Mock).mockResolvedValue({});
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await service.assignSlotToParticipant('p1', 'org1');
+      await service.assignSlotToParticipant('p1', mockAuthUser('org1'));
 
       expect(slots.getFreeSlotCount as jest.Mock).toHaveBeenCalledWith('event1', 'bramkarz');
       expect(slots.assignSlot as jest.Mock).toHaveBeenCalledWith(
@@ -576,10 +587,12 @@ describe('EnrollmentService', () => {
         { key: 'pilkarz', title: 'Piłkarz', freeSlots: 5 },
       ]);
 
-      await expect(service.assignSlotToParticipant('p1', 'org1')).rejects.toThrow(
+      await expect(service.assignSlotToParticipant('p1', mockAuthUser('org1'))).rejects.toThrow(
         BadRequestException,
       );
-      await expect(service.assignSlotToParticipant('p1', 'org1')).rejects.toThrow('Piłkarz');
+      await expect(service.assignSlotToParticipant('p1', mockAuthUser('org1'))).rejects.toThrow(
+        'Piłkarz',
+      );
     });
 
     it('odrzuca jeśli nie-organizator (ForbiddenException)', async () => {
@@ -587,9 +600,9 @@ describe('EnrollmentService', () => {
         makeEnrollment({ event: makeEvent({ organizerId: 'org1' }) }),
       );
 
-      await expect(service.assignSlotToParticipant('p1', 'different-user')).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.assignSlotToParticipant('p1', mockAuthUser('different-user')),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('odrzuca jeśli uczestnik już ma slot (BadRequestException)', async () => {
@@ -597,7 +610,7 @@ describe('EnrollmentService', () => {
         makeEnrollment({ slot: { id: 'slot1', confirmed: false } }),
       );
 
-      await expect(service.assignSlotToParticipant('p1', 'org1')).rejects.toThrow(
+      await expect(service.assignSlotToParticipant('p1', mockAuthUser('org1'))).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -607,7 +620,7 @@ describe('EnrollmentService', () => {
         makeEnrollment({ wantsIn: false, withdrawnBy: 'USER' }),
       );
 
-      await expect(service.assignSlotToParticipant('p1', 'org1')).rejects.toThrow(
+      await expect(service.assignSlotToParticipant('p1', mockAuthUser('org1'))).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -618,7 +631,7 @@ describe('EnrollmentService', () => {
       );
       (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(0);
 
-      await expect(service.assignSlotToParticipant('p1', 'org1')).rejects.toThrow(
+      await expect(service.assignSlotToParticipant('p1', mockAuthUser('org1'))).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -640,7 +653,7 @@ describe('EnrollmentService', () => {
       (prisma.organizerUserRelation.upsert as jest.Mock).mockResolvedValue({});
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await service.assignSlotToParticipant('p1', 'org1');
+      await service.assignSlotToParticipant('p1', mockAuthUser('org1'));
 
       expect(prisma.organizerUserRelation.upsert as jest.Mock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -672,7 +685,7 @@ describe('EnrollmentService', () => {
         displayName: 'User 1',
       });
 
-      await service.assignSlotToParticipant('p1', 'org1');
+      await service.assignSlotToParticipant('p1', mockAuthUser('org1'));
 
       expect(push.notifyParticipationStatus as jest.Mock).toHaveBeenCalledWith(
         'user1',
@@ -698,7 +711,7 @@ describe('EnrollmentService', () => {
       });
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await service.assignSlotToParticipant('p1', 'org1');
+      await service.assignSlotToParticipant('p1', mockAuthUser('org1'));
 
       expect(prisma.organizerUserRelation.upsert as jest.Mock).not.toHaveBeenCalled();
     });
@@ -716,7 +729,7 @@ describe('EnrollmentService', () => {
         .mockResolvedValueOnce(participation)
         .mockResolvedValue({ ...participation, slot: { confirmed: true } });
 
-      await service.confirmSlot('p1', 'user1');
+      await service.confirmSlot('p1', mockAuthUser('user1'));
 
       expect(slots.confirmSlot as jest.Mock).toHaveBeenCalledWith('p1');
     });
@@ -726,7 +739,9 @@ describe('EnrollmentService', () => {
         makeEnrollment({ wantsIn: true, slot: null }),
       );
 
-      await expect(service.confirmSlot('p1', 'user1')).rejects.toThrow(BadRequestException);
+      await expect(service.confirmSlot('p1', mockAuthUser('user1'))).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('odrzuca jeśli slot już potwierdzony (BadRequestException)', async () => {
@@ -734,7 +749,9 @@ describe('EnrollmentService', () => {
         makeEnrollment({ wantsIn: true, slot: { id: 'slot1', confirmed: true } }),
       );
 
-      await expect(service.confirmSlot('p1', 'user1')).rejects.toThrow(BadRequestException);
+      await expect(service.confirmSlot('p1', mockAuthUser('user1'))).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('odrzuca jeśli uczestnik się wypisał (BadRequestException)', async () => {
@@ -742,7 +759,9 @@ describe('EnrollmentService', () => {
         makeEnrollment({ wantsIn: false, slot: { id: 'slot1', confirmed: false } }),
       );
 
-      await expect(service.confirmSlot('p1', 'user1')).rejects.toThrow(BadRequestException);
+      await expect(service.confirmSlot('p1', mockAuthUser('user1'))).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('odrzuca jeśli nieautoryzowany użytkownik (ForbiddenException)', async () => {
@@ -755,7 +774,9 @@ describe('EnrollmentService', () => {
         }),
       );
 
-      await expect(service.confirmSlot('p1', 'intruder')).rejects.toThrow(ForbiddenException);
+      await expect(service.confirmSlot('p1', mockAuthUser('intruder'))).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -779,7 +800,7 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.update.mockResolvedValue({});
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await service.releaseSlotFromParticipant('p1', 'org1');
+      await service.releaseSlotFromParticipant('p1', mockAuthUser('org1'));
 
       expect(tx.eventEnrollment.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -795,15 +816,15 @@ describe('EnrollmentService', () => {
         makeEnrollment({ event: makeEvent({ organizerId: 'org1' }) }),
       );
 
-      await expect(service.releaseSlotFromParticipant('p1', 'not-org')).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.releaseSlotFromParticipant('p1', mockAuthUser('not-org')),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('odrzuca jeśli enrollment nie istnieje (NotFoundException)', async () => {
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(service.releaseSlotFromParticipant('p1', 'org1')).rejects.toThrow(
+      await expect(service.releaseSlotFromParticipant('p1', mockAuthUser('org1'))).rejects.toThrow(
         NotFoundException,
       );
     });
@@ -830,7 +851,7 @@ describe('EnrollmentService', () => {
         displayName: 'User 1',
       });
 
-      await service.releaseSlotFromParticipant('p1', 'org1');
+      await service.releaseSlotFromParticipant('p1', mockAuthUser('org1'));
 
       expect(push.notifyParticipationStatus as jest.Mock).toHaveBeenCalledWith(
         'user1',
@@ -854,7 +875,7 @@ describe('EnrollmentService', () => {
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(participation);
       tx.eventEnrollment.delete.mockResolvedValue({});
 
-      await service.deleteParticipation('p1', 'org1');
+      await service.deleteParticipation('p1', mockAuthUser('org1'));
 
       expect(tx.eventEnrollment.delete as jest.Mock).toHaveBeenCalledWith({
         where: { id: 'p1' },
@@ -866,7 +887,9 @@ describe('EnrollmentService', () => {
         makeEnrollment({ payments: [{ id: 'pay1' }], event: makeEvent() }),
       );
 
-      await expect(service.deleteParticipation('p1', 'org1')).rejects.toThrow(BadRequestException);
+      await expect(service.deleteParticipation('p1', mockAuthUser('org1'))).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('usuwa guest usera wraz z enrollment', async () => {
@@ -880,7 +903,7 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.delete.mockResolvedValue({});
       tx.user.delete.mockResolvedValue({});
 
-      await service.deleteParticipation('p1', 'org1');
+      await service.deleteParticipation('p1', mockAuthUser('org1'));
 
       expect(tx.user.delete as jest.Mock).toHaveBeenCalledWith({ where: { id: 'user1' } });
     });
@@ -890,7 +913,7 @@ describe('EnrollmentService', () => {
         makeEnrollment({ event: makeEvent({ organizerId: 'org1' }), payments: [] }),
       );
 
-      await expect(service.deleteParticipation('p1', 'not-org')).rejects.toThrow(
+      await expect(service.deleteParticipation('p1', mockAuthUser('not-org'))).rejects.toThrow(
         ForbiddenException,
       );
     });
@@ -910,7 +933,7 @@ describe('EnrollmentService', () => {
         .mockResolvedValue({ ...participation, wantsIn: false, withdrawnBy: 'USER', slot: null });
       tx.eventEnrollment.update.mockResolvedValue({});
 
-      await service.leave('p1', 'user1');
+      await service.leave('p1', mockAuthUser('user1'));
 
       expect(tx.eventEnrollment.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -926,13 +949,13 @@ describe('EnrollmentService', () => {
         makeEnrollment({ wantsIn: false, withdrawnBy: 'USER' }),
       );
 
-      await expect(service.leave('p1', 'user1')).rejects.toThrow(BadRequestException);
+      await expect(service.leave('p1', mockAuthUser('user1'))).rejects.toThrow(BadRequestException);
     });
 
     it('odrzuca jeśli enrollment nie istnieje (NotFoundException)', async () => {
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(service.leave('p1', 'user1')).rejects.toThrow(NotFoundException);
+      await expect(service.leave('p1', mockAuthUser('user1'))).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -944,7 +967,7 @@ describe('EnrollmentService', () => {
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(guest);
       (prisma.user.update as jest.Mock).mockResolvedValue({ displayName: 'New Name' });
 
-      await service.updateGuestName('p1', 'host1', 'New Name');
+      await service.updateGuestName('p1', mockAuthUser('host1'), 'New Name');
 
       expect(prisma.user.update as jest.Mock).toHaveBeenCalledWith(
         expect.objectContaining({ data: { displayName: 'New Name' } }),
@@ -956,7 +979,7 @@ describe('EnrollmentService', () => {
         makeEnrollment({ addedByUserId: null }),
       );
 
-      await expect(service.updateGuestName('p1', 'host1', 'Name')).rejects.toThrow(
+      await expect(service.updateGuestName('p1', mockAuthUser('host1'), 'Name')).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -966,7 +989,7 @@ describe('EnrollmentService', () => {
         makeEnrollment({ addedByUserId: 'other-host' }),
       );
 
-      await expect(service.updateGuestName('p1', 'host1', 'Name')).rejects.toThrow(
+      await expect(service.updateGuestName('p1', mockAuthUser('host1'), 'Name')).rejects.toThrow(
         ForbiddenException,
       );
     });
@@ -997,7 +1020,7 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
       tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
 
-      const result = await service.joinGuest('event1', 'host1', 'Gość');
+      const result = await service.joinGuest('event1', mockAuthUser('host1'), 'Gość');
 
       expect(prisma.user.create as jest.Mock).toHaveBeenCalled();
       expect(result.status).toBe('APPROVED');
@@ -1006,7 +1029,7 @@ describe('EnrollmentService', () => {
     it('rzuca BadRequestException gdy host przekroczył limit gości', async () => {
       (eligibility.getGuestCount as jest.Mock).mockResolvedValue(2); // MAX_GUESTS_PER_USER = 2
 
-      await expect(service.joinGuest('event1', 'host1', 'Gość')).rejects.toThrow(
+      await expect(service.joinGuest('event1', mockAuthUser('host1'), 'Gość')).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -1023,7 +1046,9 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
       tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
 
-      await expect(service.joinGuest('event1', 'org1', 'Gość')).resolves.toBeDefined();
+      await expect(
+        service.joinGuest('event1', mockAuthUser('org1'), 'Gość'),
+      ).resolves.toBeDefined();
     });
 
     it('zbanowany host → gość na liście oczekujących z waitingReason=BANNED', async () => {
@@ -1037,7 +1062,7 @@ describe('EnrollmentService', () => {
       });
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(guestEnrollment);
 
-      const result = await service.joinGuest('event1', 'host1', 'Gość');
+      const result = await service.joinGuest('event1', mockAuthUser('host1'), 'Gość');
 
       expect(result.waitingReason).toBe('BANNED');
     });
@@ -1053,7 +1078,7 @@ describe('EnrollmentService', () => {
       });
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(guestEnrollment);
 
-      const result = await service.joinGuest('event1', 'host1', 'Gość');
+      const result = await service.joinGuest('event1', mockAuthUser('host1'), 'Gość');
 
       expect(result.waitingReason).toBe('NEW_USER');
     });
@@ -1080,7 +1105,7 @@ describe('EnrollmentService', () => {
       (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
       (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
 
-      await service.rejoinById('p1', 'user1');
+      await service.rejoinById('p1', mockAuthUser('user1'));
 
       expect(prisma.eventEnrollment.update as jest.Mock).toHaveBeenCalled();
     });
@@ -1090,7 +1115,9 @@ describe('EnrollmentService', () => {
         makeEnrollment({ userId: 'user1', addedByUserId: null, wantsIn: false }),
       );
 
-      await expect(service.rejoinById('p1', 'intruder')).rejects.toThrow(ForbiddenException);
+      await expect(service.rejoinById('p1', mockAuthUser('intruder'))).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('rzuca BadRequestException gdy uczestnik już ma aktywny slot', async () => {
@@ -1099,7 +1126,9 @@ describe('EnrollmentService', () => {
         makeEnrollment({ wantsIn: true, slot: { id: 'slot1', confirmed: true }, event: openEvent }),
       );
 
-      await expect(service.rejoinById('p1', 'user1')).rejects.toThrow(BadRequestException);
+      await expect(service.rejoinById('p1', mockAuthUser('user1'))).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -1119,7 +1148,7 @@ describe('EnrollmentService', () => {
         makeEnrollment({ event: makeEvent({ roleConfig: null }) }),
       );
 
-      await expect(service.changeRole('p1', 'user1', 'bramkarz')).rejects.toThrow(
+      await expect(service.changeRole('p1', mockAuthUser('user1'), 'bramkarz')).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -1129,9 +1158,9 @@ describe('EnrollmentService', () => {
         makeEnrollment({ event: openEvent, slot: null }),
       );
 
-      await expect(service.changeRole('p1', 'user1', 'nieistniejaca-rola')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.changeRole('p1', mockAuthUser('user1'), 'nieistniejaca-rola'),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('PENDING → aktualizuje roleKey bez zwalniania slotu', async () => {
@@ -1145,7 +1174,7 @@ describe('EnrollmentService', () => {
       (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
       (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
 
-      await service.changeRole('p1', 'user1', 'bramkarz');
+      await service.changeRole('p1', mockAuthUser('user1'), 'bramkarz');
 
       expect(prisma.eventEnrollment.update as jest.Mock).toHaveBeenCalled();
       expect(slots.releaseSlot as jest.Mock).not.toHaveBeenCalled();
@@ -1167,7 +1196,7 @@ describe('EnrollmentService', () => {
       (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
       (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
 
-      await service.changeRole('p1', 'user1', 'bramkarz');
+      await service.changeRole('p1', mockAuthUser('user1'), 'bramkarz');
 
       expect(slots.releaseSlot as jest.Mock).toHaveBeenCalled();
       expect(slots.assignSlot as jest.Mock).toHaveBeenCalled();
@@ -1184,7 +1213,7 @@ describe('EnrollmentService', () => {
         makeEnrollment({ wantsIn: true, slot: null, event: paidEvent }),
       );
 
-      await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(
+      await expect(service.initiateEventPayment('p1', mockAuthUser('user1'))).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -1198,7 +1227,7 @@ describe('EnrollmentService', () => {
         }),
       );
 
-      await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(
+      await expect(service.initiateEventPayment('p1', mockAuthUser('user1'))).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -1212,7 +1241,7 @@ describe('EnrollmentService', () => {
         }),
       );
 
-      await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(
+      await expect(service.initiateEventPayment('p1', mockAuthUser('user1'))).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -1236,7 +1265,7 @@ describe('EnrollmentService', () => {
         paymentUrl: 'https://pay.tpay.com/TX1',
       });
 
-      const result = await service.initiateEventPayment('p1', 'host1');
+      const result = await service.initiateEventPayment('p1', mockAuthUser('host1'));
 
       expect(payments.initiatePayment as jest.Mock).toHaveBeenCalledWith(
         'p1',
@@ -1255,7 +1284,7 @@ describe('EnrollmentService', () => {
       const original = featureFlags.enableOnlinePayments;
       (featureFlags as any).enableOnlinePayments = false;
       try {
-        await expect(service.initiateEventPayment('p1', 'user1')).rejects.toThrow(
+        await expect(service.initiateEventPayment('p1', mockAuthUser('user1'))).rejects.toThrow(
           ForbiddenException,
         );
       } finally {

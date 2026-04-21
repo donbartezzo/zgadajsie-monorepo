@@ -18,7 +18,8 @@ import {
   PARTICIPANT_WITHDREW_MESSAGE,
   PARTICIPANT_ALREADY_HAS_SLOT_MESSAGE,
 } from '@zgadajsie/shared';
-import { AuthUserLike, resolveUserContext } from '../auth/utils/auth-user.util';
+import { resolveUserContext } from '../auth/utils/auth-user.util';
+import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
 type SlotRoleConfig = {
   roles: Array<{
@@ -511,7 +512,7 @@ export class SlotService {
    */
   async lockSlotByOrganizer(
     slotId: string,
-    organizerUser: string | AuthUserLike,
+    organizerUser: AuthUser,
   ): Promise<{ success: boolean }> {
     const { userId: organizerUserId, isAdmin } = resolveUserContext(organizerUser);
     const eventId = await this.getSlotEventId(slotId);
@@ -531,7 +532,7 @@ export class SlotService {
    */
   async unlockSlotByOrganizer(
     slotId: string,
-    organizerUser: string | AuthUserLike,
+    organizerUser: AuthUser,
   ): Promise<{ success: boolean }> {
     const { userId: organizerUserId, isAdmin } = resolveUserContext(organizerUser);
     const eventId = await this.getSlotEventId(slotId);
@@ -552,7 +553,7 @@ export class SlotService {
   async assignParticipantToLockedSlot(
     slotId: string,
     participationId: string,
-    organizerUser: string | AuthUserLike,
+    organizerUser: AuthUser,
   ) {
     const { userId: organizerUserId, isAdmin } = resolveUserContext(organizerUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
@@ -622,7 +623,7 @@ export class SlotService {
     participationIds: string[],
     confirmed = false,
     tx?: Prisma.TransactionClient,
-    user?: string | AuthUserLike,
+    user?: AuthUser,
   ): Promise<number> {
     const isAdmin = user ? resolveUserContext(user).isAdmin : false;
     const client = tx ?? this.prisma;

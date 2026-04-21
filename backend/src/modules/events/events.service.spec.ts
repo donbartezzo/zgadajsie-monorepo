@@ -7,6 +7,7 @@ import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptio
 import { SlotService } from '../slots/slot.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { EventsService } from './events.service';
+import { mockAuthUser } from '../../tests/test-helpers';
 
 function buildTxMock() {
   return {
@@ -230,7 +231,7 @@ describe('EventsService', () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent());
       (prisma.event.update as jest.Mock).mockResolvedValue(makeEvent({ title: 'Updated' }));
 
-      await service.update('event1', 'org1', { title: 'Updated' } as any);
+      await service.update('event1', mockAuthUser('org1'), { title: 'Updated' });
 
       expect(prisma.event.update as jest.Mock).toHaveBeenCalled();
       expect(realtime.invalidateEvent as jest.Mock).toHaveBeenCalledWith('event1', 'all');
@@ -239,7 +240,7 @@ describe('EventsService', () => {
     it('odrzuca nie-organizatora (ForbiddenException)', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent());
 
-      await expect(service.update('event1', 'not-org', {} as any)).rejects.toThrow(
+      await expect(service.update('event1', mockAuthUser('not-org'), {} as any)).rejects.toThrow(
         ForbiddenException,
       );
     });
@@ -247,7 +248,7 @@ describe('EventsService', () => {
     it('odrzuca jeśli event nie istnieje (NotFoundException)', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(service.update('nonexistent', 'org1', {} as any)).rejects.toThrow(
+      await expect(service.update('nonexistent', mockAuthUser('org1'), {} as any)).rejects.toThrow(
         NotFoundException,
       );
     });
@@ -257,7 +258,7 @@ describe('EventsService', () => {
         makeEvent({ startsAt: new Date(Date.now() - 1000) }),
       );
 
-      await expect(service.update('event1', 'org1', {} as any)).rejects.toThrow(
+      await expect(service.update('event1', mockAuthUser('org1'), {} as any)).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -267,7 +268,7 @@ describe('EventsService', () => {
       (slots.validateMaxParticipantsChange as jest.Mock).mockResolvedValue(null);
       (prisma.event.update as jest.Mock).mockResolvedValue(makeEvent({ maxParticipants: 15 }));
 
-      await service.update('event1', 'org1', { maxParticipants: 15 } as any);
+      await service.update('event1', mockAuthUser('org1'), { maxParticipants: 15 } as any);
 
       expect(slots.adjustSlotsForMaxParticipants as jest.Mock).toHaveBeenCalledWith(
         'event1',
@@ -282,15 +283,15 @@ describe('EventsService', () => {
         'Nie można zmniejszyć liczby miejsc',
       );
 
-      await expect(service.update('event1', 'org1', { maxParticipants: 5 } as any)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.update('event1', mockAuthUser('org1'), { maxParticipants: 5 } as any),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('odrzuca edycję eventu ze statusem CANCELLED (BadRequestException)', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent({ status: 'CANCELLED' }));
 
-      await expect(service.update('event1', 'org1', {} as any)).rejects.toThrow(
+      await expect(service.update('event1', mockAuthUser('org1'), {} as any)).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -305,7 +306,7 @@ describe('EventsService', () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent({ roleConfig }));
       (prisma.event.update as jest.Mock).mockResolvedValue(makeEvent({ roleConfig }));
 
-      await service.update('event1', 'org1', { roleConfig } as any);
+      await service.update('event1', mockAuthUser('org1'), { roleConfig } as any);
 
       expect(slots.reconcileSlotsForRoleConfig as jest.Mock).toHaveBeenCalledWith(
         'event1',
@@ -455,7 +456,7 @@ describe('EventsService', () => {
       // Outside transaction: participants for notifications
       (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([]);
 
-      await service.cancel('event1', 'org1');
+      await service.cancel('event1', mockAuthUser('org1'));
 
       expect(tx.event.update).toHaveBeenCalledWith(
         expect.objectContaining({ data: { status: 'CANCELLED' } }),
@@ -466,19 +467,25 @@ describe('EventsService', () => {
     it('rzuca BadRequestException jeśli event już CANCELLED', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent({ status: 'CANCELLED' }));
 
-      await expect(service.cancel('event1', 'org1')).rejects.toThrow(BadRequestException);
+      await expect(service.cancel('event1', mockAuthUser('org1'))).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('odrzuca nie-organizatora (ForbiddenException)', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent());
 
-      await expect(service.cancel('event1', 'not-org')).rejects.toThrow(ForbiddenException);
+      await expect(service.cancel('event1', mockAuthUser('not-org'))).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('odrzuca jeśli event nie istnieje (NotFoundException)', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(service.cancel('nonexistent', 'org1')).rejects.toThrow(NotFoundException);
+      await expect(service.cancel('nonexistent', mockAuthUser('org1'))).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('zwraca statystyki refundedParticipants i cleanedUpIntents', async () => {
@@ -500,7 +507,7 @@ describe('EventsService', () => {
       tx.organizerVoucher.create.mockResolvedValue({});
       (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([]);
 
-      const result = await service.cancel('event1', 'org1');
+      const result = await service.cancel('event1', mockAuthUser('org1'));
 
       expect(result.refundedParticipants).toBe(1);
       expect(result.cleanedUpIntents).toBe(0);
@@ -521,7 +528,7 @@ describe('EventsService', () => {
       tx.eventSlot.updateMany.mockResolvedValue({});
       (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([]);
 
-      const result = await service.cancel('event1', 'org1');
+      const result = await service.cancel('event1', mockAuthUser('org1'));
 
       expect(tx.paymentIntent.delete).toHaveBeenCalledWith({ where: { id: 'intent1' } });
       expect(result.cleanedUpIntents).toBe(1);
@@ -555,7 +562,7 @@ describe('EventsService', () => {
         { user: { id: 'user1', email: 'user@test.com', displayName: 'User 1' } },
       ]);
 
-      await service.cancel('event1', 'org1');
+      await service.cancel('event1', mockAuthUser('org1'));
 
       expect(pushMock.notifyEventCancelled).toHaveBeenCalledWith('user1', event.title, 'event1');
       expect(emailMock.sendEventCancelledEmail).toHaveBeenCalledWith(
@@ -574,7 +581,7 @@ describe('EventsService', () => {
       (prisma.eventEnrollment.count as jest.Mock).mockResolvedValue(0);
       (prisma.event.delete as jest.Mock).mockResolvedValue({});
 
-      await service.remove('event1', 'org1', false);
+      await service.remove('event1', mockAuthUser('org1'));
 
       expect(prisma.event.delete as jest.Mock).toHaveBeenCalledWith({ where: { id: 'event1' } });
     });
@@ -583,14 +590,16 @@ describe('EventsService', () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent());
       (prisma.eventEnrollment.count as jest.Mock).mockResolvedValue(5);
 
-      await expect(service.remove('event1', 'org1', false)).rejects.toThrow(BadRequestException);
+      await expect(service.remove('event1', mockAuthUser('org1'))).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('admin może usunąć wydarzenie z uczestnikami', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent());
       (prisma.event.delete as jest.Mock).mockResolvedValue({});
 
-      await service.remove('event1', 'other-user', true);
+      await service.remove('event1', mockAuthUser('other-user', 'ADMIN'));
 
       expect(prisma.event.delete as jest.Mock).toHaveBeenCalled();
     });
@@ -599,7 +608,9 @@ describe('EventsService', () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent({ organizerId: 'org1' }));
       (prisma.eventEnrollment.count as jest.Mock).mockResolvedValue(0);
 
-      await expect(service.remove('event1', 'not-org', false)).rejects.toThrow(ForbiddenException);
+      await expect(service.remove('event1', mockAuthUser('not-org'))).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -617,7 +628,7 @@ describe('EventsService', () => {
       (prisma.payment.create as jest.Mock).mockResolvedValue({});
       (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([]);
 
-      await service.markPaid('event1', 'p1', 'org1');
+      await service.markPaid('event1', 'p1', mockAuthUser('org1'));
 
       expect(prisma.payment.create as jest.Mock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -637,13 +648,17 @@ describe('EventsService', () => {
         slot: null,
       });
 
-      await expect(service.markPaid('event1', 'p1', 'org1')).rejects.toThrow(BadRequestException);
+      await expect(service.markPaid('event1', 'p1', mockAuthUser('org1'))).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('odrzuca nie-organizatora (ForbiddenException)', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent());
 
-      await expect(service.markPaid('event1', 'p1', 'not-org')).rejects.toThrow(ForbiddenException);
+      await expect(service.markPaid('event1', 'p1', mockAuthUser('not-org'))).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -668,7 +683,9 @@ describe('EventsService', () => {
       tx.eventSlot.updateMany.mockResolvedValue({});
       (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([]);
 
-      await service.cancelPayment('event1', 'pay1', 'org1', { refundAsVoucher: true });
+      await service.cancelPayment('event1', 'pay1', mockAuthUser('org1'), {
+        refundAsVoucher: true,
+      });
 
       expect(tx.payment.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -686,7 +703,7 @@ describe('EventsService', () => {
       tx.eventSlot.updateMany.mockResolvedValue({});
       (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([]);
 
-      await service.cancelPayment('event1', 'pay1', 'org1', {});
+      await service.cancelPayment('event1', 'pay1', mockAuthUser('org1'), {});
 
       expect(tx.payment.delete).toHaveBeenCalledWith({ where: { id: 'pay1' } });
     });
@@ -698,17 +715,17 @@ describe('EventsService', () => {
         status: 'PENDING',
       });
 
-      await expect(service.cancelPayment('event1', 'pay1', 'org1', {})).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.cancelPayment('event1', 'pay1', mockAuthUser('org1'), {}),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('odrzuca nie-organizatora (ForbiddenException)', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent());
 
-      await expect(service.cancelPayment('event1', 'pay1', 'not-org', {})).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.cancelPayment('event1', 'pay1', mockAuthUser('not-org'), {}),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('gotówka smart default (pusty dto): usuwa bez powiadomienia', async () => {
@@ -719,7 +736,7 @@ describe('EventsService', () => {
       tx.eventSlot.updateMany.mockResolvedValue({});
       (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([]);
 
-      await service.cancelPayment('event1', 'pay1', 'org1', {});
+      await service.cancelPayment('event1', 'pay1', mockAuthUser('org1'), {});
 
       expect(notifications.create as jest.Mock).not.toHaveBeenCalled();
     });
@@ -732,7 +749,7 @@ describe('EventsService', () => {
       tx.eventSlot.updateMany.mockResolvedValue({});
       (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([]);
 
-      await service.cancelPayment('event1', 'pay1', 'org1', {});
+      await service.cancelPayment('event1', 'pay1', mockAuthUser('org1'), {});
 
       expect(tx.organizerVoucher.create).toHaveBeenCalled();
       expect(notifications.create as jest.Mock).toHaveBeenCalled();

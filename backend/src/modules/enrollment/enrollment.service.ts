@@ -29,7 +29,8 @@ import {
   PARTICIPANT_ALREADY_HAS_SLOT_MESSAGE,
 } from '@zgadajsie/shared';
 import { featureFlags } from '../../common/config/feature-flags';
-import { AuthUserLike, resolveUserContext } from '../auth/utils/auth-user.util';
+import { resolveUserContext } from '../auth/utils/auth-user.util';
+import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
 const USER_SELECT = { id: true, displayName: true, avatarUrl: true, email: true };
 
@@ -75,7 +76,7 @@ export class EnrollmentService {
     private eventRealtime: EventRealtimeService,
   ) {}
 
-  async join(eventId: string, user: string | AuthUserLike, roleKey?: string) {
+  async join(eventId: string, user: AuthUser, roleKey?: string) {
     const { userId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
@@ -175,12 +176,7 @@ export class EnrollmentService {
     return roleKey;
   }
 
-  async joinGuest(
-    eventId: string,
-    addedByUser: string | AuthUserLike,
-    displayName: string,
-    roleKey?: string,
-  ) {
+  async joinGuest(eventId: string, addedByUser: AuthUser, displayName: string, roleKey?: string) {
     const { userId: addedByUserId, isAdmin } = resolveUserContext(addedByUser);
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
@@ -283,11 +279,7 @@ export class EnrollmentService {
     return withDerivedStatus(participation);
   }
 
-  async updateGuestName(
-    participationId: string,
-    addedByUser: string | AuthUserLike,
-    displayName: string,
-  ) {
+  async updateGuestName(participationId: string, addedByUser: AuthUser, displayName: string) {
     const { userId: addedByUserId, isAdmin } = resolveUserContext(addedByUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
@@ -322,7 +314,7 @@ export class EnrollmentService {
       displayName: updatedUser.displayName,
     };
   }
-  async assignSlotToParticipant(participationId: string, organizerUser: string | AuthUserLike) {
+  async assignSlotToParticipant(participationId: string, organizerUser: AuthUser) {
     const { userId: organizerUserId, isAdmin } = resolveUserContext(organizerUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
@@ -427,7 +419,7 @@ export class EnrollmentService {
   /**
    * User confirms their slot (acknowledges they want to participate).
    */
-  async confirmSlot(participationId: string, currentUser: string | AuthUserLike) {
+  async confirmSlot(participationId: string, currentUser: AuthUser) {
     const { userId: currentUserId, isAdmin } = resolveUserContext(currentUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
@@ -467,7 +459,7 @@ export class EnrollmentService {
   /**
    * Organizer releases a participant's slot (removes them from event).
    */
-  async releaseSlotFromParticipant(participationId: string, organizerUser: string | AuthUserLike) {
+  async releaseSlotFromParticipant(participationId: string, organizerUser: AuthUser) {
     const { userId: organizerUserId, isAdmin } = resolveUserContext(organizerUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
@@ -527,7 +519,7 @@ export class EnrollmentService {
    * Organizer permanently deletes a participation record.
    * Blocked when Payment records exist (financial audit trail must be preserved).
    */
-  async deleteParticipation(participationId: string, organizerUser: string | AuthUserLike) {
+  async deleteParticipation(participationId: string, organizerUser: AuthUser) {
     const { userId: organizerUserId, isAdmin } = resolveUserContext(organizerUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
@@ -576,7 +568,7 @@ export class EnrollmentService {
   /**
    * User leaves the event voluntarily.
    */
-  async leave(participationId: string, currentUser: string | AuthUserLike) {
+  async leave(participationId: string, currentUser: AuthUser) {
     const { userId: currentUserId, isAdmin } = resolveUserContext(currentUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
@@ -636,7 +628,7 @@ export class EnrollmentService {
 
   async initiateEventPayment(
     participationId: string,
-    currentUser: string | AuthUserLike,
+    currentUser: AuthUser,
   ): Promise<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
     const { userId: currentUserId, isAdmin } = resolveUserContext(currentUser);
     if (!featureFlags.enableOnlinePayments) {
@@ -1071,11 +1063,7 @@ export class EnrollmentService {
    * - PENDING: update roleKey, try to get a slot for new role
    * - APPROVED/CONFIRMED: release current slot, update roleKey, try to get new slot
    */
-  async changeRole(
-    participationId: string,
-    currentUser: string | AuthUserLike,
-    newRoleKey: string,
-  ) {
+  async changeRole(participationId: string, currentUser: AuthUser, newRoleKey: string) {
     const { userId: currentUserId, isAdmin } = resolveUserContext(currentUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
@@ -1200,7 +1188,7 @@ export class EnrollmentService {
    * Used by the frontend when re-adding a guest or rejoining as a user
    * — prevents creating a new User entity and bypassing the unique constraint.
    */
-  async rejoinById(participationId: string, currentUser: string | AuthUserLike) {
+  async rejoinById(participationId: string, currentUser: AuthUser) {
     const { userId: currentUserId, isAdmin } = resolveUserContext(currentUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },

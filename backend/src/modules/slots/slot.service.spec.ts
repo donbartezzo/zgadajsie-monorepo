@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Logger, NotFoundException } fr
 import { PrismaService } from '../prisma/prisma.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { SlotService } from './slot.service';
+import { mockAuthUser } from '../../tests/test-helpers';
 
 function buildPrismaMock() {
   return {
@@ -205,11 +206,12 @@ describe('SlotService', () => {
         .mockResolvedValueOnce({ ...slot, locked: true }); // lockSlot update
       (prisma.event.findUnique as jest.Mock).mockResolvedValue({
         id: 'event1',
-        organizerId: 'org1',
+        organizerId: mockAuthUser('org1').id,
+        startsAt: new Date(Date.now() + 86400000),
       });
       (prisma.eventSlot.update as jest.Mock).mockResolvedValue({ ...slot, locked: true });
 
-      const result = await service.lockSlotByOrganizer('slot1', 'org1');
+      const result = await service.lockSlotByOrganizer('slot1', mockAuthUser('org1'));
 
       expect(result).toEqual({ success: true });
     });
@@ -221,10 +223,11 @@ describe('SlotService', () => {
       });
       (prisma.event.findUnique as jest.Mock).mockResolvedValue({
         id: 'event1',
-        organizerId: 'org1',
+        organizerId: mockAuthUser('org1').id,
+        startsAt: new Date(Date.now() + 86400000),
       });
 
-      await expect(service.lockSlotByOrganizer('slot1', 'other-user')).rejects.toThrow(
+      await expect(service.lockSlotByOrganizer('slot1', mockAuthUser('not-org'))).rejects.toThrow(
         ForbiddenException,
       );
     });
@@ -399,38 +402,50 @@ describe('SlotService', () => {
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue({
         id: 'p1',
         wantsIn: false,
-        event: { organizerId: 'org1', costPerPerson: { toNumber: () => 0 } },
+        event: {
+          organizerId: 'org1',
+          costPerPerson: { toNumber: () => 0 },
+          startsAt: new Date(Date.now() + 86400000),
+        },
         slot: null,
       });
 
-      await expect(service.assignParticipantToLockedSlot('slot1', 'p1', 'org1')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.assignParticipantToLockedSlot('slot1', 'p1', mockAuthUser('org1')),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('rzuca BadRequestException jeśli uczestnik już ma slot', async () => {
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue({
         id: 'p1',
         wantsIn: true,
-        event: { organizerId: 'org1', costPerPerson: { toNumber: () => 0 } },
+        event: {
+          organizerId: 'org1',
+          costPerPerson: { toNumber: () => 0 },
+          startsAt: new Date(Date.now() + 86400000),
+        },
         slot: { id: 'existing-slot' },
       });
 
-      await expect(service.assignParticipantToLockedSlot('slot1', 'p1', 'org1')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.assignParticipantToLockedSlot('slot1', 'p1', mockAuthUser('org1')),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('rzuca ForbiddenException jeśli nie-organizator', async () => {
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue({
         id: 'p1',
         wantsIn: true,
-        event: { organizerId: 'org1', costPerPerson: { toNumber: () => 0 } },
+        event: {
+          organizerId: 'org1',
+          costPerPerson: { toNumber: () => 0 },
+          startsAt: new Date(Date.now() + 86400000),
+        },
         slot: null,
       });
 
       await expect(
-        service.assignParticipantToLockedSlot('slot1', 'p1', 'different-user'),
+        service.assignParticipantToLockedSlot('slot1', 'p1', mockAuthUser('different-user')),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -453,7 +468,11 @@ describe('SlotService', () => {
         id: 'p1',
         wantsIn: true,
         roleKey: null,
-        event: { organizerId: 'org1', costPerPerson: { toNumber: () => 0 } },
+        event: {
+          organizerId: 'org1',
+          costPerPerson: { toNumber: () => 0 },
+          startsAt: new Date(Date.now() + 86400000),
+        },
         slot: null,
       });
       (prisma.eventSlot.findUnique as jest.Mock)
@@ -463,7 +482,7 @@ describe('SlotService', () => {
       (prisma.eventSlot.update as jest.Mock).mockResolvedValue(updatedSlot);
       (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue(updatedEnrollment);
 
-      await service.assignParticipantToLockedSlot('slot1', 'p1', 'org1');
+      await service.assignParticipantToLockedSlot('slot1', 'p1', mockAuthUser('org1'));
 
       // For free event (costPerPerson=0), confirmed should be true
       expect(prisma.eventSlot.update as jest.Mock).toHaveBeenCalledWith(
@@ -476,14 +495,18 @@ describe('SlotService', () => {
         id: 'p1',
         wantsIn: true,
         roleKey: 'bramkarz',
-        event: { organizerId: 'org1', costPerPerson: { toNumber: () => 0 } },
+        event: {
+          organizerId: 'org1',
+          costPerPerson: { toNumber: () => 0 },
+          startsAt: new Date(Date.now() + 86400000),
+        },
         slot: null,
       });
       (prisma.eventSlot.findUnique as jest.Mock).mockResolvedValueOnce({ roleKey: 'pilkarz' });
 
-      await expect(service.assignParticipantToLockedSlot('slot1', 'p1', 'org1')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.assignParticipantToLockedSlot('slot1', 'p1', mockAuthUser('org1')),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('przypisuje slot jeśli role uczestnika i slotu są zgodne', async () => {
@@ -505,7 +528,11 @@ describe('SlotService', () => {
         id: 'p1',
         wantsIn: true,
         roleKey: 'bramkarz',
-        event: { organizerId: 'org1', costPerPerson: { toNumber: () => 0 } },
+        event: {
+          organizerId: 'org1',
+          costPerPerson: { toNumber: () => 0 },
+          startsAt: new Date(Date.now() + 86400000),
+        },
         slot: null,
       });
       (prisma.eventSlot.findUnique as jest.Mock)
@@ -519,7 +546,7 @@ describe('SlotService', () => {
       });
 
       await expect(
-        service.assignParticipantToLockedSlot('slot1', 'p1', 'org1'),
+        service.assignParticipantToLockedSlot('slot1', 'p1', mockAuthUser('org1')),
       ).resolves.not.toThrow();
     });
   });
