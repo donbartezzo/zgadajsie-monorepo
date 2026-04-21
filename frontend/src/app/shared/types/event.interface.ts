@@ -63,7 +63,7 @@ export interface Event
   city?: City;
   organizer?: UserBrief;
   coverImage?: CoverImage;
-  _count?: { participations: number };
+  _count?: { enrollments: number };
   eventTimeStatus?: EventTimeStatus;
   enrollmentPhase?: EnrollmentPhase | null;
 }

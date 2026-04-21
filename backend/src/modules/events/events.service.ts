@@ -187,11 +187,7 @@ export class EventsService {
             select: {
               enrollments: {
                 where: {
-                  wantsIn: true,
-                  OR: [
-                    { slot: { confirmed: true } },
-                    { slot: { confirmed: false, enrollmentId: { not: null } } },
-                  ],
+                  withdrawnBy: null,
                 },
               },
             },

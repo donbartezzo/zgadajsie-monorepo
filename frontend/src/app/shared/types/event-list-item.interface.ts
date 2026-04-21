@@ -24,5 +24,5 @@ export interface EventListItem {
   city?: City;
   organizer?: UserBrief;
   coverImage?: CoverImage;
-  _count?: { participations: number };
+  _count?: { enrollments: number };
 }
