@@ -36,10 +36,10 @@ export interface ChatViewMessage {
     UserAvatarComponent,
     LoadingSpinnerComponent,
   ],
-  host: { class: 'flex-1 min-h-0 pb-[var(--footer-height)]' },
+  host: { class: 'flex flex-col flex-1 min-h-0 pb-[var(--footer-height)]' },
   template: `
     @if (disabled()) {
-      <div class="flex flex-col items-center justify-center h-full px-6 text-center gap-4 mt-4">
+      <div class="flex flex-1 flex-col items-center justify-center px-6 text-center gap-4">
         <div class="flex items-center justify-center w-14 h-14 rounded-full bg-danger-50">
           <app-icon name="shield-alert" size="lg" class="text-danger-300"></app-icon>
         </div>
@@ -60,7 +60,7 @@ export interface ChatViewMessage {
         }
       </div>
     } @else if (accessDenied()) {
-      <div class="flex flex-col items-center justify-center h-full px-6 text-center gap-4 mt-4">
+      <div class="flex flex-1 flex-col items-center justify-center px-6 text-center gap-4">
         <div class="flex items-center justify-center w-14 h-14 rounded-full bg-warning-50">
           <app-icon name="lock" size="lg" class="text-warning-300"></app-icon>
         </div>
@@ -92,7 +92,10 @@ export interface ChatViewMessage {
         }
       </div>
     } @else {
-      <div class="px-4 py-4 space-y-3" #messagesContainer>
+      <div
+        class="flex flex-1 flex-col min-h-0 overflow-y-auto px-4 py-4 space-y-3"
+        #messagesContainer
+      >
         @if (loading()) {
           <app-loading-spinner></app-loading-spinner>
         }

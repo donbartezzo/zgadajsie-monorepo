@@ -327,6 +327,22 @@ Steruje obramowaniem i cieniem wrappera treści.
 
 Centruje główną treść strony wewnątrz layoutu.
 
+Może być używany samodzielnie lub razem z `fullscreenContent: true`.
+
+**Bez `fullscreenContent`:**
+
+- wrapper treści dostaje `flex flex-1 items-center justify-center`
+- inner wrapper dostaje `overflow-visible w-full`
+- content jest centrowany pionowo i poziomo w dostępnej przestrzeni
+
+**Razem z `fullscreenContent: true` (tryb fullscreen + centered):**
+
+- wrapper dostaje `items-center justify-center` na istniejącym flex chain
+- inner wrapper NIE dostaje `flex-1 min-h-0` — treść ma naturalny rozmiar i jest centrowana przez wrapper
+- użyteczne dla widoków, które ZAWSZE pokazują wycentrowaną treść (np. strona błędu, strona wyłączonej funkcji) w trybie fullscreen
+
+**Ważne:** Gdy komponent w trybie fullscreen przełącza się między trybem "wypełnij ekran" a "wycentrowany stan pusty", centrowanie należy obsłużyć wewnątrz samego komponentu (przez `flex flex-1 items-center justify-center` na divie stanu pustego), a nie przez `centerContent` w route data. Przykładem prawidłowego wzorca jest `ChatViewComponent`.
+
 ### `fullscreenContent`
 
 Włącza tryb fullscreen — content wypełnia dokładnie dostępną przestrzeń viewportu bez scrollbara.
@@ -343,6 +359,8 @@ Stosowany razem z:
 - `heroVariant: 'only-mini-bar'` — minimalny header
 - `showFooter: false` — bez stopki
 - Komponenty child muszą mieć `host: { class: 'flex flex-col flex-1 min-h-0' }` aby prawidłowo uczestniczyć w flex chain
+- jeśli fullscreenowy ekran ma stan pusty lub access denied i komponent przełącza się między trybami, centrowanie stanu pustego należy zrobić lokalnie w komponencie przez `flex flex-1 items-center justify-center` (wzorzec: `ChatViewComponent`)
+- można połączyć z `centerContent: true` dla widoków, które ZAWSZE pokazują wycentrowaną treść w fullscreenie — w tym trybie nie używaj `flex-1` w host komponentu, bo inner wrapper nie ma już flex-1
 
 Przykład konfiguracji:
 

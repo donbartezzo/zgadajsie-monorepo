@@ -20,26 +20,23 @@ import { BaseChatComponent } from '../base-chat.component';
     ChatViewComponent,
     ChatMembersOverlayComponent,
   ],
+  host: { class: 'flex flex-col flex-1 min-h-0' },
   template: `
     <app-event-hero-slots [event]="event()" />
 
     @if (isOrganizerMode()) {
       <!-- ─── ORGANIZER: conversation list ─── -->
-      <div class="p-4">
-        @if (loading()) {
-          <div class="py-8 flex justify-center">
-            <app-loading-spinner></app-loading-spinner>
-          </div>
-        } @else if (conversations().length === 0) {
-          <div class="text-center py-8">
-            <app-icon
-              name="message-circle"
-              size="lg"
-              class="text-neutral-300 mx-auto mb-3"
-            ></app-icon>
-            <p class="text-sm text-neutral-500">Brak prywatnych konwersacji z uczestnikami</p>
-          </div>
-        } @else {
+      @if (loading()) {
+        <div class="flex flex-1 items-center justify-center">
+          <app-loading-spinner></app-loading-spinner>
+        </div>
+      } @else if (conversations().length === 0) {
+        <div class="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+          <app-icon name="message-circle" size="lg" class="text-neutral-300"></app-icon>
+          <p class="text-sm text-neutral-500">Brak prywatnych konwersacji z uczestnikami</p>
+        </div>
+      } @else {
+        <div class="flex-1 min-h-0 overflow-y-auto p-4">
           <div class="space-y-1">
             @for (conv of conversations(); track conv.participant.id) {
               <button
@@ -88,8 +85,8 @@ import { BaseChatComponent } from '../base-chat.component';
               </button>
             }
           </div>
-        }
-      </div>
+        </div>
+      }
     } @else {
       <!-- ─── PARTICIPANT: private chat with organizer ─── -->
       <div class="flex-1 flex flex-col min-h-0">

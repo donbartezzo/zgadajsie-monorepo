@@ -90,6 +90,7 @@ export const appRoutes: Route[] = [
         canActivate: [verifiedUserGuard],
         resolve: setEventResolvedTitle('Lista uczestników wydarzenia'),
         data: {
+          heroVariant: 'only-mini-bar',
           showFooter: false,
           showBorder: false,
         },
@@ -104,6 +105,7 @@ export const appRoutes: Route[] = [
         resolve: setEventResolvedTitle('Mapa wydarzenia'),
         data: {
           ...WHITE_BARE_LAYOUT,
+          centerContent: false,
           heroVariant: 'only-mini-bar',
           fullscreenContent: true,
         },

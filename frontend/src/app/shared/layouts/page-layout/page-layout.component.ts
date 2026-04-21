@@ -217,14 +217,18 @@ export class PageLayoutComponent {
 
   readonly contentWrapperClass = computed(() => {
     const fs = this.fullscreenContent();
+    const center = this.centerContent();
     const parts = ['relative'];
     if (fs) {
       parts.push('flex-1 min-h-0 flex flex-col');
+      if (center) {
+        parts.push('items-center justify-center');
+      }
     } else {
       if (this.showHeader()) {
         parts.push('-mt-6');
       }
-      if (this.centerContent()) {
+      if (center) {
         parts.push('flex flex-1 items-center justify-center');
       }
     }
@@ -237,13 +241,19 @@ export class PageLayoutComponent {
 
   readonly contentInnerClass = computed(() => {
     const cc = this.resolvedContentClass();
-    if (this.fullscreenContent()) {
+    const fs = this.fullscreenContent();
+    const center = this.centerContent();
+    if (fs && center) {
+      // Wrapper handles centering; inner div must NOT have flex-1 so content stays natural size
+      return cc || '';
+    }
+    if (fs) {
       return ['flex-1 min-h-0 flex flex-col', cc].filter(Boolean).join(' ');
     }
     return [
       'rounded-2xl border',
       this.showBorder() ? 'shadow-xs border-neutral-100' : 'border-transparent',
-      this.centerContent() ? 'overflow-visible w-full' : 'overflow-hidden',
+      center ? 'overflow-visible w-full' : 'overflow-hidden',
       cc,
     ]
       .filter(Boolean)
