@@ -366,6 +366,7 @@ export class DesignSystemComponent {
     'eye',
     'eye-off',
     'lock',
+    'unlock',
     'mail',
     'phone',
     'image',
@@ -380,6 +381,12 @@ export class DesignSystemComponent {
     'help-circle',
     'check-circle',
     'list',
+    'hanger',
+    'toilet',
+    'ball',
+    'bookmark',
+    'coffee',
+    'crosshair',
   ];
 
   readonly spacingScale = [

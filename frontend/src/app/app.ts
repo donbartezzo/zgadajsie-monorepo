@@ -8,6 +8,7 @@ import { ConfirmModalComponent } from './shared/ui/confirm-modal/confirm-modal.c
 import { ModalHostComponent } from './shared/ui/modal/modal-host.component';
 import { PageLayoutComponent } from './shared/layouts/page-layout/page-layout.component';
 import { CookieConsentBannerComponent } from './shared/ui/cookie-consent-banner/cookie-consent-banner.component';
+import { IconComponent } from './shared/ui/icon/icon.component';
 import { ClarityService } from './core/services/clarity.service';
 import { environment } from '../environments/environment';
 
@@ -21,6 +22,7 @@ import { environment } from '../environments/environment';
     ModalHostComponent,
     PageLayoutComponent,
     CookieConsentBannerComponent,
+    IconComponent,
   ],
   selector: 'app-root',
   templateUrl: './app.html',

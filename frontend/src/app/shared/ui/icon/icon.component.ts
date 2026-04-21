@@ -73,7 +73,8 @@ export type IconName =
   | 'toilet'
   | 'ball'
   | 'bookmark'
-  | 'coffee';
+  | 'coffee'
+  | 'crosshair';
 
 export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
 
@@ -467,6 +468,13 @@ export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
             <line x1="6" y1="1" x2="6" y2="4" />
             <line x1="10" y1="1" x2="10" y2="4" />
             <line x1="14" y1="1" x2="14" y2="4" />
+          }
+          @case ('crosshair') {
+            <circle cx="12" cy="12" r="3" />
+            <line x1="12" y1="2" x2="12" y2="6" />
+            <line x1="12" y1="18" x2="12" y2="22" />
+            <line x1="2" y1="12" x2="6" y2="12" />
+            <line x1="18" y1="12" x2="22" y2="12" />
           }
           @default {
             <!-- empty icon -->

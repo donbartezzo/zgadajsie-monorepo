@@ -10,12 +10,24 @@ import {
   viewChild,
 } from '@angular/core';
 import type * as L from 'leaflet';
+import { IconComponent } from '../../../ui/icon/icon.component';
 
 @Component({
   selector: 'app-map',
+  imports: [IconComponent],
   host: { class: 'block h-full w-full max-w-full' },
   template: `
     <div class="relative h-full w-full">
+      @if (showCenterButton()) {
+        <button
+          (click)="centerOnMarker()"
+          class="absolute bottom-2 left-2 z-[1000] flex items-center justify-center bg-white rounded-lg shadow-md border border-neutral-200 p-2 hover:bg-neutral-50 focus:ring-2 focus:ring-primary-500 focus:outline-none"
+          type="button"
+          title="Centruj na markerze"
+        >
+          <app-icon name="crosshair" size="md" color="neutral"></app-icon>
+        </button>
+      }
       @if (showLayerControls()) {
         <div
           class="absolute bottom-6 right-2 z-[1000] bg-white rounded-lg shadow-md border border-neutral-200"
@@ -43,7 +55,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   readonly interactive = input(false); // Domyślnie statyczny
   readonly markerDraggable = input(true); // Domylnie marker jest przesuwalny gdy mapa jest interaktywna
   readonly showLayerControls = input(false); // Pokazuje kontrolki zmiany warstwy mapy
-  readonly defaultLayer = input<'street' | 'satellite' | 'terrain'>('street'); // Domylna warstwa
+  readonly showCenterButton = input(false); // Pokazuje przycisk do centrowania na markerze
+  readonly defaultLayer = input<'street' | 'satellite' | 'terrain'>('street'); // Domyślna warstwa
   readonly markerMoved = output<{ lat: number; lng: number }>();
 
   readonly mapContainer = viewChild.required<ElementRef<HTMLElement>>('mapContainer');
@@ -75,6 +88,14 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   updatePosition(lat: number, lng: number): void {
     this.updateMarkerAndView(lat, lng);
+  }
+
+  centerOnMarker(): void {
+    if (this.map && this.marker) {
+      const lat = this.lat();
+      const lng = this.lng();
+      this.map.setView([lat, lng], this.zoom());
+    }
   }
 
   changeMapLayer(layerType: 'street' | 'satellite' | 'terrain'): void {
@@ -193,6 +214,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       }
 
       this.scheduleInvalidateSize();
+
+      // Centruj mapę na markerze po inicjalizacji
+      window.requestAnimationFrame(() => {
+        this.centerOnMarker();
+      });
     } catch {
       // Leaflet not available (SSR or missing dep)
     }
@@ -229,6 +255,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       this.map?.invalidateSize({ pan: false });
       window.requestAnimationFrame(() => {
         this.map?.invalidateSize({ pan: false });
+        // Centruj mapę na markerze po zmianie rozmiaru
+        this.centerOnMarker();
       });
     });
   }
