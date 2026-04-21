@@ -13,6 +13,7 @@ export class CapacityProgressComponent {
 
   readonly current = input.required<number>();
   readonly max = input.required<number>();
+  readonly enrollmentsCount = input<number | undefined>(undefined);
 
   readonly hasLimit = computed(() => this.max() > 0);
 
@@ -75,7 +76,7 @@ export class CapacityProgressComponent {
     };
   });
 
-  readonly subtitleClass = 'mt-1 text-[9px] leading-tight text-neutral-400';
+  readonly subtitleClass = 'mt-1 text-[10px] leading-tight text-neutral-400';
   readonly rootClass = 'w-full';
   readonly trackClass = 'mt-2 h-3 overflow-hidden rounded-full bg-neutral-200/70 w-full';
 
@@ -123,6 +124,12 @@ export class CapacityProgressComponent {
       'progress.freeSeat',
       freeCount,
     )}`;
+  });
+
+  readonly enrollmentsText = computed(() => {
+    const count = this.enrollmentsCount();
+    if (count === undefined || count === null) return '';
+    return `${count} zgłoszonych`;
   });
 
   private translatePlural(key: string, count: number): string {

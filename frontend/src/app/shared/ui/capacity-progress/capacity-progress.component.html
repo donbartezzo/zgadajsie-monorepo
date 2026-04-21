@@ -1,6 +1,7 @@
 @let _barText = barText();
 @let _freeText = freeText();
 @let _ariaText = ariaValueText();
+@let _enrollmentsText = enrollmentsText();
 
 <div
   class="{{ rootClass }}"
@@ -20,7 +21,10 @@
       <span class="text-[10px] font-semibold leading-none text-neutral-600">{{ _barText }}</span>
     </div>
   </div>
+  @if (_enrollmentsText) {
+    <span class="{{ subtitleClass }} mr-1">{{ _enrollmentsText }}.</span>
+  }
   @if (_freeText) {
-    <p class="{{ subtitleClass }}">{{ _freeText }}</p>
+    <span class="{{ subtitleClass }}">{{ _freeText }}</span>
   }
 </div>

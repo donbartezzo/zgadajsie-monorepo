@@ -118,6 +118,7 @@ import { DateLabelsService } from '../../../services/date-labels.service';
                 class="flex-1 max-w-[250px]"
                 [current]="_event._count?.participants ?? 0"
                 [max]="_event.maxParticipants"
+                [enrollmentsCount]="_event._count?.enrollments"
               />
 
               <span

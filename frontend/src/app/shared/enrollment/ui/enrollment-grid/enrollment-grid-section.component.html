@@ -43,18 +43,14 @@
     @for (group of _groups; track group.role?.key ?? '__all'; let isLast = $last) {
       <div [class]="!isLast ? 'border-b border-neutral-100 pb-3' : ''">
         <!-- Role label with capacity progress -->
-        @if (_groups.length > 1 && group.role) {
+        @if (group.totalSlots > 0) {
           <div class="mb-3 flex flex-wrap items-center gap-2 px-4">
-            <p class="text-sm font-bold uppercase tracking-wide text-neutral-600 min-w-24 shrink-0">
-              {{ 'dict.participant-role.' + group.role.key + '.title' | transloco }}
-            </p>
-            @if (group.totalSlots > 0) {
-              <app-capacity-progress [current]="group.occupiedCount" [max]="group.totalSlots" class="min-w-28 flex-1" />
+            @if (group.role) {
+              <p class="text-sm font-bold uppercase tracking-wide text-neutral-600 min-w-24 shrink-0">
+                {{ 'dict.participant-role.' + group.role.key + '.title' | transloco }}
+              </p>
             }
-          </div>
-        } @else if (group.totalSlots > 0) {
-          <div class="mb-3">
-            <app-capacity-progress [current]="group.occupiedCount" [max]="group.totalSlots" class="w-full" />
+            <app-capacity-progress [current]="group.occupiedCount" [max]="group.totalSlots" class="min-w-28 flex-1" />
           </div>
         }
 
