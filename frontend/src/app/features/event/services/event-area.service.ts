@@ -161,11 +161,8 @@ export class EventAreaService {
   /** Liczba wszystkich zgłoszonych (wszystkie statusy). */
   readonly enrollmentCount = computed(() => this.participants().length);
 
-  /** Liczba uczestników z przydzielonym miejscem (APPROVED lub CONFIRMED). */
-  readonly participantCount = computed(
-    () =>
-      this.participants().filter((p) => p.status === 'APPROVED' || p.status === 'CONFIRMED').length,
-  );
+  /** Liczba uczestników z przydzielonym miejscem (z backendu _count.participants). */
+  readonly participantCount = computed(() => this.event()?._count?.participants ?? 0);
 
   /**
    * Global helper method to calculate participant count (with assigned slot) from any participants array.

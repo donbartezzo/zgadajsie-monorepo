@@ -116,7 +116,7 @@ import { DateLabelsService } from '../../../services/date-labels.service';
             <div class="flex items-center justify-between">
               <app-capacity-progress
                 class="flex-1 max-w-[250px]"
-                [current]="_event._count?.enrollments ?? 0"
+                [current]="_event._count?.participants ?? 0"
                 [max]="_event.maxParticipants"
               />
 

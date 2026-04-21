@@ -206,7 +206,32 @@ export class EventsService {
       this.prisma.event.count({ where }),
     ]);
 
-    return { data: events, total, page, limit };
+    const eventIds = events.map((e) => e.id);
+    const participantCounts = await this.prisma.eventEnrollment.groupBy({
+      by: ['eventId'],
+      where: {
+        eventId: { in: eventIds },
+        withdrawnBy: null,
+        slot: { isNot: null },
+      },
+      _count: {
+        eventId: true,
+      },
+    });
+
+    const participantCountMap = new Map(
+      participantCounts.map((pc) => [pc.eventId, pc._count.eventId]),
+    );
+
+    const eventsWithParticipantCount = events.map((event) => ({
+      ...event,
+      _count: {
+        ...event._count,
+        participants: participantCountMap.get(event.id) ?? 0,
+      },
+    }));
+
+    return { data: eventsWithParticipantCount, total, page, limit };
   }
 
   async findOne(id: string, userId?: string) {
@@ -219,6 +244,15 @@ export class EventsService {
         city: true,
         coverImage: true,
         organizer: { select: { id: true, displayName: true, avatarUrl: true, donationUrl: true } },
+        _count: {
+          select: {
+            enrollments: {
+              where: {
+                withdrawnBy: null,
+              },
+            },
+          },
+        },
       },
     });
     if (!event) throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
@@ -232,11 +266,23 @@ export class EventsService {
         ? { isNewUser: await this.eligibility.isNewUser(userId, event.organizerId) }
         : null;
 
+    const participantCount = await this.prisma.eventEnrollment.count({
+      where: {
+        eventId: id,
+        withdrawnBy: null,
+        slot: { isNot: null },
+      },
+    });
+
     return {
       ...event,
       eventTimeStatus,
       enrollmentPhase,
       currentUserAccess,
+      _count: {
+        ...event._count,
+        participants: participantCount,
+      },
     };
   }
 
