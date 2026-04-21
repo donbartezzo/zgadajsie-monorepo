@@ -4,13 +4,12 @@ import {
   computed,
   DestroyRef,
   ElementRef,
-  HostBinding,
   effect,
   inject,
   signal,
   ViewChild,
 } from '@angular/core';
-import { CommonModule, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   NavigationCancel,
   NavigationEnd,
@@ -24,7 +23,6 @@ import { IconComponent } from '../../ui/icon/icon.component';
 import { LayoutConfigService, HeroVariant } from './layout-config.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
 import { AuthService } from '../../../core/auth/auth.service';
-import { nowInZone } from '@zgadajsie/shared';
 import {
   NotificationState,
   NotificationStatusService,
@@ -39,6 +37,7 @@ export interface RouteLayoutData {
   showFooter?: boolean;
   showBorder?: boolean;
   centerContent?: boolean;
+  fullscreenContent?: boolean;
   contentClass?: string;
   layoutClass?: string;
   heroVariant?: HeroVariant;
@@ -51,6 +50,7 @@ const DEFAULT_ROUTE_DATA: RouteLayoutData = {
   showFooter: true,
   showBorder: false,
   centerContent: false,
+  fullscreenContent: false,
   contentClass: '',
   layoutClass: '',
   heroVariant: 'compact',
@@ -61,9 +61,8 @@ const DEFAULT_ROUTE_DATA: RouteLayoutData = {
 @Component({
   selector: 'app-page-layout',
   imports: [
-    CommonModule,
-    IconComponent,
     NgTemplateOutlet,
+    IconComponent,
     NotificationAlertComponent,
     NotificationOverlayComponent,
     FooterComponent,
@@ -149,12 +148,6 @@ export class PageLayoutComponent {
     });
   }
 
-  @HostBinding('class')
-  get dynamicClass(): string {
-    return this.contentClass();
-  }
-
-  readonly showHeader = computed(() => this.routeData().showHeader === true);
   readonly showFooter = computed(() => this.routeData().showFooter === true);
   readonly showBackButton = computed(() => !!this.breadcrumb.parentUrl());
   readonly miniBarOnly = computed(() => this.layoutConfig.heroVariant() === 'only-mini-bar');
@@ -179,6 +172,11 @@ export class PageLayoutComponent {
   readonly contentClass = computed(() => this.routeData().contentClass || '');
   readonly layoutClass = computed(() => this.routeData().layoutClass || '');
   readonly showBorder = computed(() => this.routeData().showBorder === true);
+  readonly fullscreenContent = computed(() => this.routeData().fullscreenContent === true);
+  readonly showHeader = computed(() => {
+    const heroVariant = this.layoutConfig.heroVariant();
+    return heroVariant === 'only-mini-bar' ? true : this.routeData().showHeader === true;
+  });
 
   // ── Derived from LayoutConfigService ──
   readonly coverUrl = computed(() => this.layoutConfig.coverImageUrl());
@@ -189,10 +187,80 @@ export class PageLayoutComponent {
   );
   readonly hasSticky = computed(() => !!this.layoutConfig.stickyTemplate());
 
+  // ── Template class helpers ──
+  readonly resolvedContentClass = computed(
+    () => this.contentClass() || this.layoutConfig.contentClass(),
+  );
+
+  readonly outerWrapperClass = computed(() =>
+    [
+      'flex flex-1 flex-col animate-fade-in',
+      this.layoutClass() || 'bg-neutral-100',
+      this.fullscreenContent() ? 'overflow-hidden' : '',
+    ]
+      .filter(Boolean)
+      .join(' '),
+  );
+
+  readonly heroContainerClass = computed(() =>
+    [
+      'fixed inset-x-0 top-0 mx-auto max-w-app',
+      this.showMiniBar()
+        ? 'z-50 bg-white/95 backdrop-blur-md shadow-xl border-b border-neutral-200'
+        : 'z-0',
+    ].join(' '),
+  );
+
+  readonly heroContainerMinHeight = computed(() =>
+    this.showMiniBar() ? 'auto' : this.heroHeight(),
+  );
+
+  readonly contentWrapperClass = computed(() => {
+    const fs = this.fullscreenContent();
+    const parts = ['relative'];
+    if (fs) {
+      parts.push('flex-1 min-h-0 flex flex-col');
+    } else {
+      if (this.showHeader()) {
+        parts.push('-mt-6');
+      }
+      if (this.centerContent()) {
+        parts.push('flex flex-1 items-center justify-center');
+      }
+    }
+    return parts.join(' ');
+  });
+
+  readonly contentMarginTop = computed(() =>
+    this.miniBarOnly() ? 'var(--hero-mini-bar-h)' : null,
+  );
+
+  readonly contentInnerClass = computed(() => {
+    const cc = this.resolvedContentClass();
+    if (this.fullscreenContent()) {
+      return ['flex-1 min-h-0 flex flex-col', cc].filter(Boolean).join(' ');
+    }
+    return [
+      'rounded-2xl border',
+      this.showBorder() ? 'shadow-xs border-neutral-100' : 'border-transparent',
+      this.centerContent() ? 'overflow-visible w-full' : 'overflow-hidden',
+      cc,
+    ]
+      .filter(Boolean)
+      .join(' ');
+  });
+
+  readonly showDragHandle = computed(
+    () => !this.fullscreenContent() && this.showHeader() && !this.miniBarOnly(),
+  );
+
+  readonly showNotifAlert = computed(
+    () => !this.fullscreenContent() && this.notifStatus.alertVisible(),
+  );
+
   // ── Internal state ──
   readonly heroHidden = signal(false);
   readonly coverImageError = signal(false);
-  readonly currentYear = nowInZone().year;
 
   private observer: IntersectionObserver | null = null;
 

@@ -1,27 +1,16 @@
-@let _isReady = layoutConfig.isReady();
-@let _showHeader = showHeader();
-@let _showFooter = showFooter();
-@let _showBorder = showBorder();
-@let _centerContent = centerContent();
-@let _contentClass = contentClass();
-@let _layoutClass = layoutClass();
-@let _heroHeight = heroHeight();
-@let _heroVariant = layoutConfig.heroVariant();
-@let _miniBarOnly = miniBarOnly();
-@let _showMiniBar = showMiniBar();
-
 <!-- ═══════════════════════════════════════════════════
    PRELOADER (shown until layout is ready)
    ═══════════════════════════════════════════════════ -->
-@if (!_isReady) {
+@if (!layoutConfig.isReady()) {
   <div class="flex flex-1 items-center justify-center">
     <div class="h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-500"></div>
   </div>
 } @else {
-  <div [ngClass]="['flex flex-1 flex-col animate-fade-in', _layoutClass || 'bg-neutral-100']">
+  <div [class]="outerWrapperClass()">
     <!-- ═══════════════════════════════════════════════════
        PAGE HEADER (hero area)
        ═══════════════════════════════════════════════════ -->
+    @let _showHeader = showHeader();
     @if (_showHeader) {
       @if (showBackButton()) {
         <ng-container *ngTemplateOutlet="backButton"></ng-container>
@@ -31,21 +20,15 @@
       }
 
       <!-- Sentinel: drives IntersectionObserver (not needed in mini-bar-only mode) -->
-      @if (!_miniBarOnly) {
-        <div #heroSentinel class="relative w-full shrink-0" [style.height]="_heroHeight"></div>
+      @if (!miniBarOnly()) {
+        <div #heroSentinel class="relative w-full shrink-0" [style.height]="heroHeight()"></div>
       }
 
       <!-- Unified fixed hero container: mini-bar OR full hero (compact/extended) -->
-      <div
-        [ngClass]="[
-          'fixed inset-x-0 top-0 mx-auto max-w-app',
-          _showMiniBar ? 'z-50 bg-white/95 backdrop-blur-md shadow-xl border-b border-neutral-200' : 'z-0',
-        ]"
-        [style.min-height]="_showMiniBar ? 'auto' : _heroHeight"
-      >
-        @if (_showMiniBar) {
+      <div [class]="heroContainerClass()" [style.min-height]="heroContainerMinHeight()">
+        @if (showMiniBar()) {
           <ng-container *ngTemplateOutlet="miniBarHero"></ng-container>
-        } @else if (_heroVariant === 'extended') {
+        } @else if (layoutConfig.heroVariant() === 'extended') {
           <ng-container *ngTemplateOutlet="extendedHero"></ng-container>
         } @else {
           <ng-container *ngTemplateOutlet="compactHero"></ng-container>
@@ -59,28 +42,14 @@
     <!-- ═══════════════════════════════════════════════════
        PAGE CONTENT (router-outlet goes here)
        ═══════════════════════════════════════════════════ -->
-    <div
-      [ngClass]="[
-        'relative',
-        _showHeader ? '-mt-6' : '',
-        _centerContent ? 'flex flex-1 items-center justify-center' : '',
-      ]"
-      [style.margin-top]="_miniBarOnly ? 'var(--hero-mini-bar-h)' : null"
-    >
-      <div
-        [ngClass]="[
-          'rounded-2xl border',
-          _showBorder ? 'shadow-xs border-neutral-100' : 'border-transparent',
-          _centerContent ? 'overflow-visible w-full' : 'overflow-hidden',
-          _contentClass || layoutConfig.contentClass(),
-        ]"
-      >
-        @if (_showHeader && !_miniBarOnly) {
+    <div [class]="contentWrapperClass()" [style.margin-top]="contentMarginTop()">
+      <div [class]="contentInnerClass()">
+        @if (showDragHandle()) {
           <!-- Drag handle -->
           <div class="mx-auto mt-2 h-[5px] w-12 rounded-full bg-neutral-300/60 sm:hidden"></div>
         }
 
-        @if (notifStatus.alertVisible()) {
+        @if (showNotifAlert()) {
           <div class="px-3 pt-3">
             <app-notification-alert></app-notification-alert>
           </div>
@@ -93,7 +62,7 @@
     <!-- ═══════════════════════════════════════════════════
        PAGE FOOTER
        ═══════════════════════════════════════════════════ -->
-    @if (_showFooter) {
+    @if (showFooter()) {
       <app-footer />
     }
   </div>
@@ -124,7 +93,7 @@
    ═══════════════════════════════════════════════════ -->
 <ng-template #compactHero>
   <ng-container *ngTemplateOutlet="fallbackBackground"></ng-container>
-  <div class="relative flex flex-col p-2 text-white text-center" [style.min-height]="_heroHeight">
+  <div class="relative flex flex-col p-2 text-white text-center" [style.min-height]="heroHeight()">
     <div class="w-full max-w-full">
       @if (hasTitle()) {
         <h1
@@ -175,7 +144,7 @@
   @if (notifBellState(); as bellState) {
     <button
       type="button"
-      class="group/notif absolute right-3 bottom-3 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-xs backdrop-blur-xs transition-all [@media(hover:hover)]:hover:bg-primary-500 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:shadow-md"
+      class="group/notif absolute right-3 bottom-10 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-xs backdrop-blur-xs transition-all [@media(hover:hover)]:hover:bg-primary-500 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:shadow-md"
       (click)="onNotifBellClick()"
       aria-label="Powiadomienia"
     >

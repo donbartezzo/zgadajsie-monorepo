@@ -18,7 +18,7 @@ import type * as L from 'leaflet';
     <div class="relative h-full w-full">
       @if (showLayerControls()) {
         <div
-          class="absolute top-2 right-2 z-[1000] bg-white rounded-lg shadow-md border border-neutral-200"
+          class="absolute bottom-6 right-2 z-[1000] bg-white rounded-lg shadow-md border border-neutral-200"
         >
           <select
             [value]="defaultLayer()"

@@ -6,14 +6,16 @@
   <app-loading-spinner></app-loading-spinner>
 } @else {
   @if (_event && _event.lat && _event.lng) {
-    <div class="relative z-0 block w-full" [style.height]="mapHeight">
-      <app-map
-        [lat]="_event.lat"
-        [lng]="_event.lng"
-        [interactive]="true"
-        [markerDraggable]="false"
-        [showLayerControls]="true"
-      ></app-map>
+    <div class="relative z-0 flex-1 min-h-0 w-full">
+      <div class="absolute inset-0">
+        <app-map
+          [lat]="_event.lat"
+          [lng]="_event.lng"
+          [interactive]="true"
+          [markerDraggable]="false"
+          [showLayerControls]="true"
+        ></app-map>
+      </div>
     </div>
   } @else {
     <div class="flex items-center justify-center px-4">

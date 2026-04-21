@@ -104,8 +104,8 @@ export const appRoutes: Route[] = [
         resolve: setEventResolvedTitle('Mapa wydarzenia'),
         data: {
           ...WHITE_BARE_LAYOUT,
-          showHeader: true,
           heroVariant: 'only-mini-bar',
+          fullscreenContent: true,
         },
       },
       // Chat with organizer (participant view) / Conversation list (organizer view)
@@ -118,8 +118,10 @@ export const appRoutes: Route[] = [
         canActivate: [verifiedUserGuard],
         resolve: setEventResolvedTitle('Czat z organizatorem'),
         data: {
+          heroVariant: 'only-mini-bar',
           showFooter: false,
           showBorder: false,
+          fullscreenContent: true,
           contentClass: 'bg-white',
           layoutClass: 'bg-white',
         },
@@ -134,7 +136,9 @@ export const appRoutes: Route[] = [
         canActivate: [verifiedUserGuard],
         data: {
           isPrivate: true,
+          heroVariant: 'only-mini-bar',
           showFooter: false,
+          fullscreenContent: true,
           contentClass: 'bg-white',
           breadcrumb: { parent: '/w/:citySlug/:id/host-chat', label: 'Konwersacje' },
         },
@@ -149,8 +153,10 @@ export const appRoutes: Route[] = [
         resolve: setEventResolvedTitle('Czat grupowy'),
         canActivate: [verifiedUserGuard],
         data: {
+          heroVariant: 'only-mini-bar',
           showFooter: false,
           showBorder: false,
+          fullscreenContent: true,
           contentClass: 'bg-white',
           layoutClass: 'bg-white',
         },

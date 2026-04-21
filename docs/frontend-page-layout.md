@@ -35,8 +35,9 @@ Obsługiwane pola w `RouteLayoutData`:
 - `showFooter?: boolean`
 - `showBorder?: boolean`
 - `centerContent?: boolean`
+- `fullscreenContent?: boolean`
 - `contentClass?: string`
-- `heroVariant?: 'compact' | 'extended'`
+- `heroVariant?: 'compact' | 'extended' | 'only-mini-bar'`
 - `title?: string`
 - `subtitle?: string`
 
@@ -114,10 +115,11 @@ Po zakończeniu nawigacji layout oznacza się jako gotowy przez `markReady()`.
 
 ## Warianty hero
 
-Layout wspiera dwa warianty hero:
+Layout wspiera trzy warianty hero:
 
 - `compact`
 - `extended`
+- `only-mini-bar`
 
 ### `compact`
 
@@ -141,6 +143,17 @@ Charakterystyka:
 - lepiej pasuje do ekranów wydarzeń i widoków z bardziej wizualnym hero
 
 Jeśli obraz okładki nie istnieje lub nie załaduje się poprawnie, layout użyje fallbackowego tła.
+
+### `only-mini-bar`
+
+Wariant minimalny — tylko wąski pasek nawigacyjny na górze.
+
+Charakterystyka:
+
+- pomija pełny hero i sentinel
+- content dostaje `margin-top: var(--hero-mini-bar-h)` aby nie nachodzić na fixed mini-bar
+- stosowany głównie z `fullscreenContent: true` (mapa, czat)
+- wyświetla skrócony tytuł i podtytuł
 
 ## Header, mini-bar i scroll
 
@@ -314,13 +327,49 @@ Steruje obramowaniem i cieniem wrappera treści.
 
 Centruje główną treść strony wewnątrz layoutu.
 
+### `fullscreenContent`
+
+Włącza tryb fullscreen — content wypełnia dokładnie dostępną przestrzeń viewportu bez scrollbara.
+
+Kiedy `fullscreenContent === true`:
+
+- outer wrapper dostaje `overflow-hidden` (zapobiega scrollbarowi)
+- content wrapper i inner wrapper używają `flex-1 min-h-0 flex flex-col` (pełny flex chain)
+- brak zaokrąglonych rogów, bordera, drag handle'a i notification alert'a
+- child components (np. mapa, czat) wypełniają dostępną przestrzeń przez `flex-1 min-h-0`
+
+Stosowany razem z:
+
+- `heroVariant: 'only-mini-bar'` — minimalny header
+- `showFooter: false` — bez stopki
+- Komponenty child muszą mieć `host: { class: 'flex flex-col flex-1 min-h-0' }` aby prawidłowo uczestniczyć w flex chain
+
+Przykład konfiguracji:
+
+```ts
+data: {
+  showHeader: true,
+  heroVariant: 'only-mini-bar',
+  showFooter: false,
+  fullscreenContent: true,
+  contentClass: 'bg-white',
+}
+```
+
+Strony używające tego trybu:
+
+- `/w/:citySlug/:id/map` — mapa wydarzenia
+- `/w/:citySlug/:id/chat` — czat grupowy
+- `/w/:citySlug/:id/host-chat` — czat z organizatorem
+- `/w/:citySlug/:id/host-chat/:userId` — prywatna konwersacja organizatora
+
 ### `contentClass`
 
 Pozwala nadpisać klasy wrappera treści, np. tło.
 
 ### `heroVariant`
 
-Wybiera wariant hero: `compact` lub `extended`.
+Wybiera wariant hero: `compact`, `extended` lub `only-mini-bar`.
 
 ## Breadcrumb i back button
 
@@ -367,6 +416,7 @@ Dzięki temu elementy powiadomień są osadzone na poziomie layoutu, a nie pojed
 5. Jeśli potrzebujesz bogatszego podtytułu, użyj `appLayoutSlot="subtitleTemplate"`
 6. Jeśli potrzebujesz elementu przypiętego w headerze, użyj `appLayoutSlot="stickyTemplate"`
 7. Jeśli strona nie powinna dziedziczyć stopki lub bordera, jawnie ustaw `showFooter` / `showBorder`
+8. Jeśli strona ma wypełniać cały viewport bez scrollbara (mapa, czat), ustaw `fullscreenContent: true` + `heroVariant: 'only-mini-bar'` + `showFooter: false` i dodaj `host: { class: 'flex flex-col flex-1 min-h-0' }` w komponencie strony
 
 ## Przykłady z projektu
 
@@ -386,3 +436,11 @@ Konfiguracja przez `LayoutConfigService` i sloty:
 
 - `features/events/pages/events/events.component.ts`
 - `features/event/ui/event-hero-slots/event-hero-slots.component.ts`
+
+### Ekrany fullscreen
+
+Konfiguracja przez `fullscreenContent: true` w route data:
+
+- `features/event/pages/event-map/event-map.component.ts` — mapa
+- `features/chat/pages/unified-chat/unified-chat.component.ts` — czat grupowy i prywatny
+- `features/chat/pages/host-chat/host-chat.component.ts` — czat z organizatorem

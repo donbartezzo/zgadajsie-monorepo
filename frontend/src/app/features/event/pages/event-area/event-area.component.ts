@@ -8,6 +8,7 @@ import { EventAreaService } from '../../services/event-area.service';
   imports: [RouterOutlet],
   template: '<router-outlet />',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { style: 'display: contents' },
 })
 export class EventAreaComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);

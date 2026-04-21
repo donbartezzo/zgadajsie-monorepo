@@ -18,7 +18,7 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
   ],
   templateUrl: './event-map.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'block h-full w-full' },
+  host: { class: 'flex flex-col flex-1 min-h-0' },
 })
 export class EventMapComponent {
   private readonly route = inject(ActivatedRoute);
@@ -27,8 +27,6 @@ export class EventMapComponent {
 
   readonly event = this.eventArea.event;
   readonly loading = this.eventArea.loading;
-
-  readonly mapHeight = 'calc(100dvh - var(--hero-mini-bar-h))';
 
   backToEvent(): void {
     this.router.navigate(['..'], { relativeTo: this.route });
