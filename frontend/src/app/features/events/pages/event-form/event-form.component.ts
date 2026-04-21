@@ -19,6 +19,7 @@ import { RulesEditorComponent } from '../../../../shared/event-form/ui/rules-edi
 import { DateTimeInputComponent } from '../../../../shared/ui/date-time-input/date-time-input.component';
 import { FormControlErrorDirective } from '../../../../shared/ui/form-control-error/form-control-error.directive';
 import { EventService } from '../../../../core/services/event.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { CoverImageService } from '../../../../core/services/cover-image.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { GeocodeService } from '../../../../core/services/geocode.service';
@@ -442,6 +443,7 @@ export class EventFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
   private readonly eventService = inject(EventService);
   private readonly coverImageService = inject(CoverImageService);
   private readonly dictService = inject(DictionaryService);
@@ -548,7 +550,7 @@ export class EventFormComponent implements OnInit {
     if (this.eventId) {
       this.isEdit.set(true);
       this.eventService.getEvent(this.eventId).subscribe((e) => {
-        if (!isEventJoinable(e.startsAt, e.status)) {
+        if (!this.auth.isAdmin() && !isEventJoinable(e.startsAt, e.status)) {
           const reason =
             e.status === EventStatus.CANCELLED
               ? 'Nie można edytować odwołanego wydarzenia.'

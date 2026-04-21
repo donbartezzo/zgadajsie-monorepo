@@ -10,6 +10,13 @@ import {
   EventGender,
   EventVisibility,
   NotificationKind,
+  EVENT_ENDED_MESSAGE,
+  EVENT_CANNOT_BE_EDITED_MESSAGE,
+  EVENT_NOT_FOUND_MESSAGE,
+  PARTICIPATION_NOT_FOUND_MESSAGE,
+  PAYMENT_NOT_FOUND_MESSAGE,
+  NOT_ORGANIZER_MESSAGE,
+  EVENT_CANCELLED_MESSAGE,
 } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
@@ -24,10 +31,11 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
 import { CancelPaymentDto } from './dto/cancel-payment.dto';
-import { getEventTimeStatus } from './event-time-status.util';
+import { getEventTimeStatus, isEventEnded } from './event-time-status.util';
 import { getEnrollmentPhase, shouldSkipPreEnrollment } from './enrollment-phase.util';
 import { daysFromNow } from '../../common/utils/date.util';
 import { Decimal } from '@prisma/client/runtime/library';
+import { AuthUserLike, resolveUserContext } from '../auth/utils/auth-user.util';
 
 @Injectable()
 export class EventsService {
@@ -212,7 +220,7 @@ export class EventsService {
         organizer: { select: { id: true, displayName: true, avatarUrl: true, donationUrl: true } },
       },
     });
-    if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
+    if (!event) throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
 
     const eventTimeStatus = getEventTimeStatus(event);
     const enrollmentPhase = getEnrollmentPhase(event);
@@ -231,7 +239,8 @@ export class EventsService {
     };
   }
 
-  async getEventForDuplication(id: string, userId: string) {
+  async getEventForDuplication(id: string, user: string | AuthUserLike) {
+    const { userId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({
       where: { id },
       include: {
@@ -245,27 +254,26 @@ export class EventsService {
     });
 
     if (!event) {
-      throw new NotFoundException('Wydarzenie nie zostało znalezione');
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
     }
 
-    if (event.organizerId !== userId) {
+    if (!isAdmin && event.organizerId !== userId) {
       throw new ForbiddenException('Nie możesz duplikować tego wydarzenia');
     }
 
     return event;
   }
 
-  async update(id: string, userId: string, dto: UpdateEventDto) {
+  async update(id: string, user: string | AuthUserLike, dto: UpdateEventDto) {
+    const { userId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({ where: { id } });
-    if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
-    if (event.organizerId !== userId) {
-      throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+    if (!event) throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
+    if (!isAdmin && event.organizerId !== userId) {
+      throw new ForbiddenException(NOT_ORGANIZER_MESSAGE);
     }
 
-    if (event.status !== 'ACTIVE' || new Date() >= event.startsAt) {
-      throw new BadRequestException(
-        'Wydarzenie nie może być edytowane - skontaktuj się z administracją serwisu.',
-      );
+    if (!isAdmin && (event.status !== 'ACTIVE' || new Date() >= event.startsAt)) {
+      throw new BadRequestException(EVENT_CANNOT_BE_EDITED_MESSAGE);
     }
 
     const data: Record<string, unknown> = { ...dto };
@@ -301,7 +309,10 @@ export class EventsService {
 
       // Then sync slots — use per-role reconciliation for role-based events
       if (isRoleBased) {
-        await this.slotService.reconcileSlotsForRoleConfig(id, newRoleConfig!);
+        if (!newRoleConfig) {
+          throw new BadRequestException('Brak konfiguracji ról dla wydarzenia');
+        }
+        await this.slotService.reconcileSlotsForRoleConfig(id, newRoleConfig);
       } else if (dto.maxParticipants !== undefined) {
         await this.slotService.adjustSlotsForMaxParticipants(
           id,
@@ -326,15 +337,20 @@ export class EventsService {
     return updatedEvent;
   }
 
-  async cancel(id: string, userId: string) {
+  async cancel(id: string, user: string | AuthUserLike) {
+    const { userId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({ where: { id } });
-    if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
-    if (event.organizerId !== userId) {
-      throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+    if (!event) throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
+    if (!isAdmin && event.organizerId !== userId) {
+      throw new ForbiddenException(NOT_ORGANIZER_MESSAGE);
+    }
+
+    if (!isAdmin && isEventEnded(event)) {
+      throw new BadRequestException(EVENT_ENDED_MESSAGE);
     }
 
     if (event.status === 'CANCELLED') {
-      throw new BadRequestException('Wydarzenie zostało już odwołane');
+      throw new BadRequestException(EVENT_CANCELLED_MESSAGE);
     }
 
     // Single transaction: cancel event + refund vouchers + cleanup pending intents
@@ -477,11 +493,12 @@ export class EventsService {
     };
   }
 
-  async duplicate(id: string, userId: string) {
+  async duplicate(id: string, user: string | AuthUserLike) {
+    const { userId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({ where: { id } });
-    if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
-    if (event.organizerId !== userId) {
-      throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+    if (!event) throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
+    if (!isAdmin && event.organizerId !== userId) {
+      throw new ForbiddenException(NOT_ORGANIZER_MESSAGE);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -500,13 +517,17 @@ export class EventsService {
     return newEvent;
   }
 
-  async remove(id: string, userId: string, isAdmin: boolean) {
+  async remove(id: string, user: string | AuthUserLike) {
+    const { userId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({ where: { id } });
-    if (!event) throw new NotFoundException('Wydarzenie nie znalezione');
+    if (!event) throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
 
     if (!isAdmin) {
       if (event.organizerId !== userId) {
-        throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+        throw new ForbiddenException(NOT_ORGANIZER_MESSAGE);
+      }
+      if (isEventEnded(event)) {
+        throw new BadRequestException(EVENT_ENDED_MESSAGE);
       }
       const participantCount = await this.prisma.eventEnrollment.count({
         where: { eventId: id },
@@ -602,13 +623,17 @@ export class EventsService {
     });
   }
 
-  async markPaid(eventId: string, participationId: string, organizerUserId: string) {
+  async markPaid(eventId: string, participationId: string, user: string | AuthUserLike) {
+    const { userId: organizerUserId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
-      throw new NotFoundException('Wydarzenie nie znalezione');
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
     }
-    if (event.organizerId !== organizerUserId) {
-      throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+    if (!isAdmin && event.organizerId !== organizerUserId) {
+      throw new ForbiddenException(NOT_ORGANIZER_MESSAGE);
+    }
+    if (!isAdmin && isEventEnded(event)) {
+      throw new BadRequestException(EVENT_ENDED_MESSAGE);
     }
 
     const participation = await this.prisma.eventEnrollment.findFirst({
@@ -616,7 +641,7 @@ export class EventsService {
       include: { slot: true },
     });
     if (!participation) {
-      throw new NotFoundException('Uczestnictwo nie znalezione');
+      throw new NotFoundException(PARTICIPATION_NOT_FOUND_MESSAGE);
     }
     // Must have a slot to mark as paid
     if (!participation.slot) {
@@ -650,15 +675,19 @@ export class EventsService {
   async cancelPayment(
     eventId: string,
     paymentId: string,
-    organizerUserId: string,
+    user: string | AuthUserLike,
     dto: CancelPaymentDto,
   ) {
+    const { userId: organizerUserId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
-      throw new NotFoundException('Wydarzenie nie znalezione');
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
     }
-    if (event.organizerId !== organizerUserId) {
-      throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+    if (!isAdmin && event.organizerId !== organizerUserId) {
+      throw new ForbiddenException(NOT_ORGANIZER_MESSAGE);
+    }
+    if (!isAdmin && isEventEnded(event)) {
+      throw new BadRequestException(EVENT_ENDED_MESSAGE);
     }
 
     const payment = await this.prisma.payment.findFirst({
@@ -666,7 +695,7 @@ export class EventsService {
       include: { enrollment: true },
     });
     if (!payment) {
-      throw new NotFoundException('Płatność nie znaleziona');
+      throw new NotFoundException(PAYMENT_NOT_FOUND_MESSAGE);
     }
     if (payment.status !== 'COMPLETED') {
       throw new BadRequestException('Można anulować tylko opłaconą płatność');
@@ -688,7 +717,7 @@ export class EventsService {
         await tx.organizerVoucher.create({
           data: {
             recipientUserId: payment.userId,
-            organizerUserId,
+            organizerUserId: event.organizerId,
             eventId,
             sourcePaymentId: paymentId,
             amount: new Decimal(refundAmount),
@@ -823,8 +852,8 @@ export class EventsService {
     return parent;
   }
 
-  async updateSeries(id: string, userId: string, dto: UpdateEventDto) {
-    const parent = await this.update(id, userId, dto);
+  async updateSeries(id: string, user: string | AuthUserLike, dto: UpdateEventDto) {
+    const parent = await this.update(id, user, dto);
 
     // Update all child events in the series
     const data: Record<string, unknown> = {};

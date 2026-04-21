@@ -11,6 +11,7 @@ import { EventAreaService } from '../../services/event-area.service';
       appearance="outline"
       color="danger"
       [fullWidth]="true"
+      [disabled]="!eventArea.canLeave()"
       [loading]="eventArea.joining()"
       (clicked)="eventArea.requestLeave()"
     >

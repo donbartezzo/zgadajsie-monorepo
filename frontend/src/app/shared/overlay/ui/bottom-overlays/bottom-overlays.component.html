@@ -49,6 +49,7 @@
         [citySlug]="evt.city?.slug ?? ''"
         [eventStatus]="evt.status"
         [eventStartsAt]="evt.startsAt"
+        [eventEndsAt]="evt.endsAt"
         (closed)="overlays.close()"
         (cancelRequested)="overlays.handleCancelEvent()"
       />

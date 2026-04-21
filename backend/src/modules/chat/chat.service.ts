@@ -1,5 +1,6 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { USER_NOT_PARTICIPANT_MESSAGE, EVENT_NOT_FOUND_MESSAGE } from '@zgadajsie/shared';
 
 // Chat access: wantsIn=true
 
@@ -115,7 +116,7 @@ export class ChatService {
     });
 
     if (!event) {
-      throw new NotFoundException('Wydarzenie nie istnieje');
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
     }
     if (event.organizerId !== organizerId) {
       throw new ForbiddenException('Tylko organizator może wyświetlić listę konwersacji');
@@ -198,7 +199,7 @@ export class ChatService {
     });
 
     if (!event) {
-      throw new NotFoundException('Wydarzenie nie istnieje');
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
     }
     const participations = await this.prisma.eventEnrollment.findMany({
       where: { eventId },
@@ -278,7 +279,7 @@ export class ChatService {
     });
 
     if (!event) {
-      throw new NotFoundException('Wydarzenie nie istnieje');
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
     }
 
     const isOrganizer = event.organizerId === userId;
@@ -297,7 +298,7 @@ export class ChatService {
         where: { eventId_userId: { eventId, userId: otherUserId } },
       });
       if (!otherParticipation) {
-        throw new ForbiddenException('Użytkownik nie jest uczestnikiem tego wydarzenia');
+        throw new ForbiddenException(USER_NOT_PARTICIPANT_MESSAGE);
       }
       // Organizer can chat with any participant regardless of status
       return;
@@ -309,12 +310,12 @@ export class ChatService {
     });
 
     if (!participation) {
-      throw new ForbiddenException('Użytkownik nie jest uczestnikiem tego wydarzenia');
+      throw new ForbiddenException(USER_NOT_PARTICIPANT_MESSAGE);
     }
 
     // Banned by organizer — no access
     if (!participation.wantsIn && participation.withdrawnBy === 'ORGANIZER') {
-      throw new ForbiddenException('Użytkownik nie jest uczestnikiem tego wydarzenia');
+      throw new ForbiddenException(USER_NOT_PARTICIPANT_MESSAGE);
     }
   }
 }

@@ -12,7 +12,11 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { PrismaService } from '../prisma/prisma.service';
-import { AnnouncementPriority, AnnouncementTrigger } from '@zgadajsie/shared';
+import {
+  AnnouncementPriority,
+  AnnouncementTrigger,
+  EVENT_NOT_FOUND_MESSAGE,
+} from '@zgadajsie/shared';
 import { AnnouncementDispatcherService } from './announcement-dispatcher.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 
@@ -32,7 +36,7 @@ export class AnnouncementsController {
   ) {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
-      throw new NotFoundException('Wydarzenie nie znalezione');
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
     }
     if (event.organizerId !== req.user.id) {
       throw new ForbiddenException('Tylko organizator może wysyłać komunikaty');

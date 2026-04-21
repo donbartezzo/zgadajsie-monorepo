@@ -10,6 +10,7 @@ import { UserService } from '../../../../core/services/user.service';
 import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { Participation } from '../../../../shared/types';
+import { getEventTimeStatus } from '../../../../shared/utils';
 
 @Component({
   selector: 'app-my-participations',
@@ -65,9 +66,7 @@ import { Participation } from '../../../../shared/types';
                     {{ statusLabel(p.status) }}
                   </span>
                 </div>
-                @if (
-                  p.status === 'PENDING' || p.status === 'APPROVED' || p.status === 'CONFIRMED'
-                ) {
+                @if (canLeave(p)) {
                   <app-button
                     appearance="outline"
                     color="neutral"
@@ -105,6 +104,12 @@ export class MyParticipationsComponent implements OnInit {
   }
 
   onLeave(participationId: string): void {
+    const participation = this.participations().find((p) => p.id === participationId);
+    if (!participation || !this.canLeave(participation)) {
+      this.snackbar.error('Nie można wypisać się z zakończonego wydarzenia');
+      return;
+    }
+
     this.eventService.leaveParticipation(participationId).subscribe({
       next: () => {
         this.participations.update((prev) =>
@@ -114,6 +119,20 @@ export class MyParticipationsComponent implements OnInit {
       },
       error: () => this.snackbar.error('Nie udało się wypisać'),
     });
+  }
+
+  canLeave(participation: Participation): boolean {
+    const event = participation.event;
+    if (!event) return false;
+
+    const timeStatus = getEventTimeStatus(event.startsAt, event.endsAt, event.status);
+    if (timeStatus === 'ENDED') return false;
+
+    return (
+      participation.status === 'PENDING' ||
+      participation.status === 'APPROVED' ||
+      participation.status === 'CONFIRMED'
+    );
   }
 
   statusLabel(status: string): string {

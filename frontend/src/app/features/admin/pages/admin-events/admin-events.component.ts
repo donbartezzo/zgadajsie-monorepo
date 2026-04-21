@@ -8,7 +8,7 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { PaginationComponent } from '../../../../shared/ui/pagination/pagination.component';
 import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { EventListItem } from '../../../../shared/types';
+import { EventBase } from '../../../../shared/types';
 import { EventStatus } from '@zgadajsie/shared';
 
 @Component({
@@ -73,7 +73,7 @@ import { EventStatus } from '@zgadajsie/shared';
 export class AdminEventsComponent implements OnInit {
   private readonly eventService = inject(EventService);
   private readonly snackbar = inject(SnackbarService);
-  readonly events = signal<EventListItem[]>([]);
+  readonly events = signal<EventBase[]>([]);
   readonly loading = signal(true);
   readonly page = signal(1);
   readonly totalPages = signal(1);

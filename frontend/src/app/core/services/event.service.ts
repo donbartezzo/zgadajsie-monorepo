@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   Event,
-  EventListItem,
+  EventBase,
   Enrollment,
   EventSlotInfo,
   JoinGuestRequest,
@@ -14,7 +14,7 @@ import {
 } from '../../shared/types';
 
 interface PaginatedEvents {
-  data: EventListItem[];
+  data: EventBase[];
   total: number;
   page: number;
   limit: number;

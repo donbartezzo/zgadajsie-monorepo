@@ -221,7 +221,7 @@
         </app-button>
       }
 
-      @if (isCurrentUserParticipant() && !_isWithdrawn) {
+      @if (isCurrentUserParticipant() && !_isWithdrawn && eventArea.canLeave()) {
         <app-button appearance="outline" color="danger" [fullWidth]="true" [loading]="_loading" (clicked)="onLeave()">
           <app-icon name="user-x" size="sm" />
           Wypisz się z wydarzenia

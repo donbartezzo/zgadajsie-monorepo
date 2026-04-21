@@ -15,7 +15,7 @@ import { IconComponent } from '../../../ui/icon/icon.component';
 import { DateBadgeComponent } from '../date-badge/date-badge.component';
 import { EventStatusBadgeComponent } from '../event-status-badge/event-status-badge.component';
 import { CapacityProgressComponent } from '../../../ui/capacity-progress/capacity-progress.component';
-import { EventListItem } from '../../../types';
+import { EventBase } from '../../../types';
 import { getEventCoverUrl } from '../../../types/cover-image.interface';
 import {
   getEventCountdown,
@@ -117,7 +117,7 @@ import { DateLabelsService } from '../../../services/date-labels.service';
               <app-capacity-progress
                 class="flex-1 max-w-[250px]"
                 [current]="_event._count?.enrollments ?? 0"
-                [max]="_event.maxParticipants ?? 0"
+                [max]="_event.maxParticipants"
               />
 
               <span
@@ -167,10 +167,10 @@ export class EventCardComponent implements OnDestroy {
   private readonly ngZone = inject(NgZone);
   private readonly dateLabels = inject(DateLabelsService);
 
-  readonly event = input.required<EventListItem>();
+  readonly event = input.required<EventBase>();
   readonly isDimmed = input(false);
   readonly dateLabel = input<string | null>(null);
-  readonly selected = output<EventListItem>();
+  readonly selected = output<EventBase>();
 
   readonly isCancelled = computed(() => this.event().status === EventStatus.CANCELLED);
 

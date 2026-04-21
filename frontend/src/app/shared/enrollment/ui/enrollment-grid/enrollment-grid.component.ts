@@ -6,6 +6,7 @@ import { EventSlotInfo } from '../../../types/payment.interface';
 import { Event, EnrollmentPhase } from '../../../types/event.interface';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ModalService } from '../../../ui/modal/modal.service';
+import { SnackbarService } from '../../../ui/snackbar/snackbar.service';
 import {
   EnrollmentSlotModalComponent,
   EnrollmentModalData,
@@ -34,12 +35,14 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
 export class EnrollmentGridComponent {
   private readonly auth = inject(AuthService);
   private readonly modalService = inject(ModalService);
+  private readonly snackbar = inject(SnackbarService);
 
   protected readonly statusConfig = SLOT_STATUS_CONFIG;
 
   readonly event = input.required<Event>();
   readonly participants = input<EnrollmentItem[]>([]);
   readonly slots = input<EventSlotInfo[]>([]);
+  readonly readOnly = input(false);
 
   readonly refreshNeeded = output<void>();
 
@@ -158,6 +161,13 @@ export class EnrollmentGridComponent {
   });
 
   onSlotItemClick(item: SlotItem): void {
+    if (this.readOnly()) {
+      this.snackbar.info(
+        'Zmiany w zakończonym wydarzeniu są zablokowane. Skontaktuj się z administracją serwisu.',
+      );
+      return;
+    }
+
     const slot = item.participant
       ? this.findSlotForEnrollment(item.participant)
       : item.slotData.slot;

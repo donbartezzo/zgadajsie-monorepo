@@ -9,6 +9,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { EventRoleConfig, AvailableRole } from './slot.types';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
+import { isEventEnded } from '../events/event-time-status.util';
+import {
+  EVENT_ENDED_MESSAGE,
+  SLOT_NOT_FOUND_MESSAGE,
+  PARTICIPATION_NOT_FOUND_MESSAGE,
+  USER_NOT_ORGANIZER_MESSAGE,
+  PARTICIPANT_WITHDREW_MESSAGE,
+  PARTICIPANT_ALREADY_HAS_SLOT_MESSAGE,
+} from '@zgadajsie/shared';
+import { AuthUserLike, resolveUserContext } from '../auth/utils/auth-user.util';
 
 type SlotRoleConfig = {
   roles: Array<{
@@ -408,7 +418,7 @@ export class SlotService {
   async lockSlot(slotId: string): Promise<void> {
     const slot = await this.prisma.eventSlot.findUnique({ where: { id: slotId } });
     if (!slot) {
-      throw new NotFoundException('Slot nie znaleziony');
+      throw new NotFoundException(SLOT_NOT_FOUND_MESSAGE);
     }
     if (slot.locked) {
       throw new BadRequestException('Slot jest już zablokowany');
@@ -427,7 +437,7 @@ export class SlotService {
   async unlockSlot(slotId: string): Promise<void> {
     const slot = await this.prisma.eventSlot.findUnique({ where: { id: slotId } });
     if (!slot) {
-      throw new NotFoundException('Slot nie znaleziony');
+      throw new NotFoundException(SLOT_NOT_FOUND_MESSAGE);
     }
     if (!slot.locked) {
       throw new BadRequestException('Slot nie jest zablokowany');
@@ -454,7 +464,7 @@ export class SlotService {
 
     const slot = await client.eventSlot.findUnique({ where: { id: slotId } });
     if (!slot) {
-      throw new NotFoundException('Slot nie znaleziony');
+      throw new NotFoundException(SLOT_NOT_FOUND_MESSAGE);
     }
     if (!slot.locked) {
       throw new BadRequestException('Slot nie jest zablokowany — użyj standardowego przydzielania');
@@ -491,7 +501,7 @@ export class SlotService {
       select: { eventId: true },
     });
     if (!slot) {
-      throw new NotFoundException('Slot nie znaleziony');
+      throw new NotFoundException(SLOT_NOT_FOUND_MESSAGE);
     }
     return slot.eventId;
   }
@@ -501,12 +511,16 @@ export class SlotService {
    */
   async lockSlotByOrganizer(
     slotId: string,
-    organizerUserId: string,
+    organizerUser: string | AuthUserLike,
   ): Promise<{ success: boolean }> {
+    const { userId: organizerUserId, isAdmin } = resolveUserContext(organizerUser);
     const eventId = await this.getSlotEventId(slotId);
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
-    if (!event || event.organizerId !== organizerUserId) {
-      throw new ForbiddenException('Nie jesteś organizatorem');
+    if (!event || (!isAdmin && event.organizerId !== organizerUserId)) {
+      throw new ForbiddenException(USER_NOT_ORGANIZER_MESSAGE);
+    }
+    if (!isAdmin && isEventEnded(event)) {
+      throw new BadRequestException(EVENT_ENDED_MESSAGE);
     }
     await this.lockSlot(slotId);
     return { success: true };
@@ -517,12 +531,16 @@ export class SlotService {
    */
   async unlockSlotByOrganizer(
     slotId: string,
-    organizerUserId: string,
+    organizerUser: string | AuthUserLike,
   ): Promise<{ success: boolean }> {
+    const { userId: organizerUserId, isAdmin } = resolveUserContext(organizerUser);
     const eventId = await this.getSlotEventId(slotId);
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
-    if (!event || event.organizerId !== organizerUserId) {
-      throw new ForbiddenException('Nie jesteś organizatorem');
+    if (!event || (!isAdmin && event.organizerId !== organizerUserId)) {
+      throw new ForbiddenException(USER_NOT_ORGANIZER_MESSAGE);
+    }
+    if (!isAdmin && isEventEnded(event)) {
+      throw new BadRequestException(EVENT_ENDED_MESSAGE);
     }
     await this.unlockSlot(slotId);
     return { success: true };
@@ -534,23 +552,27 @@ export class SlotService {
   async assignParticipantToLockedSlot(
     slotId: string,
     participationId: string,
-    organizerUserId: string,
+    organizerUser: string | AuthUserLike,
   ) {
+    const { userId: organizerUserId, isAdmin } = resolveUserContext(organizerUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
     });
     if (!participation) {
-      throw new NotFoundException('Zgłoszenie nie znalezione');
+      throw new NotFoundException(PARTICIPATION_NOT_FOUND_MESSAGE);
     }
-    if (participation.event.organizerId !== organizerUserId) {
-      throw new ForbiddenException('Nie jesteś organizatorem');
+    if (!isAdmin && participation.event.organizerId !== organizerUserId) {
+      throw new ForbiddenException(USER_NOT_ORGANIZER_MESSAGE);
+    }
+    if (!isAdmin && isEventEnded(participation.event)) {
+      throw new BadRequestException(EVENT_ENDED_MESSAGE);
     }
     if (!participation.wantsIn) {
-      throw new BadRequestException('Uczestnik wypisał się z wydarzenia');
+      throw new BadRequestException(PARTICIPANT_WITHDREW_MESSAGE);
     }
     if (participation.slot) {
-      throw new BadRequestException('Uczestnik już ma przydzielone miejsce');
+      throw new BadRequestException(PARTICIPANT_ALREADY_HAS_SLOT_MESSAGE);
     }
 
     const isPaid = participation.event.costPerPerson.toNumber() > 0;
@@ -600,8 +622,17 @@ export class SlotService {
     participationIds: string[],
     confirmed = false,
     tx?: Prisma.TransactionClient,
+    user?: string | AuthUserLike,
   ): Promise<number> {
+    const isAdmin = user ? resolveUserContext(user).isAdmin : false;
     const client = tx ?? this.prisma;
+    const event = await client.event.findUnique({
+      where: { id: eventId },
+      select: { startsAt: true, endsAt: true, status: true },
+    });
+    if (event && !isAdmin && isEventEnded(event)) {
+      throw new BadRequestException(EVENT_ENDED_MESSAGE);
+    }
     let assigned = 0;
 
     for (const participationId of participationIds) {

@@ -16,3 +16,7 @@ export function getEventTimeStatus(event: EventTimeable, now = new Date()): Even
 export function isEventJoinable(event: EventTimeable, now = new Date()): boolean {
   return event.status === 'ACTIVE' && now < event.startsAt;
 }
+
+export function isEventEnded(event: EventTimeable, now = new Date()): boolean {
+  return getEventTimeStatus(event, now) === 'ENDED';
+}

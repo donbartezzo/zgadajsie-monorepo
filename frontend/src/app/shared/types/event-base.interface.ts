@@ -1,9 +1,12 @@
-import { EventStatus } from '@zgadajsie/shared';
+import { EventDefaultableFields, EventStatus } from '@zgadajsie/shared';
 import { DictionaryItem, City } from './dictionary.interface';
 import { UserBrief } from './common.interface';
 import { CoverImage } from './cover-image.interface';
 
-export interface EventListItem {
+export interface EventBase
+  extends
+    Required<Pick<EventDefaultableFields, 'maxParticipants' | 'gender'>>,
+    Pick<EventDefaultableFields, 'minParticipants' | 'ageMin' | 'ageMax'> {
   id: string;
   title: string;
   coverImageId?: string;
@@ -14,9 +17,9 @@ export interface EventListItem {
   lat: number;
   lng: number;
   rules?: string;
-  gender: string;
   status: EventStatus;
-  maxParticipants?: number;
+  createdAt: string;
+  updatedAt: string;
 
   discipline?: DictionaryItem;
   facility?: DictionaryItem;

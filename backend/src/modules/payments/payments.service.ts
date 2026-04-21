@@ -9,6 +9,7 @@ import { TpayService, TpayWebhookPayload } from './tpay.service';
 import { VouchersService } from '../vouchers/vouchers.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { Decimal } from '@prisma/client/runtime/library';
+import { PAYMENT_NOT_FOUND_MESSAGE, EVENT_NOT_FOUND_MESSAGE } from '@zgadajsie/shared';
 
 @Injectable()
 export class PaymentsService {
@@ -48,7 +49,7 @@ export class PaymentsService {
       select: { id: true, title: true, organizerId: true },
     });
     if (!event) {
-      throw new NotFoundException('Wydarzenie nie znalezione');
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
     }
 
     // Clean up any previous intents (e.g. from a failed attempt)
@@ -218,7 +219,7 @@ export class PaymentsService {
       },
     });
     if (!payment) {
-      throw new NotFoundException('Płatność nie znaleziona');
+      throw new NotFoundException(PAYMENT_NOT_FOUND_MESSAGE);
     }
     return payment;
   }
@@ -241,7 +242,7 @@ export class PaymentsService {
     });
 
     if (!intent) {
-      throw new NotFoundException('Płatność nie znaleziona');
+      throw new NotFoundException(PAYMENT_NOT_FOUND_MESSAGE);
     }
 
     if (userId && intent.userId !== userId) {
@@ -331,7 +332,7 @@ export class PaymentsService {
       },
     });
     if (!payment) {
-      throw new NotFoundException('Płatność nie znaleziona');
+      throw new NotFoundException(PAYMENT_NOT_FOUND_MESSAGE);
     }
     return payment;
   }

@@ -21,7 +21,7 @@ import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { IsActiveGuard } from '../auth/guards/is-active.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
-import { Role, isOverrideAccount } from '@zgadajsie/shared';
+import { isOverrideAccount } from '@zgadajsie/shared';
 import { featureFlags } from '../../common/config/feature-flags';
 
 @Controller('events')
@@ -54,31 +54,31 @@ export class EventsController {
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Patch(':id')
   update(@Param('id') id: string, @CurrentUser() user: AuthUser, @Body() dto: UpdateEventDto) {
-    return this.eventsService.update(id, user.id, dto);
+    return this.eventsService.update(id, user, dto);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Post(':id/cancel')
   cancel(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.eventsService.cancel(id, user.id);
+    return this.eventsService.cancel(id, user);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Get(':id/duplicate')
   getEventForDuplication(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.eventsService.getEventForDuplication(id, user.id);
+    return this.eventsService.getEventForDuplication(id, user);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Post(':id/duplicate')
   duplicate(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.eventsService.duplicate(id, user.id);
+    return this.eventsService.duplicate(id, user);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Delete(':id')
   remove(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.eventsService.remove(id, user.id, user.role === Role.ADMIN);
+    return this.eventsService.remove(id, user);
   }
 
   @UseGuards(OptionalJwtAuthGuard)
@@ -99,7 +99,7 @@ export class EventsController {
     @Param('enrollmentId', ParseUUIDPipe) enrollmentId: string,
     @CurrentUser() user: AuthUser,
   ) {
-    return this.eventsService.markPaid(id, enrollmentId, user.id);
+    return this.eventsService.markPaid(id, enrollmentId, user);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
@@ -110,7 +110,7 @@ export class EventsController {
     @CurrentUser() user: AuthUser,
     @Body() dto: CancelPaymentDto,
   ) {
-    return this.eventsService.cancelPayment(id, paymentId, user.id, dto);
+    return this.eventsService.cancelPayment(id, paymentId, user, dto);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
@@ -126,6 +126,6 @@ export class EventsController {
     @CurrentUser() user: AuthUser,
     @Body() dto: UpdateEventDto,
   ) {
-    return this.eventsService.updateSeries(id, user.id, dto);
+    return this.eventsService.updateSeries(id, user, dto);
   }
 }

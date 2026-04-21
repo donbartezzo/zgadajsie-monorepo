@@ -13,6 +13,7 @@ import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { EventService } from '../../../../core/services/event.service';
 import { EventAnnouncementService } from '../../../../core/services/event-announcement.service';
 import { FormsModule } from '@angular/forms';
@@ -60,6 +61,15 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
       @if (lifecycleBannerVariant(); as variant) {
         <div class="mb-4">
           <app-event-lifecycle-banner [variant]="variant" />
+        </div>
+      }
+
+      @if (readOnlyMode()) {
+        <div
+          class="mb-4 rounded-xl border border-neutral-200 bg-neutral-100 p-4 text-sm text-neutral-600"
+        >
+          Zmiany w zakończonym wydarzeniu są zablokowane. W razie potrzeby skontaktuj się z
+          administracją serwisu.
         </div>
       }
 
@@ -161,6 +171,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
             [event]="_event"
             [participants]="manageParticipants()"
             [slots]="slots()"
+            [readOnly]="readOnlyMode()"
             (refreshNeeded)="onRefreshNeeded()"
           />
         }
@@ -168,35 +179,41 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
         <!-- Komunikaty -->
         <div class="mt-6 border-t border-neutral-100 pt-4">
           <h2 class="text-sm font-semibold text-neutral-900 mb-3">Wyślij komunikat</h2>
-          <textarea
-            class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm
-            text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500
-            focus:ring-1 focus:ring-primary-500 focus:outline-hidden"
-            rows="3"
-            placeholder="Treść komunikatu..."
-            [(ngModel)]="announcementMessage"
-          ></textarea>
-          <div class="mt-2 flex items-center gap-3">
-            <select
-              class="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs
-              text-neutral-900 focus:border-primary-500 focus:outline-hidden"
-              [(ngModel)]="announcementPriority"
-            >
-              <option value="INFORMATIONAL">Informacyjny</option>
-              <option value="ORGANIZATIONAL">Organizacyjny</option>
-              <option value="CRITICAL">Krytyczny</option>
-            </select>
-            <app-button
-              appearance="soft"
-              color="primary"
-              size="sm"
-              [loading]="sendingAnnouncement()"
-              (clicked)="sendAnnouncement()"
-            >
-              <app-icon name="send" size="xs" />
-              Wyślij
-            </app-button>
-          </div>
+          @if (!readOnlyMode()) {
+            <textarea
+              class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm
+              text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500
+              focus:ring-1 focus:ring-primary-500 focus:outline-hidden"
+              rows="3"
+              placeholder="Treść komunikatu..."
+              [(ngModel)]="announcementMessage"
+            ></textarea>
+            <div class="mt-2 flex items-center gap-3">
+              <select
+                class="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs
+                text-neutral-900 focus:border-primary-500 focus:outline-hidden"
+                [(ngModel)]="announcementPriority"
+              >
+                <option value="INFORMATIONAL">Informacyjny</option>
+                <option value="ORGANIZATIONAL">Organizacyjny</option>
+                <option value="CRITICAL">Krytyczny</option>
+              </select>
+              <app-button
+                appearance="soft"
+                color="primary"
+                size="sm"
+                [loading]="sendingAnnouncement()"
+                (clicked)="sendAnnouncement()"
+              >
+                <app-icon name="send" size="xs" />
+                Wyślij
+              </app-button>
+            </div>
+          } @else {
+            <p class="text-xs text-neutral-500">
+              Wysyłanie komunikatów jest zablokowane dla zakończonych wydarzeń.
+            </p>
+          }
           @if (lastAnnouncementStats(); as stats) {
             <div class="mt-3 flex items-center gap-4 text-xs text-neutral-500">
               <span>Wysłano do: {{ stats.total }}</span>
@@ -220,6 +237,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
 export class EventManageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
   private readonly eventService = inject(EventService);
   private readonly announcementService = inject(EventAnnouncementService);
   private readonly snackbar = inject(SnackbarService);
@@ -243,9 +261,16 @@ export class EventManageComponent implements OnInit {
     if (!e) return null;
     if (e.status === EventStatus.CANCELLED) return 'cancelled';
     const ts = getEventTimeStatus(e.startsAt, e.endsAt, e.status);
+    if (ts === 'ENDED' && !this.auth.isAdmin()) return 'no-edit';
     if (ts === 'ONGOING') return 'ongoing';
     if (ts === 'ENDED') return 'ended';
     return null;
+  });
+
+  readonly readOnlyMode = computed(() => {
+    const e = this.eventData();
+    if (!e) return false;
+    return !this.auth.isAdmin() && getEventTimeStatus(e.startsAt, e.endsAt, e.status) === 'ENDED';
   });
 
   readonly isPaidEvent = computed(() => {
@@ -343,6 +368,13 @@ export class EventManageComponent implements OnInit {
   }
 
   onApprove(id: string): void {
+    if (this.readOnlyMode()) {
+      this.snackbar.info(
+        'Zmiany w zakończonym wydarzeniu są zablokowane. Skontaktuj się z administracją serwisu.',
+      );
+      return;
+    }
+
     this.eventService.assignSlot(id).subscribe({
       next: () => {
         this.manageParticipants.update((prev) =>
@@ -355,6 +387,13 @@ export class EventManageComponent implements OnInit {
   }
 
   onReject(id: string): void {
+    if (this.readOnlyMode()) {
+      this.snackbar.info(
+        'Zmiany w zakończonym wydarzeniu są zablokowane. Skontaktuj się z administracją serwisu.',
+      );
+      return;
+    }
+
     this.eventService.releaseSlot(id).subscribe({
       next: () => {
         this.manageParticipants.update((prev) =>
@@ -372,6 +411,13 @@ export class EventManageComponent implements OnInit {
   }
 
   sendAnnouncement(): void {
+    if (this.readOnlyMode()) {
+      this.snackbar.info(
+        'Zmiany w zakończonym wydarzeniu są zablokowane. Skontaktuj się z administracją serwisu.',
+      );
+      return;
+    }
+
     if (!this.announcementMessage.trim()) {
       this.snackbar.error('Wpisz treść komunikatu');
       return;

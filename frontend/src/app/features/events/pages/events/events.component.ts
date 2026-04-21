@@ -19,7 +19,7 @@ import { EventService } from '../../../../core/services/event.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { CitySubscriptionService } from '../../../../core/services/city-subscription.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { EventListItem } from '../../../../shared/types';
+import { EventBase } from '../../../../shared/types';
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 import {
@@ -41,7 +41,7 @@ interface EventGroup {
   shortLabel: string | null;
   isToday: boolean;
   isPast: boolean;
-  events: EventListItem[];
+  events: EventBase[];
 }
 
 interface DateGroup {
@@ -49,7 +49,7 @@ interface DateGroup {
   label: string;
   shortLabel: string;
   isToday: boolean;
-  events: EventListItem[];
+  events: EventBase[];
 }
 
 @Component({
@@ -77,7 +77,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   private readonly appTitle = inject(AppTitleService);
   private readonly dateLabels = inject(DateLabelsService);
 
-  readonly events = signal<EventListItem[]>([]);
+  readonly events = signal<EventBase[]>([]);
   readonly isLoading = signal(true);
   readonly error = signal<string | null>(null);
   readonly cityName = signal('');
@@ -107,9 +107,9 @@ export class EventsComponent implements OnInit, OnDestroy {
     const now = nowInZone();
     const todayStart = createDateInZone(now.year, now.month, now.day, 0, 0);
 
-    const ongoing: EventListItem[] = [];
-    const upcoming: EventListItem[] = [];
-    const past: EventListItem[] = [];
+    const ongoing: EventBase[] = [];
+    const upcoming: EventBase[] = [];
+    const past: EventBase[] = [];
 
     for (const event of this.events()) {
       const start = toZonedDateTime(event.startsAt).toJSDate().getTime();
@@ -125,9 +125,9 @@ export class EventsComponent implements OnInit, OnDestroy {
       }
     }
 
-    const byStartAsc = (a: EventListItem, b: EventListItem) =>
+    const byStartAsc = (a: EventBase, b: EventBase) =>
       new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
-    const byStartDesc = (a: EventListItem, b: EventListItem) =>
+    const byStartDesc = (a: EventBase, b: EventBase) =>
       new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime();
     ongoing.sort(byStartAsc);
     upcoming.sort(byStartAsc);
@@ -235,7 +235,7 @@ export class EventsComponent implements OnInit, OnDestroy {
       });
   }
 
-  onEventSelected(event: EventListItem): void {
+  onEventSelected(event: EventBase): void {
     const slug = event.city?.slug || this.citySlug;
     this.router.navigate(['/w', slug, event.id]);
   }
@@ -283,7 +283,7 @@ export class EventsComponent implements OnInit, OnDestroy {
     });
   }
 
-  private groupByDate(events: EventListItem[], todayStart: Date): DateGroup[] {
+  private groupByDate(events: EventBase[], todayStart: Date): DateGroup[] {
     const groups: DateGroup[] = [];
     const todayKey = `${todayStart.getFullYear()}-${todayStart.getMonth()}-${todayStart.getDate()}`;
 

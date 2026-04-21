@@ -21,7 +21,7 @@ import {
 } from '../../../shared/types';
 import { MAX_GUESTS_PER_USER, MAX_GUESTS_PER_ORGANIZER, EventTimeStatus } from '@zgadajsie/shared';
 import { getEnrollmentPhase } from '../../../shared/utils/enrollment-phase.util';
-import { isEventJoinable } from '../../../shared/utils/event-time-status.util';
+import { getEventTimeStatus, isEventJoinable } from '../../../shared/utils/event-time-status.util';
 import {
   getWaitingReasonToast,
   getWaitingReasonBarTitle,
@@ -112,6 +112,16 @@ export class EventAreaService {
   readonly isEnrolled = computed(() => {
     const p = this.currentUserParticipation();
     if (!p) return false;
+    return p.status === 'PENDING' || p.status === 'APPROVED' || p.status === 'CONFIRMED';
+  });
+
+  readonly canLeave = computed(() => {
+    const p = this.currentUserParticipation();
+    const e = this.event();
+    if (!p) return false;
+    const timeStatus =
+      this.eventTimeStatus() ?? (e ? getEventTimeStatus(e.startsAt, e.endsAt, e.status) : null);
+    if (timeStatus === 'ENDED') return false;
     return p.status === 'PENDING' || p.status === 'APPROVED' || p.status === 'CONFIRMED';
   });
 
@@ -657,6 +667,11 @@ export class EventAreaService {
   }
 
   async requestLeave(): Promise<void> {
+    if (!this.canLeave()) {
+      this.snackbar.error('Nie można wypisać się z zakończonego wydarzenia');
+      return;
+    }
+
     const confirmed = await this.confirmModal.confirm({
       title: 'Wypisać się z wydarzenia?',
       message: 'Czy na pewno chcesz wypisać się z tego wydarzenia? Stracisz swoje miejsce.',

@@ -12,12 +12,24 @@ import { PushService } from '../notifications/push.service';
 import { PaymentsService } from '../payments/payments.service';
 import { SlotService } from '../slots/slot.service';
 import { EnrollmentEligibilityService } from './enrollment-eligibility.service';
-import { isEventJoinable } from '../events/event-time-status.util';
+import { isEventEnded, isEventJoinable } from '../events/event-time-status.util';
 import { getEnrollmentPhase } from '../events/enrollment-phase.util';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { EventRoleConfig, AvailableRole } from '../slots/slot.types';
-import { EventRealtimeScope, MAX_GUESTS_PER_USER } from '@zgadajsie/shared';
+import {
+  EventRealtimeScope,
+  MAX_GUESTS_PER_USER,
+  EVENT_ENDED_MESSAGE,
+  EVENT_NOT_FOUND_MESSAGE,
+  PARTICIPATION_NOT_FOUND_MESSAGE,
+  USER_NOT_ORGANIZER_MESSAGE,
+  NOT_ORGANIZER_MESSAGE,
+  EVENT_CANCELLED_MESSAGE,
+  PARTICIPANT_WITHDREW_MESSAGE,
+  PARTICIPANT_ALREADY_HAS_SLOT_MESSAGE,
+} from '@zgadajsie/shared';
 import { featureFlags } from '../../common/config/feature-flags';
+import { AuthUserLike, resolveUserContext } from '../auth/utils/auth-user.util';
 
 const USER_SELECT = { id: true, displayName: true, avatarUrl: true, email: true };
 
@@ -63,13 +75,16 @@ export class EnrollmentService {
     private eventRealtime: EventRealtimeService,
   ) {}
 
-  async join(eventId: string, userId: string, roleKey?: string) {
+  async join(eventId: string, user: string | AuthUserLike, roleKey?: string) {
+    const { userId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
-      throw new NotFoundException('Wydarzenie nie znalezione');
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
     }
 
-    const phase = this.assertJoinEligibility(event);
+    this.assertEventMutable(event, isAdmin);
+
+    const phase = this.getJoinPhase(event, isAdmin);
 
     const isPaid = event.costPerPerson.toNumber() > 0;
     const roleConfig = event.roleConfig as unknown as EventRoleConfig | null;
@@ -160,13 +175,21 @@ export class EnrollmentService {
     return roleKey;
   }
 
-  async joinGuest(eventId: string, addedByUserId: string, displayName: string, roleKey?: string) {
+  async joinGuest(
+    eventId: string,
+    addedByUser: string | AuthUserLike,
+    displayName: string,
+    roleKey?: string,
+  ) {
+    const { userId: addedByUserId, isAdmin } = resolveUserContext(addedByUser);
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
-      throw new NotFoundException('Wydarzenie nie znalezione');
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
     }
 
-    const phase = this.assertJoinEligibility(event);
+    this.assertEventMutable(event, isAdmin);
+
+    const phase = this.getJoinPhase(event, isAdmin);
 
     // Validate roleKey if provided
     if (roleKey) {
@@ -260,7 +283,12 @@ export class EnrollmentService {
     return withDerivedStatus(participation);
   }
 
-  async updateGuestName(participationId: string, addedByUserId: string, displayName: string) {
+  async updateGuestName(
+    participationId: string,
+    addedByUser: string | AuthUserLike,
+    displayName: string,
+  ) {
+    const { userId: addedByUserId, isAdmin } = resolveUserContext(addedByUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: {
@@ -270,14 +298,16 @@ export class EnrollmentService {
     });
 
     if (!participation) {
-      throw new NotFoundException('Uczestnictwo nie znalezione');
+      throw new NotFoundException(PARTICIPATION_NOT_FOUND_MESSAGE);
     }
 
-    if (participation.addedByUserId === null) {
+    this.assertEventMutable(participation.event, isAdmin);
+
+    if (!isAdmin && participation.addedByUserId === null) {
       throw new BadRequestException('Można edytować tylko dane gości');
     }
 
-    if (participation.addedByUserId !== addedByUserId) {
+    if (!isAdmin && participation.addedByUserId !== addedByUserId) {
       throw new ForbiddenException('Możesz edytować tylko swoich gości');
     }
 
@@ -292,22 +322,24 @@ export class EnrollmentService {
       displayName: updatedUser.displayName,
     };
   }
-  async assignSlotToParticipant(participationId: string, organizerUserId: string) {
+  async assignSlotToParticipant(participationId: string, organizerUser: string | AuthUserLike) {
+    const { userId: organizerUserId, isAdmin } = resolveUserContext(organizerUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
     });
     if (!participation) {
-      throw new NotFoundException('Zgłoszenie nie znalezione');
+      throw new NotFoundException(PARTICIPATION_NOT_FOUND_MESSAGE);
     }
-    if (participation.event.organizerId !== organizerUserId) {
-      throw new ForbiddenException('Nie jesteś organizatorem');
+    if (!isAdmin && participation.event.organizerId !== organizerUserId) {
+      throw new ForbiddenException(USER_NOT_ORGANIZER_MESSAGE);
     }
+    this.assertEventMutable(participation.event, isAdmin);
     if (!participation.wantsIn) {
-      throw new BadRequestException('Uczestnik wypisał się z wydarzenia');
+      throw new BadRequestException(PARTICIPANT_WITHDREW_MESSAGE);
     }
     if (participation.slot) {
-      throw new BadRequestException('Uczestnik już ma przydzielone miejsce');
+      throw new BadRequestException(PARTICIPANT_ALREADY_HAS_SLOT_MESSAGE);
     }
 
     const roleKey = participation.roleKey;
@@ -354,16 +386,17 @@ export class EnrollmentService {
     // Guests (addedByUserId != null) are virtual accounts — trust does not apply to them.
     // Non-critical: failure must not roll back the slot assignment already committed above.
     if (!participation.addedByUserId) {
+      const organizerId = participation.event.organizerId;
       this.prisma.organizerUserRelation
         .upsert({
           where: {
             organizerUserId_targetUserId: {
-              organizerUserId: organizerUserId,
+              organizerUserId: organizerId,
               targetUserId: participation.userId,
             },
           },
           create: {
-            organizerUserId,
+            organizerUserId: organizerId,
             targetUserId: participation.userId,
             isTrusted: true,
             trustedAt: new Date(),
@@ -375,7 +408,7 @@ export class EnrollmentService {
         })
         .catch((err: unknown) => {
           this.logger.error(
-            `Auto-trust upsert failed for user ${participation.userId} / organizer ${organizerUserId}: ${(err as Error).message}`,
+            `Auto-trust upsert failed for user ${participation.userId} / organizer ${organizerId}: ${(err as Error).message}`,
           );
         });
     }
@@ -394,19 +427,20 @@ export class EnrollmentService {
   /**
    * User confirms their slot (acknowledges they want to participate).
    */
-  async confirmSlot(participationId: string, currentUserId: string) {
+  async confirmSlot(participationId: string, currentUser: string | AuthUserLike) {
+    const { userId: currentUserId, isAdmin } = resolveUserContext(currentUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
     });
     if (!participation) {
-      throw new NotFoundException('Zgłoszenie nie znalezione');
+      throw new NotFoundException(PARTICIPATION_NOT_FOUND_MESSAGE);
     }
 
-    this.assertCanActOnParticipation(participation, currentUserId);
-
+    this.assertCanActOnParticipation(participation, currentUserId, isAdmin);
+    this.assertEventMutable(participation.event, isAdmin);
     if (!participation.wantsIn) {
-      throw new BadRequestException('Uczestnik wypisał się z wydarzenia');
+      throw new BadRequestException(PARTICIPANT_WITHDREW_MESSAGE);
     }
     if (!participation.slot) {
       throw new BadRequestException('Nie masz przydzielonego miejsca');
@@ -433,17 +467,19 @@ export class EnrollmentService {
   /**
    * Organizer releases a participant's slot (removes them from event).
    */
-  async releaseSlotFromParticipant(participationId: string, organizerUserId: string) {
+  async releaseSlotFromParticipant(participationId: string, organizerUser: string | AuthUserLike) {
+    const { userId: organizerUserId, isAdmin } = resolveUserContext(organizerUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
     });
     if (!participation) {
-      throw new NotFoundException('Zgłoszenie nie znalezione');
+      throw new NotFoundException(PARTICIPATION_NOT_FOUND_MESSAGE);
     }
-    if (participation.event.organizerId !== organizerUserId) {
-      throw new ForbiddenException('Nie jesteś organizatorem');
+    if (!isAdmin && participation.event.organizerId !== organizerUserId) {
+      throw new ForbiddenException(USER_NOT_ORGANIZER_MESSAGE);
     }
+    this.assertEventMutable(participation.event, isAdmin);
 
     const hadSlot = !!participation.slot;
     const slotWasLocked = participation.slot?.locked ?? false;
@@ -491,18 +527,20 @@ export class EnrollmentService {
    * Organizer permanently deletes a participation record.
    * Blocked when Payment records exist (financial audit trail must be preserved).
    */
-  async deleteParticipation(participationId: string, organizerUserId: string) {
+  async deleteParticipation(participationId: string, organizerUser: string | AuthUserLike) {
+    const { userId: organizerUserId, isAdmin } = resolveUserContext(organizerUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true, payments: true },
     });
 
     if (!participation) {
-      throw new NotFoundException('Zgłoszenie nie znalezione');
+      throw new NotFoundException(PARTICIPATION_NOT_FOUND_MESSAGE);
     }
-    if (participation.event.organizerId !== organizerUserId) {
-      throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+    if (!isAdmin && participation.event.organizerId !== organizerUserId) {
+      throw new ForbiddenException(NOT_ORGANIZER_MESSAGE);
     }
+    this.assertEventMutable(participation.event, isAdmin);
     if (participation.payments.length > 0) {
       throw new BadRequestException(
         'Nie można usunąć zgłoszenia z historią płatności. Użyj opcji odrzucenia uczestnika.',
@@ -516,7 +554,7 @@ export class EnrollmentService {
     const guestUserId = isGuest ? participation.userId : null;
 
     // Clean up payment intents (restores vouchers if any were reserved)
-    await this.paymentsService.cleanupIntents(participationId, organizerUserId);
+    await this.paymentsService.cleanupIntents(participationId, participation.event.organizerId);
 
     await this.prisma.$transaction(async (tx) => {
       if (hadSlot) {
@@ -538,7 +576,8 @@ export class EnrollmentService {
   /**
    * User leaves the event voluntarily.
    */
-  async leave(participationId: string, currentUserId: string) {
+  async leave(participationId: string, currentUser: string | AuthUserLike) {
+    const { userId: currentUserId, isAdmin } = resolveUserContext(currentUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
@@ -547,7 +586,8 @@ export class EnrollmentService {
       throw new NotFoundException('Nie uczestniczysz w tym wydarzeniu');
     }
 
-    this.assertCanActOnParticipation(participation, currentUserId);
+    this.assertCanActOnParticipation(participation, currentUserId, isAdmin);
+    this.assertEventMutable(participation.event, isAdmin);
 
     if (!participation.wantsIn) {
       throw new BadRequestException('Już wypisałeś się z tego wydarzenia');
@@ -596,8 +636,9 @@ export class EnrollmentService {
 
   async initiateEventPayment(
     participationId: string,
-    currentUserId: string,
+    currentUser: string | AuthUserLike,
   ): Promise<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
+    const { userId: currentUserId, isAdmin } = resolveUserContext(currentUser);
     if (!featureFlags.enableOnlinePayments) {
       throw new ForbiddenException(
         'Płatności online są tymczasowo wyłączone. Skontaktuj się z organizatorem w sprawie płatności gotówką.',
@@ -609,10 +650,11 @@ export class EnrollmentService {
       include: { event: true, slot: true },
     });
     if (!participation) {
-      throw new NotFoundException('Zgłoszenie nie znalezione');
+      throw new NotFoundException(PARTICIPATION_NOT_FOUND_MESSAGE);
     }
 
-    this.assertCanActOnParticipation(participation, currentUserId);
+    this.assertCanActOnParticipation(participation, currentUserId, isAdmin);
+    this.assertEventMutable(participation.event, isAdmin);
 
     // Must have a slot to pay
     if (!participation.slot) {
@@ -622,8 +664,8 @@ export class EnrollmentService {
     }
 
     const event = participation.event;
-    if (event.status === 'CANCELLED') {
-      throw new BadRequestException('Wydarzenie zostało odwołane - płatność nie jest możliwa');
+    if (!isAdmin && event.status === 'CANCELLED') {
+      throw new BadRequestException(EVENT_CANCELLED_MESSAGE + ' - płatność nie jest możliwa');
     }
     if (event.costPerPerson.toNumber() <= 0) {
       throw new BadRequestException('To wydarzenie jest bezpłatne');
@@ -670,6 +712,26 @@ export class EnrollmentService {
     }
 
     return phase;
+  }
+
+  private getJoinPhase(
+    event: JoinEventLike,
+    isAdmin: boolean,
+  ): ReturnType<typeof getEnrollmentPhase> {
+    if (isAdmin) {
+      return getEnrollmentPhase(event) ?? 'OPEN_ENROLLMENT';
+    }
+
+    return this.assertJoinEligibility(event);
+  }
+
+  private assertEventMutable(
+    event: { startsAt: Date; endsAt: Date; status: string },
+    isAdmin: boolean,
+  ): void {
+    if (!isAdmin && isEventEnded(event)) {
+      throw new BadRequestException(EVENT_ENDED_MESSAGE);
+    }
   }
 
   /**
@@ -826,13 +888,14 @@ export class EnrollmentService {
       roleKey?: string | null;
       slot?: { id: string } | null;
     },
+    isAdmin = false,
   ): { isPaid: boolean; phase: ReturnType<typeof getEnrollmentPhase>; roleKey?: string } {
-    const phase = this.assertJoinEligibility(event);
+    const phase = this.getJoinPhase(event, isAdmin);
 
     // Block only if participant already has an active slot (CONFIRMED or APPROVED).
     // PENDING participants (wantsIn=true, no slot) should be allowed to rejoin
     // so they can be assigned a free slot.
-    if (participation.wantsIn && participation.slot) {
+    if (!isAdmin && participation.wantsIn && participation.slot) {
       throw new BadRequestException('Uczestnik już jest aktywny w tym wydarzeniu');
     }
 
@@ -1008,16 +1071,22 @@ export class EnrollmentService {
    * - PENDING: update roleKey, try to get a slot for new role
    * - APPROVED/CONFIRMED: release current slot, update roleKey, try to get new slot
    */
-  async changeRole(participationId: string, currentUserId: string, newRoleKey: string) {
+  async changeRole(
+    participationId: string,
+    currentUser: string | AuthUserLike,
+    newRoleKey: string,
+  ) {
+    const { userId: currentUserId, isAdmin } = resolveUserContext(currentUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
     });
     if (!participation) {
-      throw new NotFoundException('Zgłoszenie nie znalezione');
+      throw new NotFoundException(PARTICIPATION_NOT_FOUND_MESSAGE);
     }
 
-    this.assertCanActOnParticipation(participation, currentUserId);
+    this.assertCanActOnParticipation(participation, currentUserId, isAdmin);
+    this.assertEventMutable(participation.event, isAdmin);
 
     const event = participation.event;
     const roleConfig = event.roleConfig as unknown as EventRoleConfig | null;
@@ -1034,7 +1103,7 @@ export class EnrollmentService {
     const isPaid = event.costPerPerson.toNumber() > 0;
     const status = deriveStatus(participation);
 
-    const phase = this.assertJoinEligibility(event);
+    const phase = this.getJoinPhase(event, isAdmin);
 
     // WITHDRAWN/REJECTED → rejoin with new roleKey
     if (status === 'WITHDRAWN' || status === 'REJECTED') {
@@ -1131,18 +1200,23 @@ export class EnrollmentService {
    * Used by the frontend when re-adding a guest or rejoining as a user
    * — prevents creating a new User entity and bypassing the unique constraint.
    */
-  async rejoinById(participationId: string, currentUserId: string) {
+  async rejoinById(participationId: string, currentUser: string | AuthUserLike) {
+    const { userId: currentUserId, isAdmin } = resolveUserContext(currentUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
       include: { event: true, slot: true },
     });
     if (!participation) {
-      throw new NotFoundException('Zgłoszenie nie znalezione');
+      throw new NotFoundException(PARTICIPATION_NOT_FOUND_MESSAGE);
     }
 
-    this.assertCanActOnParticipation(participation, currentUserId);
+    this.assertCanActOnParticipation(participation, currentUserId, isAdmin);
 
-    const { phase, roleKey } = this.validateRejoinEligibility(participation.event, participation);
+    const { phase, roleKey } = this.validateRejoinEligibility(
+      participation.event,
+      participation,
+      isAdmin,
+    );
 
     return this.handleRejoin(
       participationId,
@@ -1157,7 +1231,9 @@ export class EnrollmentService {
   private assertCanActOnParticipation(
     participation: { userId: string; addedByUserId: string | null; event: { organizerId: string } },
     currentUserId: string,
+    isAdmin = false,
   ): void {
+    if (isAdmin) return;
     const isOwner = currentUserId === participation.userId;
     const isHost = currentUserId === participation.addedByUserId;
     const isOrganizer = currentUserId === participation.event.organizerId;

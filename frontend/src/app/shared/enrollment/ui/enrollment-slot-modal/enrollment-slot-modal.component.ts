@@ -105,7 +105,7 @@ export class EnrollmentSlotModalComponent {
   private readonly snackbar = inject(SnackbarService);
   private readonly confirmModal = inject(ConfirmModalService);
   private readonly overlays = inject(BottomOverlaysService);
-  private readonly eventArea = inject(EventAreaService);
+  readonly eventArea = inject(EventAreaService);
   private readonly profileBroadcast = inject(ProfileBroadcastService);
 
   readonly data = input<EnrollmentModalData | null>(null);

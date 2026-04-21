@@ -22,7 +22,7 @@ export class EnrollmentController {
     @CurrentUser() user: AuthUser,
     @Body() dto: JoinEventDto,
   ) {
-    return this.enrollmentService.join(eventId, user.id, dto.roleKey);
+    return this.enrollmentService.join(eventId, user, dto.roleKey);
   }
 
   @Post('events/:eventId/join-guest')
@@ -31,7 +31,7 @@ export class EnrollmentController {
     @CurrentUser() user: AuthUser,
     @Body() dto: JoinGuestDto,
   ) {
-    return this.enrollmentService.joinGuest(eventId, user.id, dto.displayName, dto.roleKey);
+    return this.enrollmentService.joinGuest(eventId, user, dto.displayName, dto.roleKey);
   }
 
   @Patch('enrollments/:id/update-guest')
@@ -40,47 +40,47 @@ export class EnrollmentController {
     @CurrentUser() user: AuthUser,
     @Body() dto: UpdateGuestDto,
   ) {
-    return this.enrollmentService.updateGuestName(enrollmentId, user.id, dto.displayName);
+    return this.enrollmentService.updateGuestName(enrollmentId, user, dto.displayName);
   }
 
   @Post('enrollments/:id/assign-slot')
   assignSlot(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.enrollmentService.assignSlotToParticipant(id, user.id);
+    return this.enrollmentService.assignSlotToParticipant(id, user);
   }
 
   @Post('enrollments/:id/confirm-slot')
   confirmSlot(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.enrollmentService.confirmSlot(id, user.id);
+    return this.enrollmentService.confirmSlot(id, user);
   }
 
   @Post('enrollments/:id/release-slot')
   releaseSlot(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.enrollmentService.releaseSlotFromParticipant(id, user.id);
+    return this.enrollmentService.releaseSlotFromParticipant(id, user);
   }
 
   @Patch('enrollments/:id/role')
   changeRole(@Param('id') id: string, @CurrentUser() user: AuthUser, @Body() dto: ChangeRoleDto) {
-    return this.enrollmentService.changeRole(id, user.id, dto.roleKey);
+    return this.enrollmentService.changeRole(id, user, dto.roleKey);
   }
 
   @Post('enrollments/:id/rejoin')
   rejoin(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.enrollmentService.rejoinById(id, user.id);
+    return this.enrollmentService.rejoinById(id, user);
   }
 
   @Delete('enrollments/:id')
   deleteEnrollment(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.enrollmentService.deleteParticipation(id, user.id);
+    return this.enrollmentService.deleteParticipation(id, user);
   }
 
   @Post('enrollments/:id/leave')
   leave(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.enrollmentService.leave(id, user.id);
+    return this.enrollmentService.leave(id, user);
   }
 
   @Post('enrollments/:id/pay')
   pay(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.enrollmentService.initiateEventPayment(id, user.id);
+    return this.enrollmentService.initiateEventPayment(id, user);
   }
 
   @Get('events/:eventId/my-guests')
@@ -90,12 +90,12 @@ export class EnrollmentController {
 
   @Post('slots/:slotId/lock')
   lockSlot(@Param('slotId') slotId: string, @CurrentUser() user: AuthUser) {
-    return this.slotService.lockSlotByOrganizer(slotId, user.id);
+    return this.slotService.lockSlotByOrganizer(slotId, user);
   }
 
   @Post('slots/:slotId/unlock')
   unlockSlot(@Param('slotId') slotId: string, @CurrentUser() user: AuthUser) {
-    return this.slotService.unlockSlotByOrganizer(slotId, user.id);
+    return this.slotService.unlockSlotByOrganizer(slotId, user);
   }
 
   @Post('slots/:slotId/assign-to-slot/:enrollmentId')
@@ -104,6 +104,6 @@ export class EnrollmentController {
     @Param('enrollmentId') enrollmentId: string,
     @CurrentUser() user: AuthUser,
   ) {
-    return this.slotService.assignParticipantToLockedSlot(slotId, enrollmentId, user.id);
+    return this.slotService.assignParticipantToLockedSlot(slotId, enrollmentId, user);
   }
 }

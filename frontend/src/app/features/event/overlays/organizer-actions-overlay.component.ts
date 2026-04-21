@@ -4,8 +4,9 @@ import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overla
 import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { EventStatus } from '@zgadajsie/shared';
-import { isEventJoinable } from '../../../shared/utils/event-time-status.util';
+import { getEventTimeStatus, isEventJoinable } from '../../../shared/utils/event-time-status.util';
 
 @Component({
   selector: 'app-organizer-actions-overlay',
@@ -35,17 +36,30 @@ export class OrganizerActionsOverlayComponent {
   private readonly router = inject(Router);
   private readonly overlays = inject(BottomOverlaysService);
   private readonly snackbar = inject(SnackbarService);
+  private readonly auth = inject(AuthService);
 
   readonly open = input(false);
   readonly eventId = input.required<string>();
   readonly citySlug = input.required<string>();
   readonly eventStatus = input<string>('ACTIVE');
   readonly eventStartsAt = input<string>('');
+  readonly eventEndsAt = input<string>('');
 
   readonly closed = output<void>();
   readonly cancelRequested = output<void>();
 
-  readonly isUpcoming = computed(() => isEventJoinable(this.eventStartsAt(), this.eventStatus()));
+  readonly isEnded = computed(
+    () =>
+      getEventTimeStatus(this.eventStartsAt(), this.eventEndsAt(), this.eventStatus()) === 'ENDED',
+  );
+
+  readonly canEdit = computed(
+    () => this.auth.isAdmin() || isEventJoinable(this.eventStartsAt(), this.eventStatus()),
+  );
+
+  readonly canCancel = computed(
+    () => this.auth.isAdmin() || (!this.isEnded() && this.eventStatus() !== EventStatus.CANCELLED),
+  );
 
   readonly isCancelled = computed(() => this.eventStatus() === EventStatus.CANCELLED);
 
@@ -65,7 +79,7 @@ export class OrganizerActionsOverlayComponent {
       value: 'edit',
       iconColor: 'warning',
       iconBackground: true,
-      disabled: !this.isUpcoming(),
+      disabled: !this.canEdit(),
     },
     {
       label: 'Odwołaj wydarzenie',
@@ -75,7 +89,7 @@ export class OrganizerActionsOverlayComponent {
       color: 'danger',
       iconColor: 'danger',
       iconBackground: true,
-      disabled: this.isCancelled(),
+      disabled: !this.canCancel(),
     },
     {
       label: 'Konwersacje prywatne',
@@ -114,9 +128,9 @@ export class OrganizerActionsOverlayComponent {
   }
 
   handleEdit(): void {
-    if (!this.isUpcoming()) {
-      const reason = this.isCancelled()
-        ? 'Nie można edytować odwołanego wydarzenia.'
+    if (!this.canEdit()) {
+      const reason = this.isEnded()
+        ? 'Edycja zakończonego wydarzenia jest zablokowana. Skontaktuj się z administracją serwisu.'
         : 'Edycja jest możliwa tylko przed rozpoczęciem wydarzenia.';
       this.snackbar.info(reason);
       return;
@@ -126,8 +140,11 @@ export class OrganizerActionsOverlayComponent {
   }
 
   handleCancel(): void {
-    if (this.isCancelled()) {
-      this.snackbar.info('To wydarzenie zostało już odwołane.');
+    if (!this.canCancel()) {
+      const reason = this.isEnded()
+        ? 'Odwołanie zakończonego wydarzenia jest zablokowane. Skontaktuj się z administracją serwisu.'
+        : 'To wydarzenie zostało już odwołane.';
+      this.snackbar.info(reason);
       return;
     }
     this.overlays.close();
