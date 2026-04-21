@@ -353,8 +353,8 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     this.clarity.trackEvent('donation_click');
   }
 
-  openMapOverlay(): void {
-    this.overlays.open('map');
+  openMapPage(): void {
+    this.router.navigate(['map'], { relativeTo: this.route });
   }
 
   openGoogleMaps(lat: number, lng: number): void {

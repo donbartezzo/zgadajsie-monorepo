@@ -1,6 +1,6 @@
 import { Injectable, signal, TemplateRef } from '@angular/core';
 
-export type HeroVariant = 'compact' | 'extended';
+export type HeroVariant = 'compact' | 'extended' | 'only-mini-bar';
 
 export interface LayoutConfig {
   coverImageUrl: string;

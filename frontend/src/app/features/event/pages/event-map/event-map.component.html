@@ -1,0 +1,36 @@
+@let _event = event();
+
+<app-event-hero-slots [event]="_event" />
+
+@if (loading()) {
+  <app-loading-spinner></app-loading-spinner>
+} @else {
+  @if (_event && _event.lat && _event.lng) {
+    <div class="relative z-0 block w-full" [style.height]="mapHeight">
+      <app-map
+        [lat]="_event.lat"
+        [lng]="_event.lng"
+        [interactive]="true"
+        [markerDraggable]="false"
+        [showLayerControls]="true"
+      ></app-map>
+    </div>
+  } @else {
+    <div class="flex items-center justify-center px-4">
+      <div class="max-w-md p-6 text-center">
+        <div
+          class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-warning-50 text-warning-600"
+        >
+          <app-icon name="map-pin" size="lg" color="warning"></app-icon>
+        </div>
+        <h1 class="text-xl font-bold text-neutral-900">Brak lokalizacji wydarzenia</h1>
+        <p class="mt-3 text-sm leading-6 text-neutral-600">
+          To wydarzenie nie ma ustawionej lokalizacji, więc nie da się wyświetlić mapy.
+        </p>
+        <div class="mt-6 flex justify-center">
+          <app-button appearance="outline" color="neutral" (click)="backToEvent()">Wróć do wydarzenia</app-button>
+        </div>
+      </div>
+    </div>
+  }
+}

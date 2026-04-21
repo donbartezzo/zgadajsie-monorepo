@@ -13,9 +13,9 @@ import type * as L from 'leaflet';
 
 @Component({
   selector: 'app-map',
-  host: { class: 'block w-full max-w-full' },
+  host: { class: 'block h-full w-full max-w-full' },
   template: `
-    <div class="relative">
+    <div class="relative h-full w-full">
       @if (showLayerControls()) {
         <div
           class="absolute top-2 right-2 z-[1000] bg-white rounded-lg shadow-md border border-neutral-200"
@@ -31,11 +31,7 @@ import type * as L from 'leaflet';
           </select>
         </div>
       }
-      <div
-        #mapContainer
-        class="block w-full max-w-full rounded-xl overflow-hidden"
-        [style.height.px]="height()"
-      ></div>
+      <div #mapContainer class="block h-full w-full max-w-full overflow-hidden"></div>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,7 +40,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   readonly lat = input(51.935);
   readonly lng = input(15.506);
   readonly zoom = input(13);
-  readonly height = input(300);
   readonly interactive = input(false); // Domyślnie statyczny
   readonly markerDraggable = input(true); // Domylnie marker jest przesuwalny gdy mapa jest interaktywna
   readonly showLayerControls = input(false); // Pokazuje kontrolki zmiany warstwy mapy
@@ -121,10 +116,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     try {
       const container = this.mapContainer().nativeElement;
+      const leafletWindow = window as Window & { L?: typeof import('leaflet') };
 
       // Sprawdź czy Leaflet jest już dostępny globalnie
-      if ((window as any).L) {
-        this.leaflet = (window as any).L;
+      if (leafletWindow.L) {
+        this.leaflet = leafletWindow.L;
       } else {
         const leafletModule = await import('leaflet');
         // Użyj domyślnego eksportu z modułu
@@ -172,8 +168,13 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         if (marker) {
           marker.on(
             'dragend',
-            (e: any) => {
-              const pos = e.target.getLatLng();
+            (e: L.LeafletEvent) => {
+              const target = e.target as L.Marker | null;
+              if (!target) {
+                return;
+              }
+
+              const pos = target.getLatLng();
               this.markerMoved.emit({ lat: pos.lat, lng: pos.lng });
 
               // Centruj mapę na nowej pozycji markera

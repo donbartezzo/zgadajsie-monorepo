@@ -347,14 +347,15 @@ interface DuplicateQueryParams {
                 </div>
               </div>
 
-              <app-map
-                #mapComponent
-                [lat]="mapLat()"
-                [lng]="mapLng()"
-                [interactive]="true"
-                [height]="250"
-                (markerMoved)="onMarkerMoved($event)"
-              ></app-map>
+              <div class="h-[250px] overflow-hidden rounded-xl">
+                <app-map
+                  #mapComponent
+                  [lat]="mapLat()"
+                  [lng]="mapLng()"
+                  [interactive]="true"
+                  (markerMoved)="onMarkerMoved($event)"
+                ></app-map>
+              </div>
             } @else {
               <!-- Informacja o konieczności wybrania miasta -->
               <div class="text-center py-8 px-4 bg-neutral-50 rounded-xl border border-neutral-200">

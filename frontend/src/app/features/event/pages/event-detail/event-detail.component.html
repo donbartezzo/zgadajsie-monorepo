@@ -31,10 +31,10 @@
         />
       </div>
 
-      <!-- Location (clickable → opens map sheet) -->
+      <!-- Location (clickable → opens map page) -->
       @if (fullAddress()) {
         <div class="min-w-0">
-          <button type="button" class="inline-flex max-w-full text-left transition-colors" (click)="openMapOverlay()">
+          <button type="button" class="inline-flex max-w-full text-left transition-colors" (click)="openMapPage()">
             <app-event-info-item color="warning" icon="map-pin" label="Lokalizacja" [value]="fullAddress()" />
           </button>
         </div>
@@ -143,14 +143,8 @@
     @if (e.lat && e.lng) {
       <div class="mt-4 mb-3">
         <div class="relative z-10">
-          <div class="static-map-container relative overflow-hidden rounded-xl">
-            <app-map
-              [lat]="e.lat"
-              [lng]="e.lng"
-              [height]="200"
-              [interactive]="false"
-              [markerDraggable]="false"
-            ></app-map>
+          <div class="static-map-container relative h-[200px] overflow-hidden rounded-xl">
+            <app-map [lat]="e.lat" [lng]="e.lng" [interactive]="false" [markerDraggable]="false"></app-map>
           </div>
         </div>
         <div class="mt-3 flex gap-3">
@@ -160,9 +154,9 @@
             size="xs"
             [fullWidth]="true"
             class="flex-1 justify-between"
-            (click)="openMapOverlay()"
+            (click)="openMapPage()"
           >
-            <span>Pełny ekran</span>
+            <span>Mapa</span>
             <app-icon name="external-link" size="sm" color="neutral"></app-icon>
           </app-button>
           <app-button

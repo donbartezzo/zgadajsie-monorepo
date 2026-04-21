@@ -157,6 +157,8 @@ export class PageLayoutComponent {
   readonly showHeader = computed(() => this.routeData().showHeader === true);
   readonly showFooter = computed(() => this.routeData().showFooter === true);
   readonly showBackButton = computed(() => !!this.breadcrumb.parentUrl());
+  readonly miniBarOnly = computed(() => this.layoutConfig.heroVariant() === 'only-mini-bar');
+  readonly showMiniBar = computed(() => this.miniBarOnly() || this.heroHidden());
 
   readonly notifBellState = computed<'off' | 'complete' | 'incomplete' | null>(() => {
     const state = this.notifStatus.state();

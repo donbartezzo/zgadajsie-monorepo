@@ -12,7 +12,6 @@ import { EventCountdown } from '@zgadajsie/shared';
 export type OverlayType =
   | 'share'
   | 'settings'
-  | 'map'
   | 'auth'
   | 'joinRules'
   | 'joinConfirm'

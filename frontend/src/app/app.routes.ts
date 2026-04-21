@@ -94,6 +94,20 @@ export const appRoutes: Route[] = [
           showBorder: false,
         },
       },
+      // Event map
+      {
+        path: 'map',
+        loadComponent: () =>
+          import('./features/event/pages/event-map/event-map.component').then(
+            (m) => m.EventMapComponent,
+          ),
+        resolve: setEventResolvedTitle('Mapa wydarzenia'),
+        data: {
+          ...WHITE_BARE_LAYOUT,
+          showHeader: true,
+          heroVariant: 'only-mini-bar',
+        },
+      },
       // Chat with organizer (participant view) / Conversation list (organizer view)
       {
         path: 'host-chat',
@@ -107,6 +121,7 @@ export const appRoutes: Route[] = [
           showFooter: false,
           showBorder: false,
           contentClass: 'bg-white',
+          layoutClass: 'bg-white',
         },
       },
       // Organizer private chat with specific participant
@@ -137,6 +152,7 @@ export const appRoutes: Route[] = [
           showFooter: false,
           showBorder: false,
           contentClass: 'bg-white',
+          layoutClass: 'bg-white',
         },
       },
     ],
