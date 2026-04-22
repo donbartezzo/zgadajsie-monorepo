@@ -180,6 +180,50 @@
           </div>
         </div>
       </section>
+
+      <!-- Badge color proposal -->
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-2 mt-8">Propozycja kolorystyczna dla badge'ów</h2>
+        <p class="text-sm text-neutral-500 mb-4">
+          Foundation Palettes - ciemniejsze odcienie pasujące do białej czcionki (text-white). Wybrane z każdej palety
+          foundation.
+        </p>
+
+        <div class="bg-white rounded-xl border border-neutral-200 p-4">
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            @for (color of badgeColorProposal; track color.name) {
+              <div class="flex flex-col items-center gap-2">
+                <div
+                  class="w-full h-16 rounded-lg flex items-center justify-center text-white font-semibold text-xs uppercase"
+                  [style.background-color]="color.hex"
+                >
+                  {{ color.name }}
+                </div>
+                <div class="text-center space-y-0.5">
+                  <p class="text-[10px] text-neutral-500 font-mono">{{ color.hex }}</p>
+                  <p class="text-[10px] text-neutral-400">{{ color.tailwind }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <section class="mt-6">
+          <h3 class="text-base font-semibold text-neutral-900 mb-3">Przykładowe badge'y z propozycją</h3>
+          <div class="bg-white rounded-xl border border-neutral-200 p-4">
+            <div class="flex flex-wrap gap-2">
+              @for (color of badgeColorProposal; track color.name) {
+                <span
+                  class="rounded-xs font-semibold uppercase text-white px-2 py-0.5 text-[10px]"
+                  [style.background-color]="color.hex"
+                >
+                  {{ color.name }}
+                </span>
+              }
+            </div>
+          </div>
+        </section>
+      </section>
     }
 
     <!-- ══════════════ TYPOGRAPHY ══════════════ -->
@@ -687,57 +731,6 @@
           <div class="flex items-center gap-3 bg-danger-50 border border-danger-200 rounded-xl p-3">
             <app-icon name="shield-alert" class="w-5 h-5 text-danger-500" />
             <span class="text-sm text-neutral-900">Wystąpił błąd. Spróbuj ponownie.</span>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="text-lg font-semibold text-neutral-900 mb-4">Lista z dividerami</h2>
-        <div class="bg-white rounded-xl border border-neutral-200 divide-y divide-neutral-200">
-          <div class="flex items-center gap-3 p-4">
-            <app-icon name="calendar" class="w-5 h-5 text-neutral-500" />
-            <div>
-              <p class="text-sm font-medium text-neutral-900">Wydarzenie 1</p>
-              <p class="text-xs text-neutral-500">Jutro, 18:00</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 p-4">
-            <app-icon name="calendar" class="w-5 h-5 text-neutral-500" />
-            <div>
-              <p class="text-sm font-medium text-neutral-900">Wydarzenie 2</p>
-              <p class="text-xs text-neutral-500">Za 3 dni, 20:00</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 p-4">
-            <app-icon name="calendar" class="w-5 h-5 text-neutral-500" />
-            <div>
-              <p class="text-sm font-medium text-neutral-900">Wydarzenie 3</p>
-              <p class="text-xs text-neutral-500">W piątek, 16:30</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="text-lg font-semibold text-neutral-900 mb-4">Formularz (input + focus)</h2>
-        <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-3">
-          <div>
-            <label for="ds-name" class="block text-sm font-medium text-neutral-900 mb-1">Nazwa</label>
-            <input
-              id="ds-name"
-              type="text"
-              placeholder="Wpisz nazwę..."
-              class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-500 focus:outline-hidden focus:ring-2 focus:ring-info-400"
-            />
-          </div>
-          <div>
-            <label for="ds-desc" class="block text-sm font-medium text-neutral-900 mb-1">Opis</label>
-            <textarea
-              id="ds-desc"
-              rows="3"
-              placeholder="Opis wydarzenia..."
-              class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-500 focus:outline-hidden focus:ring-2 focus:ring-info-400"
-            ></textarea>
           </div>
         </div>
       </section>

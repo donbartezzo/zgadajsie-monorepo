@@ -418,6 +418,23 @@ export class DesignSystemComponent {
     { current: 5, max: 0 },
   ];
 
+  // ════════════════════════════════════════════════════════
+  // BADGE COLOR PROPOSAL - Foundation Palettes (głębsze odcienie)
+  // Wybrane tak, aby pasowały do białej czcionki (text-white)
+  // i były maksymalnie zróżnicowane wizualnie
+  // ════════════════════════════════════════════════════════
+  readonly badgeColorProposal = [
+    { name: 'Red', shade: '700', hex: '#a02020', tailwind: 'bg-red-700' },
+    { name: 'Yellow', shade: '800', hex: '#e65100', tailwind: 'bg-yellow-800' },
+    { name: 'Green', shade: '700', hex: '#437020', tailwind: 'bg-green-700' },
+    { name: 'Mint', shade: '700', hex: '#1e826b', tailwind: 'bg-mint-700' },
+    { name: 'Blue', shade: '700', hex: '#0d47a1', tailwind: 'bg-blue-700' },
+    { name: 'Magenta', shade: '700', hex: '#6244a8', tailwind: 'bg-magenta-700' },
+    { name: 'Pink', shade: '700', hex: '#a33e80', tailwind: 'bg-pink-700' },
+    { name: 'Brown', shade: '700', hex: '#5d4037', tailwind: 'bg-brown-700' },
+    { name: 'Dark', shade: '800', hex: '#262a30', tailwind: 'bg-dark-800' },
+  ];
+
   setSection(id: string): void {
     this.activeSection.set(id);
   }

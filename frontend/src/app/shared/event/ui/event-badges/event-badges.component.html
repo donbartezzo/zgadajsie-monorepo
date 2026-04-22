@@ -1,0 +1,19 @@
+@if (event(); as e) {
+  <div class="flex flex-wrap gap-1.5">
+    @if (e.discipline) {
+      <span [class]="getBadgeClass() + ' event-badge discipline'">
+        {{ 'dict.discipline.' + e.discipline.slug | transloco }}
+      </span>
+    }
+    @if (e.level) {
+      <span [class]="getBadgeClass() + ' event-badge level'">
+        {{ 'dict.level.' + e.level.slug | transloco }}
+      </span>
+    }
+    @if (e.facility) {
+      <span [class]="getBadgeClass() + ' event-badge facility'">
+        {{ 'dict.facility.' + e.facility.slug | transloco }}
+      </span>
+    }
+  </div>
+}
