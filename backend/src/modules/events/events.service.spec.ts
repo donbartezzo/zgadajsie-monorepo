@@ -35,6 +35,7 @@ function buildPrismaMock() {
       findFirst: jest.fn(),
       findMany: jest.fn(),
       count: jest.fn(),
+      groupBy: jest.fn().mockResolvedValue([]),
     },
     eventSlot: { findMany: jest.fn() },
     payment: { create: jest.fn(), findFirst: jest.fn() },

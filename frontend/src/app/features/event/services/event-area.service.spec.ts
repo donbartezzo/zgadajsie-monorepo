@@ -151,13 +151,8 @@ describe('EventAreaService — computed signals', () => {
   });
 
   describe('participantCount / enrollmentCount', () => {
-    it('participantCount liczy tylko APPROVED + CONFIRMED', () => {
-      service.participants.set([
-        makeParticipation({ userId: 'u1', status: 'PENDING' }),
-        makeParticipation({ userId: 'u2', status: 'APPROVED' }),
-        makeParticipation({ userId: 'u3', status: 'CONFIRMED' }),
-        makeParticipation({ userId: 'u4', status: 'WITHDRAWN' }),
-      ]);
+    it('participantCount bierze wartość z backendu _count.participants', () => {
+      service.event.set(makeEvent({ _count: { participants: 2 } }));
       expect(service.participantCount()).toBe(2);
     });
 
