@@ -11,9 +11,9 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { EventCardComponent } from '../../../../shared/event/ui/event-card/event-card.component';
+import { NextEventBadgeComponent } from '../../../../shared/event/ui/next-event-badge/next-event-badge.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
-import { DateBadgeComponent } from '../../../../shared/event/ui/date-badge/date-badge.component';
 import { AppTitleService } from '../../../../core/services/app-title.service';
 import { EventService } from '../../../../core/services/event.service';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -22,14 +22,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 import { EventBase } from '../../../../shared/types';
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
-import {
-  formatMonthShort,
-  getDayOfMonth,
-  nowInZone,
-  daysFromNow,
-  toZonedDateTime,
-  formatDateNoYear,
-} from '@zgadajsie/shared';
+import { nowInZone, daysFromNow, toZonedDateTime, formatDateNoYear } from '@zgadajsie/shared';
 import { NotificationStatusService } from '../../../../core/services/notification-status.service';
 
 interface EventGroup {
@@ -43,9 +36,9 @@ interface EventGroup {
   selector: 'app-events',
   imports: [
     EventCardComponent,
+    NextEventBadgeComponent,
     LoadingSpinnerComponent,
     EmptyStateComponent,
-    DateBadgeComponent,
     LayoutSlotDirective,
   ],
   templateUrl: './events.component.html',
@@ -71,23 +64,6 @@ export class EventsComponent implements OnInit, OnDestroy {
   readonly citySubscribed = signal(false);
 
   readonly isLoggedIn = computed(() => this.auth.isLoggedIn());
-
-  readonly dateRangeFrom = computed(() => {
-    const now = nowInZone().toJSDate();
-    return {
-      day: getDayOfMonth(now).toString(),
-      month: formatMonthShort(now),
-      year: now.getFullYear(),
-    };
-  });
-
-  readonly dateRangeTo = computed(() => {
-    const d = daysFromNow(7);
-    return {
-      day: getDayOfMonth(d).toString(),
-      month: formatMonthShort(d),
-    };
-  });
 
   readonly groupedEvents = computed(() => {
     const now = nowInZone();

@@ -1,0 +1,17 @@
+@let _viewModel = viewModel();
+
+@if (_viewModel) {
+  <app-button
+    appearance="soft"
+    color="neutral"
+    size="md"
+    iconRight="chevron-right"
+    [fullWidth]="true"
+    (clicked)="onBadgeClick()"
+  >
+    <div class="truncate text-sm font-normal text-neutral-900 leading-tight">
+      <span class="hidden-in-sticky-template">Najbliższe już </span>
+      <strong>{{ _viewModel.caption }}</strong>
+    </div>
+  </app-button>
+}

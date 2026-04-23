@@ -271,6 +271,7 @@ export class PageLayoutComponent {
   // ── Internal state ──
   readonly heroHidden = signal(false);
   readonly coverImageError = signal(false);
+  readonly stickyContainer = signal<HTMLElement | null>(null);
 
   private observer: IntersectionObserver | null = null;
 
@@ -287,6 +288,26 @@ export class PageLayoutComponent {
       this.heroHidden.set(false);
     }
   }
+
+  @ViewChild('stickyButtonContainer') set _stickyButtonContainer(
+    ref: ElementRef<HTMLElement> | undefined,
+  ) {
+    this.stickyContainer.set(ref?.nativeElement ?? null);
+  }
+
+  // ── Hide elements with .hidden-in-sticky-template when mini-bar is active ──
+  private readonly hideInStickyEffect = effect(() => {
+    this.layoutConfig.stickyTemplate();
+    const isMiniBar = this.showMiniBar();
+    const stickyContainer = this.stickyContainer();
+
+    if (!stickyContainer) return;
+
+    const elements = stickyContainer.querySelectorAll('.hidden-in-sticky-template');
+    elements.forEach((element) => {
+      (element as HTMLElement).style.display = isMiniBar ? 'none' : '';
+    });
+  });
 
   goBack(): void {
     const url = this.breadcrumb.parentUrl();

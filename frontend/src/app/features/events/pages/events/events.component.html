@@ -6,14 +6,7 @@
 </ng-template>
 
 <ng-template appLayoutSlot="stickyTemplate">
-  <div class="flex items-center gap-1 relative">
-    <app-date-badge [month]="dateRangeFrom().month" [day]="dateRangeFrom().day" />
-    <app-date-badge [month]="dateRangeTo().month" [day]="dateRangeTo().day" />
-    <span
-      class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-3xl font-extrabold text-neutral-900 z-10"
-      >→</span
-    >
-  </div>
+  <app-next-event-badge [events]="_events"></app-next-event-badge>
 </ng-template>
 
 <!-- Content -->
