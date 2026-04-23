@@ -179,7 +179,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     // Setup countdown effect in injection context
     effect(() => {
       const e = this.event();
-      if (e && !this.countdownInterval) {
+      if (e && !this.countdownInterval && this.eventTimeStatus() !== 'ENDED') {
         this.startCountdown(e.startsAt, e.endsAt);
       }
     });

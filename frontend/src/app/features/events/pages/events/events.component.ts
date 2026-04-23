@@ -25,30 +25,17 @@ import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layo
 import {
   formatMonthShort,
   getDayOfMonth,
-  formatDateLong,
-  getDaysDiffTz,
   nowInZone,
   daysFromNow,
-  createDateInZone,
   toZonedDateTime,
+  formatDateNoYear,
 } from '@zgadajsie/shared';
 import { NotificationStatusService } from '../../../../core/services/notification-status.service';
-import { DateLabelsService } from '../../../../shared/services/date-labels.service';
 
 interface EventGroup {
-  dateKey: string;
+  key: string;
   label: string;
-  shortLabel: string | null;
-  isToday: boolean;
-  isPast: boolean;
-  events: EventBase[];
-}
-
-interface DateGroup {
-  dateKey: string;
-  label: string;
-  shortLabel: string;
-  isToday: boolean;
+  sublabel?: string;
   events: EventBase[];
 }
 
@@ -75,7 +62,6 @@ export class EventsComponent implements OnInit, OnDestroy {
   private readonly snackbar = inject(SnackbarService);
   private readonly notifStatus = inject(NotificationStatusService);
   private readonly appTitle = inject(AppTitleService);
-  private readonly dateLabels = inject(DateLabelsService);
 
   readonly events = signal<EventBase[]>([]);
   readonly isLoading = signal(true);
@@ -105,7 +91,7 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   readonly groupedEvents = computed(() => {
     const now = nowInZone();
-    const todayStart = createDateInZone(now.year, now.month, now.day, 0, 0);
+    const nowMs = now.toMillis();
 
     const ongoing: EventBase[] = [];
     const upcoming: EventBase[] = [];
@@ -114,7 +100,6 @@ export class EventsComponent implements OnInit, OnDestroy {
     for (const event of this.events()) {
       const start = toZonedDateTime(event.startsAt).toJSDate().getTime();
       const end = toZonedDateTime(event.endsAt).toJSDate().getTime();
-      const nowMs = now.toMillis();
 
       if (start <= nowMs && end > nowMs) {
         ongoing.push(event);
@@ -129,6 +114,7 @@ export class EventsComponent implements OnInit, OnDestroy {
       new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
     const byStartDesc = (a: EventBase, b: EventBase) =>
       new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime();
+
     ongoing.sort(byStartAsc);
     upcoming.sort(byStartAsc);
     past.sort(byStartDesc);
@@ -137,27 +123,30 @@ export class EventsComponent implements OnInit, OnDestroy {
 
     if (ongoing.length > 0) {
       groups.push({
-        dateKey: '__ongoing',
-        label: 'Trwające',
-        shortLabel: null,
-        isToday: false,
-        isPast: false,
+        key: 'ongoing',
+        label: 'Aktualnie trwające',
         events: ongoing,
       });
     }
 
-    const upcomingByDate = this.groupByDate(upcoming, todayStart.toJSDate());
-    for (const g of upcomingByDate) {
-      groups.push({ ...g, isPast: false });
+    if (upcoming.length > 0) {
+      const today = now.toJSDate();
+      const weekFromNow = daysFromNow(7);
+      groups.push({
+        key: 'upcoming',
+        label: 'Najbliższy tydzień',
+        sublabel: `${formatDateNoYear(today)} - ${formatDateNoYear(weekFromNow)}`,
+        events: upcoming,
+      });
     }
 
     if (past.length > 0) {
+      const today = now.toJSDate();
+      const weekAgo = daysFromNow(-7);
       groups.push({
-        dateKey: '__past',
-        label: 'Niedawno zakończone',
-        shortLabel: null,
-        isToday: false,
-        isPast: true,
+        key: 'past',
+        label: 'Miniony tydzień',
+        sublabel: `${formatDateNoYear(weekAgo)} - ${formatDateNoYear(today)}`,
         events: past,
       });
     }
@@ -281,30 +270,5 @@ export class EventsComponent implements OnInit, OnDestroy {
     this.citySubscriptionService.isSubscribed(cityId).subscribe({
       next: (res) => this.citySubscribed.set(res.subscribed),
     });
-  }
-
-  private groupByDate(events: EventBase[], todayStart: Date): DateGroup[] {
-    const groups: DateGroup[] = [];
-    const todayKey = `${todayStart.getFullYear()}-${todayStart.getMonth()}-${todayStart.getDate()}`;
-
-    for (const event of events) {
-      const d = toZonedDateTime(event.startsAt);
-      const key = `${d.year}-${d.month - 1}-${d.day}`;
-      const isToday = key === todayKey;
-      const diffDays = getDaysDiffTz(d.toJSDate(), todayStart);
-      const shortLabel = this.dateLabels.getRelativeDateLabel(d.toJSDate(), todayStart);
-
-      const dateStr = formatDateLong(d.toJSDate());
-      const sub = `<span class="opacity-60 font-normal ml-1">· ${dateStr}</span>`;
-      const label = diffDays === 0 ? shortLabel : `${shortLabel} ${sub}`;
-
-      const last = groups[groups.length - 1];
-      if (last && last.dateKey === key) {
-        last.events.push(event);
-      } else {
-        groups.push({ dateKey: key, label, shortLabel, isToday, events: [event] });
-      }
-    }
-    return groups;
   }
 }

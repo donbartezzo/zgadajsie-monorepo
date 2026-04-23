@@ -30,23 +30,20 @@
     ></app-empty-state>
   } @else {
     <div class="space-y-5">
-      @for (group of groupedEvents(); track group.dateKey) {
+      @for (group of groupedEvents(); track group.key) {
         <div>
           <div class="mb-3 flex items-center justify-center gap-2">
             <div class="h-px flex-1 bg-neutral-200"></div>
             <span
               [class]="
-                'inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold ' +
-                (group.dateKey === '__ongoing'
-                  ? 'bg-success-400 text-white'
-                  : group.isToday
-                    ? 'bg-primary-500 text-white'
-                    : group.isPast
-                      ? 'bg-white text-neutral-500'
-                      : 'bg-white text-neutral-900')
+                'inline-flex flex-col items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold ' +
+                (group.key === 'ongoing' ? 'bg-success-400 text-white' : 'bg-white text-neutral-900')
               "
             >
-              <span [innerHTML]="group.label"></span>
+              {{ group.label }}
+              @if (group.sublabel) {
+                <span class="font-normal text-[10px] opacity-75">{{ group.sublabel }}</span>
+              }
             </span>
             <div class="h-px flex-1 bg-neutral-200"></div>
           </div>
@@ -55,8 +52,7 @@
             @for (event of group.events; track event.id) {
               <app-event-card
                 [event]="event"
-                [isDimmed]="group.isPast || event.status === 'CANCELLED'"
-                [dateLabel]="group.shortLabel"
+                [isDimmed]="group.key === 'past' || event.status === 'CANCELLED'"
                 (selected)="onEventSelected($event)"
               ></app-event-card>
             }

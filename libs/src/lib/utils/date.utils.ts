@@ -61,6 +61,13 @@ export function formatDateFull(date: string | Date, zone: string = APP_DEFAULT_T
 }
 
 /**
+ * "26 kwietnia" — data bez roku (do sublabel).
+ */
+export function formatDateNoYear(date: string | Date, zone: string = APP_DEFAULT_TIMEZONE): string {
+  return toZonedDateTime(date, zone).setLocale(APP_LOCALE).toFormat('d LLLL');
+}
+
+/**
  * "środa, 26 marca" — dzień tygodnia + data (do listy wydarzeń).
  */
 export function formatDateLong(date: string | Date, zone: string = APP_DEFAULT_TIMEZONE): string {
@@ -189,15 +196,19 @@ export interface EventCountdown {
   minutes: number;
   seconds: number;
   isUrgent: boolean;
+  isEnded: boolean;
 }
 
 /**
- * Oblicza countdown do wydarzenia z uwzględnieniem strefy czasowej.
+ * Oblicza countdown do wydarzenia lub od zakończenia wydarzenia z uwzględnieniem strefy czasowej.
  *
  * Zwraca `null` jeśli:
  * - wydarzenie trwa (start <= now < end)
- * - wydarzenie się zakończyło (end <= now)
  * - do rozpoczęcia jest więcej niż `maxHours` godzin
+ * - od zakończenia upłynęło więcej niż `maxHours` godzin
+ *
+ * Jeśli wydarzenie się zakończyło (end <= now) i upłynęło mniej niż `maxHours` godzin,
+ * zwraca countdown od czasu zakończenia (ile czasu upłynęło od endsAt).
  *
  * @param startsAt - data rozpoczęcia wydarzenia (string ISO lub Date)
  * @param endsAt - data zakończenia wydarzenia (string ISO lub Date)
@@ -214,26 +225,52 @@ export function getEventCountdown(
   const end = toZonedDateTime(endsAt, zone);
   const now = nowInZone(zone);
 
+  // Wydarzenie trwa - nie pokazujemy countdown
   if (start <= now && end > now) return null;
-  if (end <= now) return null;
 
+  // Wydarzenie się zakończyło - obliczamy czas od zakończenia
+  if (end <= now) {
+    const msSinceEnd = now.diff(end).milliseconds;
+    const hoursSinceEnd = msSinceEnd / MILLISECONDS_PER_HOUR;
+
+    if (hoursSinceEnd > maxHours) return null;
+
+    const timeParts = calculateTimeParts(msSinceEnd);
+
+    return {
+      ...timeParts,
+      isUrgent: false,
+      isEnded: true,
+    };
+  }
+
+  // Wydarzenie jeszcze się nie zaczęło - obliczamy czas do rozpoczęcia
   const msUntil = start.diff(now).milliseconds;
   const hoursUntil = msUntil / MILLISECONDS_PER_HOUR;
 
   if (hoursUntil > maxHours) return null;
 
-  const days = Math.floor(msUntil / MILLISECONDS_PER_DAY);
-  const hours = Math.floor((msUntil % MILLISECONDS_PER_DAY) / MILLISECONDS_PER_HOUR);
-  const minutes = Math.floor((msUntil % MILLISECONDS_PER_HOUR) / MILLISECONDS_PER_MINUTE);
-  const seconds = Math.floor((msUntil % MILLISECONDS_PER_MINUTE) / MILLISECONDS_PER_SECOND);
+  const timeParts = calculateTimeParts(msUntil);
 
   return {
-    days,
-    hours,
-    minutes,
-    seconds,
+    ...timeParts,
     isUrgent: hoursUntil < 8,
+    isEnded: false,
   };
+}
+
+/**
+ * Pomocnicza funkcja do obliczania części czasu z milisekund.
+ */
+function calculateTimeParts(
+  ms: number,
+): Pick<EventCountdown, 'days' | 'hours' | 'minutes' | 'seconds'> {
+  const days = Math.floor(ms / MILLISECONDS_PER_DAY);
+  const hours = Math.floor((ms % MILLISECONDS_PER_DAY) / MILLISECONDS_PER_HOUR);
+  const minutes = Math.floor((ms % MILLISECONDS_PER_HOUR) / MILLISECONDS_PER_MINUTE);
+  const seconds = Math.floor((ms % MILLISECONDS_PER_MINUTE) / MILLISECONDS_PER_SECOND);
+
+  return { days, hours, minutes, seconds };
 }
 
 // ── Time arithmetic utilities ──

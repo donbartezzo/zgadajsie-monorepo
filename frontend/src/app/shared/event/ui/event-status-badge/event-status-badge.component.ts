@@ -1,37 +1,17 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../ui/icon/icon.component';
 
-type BadgeVariant =
-  | 'ongoing'
-  | 'countdown-urgent'
-  | 'countdown-soon'
-  | 'date'
-  | 'ended'
-  | 'cancelled';
+type BadgeVariant = 'ongoing' | 'countdown-urgent' | 'countdown-soon' | 'days';
 
 @Component({
   selector: 'app-event-status-badge',
-  imports: [IconComponent],
-  styles: [
-    `
-      @keyframes soft-ping {
-        0% {
-          transform: scale(1);
-          opacity: 0.75;
-        }
-        75%,
-        100% {
-          transform: scale(1.4);
-          opacity: 0;
-        }
-      }
-      .animate-soft-ping {
-        animation: soft-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
-      }
-    `,
-  ],
+  imports: [CommonModule, IconComponent],
   template: `
-    <div [class]="containerClass()">
+    <div
+      class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 shadow-lg"
+      [ngClass]="badgeClasses()"
+    >
       @switch (variant()) {
         @case ('ongoing') {
           <span class="relative flex h-2 w-2 shrink-0">
@@ -43,7 +23,7 @@ type BadgeVariant =
         }
         @case ('countdown-urgent') {
           <span class="relative flex shrink-0" style="width: 12px; height: 12px">
-            <span class="absolute inset-0 flex animate-soft-ping">
+            <span class="absolute inset-0 flex">
               <app-icon name="clock" size="xs" class="text-white" style="display: flex" />
             </span>
             <span class="relative flex">
@@ -54,22 +34,13 @@ type BadgeVariant =
         @case ('countdown-soon') {
           <app-icon name="clock" size="xs" class="shrink-0 text-white" style="display: flex" />
         }
-        @case ('date') {
-          <app-icon
-            name="calendar"
-            size="xs"
-            class="shrink-0 text-neutral-500"
-            style="display: flex"
-          />
-        }
-        @case ('ended') {
-          <app-icon name="clock" size="xs" class="shrink-0 text-white" style="display: flex" />
-        }
-        @case ('cancelled') {
-          <app-icon name="x" size="xs" class="shrink-0 text-white" style="display: flex" />
+        @case ('days') {
+          <app-icon name="calendar" size="xs" class="shrink-0 text-white" style="display: flex" />
         }
       }
-      <span [class]="textClass()">{{ label() }}</span>
+      <span class="text-[10px] font-bold tracking-wide whitespace-nowrap text-white">{{
+        displayLabel()
+      }}</span>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -77,40 +48,31 @@ type BadgeVariant =
 export class EventStatusBadgeComponent {
   readonly variant = input.required<BadgeVariant>();
   readonly label = input.required<string>();
+  readonly ended = input<boolean>(false);
+  readonly canceled = input<boolean>(false);
 
-  readonly containerClass = computed(() => {
-    const base = 'flex items-center gap-1.5 rounded-full px-2.5 py-1 shadow-lg';
-    switch (this.variant()) {
-      case 'ongoing':
-        return `${base} bg-success-400`;
-      case 'countdown-urgent':
-        return `${base} bg-warning-400`;
-      case 'countdown-soon':
-        return `${base} bg-info-400`;
-      case 'date':
-        return `${base} bg-white shadow-xs`;
-      case 'ended':
-        return `${base} bg-neutral-400`;
-      case 'cancelled':
-        return `${base} bg-danger-400`;
-    }
+  readonly badgeClasses = computed(() => {
+    const defaultColor = 'bg-neutral-500/75 border-neutral-500';
+    const countdownColor = 'bg-yellow-700/75 border-yellow-700';
+
+    const classesByState: Record<BadgeVariant, string> = {
+      days: defaultColor,
+      ongoing: 'bg-success-400/75 border-success-400',
+      'countdown-urgent': countdownColor,
+      'countdown-soon': countdownColor,
+    };
+
+    const state: BadgeVariant = this.ended() || this.canceled() ? 'days' : this.variant();
+
+    return classesByState[state];
   });
 
-  readonly textClass = computed(() => {
-    const base = 'text-[10px] font-bold tracking-wide whitespace-nowrap';
-    switch (this.variant()) {
-      case 'ongoing':
-        return `${base} text-white`;
-      case 'countdown-urgent':
-        return `${base} text-white`;
-      case 'countdown-soon':
-        return `${base} text-white`;
-      case 'date':
-        return `${base} text-neutral-500`;
-      case 'ended':
-        return `${base} text-white`;
-      case 'cancelled':
-        return `${base} text-white`;
+  readonly displayLabel = computed(() => {
+    let baseLabel = this.label();
+
+    if (this.canceled()) {
+      baseLabel += ` • ODWOŁANE`;
     }
+    return baseLabel;
   });
 }

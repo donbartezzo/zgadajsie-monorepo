@@ -25,7 +25,6 @@ import {
   formatTime,
   MILLISECONDS_PER_HOUR,
   nowInZone,
-  isSameDay,
   EventStatus,
 } from '@zgadajsie/shared';
 import { EventDurationPipe } from '../../../pipes/event-duration.pipe';
@@ -44,15 +43,11 @@ import { DateLabelsService } from '../../../services/date-labels.service';
   ],
   template: `
     @let _event = event();
-    @let _countdown = countdown();
     @let _coverUrl = coverUrl();
 
     <button
       type="button"
-      [class]="
-        'rounded-2xl shadow-xs overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 bg-white border-2 text-left w-full ' +
-        borderClass()
-      "
+      class="rounded-2xl shadow-xs overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 bg-white border-2 border-neutral-400 text-left w-full"
       (click)="selected.emit(_event)"
     >
       <div class="relative">
@@ -129,18 +124,12 @@ import { DateLabelsService } from '../../../services/date-labels.service';
         </div>
 
         <div class="absolute left-2 top-2 z-10">
-          @if (isCancelled()) {
-            <app-event-status-badge variant="cancelled" label="ODWOŁANE" />
-          } @else if (isOngoing()) {
-            <app-event-status-badge variant="ongoing" label="TRWA" />
-          } @else if (_countdown) {
-            <app-event-status-badge
-              [variant]="_countdown.isUrgent ? 'countdown-urgent' : 'countdown-soon'"
-              [label]="countdownLabel()"
-            />
-          } @else {
-            <app-event-status-badge variant="date" [label]="badgeLabel()" />
-          }
+          <app-event-status-badge
+            [variant]="statusBadgeVariant()"
+            [label]="statusBadgeLabel()"
+            [ended]="isEnded()"
+            [canceled]="isCancelled()"
+          />
         </div>
       </div>
     </button>
@@ -156,7 +145,18 @@ export class EventCardComponent implements OnDestroy {
   readonly dateLabel = input<string | null>(null);
   readonly selected = output<EventBase>();
 
-  readonly isCancelled = computed(() => this.event().status === EventStatus.CANCELLED);
+  readonly isCancelled = computed(() => {
+    return this.event().status === EventStatus.CANCELLED;
+  });
+
+  readonly isEnded = computed(() => {
+    const cd = this.countdown();
+    if (cd?.isEnded) return true;
+    // Sprawdź czy wydarzenie już się zakończyło (starsze niż 24h)
+    const end = new Date(this.event().endsAt).getTime();
+    const nowMs = this.now().getTime();
+    return end <= nowMs;
+  });
 
   private readonly now = signal(nowInZone().toJSDate());
 
@@ -171,24 +171,9 @@ export class EventCardComponent implements OnDestroy {
 
   readonly coverUrl = computed(() => getEventCoverUrl(this.event()));
 
-  readonly isToday = computed(() => {
-    const eventDate = this.event().startsAt;
-    const now = this.now();
-    return isSameDay(eventDate, now);
-  });
-
   readonly countdown = computed(() =>
     getEventCountdown(this.event().startsAt, this.event().endsAt),
   );
-
-  readonly borderClass = computed(() => {
-    if (this.isOngoing()) return 'border-success-400';
-    const cd = this.countdown();
-    if (cd?.isUrgent) return 'border-warning-400';
-    if (cd) return 'border-info-400';
-    if (this.isToday()) return 'border-primary-400';
-    return 'border-neutral-200';
-  });
 
   readonly eventMonth = computed(() => formatMonthShort(this.event().startsAt));
 
@@ -208,6 +193,20 @@ export class EventCardComponent implements OnDestroy {
     const label = this.dateLabel();
     if (label) return label;
     return this.dateLabels.getRelativeDateLabel(new Date(this.event().startsAt));
+  });
+
+  readonly statusBadgeVariant = computed(() => {
+    if (this.isOngoing()) return 'ongoing';
+    const cd = this.countdown();
+    if (cd) return cd.isUrgent ? 'countdown-urgent' : 'countdown-soon';
+    return 'days';
+  });
+
+  readonly statusBadgeLabel = computed(() => {
+    if (this.isOngoing()) return 'TRWA';
+    const cd = this.countdown();
+    if (cd) return this.countdownLabel();
+    return this.badgeLabel();
   });
 
   constructor() {
