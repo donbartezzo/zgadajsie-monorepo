@@ -70,7 +70,7 @@ export class EventInfoItemComponent {
         md: 'h-8 w-8',
       }[size],
       label: {
-        xs: 'text-[8px]',
+        xs: '-mb-0.5 text-[8px]',
         sm: 'text-[9px]',
         md: 'text-[10px]',
       }[size],

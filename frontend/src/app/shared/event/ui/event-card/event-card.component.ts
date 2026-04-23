@@ -10,8 +10,8 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
-import { IconComponent } from '../../../ui/icon/icon.component';
+import { CommonModule } from '@angular/common';
+import { EventInfoItemComponent } from '../../../ui/event-info-item/event-info-item.component';
 import { DateBadgeComponent } from '../date-badge/date-badge.component';
 import { EventStatusBadgeComponent } from '../event-status-badge/event-status-badge.component';
 import { EventBadgesComponent } from '../event-badges/event-badges.component';
@@ -27,14 +27,14 @@ import {
   nowInZone,
   EventStatus,
 } from '@zgadajsie/shared';
-import { EventDurationPipe } from '../../../pipes/event-duration.pipe';
 import { DateLabelsService } from '../../../services/date-labels.service';
+import { EventDurationPipe } from '../../../pipes/event-duration.pipe';
 
 @Component({
   selector: 'app-event-card',
   imports: [
-    DecimalPipe,
-    IconComponent,
+    CommonModule,
+    EventInfoItemComponent,
     DateBadgeComponent,
     EventStatusBadgeComponent,
     EventBadgesComponent,
@@ -78,38 +78,53 @@ import { DateLabelsService } from '../../../services/date-labels.service';
           </div>
 
           <div class="p-3 space-y-2">
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
-              <span class="flex items-center gap-1">
-                <app-icon name="map-pin" size="xs" color="neutral" muted="light" />
-                {{ _event.address }}
-              </span>
-              <span class="flex items-center gap-1">
-                <app-icon name="clock" size="xs" color="neutral" muted="light" />
-                {{ eventStartTime() }}-{{ eventEndTime() }} ({{
-                  event().startsAt | eventDuration: event().endsAt
-                }})
-              </span>
+            <div class="flex items-center justify-between gap-x-2 gap-y-1">
+              <div class="min-w-0 overflow-hidden">
+                <app-event-info-item
+                  icon="map-pin"
+                  label="Adres"
+                  size="xs"
+                  [value]="_event.address"
+                />
+              </div>
+              <div class="hidden md:contents">
+                <app-event-info-item
+                  icon="calendar"
+                  label="Termin rozpoczęcia"
+                  size="xs"
+                  [value]="
+                    (event().startsAt | date: 'EEEE' | titlecase) +
+                    ' godz. ' +
+                    (event().startsAt | date: 'HH:mm')
+                  "
+                />
+              </div>
+              <app-event-info-item
+                icon="clock"
+                label="Czas trwania"
+                size="xs"
+                [value]="_event.startsAt | eventDuration: _event.endsAt"
+              />
+              <app-event-info-item
+                [icon]="_event.costPerPerson > 0 ? 'credit-card' : 'check-circle'"
+                label="Koszt"
+                size="xs"
+                color="success"
+                [value]="
+                  _event.costPerPerson > 0
+                    ? (_event.costPerPerson | number: '1.0-2') + ' zł'
+                    : 'Bezpłatne'
+                "
+              />
             </div>
 
             <div class="flex items-center justify-between">
               <app-capacity-progress
-                class="flex-1 max-w-[250px]"
+                class="flex-1"
                 [current]="_event._count?.participants ?? 0"
                 [max]="_event.maxParticipants"
                 [enrollmentsCount]="_event._count?.enrollments"
               />
-
-              <span
-                class="flex items-center gap-1 text-sm font-semibold text-success-400 w-24 justify-end"
-              >
-                @if (_event.costPerPerson > 0) {
-                  <app-icon name="credit-card" size="xs" color="success" />
-                  {{ _event.costPerPerson | number: '1.0-2' }} zł
-                } @else {
-                  <app-icon name="check-circle" size="xs" color="success" />
-                  Bezpłatne
-                }
-              </span>
             </div>
           </div>
         </div>

@@ -687,7 +687,8 @@ async function main() {
     gender: 'ANY',
     visibility: 'PUBLIC',
     status: 'ACTIVE',
-    address: 'ul. Botaniczna 5',
+    address:
+      'ul. Botaniczna 5, budynek A, pawilon 3, piętro 4, pokój numer 412, wejście od strony zachodniej przy parkingu podziemnym, za szlabanem numer 7, obok windy towarowej, naprzeciwko sekretariatu głównego',
     lat: 51.938,
     lng: 15.512,
   });
