@@ -3,25 +3,30 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { IconComponent, IconName } from '../icon/icon.component';
 import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
 
+export type EventInfoItemSize = 'xs' | 'sm' | 'md';
+
 @Component({
   selector: 'app-event-info-item',
+  standalone: true,
   imports: [CommonModule, IconComponent],
   template: `
-    <div class="flex items-center gap-1 py-1" [ngClass]="highlightClass()">
+    <div class="flex items-center py-1" [ngClass]="containerClass()">
       @if (hasIcon()) {
         <span
-          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg mr-1"
-          [ngClass]="iconBackgroundClass()"
+          class="flex shrink-0 items-center justify-center rounded-lg mr-1"
+          [ngClass]="[iconContainerClass(), iconBackgroundClass()]"
         >
           <app-icon [name]="icon()!" size="sm" [color]="color()!"></app-icon>
         </span>
       }
 
-      <div class="min-w-0">
-        <span class="block text-[10px] leading-tight text-neutral-400">{{ label() }}:</span>
+      <div class="min-w-0 text-left">
+        <span class="block leading-tight text-neutral-400" [ngClass]="labelClass()"
+          >{{ label() }}:</span
+        >
 
         @if (hasValue()) {
-          <strong class="block truncate text-sm font-semibold text-neutral-900">
+          <strong class="block truncate font-semibold text-neutral-900" [ngClass]="valueClass()">
             {{ valueText() }}
           </strong>
         } @else {
@@ -47,8 +52,45 @@ export class EventInfoItemComponent {
   readonly label = input.required<string>();
   readonly value = input<string | number | null | undefined>(null);
   readonly highlight = input<boolean>(false);
+  readonly size = input<EventInfoItemSize>('md');
 
   readonly hasIcon = computed(() => this.icon() !== null);
+
+  readonly sizeClasses = computed(() => {
+    const size = this.size();
+    return {
+      container: {
+        xs: 'gap-0.5',
+        sm: 'gap-1',
+        md: 'gap-1',
+      }[size],
+      iconContainer: {
+        xs: 'h-6 w-6',
+        sm: 'h-7 w-7',
+        md: 'h-8 w-8',
+      }[size],
+      label: {
+        xs: 'text-[8px]',
+        sm: 'text-[9px]',
+        md: 'text-[10px]',
+      }[size],
+      value: {
+        xs: 'text-[10px]',
+        sm: 'text-xs',
+        md: 'text-sm',
+      }[size],
+    };
+  });
+
+  readonly containerClass = computed(() =>
+    [this.sizeClasses().container, this.highlightClass()].filter(Boolean).join(' '),
+  );
+
+  readonly iconContainerClass = computed(() => this.sizeClasses().iconContainer);
+
+  readonly labelClass = computed(() => this.sizeClasses().label);
+
+  readonly valueClass = computed(() => this.sizeClasses().value);
 
   readonly iconBackgroundClass = computed(() => {
     const color = this.color();

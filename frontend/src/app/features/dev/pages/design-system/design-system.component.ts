@@ -3,6 +3,7 @@ import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.compone
 import { ButtonAppearance, ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
 import { CapacityProgressComponent } from '../../../../shared/ui/capacity-progress/capacity-progress.component';
+import { EventInfoItemComponent } from '../../../../shared/ui/event-info-item/event-info-item.component';
 import { SemanticColor } from '../../../../shared/types/colors';
 
 interface ColorSwatch {
@@ -18,7 +19,13 @@ interface ColorPalette {
 
 @Component({
   selector: 'app-design-system',
-  imports: [IconComponent, ButtonComponent, BadgeComponent, CapacityProgressComponent],
+  imports: [
+    IconComponent,
+    ButtonComponent,
+    BadgeComponent,
+    CapacityProgressComponent,
+    EventInfoItemComponent,
+  ],
   templateUrl: './design-system.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

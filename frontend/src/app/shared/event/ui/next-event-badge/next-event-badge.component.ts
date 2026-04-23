@@ -4,17 +4,17 @@ import { EventBase } from '../../../types';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { DateLabelsService } from '../../../services/date-labels.service';
 import { formatTime } from '@zgadajsie/shared';
+import { EventInfoItemComponent } from '../../../ui/event-info-item/event-info-item.component';
 
 interface NextEventBadgeViewModel {
-  label: string;
-  time: string;
+  timeLabel: string;
   eventId: string;
   citySlug: string;
 }
 
 @Component({
   selector: 'app-next-event-badge',
-  imports: [ButtonComponent],
+  imports: [ButtonComponent, EventInfoItemComponent],
   templateUrl: './next-event-badge.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -33,9 +33,10 @@ export class NextEventBadgeComponent {
     const label = this.dateLabels.getRelativeDateLabel(upcomingEvent.startsAt);
     const time = formatTime(upcomingEvent.startsAt);
 
+    const timeLabel = `${label} o godz. ${time}`;
+
     return {
-      label,
-      time,
+      timeLabel,
       eventId: upcomingEvent.id,
       citySlug: upcomingEvent.city?.slug ?? '',
     };

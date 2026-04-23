@@ -136,7 +136,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   readonly nextUpcomingEvent = computed(() => {
     const upcomingGroup = this.groupedEvents().find((group) => group.key === 'upcoming');
 
-    return upcomingGroup?.events[11] ?? null;
+    return upcomingGroup?.events[0] ?? null;
   });
 
   private citySlug = '';

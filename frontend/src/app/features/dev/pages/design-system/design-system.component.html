@@ -513,7 +513,8 @@
         <h2 class="text-lg font-semibold text-neutral-900 mb-4">Icon-Only Buttons</h2>
         <p class="text-sm text-neutral-500 mb-4">
           Kwadratowe przyciski z ikoną (iconOnly). Styl "Colors 2.0 Upgrade" z szablonu sticky-mobile. Pastelowe tło +
-          ciemna ikona.
+          ciemna ikona. API: <code class="bg-white px-1 rounded text-xs">iconLeft</code> +
+          <code class="bg-white px-1 rounded text-xs">iconOnly</code>.
         </p>
 
         <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-6">
@@ -522,12 +523,12 @@
               Warianty kolorystyczne (semantic)
             </p>
             <div class="flex flex-wrap gap-2">
-              <app-button appearance="soft" color="success" icon="check" [iconOnly]="true" />
-              <app-button appearance="soft" color="danger" icon="x" [iconOnly]="true" />
-              <app-button appearance="soft" color="info" icon="user" [iconOnly]="true" />
-              <app-button appearance="soft" color="primary" icon="heart" [iconOnly]="true" />
-              <app-button appearance="soft" color="warning" icon="alert-triangle" [iconOnly]="true" />
-              <app-button appearance="soft" color="neutral" icon="moon" [iconOnly]="true" />
+              <app-button appearance="soft" color="success" iconLeft="check" [iconOnly]="true" />
+              <app-button appearance="soft" color="danger" iconLeft="x" [iconOnly]="true" />
+              <app-button appearance="soft" color="info" iconLeft="user" [iconOnly]="true" />
+              <app-button appearance="soft" color="primary" iconLeft="heart" [iconOnly]="true" />
+              <app-button appearance="soft" color="warning" iconLeft="alert-triangle" [iconOnly]="true" />
+              <app-button appearance="soft" color="neutral" iconLeft="moon" [iconOnly]="true" />
             </div>
           </div>
 
@@ -536,18 +537,18 @@
               Rozmiary (appearance=soft, color=primary)
             </p>
             <div class="flex flex-wrap items-center gap-2">
-              <app-button appearance="soft" color="primary" icon="check" [iconOnly]="true" size="xs" />
-              <app-button appearance="soft" color="primary" icon="check" [iconOnly]="true" size="sm" />
-              <app-button appearance="soft" color="primary" icon="check" [iconOnly]="true" size="md" />
-              <app-button appearance="soft" color="primary" icon="check" [iconOnly]="true" size="lg" />
+              <app-button appearance="soft" color="primary" iconLeft="check" [iconOnly]="true" size="xs" />
+              <app-button appearance="soft" color="primary" iconLeft="check" [iconOnly]="true" size="sm" />
+              <app-button appearance="soft" color="primary" iconLeft="check" [iconOnly]="true" size="md" />
+              <app-button appearance="soft" color="primary" iconLeft="check" [iconOnly]="true" size="lg" />
             </div>
           </div>
 
           <div>
             <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Disabled / Loading</p>
             <div class="flex flex-wrap gap-2">
-              <app-button appearance="soft" color="success" icon="check" [iconOnly]="true" [disabled]="true" />
-              <app-button appearance="soft" color="primary" icon="check" [iconOnly]="true" [loading]="true" />
+              <app-button appearance="soft" color="success" iconLeft="check" [iconOnly]="true" [disabled]="true" />
+              <app-button appearance="soft" color="primary" iconLeft="check" [iconOnly]="true" [loading]="true" />
             </div>
           </div>
         </div>
@@ -555,25 +556,44 @@
 
       <section>
         <h2 class="text-lg font-semibold text-neutral-900 mb-4">Buttons z ikoną + tekstem</h2>
-        <p class="text-sm text-neutral-500 mb-4">Przyciski z ikoną po lewej lub prawej stronie tekstu.</p>
+        <p class="text-sm text-neutral-500 mb-4">
+          Przyciski z ikoną po lewej lub prawej stronie tekstu. API:
+          <code class="bg-white px-1 rounded text-xs">iconLeft</code> oraz
+          <code class="bg-white px-1 rounded text-xs">iconRight</code>.
+        </p>
 
         <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-6">
           <div>
-            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Ikona po lewej (domyślnie)</p>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Ikona po lewej (iconLeft)</p>
             <div class="flex flex-wrap gap-2">
-              <app-button appearance="soft" color="primary" icon="check">Zapisz</app-button>
-              <app-button appearance="soft" color="danger" icon="trash">Usuń</app-button>
-              <app-button appearance="soft" color="success" icon="plus">Dodaj</app-button>
+              <app-button appearance="soft" color="primary" iconLeft="check">Zapisz</app-button>
+              <app-button appearance="soft" color="danger" iconLeft="trash">Usuń</app-button>
+              <app-button appearance="soft" color="success" iconLeft="plus">Dodaj</app-button>
             </div>
           </div>
 
           <div>
-            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Ikona po prawej</p>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+              Ikona po prawej (iconRight)
+            </p>
             <div class="flex flex-wrap gap-2">
-              <app-button appearance="soft" color="primary" icon="arrow-right" iconPosition="right">Dalej</app-button>
-              <app-button appearance="outline" color="neutral" icon="external-link" iconPosition="right"
-                >Otwórz</app-button
-              >
+              <app-button appearance="soft" color="primary" iconRight="arrow-right">Dalej</app-button>
+              <app-button appearance="outline" color="neutral" iconRight="external-link">Otwórz</app-button>
+              <app-button appearance="ghost" color="neutral" iconRight="chevron-right">Szczegóły</app-button>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+              Ikona z tłem (iconLeftBackground / iconRightBackground)
+            </p>
+            <div class="flex flex-wrap gap-2">
+              <app-button appearance="soft" color="primary" iconLeft="check" [iconLeftBackground]="true">
+                Zapisz
+              </app-button>
+              <app-button appearance="soft" color="danger" iconRight="x" [iconRightBackground]="true">
+                Anuluj
+              </app-button>
             </div>
           </div>
         </div>
@@ -731,6 +751,90 @@
           <div class="flex items-center gap-3 bg-danger-50 border border-danger-200 rounded-xl p-3">
             <app-icon name="shield-alert" class="w-5 h-5 text-danger-500" />
             <span class="text-sm text-neutral-900">Wystąpił błąd. Spróbuj ponownie.</span>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-4">Event Info Item (app-event-info-item)</h2>
+        <p class="text-sm text-neutral-500 mb-4">
+          Komponent do wyświetlania metadanych wydarzenia (data, lokalizacja, koszt, itp.) z ikoną i wartością.
+        </p>
+
+        <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-6">
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Rozmiary (color=primary)</p>
+            <div class="space-y-4">
+              <div>
+                <p class="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-400">XS</p>
+                <div class="flex flex-wrap gap-4">
+                  <app-event-info-item size="xs" icon="calendar" label="Data" value="23 sty 2026" color="primary" />
+                  <app-event-info-item size="xs" icon="clock" label="Godzina" value="18:00" color="primary" />
+                  <app-event-info-item size="xs" icon="map-pin" label="Lokalizacja" value="Warszawa" color="primary" />
+                </div>
+              </div>
+              <div>
+                <p class="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-400">SM</p>
+                <div class="flex flex-wrap gap-4">
+                  <app-event-info-item size="sm" icon="calendar" label="Data" value="23 sty 2026" color="primary" />
+                  <app-event-info-item size="sm" icon="clock" label="Godzina" value="18:00" color="primary" />
+                  <app-event-info-item size="sm" icon="map-pin" label="Lokalizacja" value="Warszawa" color="primary" />
+                </div>
+              </div>
+              <div>
+                <p class="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-400">MD (domyślny)</p>
+                <div class="flex flex-wrap gap-4">
+                  <app-event-info-item size="md" icon="calendar" label="Data" value="23 sty 2026" color="primary" />
+                  <app-event-info-item size="md" icon="clock" label="Godzina" value="18:00" color="primary" />
+                  <app-event-info-item size="md" icon="map-pin" label="Lokalizacja" value="Warszawa" color="primary" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+              Kolory semantyczne (size=md)
+            </p>
+            <div class="flex flex-wrap gap-4">
+              <app-event-info-item icon="calendar" label="Data" value="23 sty 2026" color="primary" />
+              <app-event-info-item icon="dollar-sign" label="Koszt" value="50 zł" color="success" />
+              <app-event-info-item icon="alert-triangle" label="Miejsca" value="3/10" color="warning" />
+              <app-event-info-item icon="x" label="Status" value="Anulowane" color="danger" />
+              <app-event-info-item icon="help-circle" label="Info" value="Dodatkowe" color="info" />
+              <app-event-info-item icon="map-pin" label="Lokalizacja" value="Warszawa" color="neutral" />
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Bez ikony (size=md)</p>
+            <div class="flex flex-wrap gap-4">
+              <app-event-info-item label="Organizator" value="Jan Kowalski" color="primary" />
+              <app-event-info-item label="Dyscyplina" value="Piłka nożna" color="neutral" />
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Z highlight (size=md)</p>
+            <div class="flex flex-wrap gap-4">
+              <app-event-info-item
+                icon="calendar"
+                label="Data"
+                value="23 sty 2026"
+                color="primary"
+                [highlight]="true"
+              />
+              <app-event-info-item icon="clock" label="Godzina" value="18:00" color="primary" [highlight]="true" />
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Z ng-content (size=md)</p>
+            <div class="flex flex-wrap gap-4">
+              <app-event-info-item icon="users" label="Uczestnicy" color="primary">
+                <app-badge variant="soft" color="success">8/10</app-badge>
+              </app-event-info-item>
+            </div>
           </div>
         </div>
       </section>

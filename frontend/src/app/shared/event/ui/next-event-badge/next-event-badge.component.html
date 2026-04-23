@@ -1,17 +1,16 @@
 @let _viewModel = viewModel();
 
 @if (_viewModel) {
-  <app-button
-    appearance="soft"
-    color="neutral"
-    size="md"
-    iconRight="chevron-right"
-    [fullWidth]="true"
-    (clicked)="onBadgeClick()"
-  >
-    <div class="truncate text-xs sm:text-sm font-normal text-neutral-900 leading-tight">
-      <span class="hidden-in-sticky-template">Najbliższe już </span>
-      <strong>{{ _viewModel.label }} {{ _viewModel.time }}</strong>
-    </div>
-  </app-button>
+  <div class="opacity-90">
+    <app-button
+      appearance="outline"
+      color="neutral"
+      size="xs"
+      alignment="start"
+      iconRight="chevron-right"
+      (click)="onBadgeClick()"
+    >
+      <app-event-info-item color="primary" size="sm" label="Najbliższe wydarzenie" [value]="_viewModel.timeLabel" />
+    </app-button>
+  </div>
 }
