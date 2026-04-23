@@ -65,9 +65,12 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   readonly isLoggedIn = computed(() => this.auth.isLoggedIn());
 
+  private readonly nowMs = signal(nowInZone().toMillis());
+  private tickInterval?: ReturnType<typeof setInterval>;
+
   readonly groupedEvents = computed(() => {
+    const nowMs = this.nowMs();
     const now = nowInZone();
-    const nowMs = now.toMillis();
 
     const ongoing: EventBase[] = [];
     const upcoming: EventBase[] = [];
@@ -130,6 +133,12 @@ export class EventsComponent implements OnInit, OnDestroy {
     return groups;
   });
 
+  readonly nextUpcomingEvent = computed(() => {
+    const upcomingGroup = this.groupedEvents().find((group) => group.key === 'upcoming');
+
+    return upcomingGroup?.events[11] ?? null;
+  });
+
   private citySlug = '';
   private page = 1;
   private hasMore = true;
@@ -159,6 +168,7 @@ export class EventsComponent implements OnInit, OnDestroy {
     if (this.citySlug) {
       this.layoutConfig.coverImageUrl.set(`assets/covers/cities/${this.citySlug}.webp`);
     }
+    this.tickInterval = setInterval(() => this.nowMs.set(nowInZone().toMillis()), 60_000);
     this.loadEvents();
   }
 
@@ -212,6 +222,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    clearInterval(this.tickInterval);
     this.notifStatus.clearConfig();
   }
 

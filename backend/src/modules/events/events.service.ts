@@ -164,7 +164,10 @@ export class EventsService {
     const where: Record<string, unknown> = {
       status: { in: ['ACTIVE', 'CANCELLED'] },
       visibility: 'PUBLIC',
-      startsAt: { gte: dateFrom, lte: dateTo },
+      OR: [
+        { startsAt: { gte: dateFrom, lte: dateTo } },
+        { startsAt: { lt: now }, endsAt: { gt: now } },
+      ],
     };
 
     if (citySlug) {

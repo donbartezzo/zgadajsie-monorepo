@@ -1,4 +1,7 @@
-@let _isLoading = isLoading(); @let _error = error(); @let _events = events();
+@let _isLoading = isLoading();
+@let _error = error();
+@let _events = events();
+@let _nextUpcomingEvent = nextUpcomingEvent();
 
 <!-- Layout slots -->
 <ng-template appLayoutSlot="subtitleTemplate">
@@ -6,7 +9,7 @@
 </ng-template>
 
 <ng-template appLayoutSlot="stickyTemplate">
-  <app-next-event-badge [events]="_events"></app-next-event-badge>
+  <app-next-event-badge [event]="_nextUpcomingEvent"></app-next-event-badge>
 </ng-template>
 
 <!-- Content -->

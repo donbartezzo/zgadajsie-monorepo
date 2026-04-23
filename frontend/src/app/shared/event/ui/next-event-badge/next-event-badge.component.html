@@ -9,9 +9,9 @@
     [fullWidth]="true"
     (clicked)="onBadgeClick()"
   >
-    <div class="truncate text-sm font-normal text-neutral-900 leading-tight">
+    <div class="truncate text-xs sm:text-sm font-normal text-neutral-900 leading-tight">
       <span class="hidden-in-sticky-template">Najbliższe już </span>
-      <strong>{{ _viewModel.caption }}</strong>
+      <strong>{{ _viewModel.label }} {{ _viewModel.time }}</strong>
     </div>
   </app-button>
 }
