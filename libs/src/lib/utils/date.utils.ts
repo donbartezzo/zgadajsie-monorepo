@@ -115,6 +115,33 @@ export function isSameDay(
   return dtA.hasSame(dtB, 'day');
 }
 
+/**
+ * Formatuje czytelny zakres terminu wydarzenia.
+ *
+ * Przykłady:
+ * - "Piątek godz. 11:00 - 14:00"
+ * - "Piątek godz. 11:00 - Sobota godz. 19:00"
+ */
+export function formatDateRangeLabel(
+  startsAt: string | Date | undefined,
+  endsAt: string | Date | undefined,
+  zone: string = APP_DEFAULT_TIMEZONE,
+): string {
+  if (!startsAt || !endsAt) return '';
+
+  const startDay = formatDayOfWeek(startsAt, zone);
+  const endDay = formatDayOfWeek(endsAt, zone);
+  const startTime = formatTime(startsAt, zone);
+  const endTime = formatTime(endsAt, zone);
+  const formatDay = (day: string) => day.charAt(0).toUpperCase() + day.slice(1);
+
+  if (isSameDay(startsAt, endsAt, zone)) {
+    return `${formatDay(startDay)} godz. ${startTime} - ${endTime}`;
+  }
+
+  return `${formatDay(startDay)} godz. ${startTime} - ${formatDay(endDay)} godz. ${endTime}`;
+}
+
 // ── datetime-local input ──
 
 /**
@@ -154,7 +181,7 @@ export function getDaysDiffTz(
   now?: string | Date,
   zone: string = APP_DEFAULT_TIMEZONE,
 ): number {
-  const nowValue = now ?? nowInZone().toISO()!;
+  const nowValue = now ?? nowInZone(zone).toJSDate();
   const dtDate = toZonedDateTime(date, zone).startOf('day');
   const dtNow = toZonedDateTime(nowValue, zone).startOf('day');
   return Math.round(dtDate.diff(dtNow, 'days').days);

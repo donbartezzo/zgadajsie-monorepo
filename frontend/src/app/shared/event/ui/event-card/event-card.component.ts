@@ -23,6 +23,7 @@ import {
   formatMonthShort,
   getDayOfMonth,
   formatTime,
+  formatDateRangeLabel,
   MILLISECONDS_PER_HOUR,
   nowInZone,
   EventStatus,
@@ -87,21 +88,17 @@ import { EventDurationPipe } from '../../../pipes/event-duration.pipe';
                   [value]="_event.address"
                 />
               </div>
-              <div class="hidden md:contents">
+              <div class="hidden sm:contents">
                 <app-event-info-item
                   icon="calendar"
-                  label="Termin rozpoczęcia"
+                  label="Termin"
                   size="xs"
-                  [value]="
-                    (event().startsAt | date: 'EEEE' | titlecase) +
-                    ' godz. ' +
-                    (event().startsAt | date: 'HH:mm')
-                  "
+                  [value]="eventDateRangeLabel()"
                 />
               </div>
               <app-event-info-item
                 icon="clock"
-                label="Czas trwania"
+                label="Czas"
                 size="xs"
                 [value]="_event.startsAt | eventDuration: _event.endsAt"
               />
@@ -196,7 +193,9 @@ export class EventCardComponent implements OnDestroy {
 
   readonly eventStartTime = computed(() => formatTime(this.event().startsAt));
 
-  readonly eventEndTime = computed(() => formatTime(this.event().endsAt));
+  readonly eventDateRangeLabel = computed(() =>
+    formatDateRangeLabel(this.event().startsAt, this.event().endsAt),
+  );
 
   readonly countdownLabel = computed(() => {
     const cd = this.countdown();
