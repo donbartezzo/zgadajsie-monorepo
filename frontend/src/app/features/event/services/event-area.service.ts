@@ -30,6 +30,7 @@ import {
 import { getParticipationStatusConfig, ParticipationStatusOptions } from '../../../shared/utils';
 import { NotificationBarConfig } from '../ui/event-inline-notification-bars/event-inline-notification-bars.component';
 import type { IconName } from '../../../shared/ui/icon/icon.component';
+import { EVENT_STATUS_MESSAGES } from '../constants/event-status-messages';
 
 const AUTO_REFRESH_INTERVAL = 120000; // 120 seconds — safety-net fallback; primary updates via WebSocket
 
@@ -552,6 +553,28 @@ export class EventAreaService {
         }
       }
     });
+
+    // Show inactive event modal after data is loaded
+    // Modal is displayed when:
+    // - Event is CANCELLED (organizer cancelled it)
+    // - Event is ENDED (already finished)
+    // - Event is ONGOING (currently in progress)
+    // These states mean the event is no longer joinable or modifiable
+    effect(() => {
+      const eventId = this._eventId;
+      const loading = this.loading();
+
+      if (!loading && eventId) {
+        const ts = this.eventTimeStatus();
+        const cancelled = this.isCancelled();
+
+        if (cancelled) {
+          this.showInactiveModal('CANCELLED');
+        } else if (ts === 'ENDED' || ts === 'ONGOING') {
+          this.showInactiveModal(ts);
+        }
+      }
+    });
   }
 
   private registerOverlayCallbacks(): void {
@@ -891,7 +914,16 @@ export class EventAreaService {
     };
   }
 
-  // Removed getGuestBarConfig - guest management is now handled within the participant overlay
+  private async showInactiveModal(status: 'ENDED' | 'ONGOING' | 'CANCELLED'): Promise<void> {
+    const message = EVENT_STATUS_MESSAGES[status];
+    await this.confirmModal.confirm({
+      title: message.title,
+      message: message.description,
+      confirmLabel: 'Rozumiem',
+      showCancel: false,
+      color: message.color,
+    });
+  }
 
   private getPendingBarConfig(reason: WaitingReason | null): NotificationBarConfig {
     const isPreEnroll = reason === 'PRE_ENROLLMENT';

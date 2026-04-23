@@ -4,12 +4,14 @@ import { SemanticColor } from '../../../../shared/types/colors';
 import { EnrollmentPhase } from '../../../../shared/types/event.interface';
 import { EventTimeStatus } from '@zgadajsie/shared';
 import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
+import { EVENT_STATUS_MESSAGES } from '../../constants/event-status-messages';
 
 interface BannerConfig {
   icon: IconName;
   color: SemanticColor;
   title: string;
   subtitle: string;
+  description?: string;
 }
 
 const VARIANT_STYLES: Record<
@@ -61,23 +63,19 @@ const VARIANT_STYLES: Record<
     @if (config(); as c) {
       @let _styles = variantStyles();
       <button type="button" class="w-full text-left" (click)="openDetails()">
-        <div [class]="'rounded-xl border p-3 ' + _styles.container" role="status">
+        <div [class]="'rounded-xl border-3 p-3 ' + _styles.container" role="status">
           <div class="flex items-start gap-3">
-            <div
-              [class]="'flex shrink-0 items-center justify-center rounded-lg p-2 ' + _styles.iconBg"
-            >
-              <app-icon [name]="c.icon" size="sm" [class]="_styles.icon" />
-            </div>
-            <div class="min-w-0 flex-1">
-              <p [class]="'text-sm font-semibold leading-tight ' + _styles.title">
+            <div class="min-w-0 flex-1 text-center">
+              <p [class]="'text-base sm:text-xl font-semibold leading-tight ' + _styles.title">
                 {{ c.title }}
               </p>
-              <p class="mt-0.5 text-xs leading-relaxed text-neutral-500">{{ c.subtitle }}</p>
-              <p class="mt-1 text-[10px] text-neutral-400 underline underline-offset-2">
-                Kliknij, aby poznać szczegóły
+              <p class="mt-0.5 text-xs sm:text-sm leading-relaxed text-neutral-500">
+                {{ c.subtitle }}
               </p>
             </div>
-            <app-icon name="chevron-right" size="sm" class="mt-1 shrink-0 text-neutral-300" />
+          </div>
+          <div class="mt-1 text-end text-[10px] text-neutral-400 underline underline-offset-2">
+            Kliknij, aby poznać szczegóły
           </div>
         </div>
       </button>
@@ -97,30 +95,18 @@ export class EnrollmentStatusBannerComponent {
   // ── Computed ──
   readonly config = computed<BannerConfig | null>(() => {
     if (this.isCancelled()) {
-      return {
-        icon: 'x',
-        color: 'danger',
-        title: 'Wydarzenie odwołane',
-        subtitle: 'Zapisy zamknięte',
-      };
+      const msg = EVENT_STATUS_MESSAGES.CANCELLED;
+      return { icon: msg.icon, color: msg.color, title: msg.title, subtitle: msg.description };
     }
 
     const ts = this.eventTimeStatus();
     if (ts === 'ENDED') {
-      return {
-        icon: 'clock',
-        color: 'neutral',
-        title: 'Zakończone',
-        subtitle: 'Wydarzenie już się odbyło',
-      };
+      const msg = EVENT_STATUS_MESSAGES.ENDED;
+      return { icon: msg.icon, color: msg.color, title: msg.title, subtitle: msg.description };
     }
     if (ts === 'ONGOING') {
-      return {
-        icon: 'clock',
-        color: 'success',
-        title: 'W trakcie',
-        subtitle: 'Nowe zapisy niemożliwe',
-      };
+      const msg = EVENT_STATUS_MESSAGES.ONGOING;
+      return { icon: msg.icon, color: msg.color, title: msg.title, subtitle: msg.description };
     }
 
     const phase = this.enrollmentPhase();

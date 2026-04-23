@@ -8,6 +8,7 @@ import { EnrollmentPhase } from '../../../shared/types/event.interface';
 import { getLotteryThreshold } from '../../../shared/utils/enrollment-phase.util';
 import { TranslocoService } from '@jsverse/transloco';
 import { TimeUnitPipe } from '../../../shared/pipes/time-unit.pipe';
+import { EVENT_STATUS_MESSAGES } from '../constants/event-status-messages';
 
 interface StepConfig {
   icon: string;
@@ -231,10 +232,10 @@ export class EnrollmentDetailsOverlayComponent {
   });
 
   readonly headerTitle = computed(() => {
-    if (this.isCancelled()) return 'Wydarzenie odwołane';
+    if (this.isCancelled()) return EVENT_STATUS_MESSAGES.CANCELLED.title;
     const ts = this.eventTimeStatus();
-    if (ts === 'ENDED') return 'Wydarzenie zakończone';
-    if (ts === 'ONGOING') return 'Wydarzenie w trakcie';
+    if (ts === 'ENDED') return EVENT_STATUS_MESSAGES.ENDED.title;
+    if (ts === 'ONGOING') return EVENT_STATUS_MESSAGES.ONGOING.title;
     const phase = this.enrollmentPhase();
     if (phase === 'PRE_ENROLLMENT') return 'Wstępne zapisy';
     if (phase === 'LOTTERY_PENDING') return 'Losowanie w toku';
@@ -246,10 +247,12 @@ export class EnrollmentDetailsOverlayComponent {
   );
 
   readonly statusTitle = computed(() => {
-    if (this.isCancelled()) return 'Wydarzenie zostało odwołane';
     const ts = this.eventTimeStatus();
-    if (ts === 'ENDED') return 'Wydarzenie już się odbyło';
-    if (ts === 'ONGOING') return 'Wydarzenie jest w trakcie';
+
+    if (this.isCancelled() || ts === 'ENDED' || ts === 'ONGOING') {
+      return null;
+    }
+
     const phase = this.enrollmentPhase();
     if (phase === 'PRE_ENROLLMENT') return 'Trwają wstępne zapisy';
     if (phase === 'LOTTERY_PENDING') return 'Losowanie trwa';
@@ -258,14 +261,14 @@ export class EnrollmentDetailsOverlayComponent {
 
   readonly statusDescription = computed(() => {
     if (this.isCancelled()) {
-      return 'Organizator odwołał to wydarzenie. Zapisy zostały zamknięte. Jeśli byłeś zgłoszony, sprawdź swoje powiadomienia.';
+      return EVENT_STATUS_MESSAGES.CANCELLED.description;
     }
     const ts = this.eventTimeStatus();
     if (ts === 'ENDED') {
-      return 'To wydarzenie już się odbyło. Nie można już dołączyć ani się zapisać.';
+      return EVENT_STATUS_MESSAGES.ENDED.description;
     }
     if (ts === 'ONGOING') {
-      return 'Wydarzenie jest w trakcie. Nowe zapisy nie są możliwe.';
+      return EVENT_STATUS_MESSAGES.ONGOING.description;
     }
     const phase = this.enrollmentPhase();
     if (phase === 'PRE_ENROLLMENT') {
@@ -365,12 +368,9 @@ export class EnrollmentDetailsOverlayComponent {
   });
 
   readonly joinInstructions = computed<string[]>(() => {
-    if (this.isCancelled()) {
-      return ['Wydarzenie zostało odwołane - dołączenie nie jest możliwe.'];
-    }
     const ts = this.eventTimeStatus();
-    if (ts === 'ENDED' || ts === 'ONGOING') {
-      return ['Zapisywanie nie jest możliwe po rozpoczęciu wydarzenia.'];
+    if (this.isCancelled() || ts === 'ENDED' || ts === 'ONGOING') {
+      return [];
     }
 
     const phase = this.enrollmentPhase();

@@ -6,6 +6,7 @@ export interface ConfirmModalConfig {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  showCancel?: boolean;
   color?: SemanticColor;
 }
 

@@ -43,17 +43,20 @@ import { ConfirmModalService } from './confirm-modal.service';
           </div>
 
           <div class="flex gap-3 px-6 pb-6 pt-4">
-            <button
-              type="button"
-              class="flex-1 rounded-xl border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
-              (click)="onCancel()"
-            >
-              {{ s.cancelLabel || 'Nie' }}
-            </button>
+            @if (s.showCancel !== false) {
+              <button
+                type="button"
+                class="flex-1 rounded-xl border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
+                (click)="onCancel()"
+              >
+                {{ s.cancelLabel || 'Nie' }}
+              </button>
+            }
             <button
               type="button"
               [ngClass]="
-                'flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-colors ' +
+                (s.showCancel === false ? 'w-full' : 'flex-1') +
+                ' rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-colors ' +
                 confirmBtnClass()
               "
               (click)="onConfirm()"
