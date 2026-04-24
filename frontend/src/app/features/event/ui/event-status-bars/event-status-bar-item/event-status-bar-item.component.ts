@@ -1,8 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { IconComponent, IconName } from '../../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../../shared/ui/button/button.component';
 import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../../../shared/types/colors';
-import { BottomOverlaysService } from '../../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 
 export interface EventStatusBarConfig {
   id: string;
@@ -12,7 +11,7 @@ export interface EventStatusBarConfig {
   subtitle: string;
   bgClass: string;
   borderClass: string;
-  showInfoButton?: boolean;
+  infoActionId?: string;
   actionButton?: {
     label: string;
     color?: SemanticColor;
@@ -170,14 +169,14 @@ const ACCENT_VARIANTS: Record<SemanticColor, AccentClasses> = {
                 {{ action.label }}
               </app-button>
             }
-            @if (_bar.showInfoButton) {
+            @if (_bar.infoActionId) {
               <app-button
                 appearance="soft"
                 [color]="_bar.color"
                 [iconOnly]="true"
                 iconLeft="help"
                 [size]="_variant.infoButtonSize"
-                (clicked)="openInfo()"
+                (clicked)="infoAction.emit(_bar.infoActionId!)"
                 aria-label="Szczegóły statusu"
               />
             }
@@ -189,16 +188,11 @@ const ACCENT_VARIANTS: Record<SemanticColor, AccentClasses> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventStatusBarItemComponent {
-  private readonly overlays = inject(BottomOverlaysService);
-
   readonly bar = input.required<EventStatusBarConfig>();
   readonly variant = input<EventStatusBarVariant>('inline');
   readonly barAction = output<string>();
+  readonly infoAction = output<string>();
 
   readonly variantClasses = computed(() => VARIANTS[this.variant()]);
   readonly accentClasses = computed(() => ACCENT_VARIANTS[this.bar().color]);
-
-  openInfo(): void {
-    this.overlays.open('enrollmentDetails');
-  }
 }

@@ -202,12 +202,13 @@
       </div>
     }
 
-    <!-- Event status bars (lifecycle status, enrollment, organizer) -->
+    <!-- Event status bars (lifecycle status + participation status) -->
     @if (_notificationBars.length > 0) {
       <div class="mt-4">
         <app-event-status-bars-inline
           [bars]="_notificationBars"
           (barAction)="eventArea.handleNotificationBarAction($event)"
+          (infoAction)="eventArea.handleInfoAction($event)"
         ></app-event-status-bars-inline>
       </div>
     }
@@ -262,6 +263,10 @@
           <div class="flex shrink-0 items-center gap-2">
             @if (_isOrganizer) {
               <div data-testid="organizer-panel" class="flex items-center gap-2">
+                <app-button appearance="outline" color="primary" size="sm" (clicked)="openOrganizerActions()">
+                  <app-icon name="settings" size="sm"></app-icon>
+                  Zarządzaj
+                </app-button>
                 <app-button appearance="outline" color="primary" size="sm" (clicked)="eventArea.openOrganizerChats()">
                   <app-icon name="message-circle" size="sm"></app-icon>
                   Konwersacje

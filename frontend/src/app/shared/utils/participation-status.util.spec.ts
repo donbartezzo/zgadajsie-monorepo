@@ -41,6 +41,15 @@ describe('getParticipationStatusConfig()', () => {
     expect(config).toBeDefined();
     expect(config.icon).toBe('check');
   });
+
+  it('każdy status ma pole color: SemanticColor', () => {
+    expect(getParticipationStatusConfig('PENDING').color).toBe('warning');
+    expect(getParticipationStatusConfig('APPROVED').color).toBe('info');
+    expect(getParticipationStatusConfig('CONFIRMED').color).toBe('success');
+    expect(getParticipationStatusConfig('WITHDRAWN').color).toBe('neutral');
+    expect(getParticipationStatusConfig('REJECTED').color).toBe('danger');
+    expect(getParticipationStatusConfig(null).color).toBe('success');
+  });
 });
 
 describe('getParticipationStatusTitle()', () => {

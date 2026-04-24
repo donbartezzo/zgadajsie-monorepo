@@ -181,39 +181,43 @@ export class EventAreaService {
 
     if (!this.event()) return bars;
 
-    // ── Organizer bar ──
-    if (this.isOrganizer()) {
+    // ── Participation status bar (shown when user has any participation) ──
+    const participation = this.currentUserParticipation();
+    if (participation) {
+      const lifecycleStatus = this.lifecycleStatus() ?? 'UPCOMING';
+      const config = getParticipationStatusConfig(participation.status as ParticipationStatus, {
+        isEnded: lifecycleStatus === 'ENDED',
+        waitingReason: participation.waitingReason as WaitingReason | null,
+      });
+
       bars.push({
-        id: 'organizer',
-        color: 'info',
-        icon: 'shield',
-        title: 'Jesteś organizatorem',
-        subtitle: 'Zarządzaj tym wydarzeniem.',
-        bgClass: 'bg-info-100',
-        borderClass: 'border-t border-b border-info-300',
-        showInfoButton: false,
-        actionButton: {
-          label: STATUS_BAR_ACTION_LABELS.options,
-        },
+        id: 'participation',
+        color: config.color,
+        icon: config.icon as any,
+        title: config.title,
+        subtitle: config.subtitle,
+        bgClass: config.bgClass,
+        borderClass: config.borderClass,
+        actionButton: { label: config.buttonLabel },
       });
     }
 
-    // ── Enrollment status bar ──
+    // ── Event status bar (always shown) ──
     const lifecycleStatus = this.lifecycleStatus() ?? 'UPCOMING';
     const appearance = LIFECYCLE_STATUS_APPEARANCE[lifecycleStatus];
-    const { title, subtitle } = this.resolveStatusBarContent(lifecycleStatus);
-    const actionButton = this.resolveStatusBarActionButton();
+    const labels = LIFECYCLE_STATUS_LABELS[lifecycleStatus];
+    const joinButton = this.canJoin() ? { label: STATUS_BAR_ACTION_LABELS.join } : undefined;
 
     bars.push({
       id: 'status',
       color: appearance.color,
       icon: appearance.icon,
-      title,
-      subtitle,
+      title: labels.title,
+      subtitle: labels.subtitle,
       bgClass: appearance.bgClass,
       borderClass: appearance.borderClass,
-      showInfoButton: true,
-      ...(actionButton && { actionButton }),
+      infoActionId: 'enrollmentDetails',
+      ...(joinButton && { actionButton: joinButton }),
     });
 
     return bars;
@@ -657,8 +661,14 @@ export class EventAreaService {
       return;
     }
 
-    if (barId === 'organizer') {
-      this.overlays.open('organizerActions');
+    if (barId === 'participation') {
+      this.openJoinConfirmOverlay();
+    }
+  }
+
+  handleInfoAction(actionId: string): void {
+    if (actionId === 'enrollmentDetails') {
+      this.overlays.open('enrollmentDetails');
     }
   }
 
@@ -896,39 +906,5 @@ export class EventAreaService {
       showCancel: false,
       color: message.color,
     });
-  }
-
-  private resolveStatusBarContent(lifecycleStatus: EventLifecycleStatus): {
-    title: string;
-    subtitle: string;
-  } {
-    const labels = LIFECYCLE_STATUS_LABELS[lifecycleStatus];
-
-    if (lifecycleStatus === 'ENDED' || lifecycleStatus === 'ONGOING') {
-      if (this.isEnrolled()) {
-        const subtitle = getParticipationStatusConfig(this.participantStatus(), {
-          isEnded: lifecycleStatus === 'ENDED',
-        }).subtitle;
-        return { title: labels.title, subtitle };
-      }
-      return labels;
-    }
-
-    if (lifecycleStatus === 'UPCOMING' && this.isEnrolled()) {
-      const subtitle = getParticipationStatusConfig(this.participantStatus()).subtitle;
-      return { title: labels.title, subtitle };
-    }
-
-    return labels;
-  }
-
-  private resolveStatusBarActionButton(): EventStatusBarConfig['actionButton'] | undefined {
-    if (this.isEnrolled()) {
-      return { label: STATUS_BAR_ACTION_LABELS.details };
-    }
-
-    if (!this.canJoin()) return undefined;
-
-    return { label: STATUS_BAR_ACTION_LABELS.join };
   }
 }

@@ -263,6 +263,10 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     this.overlays.open('joinRules');
   }
 
+  openOrganizerActions(): void {
+    this.overlays.open('organizerActions');
+  }
+
   openChat(): void {
     this.eventArea.openChat();
   }

@@ -1,4 +1,5 @@
 import { WaitingReason } from '../types';
+import { SemanticColor } from '../types/colors';
 import { ParticipationStatus } from '../types/participation.interface';
 import {
   getWaitingReasonBarTitle,
@@ -10,6 +11,7 @@ export interface ParticipationStatusConfig {
   title: string;
   subtitle: string;
   description: string;
+  color: SemanticColor;
   icon: string;
   iconColorClass: string;
   bgClass: string;
@@ -36,6 +38,7 @@ const STATUS_CONFIGS: Record<
       title: getWaitingReasonBarTitle(reason),
       subtitle: getWaitingReasonBarSubtitle(reason),
       description: getWaitingReasonOverlayDescription(reason),
+      color: 'warning',
       icon: isPreEnroll ? 'users' : isBanned ? 'alert-triangle' : 'clock',
       iconColorClass: isPreEnroll
         ? 'text-info-600'
@@ -52,6 +55,7 @@ const STATUS_CONFIGS: Record<
     title: 'Zatwierdzone - potwierdź udział!',
     subtitle: 'Twoje miejsce zostało przyznane.',
     description: 'Twoje miejsce zostało przyznane. Potwierdź uczestnictwo.',
+    color: 'info' as SemanticColor,
     icon: 'check',
     iconColorClass: 'text-info-600',
     bgClass: 'bg-info-50',
@@ -67,6 +71,7 @@ const STATUS_CONFIGS: Record<
     description: options?.isEnded
       ? 'To wydarzenie już się zakończyło.'
       : 'Twój udział jest potwierdzony. Do zobaczenia!',
+    color: 'success' as SemanticColor,
     icon: 'check',
     iconColorClass: 'text-success-600',
     bgClass: 'bg-success-50',
@@ -78,6 +83,7 @@ const STATUS_CONFIGS: Record<
     title: 'Wypisano z wydarzenia',
     subtitle: 'Nie jesteś już uczestnikiem.',
     description: 'Nie jesteś już uczestnikiem tego wydarzenia.',
+    color: 'neutral' as SemanticColor,
     icon: 'user-x',
     iconColorClass: 'text-neutral-500',
     bgClass: 'bg-neutral-100',
@@ -89,6 +95,7 @@ const STATUS_CONFIGS: Record<
     title: 'Zgłoszenie odrzucone',
     subtitle: 'Organizator odrzucił Twoje zgłoszenie.',
     description: 'Organizator odrzucił Twoje zgłoszenie.',
+    color: 'danger' as SemanticColor,
     icon: 'x',
     iconColorClass: 'text-danger-500',
     bgClass: 'bg-danger-50',
@@ -103,6 +110,7 @@ const DEFAULT_CONFIG: ParticipationStatusConfig = {
   title: 'Jesteś zapisany',
   subtitle: 'Dołączyłeś do tego wydarzenia.',
   description: 'Twój udział jest potwierdzony. Do zobaczenia!',
+  color: 'success',
   icon: 'check',
   iconColorClass: 'text-success-600',
   bgClass: 'bg-success-50',

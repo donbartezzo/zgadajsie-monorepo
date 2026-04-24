@@ -80,8 +80,6 @@ export const LIFECYCLE_STATUS_LABELS: Record<EventLifecycleStatus, StatusBarLabe
 
 export const STATUS_BAR_ACTION_LABELS = {
   join: 'Zapisz się',
-  details: 'Szczegóły',
-  options: 'Opcje',
 } as const;
 
 // ── Inactive event modal messages ──

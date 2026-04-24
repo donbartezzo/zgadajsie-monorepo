@@ -16,7 +16,7 @@ import {
 } from '../../../shared/utils';
 
 @Component({
-  selector: 'app-join-confirm-overlay',
+  selector: 'app-my-participation-details-overlay',
   imports: [BottomOverlayComponent, LinkListComponent],
   template: `
     <app-bottom-overlay
@@ -75,7 +75,7 @@ import {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class JoinConfirmOverlayComponent {
+export class MyParticipationDetailsOverlayComponent {
   readonly open = input(false);
   readonly event = input<EventModel | null>(null);
   readonly loading = input(false);

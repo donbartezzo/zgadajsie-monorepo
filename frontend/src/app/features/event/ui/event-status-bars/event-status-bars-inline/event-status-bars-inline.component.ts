@@ -33,13 +33,18 @@ const BOTTOM_NAV_HEIGHT = 120;
           [bar]="bar"
           variant="inline"
           (barAction)="barAction.emit($event)"
+          (infoAction)="infoAction.emit($event)"
         />
       }
     </div>
 
     <!-- Sticky bar: shown when inline bars scroll out of viewport -->
     @if (!sentinelVisible()) {
-      <app-event-status-bar-sticky [bars]="bars()" (barAction)="barAction.emit($event)" />
+      <app-event-status-bar-sticky
+        [bars]="bars()"
+        (barAction)="barAction.emit($event)"
+        (infoAction)="infoAction.emit($event)"
+      />
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,6 +56,7 @@ export class EventStatusBarsInlineComponent implements AfterViewInit, OnDestroy 
 
   readonly bars = input<EventStatusBarConfig[]>([]);
   readonly barAction = output<string>();
+  readonly infoAction = output<string>();
 
   readonly sentinelVisible = signal(true);
 

@@ -443,50 +443,58 @@ export class DesignSystemComponent {
   // Źródło prawdy: event-status-messages.ts
   // ════════════════════════════════════════════════════════
   readonly statusBarExamples: EventStatusBarConfig[] = [
-    // UPCOMING
+    // UPCOMING (event status bar)
     {
       id: 'upcoming',
       ...LIFECYCLE_STATUS_APPEARANCE.UPCOMING,
       ...LIFECYCLE_STATUS_LABELS.UPCOMING,
-      showInfoButton: true,
+      infoActionId: 'enrollmentDetails',
       actionButton: {
         label: STATUS_BAR_ACTION_LABELS.join,
       },
     },
-    // ONGOING
+    // ONGOING (event status bar)
     {
       id: 'ongoing',
       ...LIFECYCLE_STATUS_APPEARANCE.ONGOING,
       ...LIFECYCLE_STATUS_LABELS.ONGOING,
-      showInfoButton: true,
+      infoActionId: 'enrollmentDetails',
     },
-    // ENDED
+    // ENDED (event status bar)
     {
       id: 'ended',
       ...LIFECYCLE_STATUS_APPEARANCE.ENDED,
       ...LIFECYCLE_STATUS_LABELS.ENDED,
-      showInfoButton: true,
+      infoActionId: 'enrollmentDetails',
     },
-    // CANCELLED
+    // CANCELLED (event status bar)
     {
       id: 'cancelled',
       ...LIFECYCLE_STATUS_APPEARANCE.CANCELLED,
       ...LIFECYCLE_STATUS_LABELS.CANCELLED,
-      showInfoButton: true,
+      infoActionId: 'enrollmentDetails',
     },
-    // ORGANIZER (nie ma w source of truth - specyficzny dla design systemu)
+    // PARTICIPATION: CONFIRMED (participation status bar)
     {
-      id: 'organizer',
-      color: 'info',
-      icon: 'shield',
-      title: 'Jesteś organizatorem',
-      subtitle: 'Zarządzaj tym wydarzeniem.',
-      bgClass: 'bg-info-100',
-      borderClass: 'border-t border-b border-info-300',
-      showInfoButton: false,
-      actionButton: {
-        label: STATUS_BAR_ACTION_LABELS.options,
-      },
+      id: 'participation-confirmed',
+      color: 'success',
+      icon: 'check',
+      title: 'Jesteś już potwierdzonym uczestnikiem!',
+      subtitle: 'Twój udział jest potwierdzony.',
+      bgClass: 'bg-success-50',
+      borderClass: 'border-t border-b border-success-200',
+      actionButton: { label: 'Szczegóły' },
+    },
+    // PARTICIPATION: PENDING (participation status bar)
+    {
+      id: 'participation-pending',
+      color: 'warning',
+      icon: 'clock',
+      title: 'Oczekujesz na przydzielenie miejsca',
+      subtitle: 'Poinformujemy Cię o zmianie statusu.',
+      bgClass: 'bg-warning-50',
+      borderClass: 'border-t border-b border-warning-200',
+      actionButton: { label: 'Szczegóły' },
     },
   ];
 

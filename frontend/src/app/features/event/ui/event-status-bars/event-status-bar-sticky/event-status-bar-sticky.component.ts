@@ -16,6 +16,7 @@ import {
           [bar]="bar"
           variant="sticky"
           (barAction)="barAction.emit($event)"
+          (infoAction)="infoAction.emit($event)"
         />
       }
     </div>
@@ -42,4 +43,5 @@ import {
 export class EventStatusBarStickyComponent {
   readonly bars = input<EventStatusBarConfig[]>([]);
   readonly barAction = output<string>();
+  readonly infoAction = output<string>();
 }
