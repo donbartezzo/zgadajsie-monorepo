@@ -8,6 +8,7 @@ import {
   CancelPaymentRequest,
 } from '../../../types';
 import { EventCountdown } from '@zgadajsie/shared';
+import { EventLifecycleStatus } from '../../../../features/event/constants/event-status-messages';
 
 export type OverlayType =
   | 'share'
@@ -60,6 +61,9 @@ export class BottomOverlaysService {
   private changeRoleCallback:
     | ((data: { participationId: string; roleKey: string }) => void)
     | null = null;
+
+  private readonly lifecycleStatusSignal = signal<EventLifecycleStatus>('UPCOMING');
+  readonly lifecycleStatus = this.lifecycleStatusSignal.asReadonly();
 
   private readonly lotteryCountdownSignal = signal<EventCountdown | null>(null);
   readonly lotteryCountdown = this.lotteryCountdownSignal.asReadonly();
@@ -138,6 +142,10 @@ export class BottomOverlaysService {
 
   setLoading(loading: boolean): void {
     this.loadingSignal.set(loading);
+  }
+
+  setLifecycleStatus(status: EventLifecycleStatus): void {
+    this.lifecycleStatusSignal.set(status);
   }
 
   setLotteryCountdown(countdown: EventCountdown | null): void {

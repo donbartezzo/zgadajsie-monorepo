@@ -33,11 +33,10 @@ import {
   nowInZone,
   toZonedDateTime,
 } from '@zgadajsie/shared';
-import { EnrollmentStatusBannerComponent } from '../../ui/enrollment-status-banner/enrollment-status-banner.component';
 import { EventInfoGridComponent } from '../../../../shared/ui/event-info-grid/event-info-grid.component';
 import { MapComponent } from '../../../../shared/event-form/ui/map/map.component';
-import { getLotteryThreshold } from '../../../../shared/utils/enrollment-phase.util';
-import { EventInlineNotificationBarsComponent } from '../../ui/event-inline-notification-bars/event-inline-notification-bars.component';
+import { getLotteryThreshold } from '../../../../shared/utils/event-time-status.util';
+import { EventStatusBarsInlineComponent } from '../../ui/event-status-bars/event-status-bars-inline/event-status-bars-inline.component';
 import { EventAnnouncementsComponent } from '../../ui/event-announcements/event-announcements.component';
 import { NotificationStatusService } from '../../../../core/services/notification-status.service';
 import { EventAreaService } from '../../services/event-area.service';
@@ -58,9 +57,8 @@ import { EventInfoItemComponent } from '../../../../shared/ui/event-info-item/ev
     UserAvatarComponent,
     LoadingSpinnerComponent,
     EventInfoItemComponent,
-    EventInlineNotificationBarsComponent,
+    EventStatusBarsInlineComponent,
     EventAnnouncementsComponent,
-    EnrollmentStatusBannerComponent,
     EventHeroSlotsComponent,
     EventInfoGridComponent,
     MapComponent,
@@ -93,15 +91,13 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly isEnrolled = this.eventArea.isEnrolled;
   readonly isOrganizer = this.eventArea.isOrganizer;
   readonly participantStatus = this.eventArea.participantStatus;
-  readonly enrollmentPhase = this.eventArea.enrollmentPhase;
-  readonly eventTimeStatus = this.eventArea.eventTimeStatus;
+  readonly lifecycleStatus = this.eventArea.lifecycleStatus;
   readonly canJoin = this.eventArea.canJoin;
   readonly isCancelled = this.eventArea.isCancelled;
   readonly enrollmentCount = this.eventArea.enrollmentCount;
   readonly participantCount = this.eventArea.participantCount;
   readonly notificationBars = this.eventArea.notificationBars;
   readonly visibleAvatars = this.eventArea.visibleAvatars;
-  readonly lifecycleBannerVariant = this.eventArea.lifecycleBannerVariant;
 
   // ── Local state ──
   readonly announcements = signal<EventAnnouncement[]>([]);
@@ -129,7 +125,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     { icon: 'bookmark', label: 'Własna rezerwacja' },
   ];
 
-  readonly isPreEnrollment = computed(() => this.enrollmentPhase() === 'PRE_ENROLLMENT');
+  readonly isPreEnrollment = this.eventArea.isPreEnrollment;
 
   readonly rulesList = computed(() => {
     const rules = this.event()?.rules;
@@ -179,7 +175,8 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     // Setup countdown effect in injection context
     effect(() => {
       const e = this.event();
-      if (e && !this.countdownInterval && this.eventTimeStatus() !== 'ENDED') {
+      const ls = this.lifecycleStatus();
+      if (e && !this.countdownInterval && ls !== 'ENDED' && ls !== 'CANCELLED') {
         this.startCountdown(e.startsAt, e.endsAt);
       }
     });

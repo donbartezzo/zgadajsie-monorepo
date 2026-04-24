@@ -19,12 +19,17 @@ function makeParticipant(id: string, status: string, userId = 'u1'): EnrollmentI
   } as any;
 }
 
+const FUTURE = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
 function makeEvent(overrides: Record<string, unknown> = {}) {
   return {
     id: 'ev1',
     maxParticipants: 10,
-    enrollmentPhase: 'OPEN_ENROLLMENT',
     roleConfig: null,
+    startsAt: FUTURE.toISOString(),
+    endsAt: new Date(FUTURE.getTime() + 3600000).toISOString(),
+    lotteryExecutedAt: new Date().toISOString(),
+    status: 'ACTIVE',
     ...overrides,
   } as any;
 }
@@ -102,17 +107,23 @@ describe('EnrollmentGridComponent — computed signals', () => {
     });
   });
 
-  describe('enrollmentPhase()', () => {
-    it('zwraca null gdy brak enrollmentPhase', () => {
-      const { fixture, c } = create();
-      fixture.componentRef.setInput('event', makeEvent({ enrollmentPhase: null }));
-      expect(c.enrollmentPhase()).toBeNull();
+  describe('isPreEnrollment()', () => {
+    it('zwraca false gdy lotteryExecutedAt !== null', () => {
+      const { c } = create();
+      expect(c.isPreEnrollment()).toBe(false);
     });
 
-    it('zwraca PRE_ENROLLMENT gdy ustawione', () => {
+    it('zwraca true gdy now < lotteryThreshold i lotteryExecutedAt=null', () => {
       const { fixture, c } = create();
-      fixture.componentRef.setInput('event', makeEvent({ enrollmentPhase: 'PRE_ENROLLMENT' }));
-      expect(c.enrollmentPhase()).toBe('PRE_ENROLLMENT');
+      const farFuture = new Date(Date.now() + 72 * 60 * 60 * 1000);
+      fixture.componentRef.setInput(
+        'event',
+        makeEvent({
+          startsAt: farFuture.toISOString(),
+          lotteryExecutedAt: null,
+        }),
+      );
+      expect(c.isPreEnrollment()).toBe(true);
     });
   });
 

@@ -5,6 +5,16 @@ import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
 import { CapacityProgressComponent } from '../../../../shared/ui/capacity-progress/capacity-progress.component';
 import { EventInfoItemComponent } from '../../../../shared/ui/event-info-item/event-info-item.component';
 import { SemanticColor } from '../../../../shared/types/colors';
+import {
+  EventStatusBarConfig,
+  EventStatusBarItemComponent,
+  EventStatusBarVariant,
+} from '../../../../features/event/ui/event-status-bars/event-status-bar-item/event-status-bar-item.component';
+import {
+  LIFECYCLE_STATUS_APPEARANCE,
+  LIFECYCLE_STATUS_LABELS,
+  STATUS_BAR_ACTION_LABELS,
+} from '../../../../features/event/constants/event-status-messages';
 
 interface ColorSwatch {
   shade: string;
@@ -25,6 +35,7 @@ interface ColorPalette {
     BadgeComponent,
     CapacityProgressComponent,
     EventInfoItemComponent,
+    EventStatusBarItemComponent,
   ],
   templateUrl: './design-system.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,6 +59,7 @@ export class DesignSystemComponent {
     { id: 'icons', label: 'Ikony' },
     { id: 'spacing', label: 'Spacing' },
     { id: 'components', label: 'Komponenty' },
+    { id: 'event-status-bars', label: 'Status bars' },
   ];
 
   // ════════════════════════════════════════════════════════
@@ -385,6 +397,7 @@ export class DesignSystemComponent {
     'x-twitter',
     'whatsapp',
     'alert-triangle',
+    'help',
     'help-circle',
     'check-circle',
     'list',
@@ -426,6 +439,60 @@ export class DesignSystemComponent {
   ];
 
   // ════════════════════════════════════════════════════════
+  // EVENT STATUS BARS - przykłady oparte na rzeczywistych konfiguracjach
+  // Źródło prawdy: event-status-messages.ts
+  // ════════════════════════════════════════════════════════
+  readonly statusBarExamples: EventStatusBarConfig[] = [
+    // UPCOMING
+    {
+      id: 'upcoming',
+      ...LIFECYCLE_STATUS_APPEARANCE.UPCOMING,
+      ...LIFECYCLE_STATUS_LABELS.UPCOMING,
+      showInfoButton: true,
+      actionButton: {
+        label: STATUS_BAR_ACTION_LABELS.join,
+      },
+    },
+    // ONGOING
+    {
+      id: 'ongoing',
+      ...LIFECYCLE_STATUS_APPEARANCE.ONGOING,
+      ...LIFECYCLE_STATUS_LABELS.ONGOING,
+      showInfoButton: true,
+    },
+    // ENDED
+    {
+      id: 'ended',
+      ...LIFECYCLE_STATUS_APPEARANCE.ENDED,
+      ...LIFECYCLE_STATUS_LABELS.ENDED,
+      showInfoButton: true,
+    },
+    // CANCELLED
+    {
+      id: 'cancelled',
+      ...LIFECYCLE_STATUS_APPEARANCE.CANCELLED,
+      ...LIFECYCLE_STATUS_LABELS.CANCELLED,
+      showInfoButton: true,
+    },
+    // ORGANIZER (nie ma w source of truth - specyficzny dla design systemu)
+    {
+      id: 'organizer',
+      color: 'info',
+      icon: 'shield',
+      title: 'Jesteś organizatorem',
+      subtitle: 'Zarządzaj tym wydarzeniem.',
+      bgClass: 'bg-info-100',
+      borderClass: 'border-t border-b border-info-300',
+      showInfoButton: false,
+      actionButton: {
+        label: STATUS_BAR_ACTION_LABELS.options,
+      },
+    },
+  ];
+
+  readonly statusBarVariants: EventStatusBarVariant[] = ['inline', 'sticky'];
+
+  // ════════════════════════════════════════════════════════
   // BADGE COLOR PROPOSAL - Foundation Palettes (głębsze odcienie)
   // Wybrane tak, aby pasowały do białej czcionki (text-white)
   // i były maksymalnie zróżnicowane wizualnie
@@ -440,6 +507,40 @@ export class DesignSystemComponent {
     { name: 'Pink', shade: '700', hex: '#a33e80', tailwind: 'bg-pink-700' },
     { name: 'Brown', shade: '700', hex: '#5d4037', tailwind: 'bg-brown-700' },
     { name: 'Dark', shade: '800', hex: '#262a30', tailwind: 'bg-dark-800' },
+  ];
+
+  // ════════════════════════════════════════════════════════
+  // BADGE BRIGHT PROPOSAL - Foundation Palettes (jasne, nie pastelowe)
+  // Wybrane tak, aby pasowały do ciemnej czcionki (text-neutral-900)
+  // i były bardziej nasycone niż pastele
+  // ════════════════════════════════════════════════════════
+  readonly badgeBrightProposal = [
+    { name: 'Red', shade: '200', hex: '#f9b4bc', tailwind: 'bg-red-200' },
+    { name: 'Yellow', shade: '200', hex: '#fff59d', tailwind: 'bg-yellow-200' },
+    { name: 'Green', shade: '200', hex: '#c5e1a5', tailwind: 'bg-green-200' },
+    { name: 'Mint', shade: '200', hex: '#a7edd8', tailwind: 'bg-mint-200' },
+    { name: 'Blue', shade: '200', hex: '#9dccf8', tailwind: 'bg-blue-200' },
+    { name: 'Magenta', shade: '200', hex: '#d4c4f4', tailwind: 'bg-magenta-200' },
+    { name: 'Pink', shade: '200', hex: '#f9c4de', tailwind: 'bg-pink-200' },
+    { name: 'Brown', shade: '200', hex: '#d4c4b4', tailwind: 'bg-brown-200' },
+    { name: 'Dark', shade: '200', hex: '#dadce2', tailwind: 'bg-dark-200' },
+  ];
+
+  // ════════════════════════════════════════════════════════
+  // BADGE PASTEL PROPOSAL - Foundation Palettes (pastelowe odcienie)
+  // Wybrane tak, aby pasowały do ciemnej czcionki (text-neutral-900)
+  // i były maksymalnie zróżnicowane wizualnie
+  // ════════════════════════════════════════════════════════
+  readonly badgePastelProposal = [
+    { name: 'Red', shade: '100', hex: '#fcd4d9', tailwind: 'bg-red-100' },
+    { name: 'Yellow', shade: '100', hex: '#fff9c4', tailwind: 'bg-yellow-100' },
+    { name: 'Green', shade: '100', hex: '#dcf2cc', tailwind: 'bg-green-100' },
+    { name: 'Mint', shade: '100', hex: '#d1f5ea', tailwind: 'bg-mint-100' },
+    { name: 'Blue', shade: '100', hex: '#c8e3fc', tailwind: 'bg-blue-100' },
+    { name: 'Magenta', shade: '100', hex: '#e4daf8', tailwind: 'bg-magenta-100' },
+    { name: 'Pink', shade: '100', hex: '#fce7f3', tailwind: 'bg-pink-100' },
+    { name: 'Brown', shade: '100', hex: '#e8ddd3', tailwind: 'bg-brown-100' },
+    { name: 'Dark', shade: '100', hex: '#eaecf0', tailwind: 'bg-dark-100' },
   ];
 
   setSection(id: string): void {

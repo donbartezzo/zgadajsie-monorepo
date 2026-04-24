@@ -12,7 +12,7 @@
     <!-- Current user status banner -->
     @if (_isLoggedIn && _notificationBars.length > 0) {
       <div class="mb-4">
-        <app-event-sticky-notification-bar
+        <app-event-status-bar-sticky
           [bars]="_notificationBars"
           (barAction)="eventArea.handleNotificationBarAction($event)"
         />

@@ -17,11 +17,11 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { UserService } from '../../../../core/services/user.service';
 import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { EventStatus, EventTimeStatus, isOverrideAccount } from '@zgadajsie/shared';
+import { EventStatus, isOverrideAccount } from '@zgadajsie/shared';
 import { Event as EventModel } from '../../../../shared/types';
 import {
   isEventJoinable,
-  getEventTimeStatus,
+  getEventLifecycleStatus,
 } from '../../../../shared/utils/event-time-status.util';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { environment } from '../../../../../environments/environment';
@@ -231,10 +231,10 @@ export class MyEventsComponent implements OnInit {
   }
 
   getStatusLabel(e: EventModel): string {
-    if (e.status === EventStatus.CANCELLED) return 'ODWOŁANE';
-    const timeStatus = getEventTimeStatus(e.startsAt, e.endsAt, e.status);
-    if (timeStatus === EventTimeStatus.ONGOING) return 'W TRAKCIE';
-    if (timeStatus === EventTimeStatus.ENDED) return 'ZAKOŃCZONE';
+    const ls = getEventLifecycleStatus(e.startsAt, e.endsAt, e.status);
+    if (ls === 'CANCELLED') return 'ODWOŁANE';
+    if (ls === 'ONGOING') return 'W TRAKCIE';
+    if (ls === 'ENDED') return 'ZAKOŃCZONE';
     return 'AKTYWNE';
   }
 }

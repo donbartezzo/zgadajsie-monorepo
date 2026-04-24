@@ -27,6 +27,7 @@ import {
   EVENT_CANCELLED_MESSAGE,
   PARTICIPANT_WITHDREW_MESSAGE,
   PARTICIPANT_ALREADY_HAS_SLOT_MESSAGE,
+  ENROLLMENT_BLOCKED,
 } from '@zgadajsie/shared';
 import { featureFlags } from '../../common/config/feature-flags';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
@@ -691,16 +692,16 @@ export class EnrollmentService {
 
   private assertJoinEligibility(event: JoinEventLike): ReturnType<typeof getEnrollmentPhase> {
     if (event.status !== 'ACTIVE') {
-      throw new BadRequestException('Wydarzenie nie jest aktywne');
+      throw new BadRequestException(ENROLLMENT_BLOCKED.EVENT_NOT_ACTIVE);
     }
 
     if (!isEventJoinable(event)) {
-      throw new BadRequestException('Wydarzenie już się rozpoczęło - dołączenie nie jest możliwe');
+      throw new BadRequestException(ENROLLMENT_BLOCKED.EVENT_STARTED);
     }
 
     const phase = getEnrollmentPhase(event);
     if (phase === 'LOTTERY_PENDING') {
-      throw new BadRequestException('Trwa losowanie miejsc - spróbuj za chwilę');
+      throw new BadRequestException(ENROLLMENT_BLOCKED.LOTTERY_PENDING);
     }
 
     return phase;

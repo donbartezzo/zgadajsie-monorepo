@@ -25,8 +25,6 @@ function makeEvent(overrides: Record<string, unknown> = {}) {
     startsAt: FUTURE.toISOString(),
     endsAt: new Date(FUTURE.getTime() + 3600000).toISOString(),
     lotteryExecutedAt: null,
-    enrollmentPhase: null,
-    eventTimeStatus: null,
     ...overrides,
   } as any;
 }
@@ -70,6 +68,7 @@ describe('EventAreaService — computed signals', () => {
           provide: BottomOverlaysService,
           useValue: {
             setLotteryCountdown: jest.fn(),
+            setLifecycleStatus: jest.fn(),
             onAuthSuccess: jest.fn(),
             onCancelEvent: jest.fn(),
             autoRefreshPaused$: new Subject(),

@@ -15,22 +15,25 @@ import {
 import {
   Event as EventModel,
   Participation,
-  EnrollmentPhase,
   ParticipationStatus,
   WaitingReason,
 } from '../../../shared/types';
-import { MAX_GUESTS_PER_USER, MAX_GUESTS_PER_ORGANIZER, EventTimeStatus } from '@zgadajsie/shared';
-import { getEnrollmentPhase } from '../../../shared/utils/enrollment-phase.util';
-import { getEventTimeStatus, isEventJoinable } from '../../../shared/utils/event-time-status.util';
+import { MAX_GUESTS_PER_USER, MAX_GUESTS_PER_ORGANIZER } from '@zgadajsie/shared';
 import {
-  getWaitingReasonToast,
-  getWaitingReasonBarTitle,
-  getWaitingReasonBarSubtitle,
-} from '../../../shared/utils/waiting-reason-messages.util';
-import { getParticipationStatusConfig, ParticipationStatusOptions } from '../../../shared/utils';
-import { NotificationBarConfig } from '../ui/event-inline-notification-bars/event-inline-notification-bars.component';
-import type { IconName } from '../../../shared/ui/icon/icon.component';
-import { EVENT_STATUS_MESSAGES } from '../constants/event-status-messages';
+  getEventLifecycleStatus,
+  isEventJoinable,
+  isPreEnrollment,
+} from '../../../shared/utils/event-time-status.util';
+import { getWaitingReasonToast } from '../../../shared/utils/waiting-reason-messages.util';
+import { getParticipationStatusConfig } from '../../../shared/utils';
+import { EventStatusBarConfig } from '../ui/event-status-bars/event-status-bars-inline/event-status-bars-inline.component';
+import {
+  EVENT_STATUS_MESSAGES,
+  EventLifecycleStatus,
+  LIFECYCLE_STATUS_APPEARANCE,
+  LIFECYCLE_STATUS_LABELS,
+  STATUS_BAR_ACTION_LABELS,
+} from '../constants/event-status-messages';
 
 const AUTO_REFRESH_INTERVAL = 120000; // 120 seconds — safety-net fallback; primary updates via WebSocket
 
@@ -80,14 +83,16 @@ export class EventAreaService {
 
   // ── Computed signals ──
 
-  readonly enrollmentPhase = computed<EnrollmentPhase | null>(() => {
+  readonly lifecycleStatus = computed<EventLifecycleStatus | null>(() => {
     const e = this.event();
     if (!e) return null;
-    return e.enrollmentPhase ?? getEnrollmentPhase(e.startsAt, e.lotteryExecutedAt, e.status);
+    return getEventLifecycleStatus(e.startsAt, e.endsAt, e.status);
   });
 
-  readonly eventTimeStatus = computed<EventTimeStatus | null>(() => {
-    return this.event()?.eventTimeStatus ?? null;
+  readonly isPreEnrollment = computed(() => {
+    const e = this.event();
+    if (!e) return false;
+    return isPreEnrollment(e.startsAt, e.lotteryExecutedAt, e.status);
   });
 
   readonly isCancelled = computed(() => this.event()?.status === 'CANCELLED');
@@ -118,11 +123,9 @@ export class EventAreaService {
 
   readonly canLeave = computed(() => {
     const p = this.currentUserParticipation();
-    const e = this.event();
     if (!p) return false;
-    const timeStatus =
-      this.eventTimeStatus() ?? (e ? getEventTimeStatus(e.startsAt, e.endsAt, e.status) : null);
-    if (timeStatus === 'ENDED') return false;
+    const ls = this.lifecycleStatus();
+    if (ls === 'ENDED' || ls === 'CANCELLED') return false;
     return p.status === 'PENDING' || p.status === 'APPROVED' || p.status === 'CONFIRMED';
   });
 
@@ -134,22 +137,12 @@ export class EventAreaService {
   readonly canJoin = computed(() => {
     const e = this.event();
     if (!e) return false;
-    if (!isEventJoinable(e.startsAt, e.status)) return false;
-    const phase = this.enrollmentPhase();
-    return phase === 'PRE_ENROLLMENT' || phase === 'OPEN_ENROLLMENT';
+    return isEventJoinable(e.startsAt, e.status);
   });
 
   readonly ctaLabel = computed(() => {
     if (!this.auth.isLoggedIn()) return 'Zaloguj się, aby dołączyć';
-    const phase = this.enrollmentPhase();
-    if (phase === 'PRE_ENROLLMENT') return 'Zgłoś się wstępnie';
-    return 'Dołącz do wydarzenia';
-  });
-
-  readonly ctaLabelShort = computed(() => {
-    const phase = this.enrollmentPhase();
-    if (phase === 'PRE_ENROLLMENT') return 'Zgłoś się';
-    return 'Dołącz';
+    return 'Zapisz się';
   });
 
   readonly isPaidEvent = computed(() => {
@@ -176,52 +169,52 @@ export class EventAreaService {
   readonly visibleAvatars = computed(() => this.participants().slice(0, 6));
 
   readonly lifecycleBannerVariant = computed(() => {
-    if (this.isCancelled()) return 'cancelled' as const;
-    const ts = this.eventTimeStatus();
-    if (ts === 'ONGOING') return 'ongoing' as const;
-    if (ts === 'ENDED') return 'ended' as const;
+    const ls = this.lifecycleStatus();
+    if (ls === 'CANCELLED') return 'cancelled' as const;
+    if (ls === 'ONGOING') return 'ongoing' as const;
+    if (ls === 'ENDED') return 'ended' as const;
     return null;
   });
 
-  readonly notificationBars = computed<NotificationBarConfig[]>(() => {
-    const bars: NotificationBarConfig[] = [];
-    const status = this.participantStatus();
-    const isEnded = this.eventTimeStatus() === 'ENDED' || this.isCancelled();
+  readonly notificationBars = computed<EventStatusBarConfig[]>(() => {
+    const bars: EventStatusBarConfig[] = [];
 
-    if (this.isEnrolled()) {
-      bars.push(this.getParticipantBarConfig(status, isEnded));
-    }
+    if (!this.event()) return bars;
 
+    // ── Organizer bar ──
     if (this.isOrganizer()) {
       bars.push({
         id: 'organizer',
+        color: 'info',
         icon: 'shield',
-        iconColorClass: 'text-info-600',
         title: 'Jesteś organizatorem',
         subtitle: 'Zarządzaj tym wydarzeniem.',
-        buttonLabel: 'Opcje',
-        bgClass: 'bg-info-50',
-        borderClass: 'border-t border-b border-info-200',
+        bgClass: 'bg-info-100',
+        borderClass: 'border-t border-b border-info-300',
+        showInfoButton: false,
+        actionButton: {
+          label: STATUS_BAR_ACTION_LABELS.options,
+        },
       });
     }
 
-    if (!this.isEnrolled() && this.canJoin()) {
-      const phase = this.enrollmentPhase();
-      bars.push({
-        id: 'join',
-        icon: 'user-plus',
-        iconColorClass: 'text-white',
-        title: this.ctaLabel(),
-        subtitle: phase === 'PRE_ENROLLMENT' ? 'Zapisz się na listę wstępną' : 'Zgłoś chęć udziału',
-        buttonLabel: this.ctaLabelShort(),
-        bgClass: 'bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg',
-        borderClass: 'border-t border-b border-primary-400',
-        titleColorClass: 'text-white',
-        subtitleColorClass: 'text-white/90',
-        buttonAppearance: 'soft',
-        buttonColor: 'primary',
-      });
-    }
+    // ── Enrollment status bar ──
+    const lifecycleStatus = this.lifecycleStatus() ?? 'UPCOMING';
+    const appearance = LIFECYCLE_STATUS_APPEARANCE[lifecycleStatus];
+    const { title, subtitle } = this.resolveStatusBarContent(lifecycleStatus);
+    const actionButton = this.resolveStatusBarActionButton();
+
+    bars.push({
+      id: 'status',
+      color: appearance.color,
+      icon: appearance.icon,
+      title,
+      subtitle,
+      bgClass: appearance.bgClass,
+      borderClass: appearance.borderClass,
+      showInfoButton: true,
+      ...(actionButton && { actionButton }),
+    });
 
     return bars;
   });
@@ -534,6 +527,10 @@ export class EventAreaService {
     effect(() => this.overlays.setLoading(this.joining()));
     effect(() => this.overlays.setParticipants(this.participants()));
     effect(() => {
+      const ls = this.lifecycleStatus();
+      if (ls) this.overlays.setLifecycleStatus(ls);
+    });
+    effect(() => {
       const wasOverlayOpen = this.autoRefreshPausedByOverlay;
       this.autoRefreshPausedByOverlay = this.overlays.active() !== null;
       if (this.initialized) {
@@ -565,13 +562,9 @@ export class EventAreaService {
       const loading = this.loading();
 
       if (!loading && eventId) {
-        const ts = this.eventTimeStatus();
-        const cancelled = this.isCancelled();
-
-        if (cancelled) {
-          this.showInactiveModal('CANCELLED');
-        } else if (ts === 'ENDED' || ts === 'ONGOING') {
-          this.showInactiveModal(ts);
+        const ls = this.lifecycleStatus();
+        if (ls === 'CANCELLED' || ls === 'ENDED' || ls === 'ONGOING') {
+          this.showInactiveModal(ls);
         }
       }
     });
@@ -659,7 +652,7 @@ export class EventAreaService {
   }
 
   handleNotificationBarAction(barId: string): void {
-    if (barId === 'participant' || barId === 'join') {
+    if (barId === 'status') {
       this.openJoinSheet();
       return;
     }
@@ -741,8 +734,10 @@ export class EventAreaService {
             },
           });
         },
-        error: (err) => {
-          this.snackbar.error(err.error?.message || 'Nie udało się dołączyć do wydarzenia');
+        error: (err: { error?: { message?: string; suggestion?: string } }) => {
+          const msg = err.error?.message || 'Nie udało się dołączyć do wydarzenia';
+          const suggestion = err.error?.suggestion;
+          this.snackbar.error(suggestion ? `${msg}. ${suggestion}` : msg);
         },
       });
   }
@@ -892,28 +887,6 @@ export class EventAreaService {
     return 'Zgłoszenie wysłane!';
   }
 
-  getParticipantBarConfig(status: string | null, isEnded = false): NotificationBarConfig {
-    const options: ParticipationStatusOptions = { isEnded };
-
-    if (status === 'PENDING') {
-      const reason = this.waitingReason();
-      return this.getPendingBarConfig(reason);
-    }
-
-    const config = getParticipationStatusConfig(status as ParticipationStatus | null, options);
-
-    return {
-      id: 'participant',
-      icon: config.icon as IconName,
-      iconColorClass: config.iconColorClass,
-      title: config.title,
-      subtitle: config.subtitle,
-      buttonLabel: config.buttonLabel,
-      bgClass: config.bgClass,
-      borderClass: config.borderClass,
-    };
-  }
-
   private async showInactiveModal(status: 'ENDED' | 'ONGOING' | 'CANCELLED'): Promise<void> {
     const message = EVENT_STATUS_MESSAGES[status];
     await this.confirmModal.confirm({
@@ -925,27 +898,37 @@ export class EventAreaService {
     });
   }
 
-  private getPendingBarConfig(reason: WaitingReason | null): NotificationBarConfig {
-    const isPreEnroll = reason === 'PRE_ENROLLMENT';
-    const isBanned = reason === 'BANNED';
+  private resolveStatusBarContent(lifecycleStatus: EventLifecycleStatus): {
+    title: string;
+    subtitle: string;
+  } {
+    const labels = LIFECYCLE_STATUS_LABELS[lifecycleStatus];
 
-    return {
-      id: 'participant',
-      icon: isPreEnroll ? 'users' : isBanned ? 'alert-triangle' : 'clock',
-      iconColorClass: isPreEnroll
-        ? 'text-info-600'
-        : isBanned
-          ? 'text-danger-600'
-          : 'text-warning-600',
-      title: getWaitingReasonBarTitle(reason),
-      subtitle: getWaitingReasonBarSubtitle(reason),
-      buttonLabel: 'Szczegóły',
-      bgClass: isPreEnroll ? 'bg-info-50' : isBanned ? 'bg-danger-50' : 'bg-warning-50',
-      borderClass: isPreEnroll
-        ? 'border-t border-b border-info-200'
-        : isBanned
-          ? 'border-t border-b border-danger-200'
-          : 'border-t border-b border-warning-200',
-    };
+    if (lifecycleStatus === 'ENDED' || lifecycleStatus === 'ONGOING') {
+      if (this.isEnrolled()) {
+        const subtitle = getParticipationStatusConfig(this.participantStatus(), {
+          isEnded: lifecycleStatus === 'ENDED',
+        }).subtitle;
+        return { title: labels.title, subtitle };
+      }
+      return labels;
+    }
+
+    if (lifecycleStatus === 'UPCOMING' && this.isEnrolled()) {
+      const subtitle = getParticipationStatusConfig(this.participantStatus()).subtitle;
+      return { title: labels.title, subtitle };
+    }
+
+    return labels;
+  }
+
+  private resolveStatusBarActionButton(): EventStatusBarConfig['actionButton'] | undefined {
+    if (this.isEnrolled()) {
+      return { label: STATUS_BAR_ACTION_LABELS.details };
+    }
+
+    if (!this.canJoin()) return undefined;
+
+    return { label: STATUS_BAR_ACTION_LABELS.join };
   }
 }

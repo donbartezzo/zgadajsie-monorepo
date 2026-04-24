@@ -7,8 +7,7 @@
   @let _isEnrolled = isEnrolled();
   @let _isOrganizer = isOrganizer();
   @let _participants = participants();
-  @let _phase = enrollmentPhase();
-  @let _isPreEnrollment = _phase === 'PRE_ENROLLMENT';
+  @let _isPreEnrollment = isPreEnrollment();
   @let _visibleAvatars = visibleAvatars();
   @let _countdown = countdown();
   @let _notificationBars = notificationBars();
@@ -39,16 +38,6 @@
           </button>
         </div>
       }
-    </div>
-
-    <!-- Enrollment status banner -->
-    <div class="mt-2">
-      <app-enrollment-status-banner
-        [enrollmentPhase]="enrollmentPhase()"
-        [eventTimeStatus]="eventTimeStatus()"
-        [isCancelled]="isCancelled()"
-        [participantCount]="participantCount()"
-      />
     </div>
 
     <!-- Participants section -->
@@ -213,13 +202,13 @@
       </div>
     }
 
-    <!-- Notification bars (participant, organizer, etc.) -->
+    <!-- Event status bars (lifecycle status, enrollment, organizer) -->
     @if (_notificationBars.length > 0) {
       <div class="mt-4">
-        <app-event-inline-notification-bars
+        <app-event-status-bars-inline
           [bars]="_notificationBars"
           (barAction)="eventArea.handleNotificationBarAction($event)"
-        ></app-event-inline-notification-bars>
+        ></app-event-status-bars-inline>
       </div>
     }
 
@@ -254,8 +243,6 @@
     @if (e.organizer) {
       @let _organizerName = e.organizer!.displayName;
       @let _organizerDonationUrl = e.organizer!.donationUrl;
-
-      <div class="mt-3 border-t border-neutral-100"></div>
 
       <div class="mt-4 pb-2">
         <div class="flex flex-wrap items-center justify-between gap-3">

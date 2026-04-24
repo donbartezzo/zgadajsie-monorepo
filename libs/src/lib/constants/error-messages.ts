@@ -27,3 +27,23 @@ export const PARTICIPANT_WITHDREW_MESSAGE = 'Uczestnik wypisał się z wydarzeni
 export const PARTICIPANT_ALREADY_HAS_SLOT_MESSAGE = 'Uczestnik już ma przydzielone miejsce';
 
 export const USER_NOT_PARTICIPANT_MESSAGE = 'Użytkownik nie jest uczestnikiem tego wydarzenia';
+
+// ── Enrollment blocked messages ──
+
+export interface EnrollmentBlockedResponse {
+  message: string;
+  suggestion?: string;
+}
+
+export const ENROLLMENT_BLOCKED = {
+  LOTTERY_PENDING: {
+    message: 'Trwa losowanie miejsc - w tym czasie zapisy są wstrzymane',
+    suggestion: 'To nie powinno potrwać długo. Spróbuj ponownie za chwilę.',
+  },
+  EVENT_STARTED: {
+    message: 'Zapisy nie są możliwe po rozpoczęciu wydarzenia',
+  },
+  EVENT_NOT_ACTIVE: {
+    message: 'To wydarzenie zostało odwołane',
+  },
+} as const satisfies Record<string, EnrollmentBlockedResponse>;

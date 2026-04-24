@@ -37,7 +37,7 @@ describe('EventDetailComponent', () => {
   let component: EventDetailComponent;
 
   const eventSignal = signal<any>(null);
-  const enrollmentPhaseSignal = signal<string | null>(null);
+  const isPreEnrollmentSignal = signal(false);
   const isEnrolledSignal = signal(false);
   const isOrganizerSignal = signal(false);
 
@@ -49,8 +49,8 @@ describe('EventDetailComponent', () => {
     isEnrolled: isEnrolledSignal,
     isOrganizer: isOrganizerSignal,
     participantStatus: signal(null),
-    enrollmentPhase: enrollmentPhaseSignal,
-    eventTimeStatus: signal(null),
+    isPreEnrollment: isPreEnrollmentSignal,
+    lifecycleStatus: signal(null),
     canJoin: signal(false),
     isCancelled: signal(false),
     enrollmentCount: signal(0),
@@ -115,7 +115,7 @@ describe('EventDetailComponent', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     eventSignal.set(null);
-    enrollmentPhaseSignal.set(null);
+    isPreEnrollmentSignal.set(false);
     isEnrolledSignal.set(false);
     isOrganizerSignal.set(false);
     mockAnnouncement.getAnnouncements.mockReturnValue(
@@ -165,18 +165,13 @@ describe('EventDetailComponent', () => {
   });
 
   describe('isPreEnrollment', () => {
-    it('zwraca false gdy enrollmentPhase jest null', () => {
+    it('zwraca false domyślnie', () => {
       expect(component.isPreEnrollment()).toBe(false);
     });
 
-    it('zwraca true gdy enrollmentPhase === PRE_ENROLLMENT', () => {
-      enrollmentPhaseSignal.set('PRE_ENROLLMENT');
+    it('zwraca true gdy eventArea.isPreEnrollment === true', () => {
+      isPreEnrollmentSignal.set(true);
       expect(component.isPreEnrollment()).toBe(true);
-    });
-
-    it('zwraca false gdy enrollmentPhase === OPEN_ENROLLMENT', () => {
-      enrollmentPhaseSignal.set('OPEN_ENROLLMENT');
-      expect(component.isPreEnrollment()).toBe(false);
     });
   });
 

@@ -1,7 +1,5 @@
-import { EventTimeStatus, DisciplineRole } from '@zgadajsie/shared';
+import { DisciplineRole } from '@zgadajsie/shared';
 import { EventBase } from './event-base.interface';
-
-export type EnrollmentPhase = 'PRE_ENROLLMENT' | 'LOTTERY_PENDING' | 'OPEN_ENROLLMENT';
 
 export interface CurrentUserAccess {
   isNewUser: boolean;
@@ -18,6 +16,7 @@ export interface EventRoleConfig {
  * - minParticipants, ageMin, ageMax: opcjonalne
  */
 export interface Event extends EventBase {
+  currentUserAccess?: CurrentUserAccess | null;
   description?: string;
   disciplineSlug: string;
   facilitySlug: string;
@@ -28,11 +27,6 @@ export interface Event extends EventBase {
   lotteryExecutedAt?: string | null;
   isRecurring: boolean;
   recurringRule?: string;
-  parentEventId?: string;
-
-  currentUserAccess?: CurrentUserAccess | null;
-
   roleConfig?: EventRoleConfig | null;
-  eventTimeStatus?: EventTimeStatus;
-  enrollmentPhase?: EnrollmentPhase | null;
+  parentEventId?: string;
 }

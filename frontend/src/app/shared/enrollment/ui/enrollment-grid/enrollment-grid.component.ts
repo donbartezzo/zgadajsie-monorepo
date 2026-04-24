@@ -3,7 +3,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { Enrollment, EnrolleeManageItem, EventRoleConfig } from '../../../types';
 import { EventSlotInfo } from '../../../types/payment.interface';
-import { Event, EnrollmentPhase } from '../../../types/event.interface';
+import { Event } from '../../../types/event.interface';
+import { isPreEnrollment as isPreEnrollmentFn } from '../../../utils/event-time-status.util';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ModalService } from '../../../ui/modal/modal.service';
 import { SnackbarService } from '../../../ui/snackbar/snackbar.service';
@@ -52,17 +53,16 @@ export class EnrollmentGridComponent {
     });
   }
 
-  readonly enrollmentPhase = computed<EnrollmentPhase | null>(
-    () => this.event().enrollmentPhase ?? null,
-  );
-
   readonly maxSlots = computed(() => this.event().maxParticipants ?? 0);
 
   readonly roleConfig = computed<EventRoleConfig | null>(() => this.event().roleConfig ?? null);
 
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
 
-  readonly isPreEnrollment = computed(() => this.enrollmentPhase() === 'PRE_ENROLLMENT');
+  readonly isPreEnrollment = computed(() => {
+    const e = this.event();
+    return isPreEnrollmentFn(e.startsAt, e.lotteryExecutedAt, e.status);
+  });
 
   readonly slotParticipants = computed(() =>
     this.participants().filter((p) => SLOT_STATUSES.includes(p.status)),

@@ -6,7 +6,10 @@ import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/li
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { EventStatus } from '@zgadajsie/shared';
-import { getEventTimeStatus, isEventJoinable } from '../../../shared/utils/event-time-status.util';
+import {
+  getEventLifecycleStatus,
+  isEventJoinable,
+} from '../../../shared/utils/event-time-status.util';
 
 @Component({
   selector: 'app-organizer-actions-overlay',
@@ -50,7 +53,8 @@ export class OrganizerActionsOverlayComponent {
 
   readonly isEnded = computed(
     () =>
-      getEventTimeStatus(this.eventStartsAt(), this.eventEndsAt(), this.eventStatus()) === 'ENDED',
+      getEventLifecycleStatus(this.eventStartsAt(), this.eventEndsAt(), this.eventStatus()) ===
+      'ENDED',
   );
 
   readonly canEdit = computed(

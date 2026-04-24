@@ -36,7 +36,7 @@ import {
   EventLifecycleBannerComponent,
   LifecycleBannerVariant,
 } from '../../../../shared/event/ui/event-lifecycle-banner/event-lifecycle-banner.component';
-import { getEventTimeStatus } from '../../../../shared/utils/event-time-status.util';
+import { getEventLifecycleStatus } from '../../../../shared/utils/event-time-status.util';
 import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { EventAnnouncementsComponent } from '../../../event/ui/event-announcements/event-announcements.component';
 
@@ -260,7 +260,7 @@ export class EventManageComponent implements OnInit {
     const e = this.eventData();
     if (!e) return null;
     if (e.status === EventStatus.CANCELLED) return 'cancelled';
-    const ts = getEventTimeStatus(e.startsAt, e.endsAt, e.status);
+    const ts = getEventLifecycleStatus(e.startsAt, e.endsAt, e.status);
     if (ts === 'ENDED' && !this.auth.isAdmin()) return 'no-edit';
     if (ts === 'ONGOING') return 'ongoing';
     if (ts === 'ENDED') return 'ended';
@@ -270,7 +270,9 @@ export class EventManageComponent implements OnInit {
   readonly readOnlyMode = computed(() => {
     const e = this.eventData();
     if (!e) return false;
-    return !this.auth.isAdmin() && getEventTimeStatus(e.startsAt, e.endsAt, e.status) === 'ENDED';
+    return (
+      !this.auth.isAdmin() && getEventLifecycleStatus(e.startsAt, e.endsAt, e.status) === 'ENDED'
+    );
   });
 
   readonly isPaidEvent = computed(() => {

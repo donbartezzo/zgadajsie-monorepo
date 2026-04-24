@@ -388,13 +388,13 @@ describe('EventsService', () => {
   // ─── findOne() ────────────────────────────────────────────────────────────
 
   describe('findOne()', () => {
-    it('zwraca wydarzenie z eventTimeStatus i enrollmentPhase', async () => {
+    it('zwraca wydarzenie z wymaganymi polami', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent());
 
       const result = await service.findOne('event1');
 
-      expect(result.eventTimeStatus).toBeDefined();
-      expect(result.enrollmentPhase).toBeDefined();
+      expect(result.id).toBe('event1');
+      expect(result.title).toBe('Test Event');
     });
 
     it('zwraca currentUserAccess gdy userId podany i nie jest organizatorem', async () => {

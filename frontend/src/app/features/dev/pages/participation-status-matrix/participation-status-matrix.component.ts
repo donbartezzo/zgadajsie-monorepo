@@ -463,8 +463,8 @@ export class ParticipationStatusMatrixComponent {
       purpose: 'Dokładne teksty dla powodów oczekiwania.',
     },
     {
-      file: 'frontend/src/app/shared/utils/enrollment-phase.util.ts',
-      purpose: 'Obliczanie PRE_ENROLLMENT / LOTTERY_PENDING / OPEN_ENROLLMENT.',
+      file: 'frontend/src/app/shared/utils/event-time-status.util.ts',
+      purpose: 'Obliczanie EventLifecycleStatus i isPreEnrollment.',
     },
   ];
 

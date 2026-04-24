@@ -31,8 +31,8 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
 import { CancelPaymentDto } from './dto/cancel-payment.dto';
-import { getEventTimeStatus, isEventEnded } from './event-time-status.util';
-import { getEnrollmentPhase, shouldSkipPreEnrollment } from './enrollment-phase.util';
+import { isEventEnded } from './event-time-status.util';
+import { shouldSkipPreEnrollment } from './enrollment-phase.util';
 import { daysFromNow } from '../../common/utils/date.util';
 import { Decimal } from '@prisma/client/runtime/library';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
@@ -260,9 +260,6 @@ export class EventsService {
     });
     if (!event) throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
 
-    const eventTimeStatus = getEventTimeStatus(event);
-    const enrollmentPhase = getEnrollmentPhase(event);
-
     const isOrganizer = !!userId && event.organizerId === userId;
     const currentUserAccess =
       userId && !isOrganizer
@@ -279,8 +276,6 @@ export class EventsService {
 
     return {
       ...event,
-      eventTimeStatus,
-      enrollmentPhase,
       currentUserAccess,
       _count: {
         ...event._count,

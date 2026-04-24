@@ -10,7 +10,7 @@ import { UserService } from '../../../../core/services/user.service';
 import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { Participation } from '../../../../shared/types';
-import { getEventTimeStatus } from '../../../../shared/utils';
+import { getEventLifecycleStatus } from '../../../../shared/utils';
 
 @Component({
   selector: 'app-my-participations',
@@ -125,8 +125,8 @@ export class MyParticipationsComponent implements OnInit {
     const event = participation.event;
     if (!event) return false;
 
-    const timeStatus = getEventTimeStatus(event.startsAt, event.endsAt, event.status);
-    if (timeStatus === 'ENDED') return false;
+    const ls = getEventLifecycleStatus(event.startsAt, event.endsAt, event.status);
+    if (ls === 'ENDED' || ls === 'CANCELLED') return false;
 
     return (
       participation.status === 'PENDING' ||

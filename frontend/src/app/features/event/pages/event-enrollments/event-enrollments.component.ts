@@ -13,7 +13,7 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { AuthService } from '../../../../core/auth/auth.service';
 import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
 import { EnrollmentGridComponent } from '../../../../shared/enrollment/ui/enrollment-grid/enrollment-grid.component';
-import { EventStickyNotificationBarComponent } from '../../ui/event-sticky-notification-bar/event-sticky-notification-bar.component';
+import { EventStatusBarStickyComponent } from '../../ui/event-status-bars/event-status-bar-sticky/event-status-bar-sticky.component';
 import { EventService } from '../../../../core/services/event.service';
 import { EventAreaService } from '../../services/event-area.service';
 import { EventSlotInfo } from '../../../../shared/types';
@@ -24,7 +24,7 @@ import { EventSlotInfo } from '../../../../shared/types';
     LoadingSpinnerComponent,
     EventHeroSlotsComponent,
     EnrollmentGridComponent,
-    EventStickyNotificationBarComponent,
+    EventStatusBarStickyComponent,
   ],
   templateUrl: './event-enrollments.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

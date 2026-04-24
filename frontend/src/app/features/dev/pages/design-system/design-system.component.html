@@ -224,6 +224,94 @@
           </div>
         </section>
       </section>
+
+      <!-- Badge bright color proposal -->
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-2 mt-8">Propozycja jasna dla badge'ów</h2>
+        <p class="text-sm text-neutral-500 mb-4">
+          Foundation Palettes - jaśniejsze odcienie pasujące do ciemnej czcionki (text-neutral-900). Bardziej nasycone
+          niż pastele.
+        </p>
+
+        <div class="bg-white rounded-xl border border-neutral-200 p-4">
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            @for (color of badgeBrightProposal; track color.name) {
+              <div class="flex flex-col items-center gap-2">
+                <div
+                  class="w-full h-16 rounded-lg flex items-center justify-center text-neutral-900 font-semibold text-xs uppercase"
+                  [style.background-color]="color.hex"
+                >
+                  {{ color.name }}
+                </div>
+                <div class="text-center space-y-0.5">
+                  <p class="text-[10px] text-neutral-500 font-mono">{{ color.hex }}</p>
+                  <p class="text-[10px] text-neutral-400">{{ color.tailwind }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <section class="mt-6">
+          <h3 class="text-base font-semibold text-neutral-900 mb-3">Przykładowe badge'y z propozycją jasną</h3>
+          <div class="bg-white rounded-xl border border-neutral-200 p-4">
+            <div class="flex flex-wrap gap-2">
+              @for (color of badgeBrightProposal; track color.name) {
+                <span
+                  class="rounded-xs font-semibold uppercase text-neutral-900 px-2 py-0.5 text-[10px]"
+                  [style.background-color]="color.hex"
+                >
+                  {{ color.name }}
+                </span>
+              }
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Badge pastel color proposal -->
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-2 mt-8">Propozycja pastelowa dla badge'ów</h2>
+        <p class="text-sm text-neutral-500 mb-4">
+          Foundation Palettes - jaśniejsze odcienie pasujące do ciemnej czcionki (text-neutral-900). Wybrane z każdej
+          palety foundation.
+        </p>
+
+        <div class="bg-white rounded-xl border border-neutral-200 p-4">
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            @for (color of badgePastelProposal; track color.name) {
+              <div class="flex flex-col items-center gap-2">
+                <div
+                  class="w-full h-16 rounded-lg flex items-center justify-center text-neutral-900 font-semibold text-xs uppercase"
+                  [style.background-color]="color.hex"
+                >
+                  {{ color.name }}
+                </div>
+                <div class="text-center space-y-0.5">
+                  <p class="text-[10px] text-neutral-500 font-mono">{{ color.hex }}</p>
+                  <p class="text-[10px] text-neutral-400">{{ color.tailwind }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <section class="mt-6">
+          <h3 class="text-base font-semibold text-neutral-900 mb-3">Przykładowe badge'y z propozycją pastelową</h3>
+          <div class="bg-white rounded-xl border border-neutral-200 p-4">
+            <div class="flex flex-wrap gap-2">
+              @for (color of badgePastelProposal; track color.name) {
+                <span
+                  class="rounded-xs font-semibold uppercase text-neutral-900 px-2 py-0.5 text-[10px]"
+                  [style.background-color]="color.hex"
+                >
+                  {{ color.name }}
+                </span>
+              }
+            </div>
+          </div>
+        </section>
+      </section>
     }
 
     <!-- ══════════════ TYPOGRAPHY ══════════════ -->
@@ -298,7 +386,10 @@
         <div class="grid grid-cols-4 gap-2">
           @for (icon of allIcons; track icon) {
             <div class="bg-white rounded-lg border border-neutral-200 p-3 flex flex-col items-center gap-2">
-              <app-icon [name]="icon" class="w-6 h-6 text-neutral-900" />
+              <app-icon
+                [name]="icon"
+                [class]="icon === 'help' ? 'w-8 h-8 text-neutral-900' : 'w-6 h-6 text-neutral-900'"
+              />
               <span class="text-xs text-neutral-500 truncate w-full text-center">{{ icon }}</span>
             </div>
           }
@@ -835,6 +926,36 @@
                 <app-badge variant="soft" color="success">8/10</app-badge>
               </app-event-info-item>
             </div>
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- ══════════════ EVENT STATUS BARS ══════════════ -->
+    @if (activeSection() === 'event-status-bars') {
+      <section class="space-y-8">
+        <p class="text-sm text-neutral-500">
+          Bary statusu wydarzenia — inline i sticky. Kolor/ikona zależy od statusu cyklu życia (UPCOMING / ONGOING /
+          ENDED / CANCELLED). Treść i opcjonalny button zależą od fazy zapisów i stanu użytkownika.
+        </p>
+
+        <!-- ── Warianty kolorystyczne (inline) ── -->
+        <div>
+          <h2 class="text-base font-bold text-neutral-900 mb-3">Warianty kolorystyczne (inline)</h2>
+          <div class="space-y-2">
+            @for (example of statusBarExamples; track example.id; let i = $index) {
+              <app-event-status-bar-item [bar]="example" variant="inline" />
+            }
+          </div>
+        </div>
+
+        <!-- ── Warianty kolorystyczne (sticky) ── -->
+        <div>
+          <h2 class="text-base font-bold text-neutral-900 mb-3">Warianty kolorystyczne (sticky)</h2>
+          <div class="space-y-2">
+            @for (example of statusBarExamples; track example.id; let i = $index) {
+              <app-event-status-bar-item [bar]="example" variant="sticky" />
+            }
           </div>
         </div>
       </section>
