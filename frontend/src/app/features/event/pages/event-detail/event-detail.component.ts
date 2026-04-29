@@ -143,6 +143,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     effect(() => {
       const e = this.event();
       const isPart = this.isEnrolled();
+      const loading = this.isLoading();
       if (e) {
         if (isPart) {
           this.notifStatus.setConfig({
@@ -152,7 +153,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
             subscribed: true,
             canToggle: false,
           });
-        } else {
+        } else if (!loading) {
           this.notifStatus.clearConfig();
         }
       }

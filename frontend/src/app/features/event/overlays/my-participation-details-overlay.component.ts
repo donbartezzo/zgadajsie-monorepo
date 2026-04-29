@@ -178,7 +178,7 @@ export class MyParticipationDetailsOverlayComponent {
     ];
 
     links.push({
-      label: 'Dodaj osobę towarzyszącą',
+      label: 'Dodaj kolejną osobę',
       description: 'Zgłoś do wydarzenia także swego znajomego',
       icon: 'user-plus',
       value: 'add-guest',
