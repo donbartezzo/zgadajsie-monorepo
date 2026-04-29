@@ -1,37 +1,38 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { IconName } from '../../../shared/ui/icon/icon.component';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { Router } from '@angular/router';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
-import { SemanticColor } from '../../../shared/types/colors';
-import {
-  Event as EventModel,
-  WaitingReason,
-  ParticipationStatus,
-  Participation,
-} from '../../../shared/types';
-import {
-  getParticipationStatusDescription,
-  ParticipationStatusOptions,
-  isEventJoinable,
-} from '../../../shared/utils';
+import { EnrollmentGridItemComponent } from '../../../shared/enrollment/ui/enrollment-grid/enrollment-grid-item.component';
+import { AuthService } from '../../../core/auth/auth.service';
+import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
+import { Event as EventModel, WaitingReason, Participation } from '../../../shared/types';
+import { isEventJoinable } from '../../../shared/utils';
 
 @Component({
   selector: 'app-my-participation-details-overlay',
-  imports: [BottomOverlayComponent, LinkListComponent],
+  imports: [BottomOverlayComponent, LinkListComponent, EnrollmentGridItemComponent],
   template: `
-    <app-bottom-overlay
-      [open]="open()"
-      [icon]="headerIcon()"
-      [iconColor]="headerIconColor()"
-      [title]="headerTitle()"
-      [description]="headerDescription()"
-      (closed)="closed.emit()"
-    >
-      @let _event = event();
+    <app-bottom-overlay [open]="open()" title="Twoje zapisy" (closed)="closed.emit()">
+      @let _userParticipations = userParticipations();
+
       <div class="space-y-4 mx-auto">
+        <!-- User participations listing -->
+        @if (_userParticipations.length > 0) {
+          <div class="flex flex-wrap gap-3 justify-center pb-3">
+            @for (p of _userParticipations; track p.id) {
+              <app-enrollment-grid-item
+                [clickable]="true"
+                [participant]="p"
+                [showRole]="true"
+                (clicked)="navigateToParticipants()"
+              />
+            }
+          </div>
+        }
+
         <div class="mx-auto max-w-lg mt-2 justify-center">
           <!-- Payment CTA (highlighted) -->
-          @if (needsPayment()) {
+          <!-- @if (needsPayment()) {
             <div class="rounded-xl border-2 border-danger-200">
               <div class="p-2">
                 <p class="text-sm font-bold text-danger-400 text-center">Wymagana płatność</p>
@@ -43,7 +44,7 @@ import {
                 <app-link-list [items]="paymentLinks()" (itemClicked)="payRequested.emit()" />
               </div>
             </div>
-          }
+          } -->
 
           <!-- Rejoin CTA for withdrawn users -->
           @if (isWithdrawnOrRejected() && canRejoin()) {
@@ -76,6 +77,10 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MyParticipationDetailsOverlayComponent {
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly overlays = inject(BottomOverlaysService);
+
   readonly open = input(false);
   readonly event = input<EventModel | null>(null);
   readonly loading = input(false);
@@ -84,54 +89,26 @@ export class MyParticipationDetailsOverlayComponent {
   readonly participants = input<Participation[]>([]);
 
   readonly closed = output<void>();
-  readonly openChat = output<void>();
   readonly payRequested = output<void>();
-  readonly contactOrganizer = output<void>();
   readonly leaveRequested = output<void>();
   readonly rejoinRequested = output<void>();
   readonly addGuestRequested = output<void>();
   readonly manageGuests = output<void>();
+  readonly participantClicked = output<Participation>();
+
+  readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
+
+  readonly userParticipations = computed<Participation[]>(() => {
+    const uid = this.currentUserId();
+    if (!uid) return [];
+    return this.participants().filter(
+      (p) => (!p.isGuest && p.userId === uid) || (p.isGuest && p.addedByUser?.id === uid),
+    );
+  });
 
   readonly isWithdrawnOrRejected = computed(() => {
     const s = this.participantStatus();
     return s === 'WITHDRAWN' || s === 'REJECTED';
-  });
-
-  readonly headerIcon = computed<IconName>(() => {
-    const s = this.participantStatus();
-    if (s === 'PENDING') return 'clock';
-    if (s === 'APPROVED') return 'check';
-    if (s === 'WITHDRAWN') return 'user-x';
-    if (s === 'REJECTED') return 'x';
-    return 'check-circle';
-  });
-
-  readonly headerIconColor = computed<SemanticColor>(() => {
-    const s = this.participantStatus();
-    if (s === 'PENDING') return 'warning';
-    if (s === 'APPROVED') return 'info';
-    if (s === 'WITHDRAWN') return 'neutral';
-    if (s === 'REJECTED') return 'danger';
-    return 'success';
-  });
-
-  readonly headerTitle = computed(() => {
-    const status = this.participantStatus();
-    if (status === 'PENDING') return 'Zgłoszenie wysłane!';
-    if (status === 'APPROVED') return 'Zatwierdzone - potwierdź udział!';
-    if (status === 'CONFIRMED') return 'Jesteś już potwierdzonym uczestnikiem!';
-    if (status === 'WITHDRAWN') return 'Wypisano z wydarzenia';
-    if (status === 'REJECTED') return 'Zgłoszenie odrzucone';
-    return 'Zgłoszenie wysłane!';
-  });
-
-  readonly headerDescription = computed(() => {
-    const status = this.participantStatus();
-    const options: ParticipationStatusOptions = {
-      waitingReason: this.waitingReason(),
-    };
-
-    return getParticipationStatusDescription(status as ParticipationStatus | null, options);
   });
 
   readonly needsPayment = computed(() => {
@@ -143,7 +120,6 @@ export class MyParticipationDetailsOverlayComponent {
   readonly canRejoin = computed(() => {
     const e = this.event();
     if (!e) return false;
-    // Can rejoin if event hasn't started yet and is not cancelled
     return isEventJoinable(e.startsAt, e.status);
   });
 
@@ -175,6 +151,14 @@ export class MyParticipationDetailsOverlayComponent {
     const organizerName = this.event()?.organizer?.displayName || 'organizatorem wydarzenia';
 
     const links: LinkListItem[] = [
+      {
+        label: 'Lista uczestników',
+        description: 'Zobacz wszystkich uczestników wydarzenia',
+        icon: 'users',
+        value: 'participants-list',
+        iconColor: 'info',
+        iconBackground: true,
+      },
       {
         label: 'Czat grupowy',
         description: 'Porozmawiaj z uczestnikami wydarzenia',
@@ -216,14 +200,34 @@ export class MyParticipationDetailsOverlayComponent {
     return links;
   });
 
+  navigateToParticipants(): void {
+    const event = this.event();
+    if (event) {
+      this.router.navigate(['/w', event.citySlug, event.id, 'participants']);
+    }
+  }
+
   handleParticipantOption(item: LinkListItem): void {
+    const event = this.event();
+
+    if (item.value === 'participants-list') {
+      this.navigateToParticipants();
+      return;
+    }
+
     if (item.value === 'group-chat') {
-      this.openChat.emit();
+      if (event) {
+        this.overlays.close();
+        this.router.navigate(['/w', event.citySlug, event.id, 'chat']);
+      }
       return;
     }
 
     if (item.value === 'organizer-chat') {
-      this.contactOrganizer.emit();
+      if (event) {
+        this.overlays.close();
+        this.router.navigate(['/w', event.citySlug, event.id, 'host-chat']);
+      }
       return;
     }
 

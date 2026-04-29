@@ -41,7 +41,7 @@
         <code class="bg-white px-1 rounded text-xs">_tokens.scss</code>
       </p>
 
-      @for (palette of semanticPalettes; track palette.name) {
+      @for (palette of semanticPalettes(); track palette.name) {
         <section class="mb-6">
           <h3 class="text-base font-semibold text-neutral-900 mb-1">{{ palette.name }}</h3>
           <p class="text-sm text-neutral-500 mb-3">{{ palette.description }}</p>
@@ -931,31 +931,298 @@
       </section>
     }
 
+    <!-- ══════════════ AVATARS ══════════════ -->
+    @if (activeSection() === 'avatars') {
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-4">User Avatar (app-user-avatar)</h2>
+        <p class="text-sm text-neutral-500 mb-4">
+          Komponent do wyświetlania avatarów użytkowników z inicjałami lub obrazkiem. API:
+          <code class="bg-white px-1 rounded text-xs">size</code> (xs, sm, md, lg, xl, 2xl) +
+          <code class="bg-white px-1 rounded text-xs">shape</code> (circle, rounded) +
+          <code class="bg-white px-1 rounded text-xs">displayName</code> (do inicjałów) +
+          <code class="bg-white px-1 rounded text-xs">avatarUrl</code> (opcjonalny URL obrazka).
+        </p>
+
+        <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-6">
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Rozmiary (shape=rounded)</p>
+            <div class="flex flex-wrap items-center gap-6">
+              @for (size of avatarSizes; track size) {
+                <div class="flex flex-col items-center gap-2">
+                  <app-user-avatar [size]="size" shape="rounded" [displayName]="'Jan Kowalski'" />
+                  <span class="text-xs text-neutral-500">{{ size }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Kształty (size=md)</p>
+            <div class="flex flex-wrap items-center gap-6">
+              @for (shape of avatarShapes; track shape) {
+                <div class="flex flex-col items-center gap-2">
+                  <app-user-avatar size="md" [shape]="shape" [displayName]="'Anna Nowak'" />
+                  <span class="text-xs text-neutral-500">{{ shape }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+              Inicjały z różnych nazw (size=md, shape=rounded)
+            </p>
+            <div class="flex flex-wrap items-center gap-4">
+              @for (example of avatarExamples; track example.displayName) {
+                <div class="flex flex-col items-center gap-2">
+                  <app-user-avatar
+                    size="md"
+                    shape="rounded"
+                    [displayName]="example.displayName"
+                    [avatarUrl]="example.avatarUrl"
+                  />
+                  <span class="text-xs text-neutral-500 text-center max-w-20 truncate">{{ example.displayName }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+              Kolor tła (hash z displayName)
+            </p>
+            <p class="text-sm text-neutral-500 mb-3">
+              Kolor tła jest deterministycznie wyliczany z hash nazwy użytkownika (8 predefiniowanych kolorów).
+            </p>
+            <div class="flex flex-wrap items-center gap-4">
+              <app-user-avatar size="md" shape="rounded" [displayName]="'Jan Kowalski'" />
+              <app-user-avatar size="md" shape="rounded" [displayName]="'Anna Nowak'" />
+              <app-user-avatar size="md" shape="rounded" [displayName]="'Marek Zieliński'" />
+              <app-user-avatar size="md" shape="rounded" [displayName]="'Katarzyna Wójcik'" />
+              <app-user-avatar size="md" shape="rounded" [displayName]="'Piotr Adamski'" />
+              <app-user-avatar size="md" shape="rounded" [displayName]="'Ewa Kowalczyk'" />
+              <app-user-avatar size="md" shape="rounded" [displayName]="'Tomasz Lewandowski'" />
+              <app-user-avatar size="md" shape="rounded" [displayName]="'Magdalena Kamińska'" />
+            </div>
+          </div>
+        </div>
+      </section>
+    }
+
     <!-- ══════════════ EVENT STATUS BARS ══════════════ -->
     @if (activeSection() === 'event-status-bars') {
       <section class="space-y-8">
         <p class="text-sm text-neutral-500">
-          Bary statusu wydarzenia — inline i sticky. Kolor/ikona zależy od statusu cyklu życia (UPCOMING / ONGOING /
-          ENDED / CANCELLED). Treść i opcjonalny button zależą od fazy zapisów i stanu użytkownika.
+          System dwóch typów pasków statusu: <strong>Event status bar</strong> (cykl życia wydarzenia) oraz
+          <strong>Participation status bar</strong> (status uczestnictwa użytkownika).
+          <strong>Tylko jeden aktywny bar jednocześnie.</strong>
         </p>
 
-        <!-- ── Warianty kolorystyczne (inline) ── -->
+        <!-- ── PARTICIPATION STATUS BARS ── -->
         <div>
-          <h2 class="text-base font-bold text-neutral-900 mb-3">Warianty kolorystyczne (inline)</h2>
-          <div class="space-y-2">
-            @for (example of statusBarExamples; track example.id; let i = $index) {
-              <app-event-status-bar-item [bar]="example" variant="inline" />
-            }
+          <h2 class="text-base font-bold text-neutral-900 mb-2">Participation status bar</h2>
+          <p class="text-sm text-neutral-500 mb-4">
+            Zastępuje event status bar <strong>wyłącznie</strong> gdy spełnione są oba warunki jednocześnie:
+            <strong>lifecycleStatus = UPCOMING</strong> oraz
+            <strong>currentUserParticipations.length &gt; 0</strong> (user ma co najmniej jeden zapis — własny lub
+            gościa). Kolor participation bara = kolor baru UPCOMING (primary-500). Kliknięcie otwiera overlay
+            uczestnictwa (joinConfirm).
+          </p>
+
+          <div>
+            <h3 class="text-sm font-semibold text-neutral-900 mb-3">Warianty (inline) — 1 i &gt;1 uczestnik</h3>
+            <div class="space-y-2">
+              @for (example of participationStatusBarExamples; track example.id) {
+                <app-event-status-bar-item [bar]="example" variant="inline" />
+              }
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <h3 class="text-sm font-semibold text-neutral-900 mb-3">Warianty (sticky) — 1 i &gt;1 uczestnik</h3>
+            <div class="space-y-2">
+              @for (example of participationStatusBarExamples; track example.id) {
+                <app-event-status-bar-item [bar]="example" variant="sticky" />
+              }
+            </div>
           </div>
         </div>
 
-        <!-- ── Warianty kolorystyczne (sticky) ── -->
+        <!-- ── EVENT STATUS BARS ── -->
         <div>
-          <h2 class="text-base font-bold text-neutral-900 mb-3">Warianty kolorystyczne (sticky)</h2>
+          <h2 class="text-base font-bold text-neutral-900 mb-2">Event status bars</h2>
+          <p class="text-sm text-neutral-500 mb-4">
+            Odzwierciedla bieżący cykl życia wydarzenia. Wyświetlany we wszystkich przypadkach gdy participation bar
+            <strong>nie</strong> jest aktywny: ONGOING, ENDED, CANCELLED oraz UPCOMING gdy user nie ma żadnego zapisu.
+            Kliknięcie otwiera <code class="bg-white px-1 rounded text-xs">enrollmentDetails</code> overlay z opisem
+            statusu i opcjonalnym przyciskiem CTA.
+          </p>
+
+          <div>
+            <h3 class="text-sm font-semibold text-neutral-900 mb-3">Warianty (inline)</h3>
+            <div class="space-y-2">
+              @for (example of eventStatusBarExamples; track example.id) {
+                <app-event-status-bar-item [bar]="example" variant="inline" />
+              }
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <h3 class="text-sm font-semibold text-neutral-900 mb-3">Warianty (sticky)</h3>
+            <div class="space-y-2">
+              @for (example of eventStatusBarExamples; track example.id) {
+                <app-event-status-bar-item [bar]="example" variant="sticky" />
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- ── LOGIKA WYŚWIETLANIA ── -->
+        <div class="bg-white rounded-xl border border-neutral-200 p-4">
+          <h2 class="text-base font-bold text-neutral-900 mb-3">Logika wyświetlania</h2>
+          <p class="text-sm text-neutral-600 mb-3">
+            Źródło: <code class="bg-neutral-50 px-1 rounded text-xs">EventAreaService.notificationBars</code>
+            (computed signal). Tylko jeden bar jest aktywny jednocześnie.
+          </p>
           <div class="space-y-2">
-            @for (example of statusBarExamples; track example.id; let i = $index) {
-              <app-event-status-bar-item [bar]="example" variant="sticky" />
-            }
+            <div class="flex items-start gap-2 text-sm text-neutral-700">
+              <span
+                class="w-6 h-6 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-bold text-xs shrink-0"
+                >1</span
+              >
+              <span>
+                Jeśli <strong>lifecycleStatus === 'UPCOMING'</strong> AND
+                <strong>currentUserParticipations.length &gt; 0</strong> → Participation status bar
+              </span>
+            </div>
+            <div class="flex items-start gap-2 text-sm text-neutral-700">
+              <span
+                class="w-6 h-6 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center font-bold text-xs shrink-0"
+                >2</span
+              >
+              <span
+                >W każdym innym przypadku → Event status bar (ONGOING / ENDED / CANCELLED / UPCOMING bez zapisu)</span
+              >
+            </div>
+          </div>
+          <div class="mt-3 rounded-lg border border-info-200 bg-info-50 p-3 text-xs text-neutral-600">
+            <strong class="text-info-700">Uwaga dot. warunku "jest zapisany":</strong> Warunek sprawdza
+            <code class="bg-white px-0.5 rounded">currentUserParticipations</code> — tablicę wszystkich uczestnictw
+            powiązanych z userem (własne + goście dodani przez niego), bez filtrowania po statusie. Zapis WITHDRAWN /
+            REJECTED może potencjalnie spełnić warunek, jeśli backend zwróci takie rekordy na liście uczestników.
+            <code class="bg-white px-0.5 rounded">isEnrolled</code> (PENDING/APPROVED/CONFIRMED) jest osobnym computed
+            używanym do innych celów (np. czat, opcje wypisania).
+          </div>
+        </div>
+
+        <!-- ── ZALEŻNOŚCI KOMPONENTÓW ── -->
+        <div class="bg-white rounded-xl border border-neutral-200 p-4">
+          <h2 class="text-base font-bold text-neutral-900 mb-3">Zależności komponentów</h2>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-start gap-3">
+              <code
+                class="shrink-0 bg-neutral-50 border border-neutral-200 rounded px-1.5 py-0.5 text-xs text-neutral-700"
+                >EventAreaService</code
+              >
+              <span class="text-neutral-600">
+                Computed signal <code class="bg-neutral-50 px-0.5 rounded text-xs">notificationBars</code> — decyduje
+                jaki bar wyświetlić na podstawie
+                <code class="bg-neutral-50 px-0.5 rounded text-xs">lifecycleStatus</code> i
+                <code class="bg-neutral-50 px-0.5 rounded text-xs">currentUserParticipations</code>. Metoda
+                <code class="bg-neutral-50 px-0.5 rounded text-xs">handleBarClick(barId)</code> obsługuje kliknięcia.
+              </span>
+            </div>
+            <div class="flex items-start gap-3">
+              <code
+                class="shrink-0 bg-neutral-50 border border-neutral-200 rounded px-1.5 py-0.5 text-xs text-neutral-700"
+                >EventStatusBarsInlineComponent</code
+              >
+              <span class="text-neutral-600">
+                Wrapper przyjmujący tablicę
+                <code class="bg-neutral-50 px-0.5 rounded text-xs">EventStatusBarConfig[]</code>. Renderuje bary inline
+                i obserwuje sentinel przez IntersectionObserver — gdy bary znikną z viewportu, montuje sticky.
+              </span>
+            </div>
+            <div class="flex items-start gap-3">
+              <code
+                class="shrink-0 bg-neutral-50 border border-neutral-200 rounded px-1.5 py-0.5 text-xs text-neutral-700"
+                >EventStatusBarStickyComponent</code
+              >
+              <span class="text-neutral-600">
+                Renderuje bary w pozycji
+                <code class="bg-neutral-50 px-0.5 rounded text-xs">fixed bottom-[--footer-height]</code> z animacją
+                slideUp. Widoczny gdy inline bary wyjdą poza viewport.
+              </span>
+            </div>
+            <div class="flex items-start gap-3">
+              <code
+                class="shrink-0 bg-neutral-50 border border-neutral-200 rounded px-1.5 py-0.5 text-xs text-neutral-700"
+                >EventStatusBarItemComponent</code
+              >
+              <span class="text-neutral-600">
+                Pojedynczy bar. Przyjmuje
+                <code class="bg-neutral-50 px-0.5 rounded text-xs">bar: EventStatusBarConfig</code> i
+                <code class="bg-neutral-50 px-0.5 rounded text-xs">variant: 'inline' | 'sticky'</code>. Jeśli
+                <code class="bg-neutral-50 px-0.5 rounded text-xs">enrollments</code> jest obecne, renderuje avatary
+                uczestników (participation bar). Emituje
+                <code class="bg-neutral-50 px-0.5 rounded text-xs">barClick(id)</code>.
+              </span>
+            </div>
+            <div class="flex items-start gap-3">
+              <code
+                class="shrink-0 bg-neutral-50 border border-neutral-200 rounded px-1.5 py-0.5 text-xs text-neutral-700"
+                >EventStatusBarDetailsOverlayComponent</code
+              >
+              <span class="text-neutral-600">
+                Overlay otwierany po kliknięciu event status bara (id='status'). Pokazuje opis, kroki zapisu (UPCOMING),
+                sekcje allowed/blocked (ONGOING/ENDED/CANCELLED) i opcjonalny CTA. Udostępnia
+                <code class="bg-neutral-50 px-0.5 rounded text-xs">actionButton</code> input do wstrzyknięcia przycisku
+                "Zapisz się".
+              </span>
+            </div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-neutral-100">
+            <p class="text-xs font-semibold text-neutral-700 mb-2">Konfiguracja kolorów barów</p>
+            <p class="text-xs text-neutral-600">
+              Źródło prawdy:
+              <code class="bg-neutral-50 px-0.5 rounded">event-status-colors.ts → EVENT_STATUS_COLORS</code> →
+              zaimportowane przez
+              <code class="bg-neutral-50 px-0.5 rounded"
+                >event-status-messages.ts → EVENT_LIFECYCLE_CONFIG[status].appearance</code
+              >. Participation bar używa appearance dla statusu UPCOMING (primary-500).
+            </p>
+            <div class="mt-2 grid grid-cols-2 gap-1.5 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded shrink-0 bg-primary-500"></span>
+                <span class="text-neutral-600"
+                  >UPCOMING + participation → <code class="bg-neutral-50 px-0.5 rounded">bg-primary-500</code></span
+                >
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded shrink-0 bg-primary-500"></span>
+                <span class="text-neutral-600"
+                  >UPCOMING (event bar) → <code class="bg-neutral-50 px-0.5 rounded">bg-primary-500</code></span
+                >
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded shrink-0 bg-success-400"></span>
+                <span class="text-neutral-600"
+                  >ONGOING → <code class="bg-neutral-50 px-0.5 rounded">bg-success-400</code></span
+                >
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded shrink-0 bg-neutral-400"></span>
+                <span class="text-neutral-600"
+                  >ENDED → <code class="bg-neutral-50 px-0.5 rounded">bg-neutral-400</code></span
+                >
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded shrink-0 bg-danger-500"></span>
+                <span class="text-neutral-600"
+                  >CANCELLED → <code class="bg-neutral-50 px-0.5 rounded">bg-danger-500</code></span
+                >
+              </div>
+            </div>
           </div>
         </div>
       </section>

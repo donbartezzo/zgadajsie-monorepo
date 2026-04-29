@@ -14,9 +14,8 @@ import {
       @for (bar of bars(); track bar.id) {
         <app-event-status-bar-item
           [bar]="bar"
-          variant="sticky"
-          (barAction)="barAction.emit($event)"
-          (infoAction)="infoAction.emit($event)"
+          [variant]="'sticky'"
+          (barClick)="barClick.emit(bar.id)"
         />
       }
     </div>
@@ -41,7 +40,6 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventStatusBarStickyComponent {
-  readonly bars = input<EventStatusBarConfig[]>([]);
-  readonly barAction = output<string>();
-  readonly infoAction = output<string>();
+  readonly bars = input.required<EventStatusBarConfig[]>();
+  readonly barClick = output<string>();
 }

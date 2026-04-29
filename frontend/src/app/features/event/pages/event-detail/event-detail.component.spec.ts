@@ -64,7 +64,7 @@ describe('EventDetailComponent', () => {
     openJoinConfirmOverlay: jest.fn(),
     openOrganizerChats: jest.fn(),
     handleNotificationBarAction: jest.fn(),
-    handleInfoAction: jest.fn(),
+    handleBarClick: jest.fn(),
   };
 
   const mockOverlays = {

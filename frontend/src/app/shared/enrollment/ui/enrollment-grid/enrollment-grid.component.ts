@@ -20,7 +20,7 @@ interface GridSection {
   type: 'assigned' | 'pending' | 'withdrawn';
   groups: SlotGroup[];
   config: SlotStatusConfig;
-  count: number | null;
+  count: number;
 }
 
 const SLOT_STATUSES = ['APPROVED', 'CONFIRMED'];
@@ -101,7 +101,7 @@ export class EnrollmentGridComponent {
         type: 'assigned',
         groups,
         config: this.statusConfig.assigned,
-        count: null,
+        count: this.slotParticipants().length,
       });
     }
 

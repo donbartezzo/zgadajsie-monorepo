@@ -1,21 +1,19 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { IconComponent, IconName } from '../../../../../shared/ui/icon/icon.component';
-import { ButtonComponent } from '../../../../../shared/ui/button/button.component';
-import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../../../shared/types/colors';
+import { IconComponent } from '../../../../../shared/ui/icon/icon.component';
+import { UserAvatarComponent } from '../../../../../shared/user/ui/user-avatar/user-avatar.component';
+
+export interface StatusBarEnrollment {
+  avatarUrl: string | null;
+  displayName: string;
+}
 
 export interface EventStatusBarConfig {
   id: string;
-  color: SemanticColor;
-  icon: IconName;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   bgClass: string;
   borderClass: string;
-  infoActionId?: string;
-  actionButton?: {
-    label: string;
-    color?: SemanticColor;
-  };
+  enrollments?: StatusBarEnrollment[];
 }
 
 export type EventStatusBarVariant = 'inline' | 'sticky';
@@ -24,163 +22,89 @@ interface VariantClasses {
   wrapper: string;
   inner: string;
   gap: string;
-  iconSize: 'xs' | 'sm' | 'md';
   titleSize: string;
-  actionsGap: string;
-  infoButtonBase: string;
-  actionButtonSize: 'xs' | 'sm';
-  infoButtonSize: 'xs' | 'sm';
-  showTestId: boolean;
-}
-
-interface AccentClasses {
-  icon: string;
-  title: string;
-  subtitle: string;
-  infoButton: string;
+  subtitleSize: string;
+  showSubtitle: boolean;
 }
 
 const VARIANTS: Record<EventStatusBarVariant, VariantClasses> = {
   inline: {
-    wrapper: 'relative z-10 overflow-hidden -mx-4',
-    inner: 'px-4 py-3',
+    wrapper:
+      'relative z-10 overflow-hidden -mx-4 cursor-pointer hover:brightness-110 transition-all duration-200',
+    inner: 'px-4 py-3 md:py-4',
     gap: 'gap-3',
-    iconSize: 'md',
-    titleSize: 'text-md',
-    actionsGap: 'gap-1.5',
-    infoButtonBase:
-      'flex items-center justify-center w-7 h-7 rounded-full border transition-colors',
-    actionButtonSize: 'sm',
-    infoButtonSize: 'sm',
-    showTestId: true,
+    titleSize: 'text-base md:text-lg lg:text-xl',
+    subtitleSize: 'text-sm md:text-base lg:text-lg',
+    showSubtitle: true,
   },
   sticky: {
-    wrapper: '',
-    inner: 'px-3 py-1',
+    wrapper: 'cursor-pointer hover:brightness-110 transition-all duration-200',
+    inner: 'px-3 py-2 md:py-3',
     gap: 'gap-3',
-    iconSize: 'xs',
-    titleSize: 'text-xs',
-    actionsGap: 'gap-1',
-    infoButtonBase:
-      'flex items-center justify-center w-6 h-6 rounded-full border transition-colors',
-    actionButtonSize: 'xs',
-    infoButtonSize: 'xs',
-    showTestId: false,
-  },
-};
-
-const ACCENT_VARIANTS: Record<SemanticColor, AccentClasses> = {
-  primary: {
-    icon: SEMANTIC_COLOR_CLASSES.textStrong.primary,
-    title: SEMANTIC_COLOR_CLASSES.textStrong.primary,
-    subtitle: `${SEMANTIC_COLOR_CLASSES.textStrong.primary} opacity-80`,
-    infoButton: [
-      SEMANTIC_COLOR_CLASSES.border.primary,
-      SEMANTIC_COLOR_CLASSES.surface.primary,
-      SEMANTIC_COLOR_CLASSES.textStrong.primary,
-      'hover:bg-primary-100',
-    ].join(' '),
-  },
-  success: {
-    icon: SEMANTIC_COLOR_CLASSES.textStrong.success,
-    title: SEMANTIC_COLOR_CLASSES.textStrong.success,
-    subtitle: `${SEMANTIC_COLOR_CLASSES.textStrong.success} opacity-80`,
-    infoButton: [
-      SEMANTIC_COLOR_CLASSES.border.success,
-      SEMANTIC_COLOR_CLASSES.surface.success,
-      SEMANTIC_COLOR_CLASSES.textStrong.success,
-      'hover:bg-success-100',
-    ].join(' '),
-  },
-  danger: {
-    icon: SEMANTIC_COLOR_CLASSES.textStrong.danger,
-    title: SEMANTIC_COLOR_CLASSES.textStrong.danger,
-    subtitle: `${SEMANTIC_COLOR_CLASSES.textStrong.danger} opacity-80`,
-    infoButton: [
-      SEMANTIC_COLOR_CLASSES.border.danger,
-      SEMANTIC_COLOR_CLASSES.surface.danger,
-      SEMANTIC_COLOR_CLASSES.textStrong.danger,
-      'hover:bg-danger-100',
-    ].join(' '),
-  },
-  warning: {
-    icon: SEMANTIC_COLOR_CLASSES.textStrong.warning,
-    title: SEMANTIC_COLOR_CLASSES.textStrong.warning,
-    subtitle: `${SEMANTIC_COLOR_CLASSES.textStrong.warning} opacity-80`,
-    infoButton: [
-      SEMANTIC_COLOR_CLASSES.border.warning,
-      SEMANTIC_COLOR_CLASSES.surface.warning,
-      SEMANTIC_COLOR_CLASSES.textStrong.warning,
-      'hover:bg-warning-100',
-    ].join(' '),
-  },
-  info: {
-    icon: SEMANTIC_COLOR_CLASSES.textStrong.info,
-    title: SEMANTIC_COLOR_CLASSES.textStrong.info,
-    subtitle: `${SEMANTIC_COLOR_CLASSES.textStrong.info} opacity-80`,
-    infoButton: [
-      SEMANTIC_COLOR_CLASSES.border.info,
-      SEMANTIC_COLOR_CLASSES.surface.info,
-      SEMANTIC_COLOR_CLASSES.textStrong.info,
-      'hover:bg-info-100',
-    ].join(' '),
-  },
-  neutral: {
-    icon: SEMANTIC_COLOR_CLASSES.textStrong.neutral,
-    title: SEMANTIC_COLOR_CLASSES.textStrong.neutral,
-    subtitle: `${SEMANTIC_COLOR_CLASSES.textStrong.neutral} opacity-80`,
-    infoButton: [
-      SEMANTIC_COLOR_CLASSES.border.neutral,
-      SEMANTIC_COLOR_CLASSES.surface.neutral,
-      SEMANTIC_COLOR_CLASSES.textStrong.neutral,
-      'hover:bg-neutral-200',
-    ].join(' '),
+    titleSize: 'text-base md:text-lg lg:text-xl',
+    subtitleSize: 'text-sm md:text-base lg:text-lg',
+    showSubtitle: false,
   },
 };
 
 @Component({
   selector: 'app-event-status-bar-item',
-  imports: [IconComponent, ButtonComponent],
+  imports: [IconComponent, UserAvatarComponent],
   template: `
     @let _bar = bar();
     @let _variant = variantClasses();
-    @let _accent = accentClasses();
 
-    <div class="{{ _variant.wrapper }} {{ _bar.bgClass }} {{ _bar.borderClass }}">
+    <div
+      class="{{ _variant.wrapper }} {{ _bar.bgClass }} {{ _bar.borderClass }}"
+      (click)="onBarClick()"
+      (keyup.enter)="onBarClick()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'Szczegóły statusu: ' + _bar.title"
+    >
       <div class="{{ _variant.inner }}">
         <div class="flex items-center {{ _variant.gap }}">
-          <app-icon [name]="_bar.icon" [size]="_variant.iconSize" [class]="_accent.icon"></app-icon>
-          <div class="flex-1 min-w-0">
-            <p class="font-semibold truncate {{ _variant.titleSize }} {{ _accent.title }}">
-              {{ _bar.title }}
-            </p>
-            <p class="text-[10px] {{ _accent.subtitle }}">{{ _bar.subtitle }}</p>
-          </div>
-          <div class="flex items-center {{ _variant.actionsGap }} shrink-0">
-            @if (_bar.actionButton; as action) {
-              <app-button
-                appearance="solid"
-                [color]="action.color || _bar.color"
-                [size]="_variant.actionButtonSize"
-                (clicked)="barAction.emit(_bar.id)"
-                class="shrink-0"
-                [attr.data-testid]="_variant.showTestId ? _bar.id + '-button' : null"
-              >
-                {{ action.label }}
-              </app-button>
+          <div class="flex-1 min-w-0 text-center">
+            <div class="flex items-center justify-center gap-2">
+              <span class="font-bold truncate {{ _variant.titleSize }} text-white">
+                {{ _bar.title }}
+              </span>
+              @if (_bar.enrollments && _bar.enrollments.length > 0) {
+                @if (_bar.enrollments.length === 1) {
+                  @let _enrollment = _bar.enrollments[0];
+                  <div class="flex items-center gap-2">
+                    <div class="relative h-7 w-7 shrink-0 rounded-full">
+                      <app-user-avatar
+                        [avatarUrl]="_enrollment.avatarUrl"
+                        [displayName]="_enrollment.displayName"
+                        size="xs"
+                      />
+                    </div>
+                    <span class="text-sm text-white opacity-90">{{ _enrollment.displayName }}</span>
+                  </div>
+                } @else {
+                  <div class="flex items-center -space-x-2">
+                    @for (e of _bar.enrollments; track e.displayName) {
+                      <div class="relative h-7 w-7 shrink-0 rounded-full">
+                        <app-user-avatar
+                          [avatarUrl]="e.avatarUrl"
+                          [displayName]="e.displayName"
+                          size="xs"
+                        />
+                      </div>
+                    }
+                  </div>
+                }
+              }
+            </div>
+
+            @if (_variant.showSubtitle && _bar.subtitle) {
+              <p class="truncate {{ _variant.subtitleSize }} opacity-90 text-white">
+                {{ _bar.subtitle }}
+              </p>
             }
-            @if (_bar.infoActionId) {
-              <app-button
-                appearance="soft"
-                [color]="_bar.color"
-                [iconOnly]="true"
-                iconLeft="help"
-                [size]="_variant.infoButtonSize"
-                (clicked)="infoAction.emit(_bar.infoActionId!)"
-                aria-label="Szczegóły statusu"
-              />
-            }
           </div>
+          <app-icon name="chevron-right" size="md" class="text-white" />
         </div>
       </div>
     </div>
@@ -190,9 +114,11 @@ const ACCENT_VARIANTS: Record<SemanticColor, AccentClasses> = {
 export class EventStatusBarItemComponent {
   readonly bar = input.required<EventStatusBarConfig>();
   readonly variant = input<EventStatusBarVariant>('inline');
-  readonly barAction = output<string>();
-  readonly infoAction = output<string>();
+  readonly barClick = output<string>();
 
   readonly variantClasses = computed(() => VARIANTS[this.variant()]);
-  readonly accentClasses = computed(() => ACCENT_VARIANTS[this.bar().color]);
+
+  onBarClick(): void {
+    this.barClick.emit(this.bar().id);
+  }
 }

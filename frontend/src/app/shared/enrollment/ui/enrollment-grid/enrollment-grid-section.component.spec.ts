@@ -9,7 +9,7 @@ function makeGroup(occupiedCount: number, totalSlots: number): SlotGroup {
 }
 
 describe('EnrollmentGridSectionComponent — computed signals', () => {
-  function create() {
+  function create(count = 0) {
     TestBed.configureTestingModule({
       imports: [EnrollmentGridSectionComponent],
       schemas: [NO_ERRORS_SCHEMA],
@@ -19,35 +19,37 @@ describe('EnrollmentGridSectionComponent — computed signals', () => {
     const fixture = TestBed.createComponent(EnrollmentGridSectionComponent);
     const c = fixture.componentInstance;
     fixture.componentRef.setInput('config', SLOT_STATUS_CONFIG.assigned);
+    fixture.componentRef.setInput('count', count);
     fixture.detectChanges();
     return { fixture, c };
   }
 
   afterEach(() => TestBed.resetTestingModule());
 
-  describe('totalOccupied()', () => {
-    it('zwraca 0 gdy brak grup', () => {
-      const { c } = create();
-      expect(c.totalOccupied()).toBe(0);
+  describe('count()', () => {
+    it('zwraca 0 gdy count ustawiony na 0', () => {
+      const { c } = create(0);
+      expect(c.count()).toBe(0);
     });
 
-    it('sumuje occupiedCount z wielu grup', () => {
-      const { fixture, c } = create();
-      fixture.componentRef.setInput('groups', [makeGroup(3, 5), makeGroup(2, 5)]);
-      expect(c.totalOccupied()).toBe(5);
+    it('zwraca wartość przekazaną przez input', () => {
+      const { fixture, c } = create(5);
+      fixture.componentRef.setInput('count', 5);
+      expect(c.count()).toBe(5);
     });
   });
 
-  describe('totalSlots()', () => {
-    it('zwraca 0 gdy brak grup', () => {
+  describe('groups()', () => {
+    it('zwraca pustą tablicę domyślnie', () => {
       const { c } = create();
-      expect(c.totalSlots()).toBe(0);
+      expect(c.groups()).toEqual([]);
     });
 
-    it('sumuje totalSlots z wielu grup', () => {
+    it('zwraca ustawione grupy', () => {
       const { fixture, c } = create();
-      fixture.componentRef.setInput('groups', [makeGroup(1, 5), makeGroup(2, 7)]);
-      expect(c.totalSlots()).toBe(12);
+      const groups = [makeGroup(3, 5), makeGroup(2, 5)];
+      fixture.componentRef.setInput('groups', groups);
+      expect(c.groups()).toEqual(groups);
     });
   });
 
@@ -55,7 +57,7 @@ describe('EnrollmentGridSectionComponent — computed signals', () => {
     it('zwraca poprawne klasy kolorów dla konfiguracji assigned', () => {
       const { c } = create();
       expect(c.colors()).toBeDefined();
-      expect(c.colors().headerBg).toBeTruthy();
+      expect(c.colors().textClass).toBeTruthy();
     });
 
     it('zwraca inne klasy dla konfiguracji pending', () => {

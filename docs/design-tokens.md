@@ -1,6 +1,6 @@
 # Design Tokens - System Kolorów (3-warstwowa architektura)
 
-> **Source of Truth:** CSS variables w `frontend/src/styles/_tokens.scss` > **Tailwind mapping:** `frontend/tailwind.config.js` > **Podgląd wizualny:** `/dev/design-system` (tylko dev mode)
+> **Source of Truth:** CSS variables w `frontend/src/styles/_tokens.scss` > **Tailwind mapping:** `frontend/tailwind.config.js` > **Podgląd wizualny:** `/dev/design-system` (tylko dev mode, synchronizowany z live CSS vars w przeglądarce)
 
 ## Architektura
 
@@ -97,12 +97,16 @@
 
 ### Danger (red) - Błędy, destrukcyjne akcje
 
-| Odcień       | RGB (CSS var) | Hex       | Zastosowanie         |
-| ------------ | ------------- | --------- | -------------------- |
-| `danger-50`  | `254 236 238` | `#feecee` | Tło notification bar |
-| `danger-200` | `249 180 188` | `#f9b4bc` | Border               |
-| `danger-400` | `237 85 101`  | `#ed5565` | Badge error          |
-| `danger-500` | `218 68 83`   | `#da4453` | Tekst                |
+| Odcień       | RGB (CSS var) | Hex       | Zastosowanie                           |
+| ------------ | ------------- | --------- | -------------------------------------- |
+| `danger-50`  | `254 236 238` | `#feecee` | Tło notification bar                   |
+| `danger-200` | `249 180 188` | `#f9b4bc` | Border                                 |
+| `danger-400` | `237 85 101`  | `#ed5565` | Badge error                            |
+| `danger-500` | `218 68 83`   | `#da4453` | Tekst                                  |
+| `danger-600` | `192 57 43`   | `#c0392b` | Mocniejszy tekst / destructive surface |
+| `danger-700` | `160 32 32`   | `#a02020` | Bardzo mocny akcent                    |
+| `danger-800` | `122 26 36`   | `#7a1a24` | Głębokie tło / hover                   |
+| `danger-900` | `80 16 21`    | `#501015` | Najciemniejszy wariant                 |
 
 ### Info (blue) - Informacje, focus ring
 

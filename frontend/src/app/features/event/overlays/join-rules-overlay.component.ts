@@ -130,7 +130,7 @@ export class JoinRulesOverlayComponent {
       case 1:
         return {
           title: 'Chcesz dołączyć?',
-          description: 'Zapoznaj się z poniższymi danymi i organizacją tego wydarzenia.',
+          description: 'Zapoznaj się z poniższymi informacjami i organizacją tego wydarzenia.',
         };
       default:
         return {

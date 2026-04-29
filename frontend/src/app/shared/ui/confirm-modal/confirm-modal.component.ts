@@ -25,14 +25,16 @@ import { ConfirmModalService } from './confirm-modal.service';
         <!-- Modal -->
         <div class="relative z-10 w-full max-w-sm rounded-2xl bg-white shadow-2xl animate-modal-in">
           <div class="px-6 pt-6 pb-2 text-center">
-            <div
-              [ngClass]="
-                'mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full ' +
-                iconBgClass()
-              "
-            >
-              <app-icon [name]="iconName()" size="lg" [ngClass]="iconColorClass()"></app-icon>
-            </div>
+            @if (s.showIcon !== false) {
+              <div
+                [ngClass]="
+                  'mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full ' +
+                  iconBgClass()
+                "
+              >
+                <app-icon [name]="iconName()" size="lg" [ngClass]="iconColorClass()"></app-icon>
+              </div>
+            }
 
             <h2 class="text-lg font-bold text-neutral-900">
               {{ s.title }}

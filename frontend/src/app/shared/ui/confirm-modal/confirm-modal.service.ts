@@ -8,6 +8,7 @@ export interface ConfirmModalConfig {
   cancelLabel?: string;
   showCancel?: boolean;
   color?: SemanticColor;
+  showIcon?: boolean;
 }
 
 interface ConfirmModalState extends ConfirmModalConfig {

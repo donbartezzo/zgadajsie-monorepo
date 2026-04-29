@@ -251,7 +251,7 @@ export class EnrollmentSlotModalComponent {
   );
 
   readonly colorClasses = computed<SlotColorClasses>(() =>
-    getSlotColorClasses(this.slotStatusConfig()),
+    getSlotColorClasses(this.slotStatusConfig().status),
   );
 
   readonly participationUpdatedAt = computed(() => {

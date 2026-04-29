@@ -32,9 +32,7 @@
       [waitingReason]="overlays.waitingReason()"
       [participants]="overlays.participants()"
       (closed)="overlays.close()"
-      (openChat)="overlays.handleOpenChat()"
       (payRequested)="overlays.handlePay()"
-      (contactOrganizer)="overlays.handleContactOrganizer()"
       (leaveRequested)="overlays.handleLeaveRequested()"
       (rejoinRequested)="overlays.handleRejoinRequested()"
       (addGuestRequested)="overlays.handleAddGuestRequested()"
@@ -63,7 +61,9 @@
         [participantCount]="overlays.participants().length"
         [maxParticipants]="evt.maxParticipants"
         [costPerPerson]="evt.costPerPerson"
+        [actionButton]="$any(overlays.enrollmentActionButton())"
         (closed)="overlays.close()"
+        (actionClicked)="overlays.handleEnrollmentActionClicked()"
       />
     }
   }

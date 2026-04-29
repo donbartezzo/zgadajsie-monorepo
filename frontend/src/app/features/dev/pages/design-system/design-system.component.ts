@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.component';
 import { ButtonAppearance, ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
@@ -10,11 +10,12 @@ import {
   EventStatusBarItemComponent,
   EventStatusBarVariant,
 } from '../../../../features/event/ui/event-status-bars/event-status-bar-item/event-status-bar-item.component';
+import { EVENT_LIFECYCLE_CONFIG } from '../../../../features/event/constants/event-status-messages';
 import {
-  LIFECYCLE_STATUS_APPEARANCE,
-  LIFECYCLE_STATUS_LABELS,
-  STATUS_BAR_ACTION_LABELS,
-} from '../../../../features/event/constants/event-status-messages';
+  UserAvatarComponent,
+  AvatarSize,
+  AvatarShape,
+} from '../../../../shared/user/ui/user-avatar/user-avatar.component';
 
 interface ColorSwatch {
   shade: string;
@@ -24,6 +25,7 @@ interface ColorSwatch {
 interface ColorPalette {
   name: string;
   description: string;
+  token?: string;
   swatches: ColorSwatch[];
 }
 
@@ -36,6 +38,7 @@ interface ColorPalette {
     CapacityProgressComponent,
     EventInfoItemComponent,
     EventStatusBarItemComponent,
+    UserAvatarComponent,
   ],
   templateUrl: './design-system.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,12 +56,22 @@ export class DesignSystemComponent {
   readonly buttonAppearances: ButtonAppearance[] = ['solid', 'soft', 'outline', 'ghost', 'link'];
   readonly badgeVariants = ['solid', 'soft', 'outline', 'ghost'] as const;
 
+  readonly avatarSizes: AvatarSize[] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl'];
+  readonly avatarShapes: AvatarShape[] = ['circle', 'rounded'];
+  readonly avatarExamples = [
+    { displayName: 'Jan Kowalski', avatarUrl: null },
+    { displayName: 'Anna Nowak', avatarUrl: null },
+    { displayName: 'Marek Zieliński', avatarUrl: null },
+    { displayName: 'Katarzyna Wójcik', avatarUrl: null },
+  ];
+
   readonly sections = [
     { id: 'colors', label: 'Kolory' },
     { id: 'typography', label: 'Typografia' },
     { id: 'icons', label: 'Ikony' },
     { id: 'spacing', label: 'Spacing' },
     { id: 'components', label: 'Komponenty' },
+    { id: 'avatars', label: 'Avatary' },
     { id: 'event-status-bars', label: 'Status bars' },
   ];
 
@@ -66,8 +79,9 @@ export class DesignSystemComponent {
   // SEMANTIC PALETTES - główne palety do użycia w komponentach
   // Mapowane na CSS vars w _tokens.scss
   // ════════════════════════════════════════════════════════
-  readonly semanticPalettes: ColorPalette[] = [
+  readonly semanticPalettes = signal<ColorPalette[]>([
     {
+      token: 'primary',
       name: 'Primary (mint)',
       description: 'Brand, CTA, przyciski, linki, akcenty',
       swatches: [
@@ -84,6 +98,7 @@ export class DesignSystemComponent {
       ],
     },
     {
+      token: 'neutral',
       name: 'Neutral (dark/gray)',
       description: 'Tła, tekst, bordery, ikony muted',
       swatches: [
@@ -101,6 +116,7 @@ export class DesignSystemComponent {
       ],
     },
     {
+      token: 'success',
       name: 'Success (green)',
       description: 'Pozytywne statusy, potwierdzenia',
       swatches: [
@@ -117,6 +133,7 @@ export class DesignSystemComponent {
       ],
     },
     {
+      token: 'warning',
       name: 'Warning (orange)',
       description: 'Ostrzeżenia, countdown urgent',
       swatches: [
@@ -133,6 +150,7 @@ export class DesignSystemComponent {
       ],
     },
     {
+      token: 'danger',
       name: 'Danger (red)',
       description: 'Błędy, usuwanie, destrukcyjne akcje',
       swatches: [
@@ -149,6 +167,7 @@ export class DesignSystemComponent {
       ],
     },
     {
+      token: 'info',
       name: 'Info (blue)',
       description: 'Informacje, focus ring, linki informacyjne',
       swatches: [
@@ -164,7 +183,11 @@ export class DesignSystemComponent {
         { shade: '900', hex: '#072240' },
       ],
     },
-  ];
+  ]);
+
+  constructor() {
+    afterNextRender(() => this.syncSemanticPalettesFromCssVars());
+  }
 
   // ════════════════════════════════════════════════════════
   // FOUNDATION PALETTES - raw kolory z szablonu sticky-mobile
@@ -439,62 +462,48 @@ export class DesignSystemComponent {
   ];
 
   // ════════════════════════════════════════════════════════
-  // EVENT STATUS BARS - przykłady oparte na rzeczywistych konfiguracjach
-  // Źródło prawdy: event-status-messages.ts
+  // EVENT STATUS BARS - statusy cyklu życia wydarzenia
+  // Źródło prawdy: event-status-messages.ts → EVENT_LIFECYCLE_CONFIG
+  // Pokazywany gdy NIE ma participation bara
   // ════════════════════════════════════════════════════════
-  readonly statusBarExamples: EventStatusBarConfig[] = [
-    // UPCOMING (event status bar)
+  readonly eventStatusBarExamples: EventStatusBarConfig[] = (
+    ['UPCOMING', 'ONGOING', 'ENDED', 'CANCELLED'] as const
+  ).map((status) => {
+    const cfg = EVENT_LIFECYCLE_CONFIG[status];
+    return {
+      id: status.toLowerCase(),
+      color: cfg.color,
+      title: cfg.title,
+      subtitle: cfg.subtitle,
+      bgClass: cfg.appearance.bgClass,
+      borderClass: cfg.appearance.borderClass,
+    };
+  });
+
+  // ════════════════════════════════════════════════════════
+  // PARTICIPATION STATUS BAR - jeden wariant z listingiem uczestników
+  // Wyświetlany TYLKO gdy: lifecycleStatus === 'UPCOMING' + user ma zapisy
+  // Kolor: taki sam jak UPCOMING event bar (bg-primary-500)
+  // Źródło: EventAreaService.notificationBars → config.appearance dla UPCOMING
+  // ════════════════════════════════════════════════════════
+  readonly participationStatusBarExamples: EventStatusBarConfig[] = [
     {
-      id: 'upcoming',
-      ...LIFECYCLE_STATUS_APPEARANCE.UPCOMING,
-      ...LIFECYCLE_STATUS_LABELS.UPCOMING,
-      infoActionId: 'enrollmentDetails',
-      actionButton: {
-        label: STATUS_BAR_ACTION_LABELS.join,
-      },
+      id: 'participation-single',
+      title: 'Jesteś zapisany:',
+      bgClass: 'bg-primary-500',
+      borderClass: 'border-2 border-primary-500',
+      enrollments: [{ avatarUrl: null, displayName: 'Jan Kowalski' }],
     },
-    // ONGOING (event status bar)
     {
-      id: 'ongoing',
-      ...LIFECYCLE_STATUS_APPEARANCE.ONGOING,
-      ...LIFECYCLE_STATUS_LABELS.ONGOING,
-      infoActionId: 'enrollmentDetails',
-    },
-    // ENDED (event status bar)
-    {
-      id: 'ended',
-      ...LIFECYCLE_STATUS_APPEARANCE.ENDED,
-      ...LIFECYCLE_STATUS_LABELS.ENDED,
-      infoActionId: 'enrollmentDetails',
-    },
-    // CANCELLED (event status bar)
-    {
-      id: 'cancelled',
-      ...LIFECYCLE_STATUS_APPEARANCE.CANCELLED,
-      ...LIFECYCLE_STATUS_LABELS.CANCELLED,
-      infoActionId: 'enrollmentDetails',
-    },
-    // PARTICIPATION: CONFIRMED (participation status bar)
-    {
-      id: 'participation-confirmed',
-      color: 'success',
-      icon: 'check',
-      title: 'Jesteś już potwierdzonym uczestnikiem!',
-      subtitle: 'Twój udział jest potwierdzony.',
-      bgClass: 'bg-success-50',
-      borderClass: 'border-t border-b border-success-200',
-      actionButton: { label: 'Szczegóły' },
-    },
-    // PARTICIPATION: PENDING (participation status bar)
-    {
-      id: 'participation-pending',
-      color: 'warning',
-      icon: 'clock',
-      title: 'Oczekujesz na przydzielenie miejsca',
-      subtitle: 'Poinformujemy Cię o zmianie statusu.',
-      bgClass: 'bg-warning-50',
-      borderClass: 'border-t border-b border-warning-200',
-      actionButton: { label: 'Szczegóły' },
+      id: 'participation-multi',
+      title: 'Jesteś zapisany:',
+      bgClass: 'bg-primary-500',
+      borderClass: 'border-2 border-primary-500',
+      enrollments: [
+        { avatarUrl: null, displayName: 'Jan Kowalski' },
+        { avatarUrl: null, displayName: 'Anna Nowak' },
+        { avatarUrl: null, displayName: 'Marek Zieliński' },
+      ],
     },
   ];
 
@@ -553,6 +562,51 @@ export class DesignSystemComponent {
 
   setSection(id: string): void {
     this.activeSection.set(id);
+  }
+
+  private syncSemanticPalettesFromCssVars(): void {
+    const rootStyles = getComputedStyle(document.documentElement);
+
+    const synced = this.semanticPalettes().map((palette) => {
+      const token = palette.token;
+
+      if (!token) {
+        return palette;
+      }
+
+      return {
+        ...palette,
+        swatches: palette.swatches.map((swatch) => {
+          const resolvedHex = this.resolveCssVariableHex(rootStyles, token, swatch.shade);
+
+          return resolvedHex ? { ...swatch, hex: resolvedHex } : swatch;
+        }),
+      };
+    });
+
+    this.semanticPalettes.set(synced);
+  }
+
+  private resolveCssVariableHex(
+    rootStyles: CSSStyleDeclaration,
+    token: string,
+    shade: string,
+  ): string | null {
+    const rawValue = rootStyles.getPropertyValue(`--color-${token}-${shade}`).trim();
+
+    if (!rawValue) {
+      return null;
+    }
+
+    const channels = rawValue.split(/\s+/).map((channel) => Number(channel));
+
+    if (channels.length !== 3 || channels.some((channel) => !Number.isFinite(channel))) {
+      return null;
+    }
+
+    return `#${channels
+      .map((channel) => Math.max(0, Math.min(255, channel)).toString(16).padStart(2, '0'))
+      .join('')}`;
   }
 
   isDark(hex: string): boolean {

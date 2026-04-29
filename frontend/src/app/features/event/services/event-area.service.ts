@@ -18,6 +18,7 @@ import {
   ParticipationStatus,
   WaitingReason,
 } from '../../../shared/types';
+import { SemanticColor } from '../../../shared/types/colors';
 import { MAX_GUESTS_PER_USER, MAX_GUESTS_PER_ORGANIZER } from '@zgadajsie/shared';
 import {
   getEventLifecycleStatus,
@@ -25,13 +26,10 @@ import {
   isPreEnrollment,
 } from '../../../shared/utils/event-time-status.util';
 import { getWaitingReasonToast } from '../../../shared/utils/waiting-reason-messages.util';
-import { getParticipationStatusConfig } from '../../../shared/utils';
 import { EventStatusBarConfig } from '../ui/event-status-bars/event-status-bars-inline/event-status-bars-inline.component';
 import {
-  EVENT_STATUS_MESSAGES,
+  EVENT_LIFECYCLE_CONFIG,
   EventLifecycleStatus,
-  LIFECYCLE_STATUS_APPEARANCE,
-  LIFECYCLE_STATUS_LABELS,
   STATUS_BAR_ACTION_LABELS,
 } from '../constants/event-status-messages';
 
@@ -96,6 +94,14 @@ export class EventAreaService {
   });
 
   readonly isCancelled = computed(() => this.event()?.status === 'CANCELLED');
+
+  readonly currentUserParticipations = computed<Participation[]>(() => {
+    const userId = this.auth.currentUser()?.id;
+    if (!userId) return [];
+    return this.participants().filter(
+      (p) => (!p.isGuest && p.userId === userId) || (p.isGuest && p.addedByUser?.id === userId),
+    );
+  });
 
   readonly currentUserParticipation = computed<Participation | null>(() => {
     const userId = this.auth.currentUser()?.id;
@@ -181,44 +187,35 @@ export class EventAreaService {
 
     if (!this.event()) return bars;
 
-    // ── Participation status bar (shown when user has any participation) ──
-    const participation = this.currentUserParticipation();
-    if (participation) {
-      const lifecycleStatus = this.lifecycleStatus() ?? 'UPCOMING';
-      const config = getParticipationStatusConfig(participation.status as ParticipationStatus, {
-        isEnded: lifecycleStatus === 'ENDED',
-        waitingReason: participation.waitingReason as WaitingReason | null,
-      });
+    const lifecycleStatus = this.lifecycleStatus() ?? 'UPCOMING';
+    const userParticipations = this.currentUserParticipations();
+    const config = EVENT_LIFECYCLE_CONFIG[lifecycleStatus];
 
+    // ── Participation status bar (shown ONLY when UPCOMING + user has any participation) ──
+    if (lifecycleStatus === 'UPCOMING' && userParticipations.length > 0) {
       bars.push({
         id: 'participation',
-        color: config.color,
-        icon: config.icon as any,
-        title: config.title,
-        subtitle: config.subtitle,
-        bgClass: config.bgClass,
-        borderClass: config.borderClass,
-        actionButton: { label: config.buttonLabel },
+        title: 'Jesteś zapisany:',
+        subtitle: 'Sprawdź szczegóły',
+        bgClass: config.appearance.bgClass,
+        borderClass: config.appearance.borderClass,
+        enrollments: userParticipations.map((p) => ({
+          avatarUrl: p.user?.avatarUrl ?? null,
+          displayName: p.user?.displayName ?? '',
+        })),
       });
     }
 
-    // ── Event status bar (always shown) ──
-    const lifecycleStatus = this.lifecycleStatus() ?? 'UPCOMING';
-    const appearance = LIFECYCLE_STATUS_APPEARANCE[lifecycleStatus];
-    const labels = LIFECYCLE_STATUS_LABELS[lifecycleStatus];
-    const joinButton = this.canJoin() ? { label: STATUS_BAR_ACTION_LABELS.join } : undefined;
-
-    bars.push({
-      id: 'status',
-      color: appearance.color,
-      icon: appearance.icon,
-      title: labels.title,
-      subtitle: labels.subtitle,
-      bgClass: appearance.bgClass,
-      borderClass: appearance.borderClass,
-      infoActionId: 'enrollmentDetails',
-      ...(joinButton && { actionButton: joinButton }),
-    });
+    // ── Event status bar (shown when participation bar is NOT shown) ──
+    if (bars.length === 0) {
+      bars.push({
+        id: 'status',
+        title: config.title,
+        subtitle: config.subtitle,
+        bgClass: config.appearance.bgClass,
+        borderClass: config.appearance.borderClass,
+      });
+    }
 
     return bars;
   });
@@ -579,9 +576,7 @@ export class EventAreaService {
     this.overlays.onJoinGuestConfirmed((data: { displayName: string; roleKey?: string }) =>
       this.confirmJoinGuest(data.displayName, data.roleKey),
     );
-    this.overlays.onOpenChat(() => this.openChat());
     this.overlays.onPay(() => this.payEvent());
-    this.overlays.onContactOrganizer(() => this.contactOrganizer());
     this.overlays.onLeaveRequested(() => this.requestLeave());
     this.overlays.onRejoinRequested(() => this.confirmJoin());
     this.overlays.onRejoinParticipantRequested((p) => this.confirmRejoinParticipant(p));
@@ -590,6 +585,7 @@ export class EventAreaService {
     this.overlays.onRoleChangeConfirmed((data) =>
       this.handleRoleChange(data.participationId, data.roleKey),
     );
+    this.overlays.onEnrollmentActionClicked(() => this.handleNotificationBarAction('status'));
   }
 
   openJoinConfirmOverlay(): void {
@@ -661,14 +657,24 @@ export class EventAreaService {
       return;
     }
 
-    if (barId === 'participation') {
+    if (barId === 'participation' || barId.startsWith('participation-')) {
       this.openJoinConfirmOverlay();
     }
   }
 
-  handleInfoAction(actionId: string): void {
-    if (actionId === 'enrollmentDetails') {
+  handleBarClick(barId: string): void {
+    if (barId === 'status') {
+      const config = EVENT_LIFECYCLE_CONFIG[this.lifecycleStatus() ?? 'UPCOMING'];
+      const joinButton = this.canJoin()
+        ? { label: STATUS_BAR_ACTION_LABELS.join, color: config.color as SemanticColor }
+        : undefined;
+      this.overlays.setEnrollmentActionButton(joinButton);
       this.overlays.open('enrollmentDetails');
+      return;
+    }
+
+    if (barId === 'participation' || barId.startsWith('participation-')) {
+      this.openJoinConfirmOverlay();
     }
   }
 
@@ -898,13 +904,14 @@ export class EventAreaService {
   }
 
   private async showInactiveModal(status: 'ENDED' | 'ONGOING' | 'CANCELLED'): Promise<void> {
-    const message = EVENT_STATUS_MESSAGES[status];
+    const config = EVENT_LIFECYCLE_CONFIG[status];
     await this.confirmModal.confirm({
-      title: message.title,
-      message: message.description,
+      title: config.title,
+      message: config.description ?? '',
       confirmLabel: 'Rozumiem',
       showCancel: false,
-      color: message.color,
+      color: config.color,
+      showIcon: false,
     });
   }
 }

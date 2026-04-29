@@ -31,22 +31,22 @@
   ═══════════════════════════════════ -->
   @let _colors = colorClasses();
 
-  <div [class]="'-mx-4 -mt-4 rounded-t-2xl px-5 pb-4 pt-5 pr-12 ' + _colors.headerBg">
-    <div [class]="'flex items-center gap-4'">
-      <div [class]="'flex h-12 w-12 shrink-0 items-center justify-center rounded-full ' + _colors.iconBg">
-        <app-icon [name]="_config.icon" size="md" [class]="_colors.iconColor" />
-      </div>
-      <div>
-        <h3 [class]="'text-base font-bold leading-tight uppercase ' + _colors.titleColor">
-          {{ _config.title }}
-          @let _roleKey = _participant?.slot?.roleKey ?? _participant?.roleKey;
-          @if (_roleKey) {
-            - {{ 'dict.participant-role.' + _roleKey + '.title' | transloco | uppercase }}
-          }
-        </h3>
-        <p [class]="'mt-0.5 text-xs ' + _colors.descColor">{{ _config.description }}</p>
-      </div>
-    </div>
+  <div
+    [class]="
+      '-mx-4 -mt-4 rounded-t-2xl px-5 pb-4 pt-5 pr-12 border-b-1 ' +
+      _colors.bgLightClass +
+      ' ' +
+      _colors.borderColorClass
+    "
+  >
+    <h3 [class]="'text-base font-bold leading-tight uppercase ' + _colors.textClass">
+      {{ _config.title }}
+      @let _roleKey = _participant?.slot?.roleKey ?? _participant?.roleKey;
+      @if (_roleKey) {
+        - {{ 'dict.participant-role.' + _roleKey + '.title' | transloco | uppercase }}
+      }
+    </h3>
+    <p [class]="'mt-0.5 text-xs ' + _colors.textClass">{{ _config.description }}</p>
   </div>
 
   @if (_data) {

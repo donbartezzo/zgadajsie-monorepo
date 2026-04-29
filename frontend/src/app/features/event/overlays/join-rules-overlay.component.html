@@ -19,8 +19,6 @@
 
 <app-bottom-overlay
   [open]="open()"
-  [icon]="_isAccountVerified ? 'list' : null"
-  iconColor="info"
   [title]="headerCopy().title"
   [description]="headerCopy().description"
   (closed)="closed.emit()"

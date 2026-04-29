@@ -9,6 +9,7 @@ import {
 } from '../../../types';
 import { EventCountdown } from '@zgadajsie/shared';
 import { EventLifecycleStatus } from '../../../../features/event/constants/event-status-messages';
+import { SemanticColor } from '../../../types/colors';
 
 export type OverlayType =
   | 'share'
@@ -48,9 +49,7 @@ export class BottomOverlaysService {
   private joinCallback: ((roleKey?: string) => void) | null = null;
   private joinGuestCallback: ((data: JoinGuestRequest) => void) | null = null;
   private authSuccessCallback: (() => void) | null = null;
-  private openChatCallback: (() => void) | null = null;
   private payCallback: (() => void) | null = null;
-  private contactOrganizerCallback: (() => void) | null = null;
   private cancelEventCallback: (() => void) | null = null;
   private leaveCallback: (() => void) | null = null;
   private rejoinCallback: (() => void) | null = null;
@@ -61,6 +60,7 @@ export class BottomOverlaysService {
   private changeRoleCallback:
     | ((data: { participationId: string; roleKey: string }) => void)
     | null = null;
+  private enrollmentActionCallback: (() => void) | null = null;
 
   private readonly lifecycleStatusSignal = signal<EventLifecycleStatus>('UPCOMING');
   readonly lifecycleStatus = this.lifecycleStatusSignal.asReadonly();
@@ -75,6 +75,11 @@ export class BottomOverlaysService {
 
   private readonly wizardConfigSignal = signal<JoinWizardConfig | null>(null);
   readonly wizardConfig = this.wizardConfigSignal.asReadonly();
+
+  private readonly enrollmentActionButtonSignal = signal<
+    { label: string; color?: SemanticColor } | undefined
+  >(undefined);
+  readonly enrollmentActionButton = this.enrollmentActionButtonSignal.asReadonly();
 
   readonly active = this.activeSignal.asReadonly();
   readonly event = this.eventSignal.asReadonly();
@@ -164,16 +169,8 @@ export class BottomOverlaysService {
     this.authSuccessCallback = callback;
   }
 
-  onOpenChat(callback: () => void): void {
-    this.openChatCallback = callback;
-  }
-
   onPay(callback: () => void): void {
     this.payCallback = callback;
-  }
-
-  onContactOrganizer(callback: () => void): void {
-    this.contactOrganizerCallback = callback;
   }
 
   onCancelEvent(callback: () => void): void {
@@ -210,6 +207,14 @@ export class BottomOverlaysService {
     this.changeRoleCallback = callback;
   }
 
+  setEnrollmentActionButton(button: { label: string; color?: SemanticColor } | undefined): void {
+    this.enrollmentActionButtonSignal.set(button);
+  }
+
+  onEnrollmentActionClicked(callback: () => void): void {
+    this.enrollmentActionCallback = callback;
+  }
+
   openCancelPayment(payment: ParticipantPaymentInfo, userName: string): void {
     this.cancelPaymentSignal.set(payment);
     this.cancelPaymentUserNameSignal.set(userName);
@@ -228,16 +233,8 @@ export class BottomOverlaysService {
     this.authSuccessCallback?.();
   }
 
-  handleOpenChat(): void {
-    this.openChatCallback?.();
-  }
-
   handlePay(): void {
     this.payCallback?.();
-  }
-
-  handleContactOrganizer(): void {
-    this.contactOrganizerCallback?.();
   }
 
   handleCancelEvent(): void {
@@ -272,12 +269,15 @@ export class BottomOverlaysService {
     this.changeRoleCallback?.(data);
   }
 
+  handleEnrollmentActionClicked(): void {
+    this.enrollmentActionCallback?.();
+  }
+
   clearCallbacks(): void {
     this.joinCallback = null;
     this.joinGuestCallback = null;
     this.authSuccessCallback = null;
     this.payCallback = null;
-    this.contactOrganizerCallback = null;
     this.cancelEventCallback = null;
     this.leaveCallback = null;
     this.rejoinCallback = null;
@@ -286,5 +286,6 @@ export class BottomOverlaysService {
     this.manageGuestsCallback = null;
     this.cancelPaymentCallback = null;
     this.changeRoleCallback = null;
+    this.enrollmentActionCallback = null;
   }
 }

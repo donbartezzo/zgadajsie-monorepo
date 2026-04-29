@@ -43,6 +43,7 @@ export interface SlotGroup {
         type="button"
         [attr.data-user-id]="participant().userId"
         [class]="buttonClass()"
+        [disabled]="!clickable()"
         (click)="clicked.emit()"
       >
         <div class="relative flex flex-col items-center justify-center flex-1">
@@ -99,6 +100,7 @@ export class EnrollmentGridItemComponent {
   readonly participant = input.required<EnrollmentItem>();
   readonly currentUserId = input<string | null>(null);
   readonly showRole = input(false);
+  readonly clickable = input(true);
   readonly clicked = output<void>();
 
   readonly displayName = computed(() => this.participant().user?.displayName ?? 'Uczestnik');
@@ -204,15 +206,17 @@ export class EnrollmentGridItemComponent {
     'inline-flex items-center justify-center w-5 h-5 rounded-full shadow-xs border border-white';
 
   readonly buttonClass = computed(() => {
+    if (!this.clickable()) {
+      const base = 'flex flex-col items-center w-full h-full p-1 rounded-xl cursor-default';
+      return this.isCurrentUserOrGuest() ? `${base} ring-2 ring-primary-100 ring-dashed` : base;
+    }
+
     const base =
       'flex flex-col items-center w-full h-full p-1 rounded-xl transition-colors' +
       ' hover:bg-neutral-50 focus:outline-hidden';
     const status = this.slotDisplayStatus();
 
-    if (this.isCurrentUserOrGuest()) {
-      return `${base} ring-2 ring-primary-100 ring-dashed`;
-    }
-
+    if (this.isCurrentUserOrGuest()) return `${base} ring-2 ring-primary-100 ring-dashed`;
     if (status === 'pending') return `${base} focus:ring-2 focus:ring-warning-200`;
     if (status === 'withdrawn') return `${base} focus:ring-2 focus:ring-neutral-200`;
     return `${base} focus:ring-2 focus:ring-primary-200`;

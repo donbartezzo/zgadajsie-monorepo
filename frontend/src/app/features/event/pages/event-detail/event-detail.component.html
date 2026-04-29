@@ -207,8 +207,7 @@
       <div class="mt-4">
         <app-event-status-bars-inline
           [bars]="_notificationBars"
-          (barAction)="eventArea.handleNotificationBarAction($event)"
-          (infoAction)="eventArea.handleInfoAction($event)"
+          (barClick)="eventArea.handleBarClick($event)"
         ></app-event-status-bars-inline>
       </div>
     }

@@ -2,33 +2,28 @@
 @let _count = count();
 @let _colors = colors();
 @let _groups = groups();
-@let _totalOccupied = totalOccupied();
-@let _totalSlots = totalSlots();
 
-<div [class]="'rounded-2xl shadow-xs overflow-hidden border-2 mb-4 ' + _colors.sectionCardBorder">
+<div [class]="'rounded-2xl shadow-xs overflow-hidden mb-4 ' + _colors.borderClass">
   <!-- Header band -->
-  <div [class]="'flex items-center gap-2 px-4 py-2.5 ' + _colors.headerBg">
-    <app-icon [name]="_config.icon" size="xs" [class]="_colors.sectionIcon" />
-    <h4 [class]="'text-xs font-semibold uppercase tracking-widest ' + _colors.sectionTitle">
+  <div [class]="'relative flex items-center py-2 ' + _colors.bgLightClass">
+    <h4 [class]="'flex-1 text-center text-md font-semibold uppercase tracking-widest ' + _colors.textClass">
       {{ _config.sectionHeader }}
-      @if (_count !== null) {
-        ({{ _count }})
-      } @else if (_totalSlots > 0) {
-        ({{ _totalOccupied }}/{{ _totalSlots }})
-      }
     </h4>
+    <span [class]="'absolute right-2 px-2 py-0.5 rounded-md text-xs font-bold text-white ' + _colors.bgClass">
+      {{ _count }}
+    </span>
   </div>
 
   <!-- Subheader band — section note + FAQ link -->
   @if (_config.sectionNote) {
-    <div [class]="'flex flex-col items-center gap-1 px-3 py-1.5 ' + _colors.subheaderBg">
-      <p class="text-center text-xs leading-tight text-neutral-500">
+    <div [class]="'flex flex-col items-center gap-1 px-2 pb-2 ' + _colors.bgLightClass">
+      <p [class]="'text-center text-xs leading-tight ' + _colors.textClass">
         {{ _config.sectionNote }}
         @if (_config.faqAnchor) {
           <span class="mx-1">-</span>
           <a
+            [class]="'underline inline-flex items-center hover:opacity-80 ' + _colors.textClass"
             href="/faq#{{ _config.faqAnchor }}"
-            class="text-primary-500 hover:text-primary-600 underline inline-flex items-center"
           >
             czytaj więcej
           </a>
@@ -38,7 +33,7 @@
   }
 
   <!-- Card body -->
-  <div class="bg-white space-y-3 py-2">
+  <div [class]="'bg-white space-y-3 py-2 border-t-2 ' + _colors.borderColorClass">
     <!-- Role groups (one per role, or single group for no-role sections) -->
     @for (group of _groups; track group.role?.key ?? '__all'; let isLast = $last) {
       <div [class]="!isLast ? 'border-b border-neutral-100 pb-3' : ''">

@@ -17,8 +17,6 @@ import {
   template: `
     <app-bottom-overlay
       [open]="open()"
-      icon="shield"
-      iconColor="info"
       title="Jesteś organizatorem"
       description="Zarządzaj swoim wydarzeniem, edytuj szczegóły lub sprawdź konwersacje z uczestnikami."
       (closed)="closed.emit()"
