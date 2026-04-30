@@ -1,1 +1,2 @@
-"$(dirname -- "$0")/common.sh" test:ci
+#!/usr/bin/env sh
+# CI runs on GitHub Actions after push - no local test gate needed
