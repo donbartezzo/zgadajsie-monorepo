@@ -17,6 +17,7 @@ export interface EventBase
   lat: number;
   lng: number;
   rules?: string;
+  facilityReserved?: boolean;
   status: EventStatus;
   createdAt: string;
   updatedAt: string;

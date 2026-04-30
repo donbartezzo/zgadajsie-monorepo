@@ -21,6 +21,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { IsActiveGuard } from '../auth/guards/is-active.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
 @Controller('cover-images')
 export class CoverImagesController {
@@ -30,6 +32,16 @@ export class CoverImagesController {
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   findAll(@Query('disciplineSlug') disciplineSlug?: string) {
     return this.coverImagesService.findAll(disciplineSlug);
+  }
+
+  @Get('suggest')
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  suggest(
+    @CurrentUser() user: AuthUser,
+    @Query('disciplineSlug') disciplineSlug: string,
+    @Query('citySlug') citySlug: string,
+  ) {
+    return this.coverImagesService.findSmartCoverForOrganizer(disciplineSlug, user.id, citySlug);
   }
 
   @Get(':id')

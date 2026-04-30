@@ -23,6 +23,23 @@
       </div>
     }
 
+    @if (showFacilityRiskNotice()) {
+      <div class="rounded-lg border border-warning-300 bg-warning-50 p-3">
+        <div class="flex items-start gap-3">
+          <app-icon name="alert-triangle" size="sm" class="mt-0.5 shrink-0 text-warning-500" />
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-warning-700">Uwaga: obiekt bez rezerwacji organizatora</p>
+            <p class="mt-1 text-xs text-warning-600">
+              Organizator nie dysponuje własną rezerwacją tego miejsca – jest ono ogólnodostępne. Dopiero po przybyciu
+              na miejsce w wyznaczonym terminie okaże się, czy obiekt jest wolny. Nawet jeśli zbierze się komplet
+              chętnych, <strong>wydarzenie może się nie odbyć</strong>, jeśli ktoś akurat będzie zajmował ten obiekt.
+              Dołączasz, świadomie akceptując to ryzyko.
+            </p>
+          </div>
+        </div>
+      </div>
+    }
+
     @if (_showNewUserNotice) {
       <div class="rounded-lg border border-warning-200 bg-warning-50 p-3">
         <div class="flex items-start gap-3">

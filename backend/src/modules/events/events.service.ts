@@ -33,7 +33,7 @@ import { EventQueryDto } from './dto/event-query.dto';
 import { CancelPaymentDto } from './dto/cancel-payment.dto';
 import { isEventEnded } from './event-time-status.util';
 import { shouldSkipPreEnrollment } from './enrollment-phase.util';
-import { daysFromNow } from '../../common/utils/date.util';
+import { buildEventListingWhere } from '../../common/utils/event-listing.util';
 import { Decimal } from '@prisma/client/runtime/library';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
@@ -55,7 +55,12 @@ export class EventsService {
   ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
-    const coverImageId = await this.resolveCoverImageId(dto.coverImageId, dto.disciplineSlug);
+    const coverImageId = await this.resolveCoverImageId(
+      dto.coverImageId,
+      dto.disciplineSlug,
+      organizerId,
+      dto.citySlug,
+    );
 
     const startsAt = new Date(dto.startsAt);
     const lotteryExecutedAt = shouldSkipPreEnrollment(startsAt) ? new Date() : null;
@@ -93,6 +98,7 @@ export class EventsService {
         lat: dto.lat,
         lng: dto.lng,
         rules: dto.rules,
+        facilityReserved: dto.facilityReserved ?? true,
       },
       include: { discipline: true, facility: true, level: true, city: true, coverImage: true },
     });
@@ -150,7 +156,7 @@ export class EventsService {
   }
 
   async findAll(query: EventQueryDto) {
-    const { page = 1, limit = 20, citySlug, disciplineSlug, sortBy } = query;
+    const { page = 1, limit = 100, citySlug, disciplineSlug, sortBy } = query;
     // If citySlug is provided, ensure the city exists — otherwise return 404
     if (citySlug) {
       const city = await this.prisma.city.findUnique({ where: { slug: citySlug } });
@@ -158,17 +164,7 @@ export class EventsService {
         throw new NotFoundException('Miejscowość nie znaleziona');
       }
     }
-    const now = new Date();
-    const dateFrom = daysFromNow(-7, now);
-    const dateTo = daysFromNow(7, now);
-    const where: Record<string, unknown> = {
-      status: { in: ['ACTIVE', 'CANCELLED'] },
-      visibility: 'PUBLIC',
-      OR: [
-        { startsAt: { gte: dateFrom, lte: dateTo } },
-        { startsAt: { lt: now }, endsAt: { gt: now } },
-      ],
-    };
+    const where: Record<string, unknown> = { ...buildEventListingWhere() };
 
     if (citySlug) {
       where.city = { slug: citySlug };
@@ -840,6 +836,7 @@ export class EventsService {
         lng: dto.lng,
         coverImage: dto.coverImageId ? { connect: { id: dto.coverImageId } } : undefined,
         rules: dto.rules,
+        facilityReserved: dto.facilityReserved ?? true,
         organizer: { connect: { id: organizerId } },
         isRecurring: true,
         recurringRule: dto.recurringRule,
@@ -876,6 +873,7 @@ export class EventsService {
           lat: dto.lat,
           lng: dto.lng,
           coverImage: dto.coverImageId ? { connect: { id: dto.coverImageId } } : undefined,
+          facilityReserved: dto.facilityReserved ?? true,
           organizer: { connect: { id: organizerId } },
           isRecurring: true,
           recurringRule: dto.recurringRule,
@@ -930,9 +928,19 @@ export class EventsService {
   private async resolveCoverImageId(
     coverImageId: string | undefined,
     disciplineSlug: string,
+    organizerId?: string,
+    citySlug?: string,
   ): Promise<string | undefined> {
     if (coverImageId) {
       return coverImageId;
+    }
+    if (organizerId && citySlug) {
+      const smart = await this.coverImagesService.findSmartCoverForOrganizer(
+        disciplineSlug,
+        organizerId,
+        citySlug,
+      );
+      return smart?.id;
     }
     const random = await this.coverImagesService.findRandomByDiscipline(disciplineSlug);
     return random?.id;

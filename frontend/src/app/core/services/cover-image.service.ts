@@ -73,6 +73,11 @@ export class CoverImageService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  suggest(disciplineSlug: string, citySlug: string): Observable<CoverImage | null> {
+    const params = new HttpParams().set('disciplineSlug', disciplineSlug).set('citySlug', citySlug);
+    return this.http.get<CoverImage | null>(`${this.apiUrl}/suggest`, { params });
+  }
+
   syncFromFilesystem(): Observable<CoverImagesSyncReport> {
     return this.http.post<CoverImagesSyncReport>(`${this.apiUrl}/sync`, {});
   }

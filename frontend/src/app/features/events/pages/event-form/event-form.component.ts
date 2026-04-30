@@ -102,15 +102,6 @@ interface DuplicateQueryParams {
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-medium text-neutral-600 mb-1">Obiekt</label>
-                <select formControlName="facilitySlug" appFormControlError>
-                  <option value="">Wybierz...</option>
-                  @for (f of facilities(); track f.slug) {
-                    <option [value]="f.slug">{{ 'dict.facility.' + f.slug | transloco }}</option>
-                  }
-                </select>
-              </div>
-              <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1">Poziom</label>
                 <select formControlName="levelSlug" appFormControlError>
                   <option value="">Wybierz...</option>
@@ -119,6 +110,64 @@ interface DuplicateQueryParams {
                   }
                 </select>
               </div>
+
+              <div>
+                <label class="block text-xs font-medium text-neutral-600 mb-1">Obiekt</label>
+                <select formControlName="facilitySlug" appFormControlError>
+                  <option value="">Wybierz...</option>
+                  @for (f of facilities(); track f.slug) {
+                    <option [value]="f.slug">{{ 'dict.facility.' + f.slug | transloco }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <!-- Rezerwacja obiektu -->
+            <div
+              [class]="
+                'rounded-xl border p-3 transition-colors ' +
+                (form.get('facilityReserved')?.value
+                  ? 'border-success-200 bg-success-50'
+                  : 'border-warning-300 bg-warning-50')
+              "
+            >
+              <label class="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  formControlName="facilityReserved"
+                  class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded accent-highlight"
+                />
+                <div>
+                  <span
+                    [class]="
+                      'block text-sm font-semibold ' +
+                      (form.get('facilityReserved')?.value
+                        ? 'text-success-700'
+                        : 'text-warning-700')
+                    "
+                  >
+                    {{
+                      form.get('facilityReserved')?.value
+                        ? 'Obiekt jest zarezerwowany przez organizatora'
+                        : 'Obiekt ogólnodostępny - brak własnej rezerwacji'
+                    }}
+                  </span>
+                  <span
+                    [class]="
+                      'mt-0.5 block text-xs ' +
+                      (form.get('facilityReserved')?.value
+                        ? 'text-success-600'
+                        : 'text-warning-600')
+                    "
+                  >
+                    {{
+                      form.get('facilityReserved')?.value
+                        ? 'Organizator zapewnił rezerwację obiektu na czas tego wydarzenia.'
+                        : 'Obiekt jest publiczny i dostępny dla wszystkich. Nawet przy komplecie uczestników ktoś może go zajmować w tym terminie - wydarzenie może się nie odbyć.'
+                    }}
+                  </span>
+                </div>
+              </label>
             </div>
           </div>
         </app-card>
@@ -375,47 +424,104 @@ interface DuplicateQueryParams {
           </div>
         </app-card>
 
-        <!-- Cover image gallery - pokazuj tylko po wybraniu dyscypliny i gdy sa dostepne cover images -->
+        <!-- Cover image - pokazuj tylko po wybraniu dyscypliny i gdy są dostępne cover images -->
         @if (form.get('disciplineSlug')?.value && coverImages().length > 0) {
           <app-card>
             <div class="p-4 space-y-3">
               <h3 class="text-sm font-semibold text-neutral-900">Grafika wydarzenia</h3>
-              @if (coverImagesLoading()) {
-                <div class="flex items-center justify-center py-6">
-                  <div
-                    class="h-6 w-6 animate-spin rounded-full border-2 border-highlight border-t-transparent"
-                  ></div>
-                </div>
-              } @else {
-                <div class="grid grid-cols-2 gap-2">
-                  @for (cover of coverImages(); track cover.id) {
-                    <button
-                      type="button"
-                      [class]="
-                        'relative overflow-hidden rounded-xl border-2 transition-all ' +
-                        (selectedCoverImageId() === cover.id
-                          ? 'border-highlight ring-2 ring-primary-500/30'
-                          : 'border-neutral-200 hover:border-neutral-400')
-                      "
-                      (click)="selectCoverImage(cover)"
+
+              <!-- Przełącznik trybu auto -->
+              <label class="flex cursor-pointer items-center gap-2">
+                <input
+                  type="checkbox"
+                  [checked]="autoCoverImage()"
+                  (change)="toggleAutoCoverImage($any($event.target).checked)"
+                  class="h-4 w-4 shrink-0 cursor-pointer rounded accent-highlight"
+                />
+                <span class="text-sm text-neutral-700">Automatyczny dobór grafiki</span>
+              </label>
+
+              @if (autoCoverImage()) {
+                <!-- Tryb automatyczny -->
+                @if (suggestLoading()) {
+                  <div class="flex items-center justify-center py-6">
+                    <div
+                      class="h-6 w-6 animate-spin rounded-full border-2 border-highlight border-t-transparent"
+                    ></div>
+                  </div>
+                } @else if (suggestedCover(); as cover) {
+                  <div class="space-y-2">
+                    <div
+                      class="relative overflow-hidden rounded-xl border-2 border-primary-300 ring-2 ring-primary-300/30"
                     >
                       <img
                         [src]="coverUrl(cover)"
                         [alt]="cover.filename"
                         class="w-full aspect-[700/250] object-cover"
                       />
-                      @if (selectedCoverImageId() === cover.id) {
-                        <div
-                          class="absolute inset-0 bg-primary-500/20 flex items-center justify-center"
+                      <div
+                        class="absolute inset-0 bg-primary-500/10 flex items-end justify-end p-2"
+                      >
+                        <span
+                          class="rounded-lg bg-primary-600 px-2 py-0.5 text-xs font-medium text-white"
                         >
-                          <div class="rounded-full bg-primary-500 p-1">
-                            <app-icon name="check" size="sm" class="text-white" />
-                          </div>
-                        </div>
-                      }
+                          auto
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      class="flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800"
+                      (click)="fetchSuggestedCover()"
+                    >
+                      <app-icon name="refresh-cw" size="xs" />
+                      Losuj inną
                     </button>
-                  }
-                </div>
+                  </div>
+                } @else if (!form.get('citySlug')?.value) {
+                  <p class="text-xs text-neutral-500">
+                    Wybierz miasto, aby zobaczyć sugestię grafiki.
+                  </p>
+                }
+              } @else {
+                <!-- Tryb ręczny — galeria -->
+                @if (coverImagesLoading()) {
+                  <div class="flex items-center justify-center py-6">
+                    <div
+                      class="h-6 w-6 animate-spin rounded-full border-2 border-highlight border-t-transparent"
+                    ></div>
+                  </div>
+                } @else {
+                  <div class="grid grid-cols-2 gap-2">
+                    @for (cover of coverImages(); track cover.id) {
+                      <button
+                        type="button"
+                        [class]="
+                          'relative overflow-hidden rounded-xl border-2 transition-all ' +
+                          (selectedCoverImageId() === cover.id
+                            ? 'border-highlight ring-2 ring-primary-500/30'
+                            : 'border-neutral-200 hover:border-neutral-400')
+                        "
+                        (click)="selectCoverImage(cover)"
+                      >
+                        <img
+                          [src]="coverUrl(cover)"
+                          [alt]="cover.filename"
+                          class="w-full aspect-[700/250] object-cover"
+                        />
+                        @if (selectedCoverImageId() === cover.id) {
+                          <div
+                            class="absolute inset-0 bg-primary-500/20 flex items-center justify-center"
+                          >
+                            <div class="rounded-full bg-primary-500 p-1">
+                              <app-icon name="check" size="sm" class="text-white" />
+                            </div>
+                          </div>
+                        }
+                      </button>
+                    }
+                  </div>
+                }
               }
             </div>
           </app-card>
@@ -468,6 +574,9 @@ export class EventFormComponent implements OnInit {
   readonly coverImages = signal<CoverImage[]>([]);
   readonly coverImagesLoading = signal(false);
   readonly selectedCoverImageId = signal<string | null>(null);
+  readonly autoCoverImage = signal(false);
+  readonly suggestLoading = signal(false);
+  readonly suggestedCover = signal<CoverImage | null>(null);
 
   readonly disciplineRoles = signal<DisciplineParticipantRoles | null>(null);
   readonly roleSlots = signal<DisciplineRole[]>([]);
@@ -495,6 +604,7 @@ export class EventFormComponent implements OnInit {
     ageMax: [undefined],
     gender: ['ANY'],
     visibility: ['PUBLIC'],
+    facilityReserved: [true],
     address: ['', Validators.required],
     lat: [51.935],
     lng: [15.506],
@@ -535,6 +645,8 @@ export class EventFormComponent implements OnInit {
       } else {
         this.coverImages.set([]);
         this.selectedCoverImageId.set(null);
+        this.autoCoverImage.set(false);
+        this.suggestedCover.set(null);
         this.disciplineRoles.set(null);
         this.roleSlots.set([]);
         this.rolesEnabled.set(false);
@@ -544,6 +656,13 @@ export class EventFormComponent implements OnInit {
     // Watch maxParticipants changes to adjust default role slots
     this.form.get('maxParticipants')?.valueChanges.subscribe(() => {
       this.recalculateDefaultRoleSlots();
+    });
+
+    // Re-fetch suggestion when city changes while auto mode is on
+    this.form.get('citySlug')?.valueChanges.subscribe(() => {
+      if (this.autoCoverImage()) {
+        this.fetchSuggestedCover();
+      }
     });
 
     this.eventId = this.route.snapshot.paramMap.get('id');
@@ -576,6 +695,7 @@ export class EventFormComponent implements OnInit {
           maxParticipants: e.maxParticipants || 10,
           gender: e.gender,
           visibility: e.visibility,
+          facilityReserved: e.facilityReserved ?? true,
           address: e.address,
           lat: e.lat,
           lng: e.lng,
@@ -777,6 +897,7 @@ export class EventFormComponent implements OnInit {
       ageMax: val.ageMax || undefined,
       gender: val.gender || undefined,
       visibility: val.visibility || undefined,
+      facilityReserved: val.facilityReserved ?? true,
       address: val.address || undefined,
       lat: val.lat || undefined,
       lng: val.lng || undefined,
@@ -802,6 +923,40 @@ export class EventFormComponent implements OnInit {
     });
   }
 
+  toggleAutoCoverImage(checked: boolean): void {
+    this.autoCoverImage.set(checked);
+    if (checked) {
+      this.fetchSuggestedCover();
+    } else {
+      this.suggestedCover.set(null);
+    }
+  }
+
+  fetchSuggestedCover(): void {
+    const disciplineSlug = this.form.get('disciplineSlug')?.value;
+    const citySlug = this.form.get('citySlug')?.value;
+
+    if (!disciplineSlug || !citySlug) {
+      this.suggestedCover.set(null);
+      return;
+    }
+
+    this.suggestLoading.set(true);
+    this.coverImageService.suggest(disciplineSlug, citySlug).subscribe({
+      next: (cover) => {
+        this.suggestedCover.set(cover);
+        this.selectedCoverImageId.set(cover?.id ?? null);
+        this.suggestLoading.set(false);
+      },
+      error: () => {
+        this.autoCoverImage.set(false);
+        this.suggestedCover.set(null);
+        this.suggestLoading.set(false);
+        this.snackbar.error('Nie udało się pobrać sugestii grafiki');
+      },
+    });
+  }
+
   private loadCoverImages(disciplineSlug: string): void {
     this.coverImagesLoading.set(true);
     this.coverImageService.getAll(disciplineSlug).subscribe({
@@ -809,8 +964,8 @@ export class EventFormComponent implements OnInit {
         this.coverImages.set(images);
         this.coverImagesLoading.set(false);
 
-        // Auto-select random if nothing selected and images available
-        if (!this.selectedCoverImageId() && images.length > 0) {
+        // Auto-select random if nothing selected, images available, and not in auto mode
+        if (!this.selectedCoverImageId() && images.length > 0 && !this.autoCoverImage()) {
           const randomIdx = Math.floor(Math.random() * images.length);
           this.selectedCoverImageId.set(images[randomIdx].id);
         }
@@ -959,6 +1114,7 @@ export class EventFormComponent implements OnInit {
       ageMax: event.ageMax,
       gender: event.gender,
       visibility: event.visibility,
+      facilityReserved: event.facilityReserved ?? true,
       address: event.address,
       lat: event.lat,
       lng: event.lng,

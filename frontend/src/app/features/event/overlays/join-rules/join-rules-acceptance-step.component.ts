@@ -32,6 +32,11 @@ export class JoinRulesAcceptanceStepComponent {
     return this.isOrganizer() && (event?.costPerPerson ?? 0) > 0;
   });
 
+  readonly showFacilityRiskNotice = computed(() => {
+    const event = this.event();
+    return event?.facilityReserved === false;
+  });
+
   readonly checkboxClass = computed(() =>
     this.rulesAccepted()
       ? 'flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-colors border-success-200 bg-success-50'

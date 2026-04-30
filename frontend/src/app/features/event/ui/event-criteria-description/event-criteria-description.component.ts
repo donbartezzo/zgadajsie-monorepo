@@ -89,6 +89,17 @@ export class EventCriteriaDescriptionComponent {
       text: costText,
     });
 
+    if (e.facilityReserved === false) {
+      items.push({
+        icon: 'alert-triangle',
+        iconColor: 'text-warning-500',
+        text:
+          'Organizator <strong>nie posiada własnej rezerwacji</strong> tego obiektu - jest on ogólnodostępny. ' +
+          'Nawet przy komplecie uczestników ktoś może go zajmować w tym terminie. ' +
+          '<strong>Wydarzenie może się nie odbyć.</strong>',
+      });
+    }
+
     return items;
   });
 

@@ -66,6 +66,12 @@
               <app-event-info-item label="Dyscyplina" [value]="'dict.discipline.' + e.disciplineSlug | transloco" />
               <app-event-info-item label="Poziom" [value]="'dict.level.' + e.levelSlug | transloco" />
               <app-event-info-item label="Obiekt" [value]="'dict.facility.' + e.facilitySlug | transloco" />
+              <app-event-info-item
+                label="Rezerwacja obiektu"
+                [value]="facilityReservedLabel()"
+                [color]="facilityReservedColor()"
+                [highlight]="!facilityReserved()"
+              />
               <app-event-info-item label="Koszt" [value]="costLabel()" [highlight]="true" />
             </div>
           </div>

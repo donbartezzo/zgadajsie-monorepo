@@ -109,6 +109,10 @@ export class CreateEventDto {
 
   @IsOptional()
   @IsBoolean()
+  facilityReserved?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
   isRecurring?: boolean;
 
   @IsOptional()

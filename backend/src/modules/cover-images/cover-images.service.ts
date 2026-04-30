@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { buildEventListingWhere } from '../../common/utils/event-listing.util';
 import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
 import * as path from 'path';
@@ -42,6 +43,53 @@ export class CoverImagesService {
       return null;
     }
     return covers[Math.floor(Math.random() * covers.length)];
+  }
+
+  async findSmartCoverForOrganizer(disciplineSlug: string, organizerId: string, citySlug: string) {
+    const covers = await this.prisma.coverImage.findMany({
+      where: { discipline: { slug: disciplineSlug } },
+    });
+    if (covers.length === 0) return null;
+    if (covers.length === 1) return covers[0];
+
+    const baseWhere = { ...buildEventListingWhere(), coverImageId: { not: null } };
+
+    const [organizerEvents, cityEvents] = await Promise.all([
+      this.prisma.event.findMany({
+        where: { ...baseWhere, organizerId, discipline: { slug: disciplineSlug } },
+        select: { coverImageId: true },
+        take: 100,
+      }),
+      this.prisma.event.findMany({
+        where: { ...baseWhere, city: { slug: citySlug } },
+        select: { coverImageId: true },
+        take: 100,
+      }),
+    ]);
+
+    // Zliczamy wystąpienia — w ramach jednego okna liczy się częstotliwość, nie pozycja
+    const orgCounts = new Map<string, number>();
+    for (const e of organizerEvents) {
+      const id = e.coverImageId as string;
+      orgCounts.set(id, (orgCounts.get(id) ?? 0) + 1);
+    }
+
+    const cityCounts = new Map<string, number>();
+    for (const e of cityEvents) {
+      const id = e.coverImageId as string;
+      cityCounts.set(id, (cityCounts.get(id) ?? 0) + 1);
+    }
+
+    const scored = covers.map((cover) => {
+      // Score: niższy = lepszy kandydat; nieużywany w oknie = 0
+      const score = (orgCounts.get(cover.id) ?? 0) * 10 + (cityCounts.get(cover.id) ?? 0);
+      return { cover, score };
+    });
+
+    const minScore = Math.min(...scored.map((s) => s.score));
+    const candidates = scored.filter((s) => s.score === minScore);
+
+    return candidates[Math.floor(Math.random() * candidates.length)].cover;
   }
 
   async create(disciplineSlug: string, file: Express.Multer.File) {

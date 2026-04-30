@@ -10,6 +10,7 @@ import {
 import { EventDurationPipe } from '../../pipes/event-duration.pipe';
 import { EventInfoItemComponent } from '../event-info-item/event-info-item.component';
 import { IconComponent } from '../icon/icon.component';
+import { SemanticColor } from '../../types/colors';
 
 @Component({
   selector: 'app-event-info-grid',
@@ -52,4 +53,14 @@ export class EventInfoGridComponent {
     const gender = this.event()?.gender;
     return gender ? formatEventGender(gender) : null;
   });
+
+  readonly facilityReserved = computed(() => this.event()?.facilityReserved !== false);
+
+  readonly facilityReservedLabel = computed(() =>
+    this.facilityReserved() ? 'Tak — obiekt zarezerwowany' : 'Brak rezerwacji — ryzyko',
+  );
+
+  readonly facilityReservedColor = computed<SemanticColor>(() =>
+    this.facilityReserved() ? 'success' : 'warning',
+  );
 }
