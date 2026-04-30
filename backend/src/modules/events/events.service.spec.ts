@@ -65,6 +65,7 @@ function buildNotificationsMock() {
 function buildCoverImagesMock() {
   return {
     findRandomByDiscipline: jest.fn().mockResolvedValue(null),
+    findSmartCoverForOrganizer: jest.fn().mockResolvedValue(null),
   } as unknown as CoverImagesService;
 }
 

@@ -1285,13 +1285,13 @@ describe('EnrollmentService', () => {
 
     it('rzuca ForbiddenException gdy feature flag płatności online jest wyłączony', async () => {
       const original = featureFlags.enableOnlinePayments;
-      (featureFlags as Record<string, unknown>).enableOnlinePayments = false;
+      (featureFlags as unknown as Record<string, unknown>).enableOnlinePayments = false;
       try {
         await expect(service.initiateEventPayment('p1', mockAuthUser('user1'))).rejects.toThrow(
           ForbiddenException,
         );
       } finally {
-        (featureFlags as Record<string, unknown>).enableOnlinePayments = original;
+        (featureFlags as unknown as Record<string, unknown>).enableOnlinePayments = original;
       }
     });
   });
