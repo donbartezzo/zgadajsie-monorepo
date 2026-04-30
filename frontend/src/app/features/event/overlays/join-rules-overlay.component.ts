@@ -291,7 +291,7 @@ export class JoinRulesOverlayComponent {
 
       if (!confirmed) return;
 
-      // Role change confirmed — use changeRole flow (handles WITHDRAWN correctly)
+      // Role change confirmed - use changeRole flow (handles WITHDRAWN correctly)
       this.roleChangeConfirmed.emit({ participationId: p.id, roleKey: preselectedRole });
       return;
     }
@@ -310,7 +310,7 @@ export class JoinRulesOverlayComponent {
   onSubmit(): void {
     if (!this.canSubmitStep2() || this.isLoadingAny()) return;
 
-    // Role change mode — emit dedicated output
+    // Role change mode - emit dedicated output
     if (this.isRoleChangeMode()) {
       const config = this.wizardConfig();
       const roleKey = this.selectedRoleKey();
@@ -335,7 +335,7 @@ export class JoinRulesOverlayComponent {
       return;
     }
 
-    // Self join — update profile first if name was changed
+    // Self join - update profile first if name was changed
     const originalName = this.currentUserDisplayName();
     if (name !== originalName) {
       this.submitting.set(true);

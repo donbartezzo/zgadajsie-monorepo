@@ -13,7 +13,7 @@ import { Request, Response, NextFunction } from 'express';
  *  4a. If-None-Match matches computed ETag → 304 No Content
  *  4b. Otherwise → sets ETag + Cache-Control: no-cache, sends body normally
  *
- * No frontend changes needed — the browser handles 304 revalidation
+ * No frontend changes needed - the browser handles 304 revalidation
  * transparently for XHR requests (Angular's HttpClient never sees a 304).
  */
 export function etagMiddleware(req: Request, res: Response, next: NextFunction): void {

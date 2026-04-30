@@ -156,7 +156,7 @@ export class UserProfileCardComponent {
       const reason = this.waitingReason();
       if (reason === 'NEW_USER') {
         badges.push({
-          label: 'Nowy uczestnik — wymaga weryfikacji organizatora',
+          label: 'Nowy uczestnik - wymaga weryfikacji organizatora',
           color: 'info',
           icon: 'help-circle',
         });

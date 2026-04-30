@@ -133,7 +133,7 @@ describe('EventFormComponent', () => {
     });
   });
 
-  describe('onSubmit — walidacja', () => {
+  describe('onSubmit - walidacja', () => {
     it('przy pustym formularzu wywołuje snackbar.error i nie wywołuje createEvent', () => {
       component.form.patchValue({ title: '', disciplineSlug: '', citySlug: '' });
       component.onSubmit();
@@ -164,9 +164,12 @@ describe('EventFormComponent', () => {
     });
   });
 
-  describe('onSubmit — tryb tworzenia', () => {
+  describe('onSubmit - tryb tworzenia', () => {
     it('wywołuje createEvent z danymi formularza i nawiguje po sukcesie', fakeAsync(() => {
-      const createdEvent = { id: 'ev1', city: { slug: 'warsaw' } } as any;
+      const createdEvent = { id: 'ev1', city: { slug: 'warsaw' } } as unknown as Record<
+        string,
+        unknown
+      >;
       mockEventService.createEvent.mockReturnValue(of(createdEvent));
       const navSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
 
@@ -278,7 +281,7 @@ describe('EventFormComponent', () => {
         lng: 21.0,
         coverImageId: null,
         rules: '',
-      } as any;
+      } as unknown as Record<string, unknown>;
       mockEventService.getEvent.mockReturnValue(of(event));
 
       fixture = TestBed.createComponent(EventFormComponent);

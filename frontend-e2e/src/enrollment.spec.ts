@@ -1,7 +1,7 @@
 /**
  * E2E: Przeglądanie wydarzeń i dołączanie @smoke
  * Wymaga: działającego frontendu + backendu, zalogowanego użytkownika (auth.setup.ts)
- * Wymaga: seed danych — co najmniej jedno aktywne wydarzenie
+ * Wymaga: seed danych - co najmniej jedno aktywne wydarzenie
  */
 import { test, expect } from '@playwright/test';
 import { EventsPage } from './pages/events.page';
@@ -10,7 +10,7 @@ import { EventDetailPage } from './pages/event-detail.page';
 const TEST_CITY = process.env['TEST_CITY_SLUG'] ?? 'warszawa';
 const TEST_EVENT_ID = process.env['TEST_EVENT_ID'] ?? '';
 
-test.describe('Enrollment — przeglądanie wydarzeń @smoke', () => {
+test.describe('Enrollment - przeglądanie wydarzeń @smoke', () => {
   test('lista wydarzeń wyświetla się po wejściu na /w/:city', async ({ page }) => {
     const eventsPage = new EventsPage(page);
     await eventsPage.goto(TEST_CITY);
@@ -31,8 +31,8 @@ test.describe('Enrollment — przeglądanie wydarzeń @smoke', () => {
   });
 });
 
-test.describe('Enrollment — dołączanie do wydarzenia @smoke', () => {
-  test.skip(!TEST_EVENT_ID, 'Wymaga TEST_EVENT_ID w env — ustaw przed uruchomieniem');
+test.describe('Enrollment - dołączanie do wydarzenia @smoke', () => {
+  test.skip(!TEST_EVENT_ID, 'Wymaga TEST_EVENT_ID w env - ustaw przed uruchomieniem');
 
   test('zalogowany użytkownik może dołączyć do otwartego wydarzenia', async ({ page }) => {
     const detailPage = new EventDetailPage(page);

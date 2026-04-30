@@ -11,11 +11,11 @@
 | Participacje usera                             | Oczekiwane zachowanie                     |
 | ---------------------------------------------- | ----------------------------------------- |
 | Wszystkie aktywne (PENDING/APPROVED/CONFIRMED) | "Jesteś zapisany" z awatarami             |
-| Mieszane (aktywne + wycofane)                  | "Jesteś zapisany" — tylko aktywne awatary |
+| Mieszane (aktywne + wycofane)                  | "Jesteś zapisany" - tylko aktywne awatary |
 | Wszystkie WITHDRAWN/REJECTED                   | Domyślny pasek statusu wydarzenia         |
 | Brak participacji                              | Bez zmian                                 |
 
-## Wariant A — minimalny fix (rekomendowany)
+## Wariant A - minimalny fix (rekomendowany)
 
 W `notificationBars` przefiltrować participacje do aktywnych przed sprawdzeniem warunku:
 
@@ -30,9 +30,9 @@ if (lifecycleStatus === 'UPCOMING' && activeParticipations.length > 0) {
 ```
 
 **Zaleta:** minimalny zakres zmian, poprawna semantyka.  
-**Wada:** user z samymi WITHDRAWN/REJECTED nie widzi śladu w pasku — ale `MyParticipationDetailsOverlay` obsługuje ten stan i pokazuje CTA "Dołącz ponownie", więc to akceptowalne.
+**Wada:** user z samymi WITHDRAWN/REJECTED nie widzi śladu w pasku - ale `MyParticipationDetailsOverlay` obsługuje ten stan i pokazuje CTA "Dołącz ponownie", więc to akceptowalne.
 
-## Wariant B — bogatszy UX
+## Wariant B - bogatszy UX
 
 Dodatkowo, gdy user ma **wyłącznie** WITHDRAWN/REJECTED i wydarzenie jest nadal joinable, pokazać pasek "Byłeś zapisany":
 
@@ -51,4 +51,4 @@ if (activeParticipations.length === 0 && withdrawnParticipations.length > 0 && t
 
 ## Rekomendacja
 
-**Wariant A** — wystarczający. Wariant B warto dodać tylko jeśli zależy na proaktywnym CTA dla wycofanych.
+**Wariant A** - wystarczający. Wariant B warto dodać tylko jeśli zależy na proaktywnym CTA dla wycofanych.

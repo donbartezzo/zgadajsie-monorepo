@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { EnrollmentGridItemEmptyComponent } from './enrollment-grid-item-empty.component';
 
-describe('EnrollmentGridItemEmptyComponent — computed signals', () => {
+describe('EnrollmentGridItemEmptyComponent - computed signals', () => {
   function create() {
     TestBed.configureTestingModule({
       imports: [EnrollmentGridItemEmptyComponent],

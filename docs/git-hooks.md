@@ -1,4 +1,4 @@
-# Git Hooks — automatyczna walidacja kodu
+# Git Hooks - automatyczna walidacja kodu
 
 Projekt używa **husky** + **lint-staged** do automatycznego sprawdzania jakości kodu przy commitach i pushach.
 
@@ -16,7 +16,7 @@ pnpm exec husky init
 
 ## Hooki
 
-### Pre-commit — lint-staged
+### Pre-commit - lint-staged
 
 **Kiedy:** Przed każdym `git commit`.
 
@@ -29,9 +29,9 @@ pnpm exec husky init
 
 **Czas:** <5 sekund (tylko zmienione pliki).
 
-**Efekt:** Poprawione pliki są automatycznie dodane do commita. Jeśli ESLint znajdzie błąd, którego nie może naprawić automatycznie — commit zostaje zablokowany.
+**Efekt:** Poprawione pliki są automatycznie dodane do commita. Jeśli ESLint znajdzie błąd, którego nie może naprawić automatycznie - commit zostaje zablokowany.
 
-### Pre-push — unit testy
+### Pre-push - unit testy
 
 **Kiedy:** Przed każdym `git push`.
 
@@ -99,13 +99,13 @@ git push --no-verify
 
 ### Pliki
 
-- `.husky/pre-commit` — hook pre-commit
-- `.husky/pre-push` — hook pre-push
-- `.husky/common.sh` — wrapper znajdujący pnpm (rozwiązuje problem PATH w git hookach)
-- `package.json` → sekcja `lint-staged` — reguły lint-staged
-- `package.json` → `scripts.prepare` → `husky` — automatyczna instalacja hooków
+- `.husky/pre-commit` - hook pre-commit
+- `.husky/pre-push` - hook pre-push
+- `.husky/common.sh` - wrapper znajdujący pnpm (rozwiązuje problem PATH w git hookach)
+- `package.json` → sekcja `lint-staged` - reguły lint-staged
+- `package.json` → `scripts.prepare` → `husky` - automatyczna instalacja hooków
 
 ### Zależności
 
-- `husky` — zarządzanie git hookami
-- `lint-staged` — uruchamianie linterów na staged files
+- `husky` - zarządzanie git hookami
+- `lint-staged` - uruchamianie linterów na staged files

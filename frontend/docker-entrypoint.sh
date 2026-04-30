@@ -7,7 +7,7 @@ if [ -z "$BACKEND_PROXY_URL" ]; then
     exit 1
 fi
 
-# Zastąp ${BACKEND_PROXY_URL} w szablonie nginx — pozostałe zmienne nginx ($uri, $host itp.) są nienaruszone
+# Zastąp ${BACKEND_PROXY_URL} w szablonie nginx - pozostałe zmienne nginx ($uri, $host itp.) są nienaruszone
 envsubst '${BACKEND_PROXY_URL}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
 
 exec nginx -g 'daemon off;'

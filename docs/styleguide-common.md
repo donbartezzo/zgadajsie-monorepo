@@ -97,20 +97,20 @@ Projekt używa **Luxon** (`DateTime`) jako jedynej biblioteki do obsługi dat.
 
 ### Zasady architektoniczne
 
-- **Baza danych i API zawsze UTC** — Prisma `DateTime` przechowuje UTC, transfer frontend ↔ backend w ISO 8601 UTC.
+- **Baza danych i API zawsze UTC** - Prisma `DateTime` przechowuje UTC, transfer frontend ↔ backend w ISO 8601 UTC.
 - **Konwersja do strefy lokalnej tylko na UI** lub w specyficznych wyjściach backendowych (emaile, powiadomienia).
-- **Nie używaj `new Date()` do formatowania** — `toLocaleDateString`, `toLocaleTimeString`, `toLocaleString` są zależne od strefy serwera/przeglądarki. Używaj Luxon.
+- **Nie używaj `new Date()` do formatowania** - `toLocaleDateString`, `toLocaleTimeString`, `toLocaleString` są zależne od strefy serwera/przeglądarki. Używaj Luxon.
 - **`new Date()` dozwolone wyłącznie** do porównań UTC (`getTime()`) lub tworzenia timestamp `new Date().toISOString()`.
 
 ### Stałe i utilities
 
-- `APP_DEFAULT_TIMEZONE = 'Europe/Warsaw'` — w `libs/src/lib/constants/timezone.constants.ts`
-- `APP_LOCALE = 'pl'` — locale do formatowania dat
+- `APP_DEFAULT_TIMEZONE = 'Europe/Warsaw'` - w `libs/src/lib/constants/timezone.constants.ts`
+- `APP_LOCALE = 'pl'` - locale do formatowania dat
 - Wszystkie timezone-aware utility w `libs/src/lib/utils/luxon.utils.ts`:
-  - `toZonedDateTime`, `nowInZone`, `createDateInZone` — core
-  - `formatDateTime`, `formatDateFull`, `formatDateLong`, `formatMonthShort`, `formatDayOfWeek`, `formatTime`, `getDayOfMonth` — formatowanie
-  - `isSameDay`, `getDaysDiffTz` — porównania
-  - `toLocalInputValue`, `fromLocalInputValue` — HTML `<input type="datetime-local">`
+  - `toZonedDateTime`, `nowInZone`, `createDateInZone` - core
+  - `formatDateTime`, `formatDateFull`, `formatDateLong`, `formatMonthShort`, `formatDayOfWeek`, `formatTime`, `getDayOfMonth` - formatowanie
+  - `isSameDay`, `getDaysDiffTz` - porównania
+  - `toLocalInputValue`, `fromLocalInputValue` - HTML `<input type="datetime-local">`
 
 ### Frontend
 

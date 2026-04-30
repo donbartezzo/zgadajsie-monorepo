@@ -3,9 +3,10 @@ import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
 import * as fs from 'fs';
 import * as path from 'path';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { E2E_SEED } from '../backend/prisma/e2e-constants';
 
-// Load environment overrides from .env.test.e2e (optional — only for CI or local overrides)
+// Load environment overrides from .env.test.e2e (optional - only for CI or local overrides)
 const envPath = path.join(workspaceRoot, '.env.test.e2e');
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf-8');
@@ -19,7 +20,7 @@ if (fs.existsSync(envPath)) {
   });
 }
 
-// Defaults from seed constants — single source of truth with backend/prisma/e2e-constants.ts
+// Defaults from seed constants - single source of truth with backend/prisma/e2e-constants.ts
 process.env['TEST_USER_EMAIL'] ??= E2E_SEED.user.email;
 process.env['TEST_USER_PASSWORD'] ??= E2E_SEED.user.password;
 process.env['TEST_CITY_SLUG'] ??= E2E_SEED.city;

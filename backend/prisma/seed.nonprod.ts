@@ -13,6 +13,7 @@ const APP_BRAND = {
 
 const prisma = new PrismaClient();
 
+/* eslint-disable no-console */
 async function main() {
   console.log('Rozpoczynam seed bazy danych...');
 
@@ -1112,7 +1113,7 @@ async function main() {
   await addWaitingParticipant(extraFootball2.id, wojtek.id);
 
   const extraFootball3 = await createEventWithSlots({
-    id: E2E_SEED.events.enrollment, // stały UUID — używany przez testy e2e (enrollment + chat)
+    id: E2E_SEED.events.enrollment, // stały UUID - używany przez testy e2e (enrollment + chat)
     title: 'Amatorski mecz piłkarski',
     description: 'Spotkanie dla miłośników piłki nożnej.',
     disciplineSlug: disciplines[0].slug,

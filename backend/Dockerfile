@@ -5,11 +5,11 @@ WORKDIR /app
 
 RUN npm install -g pnpm@10
 
-# Workspace manifests (warstwa cache — zmienia się rzadko)
+# Workspace manifests (warstwa cache - zmienia się rzadko)
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Instaluj wszystkie zależności (pnpm-workspace.yaml zawiera ignoredBuiltDependencies
-# dla native modules — tu akceptujemy, budujemy je explicite w stage 2)
+# dla native modules - tu akceptujemy, budujemy je explicite w stage 2)
 RUN pnpm install --frozen-lockfile
 
 # Wygeneruj Prisma client przed buildem
@@ -35,7 +35,7 @@ RUN npm install -g pnpm@10
 # package.json wygenerowany przez nx generatePackageJson (tylko prod deps)
 COPY --from=builder /app/dist/backend/package.json ./package.json
 
-# Schemat Prisma musi być przed pnpm install — @prisma/client uruchamia
+# Schemat Prisma musi być przed pnpm install - @prisma/client uruchamia
 # prisma generate w postinstall i szuka go w ./prisma/schema.prisma
 COPY --from=builder /app/dist/backend/prisma ./prisma
 

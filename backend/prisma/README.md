@@ -6,8 +6,8 @@ Dokument opisuje zasady pracy z migracjami i seedami w projekcie.
 
 ### Migracje
 
-- **Local**: `prisma migrate dev` — tworzy nowe migracje, aktualizuje bazę
-- **Dev/Prod**: `prisma migrate deploy` — tylko aplikuje istniejące migracje
+- **Local**: `prisma migrate dev` - tworzy nowe migracje, aktualizuje bazę
+- **Dev/Prod**: `prisma migrate deploy` - tylko aplikuje istniejące migracje
 - **NIGDY** nie uruchamiaj `prisma migrate dev` na środowiskach zdalnych (dev/prod)
 
 ### Seedy
@@ -94,6 +94,6 @@ node main.js
 
 1. **Migracje tworzymy tylko lokalnie** (`prisma migrate dev`)
 2. **Na dev/prod tylko aplikujemy** (`prisma migrate deploy`)
-3. **Seed nonprod czyści bazę** — używaj tylko local/dev
-4. **Seed prod jest bezpieczny** — można uruchamiać wielokrotnie
+3. **Seed nonprod czyści bazę** - używaj tylko local/dev
+4. **Seed prod jest bezpieczny** - można uruchamiać wielokrotnie
 5. **Nigdy nie uruchamiaj `prisma migrate dev` na środowiskach zdalnych**

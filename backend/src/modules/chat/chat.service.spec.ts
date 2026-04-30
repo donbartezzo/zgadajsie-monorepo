@@ -99,7 +99,7 @@ describe('ChatService', () => {
       expect(result).toBe(false);
     });
 
-    it('użytkownik bez enrollment — brak dostępu', async () => {
+    it('użytkownik bez enrollment - brak dostępu', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue({
         id: 'event1',
         organizerId: 'org1',
@@ -111,7 +111,7 @@ describe('ChatService', () => {
       expect(result).toBe(false);
     });
 
-    it('event nie istnieje — false', async () => {
+    it('event nie istnieje - false', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(null);
 
       const result = await service.hasEventAccess('nonexistent', 'user1');
@@ -120,7 +120,7 @@ describe('ChatService', () => {
     });
   });
 
-  describe('createMessage() — dostęp grupowy', () => {
+  describe('createMessage() - dostęp grupowy', () => {
     it('tworzy wiadomość przez uczestnika z dostępem', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue({
         id: 'event1',
@@ -188,7 +188,7 @@ describe('ChatService', () => {
     });
   });
 
-  describe('validatePrivateChatAccess() — przez createPrivateMessage', () => {
+  describe('validatePrivateChatAccess() - przez createPrivateMessage', () => {
     it('self-message (userId === otherUserId): ForbiddenException', async () => {
       await expect(service.createPrivateMessage('event1', 'user1', 'user1', 'Hi')).rejects.toThrow(
         ForbiddenException,
@@ -273,7 +273,7 @@ describe('ChatService', () => {
       (prisma.privateChatMessage.findMany as jest.Mock).mockResolvedValue([
         { senderId: 'user1', recipientId: 'org1' },
       ]);
-      (prisma.user as any).findMany.mockResolvedValue([
+      (prisma.user.findMany as jest.Mock).mockResolvedValue([
         { id: 'user1', displayName: 'User 1', avatarUrl: null },
       ]);
       (prisma.privateChatMessage.findFirst as jest.Mock).mockResolvedValue({

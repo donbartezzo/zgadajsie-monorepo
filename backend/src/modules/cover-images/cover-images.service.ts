@@ -67,7 +67,7 @@ export class CoverImagesService {
       }),
     ]);
 
-    // Zliczamy wystąpienia — w ramach jednego okna liczy się częstotliwość, nie pozycja
+    // Zliczamy wystąpienia - w ramach jednego okna liczy się częstotliwość, nie pozycja
     const orgCounts = new Map<string, number>();
     for (const e of organizerEvents) {
       const id = e.coverImageId as string;

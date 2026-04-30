@@ -25,7 +25,9 @@ function buildPrismaMock() {
     eventSlot: {
       updateMany: jest.fn(),
     },
-    $transaction: jest.fn((fn: (tx: any) => any) => fn(buildTxMock())),
+    $transaction: jest.fn((fn: (tx: ReturnType<typeof buildTxMock>) => unknown) =>
+      fn(buildTxMock()),
+    ),
   } as unknown as PrismaService;
 }
 
@@ -122,7 +124,7 @@ describe('VouchersService', () => {
       (prisma.organizerVoucher.findMany as jest.Mock).mockResolvedValue([voucher]);
       (prisma.organizerVoucher.update as jest.Mock).mockResolvedValue({});
 
-      // 30zł voucher for 50zł payment — will throw because 20zł remaining after voucher
+      // 30zł voucher for 50zł payment - will throw because 20zł remaining after voucher
       await expect(service.deductVoucher('user1', 'org1', 50)).rejects.toThrow(BadRequestException);
 
       // Update should still have been called with the 30zł deducted

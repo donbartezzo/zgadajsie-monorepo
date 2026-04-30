@@ -4,11 +4,11 @@ Data: 2026-03-29
 
 ---
 
-## Część 1 — Pre-deploy checklist
+## Część 1 - Pre-deploy checklist
 
 ### Zrealizowane w kodzie
 
-#### ✅ Punkt 1 — `vapidPublicKey` w `environment.prod.ts`
+#### ✅ Punkt 1 - `vapidPublicKey` w `environment.prod.ts`
 
 Wygenerowano nową parę kluczy VAPID i wpisano klucz publiczny do `frontend/src/environments/environment.prod.ts`.
 
@@ -18,14 +18,14 @@ VAPID_PRIVATE_KEY=tGdX2_kgpwOD-KmhM6YuX0u4hkRjfCyMbpR1OhH0R98
 ```
 
 > Klucz prywatny musi trafić do `~/apps/zgadajsie/shared/.env.prod` na serwerze (`VAPID_PRIVATE_KEY`).
-> Para musi być spójna — klucz publiczny jest wkompilowany we frontend podczas buildu.
+> Para musi być spójna - klucz publiczny jest wkompilowany we frontend podczas buildu.
 
-#### ✅ Punkt 4 — Health check endpoint
+#### ✅ Punkt 4 - Health check endpoint
 
 Dodano `GET /api/health` sprawdzający połączenie z bazą danych.
 
-- `backend/src/app/app.service.ts` — metoda `getHealth()` z `SELECT 1` przez PrismaService
-- `backend/src/app/app.controller.ts` — endpoint `@Get('health')`
+- `backend/src/app/app.service.ts` - metoda `getHealth()` z `SELECT 1` przez PrismaService
+- `backend/src/app/app.controller.ts` - endpoint `@Get('health')`
 
 Odpowiedź:
 
@@ -34,42 +34,42 @@ Odpowiedź:
 { "status": "error", "db": "unreachable" }
 ```
 
-#### ✅ Punkt 3 — Template `.env.prod`
+#### ✅ Punkt 3 - Template `.env.prod`
 
 Plik `.env.prod` w repo uzupełniony jako template z wygenerowanymi kluczami VAPID.
 Do uzupełnienia ręcznie na serwerze: `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `SMTP_PASS`, `R2_*`, `TPAY_*`, `GOOGLE_*`, `FACEBOOK_*`.
 
 ### Wymagające akcji ręcznych
 
-**Punkt 2 — seed na produkcyjnej bazie** (po pierwszym deployu):
+**Punkt 2 - seed na produkcyjnej bazie** (po pierwszym deployu):
 
 ```bash
 NODE_ENV=production pnpm prisma:seed:prod
 ```
 
-**Punkt 5 — backup bazy (cron na serwerze):**
+**Punkt 5 - backup bazy (cron na serwerze):**
 
 ```bash
 0 3 * * * pg_dump -U zgadajsie_user zgadajsie_db | gzip > ~/backups/zgadaj_$(date +\%Y\%m\%d).sql.gz
 ```
 
-**Punkt 6 — monitoring:** PM2 logi dostępne przez Passenger. Sentry — do wdrożenia opcjonalnie.
+**Punkt 6 - monitoring:** PM2 logi dostępne przez Passenger. Sentry - do wdrożenia opcjonalnie.
 
 ---
 
-## Część 2 — Automatyczny deploy
+## Część 2 - Automatyczny deploy
 
-### Analiza `docs/deploy.md` — znalezione problemy
+### Analiza `docs/deploy.md` - znalezione problemy
 
 | #   | Problem                                                                              | Skutek                                      |
 | --- | ------------------------------------------------------------------------------------ | ------------------------------------------- |
-| 1   | Ścieżki artefaktu: `dist/apps/frontend/browser` — faktycznie `dist/frontend/browser` | Deploy się wysypie                          |
-| 2   | Frontend nie ma SSR — `dist/frontend/server/main.js` nie istnieje                    | Błędne założenie w dokumentacji             |
+| 1   | Ścieżki artefaktu: `dist/apps/frontend/browser` - faktycznie `dist/frontend/browser` | Deploy się wysypie                          |
+| 2   | Frontend nie ma SSR - `dist/frontend/server/main.js` nie istnieje                    | Błędne założenie w dokumentacji             |
 | 3   | `pnpm install --prod` musi być w `dist/backend/`, nie w katalogu release             | bcrypt/sharp/prisma nie znajdą node_modules |
 | 4   | Brak `prisma/` w artefakcie + złe wywołanie `prisma migrate deploy`                  | Migracje się nie uruchomią                  |
-| 5   | `devil www restart` — poprawna komenda MyDevil, ale z placeholderem domeny           | Trzeba uzupełnić                            |
-| 6   | Node.js `>=24.4.1` — MyDevil musi mieć Node 24                                       | Potencjalny bloker — sprawdzić              |
-| 7   | Brak `.github/workflows/` — CI/CD nie istniał                                        | Trzeba stworzyć                             |
+| 5   | `devil www restart` - poprawna komenda MyDevil, ale z placeholderem domeny           | Trzeba uzupełnić                            |
+| 6   | Node.js `>=24.4.1` - MyDevil musi mieć Node 24                                       | Potencjalny bloker - sprawdzić              |
+| 7   | Brak `.github/workflows/` - CI/CD nie istniał                                        | Trzeba stworzyć                             |
 
 ### Co jest dobre w oryginalnym planie (zachowane)
 
@@ -99,7 +99,7 @@ Skrypt na serwerze (kopiować jako `~/apps/zgadajsie/deploy.sh`):
 2. Rozpakuj artefakt
 3. Symlink `.env` z `shared/.env.prod` → `dist/backend/.env` i `NEW_RELEASE/.env`
 4. `pnpm install --prod --frozen-lockfile` w `dist/backend/`
-5. Fallback: jeśli brak `prisma` CLI — `pnpm add prisma`
+5. Fallback: jeśli brak `prisma` CLI - `pnpm add prisma`
 6. `./node_modules/.bin/prisma migrate deploy --schema prisma/schema.prisma`
 7. `ln -sfn NEW_RELEASE current`
 8. Symlink `public` → `current/dist/frontend/browser`
@@ -107,7 +107,7 @@ Skrypt na serwerze (kopiować jako `~/apps/zgadajsie/deploy.sh`):
 10. `devil www restart api.zgadajsie.pl`
 11. Usuń stare releases (zostaw 5)
 
-#### `docs/deploy.md` — przepisany
+#### `docs/deploy.md` - przepisany
 
 Aktualna, dokładna dokumentacja procesu deployu z sekcjami:
 
@@ -125,7 +125,7 @@ Aktualna, dokładna dokumentacja procesu deployu z sekcjami:
 
 ### Serwer
 
-- [ ] Sprawdzić Node.js: `devil nodejs list` — wymagane `>= 24.4.1`
+- [ ] Sprawdzić Node.js: `devil nodejs list` - wymagane `>= 24.4.1`
 - [ ] Ustawić `devil nodejs set 24`
 - [ ] Zainstalować pnpm: `npm install -g pnpm@10`
 - [ ] Stworzyć katalogi: `mkdir -p ~/apps/zgadajsie/{releases,shared,tmp}`

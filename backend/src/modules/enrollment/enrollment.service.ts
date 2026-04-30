@@ -158,7 +158,7 @@ export class EnrollmentService {
       return undefined;
     }
 
-    // Event has roles — roleKey is required
+    // Event has roles - roleKey is required
     if (!roleKey) {
       // Use default role
       const defaultRole = roleConfig.roles.find((r) => r.isDefault);
@@ -376,7 +376,7 @@ export class EnrollmentService {
     });
 
     // Auto-trust: mark real user as trusted upon first organizer-approved slot assignment.
-    // Guests (addedByUserId != null) are virtual accounts — trust does not apply to them.
+    // Guests (addedByUserId != null) are virtual accounts - trust does not apply to them.
     // Non-critical: failure must not roll back the slot assignment already committed above.
     if (!participation.addedByUserId) {
       const organizerId = participation.event.organizerId;
@@ -782,7 +782,7 @@ export class EnrollmentService {
   }
 
   /**
-   * Handle open enrollment join — assign slot if eligible and available.
+   * Handle open enrollment join - assign slot if eligible and available.
    */
   private async handleOpenEnrollmentJoin(
     eventId: string,
@@ -964,7 +964,7 @@ export class EnrollmentService {
       };
     }
 
-    // Re-check eligibility on rejoin — user status may have changed since they left
+    // Re-check eligibility on rejoin - user status may have changed since they left
     const [isBanned, isNew] = await Promise.all([
       this.eligibility.isBannedByOrganizer(userId, event.organizerId),
       this.eligibility.isNewUser(userId, event.organizerId),
@@ -1124,7 +1124,7 @@ export class EnrollmentService {
       });
     }
 
-    // Re-check eligibility — user status may have changed
+    // Re-check eligibility - user status may have changed
     const [isBannedCR, isNewCR] = await Promise.all([
       this.eligibility.isBannedByOrganizer(participation.userId, event.organizerId),
       this.eligibility.isNewUser(participation.userId, event.organizerId),
@@ -1187,7 +1187,7 @@ export class EnrollmentService {
   /**
    * Rejoin an existing participation by its ID (for withdrawn/pending participants).
    * Used by the frontend when re-adding a guest or rejoining as a user
-   * — prevents creating a new User entity and bypassing the unique constraint.
+   * - prevents creating a new User entity and bypassing the unique constraint.
    */
   async rejoinById(participationId: string, currentUser: AuthUser) {
     const { userId: currentUserId, isAdmin } = resolveUserContext(currentUser);

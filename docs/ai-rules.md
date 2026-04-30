@@ -19,9 +19,9 @@ Wszelką implementację ZAWSZE prowadź lub wdrażaj według zasad opisanych w p
 6. jeśli zadanie dotyczy layoutu lub struktury stron: dodatkowo `docs/frontend-page-layout.md`
 7. jeśli zadanie dotyczy migracji z szablonu sticky mobile / Bootstrapa: dodatkowo `docs/ai-bootstrap-to-tailwind-migration.md`
 
-Jeśli coś trzeba doprecyzować, napisz to w punktach i czekaj na decyzję. Jeśli wszystko jest jasne, przejdź do implementacji, planowania lub analizy — zależnie od potrzeb.
+Jeśli coś trzeba doprecyzować, napisz to w punktach i czekaj na decyzję. Jeśli wszystko jest jasne, przejdź do implementacji, planowania lub analizy - zależnie od potrzeb.
 
-Jeśli zadanie dotyczy wyłącznie analizy, planowania lub przeglądu dokumentacji i nie wymaga implementacji, korzystaj z guide'ów selektywnie — nie ma sensu zapychać kontekstu.
+Jeśli zadanie dotyczy wyłącznie analizy, planowania lub przeglądu dokumentacji i nie wymaga implementacji, korzystaj z guide'ów selektywnie - nie ma sensu zapychać kontekstu.
 
 ## Kolejność źródeł prawdy
 
@@ -31,7 +31,7 @@ W przypadku rozbieżności stosuj następującą kolejność:
 2. `docs/styleguide-common.md` oraz odpowiedni guide stack-specific
 3. pozostała dokumentacja opisowa
 
-Głównym szablonem wizualnym jest `ignored/themplates/sticky-mobile` (Bootstrap), ale projekt używa Tailwind — przy wdrażaniu elementów z tego szablonu przeprowadź migrację według `docs/ai-bootstrap-to-tailwind-migration.md`.
+Głównym szablonem wizualnym jest `ignored/themplates/sticky-mobile` (Bootstrap), ale projekt używa Tailwind - przy wdrażaniu elementów z tego szablonu przeprowadź migrację według `docs/ai-bootstrap-to-tailwind-migration.md`.
 
 ## Design System
 
@@ -45,7 +45,7 @@ Strona `/dev/design-system` to **single source of truth** dla wizualnego podglą
 
 ## Autonomia operacyjna
 
-Przy rutynowych zadaniach (czytanie, edycja, tworzenie plików w projekcie, uruchamianie skryptów z `docs/project-commands.md`) działaj od razu bez proszenia o potwierdzenie — chyba że operacja jest nieodwracalna (usunięcie pliku, reset bazy danych) lub wykracza poza katalog projektu.
+Przy rutynowych zadaniach (czytanie, edycja, tworzenie plików w projekcie, uruchamianie skryptów z `docs/project-commands.md`) działaj od razu bez proszenia o potwierdzenie - chyba że operacja jest nieodwracalna (usunięcie pliku, reset bazy danych) lub wykracza poza katalog projektu.
 
 ## Formatowanie kodu
 
@@ -53,4 +53,4 @@ Generowany kod musi być zgodny z `.prettierrc`. Nigdy nie nadpisuj ustawień Pr
 
 ## Potwierdzenie na końcu odpowiedzi
 
-W odpowiedzi na każde polecenie napisz czy zostało wykonane zgodnie z zasadami opisanymi powyżej oraz który z powyższych plików został uwzględniony. Jeśli żaden — napisz dlaczego.
+W odpowiedzi na każde polecenie napisz czy zostało wykonane zgodnie z zasadami opisanymi powyżej oraz który z powyższych plików został uwzględniony. Jeśli żaden - napisz dlaczego.

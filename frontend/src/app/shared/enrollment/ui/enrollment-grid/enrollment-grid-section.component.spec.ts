@@ -8,7 +8,7 @@ function makeGroup(occupiedCount: number, totalSlots: number): SlotGroup {
   return { role: null, items: [], occupiedCount, totalSlots };
 }
 
-describe('EnrollmentGridSectionComponent — computed signals', () => {
+describe('EnrollmentGridSectionComponent - computed signals', () => {
   function create(count = 0) {
     TestBed.configureTestingModule({
       imports: [EnrollmentGridSectionComponent],

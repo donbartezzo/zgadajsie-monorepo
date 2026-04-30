@@ -29,7 +29,7 @@ function buildPrismaMock() {
     event: {
       findMany: jest.fn(),
     },
-    $transaction: jest.fn((fn: (tx: any) => any) => fn(tx)),
+    $transaction: jest.fn((fn: (tx: ReturnType<typeof buildTxMock>) => unknown) => fn(tx)),
     _tx: tx,
   } as unknown as PrismaService & { _tx: ReturnType<typeof buildTxMock> };
 }
@@ -55,7 +55,7 @@ describe('EnrollmentLotteryCron', () => {
 
   beforeEach(() => {
     prisma = buildPrismaMock();
-    tx = (prisma as any)._tx;
+    tx = prisma._tx;
     push = buildPushMock();
     realtime = buildRealtimeMock();
     cron = new EnrollmentLotteryCron(
@@ -109,7 +109,7 @@ describe('EnrollmentLotteryCron', () => {
   describe('executeLotteryForEvent()', () => {
     const event = { id: 'event1', maxParticipants: 2, organizerId: 'org1', title: 'Test Event' };
 
-    it('atomowy lock: ustawia lotteryExecutedAt — drugi call zwraca noop', async () => {
+    it('atomowy lock: ustawia lotteryExecutedAt - drugi call zwraca noop', async () => {
       tx.event.updateMany.mockResolvedValue({ count: 0 });
 
       await cron.executeLotteryForEvent(event);
@@ -127,7 +127,7 @@ describe('EnrollmentLotteryCron', () => {
       expect(realtime.invalidateEvent as jest.Mock).toHaveBeenCalledWith('event1', 'all');
     });
 
-    it('filtruje tylko real userów (addedByUserId=null) — goście nie uczestniczą', async () => {
+    it('filtruje tylko real userów (addedByUserId=null) - goście nie uczestniczą', async () => {
       tx.event.updateMany.mockResolvedValue({ count: 1 });
       tx.eventEnrollment.findMany.mockResolvedValue([]);
 
@@ -198,7 +198,7 @@ describe('EnrollmentLotteryCron', () => {
         { targetUserId: 'u1', isTrusted: true, isBanned: false },
         { targetUserId: 'u2', isTrusted: true, isBanned: false },
       ]);
-      // Only 1 slot — one gets it, one doesn't
+      // Only 1 slot - one gets it, one doesn't
       tx.eventSlot.findFirst.mockResolvedValueOnce({ id: 'slot1' }).mockResolvedValueOnce(null);
       tx.eventSlot.update.mockResolvedValue({});
 
@@ -206,7 +206,7 @@ describe('EnrollmentLotteryCron', () => {
 
       const calls = (push.notifyParticipationStatus as jest.Mock).mock.calls;
       expect(calls).toHaveLength(2);
-      const statuses = calls.map((c: any[]) => c[2]);
+      const statuses = calls.map((c: unknown[]) => c[2]);
       expect(statuses).toContain('SLOT_ASSIGNED');
       expect(statuses).toContain('LOTTERY_NOT_SELECTED');
     });

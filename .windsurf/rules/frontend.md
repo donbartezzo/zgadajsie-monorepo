@@ -1,7 +1,7 @@
 ---
 trigger: glob
 globs: ['frontend/**']
-description: Reguły frontendowe — aktywne przy pracy z plikami frontend/
+description: Reguły frontendowe - aktywne przy pracy z plikami frontend/
 ---
 
 ## Obowiązkowe guide'y
@@ -33,7 +33,7 @@ Używaj WYŁĄCZNIE semantycznych klas Tailwind w HTML: `primary-*`, `neutral-*`
 ## Tailwind v4
 
 - Global `styles.scss`: `@apply` działa (Tailwind załadowany)
-- Component SCSS: NIE używaj `@apply` z custom theme — wstaw klasy Tailwind bezpośrednio w HTML
+- Component SCSS: NIE używaj `@apply` z custom theme - wstaw klasy Tailwind bezpośrednio w HTML
 - Config: `tailwind.config.js` via `@config` directive
 - Renamed utilities: `shadow-xs` (nie `shadow-sm`), `rounded-xs` (nie `rounded-sm`), `outline-hidden` (nie `outline-none`)
 

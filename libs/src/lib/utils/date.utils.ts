@@ -47,56 +47,56 @@ export function createDateInZone(
 // ── Formatting ──
 
 /**
- * "26 mar 2026, 19:00" — do emaili i powiadomień.
+ * "26 mar 2026, 19:00" - do emaili i powiadomień.
  */
 export function formatDateTime(date: string | Date, zone: string = APP_DEFAULT_TIMEZONE): string {
   return toZonedDateTime(date, zone).setLocale(APP_LOCALE).toFormat('d LLL yyyy, HH:mm');
 }
 
 /**
- * "26 marca 2026" — pełna data z odmianą miesiąca.
+ * "26 marca 2026" - pełna data z odmianą miesiąca.
  */
 export function formatDateFull(date: string | Date, zone: string = APP_DEFAULT_TIMEZONE): string {
   return toZonedDateTime(date, zone).setLocale(APP_LOCALE).toFormat('d LLLL yyyy');
 }
 
 /**
- * "26 kwietnia" — data bez roku (do sublabel).
+ * "26 kwietnia" - data bez roku (do sublabel).
  */
 export function formatDateNoYear(date: string | Date, zone: string = APP_DEFAULT_TIMEZONE): string {
   return toZonedDateTime(date, zone).setLocale(APP_LOCALE).toFormat('d LLLL');
 }
 
 /**
- * "środa, 26 marca" — dzień tygodnia + data (do listy wydarzeń).
+ * "środa, 26 marca" - dzień tygodnia + data (do listy wydarzeń).
  */
 export function formatDateLong(date: string | Date, zone: string = APP_DEFAULT_TIMEZONE): string {
   return toZonedDateTime(date, zone).setLocale(APP_LOCALE).toFormat('EEEE, d LLLL');
 }
 
 /**
- * "MAR" — skrócona nazwa miesiąca uppercase (do date badge).
+ * "MAR" - skrócona nazwa miesiąca uppercase (do date badge).
  */
 export function formatMonthShort(date: string | Date, zone: string = APP_DEFAULT_TIMEZONE): string {
   return toZonedDateTime(date, zone).setLocale(APP_LOCALE).toFormat('LLL').toUpperCase();
 }
 
 /**
- * "środa" — nazwa dnia tygodnia (do opisu wydarzenia).
+ * "środa" - nazwa dnia tygodnia (do opisu wydarzenia).
  */
 export function formatDayOfWeek(date: string | Date, zone: string = APP_DEFAULT_TIMEZONE): string {
   return toZonedDateTime(date, zone).setLocale(APP_LOCALE).toFormat('EEEE');
 }
 
 /**
- * "19:00" — godzina i minuta (do wyświetlania czasu).
+ * "19:00" - godzina i minuta (do wyświetlania czasu).
  */
 export function formatTime(date: string | Date, zone: string = APP_DEFAULT_TIMEZONE): string {
   return toZonedDateTime(date, zone).toFormat('HH:mm');
 }
 
 /**
- * Zwraca numer dnia miesiąca (np. 26) — do date badge.
+ * Zwraca numer dnia miesiąca (np. 26) - do date badge.
  */
 export function getDayOfMonth(date: string | Date, zone: string = APP_DEFAULT_TIMEZONE): number {
   return toZonedDateTime(date, zone).day;

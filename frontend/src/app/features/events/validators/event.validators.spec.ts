@@ -1,7 +1,7 @@
 import { FormControl, FormGroup } from '@angular/forms';
 import { EventValidators } from './event.validators';
 
-// Daty poza zakresem aktualnej daty — nie wymagają mockowania nowInZone()
+// Daty poza zakresem aktualnej daty - nie wymagają mockowania nowInZone()
 const PAST_DATE = '2020-01-01T10:00';
 const FUTURE_DATE = '2099-12-31T10:00';
 const FUTURE_DATE_LATER = '2099-12-31T12:00';
@@ -51,6 +51,7 @@ describe('EventValidators', () => {
         startsAt: new FormControl(''),
         endsAt: new FormControl(FUTURE_DATE_LATER),
       });
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(EventValidators.endDateAfterStart(group.get('endsAt')!)).toBeNull();
     });
 
@@ -59,6 +60,7 @@ describe('EventValidators', () => {
         startsAt: new FormControl(FUTURE_DATE),
         endsAt: new FormControl(FUTURE_DATE_LATER),
       });
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(EventValidators.endDateAfterStart(group.get('endsAt')!)).toBeNull();
     });
 
@@ -67,6 +69,7 @@ describe('EventValidators', () => {
         startsAt: new FormControl(FUTURE_DATE),
         endsAt: new FormControl(FUTURE_DATE_EARLIER),
       });
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(EventValidators.endDateAfterStart(group.get('endsAt')!)).toEqual({
         endDateBeforeStart: true,
       });
@@ -77,6 +80,7 @@ describe('EventValidators', () => {
         startsAt: new FormControl(FUTURE_DATE),
         endsAt: new FormControl(FUTURE_DATE),
       });
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(EventValidators.endDateAfterStart(group.get('endsAt')!)).toEqual({
         endDateBeforeStart: true,
       });

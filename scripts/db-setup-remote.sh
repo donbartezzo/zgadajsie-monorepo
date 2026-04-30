@@ -89,7 +89,7 @@ if [ "$SEED_TYPE" = "prod" ]; then
   SEED_FILE="backend/prisma/seed.prod.ts"
   SEED_LABEL="PRODUKCYJNY (seed.prod.ts)"
   SEED_DESC="  ✔ dane słownikowe (miasta, dyscypliny, obiekty, poziomy)"
-  SEED_WARN="  ✔ bezpieczny — idempotentny, nie nadpisuje danych użytkowników"
+  SEED_WARN="  ✔ bezpieczny - idempotentny, nie nadpisuje danych użytkowników"
 else
   SEED_FILE="backend/prisma/seed.nonprod.ts"
   SEED_LABEL="DEWELOPERSKI (seed.nonprod.ts)"
@@ -127,7 +127,7 @@ fi
 
 # Sprawdź czy tunel już działa (np. z pnpm start:remote)
 if nc -z localhost $TUNNEL_PORT 2>/dev/null; then
-  echo "🔗 Tunel SSH już aktywny na porcie $TUNNEL_PORT — używam istniejącego."
+  echo "🔗 Tunel SSH już aktywny na porcie $TUNNEL_PORT - używam istniejącego."
 else
   echo "🔗 Pobieram IP kontenera bazy danych..."
   DB_IP=$(ssh ${SSH_HOST} "docker inspect ${DB_CONTAINER} --format '{{.NetworkSettings.Networks.coolify.IPAddress}}'")

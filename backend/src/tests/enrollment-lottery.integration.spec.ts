@@ -19,7 +19,7 @@ function startsInHours(h: number): Date {
   return new Date(Date.now() + h * MS_PER_HOUR);
 }
 
-describe('[Integration] EnrollmentLotteryCron — lottery flow', () => {
+describe('[Integration] EnrollmentLotteryCron - lottery flow', () => {
   let module: TestingModule;
   let prisma: PrismaService;
   let cron: EnrollmentLotteryCron;

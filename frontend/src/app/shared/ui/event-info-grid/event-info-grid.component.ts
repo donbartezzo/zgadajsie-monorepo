@@ -57,7 +57,7 @@ export class EventInfoGridComponent {
   readonly facilityReserved = computed(() => this.event()?.facilityReserved !== false);
 
   readonly facilityReservedLabel = computed(() =>
-    this.facilityReserved() ? 'Tak — obiekt zarezerwowany' : 'Brak rezerwacji — ryzyko',
+    this.facilityReserved() ? 'Tak - obiekt zarezerwowany' : 'Brak rezerwacji - ryzyko',
   );
 
   readonly facilityReservedColor = computed<SemanticColor>(() =>

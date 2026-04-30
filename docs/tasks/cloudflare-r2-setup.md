@@ -5,42 +5,42 @@ Upload przechodzi przez backend (nie bezpośrednio z przeglądarki), więc konfi
 
 Env vars do uzupełnienia: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`
 
-## Krok 1 — Konto i włączenie R2
+## Krok 1 - Konto i włączenie R2
 
 1. Zaloguj / zarejestruj się na [cloudflare.com](https://cloudflare.com)
 2. Dashboard → **R2 Object Storage → Get started**
 
-> Wymagana karta kredytowa do aktywacji. Free tier: **10 GB + 1M operacji/mies.** — stały, bez limitu czasowego. Karta tylko jako zabezpieczenie przy przekroczeniu limitu.
+> Wymagana karta kredytowa do aktywacji. Free tier: **10 GB + 1M operacji/mies.** - stały, bez limitu czasowego. Karta tylko jako zabezpieczenie przy przekroczeniu limitu.
 
-## Krok 2 — Utwórz dwa buckety
+## Krok 2 - Utwórz dwa buckety
 
-**R2 → Create bucket** (dwa osobne — izolacja danych prod/dev):
+**R2 → Create bucket** (dwa osobne - izolacja danych prod/dev):
 
 | Pole        | Prod              | Dev                   |
 | ----------- | ----------------- | --------------------- |
 | Bucket name | `zgadajsie-media` | `zgadajsie-media-dev` |
 | Location    | Automatic         | Automatic             |
 
-## Krok 3 — Publiczny dostęp
+## Krok 3 - Publiczny dostęp
 
 Pliki muszą być publicznie dostępne przez URL (wyświetlanie avatarów w przeglądarce).
 
-**Bucket `zgadajsie-media` (prod) — zalecana opcja z custom domain:**
+**Bucket `zgadajsie-media` (prod) - zalecana opcja z custom domain:**
 
 Settings → **Custom Domains → Connect Domain** → wpisz `media.zgadajsie.pl`
-(wymaga żeby `zgadajsie.pl` był na Cloudflare DNS — Cloudflare skonfiguruje subdomenę automatycznie)
+(wymaga żeby `zgadajsie.pl` był na Cloudflare DNS - Cloudflare skonfiguruje subdomenę automatycznie)
 
 `R2_PUBLIC_URL` = `https://media.zgadajsie.pl`
 
-**Bucket `zgadajsie-media-dev` (dev) — wystarczy r2.dev URL:**
+**Bucket `zgadajsie-media-dev` (dev) - wystarczy r2.dev URL:**
 
 Settings → **Public Access → Allow Access** → wygeneruje URL w stylu `pub-xxx.r2.dev`
 
 `R2_PUBLIC_URL` = wygenerowany URL `pub-xxx.r2.dev`
 
-## Krok 4 — API Tokens
+## Krok 4 - API Tokens
 
-**R2 → Manage R2 API Tokens → Create API Token** — utwórz dwa tokeny:
+**R2 → Manage R2 API Tokens → Create API Token** - utwórz dwa tokeny:
 
 **Token prod:**
 
@@ -54,11 +54,11 @@ Settings → **Public Access → Allow Access** → wygeneruje URL w stylu `pub-
 - Permissions: **Object Read & Write**
 - Specify bucket: `zgadajsie-media-dev`
 
-Po utworzeniu każdego tokena zapisz **Access Key ID** i **Secret Access Key** — Secret widoczny tylko raz.
+Po utworzeniu każdego tokena zapisz **Access Key ID** i **Secret Access Key** - Secret widoczny tylko raz.
 
-**Account ID** — widoczny w prawym panelu głównego dashboardu Cloudflare (ten sam dla obu tokenów).
+**Account ID** - widoczny w prawym panelu głównego dashboardu Cloudflare (ten sam dla obu tokenów).
 
-## Krok 5 — CORS
+## Krok 5 - CORS
 
 W każdym buckecie → **Settings → CORS** → wklej poniższą konfigurację:
 
@@ -78,7 +78,7 @@ W każdym buckecie → **Settings → CORS** → wklej poniższą konfigurację:
 ]
 ```
 
-## Krok 6 — Env vars w Coolify
+## Krok 6 - Env vars w Coolify
 
 **Coolify → zgadajsie-prod → PROD-zgadajsie-backend → Environment Variables:**
 
@@ -100,9 +100,9 @@ R2_BUCKET_NAME=zgadajsie-media-dev
 R2_PUBLIC_URL=<r2.dev URL z bucketu dev>
 ```
 
-Po ustawieniu zmiennych — **redeploy** obu backendów.
+Po ustawieniu zmiennych - **redeploy** obu backendów.
 
-## Krok 7 — Env vars lokalnie
+## Krok 7 - Env vars lokalnie
 
 W `config/env/.env.local`:
 
@@ -114,7 +114,7 @@ R2_BUCKET_NAME=zgadajsie-media-dev
 R2_PUBLIC_URL=<r2.dev URL z bucketu dev>
 ```
 
-## Krok 8 — R2 jako S3 Storage w Coolify (backup bazy danych)
+## Krok 8 - R2 jako S3 Storage w Coolify (backup bazy danych)
 
 **Coolify → Settings → S3 Storages → Add:**
 
@@ -127,11 +127,11 @@ Access Key: <Access Key ID>
 Secret Key: <Secret Access Key>
 ```
 
-Kliknij **Validate** — Coolify przetestuje połączenie.
+Kliknij **Validate** - Coolify przetestuje połączenie.
 
 Następnie: **Coolify → zgadajsie-prod → zgadajsie-prod-db → Backups → New Scheduled Backup:**
 
 - Frequency: `0 3 * * *` (codziennie o 3:00)
 - S3: wybierz skonfigurowany storage
 
-> Rozważ osobny bucket `zgadajsie-backups` dla backupów DB — oddzielenie od mediów użytkowników ułatwia zarządzanie retencją i uprawnieniami.
+> Rozważ osobny bucket `zgadajsie-backups` dla backupów DB - oddzielenie od mediów użytkowników ułatwia zarządzanie retencją i uprawnieniami.

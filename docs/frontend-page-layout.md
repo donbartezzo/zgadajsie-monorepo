@@ -146,7 +146,7 @@ Jeśli obraz okładki nie istnieje lub nie załaduje się poprawnie, layout uży
 
 ### `only-mini-bar`
 
-Wariant minimalny — tylko wąski pasek nawigacyjny na górze.
+Wariant minimalny - tylko wąski pasek nawigacyjny na górze.
 
 Charakterystyka:
 
@@ -338,14 +338,14 @@ Może być używany samodzielnie lub razem z `fullscreenContent: true`.
 **Razem z `fullscreenContent: true` (tryb fullscreen + centered):**
 
 - wrapper dostaje `items-center justify-center` na istniejącym flex chain
-- inner wrapper NIE dostaje `flex-1 min-h-0` — treść ma naturalny rozmiar i jest centrowana przez wrapper
+- inner wrapper NIE dostaje `flex-1 min-h-0` - treść ma naturalny rozmiar i jest centrowana przez wrapper
 - użyteczne dla widoków, które ZAWSZE pokazują wycentrowaną treść (np. strona błędu, strona wyłączonej funkcji) w trybie fullscreen
 
 **Ważne:** Gdy komponent w trybie fullscreen przełącza się między trybem "wypełnij ekran" a "wycentrowany stan pusty", centrowanie należy obsłużyć wewnątrz samego komponentu (przez `flex flex-1 items-center justify-center` na divie stanu pustego), a nie przez `centerContent` w route data. Przykładem prawidłowego wzorca jest `ChatViewComponent`.
 
 ### `fullscreenContent`
 
-Włącza tryb fullscreen — content wypełnia dokładnie dostępną przestrzeń viewportu bez scrollbara.
+Włącza tryb fullscreen - content wypełnia dokładnie dostępną przestrzeń viewportu bez scrollbara.
 
 Kiedy `fullscreenContent === true`:
 
@@ -356,11 +356,11 @@ Kiedy `fullscreenContent === true`:
 
 Stosowany razem z:
 
-- `heroVariant: 'only-mini-bar'` — minimalny header
-- `showFooter: false` — bez stopki
+- `heroVariant: 'only-mini-bar'` - minimalny header
+- `showFooter: false` - bez stopki
 - Komponenty child muszą mieć `host: { class: 'flex flex-col flex-1 min-h-0' }` aby prawidłowo uczestniczyć w flex chain
 - jeśli fullscreenowy ekran ma stan pusty lub access denied i komponent przełącza się między trybami, centrowanie stanu pustego należy zrobić lokalnie w komponencie przez `flex flex-1 items-center justify-center` (wzorzec: `ChatViewComponent`)
-- można połączyć z `centerContent: true` dla widoków, które ZAWSZE pokazują wycentrowaną treść w fullscreenie — w tym trybie nie używaj `flex-1` w host komponentu, bo inner wrapper nie ma już flex-1
+- można połączyć z `centerContent: true` dla widoków, które ZAWSZE pokazują wycentrowaną treść w fullscreenie - w tym trybie nie używaj `flex-1` w host komponentu, bo inner wrapper nie ma już flex-1
 
 Przykład konfiguracji:
 
@@ -376,10 +376,10 @@ data: {
 
 Strony używające tego trybu:
 
-- `/w/:citySlug/:id/map` — mapa wydarzenia
-- `/w/:citySlug/:id/chat` — czat grupowy
-- `/w/:citySlug/:id/host-chat` — czat z organizatorem
-- `/w/:citySlug/:id/host-chat/:userId` — prywatna konwersacja organizatora
+- `/w/:citySlug/:id/map` - mapa wydarzenia
+- `/w/:citySlug/:id/chat` - czat grupowy
+- `/w/:citySlug/:id/host-chat` - czat z organizatorem
+- `/w/:citySlug/:id/host-chat/:userId` - prywatna konwersacja organizatora
 
 ### `contentClass`
 
@@ -459,6 +459,6 @@ Konfiguracja przez `LayoutConfigService` i sloty:
 
 Konfiguracja przez `fullscreenContent: true` w route data:
 
-- `features/event/pages/event-map/event-map.component.ts` — mapa
-- `features/chat/pages/unified-chat/unified-chat.component.ts` — czat grupowy i prywatny
-- `features/chat/pages/host-chat/host-chat.component.ts` — czat z organizatorem
+- `features/event/pages/event-map/event-map.component.ts` - mapa
+- `features/chat/pages/unified-chat/unified-chat.component.ts` - czat grupowy i prywatny
+- `features/chat/pages/host-chat/host-chat.component.ts` - czat z organizatorem

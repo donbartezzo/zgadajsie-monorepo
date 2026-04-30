@@ -16,7 +16,7 @@ function makeParticipant(id: string, status: string, userId = 'u1'): EnrollmentI
     user: null,
     slot: null,
     roleKey: null,
-  } as any;
+  } as unknown as EnrollmentItem;
 }
 
 const FUTURE = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -31,15 +31,15 @@ function makeEvent(overrides: Record<string, unknown> = {}) {
     lotteryExecutedAt: new Date().toISOString(),
     status: 'ACTIVE',
     ...overrides,
-  } as any;
+  } as unknown as Record<string, unknown>;
 }
 
-describe('EnrollmentGridComponent — computed signals', () => {
-  let currentUserSignal: ReturnType<typeof signal<any>>;
+describe('EnrollmentGridComponent - computed signals', () => {
+  let currentUserSignal: ReturnType<typeof signal<{ id: string } | null>>;
   const mockRefresh$ = new Subject<void>();
 
   beforeEach(() => {
-    currentUserSignal = signal<any>(null);
+    currentUserSignal = signal<{ id: string } | null>(null);
 
     TestBed.configureTestingModule({
       imports: [EnrollmentGridComponent],
@@ -127,7 +127,7 @@ describe('EnrollmentGridComponent — computed signals', () => {
     });
   });
 
-  describe('slotGroups() — bez roleConfig', () => {
+  describe('slotGroups() - bez roleConfig', () => {
     it('tworzy jedną grupę z pustymi slotami gdy brak uczestników', () => {
       const { c } = create();
       const groups = c.slotGroups();

@@ -102,7 +102,7 @@ describe('[Integration] Moderation → Eligibility', () => {
       expect(banned).toBe(false);
     });
 
-    it('po banie — isBannedByOrganizer() zwraca true', async () => {
+    it('po banie - isBannedByOrganizer() zwraca true', async () => {
       await moderationService.banUser(organizerId, { userId, reason: 'Test ban' });
       const banned = await eligibilityService.isBannedByOrganizer(userId, organizerId);
       expect(banned).toBe(true);
@@ -115,7 +115,7 @@ describe('[Integration] Moderation → Eligibility', () => {
       expect(isNew).toBe(true);
     });
 
-    it('po ustawieniu isTrusted=true — isNewUser() zwraca false', async () => {
+    it('po ustawieniu isTrusted=true - isNewUser() zwraca false', async () => {
       await prisma.organizerUserRelation.create({
         data: {
           organizerUserId: organizerId,

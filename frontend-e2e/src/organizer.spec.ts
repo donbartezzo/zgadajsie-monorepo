@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
 const TEST_EVENT_ID = process.env['TEST_ORGANIZER_EVENT_ID'] ?? '';
 const TEST_CITY = process.env['TEST_CITY_SLUG'] ?? 'warszawa';
 
-test.describe('Organizer — zarządzanie wydarzeniem', () => {
+test.describe('Organizer - zarządzanie wydarzeniem', () => {
   test.skip(!TEST_EVENT_ID, 'Wymaga TEST_ORGANIZER_EVENT_ID w env');
 
   test.beforeEach(async (_args, testInfo) => {

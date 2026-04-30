@@ -157,7 +157,7 @@ export class EventsService {
 
   async findAll(query: EventQueryDto) {
     const { page = 1, limit = 100, citySlug, disciplineSlug, sortBy } = query;
-    // If citySlug is provided, ensure the city exists — otherwise return 404
+    // If citySlug is provided, ensure the city exists - otherwise return 404
     if (citySlug) {
       const city = await this.prisma.city.findUnique({ where: { slug: citySlug } });
       if (!city) {
@@ -348,7 +348,7 @@ export class EventsService {
         include: { discipline: true, facility: true, level: true, city: true },
       });
 
-      // Then sync slots — use per-role reconciliation for role-based events
+      // Then sync slots - use per-role reconciliation for role-based events
       if (isRoleBased) {
         if (!newRoleConfig) {
           throw new BadRequestException('Brak konfiguracji ról dla wydarzenia');

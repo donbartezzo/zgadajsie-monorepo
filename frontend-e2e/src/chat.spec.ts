@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
 const TEST_CITY = process.env['TEST_CITY_SLUG'] ?? 'warszawa';
 const TEST_CHAT_EVENT_ID = process.env['TEST_CHAT_EVENT_ID'] ?? '';
 
-test.describe('Chat — czat grupowy', () => {
+test.describe('Chat - czat grupowy', () => {
   test.skip(!TEST_CHAT_EVENT_ID, 'Wymaga TEST_CHAT_EVENT_ID w env');
 
   test('zakładka chatu wyświetla się dla uczestnika', async ({ page }) => {
@@ -37,7 +37,7 @@ test.describe('Chat — czat grupowy', () => {
   });
 });
 
-test.describe('Chat — czat prywatny', () => {
+test.describe('Chat - czat prywatny', () => {
   test.skip(!TEST_CHAT_EVENT_ID, 'Wymaga TEST_CHAT_EVENT_ID w env');
 
   test('lista konwersacji prywatnych wyświetla się dla organizatora', async ({ page }) => {

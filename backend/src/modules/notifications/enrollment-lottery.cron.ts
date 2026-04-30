@@ -45,7 +45,7 @@ export class EnrollmentLotteryCron {
     title: string;
   }): Promise<void> {
     const result = await this.prisma.$transaction(async (tx) => {
-      // Atomic lock — only one cron instance processes this event
+      // Atomic lock - only one cron instance processes this event
       const locked = await tx.event.updateMany({
         where: { id: event.id, lotteryExecutedAt: null },
         data: { lotteryExecutedAt: new Date() },

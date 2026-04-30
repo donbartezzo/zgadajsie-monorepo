@@ -1,7 +1,7 @@
 ---
 trigger: glob
 globs: ['backend/**']
-description: Reguły backendowe — aktywne przy pracy z plikami backend/
+description: Reguły backendowe - aktywne przy pracy z plikami backend/
 ---
 
 ## Obowiązkowe guide'y
@@ -35,5 +35,5 @@ Przy implementacji backendowej ZAWSZE przeczytaj:
 
 ## Linting
 
-- `@typescript-eslint/no-extraneous-class` — wyłączone (klasy z dekoratorami OK)
-- `@typescript-eslint/no-floating-promises` — wyłączone, ale zarządzaj async odpowiedzialnie
+- `@typescript-eslint/no-extraneous-class` - wyłączone (klasy z dekoratorami OK)
+- `@typescript-eslint/no-floating-promises` - wyłączone, ale zarządzaj async odpowiedzialnie

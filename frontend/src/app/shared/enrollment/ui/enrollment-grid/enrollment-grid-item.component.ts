@@ -170,7 +170,7 @@ export class EnrollmentGridItemComponent {
     if (this.isNewUserPending()) {
       indicators.push({
         icon: 'help-circle',
-        tooltip: 'Nowy uczestnik — wymaga weryfikacji organizatora',
+        tooltip: 'Nowy uczestnik - wymaga weryfikacji organizatora',
         color: 'info',
       });
     }

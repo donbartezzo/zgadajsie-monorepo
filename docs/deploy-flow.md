@@ -123,7 +123,7 @@ Jeśli ten argument nie zostanie ustawiony, generator używa danych z Git jako f
 
 ### Trigger
 
-Opublikowanie GitHub Release (kliknięcie **Publish release** w GitHubie). Nie odpala się na samo stworzenie taga — dopiero po świadomym opublikowaniu.
+Opublikowanie GitHub Release (kliknięcie **Publish release** w GitHubie). Nie odpala się na samo stworzenie taga - dopiero po świadomym opublikowaniu.
 
 ### Przebieg
 
@@ -132,7 +132,7 @@ developer → GitHub → New Release → Publish (tag: v1.2.3)
                │
                ▼
         GitHub Actions: job CI
-          (identyczny jak w dev — te same kroki build + test)
+          (identyczny jak w dev - te same kroki build + test)
                │
                │  (CI musi przejść)
                ▼
@@ -208,25 +208,25 @@ Jeśli release tag nie zostanie przekazany, generator użyje danych z Git jako f
 
 ---
 
-## Build Dockerowy — szczegóły
+## Build Dockerowy - szczegóły
 
 ### Backend (`backend/Dockerfile`)
 
 Wieloetapowy build (multi-stage):
 
-**Stage 1 — builder (`node:24-slim`)**
+**Stage 1 - builder (`node:24-slim`)**
 
 1. Instalacja pnpm
-2. `pnpm install --frozen-lockfile` — wszystkie zależności (dev + prod)
-3. `prisma generate` — generowanie klienta Prisma
-4. `pnpm nx build backend` — kompilacja TypeScript → Webpack → `dist/backend/main.js`
+2. `pnpm install --frozen-lockfile` - wszystkie zależności (dev + prod)
+3. `prisma generate` - generowanie klienta Prisma
+4. `pnpm nx build backend` - kompilacja TypeScript → Webpack → `dist/backend/main.js`
 5. Kopiowanie `backend/prisma` do `dist/backend/prisma`
 
-**Stage 2 — runner (`node:24-slim`)**
+**Stage 2 - runner (`node:24-slim`)**
 
 1. Instalacja OpenSSL (wymagane przez Prisma)
-2. `pnpm install --prod` — tylko prod deps z wygenerowanego `package.json`
-3. `prisma generate` — regeneracja klienta w środowisku runtime
+2. `pnpm install --prod` - tylko prod deps z wygenerowanego `package.json`
+3. `prisma generate` - regeneracja klienta w środowisku runtime
 4. Kopiowanie `main.js`, `prisma/`, `docker-entrypoint.sh`
 5. `ENTRYPOINT ["./docker-entrypoint.sh"]`
 
@@ -242,15 +242,15 @@ node main.js            # start aplikacji
 
 Wieloetapowy build:
 
-**Stage 1 — builder (`node:24-slim`)**
+**Stage 1 - builder (`node:24-slim`)**
 
-1. `ARG BUILD_CONFIGURATION=dev` — konfiguracja przekazywana z CI
-2. `ARG FRONTEND_VERSION` — jawna wersja przekazywana z CI (dla DEV: skrócony SHA, dla PROD: tag)
+1. `ARG BUILD_CONFIGURATION=dev` - konfiguracja przekazywana z CI
+2. `ARG FRONTEND_VERSION` - jawna wersja przekazywana z CI (dla DEV: skrócony SHA, dla PROD: tag)
 3. `pnpm install --frozen-lockfile`
-4. `ENV FRONTEND_VERSION=${FRONTEND_VERSION}` — generator wersji odczytuje tę wartość przed fallbackiem do Git
+4. `ENV FRONTEND_VERSION=${FRONTEND_VERSION}` - generator wersji odczytuje tę wartość przed fallbackiem do Git
 5. `pnpm nx build frontend --configuration=$BUILD_CONFIGURATION` → `dist/frontend/browser/`
 
-**Stage 2 — runner (`nginx:alpine`)**
+**Stage 2 - runner (`nginx:alpine`)**
 
 1. Kopiowanie `dist/frontend/browser` → `/usr/share/nginx/html`
 2. Kopiowanie `frontend/nginx.conf` (SPA fallback: `try_files $uri /index.html`)
@@ -281,8 +281,8 @@ Wymagane sekrety w repozytorium (`Settings → Secrets → Actions`):
 
 Workflow publikuje obrazy z **wieloma tagami**:
 
-- **Mutowalne aliasy** (`:dev`, `:stable`) — dla wygody podglądu
-- **Immutable identyfikatory** (`:<commit-sha>`, `:vX.Y.Z`) — dla deterministycznego deployu
+- **Mutowalne aliasy** (`:dev`, `:stable`) - dla wygody podglądu
+- **Immutable identyfikatory** (`:<commit-sha>`, `:vX.Y.Z`) - dla deterministycznego deployu
 
 **Coolify powinien deployować po immutable tag**, nie po aliasie. To zapewnia:
 
@@ -308,7 +308,7 @@ Workflow używa mechanizmu `concurrency` dla kontroli równoległych deployów:
 
 ---
 
-## Skrypty testowe — lokalne i CI
+## Skrypty testowe - lokalne i CI
 
 ### Lokalne (codzienna praca)
 
@@ -331,9 +331,9 @@ Workflow używa mechanizmu `concurrency` dla kontroli równoległych deployów:
 
 ### Architektura testów
 
-- **Unit testy** (`*.spec.ts` z wyłączeniem `*.integration.spec.ts`) — nie wymagają infrastruktury, korzystają z cache Nx
-- **Integration testy** (`*.integration.spec.ts`) — wymagają testowej bazy PostgreSQL (`docker-compose.test.yml`, port 5434)
-- **E2E testy** (Playwright, `frontend-e2e/src/`) — wymagają działającego frontendu + backendu, **cache Nx wyłączony** (zawsze świeże uruchomienie)
+- **Unit testy** (`*.spec.ts` z wyłączeniem `*.integration.spec.ts`) - nie wymagają infrastruktury, korzystają z cache Nx
+- **Integration testy** (`*.integration.spec.ts`) - wymagają testowej bazy PostgreSQL (`docker-compose.test.yml`, port 5434)
+- **E2E testy** (Playwright, `frontend-e2e/src/`) - wymagają działającego frontendu + backendu, **cache Nx wyłączony** (zawsze świeże uruchomienie)
 
 ---
 

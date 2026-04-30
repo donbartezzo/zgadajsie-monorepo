@@ -126,7 +126,7 @@ export class PageLayoutComponent {
         });
       }
       if (e instanceof NavigationError) {
-        // Lazy chunk load failure etc. — show content instead of infinite spinner
+        // Lazy chunk load failure etc. - show content instead of infinite spinner
         this.layoutConfig.markReady();
       }
       if (e instanceof NavigationCancel) {

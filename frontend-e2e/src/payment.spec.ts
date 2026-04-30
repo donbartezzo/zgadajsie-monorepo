@@ -1,14 +1,14 @@
 /**
  * E2E: Happy path płatności @smoke
  * Wymaga: Tpay sandbox, płatnego wydarzenia z TEST_PAID_EVENT_ID
- * Uwaga: testy płatności nie kończą transakcji — tylko weryfikują URL redirectu
+ * Uwaga: testy płatności nie kończą transakcji - tylko weryfikują URL redirectu
  */
 import { test, expect } from '@playwright/test';
 
 const TEST_CITY = process.env['TEST_CITY_SLUG'] ?? 'warszawa';
 const TEST_PAID_EVENT_ID = process.env['TEST_PAID_EVENT_ID'] ?? '';
 
-test.describe('Payment — happy path @smoke', () => {
+test.describe('Payment - happy path @smoke', () => {
   test.skip(!TEST_PAID_EVENT_ID, 'Wymaga TEST_PAID_EVENT_ID i Tpay sandbox');
 
   test('strona płatnego wydarzenia pokazuje informację o koszcie', async ({ page }) => {

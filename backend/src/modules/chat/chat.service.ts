@@ -250,7 +250,7 @@ export class ChatService {
 
     if (!participation) return false;
 
-    // Banned by organizer — no access
+    // Banned by organizer - no access
     if (!participation.wantsIn && participation.withdrawnBy === 'ORGANIZER') return false;
 
     return true;
@@ -313,7 +313,7 @@ export class ChatService {
       throw new ForbiddenException(USER_NOT_PARTICIPANT_MESSAGE);
     }
 
-    // Banned by organizer — no access
+    // Banned by organizer - no access
     if (!participation.wantsIn && participation.withdrawnBy === 'ORGANIZER') {
       throw new ForbiddenException(USER_NOT_PARTICIPANT_MESSAGE);
     }

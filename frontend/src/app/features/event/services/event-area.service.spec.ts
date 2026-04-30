@@ -26,7 +26,7 @@ function makeEvent(overrides: Record<string, unknown> = {}) {
     endsAt: new Date(FUTURE.getTime() + 3600000).toISOString(),
     lotteryExecutedAt: null,
     ...overrides,
-  } as any;
+  } as unknown as Record<string, unknown>;
 }
 
 function makeParticipation(overrides: Record<string, unknown> = {}) {
@@ -36,15 +36,15 @@ function makeParticipation(overrides: Record<string, unknown> = {}) {
     status: 'PENDING',
     waitingReason: null,
     ...overrides,
-  } as any;
+  } as unknown as Record<string, unknown>;
 }
 
-describe('EventAreaService — computed signals', () => {
+describe('EventAreaService - computed signals', () => {
   let service: EventAreaService;
-  let currentUserSignal: ReturnType<typeof signal<any>>;
+  let currentUserSignal: ReturnType<typeof signal<{ id: string } | null>>;
 
   beforeEach(() => {
-    currentUserSignal = signal<any>(null);
+    currentUserSignal = signal<{ id: string } | null>(null);
 
     TestBed.configureTestingModule({
       providers: [

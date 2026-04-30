@@ -15,7 +15,7 @@ async function isBackendAvailable(): Promise<boolean> {
     .catch(() => false);
 }
 
-test.describe('Auth — logowanie @smoke', () => {
+test.describe('Auth - logowanie @smoke', () => {
   test('poprawne logowanie przekierowuje na stronę główną', async ({ page }) => {
     const backendAvailable = await isBackendAvailable();
     test.skip(!backendAvailable, 'Backend niedostępny');
@@ -49,7 +49,7 @@ test.describe('Auth — logowanie @smoke', () => {
   });
 });
 
-test.describe('Auth — rejestracja @smoke', () => {
+test.describe('Auth - rejestracja @smoke', () => {
   const uniqueSuffix = Date.now();
   const newEmail = `e2e_test_${uniqueSuffix}@test.zgadajsie.pl`;
 

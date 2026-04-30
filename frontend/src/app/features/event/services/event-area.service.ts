@@ -33,7 +33,7 @@ import {
   STATUS_BAR_ACTION_LABELS,
 } from '../constants/event-status-messages';
 
-const AUTO_REFRESH_INTERVAL = 120000; // 120 seconds — safety-net fallback; primary updates via WebSocket
+const AUTO_REFRESH_INTERVAL = 120000; // 120 seconds - safety-net fallback; primary updates via WebSocket
 
 @Injectable({
   providedIn: 'root',
@@ -242,14 +242,14 @@ export class EventAreaService {
 
       this.eventRealtime.connect(eventId);
       // Run outside Angular zone: bufferTime uses RxJS asyncScheduler (setInterval internally),
-      // which zone.js patches and tracks as a macrotask — keeping the app permanently unstable.
+      // which zone.js patches and tracks as a macrotask - keeping the app permanently unstable.
       // Re-enter zone only when performing the actual state update.
       this.ngZone.runOutsideAngular(() => {
         this.realtimeSubscription = this.eventRealtime
           .onInvalidation()
           .pipe(
             filter((payload) => payload.eventId === this._eventId),
-            // Collect all scopes within 300ms window — handles burst events (e.g. lottery)
+            // Collect all scopes within 300ms window - handles burst events (e.g. lottery)
             bufferTime(300),
             filter((payloads) => payloads.length > 0),
           )
@@ -803,9 +803,9 @@ export class EventAreaService {
     switch (status) {
       case 'CONFIRMED':
       case 'APPROVED':
-        return 'Rola zmieniona — masz przydzielone miejsce';
+        return 'Rola zmieniona - masz przydzielone miejsce';
       case 'PENDING':
-        return 'Rola zmieniona — oczekujesz na przydzielenie miejsca';
+        return 'Rola zmieniona - oczekujesz na przydzielenie miejsca';
       default:
         return 'Rola zmieniona';
     }

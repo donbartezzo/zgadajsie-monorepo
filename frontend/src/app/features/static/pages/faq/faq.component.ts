@@ -123,7 +123,7 @@ export class FaqComponent {
       anchor: 'participant-status',
       question: 'Co oznacza status „Uczestnik"?',
       answer:
-        'Status „Uczestnik" oznacza, że masz potwierdzone miejsce w tym wydarzeniu — Twoja obecność jest zarezerwowana, a opłata (jeśli dotyczy) pobrana lub zarezerwowana z portfela. Możesz zrezygnować z udziału, klikając swój awatar na liście uczestników i wybierając opcję wypisania. Opcja ta jest dostępna do momentu zamknięcia listy przez organizatora.',
+        'Status „Uczestnik" oznacza, że masz potwierdzone miejsce w tym wydarzeniu - Twoja obecność jest zarezerwowana, a opłata (jeśli dotyczy) pobrana lub zarezerwowana z portfela. Możesz zrezygnować z udziału, klikając swój awatar na liście uczestników i wybierając opcję wypisania. Opcja ta jest dostępna do momentu zamknięcia listy przez organizatora.',
     },
     {
       anchor: 'pending-status',

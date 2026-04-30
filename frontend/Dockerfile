@@ -21,7 +21,7 @@ FROM nginx:alpine AS runner
 
 COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
 
-# nginx.conf jako szablon — ${BACKEND_URL} zostanie podstawiony przez entrypoint
+# nginx.conf jako szablon - ${BACKEND_URL} zostanie podstawiony przez entrypoint
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf.template
 
 # Entrypoint: envsubst + start nginx

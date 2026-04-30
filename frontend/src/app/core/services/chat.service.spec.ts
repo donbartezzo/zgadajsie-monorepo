@@ -11,7 +11,7 @@ const mockAuthService = {
   currentUser: jest.fn().mockReturnValue({ id: 'user1', displayName: 'User One' }),
 };
 
-describe('ChatService — HTTP', () => {
+describe('ChatService - HTTP', () => {
   let service: ChatService;
   let httpMock: HttpTestingController;
 

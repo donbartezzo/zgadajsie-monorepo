@@ -19,7 +19,7 @@ export class EventRealtimeGateway implements OnGatewayConnection, OnGatewayDisco
   server!: Server;
 
   handleConnection(_client: Socket): void {
-    // Public event updates — no handshake auth required for this invalidation channel.
+    // Public event updates - no handshake auth required for this invalidation channel.
   }
 
   handleDisconnect(_client: Socket): void {

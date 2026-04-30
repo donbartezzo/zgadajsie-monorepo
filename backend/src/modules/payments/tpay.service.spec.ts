@@ -43,7 +43,7 @@ describe('TpayService', () => {
     jest.clearAllMocks();
   });
 
-  describe('verifyWebhook() — brak JWS', () => {
+  describe('verifyWebhook() - brak JWS', () => {
     it('zwraca false dla brakującego nagłówka JWS', async () => {
       const result = await service.verifyWebhook(baseWebhookPayload);
       expect(result.valid).toBe(false);
@@ -56,7 +56,7 @@ describe('TpayService', () => {
     });
   });
 
-  describe('verifyWebhook() — weryfikacja md5sum', () => {
+  describe('verifyWebhook() - weryfikacja md5sum', () => {
     it('odrzuca payloads z niepoprawnym md5sum gdy securityCode skonfigurowany', async () => {
       const serviceWithCode = new TpayService(
         buildConfigMock({ TPAY_SECURITY_CODE: 'secret-code' }),
@@ -99,7 +99,7 @@ describe('TpayService', () => {
     });
   });
 
-  describe('verifyWebhook() — format JWS', () => {
+  describe('verifyWebhook() - format JWS', () => {
     it('zwraca false dla JWS z niepoprawną liczbą segmentów (< 3)', async () => {
       const result = await service.verifyWebhook(baseWebhookPayload, 'only.two');
       expect(result.valid).toBe(false);
@@ -132,7 +132,7 @@ describe('TpayService', () => {
         status: 400,
         text: jest.fn().mockResolvedValue('Bad request'),
         json: jest.fn(),
-      } as any);
+      } as unknown as Response);
 
       const params = {
         amount: 50,
@@ -154,12 +154,12 @@ describe('TpayService', () => {
             expires_in: 3600,
             issued_at: Date.now(),
           }),
-        } as any)
+        } as unknown as Response)
         .mockResolvedValueOnce({
           ok: false,
           status: 400,
           text: jest.fn().mockResolvedValue('Bad request'),
-        } as any);
+        } as unknown as Response);
 
       await expect(service.createTransaction(params)).rejects.toThrow(
         'Tpay create transaction failed',
@@ -176,7 +176,7 @@ describe('TpayService', () => {
             expires_in: 3600,
             issued_at: Date.now(),
           }),
-        } as any)
+        } as unknown as Response)
         .mockResolvedValueOnce({
           ok: true,
           json: jest.fn().mockResolvedValue({
@@ -186,7 +186,7 @@ describe('TpayService', () => {
             title: 'TX999',
             status: 'pending',
           }),
-        } as any);
+        } as unknown as Response);
 
       const params = {
         amount: 50,

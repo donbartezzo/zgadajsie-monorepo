@@ -8,7 +8,13 @@ import {
   viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
@@ -31,6 +37,7 @@ import {
   EventStatus,
   DisciplineParticipantRoles,
   DisciplineRole,
+  DisciplineSchema,
   nowInZone,
   createDateInZone,
   toLocalInputValue,
@@ -42,6 +49,12 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 interface DuplicateQueryParams {
   duplicateId?: string;
+}
+
+interface EventRule {
+  id: string;
+  text: string;
+  indent: number;
 }
 
 @Component({
@@ -484,7 +497,7 @@ interface DuplicateQueryParams {
                   </p>
                 }
               } @else {
-                <!-- Tryb ręczny — galeria -->
+                <!-- Tryb ręczny - galeria -->
                 @if (coverImagesLoading()) {
                   <div class="flex items-center justify-center py-6">
                     <div
@@ -570,7 +583,7 @@ export class EventFormComponent implements OnInit {
   readonly facilities = signal<DictionaryItem[]>([]);
   readonly levels = signal<DictionaryItem[]>([]);
   readonly cities = signal<City[]>([]);
-  readonly eventRules = signal<any[]>([]);
+  readonly eventRules = signal<EventRule[]>([]);
   readonly coverImages = signal<CoverImage[]>([]);
   readonly coverImagesLoading = signal(false);
   readonly selectedCoverImageId = signal<string | null>(null);
@@ -600,8 +613,8 @@ export class EventFormComponent implements OnInit {
     costPerPerson: [0],
     minParticipants: [2],
     maxParticipants: [10],
-    ageMin: [undefined],
-    ageMax: [undefined],
+    ageMin: [undefined as number | undefined],
+    ageMax: [undefined as number | undefined],
     gender: ['ANY'],
     visibility: ['PUBLIC'],
     facilityReserved: [true],
@@ -701,11 +714,8 @@ export class EventFormComponent implements OnInit {
           lng: e.lng,
         });
 
-        // Set age fields separately to avoid type issues
-        (this.form.patchValue as any)({
-          ageMin: e.ageMin,
-          ageMax: e.ageMax,
-        });
+        this.form.get('ageMin')?.setValue(e.ageMin);
+        this.form.get('ageMax')?.setValue(e.ageMax);
         this.eventRules.set(this.parseRules(e.rules));
         this.mapLat.set(e.lat);
         this.mapLng.set(e.lng);
@@ -776,18 +786,18 @@ export class EventFormComponent implements OnInit {
     }
   }
 
-  onRulesChange(rules: any[]): void {
+  onRulesChange(rules: EventRule[]): void {
     this.eventRules.set(rules);
   }
 
-  formatRules(rules: any[]): string {
+  formatRules(rules: EventRule[]): string {
     return rules
       .filter((rule) => rule.text.trim())
       .map((rule) => `${' '.repeat(rule.indent)}${rule.text}`)
       .join('\n');
   }
 
-  parseRules(rulesString?: string): any[] {
+  parseRules(rulesString?: string): EventRule[] {
     if (!rulesString) return [];
 
     return rulesString
@@ -855,6 +865,7 @@ export class EventFormComponent implements OnInit {
 
     const startUtc = fromLocalInputValue(val.startsAt);
     const endUtc = fromLocalInputValue(val.endsAt);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const nowUtc = nowInZone().toISO()!;
 
     if (startUtc <= nowUtc) {
@@ -986,17 +997,19 @@ export class EventFormComponent implements OnInit {
       return;
     }
 
-    this.dictService.getDisciplineSchema(discipline.slug).subscribe((schema: any) => {
-      if (!schema?.participantRoles) {
-        this.disciplineRoles.set(null);
-        this.roleSlots.set([]);
-        this.rolesEnabled.set(false);
-        return;
-      }
+    this.dictService
+      .getDisciplineSchema(discipline.slug)
+      .subscribe((schema: DisciplineSchema | null) => {
+        if (!schema?.participantRoles) {
+          this.disciplineRoles.set(null);
+          this.roleSlots.set([]);
+          this.rolesEnabled.set(false);
+          return;
+        }
 
-      this.disciplineRoles.set(schema.participantRoles);
-      this.initializeRoleSlots(schema.participantRoles);
-    });
+        this.disciplineRoles.set(schema.participantRoles);
+        this.initializeRoleSlots(schema.participantRoles);
+      });
   }
 
   private initializeRoleSlots(roles: DisciplineParticipantRoles): void {
@@ -1097,8 +1110,7 @@ export class EventFormComponent implements OnInit {
   }
 
   private populateFormFromEvent(event: Event): void {
-    // Wypełnij formularz danymi z wydarzenia
-    (this.form.patchValue as any)({
+    this.form.patchValue({
       title: event.title,
       description: event.description || '',
       disciplineSlug: event.disciplineSlug,
@@ -1110,8 +1122,6 @@ export class EventFormComponent implements OnInit {
       costPerPerson: event.costPerPerson,
       minParticipants: event.minParticipants || 2,
       maxParticipants: event.maxParticipants || 10,
-      ageMin: event.ageMin,
-      ageMax: event.ageMax,
       gender: event.gender,
       visibility: event.visibility,
       facilityReserved: event.facilityReserved ?? true,
@@ -1119,6 +1129,8 @@ export class EventFormComponent implements OnInit {
       lat: event.lat,
       lng: event.lng,
     });
+    this.form.get('ageMin')?.setValue(event.ageMin);
+    this.form.get('ageMax')?.setValue(event.ageMax);
 
     // Ustaw reguły jeśli są
     if (event.rules) {
@@ -1137,10 +1149,10 @@ export class EventFormComponent implements OnInit {
     }
   }
 
-  private markFormGroupTouched(formGroup: any): void {
-    Object.values(formGroup.controls).forEach((control: any) => {
+  private markFormGroupTouched(formGroup: FormGroup): void {
+    Object.values(formGroup.controls).forEach((control: AbstractControl) => {
       control.markAsTouched();
-      if (control.controls) {
+      if (control instanceof FormGroup) {
         this.markFormGroupTouched(control);
       }
     });
@@ -1150,7 +1162,7 @@ export class EventFormComponent implements OnInit {
     // Ustaw domyślny poziom na "Zróżnicowany"
     // (zostanie zaktualizowany po załadowaniu słowników)
 
-    // Ustaw domyślne czasy — jutro 19:00–21:00 w polskiej strefie
+    // Ustaw domyślne czasy - jutro 19:00–21:00 w polskiej strefie
     const now = nowInZone();
     const tomorrow = now.plus({ days: 1 });
     const startsAt = createDateInZone(tomorrow.year, tomorrow.month, tomorrow.day, 19, 0);

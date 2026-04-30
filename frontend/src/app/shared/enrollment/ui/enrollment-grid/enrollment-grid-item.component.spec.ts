@@ -15,21 +15,21 @@ function makeParticipant(overrides: Partial<EnrollmentItem> = {}): EnrollmentIte
     userId: 'user1',
     status: 'APPROVED',
     isGuest: false,
-    payment: { id: 'pay1' } as any,
+    payment: { id: 'pay1' },
     user: {
       id: 'user1',
       displayName: 'Jan Kowalski',
       avatarUrl: null,
       isActive: true,
       isEmailVerified: true,
-    } as any,
+    },
     slot: null,
     roleKey: null,
     ...overrides,
-  } as any;
+  } as unknown as EnrollmentItem;
 }
 
-describe('EnrollmentGridItemComponent — computed signals', () => {
+describe('EnrollmentGridItemComponent - computed signals', () => {
   function create(participant: EnrollmentItem) {
     TestBed.configureTestingModule({
       imports: [EnrollmentGridItemComponent],
@@ -48,7 +48,11 @@ describe('EnrollmentGridItemComponent — computed signals', () => {
 
   describe('displayName()', () => {
     it('zwraca displayName uczestnika', () => {
-      const { c } = create(makeParticipant({ user: { displayName: 'Anna Nowak' } as any }));
+      const { c } = create(
+        makeParticipant({
+          user: { displayName: 'Anna Nowak' },
+        } as unknown as Partial<EnrollmentItem>),
+      );
       expect(c.displayName()).toBe('Anna Nowak');
     });
 
@@ -106,7 +110,7 @@ describe('EnrollmentGridItemComponent — computed signals', () => {
     });
 
     it('zwraca false gdy status APPROVED ale payment istnieje', () => {
-      const { c } = create(makeParticipant({ status: 'APPROVED', payment: { id: 'p' } as any }));
+      const { c } = create(makeParticipant({ status: 'APPROVED', payment: { id: 'p' } }));
       expect(c.needsPayment()).toBe(false);
     });
 
@@ -125,14 +129,14 @@ describe('EnrollmentGridItemComponent — computed signals', () => {
 
     it('PENDING bez waitingReason → wskaźnik clock', () => {
       const { c } = create(
-        makeParticipant({ status: 'PENDING', payment: null, waitingReason: null } as any),
+        makeParticipant({ status: 'PENDING', payment: null, waitingReason: null }),
       );
       const icons = c.statusIndicators().map((i) => i.icon);
       expect(icons).toContain('clock');
     });
 
     it('CONFIRMED z payment → brak wskaźników ostrzegawczych', () => {
-      const { c } = create(makeParticipant({ status: 'CONFIRMED', payment: { id: 'p' } as any }));
+      const { c } = create(makeParticipant({ status: 'CONFIRMED', payment: { id: 'p' } }));
       const warnIcons = c
         .statusIndicators()
         .filter((i) => i.color === 'warning')

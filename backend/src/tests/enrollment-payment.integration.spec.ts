@@ -154,7 +154,7 @@ describe('[Integration] Enrollment join flow', () => {
     return event;
   }
 
-  describe('join() — OPEN_ENROLLMENT', () => {
+  describe('join() - OPEN_ENROLLMENT', () => {
     it('trusted user może dołączyć do bezpłatnego eventu (PENDING → enrollment)', async () => {
       const suffix = `a_${Date.now()}`;
       const organizer = await createOrganizer(suffix);

@@ -98,7 +98,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
             • Organizatorom wydarzeń (tylko niezbędne dane do realizacji wydarzenia)<br />
             • Dostawcom usług płatniczych (Tpay - do przetwarzania płatności)<br />
             • Podmiotom technicznym (hosting, wsparcie IT)<br />
-            • Microsoft Corporation — w zakresie anonimowych danych behawioralnych zbieranych przez
+            • Microsoft Corporation - w zakresie anonimowych danych behawioralnych zbieranych przez
             narzędzie Microsoft Clarity (wyłącznie po udzieleniu zgody na pliki cookie analityczne;
             dane są przetwarzane zgodnie z polityką prywatności Microsoft)<br />
             • Organom ścigania (wyłącznie na podstawie prawnych żądań)<br /><br />
@@ -152,7 +152,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
             • Analizy ruchu w aplikacji<br />
             • Personalizacji treści<br /><br />
 
-            <strong>Cookies analityczne — Microsoft Clarity</strong><br />
+            <strong>Cookies analityczne - Microsoft Clarity</strong><br />
             Za Twoją zgodą korzystamy z narzędzia Microsoft Clarity dostarczanego przez Microsoft
             Corporation. Narzędzie to rejestruje anonimowe dane behawioralne (m.in. ruchy kursora,
             kliknięcia, mapy cieplne) w celu poprawy użyteczności serwisu. Treści wiadomości

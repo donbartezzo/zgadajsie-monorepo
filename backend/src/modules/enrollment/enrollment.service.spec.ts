@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Decimal } from '@prisma/client/runtime/library';
 import { featureFlags } from '../../common/config/feature-flags';
 import { PrismaService } from '../prisma/prisma.service';
@@ -38,7 +39,7 @@ function buildPrismaMock() {
     user: { findUnique: jest.fn(), create: jest.fn(), update: jest.fn() },
     organizerUserRelation: { upsert: jest.fn() },
     payment: { findMany: jest.fn() },
-    $transaction: jest.fn((fn: (tx: any) => any) => fn(tx)),
+    $transaction: jest.fn((fn: (tx: ReturnType<typeof buildTxMock>) => unknown) => fn(tx)),
     _tx: tx,
   } as unknown as PrismaService & { _tx: ReturnType<typeof buildTxMock> };
 }
@@ -138,7 +139,7 @@ describe('EnrollmentService', () => {
 
   beforeEach(() => {
     prisma = buildPrismaMock();
-    tx = (prisma as any)._tx;
+    tx = prisma._tx;
     email = buildEmailMock();
     push = buildPushMock();
     payments = buildPaymentsMock();
@@ -147,7 +148,9 @@ describe('EnrollmentService', () => {
     realtime = buildRealtimeMock();
     service = new EnrollmentService(
       prisma as PrismaService,
-      { getOrThrow: jest.fn().mockReturnValue('http://localhost:4200') } as any,
+      {
+        getOrThrow: jest.fn().mockReturnValue('http://localhost:4200'),
+      } as unknown as ConfigService,
       email,
       push,
       payments,
@@ -160,7 +163,7 @@ describe('EnrollmentService', () => {
 
   // ─── deriveStatus (tested through service results) ───────────────────────
 
-  describe('deriveStatus() — przez wyniki serwisu', () => {
+  describe('deriveStatus() - przez wyniki serwisu', () => {
     it('wantsIn=true, slot=null → PENDING', async () => {
       const event = makeEvent();
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);
@@ -218,7 +221,7 @@ describe('EnrollmentService', () => {
 
   // ─── join() PRE_ENROLLMENT ────────────────────────────────────────────────
 
-  describe('join() — PRE_ENROLLMENT', () => {
+  describe('join() - PRE_ENROLLMENT', () => {
     const preEnrollmentEvent = makeEvent({ startsAt: FUTURE_FAR, lotteryExecutedAt: null });
 
     it('tworzy enrollment ze statusem PENDING i waitingReason=PRE_ENROLLMENT', async () => {
@@ -302,7 +305,7 @@ describe('EnrollmentService', () => {
 
   // ─── join() OPEN_ENROLLMENT ───────────────────────────────────────────────
 
-  describe('join() — OPEN_ENROLLMENT', () => {
+  describe('join() - OPEN_ENROLLMENT', () => {
     const openEvent = makeEvent({
       startsAt: FUTURE_FAR,
       lotteryExecutedAt: new Date(),
@@ -461,7 +464,7 @@ describe('EnrollmentService', () => {
 
   // ─── join() rejoin ────────────────────────────────────────────────────────
 
-  describe('join() — rejoin po wypisaniu', () => {
+  describe('join() - rejoin po wypisaniu', () => {
     it('użytkownik który się wypisał może ponownie dołączyć', async () => {
       const openEvent = makeEvent({ lotteryExecutedAt: new Date() });
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(openEvent);
@@ -1282,13 +1285,13 @@ describe('EnrollmentService', () => {
 
     it('rzuca ForbiddenException gdy feature flag płatności online jest wyłączony', async () => {
       const original = featureFlags.enableOnlinePayments;
-      (featureFlags as any).enableOnlinePayments = false;
+      (featureFlags as Record<string, unknown>).enableOnlinePayments = false;
       try {
         await expect(service.initiateEventPayment('p1', mockAuthUser('user1'))).rejects.toThrow(
           ForbiddenException,
         );
       } finally {
-        (featureFlags as any).enableOnlinePayments = original;
+        (featureFlags as Record<string, unknown>).enableOnlinePayments = original;
       }
     });
   });

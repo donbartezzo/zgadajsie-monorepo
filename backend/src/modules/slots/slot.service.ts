@@ -414,7 +414,7 @@ export class SlotService {
 
   /**
    * Lock a slot. Only the organizer can do this.
-   * If the slot has a participant, they stay — the slot is just marked as locked.
+   * If the slot has a participant, they stay - the slot is just marked as locked.
    */
   async lockSlot(slotId: string): Promise<void> {
     const slot = await this.prisma.eventSlot.findUnique({ where: { id: slotId } });
@@ -468,7 +468,7 @@ export class SlotService {
       throw new NotFoundException(SLOT_NOT_FOUND_MESSAGE);
     }
     if (!slot.locked) {
-      throw new BadRequestException('Slot nie jest zablokowany — użyj standardowego przydzielania');
+      throw new BadRequestException('Slot nie jest zablokowany - użyj standardowego przydzielania');
     }
     if (slot.enrollmentId) {
       throw new BadRequestException('Slot jest już zajęty');

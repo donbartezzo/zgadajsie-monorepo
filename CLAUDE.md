@@ -70,7 +70,7 @@ Przy zmianach design systemu ZAWSZE zaktualizuj:
 
 ### Autonomia operacyjna
 
-Przy rutynowych zadaniach działaj od razu bez proszenia o potwierdzenie — chyba że operacja jest nieodwracalna lub wykracza poza projekt.
+Przy rutynowych zadaniach działaj od razu bez proszenia o potwierdzenie - chyba że operacja jest nieodwracalna lub wykracza poza projekt.
 
 ### Spójność zasad
 
@@ -78,7 +78,7 @@ Przy zmianie zasad AI utrzymuj spójność co najmniej między:
 
 - `CLAUDE.md`
 - `.windsurf/rules/rules.md`
-- dokumentem referencyjnym zasad AI z początku tego pliku — jeśli zmiana dotyczy szerszego opisu procesu lub dokumentacji referencyjnej
+- dokumentem referencyjnym zasad AI z początku tego pliku - jeśli zmiana dotyczy szerszego opisu procesu lub dokumentacji referencyjnej
 
 ### Potwierdzenie na końcu odpowiedzi
 
@@ -86,4 +86,4 @@ W odpowiedzi na KAŻDE polecenie napisz:
 
 1. czy zostało wykonane zgodnie z powyższymi zasadami
 2. które guide'y zostały uwzględnione
-3. jeśli żaden — dlaczego
+3. jeśli żaden - dlaczego

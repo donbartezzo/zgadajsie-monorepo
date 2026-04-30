@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Decimal } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
-import { TpayService } from './tpay.service';
+import { TpayService, TpayWebhookPayload } from './tpay.service';
 import { VouchersService } from '../vouchers/vouchers.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { PaymentsService } from './payments.service';
@@ -29,7 +29,7 @@ function buildPrismaMock() {
     },
     eventSlot: { updateMany: jest.fn() },
     eventEnrollment: { findUnique: jest.fn() },
-    $transaction: jest.fn((fn: (tx: any) => any) => fn(tx)),
+    $transaction: jest.fn((fn: (tx: ReturnType<typeof buildTxMock>) => unknown) => fn(tx)),
     _tx: tx,
   } as unknown as PrismaService & { _tx: ReturnType<typeof buildTxMock> };
 }
@@ -65,7 +65,7 @@ describe('PaymentsService', () => {
 
   beforeEach(() => {
     prisma = buildPrismaMock();
-    tx = (prisma as any)._tx;
+    tx = prisma._tx;
     tpay = buildTpayMock();
     vouchers = buildVouchersMock();
     realtime = buildRealtimeMock();
@@ -280,9 +280,9 @@ describe('PaymentsService', () => {
     it('odrzuca nieprawidłowy podpis (BadRequestException)', async () => {
       (tpay.verifyWebhook as jest.Mock).mockResolvedValue({ valid: false });
 
-      await expect(service.handleWebhook({ tr_id: 'TX1' } as any, 'bad-sig')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.handleWebhook({ tr_id: 'TX1' } as unknown as TpayWebhookPayload, 'bad-sig'),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('status TRUE → tworzy Payment COMPLETED + potwierdza slot', async () => {
@@ -305,7 +305,7 @@ describe('PaymentsService', () => {
       tx.payment.create.mockResolvedValue({ id: 'pay1' });
       tx.eventSlot.updateMany.mockResolvedValue({});
 
-      await service.handleWebhook({ tr_id: 'TX1' } as any, 'valid-sig');
+      await service.handleWebhook({ tr_id: 'TX1' } as unknown as TpayWebhookPayload, 'valid-sig');
 
       expect(tx.payment.create).toHaveBeenCalled();
       expect(tx.eventSlot.updateMany).toHaveBeenCalledWith({
@@ -333,12 +333,12 @@ describe('PaymentsService', () => {
       });
       (prisma.paymentIntent.findFirst as jest.Mock).mockResolvedValue(mockIntent);
 
-      await service.handleWebhook({ tr_id: 'TX1' } as any, 'valid-sig');
+      await service.handleWebhook({ tr_id: 'TX1' } as unknown as TpayWebhookPayload, 'valid-sig');
 
       expect(vouchers.restoreVoucher as jest.Mock).toHaveBeenCalledWith('user1', 'org1', 30);
     });
 
-    it('idempotentność — Payment już istnieje → noop', async () => {
+    it('idempotentność - Payment już istnieje → noop', async () => {
       (tpay.verifyWebhook as jest.Mock).mockResolvedValue({
         valid: true,
         transactionId: 'TX1',
@@ -347,7 +347,7 @@ describe('PaymentsService', () => {
       (prisma.paymentIntent.findFirst as jest.Mock).mockResolvedValue(null);
       (prisma.payment.findFirst as jest.Mock).mockResolvedValue({ id: 'pay1' });
 
-      await service.handleWebhook({ tr_id: 'TX1' } as any, 'valid-sig');
+      await service.handleWebhook({ tr_id: 'TX1' } as unknown as TpayWebhookPayload, 'valid-sig');
 
       expect(tx.payment.create).not.toHaveBeenCalled();
     });
@@ -361,7 +361,10 @@ describe('PaymentsService', () => {
       (prisma.paymentIntent.findFirst as jest.Mock).mockResolvedValue(null);
       (prisma.payment.findFirst as jest.Mock).mockResolvedValue(null);
 
-      await service.handleWebhook({ tr_id: 'UNKNOWN_TX' } as any, 'valid-sig');
+      await service.handleWebhook(
+        { tr_id: 'UNKNOWN_TX' } as unknown as TpayWebhookPayload,
+        'valid-sig',
+      );
 
       expect(tx.payment.create).not.toHaveBeenCalled();
     });
@@ -406,7 +409,7 @@ describe('PaymentsService', () => {
       });
     });
 
-    it('idempotentność — zwraca istniejącą płatność bez tworzenia nowej', async () => {
+    it('idempotentność - zwraca istniejącą płatność bez tworzenia nowej', async () => {
       (prisma.paymentIntent.findUnique as jest.Mock).mockResolvedValue(mockIntent);
       (prisma.payment.findFirst as jest.Mock).mockResolvedValue({ id: 'existing-pay1' });
 

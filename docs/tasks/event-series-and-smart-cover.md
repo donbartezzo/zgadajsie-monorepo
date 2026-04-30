@@ -9,13 +9,13 @@ Backend **już posiada** fundament dla serii:
 - `generateRecurringDates()` obsługuje reguły: `DAILY`, `WEEKLY` (default), `BIWEEKLY`, `MONTHLY`, max 52 instancje
 - istnieje też `PATCH /events/:id/series` do aktualizacji całej serii
 
-Frontend **nie eksponuje żadnej z tych możliwości** — formularz zawsze wysyła do `POST /events`.
+Frontend **nie eksponuje żadnej z tych możliwości** - formularz zawsze wysyła do `POST /events`.
 
 Cover image jest wybierany **losowo** (`findRandomByDiscipline`) gdy organizator nie wskaże konkretnego.
 
 ---
 
-## TASK 1 — UI i ulepszenia serii wydarzeń
+## TASK 1 - UI i ulepszenia serii wydarzeń
 
 ### Cel
 
@@ -23,13 +23,13 @@ Dać organizatorowi możliwość zaznaczenia w formularzu, że tworzy serię (np
 
 ### Projekt rozwiązania
 
-#### 1.1 Backend — `CreateEventDto` + `generateRecurringDates`
+#### 1.1 Backend - `CreateEventDto` + `generateRecurringDates`
 
 Obecny kod zawsze tworzy **wszystkie 52 instancje**, bo `maxInstances = 52` jest hardkodowane.
 Trzeba dodać parametr `seriesCount`:
 
 ```ts
-// CreateEventDto — nowe pole:
+// CreateEventDto - nowe pole:
 @IsOptional()
 @IsInt()
 @Min(2)
@@ -39,9 +39,9 @@ seriesCount?: number;   // ile instancji (wliczając pierwszą)
 
 `generateRecurringDates` powinna przyjmować `count` i respektować go zamiast `maxInstances`.
 
-Ponadto child events pomijają pole `rules` — należy je skopiować z parenta (bug istniejący w kodzie).
+Ponadto child events pomijają pole `rules` - należy je skopiować z parenta (bug istniejący w kodzie).
 
-#### 1.2 Frontend — sekcja „Seria wydarzeń" w formularzu
+#### 1.2 Frontend - sekcja „Seria wydarzeń" w formularzu
 
 Nowa, zwijana sekcja `<app-card>` pod sekcją dat, widoczna zawsze:
 
@@ -62,7 +62,7 @@ Podgląd dat:
   · pn 26.05.2025  20:00–22:00
 ```
 
-Podgląd oblicza się **lokalnie w komponencie** na podstawie `startsAt`, `endsAt`, rytmu i liczby powtórzeń — bez wywołania API.
+Podgląd oblicza się **lokalnie w komponencie** na podstawie `startsAt`, `endsAt`, rytmu i liczby powtórzeń - bez wywołania API.
 
 Gdy seria jest aktywna, przycisk submit wysyła `POST /events/series` zamiast `POST /events`.
 
@@ -78,7 +78,7 @@ To jest wydarzenie z serii. Czy edytować tylko tę instancję czy całą serię
 „Całą serię" wywołuje `PATCH /events/:parentId/series`.
 „Tylko tę" wywołuje dotychczasowe `PATCH /events/:id`.
 
-### Checklist — TASK 1
+### Checklist - TASK 1
 
 #### Backend
 
@@ -92,7 +92,7 @@ To jest wydarzenie z serii. Czy edytować tylko tę instancję czy całą serię
 
 - [ ] `event-form.component.ts`: dodać pola formularza `isRecurring: false`, `recurringRule: 'WEEKLY'`, `seriesCount: 4`
 - [ ] Dodać sekcję „Seria wydarzeń" z checkboxem, select rytmu, inputem liczby powtórzeń
-- [ ] Dodać computed `seriesPreviewDates` — lista dat wyliczana lokalnie
+- [ ] Dodać computed `seriesPreviewDates` - lista dat wyliczana lokalnie
 - [ ] Wyświetlić podgląd dat w sekcji (tylko gdy `isRecurring = true`)
 - [ ] `onSubmit()`: gdy `isRecurring`, wywołać `eventService.createSeries()` zamiast `createEvent()`
 - [ ] `EventService`: dodać metodę `createSeries(payload)` → `POST /events/series`
@@ -100,7 +100,7 @@ To jest wydarzenie z serii. Czy edytować tylko tę instancję czy całą serię
 
 ---
 
-## TASK 2 — Automatyczny dobór cover image
+## TASK 2 - Automatyczny dobór cover image
 
 ### Cel
 
@@ -108,7 +108,7 @@ Dodać opcjonalny checkbox w formularzu, który uruchamia algorytm wybierający 
 
 ### Projekt rozwiązania
 
-#### 2.1 Algorytm — logika serwisu
+#### 2.1 Algorytm - logika serwisu
 
 Nowa metoda w `CoverImagesService`:
 
@@ -126,9 +126,9 @@ Kolejność priorytetów przy wyborze:
 1. **Wyklucz** `excludeIds` (przypisane wcześniej w tej samej serii)
 2. Pobierz ostatnie N wydarzeń organizatora dla danej dyscypliny (proponowane N = 20), wyciągnij ich `coverImageId`
 3. **Priorytet 1:** wybierz cover który **nie był użyty** przez organizatora w tych N wydarzeniach
-4. Jeśli każdy był użyty przez organizatora (mała pula coverów) — wybierz ten **najdawniej użyty** przez organizatora
+4. Jeśli każdy był użyty przez organizatora (mała pula coverów) - wybierz ten **najdawniej użyty** przez organizatora
 5. **Priorytet 2 (tie-breaker):** wśród remisantów preferuj cover nieużywany w ostatnich M wydarzeniach w tym mieście (proponowane M = 30)
-6. Wśród remisantów po priorytecie 2 — losowy wybór
+6. Wśród remisantów po priorytecie 2 - losowy wybór
 
 Implementacja przez scorowanie:
 
@@ -138,9 +138,9 @@ score(cover) = organizer_penalty * 10 + city_penalty * 1
   city_penalty = pozycja w historii miasta (analogicznie)
 ```
 
-Wybieramy cover z najniższym score. Przy równym score — losowo.
+Wybieramy cover z najniższym score. Przy równym score - losowo.
 
-#### 2.2 Backend — endpoint sugestii
+#### 2.2 Backend - endpoint sugestii
 
 ```
 GET /cover-images/suggest?disciplineSlug=&citySlug=
@@ -160,9 +160,9 @@ Gdy `isRecurring = true` i `autoCoverImage = true`:
 
 - Każda instancja serii dostaje **inny** cover image
 - `createSeries()` wywołuje `findSmartCoverForOrganizer()` dla każdej instancji, przekazując `excludeIds` z poprzednich instancji tej serii
-- Jeśli dostępnych coverów jest mniej niż instancji — po wyczerpaniu puli ponownie wybierane są te najdawniej użyte
+- Jeśli dostępnych coverów jest mniej niż instancji - po wyczerpaniu puli ponownie wybierane są te najdawniej użyte
 
-#### 2.4 Frontend — UX sekcji cover image
+#### 2.4 Frontend - UX sekcji cover image
 
 Obecny stan: galeria thumbnail z zaznaczeniem aktywnego.
 
@@ -182,7 +182,7 @@ Gdy odznaczone → standardowa galeria (jak dotychczas).
 
 Dla serii + auto cover: dodatkowa informacja "Każde wydarzenie z serii otrzyma inną grafikę".
 
-### Checklist — TASK 2 (pojedyncze wydarzenie — ZREALIZOWANE)
+### Checklist - TASK 2 (pojedyncze wydarzenie - ZREALIZOWANE)
 
 #### Backend
 
@@ -220,14 +220,14 @@ Serie + smart cover działają niezależnie, ale naturalnie się łączą:
 
 Rekomendowana kolejność:
 
-1. **Backend Task 1** — fix `seriesCount`, fix kopiowania `rules` (małe zmiany)
-2. **Backend Task 2** — smart cover algorithm + endpoint suggest
-3. **Frontend Task 1** — sekcja serii w formularzu (nie wymaga Task 2)
-4. **Frontend Task 2** — checkbox auto cover (nie wymaga Task 1, ale dobrze je połączyć)
+1. **Backend Task 1** - fix `seriesCount`, fix kopiowania `rules` (małe zmiany)
+2. **Backend Task 2** - smart cover algorithm + endpoint suggest
+3. **Frontend Task 1** - sekcja serii w formularzu (nie wymaga Task 2)
+4. **Frontend Task 2** - checkbox auto cover (nie wymaga Task 1, ale dobrze je połączyć)
 
 ## Otwarte pytania
 
 1. **Liczba powtórzeń vs data końca serii**: zaproponowano liczbę instancji (prostsze UX). Alternatywa to pole „Powtarzaj do dnia [...]". Które wygodniejsze?
 2. **Podgląd sugestii cover image w UI**: czy przycisk „Podejrzyj" jest potrzebny, czy wystarczy informacja że zostanie dobrana automatycznie?
-3. **Edycja cover image w serii**: jeśli organizator edytuje jedną instancję i zmienia cover ręcznie — czy wyłącza to auto cover dla tej instancji? (Rekomendacja: tak, per-instance override)
+3. **Edycja cover image w serii**: jeśli organizator edytuje jedną instancję i zmienia cover ręcznie - czy wyłącza to auto cover dla tej instancji? (Rekomendacja: tak, per-instance override)
 4. **N i M dla algorytmu** (historia 20/30 wydarzeń): czy te wartości są odpowiednie dla skali projektu?

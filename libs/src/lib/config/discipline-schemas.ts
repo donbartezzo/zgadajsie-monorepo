@@ -20,7 +20,7 @@ export interface DisciplineParticipantRoles {
 }
 
 /**
- * Podstawowy schemat dyscypliny — wartości domyślne dla pól wydarzenia.
+ * Podstawowy schemat dyscypliny - wartości domyślne dla pól wydarzenia.
  * Extends EventDefaultableFields dla spójności nazw pól z Event interface.
  */
 export type DisciplineSchemaBasic = EventDefaultableFields & {
