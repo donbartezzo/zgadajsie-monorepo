@@ -35,11 +35,7 @@ import { ChatMember } from '../../../shared/types';
                 [class.opacity-40]="!m.isActive"
                 [class.bg-primary-500/5]="m.user.id === organizerId()"
               >
-                <app-user-avatar
-                  [avatarUrl]="m.user.avatarUrl"
-                  [displayName]="m.user.displayName"
-                  size="sm"
-                ></app-user-avatar>
+                <app-user-avatar [user]="m.user" size="sm"></app-user-avatar>
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-neutral-900 truncate">
                     {{ m.user.displayName }}

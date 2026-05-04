@@ -50,13 +50,7 @@ export abstract class BaseChatComponent implements OnDestroy {
       senderId: msg.senderId,
       content: msg.content,
       createdAt: msg.createdAt,
-      sender: msg.sender
-        ? {
-            id: msg.sender.id,
-            displayName: msg.sender.displayName,
-            avatarUrl: msg.sender.avatarUrl,
-          }
-        : undefined,
+      sender: msg.sender ?? undefined,
     })),
   );
 

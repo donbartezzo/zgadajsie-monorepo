@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { IsStrongPassword } from '../../../common/validators/password.decorator';
 import { IsSupportedSupportUrl } from '../../../common/validators/support-url.validator';
 
@@ -10,7 +10,8 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsString()
-  avatarUrl?: string;
+  @MaxLength(32)
+  avatarSeed?: string | null;
 
   @IsOptional()
   @IsEmail()

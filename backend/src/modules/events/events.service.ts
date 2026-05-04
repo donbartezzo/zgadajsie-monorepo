@@ -189,7 +189,7 @@ export class EventsService {
           city: true,
           coverImage: true,
           organizer: {
-            select: { id: true, displayName: true, avatarUrl: true, donationUrl: true },
+            select: { id: true, displayName: true, avatarSeed: true, donationUrl: true },
           },
           _count: {
             select: {
@@ -242,7 +242,14 @@ export class EventsService {
         level: true,
         city: true,
         coverImage: true,
-        organizer: { select: { id: true, displayName: true, avatarUrl: true, donationUrl: true } },
+        organizer: {
+          select: {
+            id: true,
+            displayName: true,
+            avatarSeed: true,
+            donationUrl: true,
+          },
+        },
         _count: {
           select: {
             enrollments: {
@@ -290,7 +297,14 @@ export class EventsService {
         level: true,
         city: true,
         coverImage: true,
-        organizer: { select: { id: true, displayName: true, avatarUrl: true, donationUrl: true } },
+        organizer: {
+          select: {
+            id: true,
+            displayName: true,
+            avatarSeed: true,
+            donationUrl: true,
+          },
+        },
       },
     });
 
@@ -595,7 +609,7 @@ export class EventsService {
           select: {
             id: true,
             displayName: true,
-            avatarUrl: true,
+            avatarSeed: true,
             email: true,
             isActive: true,
             isEmailVerified: true,
@@ -605,7 +619,7 @@ export class EventsService {
           select: {
             id: true,
             displayName: true,
-            avatarUrl: true,
+            avatarSeed: true,
           },
         },
         slot: true,

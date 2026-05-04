@@ -241,7 +241,7 @@ export class ModerationService {
         take: limit,
         orderBy: { [field]: direction },
         include: {
-          targetUser: { select: { id: true, displayName: true, avatarUrl: true } },
+          targetUser: { select: { id: true, displayName: true } },
         },
       }),
       this.prisma.organizerUserRelation.count({ where: { organizerUserId } }),

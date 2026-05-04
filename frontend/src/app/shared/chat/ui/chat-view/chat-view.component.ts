@@ -104,12 +104,13 @@ export interface ChatViewMessage {
           <div
             [class]="'flex gap-2 ' + (msg.senderId === currentUserId() ? 'flex-row-reverse' : '')"
           >
-            <app-user-avatar
-              [avatarUrl]="msg.sender?.avatarUrl"
-              [displayName]="msg.sender?.displayName || ''"
-              size="sm"
-              [class.opacity-40]="isInactive"
-            ></app-user-avatar>
+            @if (msg.sender) {
+              <app-user-avatar
+                [user]="msg.sender"
+                size="sm"
+                [class.opacity-40]="isInactive"
+              ></app-user-avatar>
+            }
             <div
               data-clarity-mask="True"
               [class]="
@@ -119,9 +120,11 @@ export interface ChatViewMessage {
               "
             >
               <div class="flex items-center gap-2 mb-0.5">
-                <p class="text-xs font-medium opacity-70" [class.opacity-40]="isInactive">
-                  {{ msg.sender?.displayName }}
-                </p>
+                @if (msg.sender) {
+                  <p class="text-xs font-medium opacity-70" [class.opacity-40]="isInactive">
+                    {{ msg.sender.displayName }}
+                  </p>
+                }
                 @if (isInactive) {
                   <span
                     [class]="

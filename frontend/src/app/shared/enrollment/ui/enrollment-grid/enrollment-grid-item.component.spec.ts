@@ -19,7 +19,6 @@ function makeParticipant(overrides: Partial<EnrollmentItem> = {}): EnrollmentIte
     user: {
       id: 'user1',
       displayName: 'Jan Kowalski',
-      avatarUrl: null,
       isActive: true,
       isEmailVerified: true,
     },

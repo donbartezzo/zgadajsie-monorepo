@@ -6,6 +6,7 @@ import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { UserProfileCardComponent } from '../../../../shared/user/ui/user-profile-card/user-profile-card.component';
+import { AvatarPickerComponent } from '../../../../shared/user/ui/avatar-picker/avatar-picker.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { UserService } from '../../../../core/services/user.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
@@ -21,6 +22,7 @@ import { isSupportedDonationUrl } from '../../../../shared/utils/support-url.uti
     ButtonComponent,
     CardComponent,
     UserProfileCardComponent,
+    AvatarPickerComponent,
   ],
   templateUrl: './profile.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -103,6 +105,10 @@ export class ProfileComponent implements OnInit {
         this.saving.set(false);
       },
     });
+  }
+
+  onAvatarConfirmed(newSeed: string): void {
+    this.auth.updateUser({ avatarSeed: newSeed });
   }
 
   logout(): void {

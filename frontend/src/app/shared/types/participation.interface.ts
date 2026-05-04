@@ -1,6 +1,6 @@
 import { ParticipantPaymentInfo, EventSlotInfo } from './payment.interface';
 export type { EnrollmentStatus, ParticipationStatus } from './common.interface';
-import type { EnrollmentStatus } from './common.interface';
+import type { EnrollmentStatus, UserBrief } from './common.interface';
 
 export interface EventSlot {
   id: string;
@@ -27,19 +27,13 @@ export interface AvailableRole {
   freeSlots: number;
 }
 
-export interface AddedByUser {
-  id: string;
-  displayName: string;
-  avatarUrl: string | null;
-}
-
 export interface Enrollment {
   id: string;
   eventId: string;
   userId: string;
   wantsIn: boolean;
   withdrawnBy?: string | null;
-  addedByUser?: AddedByUser | null;
+  addedByUser?: UserBrief | null;
   isGuest: boolean;
   roleKey?: string | null;
   createdAt: string;
@@ -65,7 +59,7 @@ export interface Enrollment {
   user: {
     id: string;
     displayName: string;
-    avatarUrl: string | null;
+    avatarSeed?: string | null;
     email: string;
     isActive?: boolean;
     isEmailVerified?: boolean;

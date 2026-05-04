@@ -936,51 +936,22 @@
       <section>
         <h2 class="text-lg font-semibold text-neutral-900 mb-4">User Avatar (app-user-avatar)</h2>
         <p class="text-sm text-neutral-500 mb-4">
-          Komponent do wyświetlania avatarów użytkowników z inicjałami lub obrazkiem. API:
-          <code class="bg-white px-1 rounded text-xs">size</code> (xs, sm, md, lg, xl, 2xl) +
-          <code class="bg-white px-1 rounded text-xs">shape</code> (circle, rounded) +
-          <code class="bg-white px-1 rounded text-xs">displayName</code> (do inicjałów) +
-          <code class="bg-white px-1 rounded text-xs">avatarUrl</code> (opcjonalny URL obrazka).
+          Komponent do wyświetlania avatarów. Domyślny wariant:
+          <code class="bg-white px-1 rounded text-xs">pixel-art</code> (DiceBear) – wymaga
+          <code class="bg-white px-1 rounded text-xs">userId</code>; opcjonalnie
+          <code class="bg-white px-1 rounded text-xs">avatarSeed</code> dla indywidualizacji. Wariant
+          <code class="bg-white px-1 rounded text-xs">initials</code> – fallback na inicjały.
         </p>
 
         <div class="bg-white rounded-xl border border-neutral-200 p-4 space-y-6">
           <div>
-            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Rozmiary (shape=rounded)</p>
-            <div class="flex flex-wrap items-center gap-6">
-              @for (size of avatarSizes; track size) {
-                <div class="flex flex-col items-center gap-2">
-                  <app-user-avatar [size]="size" shape="rounded" [displayName]="'Jan Kowalski'" />
-                  <span class="text-xs text-neutral-500">{{ size }}</span>
-                </div>
-              }
-            </div>
-          </div>
-
-          <div>
-            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Kształty (size=md)</p>
-            <div class="flex flex-wrap items-center gap-6">
-              @for (shape of avatarShapes; track shape) {
-                <div class="flex flex-col items-center gap-2">
-                  <app-user-avatar size="md" [shape]="shape" [displayName]="'Anna Nowak'" />
-                  <span class="text-xs text-neutral-500">{{ shape }}</span>
-                </div>
-              }
-            </div>
-          </div>
-
-          <div>
             <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
-              Inicjały z różnych nazw (size=md, shape=rounded)
+              Pixel-art (domyślny) – seed = userId + avatarSeed
             </p>
             <div class="flex flex-wrap items-center gap-4">
-              @for (example of avatarExamples; track example.displayName) {
+              @for (example of avatarExamples; track example.id) {
                 <div class="flex flex-col items-center gap-2">
-                  <app-user-avatar
-                    size="md"
-                    shape="rounded"
-                    [displayName]="example.displayName"
-                    [avatarUrl]="example.avatarUrl"
-                  />
+                  <app-user-avatar size="md" shape="rounded" [user]="example" />
                   <span class="text-xs text-neutral-500 text-center max-w-20 truncate">{{ example.displayName }}</span>
                 </div>
               }
@@ -989,20 +960,45 @@
 
           <div>
             <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
-              Kolor tła (hash z displayName)
+              Rozmiary pixel-art (shape=rounded)
             </p>
-            <p class="text-sm text-neutral-500 mb-3">
-              Kolor tła jest deterministycznie wyliczany z hash nazwy użytkownika (8 predefiniowanych kolorów).
+            <div class="flex flex-wrap items-center gap-6">
+              @for (size of avatarSizes; track size) {
+                <div class="flex flex-col items-center gap-2">
+                  <app-user-avatar [size]="size" shape="rounded" [user]="{ id: 'demo-user-1', displayName: 'Demo' }" />
+                  <span class="text-xs text-neutral-500">{{ size }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+              Kształty pixel-art (size=md)
+            </p>
+            <div class="flex flex-wrap items-center gap-6">
+              @for (shape of avatarShapes; track shape) {
+                <div class="flex flex-col items-center gap-2">
+                  <app-user-avatar
+                    size="md"
+                    [shape]="shape"
+                    [user]="{ id: 'demo-user-2', displayName: 'Demo', avatarSeed: 'abc123' }"
+                  />
+                  <span class="text-xs text-neutral-500">{{ shape }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">
+              Fallback: inicjały (brak userId)
             </p>
             <div class="flex flex-wrap items-center gap-4">
-              <app-user-avatar size="md" shape="rounded" [displayName]="'Jan Kowalski'" />
-              <app-user-avatar size="md" shape="rounded" [displayName]="'Anna Nowak'" />
-              <app-user-avatar size="md" shape="rounded" [displayName]="'Marek Zieliński'" />
-              <app-user-avatar size="md" shape="rounded" [displayName]="'Katarzyna Wójcik'" />
-              <app-user-avatar size="md" shape="rounded" [displayName]="'Piotr Adamski'" />
-              <app-user-avatar size="md" shape="rounded" [displayName]="'Ewa Kowalczyk'" />
-              <app-user-avatar size="md" shape="rounded" [displayName]="'Tomasz Lewandowski'" />
-              <app-user-avatar size="md" shape="rounded" [displayName]="'Magdalena Kamińska'" />
+              <app-user-avatar size="md" shape="rounded" [user]="{ id: '', displayName: 'Jan Kowalski' }" />
+              <app-user-avatar size="md" shape="rounded" [user]="{ id: '', displayName: 'Anna Nowak' }" />
+              <app-user-avatar size="md" shape="rounded" [user]="{ id: '', displayName: 'Marek Zieliński' }" />
+              <app-user-avatar size="md" shape="rounded" [user]="{ id: '', displayName: 'Katarzyna Wójcik' }" />
             </div>
           </div>
         </div>

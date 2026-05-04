@@ -48,12 +48,7 @@ export interface SlotGroup {
       >
         <div class="relative flex flex-col items-center justify-center flex-1">
           <div class="relative">
-            <app-user-avatar
-              [avatarUrl]="avatarUrl()"
-              [displayName]="displayName()"
-              size="lg"
-              shape="rounded"
-            />
+            <app-user-avatar [user]="participant().user" size="lg" shape="rounded" />
             @if (_statusIndicators.length > 0) {
               <div
                 class="absolute -top-2 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1"
@@ -104,7 +99,6 @@ export class EnrollmentGridItemComponent {
   readonly clicked = output<void>();
 
   readonly displayName = computed(() => this.participant().user?.displayName ?? 'Uczestnik');
-  readonly avatarUrl = computed(() => this.participant().user?.avatarUrl ?? null);
 
   readonly slotDisplayStatus = computed<SlotDisplayStatus>(() => {
     const status = this.participant().status;

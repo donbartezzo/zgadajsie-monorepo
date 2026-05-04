@@ -5,7 +5,6 @@ export function mockAuthUser(id: string, role = 'USER'): AuthUser {
     id,
     email: `${id}@example.com`,
     displayName: id,
-    avatarUrl: null,
     role,
     isActive: true,
     isEmailVerified: true,

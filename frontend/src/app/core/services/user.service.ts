@@ -2,11 +2,11 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { User, Event, Participation, AvatarUrl } from '../../shared/types';
+import { User, Event, Participation } from '../../shared/types';
 
 interface UpdateProfileData {
   displayName?: string;
-  avatarUrl?: AvatarUrl;
+  avatarSeed?: string | null;
   email?: string;
   donationUrl?: string | null;
   currentPassword?: string;

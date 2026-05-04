@@ -37,11 +37,7 @@ interface PaymentListItem {
         <app-loading-spinner></app-loading-spinner>
       } @else if (user(); as u) {
         <div class="text-center mb-6">
-          <app-user-avatar
-            [avatarUrl]="u.avatarUrl"
-            [displayName]="u.displayName"
-            size="lg"
-          ></app-user-avatar>
+          <app-user-avatar [user]="u" size="lg"></app-user-avatar>
           <h1 class="mt-3 text-xl font-bold text-neutral-900">{{ u.displayName }}</h1>
           <p class="text-sm text-neutral-500">{{ u.email }}</p>
           <span

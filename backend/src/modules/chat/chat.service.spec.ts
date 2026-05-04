@@ -274,7 +274,7 @@ describe('ChatService', () => {
         { senderId: 'user1', recipientId: 'org1' },
       ]);
       (prisma.user.findMany as jest.Mock).mockResolvedValue([
-        { id: 'user1', displayName: 'User 1', avatarUrl: null },
+        { id: 'user1', displayName: 'User 1' },
       ]);
       (prisma.privateChatMessage.findFirst as jest.Mock).mockResolvedValue({
         content: 'Hello',
@@ -303,7 +303,7 @@ describe('ChatService', () => {
     it('zwraca organizatora i listę członków z statusami', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue({
         organizerId: 'org1',
-        organizer: { id: 'org1', displayName: 'Organizer', avatarUrl: null },
+        organizer: { id: 'org1', displayName: 'Organizer' },
       });
       (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([
         {
@@ -312,7 +312,7 @@ describe('ChatService', () => {
           wantsIn: true,
           withdrawnBy: null,
           slot: { confirmed: true },
-          user: { id: 'user1', displayName: 'User 1', avatarUrl: null },
+          user: { id: 'user1', displayName: 'User 1' },
         },
       ]);
 
@@ -327,7 +327,7 @@ describe('ChatService', () => {
     it('wypisany uczestnik ma isActive=false i status=WITHDRAWN', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue({
         organizerId: 'org1',
-        organizer: { id: 'org1', displayName: 'Organizer', avatarUrl: null },
+        organizer: { id: 'org1', displayName: 'Organizer' },
       });
       (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([
         {
@@ -336,7 +336,7 @@ describe('ChatService', () => {
           wantsIn: false,
           withdrawnBy: 'USER',
           slot: null,
-          user: { id: 'user1', displayName: 'User 1', avatarUrl: null },
+          user: { id: 'user1', displayName: 'User 1' },
         },
       ]);
 

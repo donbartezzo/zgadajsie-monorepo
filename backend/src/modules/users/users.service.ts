@@ -15,7 +15,7 @@ export class UsersService {
         id: true,
         email: true,
         displayName: true,
-        avatarUrl: true,
+        avatarSeed: true,
         donationUrl: true,
         role: true,
         isActive: true,
@@ -28,7 +28,7 @@ export class UsersService {
   async updateProfile(userId: string, dto: UpdateProfileDto) {
     const data: Record<string, unknown> = {};
     if (dto.displayName) data.displayName = dto.displayName;
-    if (dto.avatarUrl !== undefined) data.avatarUrl = dto.avatarUrl;
+    if (dto.avatarSeed !== undefined) data.avatarSeed = dto.avatarSeed ?? null;
     if (dto.email) data.email = dto.email;
     if (dto.donationUrl !== undefined) data.donationUrl = dto.donationUrl || null;
 
@@ -54,7 +54,7 @@ export class UsersService {
         id: true,
         email: true,
         displayName: true,
-        avatarUrl: true,
+        avatarSeed: true,
         donationUrl: true,
         role: true,
         isActive: true,

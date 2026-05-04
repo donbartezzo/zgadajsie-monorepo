@@ -32,8 +32,7 @@ import {
 import { featureFlags } from '../../common/config/feature-flags';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
-
-const USER_SELECT = { id: true, displayName: true, avatarUrl: true, email: true };
+import { USER_SELECT_WITH_EMAIL as USER_SELECT } from '../../common/prisma-selects';
 
 type EnrollmentWithSlot = {
   wantsIn: boolean;

@@ -59,10 +59,10 @@ export class DesignSystemComponent {
   readonly avatarSizes: AvatarSize[] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl'];
   readonly avatarShapes: AvatarShape[] = ['circle', 'rounded'];
   readonly avatarExamples = [
-    { displayName: 'Jan Kowalski', avatarUrl: null },
-    { displayName: 'Anna Nowak', avatarUrl: null },
-    { displayName: 'Marek Zieliński', avatarUrl: null },
-    { displayName: 'Katarzyna Wójcik', avatarUrl: null },
+    { id: 'demo-user-1', displayName: 'Jan Kowalski', avatarSeed: null },
+    { id: 'demo-user-2', displayName: 'Anna Nowak', avatarSeed: 'abc123' },
+    { id: 'demo-user-3', displayName: 'Marek Zieliński', avatarSeed: null },
+    { id: 'demo-user-4', displayName: 'Katarzyna Wójcik', avatarSeed: 'xyz789' },
   ];
 
   readonly sections = [
@@ -492,7 +492,7 @@ export class DesignSystemComponent {
       title: 'Jesteś zapisany:',
       bgClass: 'bg-primary-500',
       borderClass: 'border-2 border-primary-500',
-      enrollments: [{ avatarUrl: null, displayName: 'Jan Kowalski' }],
+      enrollments: [{ id: 'demo-user-1', displayName: 'Jan Kowalski' }],
     },
     {
       id: 'participation-multi',
@@ -500,9 +500,9 @@ export class DesignSystemComponent {
       bgClass: 'bg-primary-500',
       borderClass: 'border-2 border-primary-500',
       enrollments: [
-        { avatarUrl: null, displayName: 'Jan Kowalski' },
-        { avatarUrl: null, displayName: 'Anna Nowak' },
-        { avatarUrl: null, displayName: 'Marek Zieliński' },
+        { id: 'demo-user-1', displayName: 'Jan Kowalski' },
+        { id: 'demo-user-2', displayName: 'Anna Nowak' },
+        { id: 'demo-user-3', displayName: 'Marek Zieliński' },
       ],
     },
   ];

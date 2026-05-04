@@ -39,11 +39,7 @@ import { User } from '../../../../shared/types';
             <a [routerLink]="['/admin/users', u.id]">
               <app-card>
                 <div class="flex items-center gap-3">
-                  <app-user-avatar
-                    [avatarUrl]="u.avatarUrl"
-                    [displayName]="u.displayName"
-                    size="sm"
-                  ></app-user-avatar>
+                  <app-user-avatar [user]="u" size="sm"></app-user-avatar>
                   <div class="flex-1">
                     <p class="text-sm font-medium text-neutral-900">
                       {{ u.displayName }}

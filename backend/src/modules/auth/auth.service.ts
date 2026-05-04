@@ -71,7 +71,6 @@ export class AuthService {
         id: user.id,
         email: user.email,
         displayName: user.displayName,
-        avatarUrl: user.avatarUrl,
         role: user.role,
         isActive: user.isActive,
       },
@@ -179,7 +178,6 @@ export class AuthService {
     providerUserId: string;
     email: string;
     displayName: string;
-    avatarUrl?: string;
     provider: SocialProvider;
   }) {
     const socialAccount = await this.prisma.socialAccount.findUnique({
@@ -193,13 +191,6 @@ export class AuthService {
     });
 
     if (socialAccount) {
-      // Refresh avatar URL if it has changed (e.g., expired or invalid)
-      if (profile.avatarUrl && socialAccount.user.avatarUrl !== profile.avatarUrl) {
-        await this.prisma.user.update({
-          where: { id: socialAccount.user.id },
-          data: { avatarUrl: profile.avatarUrl },
-        });
-      }
       return this.generateTokens(socialAccount.user.id, socialAccount.user.email);
     }
 
@@ -212,7 +203,6 @@ export class AuthService {
         data: {
           email: profile.email,
           displayName: profile.displayName,
-          avatarUrl: profile.avatarUrl,
           isActive: true,
           isEmailVerified: true,
         },

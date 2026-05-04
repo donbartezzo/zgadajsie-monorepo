@@ -1,0 +1,36 @@
+<div class="space-y-4">
+  <div class="flex items-center gap-6">
+    <!-- Obecny avatar -->
+    <div class="flex flex-col items-center gap-1.5">
+      <p class="text-xs font-medium text-neutral-500">Obecny</p>
+      <app-user-avatar [user]="user()" size="xl" shape="rounded" />
+    </div>
+
+    @if (hasPreview()) {
+      <!-- Strzałka -->
+      <div class="mt-5">
+        <app-icon name="arrow-right" size="md" color="neutral" />
+      </div>
+
+      <!-- Podgląd nowego avatara -->
+      <div class="flex flex-col items-center gap-1.5">
+        <p class="text-xs font-medium text-primary-600">Podgląd</p>
+        <app-user-avatar [user]="previewUser()" size="xl" shape="rounded" />
+      </div>
+    }
+  </div>
+
+  <div class="flex flex-wrap gap-2">
+    <app-button appearance="soft" color="primary" (clicked)="generateNew()">
+      <app-icon name="refresh-cw" size="sm" />
+      {{ hasPreview() ? 'Generuj kolejny' : 'Generuj nowy avatar' }}
+    </app-button>
+
+    @if (hasPreview() && previewDifferentFromCurrent()) {
+      <app-button appearance="solid" color="primary" (clicked)="openConfirmModal()">
+        <app-icon name="check" size="sm" />
+        Zatwierdź zmianę
+      </app-button>
+    }
+  </div>
+</div>

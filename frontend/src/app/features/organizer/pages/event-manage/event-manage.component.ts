@@ -104,11 +104,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
             @for (p of pendingList(); track p.id) {
               <app-card>
                 <div class="p-3 flex items-center gap-3">
-                  <app-user-avatar
-                    [avatarUrl]="p.user.avatarUrl"
-                    [displayName]="p.user.displayName"
-                    size="sm"
-                  />
+                  <app-user-avatar [user]="p.user" size="sm" />
                   <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-neutral-900 truncate">
                       {{ p.user.displayName }}

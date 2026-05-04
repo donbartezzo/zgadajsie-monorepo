@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { VoucherSource, VoucherStatus } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { Decimal } from '@prisma/client/runtime/library';
+import { USER_SELECT } from '../../common/prisma-selects';
 
 @Injectable()
 export class VouchersService {
@@ -24,7 +25,7 @@ export class VouchersService {
       where: { recipientUserId: userId, status: VoucherStatus.ACTIVE },
       orderBy: { createdAt: 'asc' },
       include: {
-        organizer: { select: { id: true, displayName: true, avatarUrl: true } },
+        organizer: { select: USER_SELECT },
         event: { select: { id: true, title: true } },
       },
     });
@@ -33,7 +34,7 @@ export class VouchersService {
     const grouped = new Map<
       string,
       {
-        organizer: { id: string; displayName: string; avatarUrl: string | null };
+        organizer: { id: string; displayName: string };
         totalBalance: number;
         vouchers: typeof vouchers;
       }

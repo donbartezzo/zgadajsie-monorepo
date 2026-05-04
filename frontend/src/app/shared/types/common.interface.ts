@@ -5,11 +5,15 @@ export type EnrollmentStatus = 'PENDING' | 'APPROVED' | 'CONFIRMED' | 'WITHDRAWN
 /** @deprecated Use EnrollmentStatus */
 export type ParticipationStatus = EnrollmentStatus;
 
-/** Typ dla URL awatara użytkownika. */
-export type AvatarUrl = string | null | undefined;
+/** Minimalne dane użytkownika potrzebne do wyświetlenia avatara i nazwy. */
+export interface AvatarUser {
+  id: string;
+  displayName: string;
+  avatarSeed?: string | null;
+}
 
-/** Skrócona reprezentacja użytkownika (id + displayName + avatar). */
-export type UserBrief = Pick<User, 'id' | 'displayName' | 'avatarUrl' | 'donationUrl'>;
+/** Skrócona reprezentacja użytkownika (id + displayName + avatar + donationUrl). */
+export type UserBrief = AvatarUser & Pick<User, 'donationUrl'>;
 
 /** Skrócona reprezentacja użytkownika z adresem email. */
 export type UserBriefWithEmail = UserBrief & Pick<User, 'email'>;

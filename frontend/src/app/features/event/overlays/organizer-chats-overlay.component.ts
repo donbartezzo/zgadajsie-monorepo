@@ -48,11 +48,7 @@ import { OrganizerConversation } from '../../../shared/types';
               class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-50 transition-colors text-left"
               (click)="openChat(conv.participant.id)"
             >
-              <app-user-avatar
-                [avatarUrl]="conv.participant.avatarUrl"
-                [displayName]="conv.participant.displayName"
-                size="sm"
-              ></app-user-avatar>
+              <app-user-avatar [user]="conv.participant" size="sm"></app-user-avatar>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <p class="text-sm font-medium text-neutral-900 truncate">

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { UserAvatarComponent } from '../user-avatar/user-avatar.component';
+import { AvatarUser, UserAvatarComponent } from '../user-avatar/user-avatar.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { User } from '../../../types/user.interface';
@@ -19,11 +19,6 @@ export interface UserProfileStats {
 
 export type ProfileCardVariant = 'default' | 'compact' | 'overlay';
 export type ProfileCardContext = 'profile' | 'participant' | 'organizer';
-
-export interface ProfileEditData {
-  displayName?: string;
-  avatarUrl?: string | null;
-}
 
 @Component({
   selector: 'app-user-profile-card',
@@ -47,15 +42,24 @@ export class UserProfileCardComponent {
   readonly loading = input(false);
   readonly isOwnGuest = input(false);
 
-  readonly profileUpdated = output<ProfileEditData>();
+  readonly profileUpdated = output<{ displayName: string }>();
   readonly guestUpdated = output<{ participationId: string; displayName: string }>();
 
   readonly editingMode = signal(false);
   readonly tempDisplayName = signal('');
-  readonly tempAvatarUrl = signal<string | null>(null);
 
-  readonly avatarUrl = computed(() => this.user().avatarUrl ?? null);
   readonly displayName = computed(() => this.user().displayName);
+
+  readonly avatarUser = computed((): AvatarUser => {
+    const u = this.user();
+    const avatarSeed =
+      'avatarSeed' in u ? ((u as { avatarSeed?: string | null }).avatarSeed ?? null) : null;
+    return {
+      id: this.user().id,
+      displayName: this.editingMode() ? this.tempDisplayName() : this.displayName(),
+      avatarSeed,
+    };
+  });
   readonly subtitle = computed(() => {
     const user = this.user();
     switch (this.context()) {
@@ -246,21 +250,18 @@ export class UserProfileCardComponent {
 
   startEditing(): void {
     this.tempDisplayName.set(this.displayName());
-    this.tempAvatarUrl.set(this.avatarUrl());
     this.editingMode.set(true);
   }
 
   cancelEditing(): void {
     this.editingMode.set(false);
     this.tempDisplayName.set('');
-    this.tempAvatarUrl.set(null);
   }
 
   saveChanges(): void {
     if (!this.hasChanges()) return;
 
     const newDisplayName = this.tempDisplayName().trim();
-    const newAvatarUrl = this.tempAvatarUrl();
     const isGuest = this.isGuest();
     const participationId = this.participationId();
 
@@ -272,18 +273,8 @@ export class UserProfileCardComponent {
         });
       }
     } else {
-      const updateData: ProfileEditData = {};
-
       if (newDisplayName !== this.displayName()) {
-        updateData.displayName = newDisplayName;
-      }
-
-      if (newAvatarUrl !== this.avatarUrl()) {
-        updateData.avatarUrl = newAvatarUrl;
-      }
-
-      if (Object.keys(updateData).length > 0) {
-        this.profileUpdated.emit(updateData);
+        this.profileUpdated.emit({ displayName: newDisplayName });
       }
     }
 

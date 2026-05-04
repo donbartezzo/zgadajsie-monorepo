@@ -56,6 +56,8 @@
     "@angular/service-worker": "~21.2.6",
     "@aws-sdk/client-s3": "^3.985.0",
     "@aws-sdk/s3-request-presigner": "^3.985.0",
+    "@dicebear/core": "^9.4.2",
+    "@dicebear/pixel-art": "^9.4.2",
     "@jsverse/transloco": "^8.2.1",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.3",

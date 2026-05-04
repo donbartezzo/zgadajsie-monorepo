@@ -13,10 +13,7 @@ import { UpperCasePipe } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { ModalComponent } from '../../../ui/modal/modal.component';
 import { ModalService } from '../../../ui/modal/modal.service';
-import {
-  UserProfileCardComponent,
-  ProfileEditData,
-} from '../../../user/ui/user-profile-card/user-profile-card.component';
+import { UserProfileCardComponent } from '../../../user/ui/user-profile-card/user-profile-card.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import {
@@ -44,7 +41,6 @@ import { formatDateTime } from '@zgadajsie/shared';
 export interface EnrollmentModalUserInfo {
   id: string;
   displayName: string;
-  avatarUrl: string | null;
 }
 
 export interface EnrollmentModalData {
@@ -742,13 +738,12 @@ export class EnrollmentSlotModalComponent {
     this.eventArea.contactOrganizer();
   }
 
-  onProfileUpdated(data: ProfileEditData): void {
+  onProfileUpdated(data: { displayName: string }): void {
     this.loading.set(true);
     this.userService.updateProfile(data).subscribe({
       next: (updatedUser) => {
         this.profileBroadcast.notifyUserChange(updatedUser.id, {
           displayName: updatedUser.displayName,
-          avatarUrl: updatedUser.avatarUrl,
         });
         this.snackbar.success('Profil zaktualizowany');
         this.loading.set(false);

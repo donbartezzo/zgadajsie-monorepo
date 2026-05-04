@@ -27,7 +27,6 @@ const baseUser = {
   id: 'user1',
   email: 'user@example.com',
   displayName: 'Test User',
-  avatarUrl: null,
   donationUrl: null,
   role: 'USER',
   isActive: true,

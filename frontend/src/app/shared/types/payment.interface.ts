@@ -1,4 +1,4 @@
-import { UserBriefWithEmail, EventRef, EnrollmentStatus } from './common.interface';
+import { UserBriefWithEmail, UserBrief, EventRef, EnrollmentStatus } from './common.interface';
 
 export interface Payment {
   id: string;
@@ -51,15 +51,11 @@ export interface EnrolleeManageItem {
   status: EnrollmentStatus;
   isGuest: boolean;
   addedByUserId?: string;
-  addedByUser?: { id: string; displayName: string; avatarUrl: string | null } | null;
+  addedByUser?: UserBrief | null;
   roleKey?: string | null;
   slot?: EventSlotInfo | null;
   createdAt: string;
-  user: {
-    id: string;
-    displayName: string;
-    avatarUrl: string | null;
-    email: string;
+  user: UserBriefWithEmail & {
     isActive?: boolean;
     isEmailVerified?: boolean;
   };

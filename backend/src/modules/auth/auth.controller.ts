@@ -16,7 +16,6 @@ interface SocialUser {
   providerUserId: string;
   email: string;
   displayName: string;
-  avatarUrl?: string;
   provider: SocialProvider;
 }
 

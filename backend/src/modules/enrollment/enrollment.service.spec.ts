@@ -119,7 +119,7 @@ function makeEnrollment(overrides: Record<string, unknown> = {}) {
     roleKey: null,
     waitingReason: null,
     slot: null,
-    user: { id: 'user1', displayName: 'User One', avatarUrl: null, email: 'user@test.com' },
+    user: { id: 'user1', displayName: 'User One', email: 'user@test.com' },
     event: makeEvent(),
     payments: [],
     ...overrides,

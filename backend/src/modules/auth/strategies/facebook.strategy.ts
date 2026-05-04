@@ -44,12 +44,11 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     profile: Profile,
     done: (err: Error | null, user?: Record<string, unknown>) => void,
   ): Promise<void> {
-    const { id, emails, displayName, photos } = profile;
+    const { id, emails, displayName } = profile;
     const user = {
       providerUserId: id,
-      email: emails?.[0]?.value,
+      email: emails?.[0].value,
       displayName,
-      avatarUrl: photos?.[0]?.value,
       provider: 'FACEBOOK',
     };
     done(null, user);

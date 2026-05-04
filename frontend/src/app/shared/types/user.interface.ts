@@ -1,10 +1,8 @@
-import type { AvatarUrl } from './common.interface';
-
 export interface User {
   id: string;
   email: string;
   displayName: string;
-  avatarUrl?: AvatarUrl;
+  avatarSeed?: string | null;
   donationUrl?: string | null;
   role: string;
   isActive: boolean;

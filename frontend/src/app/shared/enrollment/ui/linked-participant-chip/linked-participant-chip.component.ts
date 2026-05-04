@@ -6,17 +6,11 @@ import {
   EnrollmentSlotModalComponent,
   EnrollmentModalData,
 } from '../enrollment-slot-modal/enrollment-slot-modal.component';
-import { Participation, ParticipantManageItem } from '../../../types';
+import { Participation, ParticipantManageItem, AvatarUser } from '../../../types';
 import { Event } from '../../../types/event.interface';
 import { EventSlotInfo } from '../../../types/payment.interface';
 
 type ParticipantItem = Participation | ParticipantManageItem;
-
-export interface ChipUserInfo {
-  id: string;
-  displayName: string;
-  avatarUrl: string | null;
-}
 
 @Component({
   selector: 'app-linked-participant-chip',
@@ -29,12 +23,7 @@ export interface ChipUserInfo {
         class="flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-left transition-colors hover:border-primary-300 hover:bg-primary-50"
         (click)="openModal()"
       >
-        <app-user-avatar
-          [avatarUrl]="_user.avatarUrl"
-          [displayName]="_user.displayName"
-          size="xs"
-          shape="circle"
-        />
+        <app-user-avatar [user]="_user" size="xs" shape="circle" />
         <span class="text-xs font-medium text-neutral-700">{{ _user.displayName }}</span>
         <app-icon name="chevron-right" size="xs" class="text-neutral-400" />
       </button>
@@ -46,14 +35,18 @@ export class LinkedParticipantChipComponent {
   private readonly modalService = inject(ModalService);
 
   readonly participant = input<ParticipantItem | null>(null);
-  readonly userInfo = input<ChipUserInfo | null>(null);
+  readonly userInfo = input<AvatarUser | null>(null);
   readonly event = input<Event | null>(null);
   readonly allParticipants = input<ParticipantItem[]>([]);
 
-  readonly displayUser = computed<ChipUserInfo | null>(() => {
+  readonly displayUser = computed<AvatarUser | null>(() => {
     const p = this.participant();
     if (p?.user) {
-      return { id: p.user.id, displayName: p.user.displayName, avatarUrl: p.user.avatarUrl };
+      return {
+        id: p.user.id,
+        displayName: p.user.displayName,
+        avatarSeed: p.user.avatarSeed ?? null,
+      };
     }
     return this.userInfo();
   });

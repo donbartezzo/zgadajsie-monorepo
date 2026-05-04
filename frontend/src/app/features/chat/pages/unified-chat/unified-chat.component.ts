@@ -62,9 +62,7 @@ export class UnifiedChatComponent extends BaseChatComponent implements OnInit {
       senderId: msg.userId,
       content: msg.content,
       createdAt: msg.createdAt,
-      sender: msg.user
-        ? { id: msg.user.id, displayName: msg.user.displayName, avatarUrl: msg.user.avatarUrl }
-        : undefined,
+      sender: msg.user ?? undefined,
     }));
   });
 

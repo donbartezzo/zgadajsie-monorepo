@@ -47,7 +47,6 @@ const baseUser = {
   email: 'user@example.com',
   displayName: 'Test User',
   passwordHash: 'hashed-password',
-  avatarUrl: null,
   role: 'USER',
   isActive: true,
   isEmailVerified: true,
@@ -397,27 +396,6 @@ describe('AuthService', () => {
       });
 
       expect(result.accessToken).toBeDefined();
-    });
-
-    it('aktualizuje avatarUrl jeśli się zmienił', async () => {
-      (prisma.socialAccount.findUnique as jest.Mock).mockResolvedValue({
-        user: { ...baseUser, avatarUrl: 'old-url' },
-      });
-      (prisma.user.update as jest.Mock).mockResolvedValue({});
-      (jwt.signAsync as jest.Mock).mockResolvedValue('token');
-
-      await service.validateSocialUser({
-        providerUserId: 'google-123',
-        email: 'user@example.com',
-        displayName: 'Test User',
-        avatarUrl: 'new-url',
-        provider: SocialProvider.GOOGLE,
-      });
-
-      expect(prisma.user.update as jest.Mock).toHaveBeenCalledWith({
-        where: { id: baseUser.id },
-        data: { avatarUrl: 'new-url' },
-      });
     });
 
     it('tworzy nowe konto + social account dla nowego użytkownika', async () => {

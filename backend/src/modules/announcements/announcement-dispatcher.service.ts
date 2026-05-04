@@ -4,6 +4,7 @@ import { PushService } from '../notifications/push.service';
 import { EmailService } from '../notifications/email.service';
 import { ChatService } from '../chat/chat.service';
 import { ChatGateway } from '../chat/chat.gateway';
+import { USER_SELECT } from '../../common/prisma-selects';
 import { AnnouncementPriority, AnnouncementTrigger } from '@zgadajsie/shared';
 
 const CHUNK_SIZE = 50;
@@ -195,7 +196,7 @@ export class AnnouncementDispatcherService {
       where: { eventId },
       orderBy: { createdAt: 'desc' },
       include: {
-        organizer: { select: { id: true, displayName: true, avatarUrl: true } },
+        organizer: { select: USER_SELECT },
         receipts: {
           where: { userId },
           select: { id: true, viewedAt: true, confirmedAt: true, confirmToken: true },

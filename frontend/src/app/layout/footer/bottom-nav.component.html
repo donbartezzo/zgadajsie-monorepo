@@ -41,12 +41,7 @@
           (click)="navigateToProfile()"
           class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
         >
-          <app-user-avatar
-            [avatarUrl]="auth.currentUser()?.avatarUrl"
-            [displayName]="auth.currentUser()?.displayName || ''"
-            size="md"
-            class="mb-1"
-          ></app-user-avatar>
+          <app-user-avatar [user]="auth.currentUser()" size="md" class="mb-1"></app-user-avatar>
           <!-- <span>Profil</span> -->
         </button>
       } @else {

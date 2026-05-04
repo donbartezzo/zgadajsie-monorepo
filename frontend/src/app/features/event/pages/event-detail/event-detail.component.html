@@ -63,11 +63,7 @@
             <div class="flex items-center -space-x-3 mr-3">
               @for (p of _visibleAvatars; track p.id; let i = $index) {
                 <div class="relative h-7 w-7 shrink-0 rounded-full ring-2 ring-white" [style.z-index]="6 - i">
-                  <app-user-avatar
-                    [avatarUrl]="p.user.avatarUrl"
-                    [displayName]="p.user.displayName || ''"
-                    size="sm"
-                  ></app-user-avatar>
+                  <app-user-avatar [user]="p.user" size="sm"></app-user-avatar>
                 </div>
               }
             </div>
@@ -247,11 +243,7 @@
       <div class="mt-4 pb-2">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-3">
-            <app-user-avatar
-              [avatarUrl]="e.organizer!.avatarUrl"
-              [displayName]="e.organizer!.displayName"
-              size="md"
-            ></app-user-avatar>
+            <app-user-avatar [user]="e.organizer!" size="md"></app-user-avatar>
             <div class="min-w-0 flex-1">
               <p class="truncate text-base font-semibold text-neutral-900">
                 {{ e.organizer!.displayName }}

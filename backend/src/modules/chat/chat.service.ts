@@ -1,10 +1,9 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { USER_NOT_PARTICIPANT_MESSAGE, EVENT_NOT_FOUND_MESSAGE } from '@zgadajsie/shared';
+import { USER_SELECT } from '../../common/prisma-selects';
 
 // Chat access: wantsIn=true
-
-const USER_SELECT = { id: true, displayName: true, avatarUrl: true } as const;
 
 @Injectable()
 export class ChatService {

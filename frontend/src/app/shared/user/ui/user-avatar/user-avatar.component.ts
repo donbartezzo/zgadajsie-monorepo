@@ -1,32 +1,38 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { AvatarUrl } from '../../../types';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { createAvatar } from '@dicebear/core';
+import * as pixelArt from '@dicebear/pixel-art';
+import type { AvatarUser } from '../../../types';
 
+export type { AvatarUser };
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 export type AvatarShape = 'circle' | 'rounded';
 
 @Component({
   selector: 'app-user-avatar',
-  imports: [CommonModule],
   template: `
     <div class="relative inline-flex shrink-0">
-      <!-- Avatar container -->
       <div
-        class="relative inline-flex items-center justify-center overflow-hidden"
-        [ngClass]="[sizeClass(), shapeClass()]"
+        [class]="
+          'relative inline-flex items-center justify-center overflow-hidden ' +
+          sizeClass() +
+          ' ' +
+          shapeClass()
+        "
       >
-        @if (hasAvatar() && showImage()) {
+        @if (pixelArtDataUri()) {
           <img
-            [src]="avatarUrl()"
-            [alt]="displayName()"
-            class="object-cover w-full h-full"
-            [ngClass]="shapeClass()"
-            (error)="onImageError()"
+            [src]="pixelArtDataUri()"
+            [alt]="user()?.displayName ?? ''"
+            [class]="'object-cover w-full h-full ' + shapeClass()"
           />
         } @else {
           <div
-            class="flex items-center justify-center font-semibold text-white w-full h-full"
-            [ngClass]="[bgClass(), shapeClass()]"
+            [class]="
+              'flex items-center justify-center font-semibold text-white w-full h-full ' +
+              bgClass() +
+              ' ' +
+              shapeClass()
+            "
           >
             {{ initials() }}
           </div>
@@ -37,20 +43,20 @@ export type AvatarShape = 'circle' | 'rounded';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserAvatarComponent {
-  readonly avatarUrl = input<AvatarUrl>(null);
-  readonly displayName = input('');
+  readonly user = input<AvatarUser | null>(null);
   readonly size = input<AvatarSize>('md');
   readonly shape = input<AvatarShape>('rounded');
 
-  readonly hasAvatar = computed(() => {
-    const url = this.avatarUrl();
-    return url !== null && url !== undefined && url.trim() !== '';
+  readonly pixelArtDataUri = computed(() => {
+    const u = this.user();
+    if (!u?.id) return null;
+    const seed = u.id + (u.avatarSeed ?? '');
+    const svg = createAvatar(pixelArt, { seed }).toString();
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
   });
 
-  readonly showImage = signal(true);
-
   readonly initials = computed(() => {
-    const name = this.displayName();
+    const name = this.user()?.displayName ?? '';
     if (!name) return '?';
     const parts = name.trim().split(/\s+/);
     return parts.length >= 2
@@ -85,12 +91,8 @@ export class UserAvatarComponent {
       'bg-info-400',
       'bg-danger-300',
     ];
-    const name = this.displayName();
+    const name = this.user()?.displayName ?? '';
     const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
   });
-
-  onImageError(): void {
-    this.showImage.set(false);
-  }
 }

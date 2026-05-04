@@ -24,11 +24,7 @@ import { OrganizerVoucherGroup } from '../../../../shared/types';
           <app-card>
             <div class="space-y-3">
               <div class="flex items-center gap-3">
-                <app-user-avatar
-                  [avatarUrl]="group.organizer.avatarUrl"
-                  [displayName]="group.organizer.displayName"
-                  size="md"
-                />
+                <app-user-avatar [user]="group.organizer" size="md" />
                 <div>
                   <p class="text-sm font-medium text-neutral-900">
                     {{ group.organizer.displayName }}

@@ -18,6 +18,7 @@ import {
   PARTICIPANT_WITHDREW_MESSAGE,
   PARTICIPANT_ALREADY_HAS_SLOT_MESSAGE,
 } from '@zgadajsie/shared';
+import { USER_SELECT } from '../../common/prisma-selects';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
@@ -403,7 +404,7 @@ export class SlotService {
         enrollment: {
           include: {
             user: {
-              select: { id: true, displayName: true, avatarUrl: true },
+              select: USER_SELECT,
             },
           },
         },
@@ -601,7 +602,7 @@ export class SlotService {
       where: { id: participationId },
       data: { waitingReason: null },
       include: {
-        user: { select: { id: true, displayName: true, avatarUrl: true, email: true } },
+        user: { select: { id: true, displayName: true, avatarSeed: true, email: true } },
         event: { select: { id: true, title: true } },
         slot: true,
       },

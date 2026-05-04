@@ -97,7 +97,6 @@ model User {
   email                       String                  @unique
   passwordHash                String?
   displayName                 String
-  avatarUrl                   String?
   role                        Role                    @default(USER)
   isActive                    Boolean                 @default(false)
   isEmailVerified             Boolean                 @default(false)
@@ -109,6 +108,7 @@ model User {
   updatedAt                   DateTime                @updatedAt
   tpayMerchantId              String?
   donationUrl                 String?
+  avatarSeed                  String?
   announcementReceipts        AnnouncementReceipt[]
   groupChatMessages           EventGroupMessage[]
   citySubscriptions           CitySubscription[]

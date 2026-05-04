@@ -1,11 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { IconComponent } from '../../../../../shared/ui/icon/icon.component';
 import { UserAvatarComponent } from '../../../../../shared/user/ui/user-avatar/user-avatar.component';
-
-export interface StatusBarEnrollment {
-  avatarUrl: string | null;
-  displayName: string;
-}
+import type { AvatarUser } from '../../../../../shared/types';
 
 export interface EventStatusBarConfig {
   id: string;
@@ -13,7 +9,7 @@ export interface EventStatusBarConfig {
   subtitle?: string;
   bgClass: string;
   borderClass: string;
-  enrollments?: StatusBarEnrollment[];
+  enrollments?: AvatarUser[];
 }
 
 export type EventStatusBarVariant = 'inline' | 'sticky';
@@ -74,23 +70,15 @@ const VARIANTS: Record<EventStatusBarVariant, VariantClasses> = {
                   @let _enrollment = _bar.enrollments[0];
                   <div class="flex items-center gap-2">
                     <div class="relative h-7 w-7 shrink-0 rounded-full">
-                      <app-user-avatar
-                        [avatarUrl]="_enrollment.avatarUrl"
-                        [displayName]="_enrollment.displayName"
-                        size="xs"
-                      />
+                      <app-user-avatar [user]="_enrollment" size="xs" />
                     </div>
                     <span class="text-sm text-white opacity-90">{{ _enrollment.displayName }}</span>
                   </div>
                 } @else {
                   <div class="flex items-center -space-x-2">
-                    @for (e of _bar.enrollments; track e.displayName) {
+                    @for (e of _bar.enrollments; track e.id) {
                       <div class="relative h-7 w-7 shrink-0 rounded-full">
-                        <app-user-avatar
-                          [avatarUrl]="e.avatarUrl"
-                          [displayName]="e.displayName"
-                          size="xs"
-                        />
+                        <app-user-avatar [user]="e" size="xs" />
                       </div>
                     }
                   </div>

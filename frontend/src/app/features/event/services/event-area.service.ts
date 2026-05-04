@@ -200,8 +200,9 @@ export class EventAreaService {
         bgClass: config.appearance.bgClass,
         borderClass: config.appearance.borderClass,
         enrollments: userParticipations.map((p) => ({
-          avatarUrl: p.user?.avatarUrl ?? null,
+          id: p.userId,
           displayName: p.user?.displayName ?? '',
+          avatarSeed: p.user?.avatarSeed ?? null,
         })),
       });
     }
