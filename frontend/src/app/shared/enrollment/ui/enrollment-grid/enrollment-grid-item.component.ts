@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { IconComponent } from '../../../ui/icon/icon.component';
 import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.component';
 import { BadgeComponent } from '../../../ui/badge/badge.component';
+import { StatusIndicatorComponent } from '../../../ui/status-indicator/status-indicator.component';
 import { EventSlotInfo } from '../../../types/payment.interface';
-import { DisciplineRole } from '@zgadajsie/shared';
+import { DisciplineRole, STATUS_INDICATORS, type StatusIndicatorType } from '@zgadajsie/shared';
 import { Enrollment, EnrolleeManageItem } from '../../../types';
 import { SemanticColor } from '../../../types/colors';
 import { SlotDisplayStatus } from '../../slot-status-config';
@@ -34,7 +34,7 @@ export interface SlotGroup {
 
 @Component({
   selector: 'app-enrollment-grid-item',
-  imports: [IconComponent, UserAvatarComponent, TranslocoPipe, BadgeComponent],
+  imports: [UserAvatarComponent, TranslocoPipe, BadgeComponent, StatusIndicatorComponent],
   template: `
     @let _statusIndicators = statusIndicators();
 
@@ -51,15 +51,10 @@ export interface SlotGroup {
             <app-user-avatar [user]="participant().user" size="lg" shape="rounded" />
             @if (_statusIndicators.length > 0) {
               <div
-                class="absolute -top-2 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1"
+                class="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1"
               >
-                @for (indicator of _statusIndicators; track indicator.icon) {
-                  <span
-                    [class]="indicatorClass + ' bg-' + indicator.color + '-400'"
-                    [title]="indicator.tooltip"
-                  >
-                    <app-icon [name]="$any(indicator.icon)" size="xs" class="text-white" />
-                  </span>
+                @for (indicatorType of _statusIndicators; track indicatorType) {
+                  <app-status-indicator [type]="indicatorType" variant="icon" />
                 }
               </div>
             }
@@ -139,9 +134,7 @@ export class EnrollmentGridItemComponent {
     () => this.participant().payment === null && this.participant().status === 'APPROVED',
   );
 
-  readonly showPending = computed(
-    () => this.participant().status === 'PENDING' && !this.isBanned() && !this.isNewUserPending(),
-  );
+  readonly isPending = computed(() => this.participant().status === 'PENDING');
 
   readonly avatarStatus = computed<SemanticColor | null>(() => {
     const status = this.participant().status;
@@ -150,54 +143,43 @@ export class EnrollmentGridItemComponent {
     return null;
   });
 
-  readonly statusIndicators = computed(() => {
-    const indicators: { icon: string; tooltip: string; color: SemanticColor }[] = [];
+  readonly statusIndicators = computed<StatusIndicatorType[]>(() => {
+    const indicators: StatusIndicatorType[] = [];
 
     if (this.needsPayment()) {
-      indicators.push({ icon: 'credit-card', tooltip: 'Oczekuje na płatność', color: 'warning' });
+      indicators.push('needs_payment');
     }
 
-    if (this.showPending()) {
-      indicators.push({ icon: 'clock', tooltip: 'Oczekuje na zatwierdzenie', color: 'warning' });
+    if (this.isPending()) {
+      indicators.push('pending');
     }
 
     if (this.isNewUserPending()) {
-      indicators.push({
-        icon: 'help-circle',
-        tooltip: 'Nowy uczestnik - wymaga weryfikacji organizatora',
-        color: 'info',
-      });
+      indicators.push('new_user_pending');
     }
 
     if (this.isCurrentUserGuest()) {
-      indicators.push({ icon: 'user-plus', tooltip: 'Gość dodany przez ciebie', color: 'info' });
+      indicators.push('is_guest');
     }
 
     if (this.isBanned()) {
-      indicators.push({ icon: 'shield-alert', tooltip: 'Zbanowany', color: 'danger' });
+      indicators.push('banned');
     }
 
     if (this.isAccountUnverified()) {
-      indicators.push({
-        icon: 'alert-triangle',
-        tooltip: 'Konto niezweryfikowane',
-        color: 'warning',
-      });
+      indicators.push('account_unverified');
     }
 
     const avatarStatus = this.avatarStatus();
     if (avatarStatus === 'success') {
-      indicators.push({ icon: 'check', tooltip: 'Potwierdzony', color: 'success' });
+      indicators.push('confirmed');
     }
     if (avatarStatus === 'danger') {
-      indicators.push({ icon: 'x', tooltip: 'Odrzucony', color: 'danger' });
+      indicators.push('rejected');
     }
 
-    return indicators;
+    return indicators.filter((type) => STATUS_INDICATORS[type].requiresAction);
   });
-
-  readonly indicatorClass =
-    'inline-flex items-center justify-center w-5 h-5 rounded-full shadow-xs border border-white';
 
   readonly buttonClass = computed(() => {
     if (!this.clickable()) {

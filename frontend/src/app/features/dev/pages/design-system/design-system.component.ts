@@ -16,6 +16,9 @@ import {
   AvatarSize,
   AvatarShape,
 } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
+import { STATUS_INDICATORS, type StatusIndicatorType } from '@zgadajsie/shared';
+import { StatusIndicatorComponent } from '../../../../shared/ui/status-indicator/status-indicator.component';
+import { ExplainerTriggerComponent } from '../../../../shared/ui/explainer/explainer-trigger.component';
 
 interface ColorSwatch {
   shade: string;
@@ -39,6 +42,8 @@ interface ColorPalette {
     EventInfoItemComponent,
     EventStatusBarItemComponent,
     UserAvatarComponent,
+    StatusIndicatorComponent,
+    ExplainerTriggerComponent,
   ],
   templateUrl: './design-system.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -64,6 +69,10 @@ export class DesignSystemComponent {
     { id: 'demo-user-3', displayName: 'Marek Zieliński', avatarSeed: null },
     { id: 'demo-user-4', displayName: 'Katarzyna Wójcik', avatarSeed: 'xyz789' },
   ];
+
+  readonly statusIndicatorTypes: StatusIndicatorType[] = Object.keys(
+    STATUS_INDICATORS,
+  ) as StatusIndicatorType[];
 
   readonly sections = [
     { id: 'colors', label: 'Kolory' },

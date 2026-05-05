@@ -4,11 +4,21 @@ import { FormsModule } from '@angular/forms';
 import { AvatarUser, UserAvatarComponent } from '../user-avatar/user-avatar.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
+import { StatusIndicatorComponent } from '../../../ui/status-indicator/status-indicator.component';
 import { User } from '../../../types/user.interface';
 import { UserBrief } from '../../../types/common.interface';
 import { ParticipationStatus, WaitingReason } from '../../../types/participation.interface';
-import { Payment } from '../../../types/payment.interface';
-import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../types/colors';
+import { ParticipantPaymentInfo } from '../../../types/payment.interface';
+import { SemanticColor } from '../../../types/colors';
+import { type StatusIndicatorType, type StatusBadgeEntry } from '@zgadajsie/shared';
+
+const PARTICIPATION_STATUS_TO_BADGE: Record<ParticipationStatus, StatusIndicatorType> = {
+  CONFIRMED: 'confirmed',
+  APPROVED: 'approved',
+  PENDING: 'pending',
+  REJECTED: 'rejected',
+  WITHDRAWN: 'withdrawn',
+};
 
 export interface UserProfileStats {
   label: string;
@@ -22,7 +32,14 @@ export type ProfileCardContext = 'profile' | 'participant' | 'organizer';
 
 @Component({
   selector: 'app-user-profile-card',
-  imports: [CommonModule, UserAvatarComponent, IconComponent, ButtonComponent, FormsModule],
+  imports: [
+    CommonModule,
+    UserAvatarComponent,
+    IconComponent,
+    ButtonComponent,
+    FormsModule,
+    StatusIndicatorComponent,
+  ],
   templateUrl: './user-profile-card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -31,7 +48,7 @@ export class UserProfileCardComponent {
   readonly context = input<ProfileCardContext>('profile');
   readonly participationStatus = input<ParticipationStatus | null>(null);
   readonly waitingReason = input<WaitingReason | null>(null);
-  readonly paymentInfo = input<Payment | null>(null);
+  readonly paymentInfo = input<ParticipantPaymentInfo | null>(null);
   readonly isGuest = input(false);
   readonly variant = input<ProfileCardVariant>('default');
   readonly stats = input<UserProfileStats[]>([]);
@@ -41,6 +58,7 @@ export class UserProfileCardComponent {
   readonly isOrganizer = input(false);
   readonly loading = input(false);
   readonly isOwnGuest = input(false);
+  readonly extraBadges = input<StatusBadgeEntry[]>([]);
 
   readonly profileUpdated = output<{ displayName: string }>();
   readonly guestUpdated = output<{ participationId: string; displayName: string }>();
@@ -72,116 +90,47 @@ export class UserProfileCardComponent {
         return null;
     }
   });
-  readonly statusBadge = computed(() => {
-    if (this.context() === 'profile') {
-      const user = this.user();
-      if ('isEmailVerified' in user) {
-        return user.isEmailVerified ? null : 'Email nie zweryfikowany';
-      }
-      return null;
-    }
-    if (this.context() === 'participant' || this.context() === 'organizer') {
-      const status = this.participationStatus();
-      switch (status) {
-        case 'CONFIRMED':
-          return 'Potwierdzony';
-        case 'APPROVED':
-          return 'Zatwierdzony';
-        case 'PENDING':
-          return 'Oczekujący';
-        case 'REJECTED':
-          return 'Odrzucony';
-        case 'WITHDRAWN':
-          return 'Wypisany';
-        default:
-          return null;
-      }
-    }
-    return null;
-  });
-  readonly statusBadgeColor = computed<SemanticColor>(() => {
-    if (this.context() === 'profile') {
-      const user = this.user();
-      if ('isEmailVerified' in user) {
-        return user.isEmailVerified ? 'success' : 'warning';
-      }
-      return 'neutral';
-    }
-
-    if (this.context() === 'participant' || this.context() === 'organizer') {
-      const status = this.participationStatus();
-      switch (status) {
-        case 'CONFIRMED':
-          return 'success';
-        case 'APPROVED':
-          return 'info';
-        case 'PENDING':
-          return 'warning';
-        case 'REJECTED':
-          return 'danger';
-        default:
-          return 'neutral';
-      }
-    }
-
-    return 'neutral';
-  });
-  readonly statusBadgeIcon = computed<string | null>(() => {
-    if (this.context() === 'profile') {
-      return null;
-    }
+  readonly allStatusBadges = computed<StatusBadgeEntry[]>(() => {
+    const badges: StatusBadgeEntry[] = [];
     const status = this.participationStatus();
-    switch (status) {
-      case 'CONFIRMED':
-        return 'check';
-      case 'PENDING':
-        return 'clock';
-      case 'REJECTED':
-        return 'x';
-      default:
-        return null;
-    }
-  });
-  readonly showPaymentWarning = computed(() => {
-    if (this.context() !== 'participant' && this.context() !== 'organizer') {
-      return false;
-    }
-    return this.participationStatus() === 'APPROVED' && !this.paymentInfo();
-  });
-  readonly showPending = computed(() => this.participationStatus() === 'PENDING');
+    const ctx = this.context();
 
-  readonly additionalBadges = computed<{ label: string; color: SemanticColor; icon: string }[]>(
-    () => {
-      const ctx = this.context();
-      if (ctx !== 'participant' && ctx !== 'organizer') return [];
-
-      const badges: { label: string; color: SemanticColor; icon: string }[] = [];
-
-      const reason = this.waitingReason();
-      if (reason === 'NEW_USER') {
-        badges.push({
-          label: 'Nowy uczestnik - wymaga weryfikacji organizatora',
-          color: 'info',
-          icon: 'help-circle',
-        });
-      }
-
-      if (!this.isGuest()) {
-        const user = this.user();
-        const isActive = 'isActive' in user ? user.isActive : undefined;
-        const isEmailVerified = 'isEmailVerified' in user ? user.isEmailVerified : undefined;
-        if (isActive === false || isEmailVerified === false) {
-          badges.push({
-            label: 'Konto niezweryfikowane',
-            color: 'warning',
-            icon: 'alert-triangle',
-          });
+    if (status) {
+      const inEnrollmentCtx = ctx === 'participant' || ctx === 'organizer';
+      if (status === 'APPROVED' && inEnrollmentCtx) {
+        const payment = this.paymentInfo();
+        const amountDetail = payment?.amount ? `${payment.amount} zł` : null;
+        if (!payment) {
+          badges.push({ type: 'needs_payment' });
+        } else {
+          const s = payment.status;
+          if (s === 'COMPLETED') badges.push({ type: 'payment_completed', detail: amountDetail });
+          else if (s === 'VOUCHER_REFUNDED' || s === 'REFUNDED')
+            badges.push({ type: 'payment_refunded', detail: amountDetail });
+          else badges.push({ type: 'payment_pending', detail: amountDetail });
         }
+      } else {
+        badges.push({ type: PARTICIPATION_STATUS_TO_BADGE[status] });
       }
+    }
 
-      return badges;
-    },
-  );
+    if (!this.isGuest()) {
+      const user = this.user();
+      const isActive = 'isActive' in user ? user.isActive : undefined;
+      const isEmailVerified = 'isEmailVerified' in user ? user.isEmailVerified : undefined;
+      if (isActive === false || isEmailVerified === false) {
+        badges.push({ type: 'email_not_verified' });
+      }
+    }
+
+    if (ctx === 'participant' || ctx === 'organizer') {
+      if (this.waitingReason() === 'NEW_USER') {
+        badges.push({ type: 'new_user_pending' });
+      }
+    }
+
+    return [...badges, ...this.extraBadges()];
+  });
 
   readonly avatarSize = computed(() => {
     const sizes: Record<ProfileCardVariant, 'lg' | 'xl' | '2xl'> = {
@@ -209,15 +158,6 @@ export class UserProfileCardComponent {
     };
     return variants[this.variant()];
   });
-
-  readonly statusBadgeClass = computed(() => {
-    const color = this.statusBadgeColor();
-    return `${SEMANTIC_COLOR_CLASSES.surface[color]} ${SEMANTIC_COLOR_CLASSES.textStrong[color]}`;
-  });
-
-  badgeClass(color: SemanticColor): string {
-    return `${SEMANTIC_COLOR_CLASSES.surface[color]} ${SEMANTIC_COLOR_CLASSES.textStrong[color]}`;
-  }
 
   readonly canEditName = computed(() => {
     const userId = this.currentUserId();

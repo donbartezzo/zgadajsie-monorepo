@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IconComponent } from '../icon/icon.component';
 import { SemanticColor } from '../../types/colors';
 import { Muted } from '../../types';
 
@@ -8,7 +9,7 @@ export type BadgeSize = 'xs' | 'sm' | 'md';
 
 @Component({
   selector: 'app-badge',
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: './badge.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -17,14 +18,22 @@ export class BadgeComponent {
   readonly color = input<SemanticColor>('neutral');
   readonly size = input<BadgeSize>('sm');
   readonly muted = input<Muted>();
+  readonly icon = input<string>();
+  readonly square = input(false);
 
   readonly classes = computed(() => {
-    const base = 'inline-flex items-center font-medium rounded-full transition-colors';
+    const base = 'inline-flex items-center gap-1 font-medium rounded-full transition-colors';
 
     const sizeClasses: Record<BadgeSize, string> = {
       xs: 'px-1.5 py-0.5 text-[10px]',
       sm: 'px-2 py-1 text-xs',
       md: 'px-2.5 py-1.5 text-sm',
+    };
+
+    const squareSizeClasses: Record<BadgeSize, string> = {
+      xs: 'p-1 text-[10px]',
+      sm: 'p-1.5 text-xs',
+      md: 'p-2 text-sm',
     };
 
     const solidClasses: Record<SemanticColor, string> = {
@@ -74,7 +83,9 @@ export class BadgeComponent {
     const color = this.color();
     const mutedValue = this.muted();
 
-    let classes = [base, sizeClasses[this.size()], variantClasses[variant][color]]
+    const activeSizeClasses = this.square() ? squareSizeClasses : sizeClasses;
+
+    let classes = [base, activeSizeClasses[this.size()], variantClasses[variant][color]]
       .filter(Boolean)
       .join(' ');
 

@@ -1,3 +1,6 @@
 <span [class]="classes()">
+  @if (icon()) {
+    <app-icon [name]="$any(icon())" [color]="color()" [size]="size()" />
+  }
   <ng-content />
 </span>

@@ -24,6 +24,7 @@ import {
   getSlotColorClasses,
 } from '../../slot-status-config';
 import { LinkedParticipantChipComponent } from '../linked-participant-chip/linked-participant-chip.component';
+import { StatusIndicatorComponent } from '../../../ui/status-indicator/status-indicator.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { EventService } from '../../../../core/services/event.service';
 import { UserService } from '../../../../core/services/user.service';
@@ -36,7 +37,7 @@ import { ProfileBroadcastService } from '../../../../core/services/profile-broad
 import { Enrollment, EnrolleeManageItem, OrganizerUserRelation } from '../../../types';
 import { Event } from '../../../types/event.interface';
 import { EventSlotInfo } from '../../../types/payment.interface';
-import { formatDateTime } from '@zgadajsie/shared';
+import { formatDateTime, type StatusBadgeEntry } from '@zgadajsie/shared';
 
 export interface EnrollmentModalUserInfo {
   id: string;
@@ -87,6 +88,7 @@ function getErrorMessage(err: unknown, fallback: string): string {
     UpperCasePipe,
     TranslocoPipe,
     LinkedParticipantChipComponent,
+    StatusIndicatorComponent,
   ],
   templateUrl: './enrollment-slot-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -323,6 +325,16 @@ export class EnrollmentSlotModalComponent {
     const relation = this.organizerRelation();
     if (!relation?.bannedAt) return null;
     return formatDateTime(relation.bannedAt);
+  });
+
+  readonly participantExtraBadges = computed<StatusBadgeEntry[]>(() => {
+    const badges: StatusBadgeEntry[] = [];
+    const trust = this.trustStatus();
+    if (trust?.isTrusted)
+      badges.push({ type: 'trusted', detail: trust.trustedAt ? `od ${trust.trustedAt}` : null });
+    const banDate = this.banDate();
+    if (banDate) badges.push({ type: 'banned', detail: banDate });
+    return badges;
   });
 
   readonly organizerActions = computed(() => {

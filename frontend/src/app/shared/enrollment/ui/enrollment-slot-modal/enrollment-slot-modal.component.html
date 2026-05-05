@@ -3,11 +3,9 @@
   @let _participant = participant();
   @let _slot = slot();
   @let _isOrganizer = isOrganizer();
-  @let _isActive = isActiveStatus();
   @let _isWithdrawn = isWithdrawnStatus();
   @let _isBanned = isBanned();
   @let _waitingReason = waitingReason();
-  @let _isPaid = isPaidEvent();
   @let _payment = paymentInfo();
   @let _loading = loading();
   @let _slotLocked = slotLocked();
@@ -15,7 +13,6 @@
   @let _config = slotStatusConfig();
   @let _canRejoin = canRejoin();
   @let _canGuestRejoin = canGuestRejoin();
-  @let _trustStatus = trustStatus();
   @let _actions = organizerActions();
   @let _hostParticipant = hostParticipant();
   @let _hostUserInfo = hostUserInfo();
@@ -60,56 +57,18 @@
           [context]="_isOrganizer ? 'organizer' : 'participant'"
           [participationStatus]="_participant.status"
           [waitingReason]="_waitingReason"
-          [paymentInfo]="null"
+          [paymentInfo]="_payment"
           [isGuest]="_participant.isGuest"
           [participationId]="_participant.id"
           [currentUserId]="_currentUserId"
           [isOrganizer]="_isOrganizer"
           [loading]="_loading"
           [isOwnGuest]="isGuestHost()"
+          [extraBadges]="participantExtraBadges()"
           variant="overlay"
           (profileUpdated)="onProfileUpdated($event)"
           (guestUpdated)="onGuestUpdated($event)"
         >
-          <!-- Payment status (for organizer, paid event) -->
-          @if (_isOrganizer && _isPaid) {
-            <div class="mt-3 flex items-center justify-center gap-2 text-sm">
-              @if (_payment; as payment) {
-                <app-icon
-                  [name]="payment.status === 'COMPLETED' ? 'check-circle' : 'clock'"
-                  size="sm"
-                  [class]="payment.status === 'COMPLETED' ? 'text-success-400' : 'text-warning-400'"
-                />
-                <span [class]="payment.status === 'COMPLETED' ? 'text-success-600' : 'text-warning-600'">
-                  {{ paymentStatusLabel() }}
-                </span>
-              } @else if (_isActive) {
-                <app-icon name="clock" size="sm" class="text-warning-400" />
-                <span class="text-warning-500">Oczekuje na płatność</span>
-              }
-            </div>
-          }
-
-          <!-- Trust status (for organizer) -->
-          @if (_trustStatus) {
-            @let _banDate = banDate();
-            <div class="mt-3 flex flex-col items-center gap-1">
-              <span
-                [class]="
-                  'inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ' + _trustStatus.class
-                "
-              >
-                {{ _trustStatus.label }}
-              </span>
-              @if (_trustStatus.trustedAt) {
-                <span class="text-xs text-neutral-400">Zaufany od {{ _trustStatus.trustedAt }}</span>
-              }
-              @if (_banDate) {
-                <span class="text-xs text-danger-500">Zbanowany {{ _banDate }}</span>
-              }
-            </div>
-          }
-
           <!-- Added by (for guests) -->
           @if (_hostParticipant && _event) {
             <div class="mt-3">
@@ -266,14 +225,11 @@
         }
       }
 
-      <!-- ── View-only (other user's participation) ── -->
-      @if (_isViewOnly) {
+      <!-- ── View-only (other user's participation, nie dla organizatora) ── -->
+      @if (_isViewOnly && !_isOrganizer) {
         <div class="py-2 text-center text-sm text-neutral-400">
           @if (_isBanned) {
-            <div class="flex items-center justify-center gap-2 text-danger-500">
-              <app-icon name="shield-alert" size="sm" />
-              <span>Uczestnik jest zbanowany przez organizatora</span>
-            </div>
+            <app-status-indicator type="banned" variant="icon-label" />
           } @else {
             Uczestnik wydarzenia
           }

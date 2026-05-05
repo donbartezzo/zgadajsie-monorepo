@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA, Pipe, PipeTransform } from '@angular/core';
 import { EnrollmentGridItemComponent, EnrollmentItem } from './enrollment-grid-item.component';
+import { ParticipantPaymentInfo } from '../../../types/payment.interface';
 
 @Pipe({ name: 'transloco', standalone: true })
 class MockTranslocoPipe implements PipeTransform {
@@ -26,6 +27,19 @@ function makeParticipant(overrides: Partial<EnrollmentItem> = {}): EnrollmentIte
     roleKey: null,
     ...overrides,
   } as unknown as EnrollmentItem;
+}
+
+function makePayment(overrides: Partial<ParticipantPaymentInfo> = {}): ParticipantPaymentInfo {
+  return {
+    id: 'pay1',
+    amount: 100,
+    voucherAmountUsed: 0,
+    organizerAmount: 100,
+    method: 'TPAY',
+    status: 'COMPLETED',
+    paidAt: '2026-05-05T00:00:00.000Z',
+    ...overrides,
+  };
 }
 
 describe('EnrollmentGridItemComponent - computed signals', () => {
@@ -109,7 +123,7 @@ describe('EnrollmentGridItemComponent - computed signals', () => {
     });
 
     it('zwraca false gdy status APPROVED ale payment istnieje', () => {
-      const { c } = create(makeParticipant({ status: 'APPROVED', payment: { id: 'p' } }));
+      const { c } = create(makeParticipant({ status: 'APPROVED', payment: makePayment() }));
       expect(c.needsPayment()).toBe(false);
     });
 
@@ -122,7 +136,7 @@ describe('EnrollmentGridItemComponent - computed signals', () => {
   describe('statusIndicators()', () => {
     it('APPROVED z payment=null → wskaźnik credit-card', () => {
       const { c } = create(makeParticipant({ status: 'APPROVED', payment: null }));
-      const icons = c.statusIndicators().map((i) => i.icon);
+      const icons = c.statusIndicators().map((i: (typeof c.statusIndicators)[number]) => i.icon);
       expect(icons).toContain('credit-card');
     });
 
@@ -130,16 +144,25 @@ describe('EnrollmentGridItemComponent - computed signals', () => {
       const { c } = create(
         makeParticipant({ status: 'PENDING', payment: null, waitingReason: null }),
       );
-      const icons = c.statusIndicators().map((i) => i.icon);
+      const icons = c.statusIndicators().map((i: (typeof c.statusIndicators)[number]) => i.icon);
       expect(icons).toContain('clock');
     });
 
+    it('PENDING z waitingReason=BANNED → wskaźniki clock i ban', () => {
+      const { c } = create(
+        makeParticipant({ status: 'PENDING', payment: null, waitingReason: 'BANNED' }),
+      );
+      const icons = c.statusIndicators().map((i: (typeof c.statusIndicators)[number]) => i.icon);
+      expect(icons).toContain('clock');
+      expect(icons).toContain('ban');
+    });
+
     it('CONFIRMED z payment → brak wskaźników ostrzegawczych', () => {
-      const { c } = create(makeParticipant({ status: 'CONFIRMED', payment: { id: 'p' } }));
+      const { c } = create(makeParticipant({ status: 'CONFIRMED', payment: makePayment() }));
       const warnIcons = c
         .statusIndicators()
-        .filter((i) => i.color === 'warning')
-        .map((i) => i.icon);
+        .filter((i: (typeof c.statusIndicators)[number]) => i.color === 'warning')
+        .map((i: (typeof c.statusIndicators)[number]) => i.icon);
       expect(warnIcons).not.toContain('credit-card');
       expect(warnIcons).not.toContain('clock');
     });
