@@ -90,6 +90,11 @@ enum ReprimandType {
   BAN
 }
 
+enum EventSeriesRecurrenceType {
+  INTERVAL
+  WEEKLY
+}
+
 // ─── Models ──────────────────────────────────────────────────────────────────
 
 model User {
@@ -130,6 +135,7 @@ model User {
   reprimandsGiven             Reprimand[]             @relation("ReprimandFrom")
   reprimandsReceived          Reprimand[]             @relation("ReprimandTo")
   socialAccounts              SocialAccount[]
+  eventSeries                 EventSeries[]
 }
 
 model SocialAccount {
@@ -206,6 +212,7 @@ model Event {
   isRecurring       Boolean              @default(false)
   recurringRule     String?
   parentEventId     String?
+  seriesId          String?
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
   rules             String?
@@ -221,6 +228,7 @@ model Event {
   organizer         User                 @relation("OrganizerEvents", fields: [organizerId], references: [id])
   parentEvent       Event?               @relation("RecurringEvents", fields: [parentEventId], references: [id])
   childEvents       Event[]              @relation("RecurringEvents")
+  series            EventSeries?         @relation("SeriesEvents", fields: [seriesId], references: [id])
   announcements     EventAnnouncement[]
   enrollments       EventEnrollment[]
   slots             EventSlot[]
@@ -232,6 +240,34 @@ model Event {
   reprimands        Reprimand[]
 
   @@index([citySlug, status, startsAt])
+  @@index([seriesId, startsAt])
+}
+
+model EventSeries {
+  id               String                     @id @default(uuid())
+  organizerId      String
+  name             String
+  recurrenceType   EventSeriesRecurrenceType
+  intervalDays     Int?
+  daysOfWeek       Int[]
+  time             String
+  timezone         String
+  durationMinutes  Int
+  startDate        DateTime
+  endDate          DateTime?
+  nextGenerationAt DateTime
+  lastGeneratedAt  DateTime?
+  bufferDays       Int                        @default(30)
+  autoCoverImage   Boolean                    @default(false)
+  templateSnapshot Json
+  isActive         Boolean                    @default(true)
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+  organizer        User                       @relation(fields: [organizerId], references: [id])
+  events           Event[]                    @relation("SeriesEvents")
+
+  @@index([organizerId])
+  @@index([isActive, nextGenerationAt])
 }
 
 model EventEnrollment {

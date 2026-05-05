@@ -25,4 +25,8 @@ export class EventQueryDto {
   @IsOptional()
   @IsString()
   sortBy?: string;
+
+  @IsOptional()
+  @IsString()
+  seriesId?: string;
 }

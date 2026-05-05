@@ -13,3 +13,4 @@ export * from './dictionary.interface';
 export * from './moderation.interface';
 export * from './cover-image.interface';
 export * from './event-announcement.interface';
+export * from './event-series.interface';

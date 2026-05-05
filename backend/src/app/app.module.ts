@@ -20,6 +20,7 @@ import { CoverImagesModule } from '../modules/cover-images/cover-images.module';
 import { AnnouncementsModule } from '../modules/announcements/announcements.module';
 import { CitySubscriptionsModule } from '../modules/city-subscriptions/city-subscriptions.module';
 import { SlotModule } from '../modules/slots/slot.module';
+import { EventSeriesModule } from '../modules/event-series/event-series.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { SlotModule } from '../modules/slots/slot.module';
     AuthModule,
     UsersModule,
     EventsModule,
+    EventSeriesModule,
     EnrollmentModule,
     PaymentsModule,
     ChatModule,

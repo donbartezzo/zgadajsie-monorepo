@@ -156,7 +156,7 @@ export class EventsService {
   }
 
   async findAll(query: EventQueryDto) {
-    const { page = 1, limit = 100, citySlug, disciplineSlug, sortBy } = query;
+    const { page = 1, limit = 100, citySlug, disciplineSlug, sortBy, seriesId } = query;
     // If citySlug is provided, ensure the city exists - otherwise return 404
     if (citySlug) {
       const city = await this.prisma.city.findUnique({ where: { slug: citySlug } });
@@ -171,6 +171,9 @@ export class EventsService {
     }
     if (disciplineSlug) {
       where.discipline = { slug: disciplineSlug };
+    }
+    if (seriesId) {
+      where.seriesId = seriesId;
     }
 
     const orderBy: Record<string, string> =
@@ -242,6 +245,7 @@ export class EventsService {
         level: true,
         city: true,
         coverImage: true,
+        series: { select: { id: true, name: true } },
         organizer: {
           select: {
             id: true,

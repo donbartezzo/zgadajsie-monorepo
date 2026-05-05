@@ -45,9 +45,17 @@ export class CoverImagesService {
     return covers[Math.floor(Math.random() * covers.length)];
   }
 
-  async findSmartCoverForOrganizer(disciplineSlug: string, organizerId: string, citySlug: string) {
+  async findSmartCoverForOrganizer(
+    disciplineSlug: string,
+    organizerId: string,
+    citySlug: string,
+    excludeIds: string[] = [],
+  ) {
     const covers = await this.prisma.coverImage.findMany({
-      where: { discipline: { slug: disciplineSlug } },
+      where: {
+        discipline: { slug: disciplineSlug },
+        ...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {}),
+      },
     });
     if (covers.length === 0) return null;
     if (covers.length === 1) return covers[0];

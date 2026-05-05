@@ -7,6 +7,7 @@ export interface FeatureFlags {
   enableFacebookLogin: boolean;
   enableEventCreation: boolean;
   enableOnlinePayments: boolean;
+  enableEventSeries: boolean;
 }
 
 export const DEV_FEATURE_FLAGS: FeatureFlags = {
@@ -15,6 +16,7 @@ export const DEV_FEATURE_FLAGS: FeatureFlags = {
   enableFacebookLogin: true,
   enableEventCreation: true,
   enableOnlinePayments: true,
+  enableEventSeries: true,
 };
 
 export const PRODUCTION_FEATURE_FLAGS: FeatureFlags = {
@@ -23,4 +25,5 @@ export const PRODUCTION_FEATURE_FLAGS: FeatureFlags = {
   enableFacebookLogin: false,
   enableEventCreation: false,
   enableOnlinePayments: true,
+  enableEventSeries: false,
 };

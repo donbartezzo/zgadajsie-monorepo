@@ -78,7 +78,8 @@ export type IconName =
   | 'bookmark'
   | 'coffee'
   | 'crosshair'
-  | 'refresh-cw';
+  | 'refresh-cw'
+  | 'repeat';
 
 export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
 
@@ -498,6 +499,12 @@ export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
             <polyline points="23 4 23 10 17 10" />
             <polyline points="1 20 1 14 7 14" />
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+          }
+          @case ('repeat') {
+            <polyline points="17 1 21 5 17 9" />
+            <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+            <polyline points="7 23 3 19 7 15" />
+            <path d="M21 13v2a4 4 0 0 1-4 4H3" />
           }
           @default {
             <!-- empty icon -->

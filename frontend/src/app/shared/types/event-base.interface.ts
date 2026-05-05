@@ -29,4 +29,5 @@ export interface EventBase
   organizer?: UserBrief;
   coverImage?: CoverImage;
   _count?: { enrollments: number; participants: number };
+  seriesId?: string | null;
 }

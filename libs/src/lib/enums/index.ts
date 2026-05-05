@@ -1,4 +1,5 @@
 export * from './role.enum';
+export * from './event-series-recurrence-type.enum';
 export * from './event-status.enum';
 export * from './event-visibility.enum';
 export * from './event-gender.enum';

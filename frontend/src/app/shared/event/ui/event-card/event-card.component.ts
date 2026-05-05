@@ -135,13 +135,36 @@ import { EventDurationPipe } from '../../../pipes/event-duration.pipe';
           />
         </div>
 
-        <div class="absolute left-2 top-2 z-10">
+        <div class="absolute left-2 top-2 z-10 flex flex-col items-start gap-1">
           <app-event-status-badge
             [variant]="statusBadgeVariant()"
             [label]="statusBadgeLabel()"
             [ended]="isEnded()"
             [canceled]="isCancelled()"
           />
+          @if (_event.seriesId) {
+            <span
+              class="inline-flex items-center gap-1 rounded-full bg-primary-600/80 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white backdrop-blur-sm"
+              aria-label="Wydarzenie z serii"
+              title="Wydarzenie z serii"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-2.5 w-2.5 shrink-0"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"
+                />
+              </svg>
+              seria
+            </span>
+          }
         </div>
       </div>
     </button>

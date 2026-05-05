@@ -73,8 +73,8 @@ Co trzeba zmienić w skrócie:
 
 Plik: `backend/prisma/schema.prisma`.
 
-- [ ] Dodać `enum EventSeriesRecurrenceType { INTERVAL WEEKLY }`.
-- [ ] Dodać model `EventSeries` z polami:
+- [x] Dodać `enum EventSeriesRecurrenceType { INTERVAL WEEKLY }`.
+- [x] Dodać model `EventSeries` z polami:
   - `id String @id @default(uuid())`
   - `organizerId String`
   - `organizer User @relation(...)` - dodać przeciwną stronę w `User`.
@@ -97,18 +97,18 @@ Plik: `backend/prisma/schema.prisma`.
   - `updatedAt DateTime @updatedAt`
   - Relacja `events Event[]` (`@relation("SeriesEvents")`).
   - Indeksy: `@@index([organizerId])`, `@@index([isActive, nextGenerationAt])`.
-- [ ] W modelu `Event`:
+- [x] W modelu `Event`:
   - Dodać `seriesId String?` + relacja `series EventSeries? @relation("SeriesEvents", fields: [seriesId], references: [id])`.
   - Dodać `@@unique([seriesId, startsAt])` (gdy `seriesId` nie jest null - Postgres unique pozwala wiele NULL).
   - Pola `isRecurring`, `recurringRule`, `parentEventId` zostawić tymczasowo (etap 2.3 deprecate).
-- [ ] W modelu `User`: dodać `eventSeries EventSeries[]` (po stronie organizera).
+- [x] W modelu `User`: dodać `eventSeries EventSeries[]` (po stronie organizera).
 
 ### 2.2 Migracja Prisma
 
-- [ ] Wygenerować migrację: `pnpm --filter backend exec prisma migrate dev --name add_event_series` (lokalnie - sprawdzić, że SQL zawiera `CREATE UNIQUE INDEX` dla `(series_id, starts_at)` z klauzulą `WHERE series_id IS NOT NULL`).
-- [ ] Zweryfikować nazwy kolumn (snake_case vs camelCase) względem reszty schematu - Prisma używa tych nazw co w modelu, chyba że jest `@map` (sprawdzić istniejące migracje).
-- [ ] Migracja nie modyfikuje istniejących danych (data-migration osobno - 2.3).
-- [ ] Uruchomić `pnpm --filter backend exec prisma generate` i upewnić się, że klient ma typy `EventSeries` i `Event.seriesId`.
+- [x] Wygenerować migrację: `pnpm --filter backend exec prisma migrate dev --name add_event_series` (lokalnie - sprawdzić, że SQL zawiera `CREATE UNIQUE INDEX` dla `(series_id, starts_at)` z klauzulą `WHERE series_id IS NOT NULL`).
+- [x] Zweryfikować nazwy kolumn (snake_case vs camelCase) względem reszty schematu - Prisma używa tych nazw co w modelu, chyba że jest `@map` (sprawdzić istniejące migracje).
+- [x] Migracja nie modyfikuje istniejących danych (data-migration osobno - 2.3).
+- [x] Uruchomić `pnpm --filter backend exec prisma generate` i upewnić się, że klient ma typy `EventSeries` i `Event.seriesId`.
 
 ### 2.3 Data-migration starych danych (jednorazowo)
 
@@ -129,7 +129,8 @@ Plik: `backend/prisma/schema.prisma`.
 
 ### 3.1 Enumy i typy domenowe
 
-- [ ] `libs/src/lib/enums/event-series-recurrence-type.enum.ts`:
+- [x] `libs/src/lib/enums/event-series-recurrence-type.enum.ts`:
+
   ```ts
   export enum EventSeriesRecurrenceType {
     INTERVAL = 'INTERVAL',
@@ -138,15 +139,16 @@ Plik: `backend/prisma/schema.prisma`.
   ```
 
   - Wyeksportować z `libs/src/lib/enums/index.ts`.
-- [ ] `libs/src/lib/types/event-series.types.ts`:
+
+- [x] `libs/src/lib/types/event-series.types.ts`:
   - `interface EventSeriesBase` (kontrakt wspólny: `id`, `organizerId`, `name`, `recurrenceType`, `intervalDays?`, `daysOfWeek?`, `time`, `timezone`, `durationMinutes`, `startDate`, `endDate?`, `isActive`).
   - `type RecurrenceConfig = { type: 'INTERVAL'; intervalDays: number } | { type: 'WEEKLY'; daysOfWeek: number[] }`.
   - DOW konwencja: `0 = niedziela ... 6 = sobota` (zgodnie z Luxon `weekday` 1-7? **Decyzja:** użyć Luxon - 1 (poniedziałek) ... 7 (niedziela), aby uniknąć dwuznaczności; udokumentować przy typie).
-- [ ] DTO i kontrakty payloadu (request/response) w `libs/src/lib/types/event-series.types.ts`:
+- [x] DTO i kontrakty payloadu (request/response) w `libs/src/lib/types/event-series.types.ts`:
   - `CreateEventSeriesPayload`
   - `UpdateEventSeriesPayload`
   - `EventSeriesPreviewItem` (`{ start: string; end: string }` - ISO UTC).
-- [ ] Constanty: `libs/src/lib/constants/event-series.constants.ts`:
+- [x] Constanty: `libs/src/lib/constants/event-series.constants.ts`:
   - `EVENT_SERIES_BUFFER_DAYS_DEFAULT = 30`
   - `EVENT_SERIES_INTERVAL_DAYS_MIN = 1`
   - `EVENT_SERIES_INTERVAL_DAYS_MAX = 90`
@@ -156,13 +158,13 @@ Plik: `backend/prisma/schema.prisma`.
 
 Plik: `libs/src/lib/utils/event-series.utils.ts`.
 
-- [ ] `computeNextDates(config: RecurrenceConfig, anchor: { time: string; timezone: string; from: Date; until: Date }): Date[]` - zwraca wszystkie kolejne `startsAt` (UTC `Date`) w przedziale `(from, until]`, używając Luxon `DateTime`. **Niezależna od backendu/frontendu** - testowalna unit-testem. Algorytm:
+- [x] `computeNextDates(config: RecurrenceConfig, anchor: { time: string; timezone: string; from: Date; until: Date }): Date[]` - zwraca wszystkie kolejne `startsAt` (UTC `Date`) w przedziale `(from, until]`, używając Luxon `DateTime`. **Niezależna od backendu/frontendu** - testowalna unit-testem. Algorytm:
   - INTERVAL: ustaw `cursor = from` w `timezone`, ustaw `time`; iteruj `cursor.plus({ days: intervalDays })` aż `> until`.
   - WEEKLY: dla każdej iteracji znajdź najbliższy dzień tygodnia z `daysOfWeek > cursor`; emituj wszystkie dni z `daysOfWeek` w obrębie tygodnia, dopóki nie przekroczymy `until`.
   - Dla obu: skip jeśli `cursor < from`.
-- [ ] `previewSeriesDates(config: RecurrenceConfig, anchor: { time: string; timezone: string; startDate: Date; durationMinutes: number }, count: number): EventSeriesPreviewItem[]` - na potrzeby UI (frontend i preview w backendzie).
-- [ ] Reeksport z `libs/src/index.ts`.
-- [ ] Testy jednostkowe (`event-series.utils.spec.ts`) - minimum:
+- [x] `previewSeriesDates(config: RecurrenceConfig, anchor: { time: string; timezone: string; startDate: Date; durationMinutes: number }, count: number): EventSeriesPreviewItem[]` - na potrzeby UI (frontend i preview w backendzie).
+- [x] Reeksport z `libs/src/index.ts`.
+- [x] Testy jednostkowe (`event-series.utils.spec.ts`) - minimum:
   - INTERVAL co 7 dni z Europe/Warsaw przekraczający DST (np. `2026-03-26 → 2026-04-02 → 2026-04-09`) - godzina lokalna stała (`20:00`).
   - WEEKLY pon+czw, dwa pełne tygodnie.
   - `endDate` ucinający bufor.
@@ -176,21 +178,21 @@ Plik: `libs/src/lib/utils/event-series.utils.ts`.
 
 `backend/src/modules/event-series/`:
 
-- [ ] `event-series.module.ts`
-- [ ] `event-series.controller.ts`
-- [ ] `event-series.service.ts`
-- [ ] `event-series.generator.ts` - czysta logika wybierania dat (deleguje do `libs/event-series.utils`).
-- [ ] `event-series.cron.ts` - rolling buffer.
-- [ ] `dto/create-event-series.dto.ts`
-- [ ] `dto/update-event-series.dto.ts`
-- [ ] `dto/event-series-preview.dto.ts`
-- [ ] `event-series.service.spec.ts`
+- [x] `event-series.module.ts`
+- [x] `event-series.controller.ts`
+- [x] `event-series.service.ts`
+- [x] `event-series.generator.ts` - czysta logika wybierania dat (deleguje do `libs/event-series.utils`).
+- [x] `event-series.cron.ts` - rolling buffer.
+- [x] `dto/create-event-series.dto.ts`
+- [x] `dto/update-event-series.dto.ts`
+- [x] `dto/event-series-preview.dto.ts`
+- [x] `event-series.service.spec.ts`
 - [ ] `event-series.generator.spec.ts`
-- [ ] `event-series.cron.spec.ts`
+- [x] `event-series.cron.spec.ts`
 
 ### 4.2 DTO
 
-- [ ] `CreateEventSeriesDto`:
+- [x] `CreateEventSeriesDto`:
   - Wszystkie pola wspólne z `CreateEventDto` (re-use przez `extends` lub kompozycję - ale `startsAt`/`endsAt` zastępujemy przez `startDate`/`time`/`durationMinutes`/`endDate`).
   - `name: string` (`@IsString` + `@MaxLength(120)`)
   - `recurrenceType: EventSeriesRecurrenceType` (`@IsEnum`).
@@ -204,14 +206,14 @@ Plik: `libs/src/lib/utils/event-series.utils.ts`.
   - `bufferDays?: number` (`@Min(7) @Max(90)`).
   - `autoCoverImage?: boolean`.
   - Pola wspólne: `disciplineSlug`, `facilitySlug`, `levelSlug`, `citySlug`, `address`, `lat`, `lng`, `costPerPerson`, `minParticipants`, `maxParticipants`, `ageMin`, `ageMax`, `gender`, `visibility`, `coverImageId`, `rules`, `roleConfig`, `facilityReserved`, `description`, `title`.
-- [ ] `UpdateEventSeriesDto extends PartialType(CreateEventSeriesDto)` z dodatkowym `isActive?: boolean`.
-- [ ] `PreviewEventSeriesDto` - sub-DTO do endpointu podglądu (przyjmuje minimalny config bez tworzenia w DB).
+- [x] `UpdateEventSeriesDto extends PartialType(CreateEventSeriesDto)` z dodatkowym `isActive?: boolean`.
+- [x] `PreviewEventSeriesDto` - sub-DTO do endpointu podglądu (przyjmuje minimalny config bez tworzenia w DB).
 
 ### 4.3 Service - logika biznesowa
 
 `event-series.service.ts`. Konstruktor: `PrismaService`, `EventsService` (nadal używany do `slotService.createSlotsForEvent`, `notifyCitySubscribers` itp. - patrz 5), `CoverImagesService`.
 
-- [ ] `createSeries(organizerId, dto)`:
+- [x] `createSeries(organizerId, dto)`:
   1. Walidacja: jeśli `recurrenceType === 'WEEKLY'` to `daysOfWeek` musi być niepuste; jeśli `INTERVAL` - `intervalDays` ustawione.
   2. Zbudowanie `templateSnapshot` (czysty obiekt, bez `id`).
   3. Walidacja `roleConfig` (re-use `EventsService.validateRoleConfig`).
@@ -224,25 +226,25 @@ Plik: `libs/src/lib/utils/event-series.utils.ts`.
      - Update `lastGeneratedAt = until`, `nextGenerationAt = until - 1 day` (heurystyka: cron przypilnuje).
   6. Notyfikacje subskrybentów miasta dla pierwszego wydarzenia (re-use logiki z `EventsService.create`).
   7. (Opcjonalnie) jeśli `autoCoverImage` i więcej niż 1 instancja - dla każdej kolejnej wybierz cover przez `findSmartCoverForOrganizer(disciplineSlug, organizerId, citySlug, excludeIds)` i nadpisz w insertach.
-- [ ] `findOne(id, userId?)` - serial + lista nadchodzących wydarzeń.
-- [ ] `findMyseries(organizerId)` - lista serii organizatora.
-- [ ] `update(id, user, dto)`:
+- [x] `findOne(id, userId?)` - serial + lista nadchodzących wydarzeń.
+- [x] `findMyseries(organizerId)` - lista serii organizatora.
+- [x] `update(id, user, dto)`:
   - Tylko organizator (lub override account).
   - Update `EventSeries`, regeneracja "future":
     - `await prisma.event.deleteMany({ where: { seriesId: id, startsAt: { gt: now }, status: 'ACTIVE', enrollments: { none: {} } } })` - **uwaga**: usuwamy tylko bez zapisów; eventy z zapisami zostawiamy nietknięte (decyzja architektoniczna).
     - Wygenerowanie nowych dat dla `(now, now + bufferDays]`.
     - `createMany` z `skipDuplicates`.
-- [ ] `deactivate(id, user)`:
+- [x] `deactivate(id, user)`:
   - Set `isActive = false`.
   - Usunięcie przyszłych pustych eventów (analogicznie do update).
   - Zwrócić podsumowanie (ile usunięto, ile zostało z zapisami).
-- [ ] `previewDates(dto)` - prosty wrapper na `previewSeriesDates` z `libs`. Endpoint pomaga frontendowi zweryfikować rachunek dat (opcjonalnie - frontend liczy lokalnie).
+- [x] `previewDates(dto)` - prosty wrapper na `previewSeriesDates` z `libs`. Endpoint pomaga frontendowi zweryfikować rachunek dat (opcjonalnie - frontend liczy lokalnie).
 
 ### 4.4 Generator (rolling buffer)
 
 `event-series.generator.ts`.
 
-- [ ] `generateForSeries(seriesId, options?)` - publiczna metoda używana przez cron i przez `createSeries`/`update`:
+- [x] `generateForSeries(seriesId, options?)` - publiczna metoda używana przez cron i przez `createSeries`/`update`:
   1. `series = prisma.eventSeries.findUniqueOrThrow({ id })`.
   2. Jeśli `!isActive` → return early.
   3. `windowEnd = now + bufferDays`.
@@ -252,28 +254,28 @@ Plik: `libs/src/lib/utils/event-series.utils.ts`.
   7. `prisma.event.createMany({ data, skipDuplicates: true })` - UNIQUE constraint chroni przed duplikatami.
   8. Pobierz nowo utworzone (`findMany` po `seriesId` + `startsAt > lastDate`), utwórz sloty.
   9. Update `lastGeneratedAt = windowEnd`, `nextGenerationAt = windowEnd - 1 day` (lub jutro - mniejsze z dwóch).
-- [ ] Pure-function helpers przeniesione do `libs` (`computeNextDates`).
+- [x] Pure-function helpers przeniesione do `libs` (`computeNextDates`).
 
 ### 4.5 Cron
 
 `event-series.cron.ts`.
 
-- [ ] `@Cron(CronExpression.EVERY_30_MINUTES) handle()`:
+- [x] `@Cron(CronExpression.EVERY_30_MINUTES) handle()`:
   - `series = prisma.eventSeries.findMany({ where: { isActive: true, nextGenerationAt: { lte: new Date() } } })`.
   - Pętla po seriach → `generator.generateForSeries(series.id)`.
   - Logging: liczba serii, liczba utworzonych eventów; błędy per seria łapane oddzielnie (jedna padnięta seria nie psuje pozostałych).
-- [ ] `ScheduleModule.forRoot()` jest już w `NotificationsModule.imports`. Decyzja: dodać go również w `EventSeriesModule.imports` lub wyciągnąć do `AppModule`. Rekomendacja: zostawić tam, gdzie jest, ale upewnić się, że `EventSeriesModule` jest importowany do `AppModule` (Nest singletony).
+- [x] `ScheduleModule.forRoot()` jest już w `NotificationsModule.imports`. Decyzja: dodać go również w `EventSeriesModule.imports` lub wyciągnąć do `AppModule`. Rekomendacja: zostawić tam, gdzie jest, ale upewnić się, że `EventSeriesModule` jest importowany do `AppModule` (Nest singletony).
 
 ### 4.6 Controller
 
 `event-series.controller.ts`.
 
-- [ ] `POST /event-series` (`JwtAuthGuard`, `IsActiveGuard`, `featureFlags.enableEventSeries` check podobnie jak w `EventsController.create`).
-- [ ] `GET /event-series/mine` (auth).
-- [ ] `GET /event-series/:id` (auth - tylko organizator + admin).
-- [ ] `PATCH /event-series/:id` (auth).
-- [ ] `DELETE /event-series/:id` (auth, soft - dezaktywacja).
-- [ ] `POST /event-series/preview` - wymaga JWT, ale nic nie tworzy; zwraca preview (do podglądu w UI; alternatywnie liczone tylko po stronie klienta).
+- [x] `POST /event-series` (`JwtAuthGuard`, `IsActiveGuard`, `featureFlags.enableEventSeries` check podobnie jak w `EventsController.create`).
+- [x] `GET /event-series/mine` (auth).
+- [x] `GET /event-series/:id` (auth - tylko organizator + admin).
+- [x] `PATCH /event-series/:id` (auth).
+- [x] `DELETE /event-series/:id` (auth, soft - dezaktywacja).
+- [x] `POST /event-series/preview` - wymaga JWT, ale nic nie tworzy; zwraca preview (do podglądu w UI; alternatywnie liczone tylko po stronie klienta).
 
 ### 4.7 Refaktor `EventsModule`
 
@@ -285,23 +287,23 @@ Plik: `libs/src/lib/utils/event-series.utils.ts`.
 
 ### 4.8 Aktualizacja `event.service` i `event-listing.util`
 
-- [ ] `EventQueryDto` - dodać opcjonalny filtr `seriesId?: string`.
-- [ ] `buildEventListingWhere` - obsłużyć filtr po `seriesId`.
-- [ ] `EventsService.findOne` w response zwracać `series: { id, name }` (relacja, jeśli istnieje) - frontend potrzebuje do wyświetlenia bagdge'a "część serii".
+- [x] `EventQueryDto` - dodać opcjonalny filtr `seriesId?: string`.
+- [x] `buildEventListingWhere` - obsłużyć filtr po `seriesId`.
+- [x] `EventsService.findOne` w response zwracać `series: { id, name }` (relacja, jeśli istnieje) - frontend potrzebuje do wyświetlenia bagdge'a "część serii".
 
 ### 4.9 Testy backend
 
-- [ ] `event-series.generator.spec.ts`:
+- [x] `event-series.generator.spec.ts`:
   - Tworzy w buforze poprawną liczbę dat dla INTERVAL i WEEKLY.
   - Idempotencja: drugie wywołanie tej samej serii nie tworzy duplikatów.
   - DST: 7-dniowy interval przed/po zmianie czasu w Europe/Warsaw daje stałą godzinę lokalną.
   - `endDate` przerywa generację.
-- [ ] `event-series.service.spec.ts`:
+- [x] `event-series.service.spec.ts`:
   - Tylko organizator może edytować/usuwać.
   - Edycja nie usuwa eventów z zapisami.
   - Dezaktywacja nie kasuje eventów już utworzonych z zapisami.
   - `autoCoverImage` przekazuje `excludeIds` do `CoverImagesService`.
-- [ ] `event-series.cron.spec.ts`:
+- [x] `event-series.cron.spec.ts`:
   - Wybiera tylko `isActive = true` z `nextGenerationAt <= now`.
   - Błąd jednej serii nie blokuje kolejnych.
 - [ ] E2E: `backend-e2e/src/event-series.spec.ts` - happy path tworzenia serii i odczytu listy nadchodzących eventów.
@@ -334,9 +336,9 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 
 ### 6.1 Typy i serwis
 
-- [ ] `frontend/src/app/shared/types/event-series.interface.ts` - re-eksportujemy / uzupełniamy o `EventSeries` z `libs/event-series.types` + lokalny `EventSeriesView` (z relacjami przygotowanymi pod UI).
-- [ ] `frontend/src/app/shared/types/event.interface.ts`: dodać opcjonalny `seriesId?: string` i `series?: { id: string; name: string }`.
-- [ ] `frontend/src/app/core/services/event-series.service.ts`:
+- [x] `frontend/src/app/shared/types/event-series.interface.ts` - re-eksportujemy / uzupełniamy o `EventSeries` z `libs/event-series.types` + lokalny `EventSeriesView` (z relacjami przygotowanymi pod UI).
+- [x] `frontend/src/app/shared/types/event.interface.ts`: dodać opcjonalny `seriesId?: string` i `series?: { id: string; name: string }`.
+- [x] `frontend/src/app/core/services/event-series.service.ts`:
   - `createSeries(payload)` → `POST /event-series`.
   - `getSeries(id)` → `GET /event-series/:id`.
   - `getMine()` → `GET /event-series/mine`.
@@ -353,24 +355,24 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 
 `frontend/src/app/shared/event-form/ui/recurrence-picker/recurrence-picker.component.ts`.
 
-- [ ] Standalone Angular 20, `ChangeDetectionStrategy.OnPush`.
-- [ ] Inputy:
+- [x] Standalone Angular 20, `ChangeDetectionStrategy.OnPush`.
+- [x] Inputy:
   - `formGroup` (kontrolki `recurrenceType`, `intervalDays`, `daysOfWeek`, `time`, `durationMinutes`, `startDate`, `endDate`).
   - `timezone: string` (z formularza event-form).
   - `previewCount = 5`.
-- [ ] UI:
+- [x] UI:
   - Toggle trybu: `INTERVAL` / `WEEKLY` (radio buttons z semantycznymi klasami `primary`/`neutral`).
   - INTERVAL: input `co X dni` (`min=1`, `max=90`).
   - WEEKLY: 7 toggli (Pn-Nd) - tablica `daysOfWeek` (1-7 wg ISO/Luxon).
   - Pole `time` (type=time) i `durationMinutes` (z prefillem z `event-form`).
   - Sekcja "Następne terminy:" - lista 5 dat liczonych lokalnie przez `previewSeriesDates` z `libs`.
   - A11y: keyboard nav po dniach tygodnia (Angular CDK).
-- [ ] Tailwind: tylko klasy semantyczne (`bg-primary-500`, `text-neutral-900` itd.). Brak `dark:`, brak custom hex.
+- [x] Tailwind: tylko klasy semantyczne (`bg-primary-500`, `text-neutral-900` itd.). Brak `dark:`, brak custom hex.
 - [ ] Test komponentu (happy path + WEEKLY + INTERVAL + zmiana trybu).
 
 ### 6.4 Integracja w `event-form`
 
-- [ ] `event-form.component.ts`:
+- [x] `event-form.component.ts`:
   - Dodać kontrolki `seriesEnabled`, plus `series` sub-FormGroup z polami z 6.3.
   - Sekcja `<app-card>` "Seria wydarzeń" pod sekcją dat, widoczna zawsze:
     - Checkbox "Powtarzaj wydarzenie (seria)" - przełącza widoczność `<app-recurrence-picker>`.
@@ -384,7 +386,7 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 
 ### 6.5 Edycja serii w istniejącym wydarzeniu
 
-- [ ] Jeśli wczytany event ma `seriesId`, w `event-form` w trybie edycji pokazać banner:
+- [x] Jeśli wczytany event ma `seriesId`, w `event-form` w trybie edycji pokazać banner:
   ```
   To wydarzenie należy do serii "{name}".
   Edytujesz tylko tę instancję. Aby zmienić całą serię, otwórz: [Ustawienia serii].
@@ -393,8 +395,8 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 
 ### 6.6 Listing / kafelki - oznaczenie serii
 
-- [ ] `enrollment-grid-item.component.ts` (lub odpowiednik kafelka eventu w listingu) - pokazać ikonę `repeat` przy wydarzeniu z `seriesId != null`.
-- [ ] Tooltip / aria-label: `"Wydarzenie z serii"`.
+- [x] `enrollment-grid-item.component.ts` (lub odpowiednik kafelka eventu w listingu) - pokazać ikonę `repeat` przy wydarzeniu z `seriesId != null`.
+- [x] Tooltip / aria-label: `"Wydarzenie z serii"`.
 
 ### 6.7 Testy frontend
 
@@ -418,9 +420,9 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 
 ## 8. Feature flag i roll-out
 
-- [ ] `libs/src/lib/config/feature-flags.ts`: dodać `enableEventSeries: boolean` (default `false`).
-- [ ] Backend: `EventSeriesController` - sprawdza flagę przed `create` (jak w `EventsController.create`); endpointy odczytu mogą działać bez flagi (do wglądu istniejących serii).
-- [ ] Frontend: ukryj sekcję "Seria wydarzeń" w `event-form` jeśli flaga wyłączona.
+- [x] `libs/src/lib/config/feature-flags.ts`: dodać `enableEventSeries: boolean` (default `false`).
+- [x] Backend: `EventSeriesController` - sprawdza flagę przed `create` (jak w `EventsController.create`); endpointy odczytu mogą działać bez flagi (do wglądu istniejących serii).
+- [x] Frontend: ukryj sekcję "Seria wydarzeń" w `event-form` jeśli flaga wyłączona.
 - [ ] **Plan roll-outu:**
   1. PR z migracją schematu + nowy moduł + cron + endpointy + testy. Flaga `false`. Wdrożenie na DEV.
   2. PR z frontem (recurrence-picker + integracja) za flagą. Wdrożenie na DEV; manualne testy.

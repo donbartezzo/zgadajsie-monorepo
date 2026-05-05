@@ -29,4 +29,6 @@ export interface Event extends EventBase {
   recurringRule?: string;
   roleConfig?: EventRoleConfig | null;
   parentEventId?: string;
+  seriesId?: string;
+  series?: { id: string; name: string } | null;
 }
