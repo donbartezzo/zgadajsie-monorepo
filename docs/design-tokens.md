@@ -272,6 +272,15 @@ Nagłówkowa ikona overlayu używa:
 - badge/statusy, jeśli opisują **kolor prezentacji**, powinny używać `SemanticColor`
 - jeśli typ opisuje **rodzaj komunikatu lub stan domenowy** (np. `SnackbarType`), zachowujemy typ domenowy i mapujemy go do `SemanticColor`, zamiast zastępować go kolorem 1:1
 
+### Ikona `repeat` i badge serii wydarzeń
+
+Ikona `repeat` jest używana do oznaczenia wydarzeń należących do serii:
+
+- W `event-card.component.ts`: pill `bg-primary-600/80 backdrop-blur-sm` z `<app-icon name="repeat" size="xs" class="text-white" />` i etykietą "seria"
+- Klasy: `inline-flex items-center gap-1 rounded-full bg-primary-600/80 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white`
+- `aria-label="Wydarzenie z serii"`, `title="Wydarzenie z serii"`
+- Badge jest widoczny TYLKO gdy `event.seriesId != null`
+
 ## Reguły
 
 ### DOZWOLONE

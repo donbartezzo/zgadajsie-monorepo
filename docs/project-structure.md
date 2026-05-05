@@ -43,7 +43,7 @@ frontend/
   │   │   │   ├── auth/          # współdzielone helpery auth w UI
   │   │   │   ├── chat/          # współdzielone komponenty domeny chat (`shared/chat/ui`)
   │   │   │   ├── event/         # współdzielone komponenty domeny event (`shared/event/ui`)
-  │   │   │   ├── event-form/    # współdzielone komponenty domeny formularza wydarzenia
+  │   │   │   ├── event-form/    # współdzielone komponenty domeny formularza wydarzenia (m.in. `recurrence-picker`)
   │   │   │   ├── layouts/       # współdzielone layout helpers
   │   │   │   ├── overlay/       # współdzielone prymitywy i orkiestracja overlayów
   │   │   │   ├── participant/   # współdzielone komponenty domeny uczestników
@@ -132,6 +132,7 @@ backend/
   │   │   ├── cover-images/
   │   │   ├── media/
   │   │   ├── city-subscriptions/
+  │   │   ├── event-series/     # serie wydarzeń: cron rolling buffer, generator, DTO
   │   │   ├── email/
   │   │   └── prisma/
   │   └── main.ts

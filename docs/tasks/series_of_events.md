@@ -1,5 +1,7 @@
 # System powtarzalnych wydarzeń (interwały / serie) — plan wdrożenia
 
+> **Status:** Wdrożono (2026-05-05). Plan implementacyjny: `docs/tasks/series_of_events_implementation.md`.
+
 ## 🎯 Cel
 
 Wdrożenie prostego, skalowalnego i łatwego w utrzymaniu systemu powtarzalnych wydarzeń, który:

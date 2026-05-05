@@ -187,7 +187,7 @@ Plik: `libs/src/lib/utils/event-series.utils.ts`.
 - [x] `dto/update-event-series.dto.ts`
 - [x] `dto/event-series-preview.dto.ts`
 - [x] `event-series.service.spec.ts`
-- [ ] `event-series.generator.spec.ts`
+- [x] `event-series.generator.spec.ts`
 - [x] `event-series.cron.spec.ts`
 
 ### 4.2 DTO
@@ -280,10 +280,10 @@ Plik: `libs/src/lib/utils/event-series.utils.ts`.
 ### 4.7 Refaktor `EventsModule`
 
 - [ ] `EventsController`: usunąć `POST /events/series` i `PATCH /events/:id/series` po włączeniu nowego API (etap 11.3 - feature flag w fazie roll-outu).
-- [ ] `EventsService`: usunąć metody `createSeries`, `updateSeries`, `generateRecurringDates` (tymczasowo zostawić jako `@deprecated` z logowaniem `warn`).
-- [ ] `EventsService.update`: nadal działa per pojedynczy event - bez zmian.
-- [ ] `EventsService.cancel`: bez zmian (cancel pojedynczego eventu jest niezależny od serii).
-- [ ] Dodać metodę `EventsService.findEventsBySeries(seriesId)` (delegowana z `EventSeriesService`).
+- [x] `EventsService`: usunąć metody `createSeries`, `updateSeries`, `generateRecurringDates` (tymczasowo zostawić jako `@deprecated` z logowaniem `warn`).
+- [x] `EventsService.update`: nadal działa per pojedynczy event - bez zmian.
+- [x] `EventsService.cancel`: bez zmian (cancel pojedynczego eventu jest niezależny od serii).
+- [x] Dodać metodę `EventsService.findEventsBySeries(seriesId)` (delegowana z `EventSeriesService`).
 
 ### 4.8 Aktualizacja `event.service` i `event-listing.util`
 
@@ -306,7 +306,7 @@ Plik: `libs/src/lib/utils/event-series.utils.ts`.
 - [x] `event-series.cron.spec.ts`:
   - Wybiera tylko `isActive = true` z `nextGenerationAt <= now`.
   - Błąd jednej serii nie blokuje kolejnych.
-- [ ] E2E: `backend-e2e/src/event-series.spec.ts` - happy path tworzenia serii i odczytu listy nadchodzących eventów.
+- [x] E2E: `backend-e2e/src/event-series.spec.ts` - happy path tworzenia serii i odczytu listy nadchodzących eventów. Wdrożono 2026-05-05: 7 testów (401 guard, create, get details+events, list mine, 403 inny user, delete by owner).
 
 ---
 
@@ -325,9 +325,9 @@ Plik: `libs/src/lib/utils/event-series.utils.ts`.
 
 Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 
-- [ ] `EventSeriesService.createSeries` przy `autoCoverImage = true`:
+- [x] `EventSeriesService.createSeries` przy `autoCoverImage = true`:
   - Pętla per generowana instancja: `cover = coverImagesService.findSmartCoverForOrganizer(disciplineSlug, organizerId, citySlug, excludeIds)`; dopisz `cover.id` do `excludeIds`.
-- [ ] `EventSeriesGenerator.generateForSeries` (cron) - analogicznie. Dla globalnego cache `excludeIds` używa historii dotychczas użytych coverów w tej serii (`prisma.event.findMany({ where: { seriesId }, select: { coverImageId: true } })`).
+- [x] `EventSeriesGenerator.generateForSeries` (cron) - analogicznie. Dla globalnego cache `excludeIds` używa historii dotychczas użytych coverów w tej serii (`prisma.event.findMany({ where: { seriesId }, select: { coverImageId: true } })`).
 - [ ] Test: seria 8 instancji + 8 coverów dyscypliny → każdy event dostaje inny.
 
 ---
@@ -368,7 +368,7 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
   - Sekcja "Następne terminy:" - lista 5 dat liczonych lokalnie przez `previewSeriesDates` z `libs`.
   - A11y: keyboard nav po dniach tygodnia (Angular CDK).
 - [x] Tailwind: tylko klasy semantyczne (`bg-primary-500`, `text-neutral-900` itd.). Brak `dark:`, brak custom hex.
-- [ ] Test komponentu (happy path + WEEKLY + INTERVAL + zmiana trybu).
+- [x] Test komponentu (happy path + WEEKLY + INTERVAL + zmiana trybu).
 
 ### 6.4 Integracja w `event-form`
 
@@ -382,7 +382,7 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
   - Submit:
     - `seriesEnabled` → `eventSeriesService.createSeries(payload)`.
     - inaczej → istniejące `eventService.createEvent`.
-- [ ] Smart cover (jeśli `autoCoverImage = true` + `seriesEnabled`): pokazać badge "Każde wydarzenie z serii otrzyma inną grafikę" (re-use ze stylu z `event-series-and-smart-cover.md`).
+- [x] Smart cover (jeśli `autoCoverImage = true` + `seriesEnabled`): pokazać badge "Każde wydarzenie z serii otrzyma inną grafikę" (re-use ze stylu z `event-series-and-smart-cover.md`). Wdrożono 2026-05-05: badge w sekcji serii `event-form` (linie 589-596).
 
 ### 6.5 Edycja serii w istniejącym wydarzeniu
 
@@ -400,21 +400,21 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 
 ### 6.7 Testy frontend
 
-- [ ] Spec dla `recurrence-picker`: zmiana trybu, dodawanie/usuwanie dni tygodnia, podgląd 5 dat.
-- [ ] Spec dla `event-form` w trybie serii: poprawny payload do `eventSeriesService.createSeries`.
+- [x] Spec dla `recurrence-picker`: zmiana trybu, dodawanie/usuwanie dni tygodnia, podgląd 5 dat.
+- [x] Spec dla `event-form` w trybie serii: poprawny payload do `eventSeriesService.createSeries`. Wdrożono 2026-05-05: 6 testów w `event-form.component.spec.ts` (sekcja "tryb serii wydarzeń").
 - [ ] E2E (`frontend-e2e`): scenariusz "stwórz serię WEEKLY pon+czw → na liście są 4 nadchodzące eventy".
 
 ---
 
 ## 7. Design system / dokumentacja
 
-- [ ] Dodać do `docs/design-tokens.md` opis ikony `repeat` (jeśli jeszcze nie ma) oraz badge'a "seria".
-- [ ] Zaktualizować stronę `/dev/design-system`:
+- [x] Dodać do `docs/design-tokens.md` opis ikony `repeat` (jeśli jeszcze nie ma) oraz badge'a "seria".
+- [x] Zaktualizować stronę `/dev/design-system`:
   - Sekcja "Recurrence picker" - przykład komponentu w obu trybach.
   - Sekcja "Event tile" - wariant z badge'em serii.
-- [ ] `docs/api-endpoints.md` - dopisać 5 nowych endpointów `/event-series/*`.
-- [ ] `docs/project-structure.md` - dopisać moduł `event-series` w drzewie backendu i komponent `recurrence-picker` we frontendzie.
-- [ ] `docs/tasks/series_of_events.md` - po zakończeniu wdrożenia oznaczyć status "Wdrożono - 2026-XX-XX" i dodać link do tego dokumentu.
+- [x] `docs/api-endpoints.md` - dopisać 5 nowych endpointów `/event-series/*`.
+- [x] `docs/project-structure.md` - dopisać moduł `event-series` w drzewie backendu i komponent `recurrence-picker` we frontendzie.
+- [x] `docs/tasks/series_of_events.md` - oznaczyć status "Wdrożono - 2026-05-05" i dodać link do tego dokumentu. Wdrożono 2026-05-05.
 
 ---
 
@@ -464,7 +464,7 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 - [ ] Testy jednostkowe i e2e przechodzą lokalnie i w CI (`pnpm test`, `pnpm e2e`).
 - [ ] Lint + Prettier bez błędów (`pnpm lint`, `pnpm format:check`).
 - [ ] Schema Prisma w prod i dev synchroniczna (brak `prisma migrate diff` różnic).
-- [ ] Strona `/dev/design-system` pokazuje nowy `recurrence-picker` i badge serii.
+- [x] Strona `/dev/design-system` pokazuje nowy `recurrence-picker` i badge serii.
 - [ ] Dokumentacja zaktualizowana (`api-endpoints.md`, `project-structure.md`, `design-tokens.md`, `tasks/series_of_events.md`).
 - [ ] Cron działa na środowisku staging przez >7 dni bez błędów (logi + monitoring).
 - [ ] Feature flag włączony na produkcji bez incydentu.

@@ -6,11 +6,13 @@ import { provideRouter, Router, ActivatedRoute } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { EventFormComponent } from './event-form.component';
 import { EventService } from '../../../../core/services/event.service';
+import { EventSeriesService } from '../../../../core/services/event-series.service';
 import { CoverImageService } from '../../../../core/services/cover-image.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { GeocodeService } from '../../../../core/services/geocode.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
+import { EventSeriesRecurrenceType } from '@zgadajsie/shared';
 
 @Pipe({ name: 'transloco', standalone: true })
 class MockTranslocoPipe implements PipeTransform {
@@ -30,6 +32,9 @@ const mockEventService = {
   createEvent: jest.fn(),
   updateEvent: jest.fn(),
   getEventForDuplication: jest.fn(),
+};
+const mockEventSeriesService = {
+  createSeries: jest.fn(),
 };
 const mockCoverImageService = { getAll: jest.fn().mockReturnValue(of([])) };
 const mockDictService = {
@@ -67,6 +72,7 @@ describe('EventFormComponent', () => {
       providers: [
         provideRouter([]),
         { provide: EventService, useValue: mockEventService },
+        { provide: EventSeriesService, useValue: mockEventSeriesService },
         { provide: CoverImageService, useValue: mockCoverImageService },
         { provide: DictionaryService, useValue: mockDictService },
         { provide: GeocodeService, useValue: mockGeocode },
@@ -290,5 +296,174 @@ describe('EventFormComponent', () => {
 
       expect(component.isEdit()).toBe(true);
     });
+  });
+
+  describe('tryb serii wydarzeń', () => {
+    const fillValidEventForm = () => {
+      component.form.patchValue({
+        title: 'Trening piłkarski',
+        disciplineSlug: 'football',
+        facilitySlug: 'pitch',
+        levelSlug: 'mixed-open',
+        citySlug: 'warsaw',
+        address: 'ul. Testowa 1',
+        startsAt: futureDate(2),
+        endsAt: futureDate(2).replace('19:00', '21:00'),
+        minParticipants: 2,
+        maxParticipants: 10,
+        costPerPerson: 0,
+        gender: 'ANY',
+        visibility: 'PUBLIC',
+        lat: 52.2,
+        lng: 21.0,
+      });
+    };
+
+    it('gdy seriesEnabled = false wywołuje createEvent, nie createSeries', fakeAsync(() => {
+      mockEventService.createEvent.mockReturnValue(
+        of({ id: 'ev1', city: { slug: 'warsaw' } } as unknown as Record<string, unknown>),
+      );
+      jest.spyOn(router, 'navigate').mockResolvedValue(true);
+
+      fillValidEventForm();
+      component.onSubmit();
+      tick();
+
+      expect(mockEventService.createEvent).toHaveBeenCalled();
+      expect(mockEventSeriesService.createSeries).not.toHaveBeenCalled();
+    }));
+
+    it('gdy seriesEnabled = true i pusta nazwa serii, wywołuje snackbar.error i nie wywołuje createSeries', () => {
+      component.toggleSeriesEnabled(true);
+      component.seriesForm.patchValue({ name: '' });
+
+      fillValidEventForm();
+      component.onSubmit();
+
+      expect(mockSnackbar.error).toHaveBeenCalledWith('Nazwa serii jest wymagana.');
+      expect(mockEventSeriesService.createSeries).not.toHaveBeenCalled();
+    });
+
+    it('gdy seriesEnabled = true i brak startDate serii, wywołuje snackbar.error i nie wywołuje createSeries', () => {
+      component.toggleSeriesEnabled(true);
+      component.seriesForm.patchValue({ name: 'Trening środowy', startDate: '' });
+
+      fillValidEventForm();
+      component.onSubmit();
+
+      expect(mockSnackbar.error).toHaveBeenCalledWith('Data rozpoczęcia serii jest wymagana.');
+      expect(mockEventSeriesService.createSeries).not.toHaveBeenCalled();
+    });
+
+    it('gdy seriesEnabled = true i formularz poprawny, wywołuje createSeries z połączonym payloadem', fakeAsync(() => {
+      const createdSeries = { id: 'series1' } as unknown as Record<string, unknown>;
+      mockEventSeriesService.createSeries.mockReturnValue(of(createdSeries));
+      const navSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
+
+      fillValidEventForm();
+      component.toggleSeriesEnabled(true);
+      component.seriesForm.patchValue({
+        name: 'Trening środowy',
+        recurrenceType: EventSeriesRecurrenceType.INTERVAL,
+        intervalDays: 7,
+        time: '19:00',
+        durationMinutes: 120,
+        startDate: futureDate(2).substring(0, 10),
+      });
+
+      component.onSubmit();
+      tick();
+
+      expect(mockEventSeriesService.createSeries).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Trening środowy',
+          recurrenceType: EventSeriesRecurrenceType.INTERVAL,
+          intervalDays: 7,
+          time: '19:00',
+          timezone: 'Europe/Warsaw',
+          durationMinutes: 120,
+          title: 'Trening piłkarski',
+          disciplineSlug: 'football',
+          facilitySlug: 'pitch',
+          levelSlug: 'mixed-open',
+          citySlug: 'warsaw',
+          address: 'ul. Testowa 1',
+        }),
+      );
+      expect(mockEventService.createEvent).not.toHaveBeenCalled();
+      expect(mockSnackbar.success).toHaveBeenCalledWith('Seria wydarzeń utworzona');
+      expect(navSpy).toHaveBeenCalledWith(['/o']);
+    }));
+
+    it('gdy createSeries zwraca błąd, wywołuje snackbar.error z komunikatem', fakeAsync(() => {
+      mockEventSeriesService.createSeries.mockReturnValue(
+        throwError(() => ({ error: { message: 'Błąd serwera' } })),
+      );
+
+      fillValidEventForm();
+      component.toggleSeriesEnabled(true);
+      component.seriesForm.patchValue({
+        name: 'Trening',
+        startDate: futureDate(2).substring(0, 10),
+      });
+
+      component.onSubmit();
+      tick();
+
+      expect(mockSnackbar.error).toHaveBeenCalledWith('Błąd serwera');
+    }));
+
+    it('toggleSeriesEnabled prefilluje startDate z pola startsAt', () => {
+      const startsAt = futureDate(3);
+      component.form.patchValue({ startsAt });
+
+      component.toggleSeriesEnabled(true);
+
+      expect(component.seriesForm.get('startDate')?.value).toBe(startsAt.substring(0, 10));
+    });
+
+    it('gdy seriesEnabled = true w trybie edycji, nie wywołuje createSeries', fakeAsync(() => {
+      mockRoute.snapshot.paramMap.get.mockReturnValue('event-edit-123');
+      const event = {
+        id: 'event-edit-123',
+        status: 'ACTIVE',
+        startsAt: futureDate(5),
+        endsAt: futureDate(5).replace('19:00', '21:00'),
+        title: 'Event',
+        description: '',
+        disciplineSlug: 'football',
+        facilitySlug: 'pitch',
+        levelSlug: 'mixed-open',
+        citySlug: 'warsaw',
+        city: { slug: 'warsaw' },
+        costPerPerson: 0,
+        minParticipants: 2,
+        maxParticipants: 10,
+        gender: 'ANY',
+        visibility: 'PUBLIC',
+        address: 'ul. Testowa 1',
+        lat: 52.2,
+        lng: 21.0,
+        coverImageId: null,
+        rules: '',
+      } as unknown as Record<string, unknown>;
+      mockEventService.getEvent.mockReturnValue(of(event));
+      mockEventService.updateEvent.mockReturnValue(of({ ...event }));
+      jest.spyOn(router, 'navigate').mockResolvedValue(true);
+
+      fixture = TestBed.createComponent(EventFormComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+      tick();
+
+      expect(component.isEdit()).toBe(true);
+
+      component.seriesEnabled.set(true);
+      component.onSubmit();
+      tick();
+
+      expect(mockEventSeriesService.createSeries).not.toHaveBeenCalled();
+      expect(mockEventService.updateEvent).toHaveBeenCalled();
+    }));
   });
 });

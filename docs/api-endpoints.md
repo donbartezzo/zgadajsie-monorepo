@@ -192,6 +192,15 @@ Kontroler announcement używa mieszanych ścieżek bez wspólnego prefixu kontro
 
 - `GET /activity-rank/me` - `auth`
 
+## Event series (`/api/event-series`)
+
+- `POST /event-series` - `auth + active + feature:enableEventSeries` - tworzy serię i generuje bufor 30 dni
+- `GET /event-series/mine` - `auth` - lista serii zalogowanego organizatora
+- `GET /event-series/:id` - `auth` - szczegóły serii + lista nadchodzących wydarzeń (tylko organizator lub admin)
+- `PATCH /event-series/:id` - `auth` - edycja konfiguracji serii; regeneruje przyszłe puste wydarzenia
+- `DELETE /event-series/:id` - `auth` - dezaktywacja serii (soft delete); usuwa przyszłe puste wydarzenia
+- `POST /event-series/preview` - `auth` - podgląd dat bez zapisu do DB; używa `previewSeriesDates` z `@zgadajsie/shared`
+
 ## Uwaga dla AI
 
 - Nie zakładaj shape requestów i response’ów wyłącznie na podstawie tego dokumentu.

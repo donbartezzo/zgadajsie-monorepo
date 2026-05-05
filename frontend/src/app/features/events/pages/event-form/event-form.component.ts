@@ -585,6 +585,15 @@ interface EventRule {
                 </div>
 
                 <app-recurrence-picker [formGroup]="seriesForm" timezone="Europe/Warsaw" />
+
+                @if (autoCoverImage()) {
+                  <div
+                    class="flex items-center gap-2 rounded-xl border border-primary-200 bg-primary-50 px-3 py-2 text-xs text-primary-700"
+                  >
+                    <app-icon name="image" size="xs" class="shrink-0" />
+                    Każde wydarzenie z serii otrzyma inną grafikę automatycznie.
+                  </div>
+                }
               }
             </div>
           </app-card>

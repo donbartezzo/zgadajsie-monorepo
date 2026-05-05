@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input,
-  OnChanges,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, OnChanges, signal } from '@angular/core';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { DateTime } from 'luxon';
 import {
@@ -46,13 +39,15 @@ export class RecurrencePickerComponent implements OnChanges {
   readonly dayOptions = DAY_OPTIONS;
 
   readonly previewDates = signal<EventSeriesPreviewItem[]>([]);
-
-  readonly selectedType = computed(() => {
-    return this.formGroup().get('recurrenceType')?.value as EventSeriesRecurrenceType;
-  });
+  readonly selectedType = signal<EventSeriesRecurrenceType>(EventSeriesRecurrenceType.INTERVAL);
 
   ngOnChanges(): void {
-    this.formGroup().valueChanges.subscribe(() => this.refreshPreview());
+    const fg = this.formGroup();
+    this.selectedType.set(fg.get('recurrenceType')?.value ?? EventSeriesRecurrenceType.INTERVAL);
+    fg.valueChanges.subscribe(() => {
+      this.selectedType.set(fg.get('recurrenceType')?.value ?? EventSeriesRecurrenceType.INTERVAL);
+      this.refreshPreview();
+    });
     this.refreshPreview();
   }
 

@@ -236,6 +236,10 @@ export class EventsService {
     return { data: eventsWithParticipantCount, total, page, limit };
   }
 
+  async findEventsBySeries(seriesId: string) {
+    return this.findAll({ seriesId, limit: 200 });
+  }
+
   async findOne(id: string, userId?: string) {
     const event = await this.prisma.event.findUnique({
       where: { id },
@@ -811,6 +815,7 @@ export class EventsService {
     return this.getParticipants(eventId);
   }
 
+  /** @deprecated Use EventSeriesService.createSeries instead. Will be removed after roll-out. */
   async createSeries(organizerId: string, dto: CreateEventDto) {
     if (!dto.isRecurring || !dto.recurringRule) {
       return this.create(organizerId, dto);
@@ -908,6 +913,7 @@ export class EventsService {
     return parent;
   }
 
+  /** @deprecated Use EventSeriesService.update instead. Will be removed after roll-out. */
   async updateSeries(id: string, user: AuthUser, dto: UpdateEventDto) {
     const parent = await this.update(id, user, dto);
 
@@ -964,6 +970,7 @@ export class EventsService {
     return random?.id;
   }
 
+  /** @deprecated Logic moved to libs/event-series.utils. Will be removed after roll-out. */
   private generateRecurringDates(
     startsAt: Date,
     endsAt: Date,

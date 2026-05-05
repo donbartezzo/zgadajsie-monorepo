@@ -1,4 +1,11 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import {
+  EventSeriesRecurrenceType,
+  STATUS_INDICATORS,
+  type StatusIndicatorType,
+} from '@zgadajsie/shared';
+import { RecurrencePickerComponent } from '../../../../shared/event-form/ui/recurrence-picker/recurrence-picker.component';
 import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.component';
 import { ButtonAppearance, ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
@@ -16,7 +23,6 @@ import {
   AvatarSize,
   AvatarShape,
 } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
-import { STATUS_INDICATORS, type StatusIndicatorType } from '@zgadajsie/shared';
 import { StatusIndicatorComponent } from '../../../../shared/ui/status-indicator/status-indicator.component';
 import { ExplainerTriggerComponent } from '../../../../shared/ui/explainer/explainer-trigger.component';
 
@@ -44,11 +50,34 @@ interface ColorPalette {
     UserAvatarComponent,
     StatusIndicatorComponent,
     ExplainerTriggerComponent,
+    RecurrencePickerComponent,
+    ReactiveFormsModule,
   ],
   templateUrl: './design-system.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DesignSystemComponent {
+  private readonly fb = inject(FormBuilder);
+
+  readonly recurrencePickerIntervalForm = this.fb.group({
+    recurrenceType: [EventSeriesRecurrenceType.INTERVAL],
+    intervalDays: [7],
+    daysOfWeek: [[] as number[]],
+    time: ['20:00'],
+    durationMinutes: [90],
+    startDate: [new Date().toISOString().substring(0, 10)],
+    endDate: [''],
+  });
+
+  readonly recurrencePickerWeeklyForm = this.fb.group({
+    recurrenceType: [EventSeriesRecurrenceType.WEEKLY],
+    intervalDays: [7],
+    daysOfWeek: [[1, 4]],
+    time: ['18:30'],
+    durationMinutes: [60],
+    startDate: [new Date().toISOString().substring(0, 10)],
+    endDate: [''],
+  });
   readonly activeSection = signal<string>('colors');
   readonly semanticColors: SemanticColor[] = [
     'primary',

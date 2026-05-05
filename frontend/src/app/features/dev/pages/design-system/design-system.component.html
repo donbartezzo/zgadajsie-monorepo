@@ -1270,6 +1270,46 @@
           </div>
         </div>
       </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-4">Recurrence picker (app-recurrence-picker)</h2>
+        <p class="text-sm text-neutral-600 mb-4">
+          Komponent do ustawiania powtarzania serii wydarzeń. Obsługuje tryby INTERVAL (co X dni) i WEEKLY (wybrane dni
+          tygodnia). Podgląd 5 najbliższych dat liczony lokalnie przez <code>previewSeriesDates</code> z
+          <code>&#64;zgadajsie/shared</code>.
+        </p>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div class="rounded-xl border border-neutral-200 p-4">
+            <p class="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-3">INTERVAL - co 7 dni</p>
+            <app-recurrence-picker [formGroup]="recurrencePickerIntervalForm" timezone="Europe/Warsaw" />
+          </div>
+          <div class="rounded-xl border border-neutral-200 p-4">
+            <p class="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-3">WEEKLY - pon + czw</p>
+            <app-recurrence-picker [formGroup]="recurrencePickerWeeklyForm" timezone="Europe/Warsaw" />
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-4">Badge serii wydarzeń</h2>
+        <p class="text-sm text-neutral-600 mb-4">
+          Pill wyświetlany na kafelku <code>app-event-card</code> gdy <code>event.seriesId != null</code>.
+        </p>
+        <div class="flex items-center gap-4 p-4 rounded-xl border border-neutral-200 bg-neutral-50">
+          <span
+            class="inline-flex items-center gap-1 rounded-full bg-primary-600/80 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white backdrop-blur-sm"
+            aria-label="Wydarzenie z serii"
+            title="Wydarzenie z serii"
+          >
+            <app-icon name="repeat" size="xs" class="text-white" />
+            seria
+          </span>
+          <span class="text-sm text-neutral-600">
+            Widoczny na kafelku eventu należącego do serii. Kolor: <code>bg-primary-600/80</code> z
+            <code>backdrop-blur-sm</code>. Używa <code>app-icon</code> dla spójności z systemem ikon.
+          </span>
+        </div>
+      </section>
     }
   </main>
 </div>
