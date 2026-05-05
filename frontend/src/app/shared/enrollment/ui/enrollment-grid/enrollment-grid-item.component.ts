@@ -204,9 +204,6 @@ export class EnrollmentGridItemComponent {
   });
 
   readonly nameClass = computed(() => {
-    const status = this.slotDisplayStatus();
-    if (status === 'withdrawn') return 'text-neutral-400';
-    if (status === 'pending') return this.isBanned() ? 'text-danger-500' : 'text-warning-600';
     return 'text-neutral-700';
   });
 }
