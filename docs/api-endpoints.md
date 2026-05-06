@@ -95,8 +95,6 @@ Publiczne endpointy słownikowe:
 - `GET /events/:id/enrollments/manage`
 - `POST /events/:id/mark-paid/:enrollmentId`
 - `POST /events/:id/cancel-payment/:paymentId`
-- `POST /events/series`
-- `PATCH /events/:id/series`
 
 ## Enrollment (`/api`)
 

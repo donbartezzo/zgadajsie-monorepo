@@ -29,6 +29,11 @@ const BREADCRUMB_TO_PROFILE = {
   label: 'Profil użytkownika',
 } as const;
 
+const BREADCRUMB_TO_EVENTS = {
+  parent: '/profile/events',
+  label: 'Moje wydarzenia',
+} as const;
+
 export const appRoutes: Route[] = [
   // ── Home ──
   {
@@ -203,6 +208,20 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Zarządzanie',
+    },
+  },
+
+  // ── Organizer: series details ──
+  {
+    path: 'series/:id',
+    loadComponent: () =>
+      import('./features/organizer/pages/series-details/series-details.component').then(
+        (m) => m.SeriesDetailsComponent,
+      ),
+    canActivate: [verifiedUserGuard],
+    data: {
+      title: 'Seria wydarzeń',
+      breadcrumb: BREADCRUMB_TO_EVENTS,
     },
   },
 

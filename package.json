@@ -24,6 +24,7 @@
     "backend:test": "nx test backend",
     "backend:start:db": "nx run backend:start-db",
     "backend:db:seed": "nx run backend:db-seed",
+    "backend:db:backfill:event-series": "cd backend && dotenv -e ../config/env/.env.local -- npx tsx prisma/data-migrations/20260505_event_series_backfill.ts",
     "lint": "nx run-many --target=lint --all",
     "lint:frontend": "nx lint frontend",
     "lint:backend": "nx lint backend",

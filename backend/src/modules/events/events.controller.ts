@@ -112,20 +112,4 @@ export class EventsController {
   ) {
     return this.eventsService.cancelPayment(id, paymentId, user, dto);
   }
-
-  @UseGuards(JwtAuthGuard, IsActiveGuard)
-  @Post('series')
-  createSeries(@CurrentUser() user: AuthUser, @Body() dto: CreateEventDto) {
-    return this.eventsService.createSeries(user.id, dto);
-  }
-
-  @UseGuards(JwtAuthGuard, IsActiveGuard)
-  @Patch(':id/series')
-  updateSeries(
-    @Param('id') id: string,
-    @CurrentUser() user: AuthUser,
-    @Body() dto: UpdateEventDto,
-  ) {
-    return this.eventsService.updateSeries(id, user, dto);
-  }
 }

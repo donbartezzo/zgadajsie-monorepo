@@ -53,6 +53,7 @@ import { environment } from '../../../../../environments/environment';
 
 interface DuplicateQueryParams {
   duplicateId?: string;
+  seriesMode?: string;
 }
 
 interface EventRule {
@@ -547,14 +548,27 @@ interface EventRule {
 
         @if (seriesAvailable && isEdit() && editEventSeriesId()) {
           <app-card>
-            <div class="p-4 flex items-start gap-3">
-              <app-icon name="repeat" size="sm" class="text-primary-500 mt-0.5 shrink-0" />
-              <div>
-                <p class="text-sm font-medium text-neutral-900">To wydarzenie należy do serii</p>
-                <p class="text-xs text-neutral-500 mt-0.5">
-                  Edytujesz pojedyncze wydarzenie. Zmiany nie wpłyną na pozostałe zdarzenia w serii.
-                </p>
+            <div class="p-4 flex items-start justify-between gap-3">
+              <div class="flex items-start gap-3">
+                <app-icon name="repeat" size="sm" class="text-primary-500 mt-0.5 shrink-0" />
+                <div>
+                  <p class="text-sm font-medium text-neutral-900">To wydarzenie należy do serii</p>
+                  <p class="text-xs text-neutral-500 mt-0.5">
+                    Edytujesz pojedyncze wydarzenie. Zmiany nie wpłyną na pozostałe zdarzenia w
+                    serii.
+                  </p>
+                </div>
               </div>
+
+              <app-button
+                type="button"
+                appearance="soft"
+                color="primary"
+                size="sm"
+                (clicked)="openSeriesSettings()"
+              >
+                Ustawienia serii
+              </app-button>
             </div>
           </app-card>
         }
@@ -808,6 +822,8 @@ export class EventFormComponent implements OnInit {
           this.editEventSeriesId.set(e.seriesId);
         }
       });
+    } else if (this.route.snapshot.queryParamMap.get('seriesMode') === 'true') {
+      this.toggleSeriesEnabled(true);
     }
   }
 
@@ -817,6 +833,15 @@ export class EventFormComponent implements OnInit {
 
   selectCoverImage(cover: CoverImage): void {
     this.selectedCoverImageId.set(cover.id);
+  }
+
+  openSeriesSettings(): void {
+    const seriesId = this.editEventSeriesId();
+    if (!seriesId) {
+      return;
+    }
+
+    void this.router.navigate(['/series', seriesId]);
   }
 
   onMarkerMoved(pos: { lat: number; lng: number }): void {
@@ -1047,9 +1072,9 @@ export class EventFormComponent implements OnInit {
       };
 
       this.eventSeriesService.createSeries(seriesPayload).subscribe({
-        next: () => {
+        next: (series) => {
           this.snackbar.success('Seria wydarzeń utworzona');
-          this.router.navigate(['/o']);
+          this.router.navigate(['/series', series.id]);
           this.submitting.set(false);
         },
         error: (err) => {

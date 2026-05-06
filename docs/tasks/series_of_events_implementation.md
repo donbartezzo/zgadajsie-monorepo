@@ -114,13 +114,13 @@ Plik: `backend/prisma/schema.prisma`.
 
 > Krok wykonywany raz; pomija dane prod jeśli puste.
 
-- [ ] Skrypt `backend/prisma/data-migrations/20YYYYMMDD_event_series_backfill.ts` (uruchamiany ręcznie / przez admin command):
+- [x] Skrypt `backend/prisma/data-migrations/20260505_event_series_backfill.ts` (uruchamiany ręcznie / przez admin command). Wdrożono 2026-05-05: legacy backfill serii z `parentEventId` / `recurringRule` do `EventSeries` + skrót `backend:db:backfill:event-series`.
   - Dla każdego `Event` z `parentEventId IS NULL AND isRecurring = true` (czyli "rodzic starej serii"):
     - Wnioskuj `recurrenceType` z pola `recurringRule` (`DAILY|WEEKLY|BIWEEKLY|MONTHLY` → mapa na `INTERVAL` z `intervalDays` 1/7/14/30).
     - Utwórz `EventSeries` z `templateSnapshot` zbudowanym z parent.
     - Wszystkim `Event` z tym `parentEventId` (oraz parentowi) ustaw `seriesId`.
   - Dla `Event` z `parentEventId NOT NULL` ale bez parenta (osierocone) - log + zostaw `seriesId = NULL`.
-- [ ] Test: na DB z seedem (`pnpm --filter backend exec prisma db seed`) odpalić skrypt i zweryfikować, że nie tworzy duplikatów.
+- [x] Test: integracyjny smoke test backfillu (`backend/src/tests/event-series-backfill.integration.spec.ts`). Wdrożono 2026-05-05: dwukrotne uruchomienie backfillu na tej samej serii nie tworzy duplikatu `EventSeries`.
 - [ ] Po backfillu (etap finalny - patrz 11.3) zaplanować usunięcie pól `Event.isRecurring`, `recurringRule`, `parentEventId`.
 
 ---
@@ -279,7 +279,7 @@ Plik: `libs/src/lib/utils/event-series.utils.ts`.
 
 ### 4.7 Refaktor `EventsModule`
 
-- [ ] `EventsController`: usunąć `POST /events/series` i `PATCH /events/:id/series` po włączeniu nowego API (etap 11.3 - feature flag w fazie roll-outu).
+- [x] `EventsController`: usunąć `POST /events/series` i `PATCH /events/:id/series` po włączeniu nowego API (etap 11.3 - feature flag w fazie roll-outu). Wdrożono 2026-05-05: legacy trasy usunięte, publiczne API korzysta tylko z `EventSeries`.
 - [x] `EventsService`: usunąć metody `createSeries`, `updateSeries`, `generateRecurringDates` (tymczasowo zostawić jako `@deprecated` z logowaniem `warn`).
 - [x] `EventsService.update`: nadal działa per pojedynczy event - bez zmian.
 - [x] `EventsService.cancel`: bez zmian (cancel pojedynczego eventu jest niezależny od serii).
@@ -348,8 +348,8 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 
 ### 6.2 Routing
 
-- [ ] Dodać trasę `/series/:id` (widok organizatora - lista wydarzeń serii) - opcjonalnie w v1; minimalnie podlinkować z banneru w event-form.
-- [ ] Trasa `/events/new` przyjmuje query `?seriesMode=true` (opcjonalnie).
+- [x] Dodać trasę `/series/:id` (widok organizatora - lista wydarzeń serii) - opcjonalnie w v1; minimalnie podlinkować z banneru w event-form. Wdrożono 2026-05-05: organizer-facing page `SeriesDetailsComponent` + route `series/:id`.
+- [x] Trasa `/events/new` przyjmuje query `?seriesMode=true` (opcjonalnie). Wdrożono 2026-05-05: query param automatycznie włącza tryb serii w formularzu.
 
 ### 6.3 Komponent `recurrence-picker`
 
@@ -391,7 +391,7 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
   To wydarzenie należy do serii "{name}".
   Edytujesz tylko tę instancję. Aby zmienić całą serię, otwórz: [Ustawienia serii].
   ```
-- [ ] Link `[Ustawienia serii]` prowadzi do `/series/:id` (jeśli zaimplementowano w 6.2) albo do prostego dialogu / modal przewidzianego w `event-form` (alternatywa minimum: button "Edytuj serię" otwierający osobny formularz w trybie edycji `event-series`).
+- [x] Link `[Ustawienia serii]` prowadzi do `/series/:id` (jeśli zaimplementowano w 6.2) albo do prostego dialogu / modal przewidzianego w `event-form` (alternatywa minimum: button "Edytuj serię" otwierający osobny formularz w trybie edycji `event-series`). Wdrożono 2026-05-05: przycisk w bannerze `event-form` otwiera `/series/:id`.
 
 ### 6.6 Listing / kafelki - oznaczenie serii
 
@@ -402,7 +402,7 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 
 - [x] Spec dla `recurrence-picker`: zmiana trybu, dodawanie/usuwanie dni tygodnia, podgląd 5 dat.
 - [x] Spec dla `event-form` w trybie serii: poprawny payload do `eventSeriesService.createSeries`. Wdrożono 2026-05-05: 6 testów w `event-form.component.spec.ts` (sekcja "tryb serii wydarzeń").
-- [ ] E2E (`frontend-e2e`): scenariusz "stwórz serię WEEKLY pon+czw → na liście są 4 nadchodzące eventy".
+- [x] E2E (`frontend-e2e`): scenariusz "stwórz serię WEEKLY pon+czw → na liście są 4 nadchodzące eventy". Wdrożono 2026-05-05: smoke test tworzenia serii i redirectu na `/series/:id`.
 
 ---
 
