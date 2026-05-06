@@ -19,8 +19,7 @@ const ARROW_HALF = 5;
         role="tooltip"
       >
         <span
-          class="absolute w-2.5 h-2.5 bg-white rotate-45"
-          [class]="arrowBorderClass()"
+          [class]="arrowBorderClass() + ' absolute w-2.5 h-2.5 bg-white rotate-45'"
           [style.left.px]="arrowLeft()"
         ></span>
 

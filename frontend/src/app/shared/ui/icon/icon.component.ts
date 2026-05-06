@@ -79,7 +79,8 @@ export type IconName =
   | 'coffee'
   | 'crosshair'
   | 'refresh-cw'
-  | 'repeat';
+  | 'repeat'
+  | 'bar-chart';
 
 export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
 
@@ -505,6 +506,11 @@ export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
             <path d="M3 11V9a4 4 0 0 1 4-4h14" />
             <polyline points="7 23 3 19 7 15" />
             <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+          }
+          @case ('bar-chart') {
+            <line x1="12" y1="20" x2="12" y2="10" />
+            <line x1="18" y1="20" x2="18" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="16" />
           }
           @default {
             <!-- empty icon -->

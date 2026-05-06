@@ -25,5 +25,5 @@ export const PRODUCTION_FEATURE_FLAGS: FeatureFlags = {
   enableFacebookLogin: false,
   enableEventCreation: false,
   enableOnlinePayments: true,
-  enableEventSeries: false,
+  enableEventSeries: true,
 };

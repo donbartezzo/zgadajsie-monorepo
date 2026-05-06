@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, input, OnChanges, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  input,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { DateTime } from 'luxon';
 import {
@@ -30,7 +39,8 @@ const DAY_OPTIONS: DayOption[] = [
   templateUrl: './recurrence-picker.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RecurrencePickerComponent implements OnChanges {
+export class RecurrencePickerComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
   readonly formGroup = input.required<FormGroup>();
   readonly timezone = input<string>('Europe/Warsaw');
   readonly previewCount = input<number>(EVENT_SERIES_PREVIEW_COUNT);
@@ -41,19 +51,53 @@ export class RecurrencePickerComponent implements OnChanges {
   readonly previewDates = signal<EventSeriesPreviewItem[]>([]);
   readonly selectedType = signal<EventSeriesRecurrenceType>(EventSeriesRecurrenceType.INTERVAL);
 
-  ngOnChanges(): void {
+  // Computed dla klas przycisków trybu
+  readonly modeButtonClass = computed(
+    () =>
+      `flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+        this.selectedType() === EventSeriesRecurrenceType.INTERVAL
+          ? 'bg-primary-500 text-white border-primary-500'
+          : 'bg-white text-neutral-700 border-neutral-300 hover:border-primary-400'
+      }`,
+  );
+
+  readonly weeklyButtonClass = computed(
+    () =>
+      `flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+        this.selectedType() === EventSeriesRecurrenceType.WEEKLY
+          ? 'bg-primary-500 text-white border-primary-500'
+          : 'bg-white text-neutral-700 border-neutral-300 hover:border-primary-400'
+      }`,
+  );
+
+  // Computed dla klas przycisków dni tygodnia
+  readonly dayButtonClass = (isSelected: boolean) =>
+    `rounded-lg border px-3 py-2 text-sm font-medium transition-colors min-w-[44px] ${
+      isSelected
+        ? 'bg-primary-500 text-white border-primary-500'
+        : 'bg-white text-neutral-700 border-neutral-300 hover:border-primary-400'
+    }`;
+
+  ngOnInit(): void {
     const fg = this.formGroup();
     this.selectedType.set(fg.get('recurrenceType')?.value ?? EventSeriesRecurrenceType.INTERVAL);
-    fg.valueChanges.subscribe(() => {
+
+    const subscription = fg.valueChanges.subscribe(() => {
       this.selectedType.set(fg.get('recurrenceType')?.value ?? EventSeriesRecurrenceType.INTERVAL);
       this.refreshPreview();
     });
+
+    this.destroyRef.onDestroy(() => subscription.unsubscribe());
     this.refreshPreview();
   }
 
   isDaySelected(day: number): boolean {
     const days: number[] = this.formGroup().get('daysOfWeek')?.value ?? [];
     return days.includes(day);
+  }
+
+  getDayButtonClass(day: number): string {
+    return this.dayButtonClass(this.isDaySelected(day));
   }
 
   toggleDay(day: number): void {

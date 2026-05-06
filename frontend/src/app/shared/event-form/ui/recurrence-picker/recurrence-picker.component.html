@@ -3,28 +3,10 @@
   <div>
     <label class="block text-sm font-medium text-neutral-700 mb-2">Tryb powtarzania</label>
     <div class="flex gap-2">
-      <button
-        type="button"
-        class="flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors"
-        [class]="
-          selectedType() === RecurrenceType.INTERVAL
-            ? 'bg-primary-500 text-white border-primary-500'
-            : 'bg-white text-neutral-700 border-neutral-300 hover:border-primary-400'
-        "
-        (click)="setRecurrenceType(RecurrenceType.INTERVAL)"
-      >
+      <button type="button" [class]="modeButtonClass()" (click)="setRecurrenceType(RecurrenceType.INTERVAL)">
         Co X dni
       </button>
-      <button
-        type="button"
-        class="flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors"
-        [class]="
-          selectedType() === RecurrenceType.WEEKLY
-            ? 'bg-primary-500 text-white border-primary-500'
-            : 'bg-white text-neutral-700 border-neutral-300 hover:border-primary-400'
-        "
-        (click)="setRecurrenceType(RecurrenceType.WEEKLY)"
-      >
+      <button type="button" [class]="weeklyButtonClass()" (click)="setRecurrenceType(RecurrenceType.WEEKLY)">
         Dni tygodnia
       </button>
     </div>
@@ -53,12 +35,7 @@
         @for (day of dayOptions; track day.value) {
           <button
             type="button"
-            class="rounded-lg border px-3 py-2 text-sm font-medium transition-colors min-w-[44px]"
-            [class]="
-              isDaySelected(day.value)
-                ? 'bg-primary-500 text-white border-primary-500'
-                : 'bg-white text-neutral-700 border-neutral-300 hover:border-primary-400'
-            "
+            [class]="getDayButtonClass(day.value)"
             [attr.aria-pressed]="isDaySelected(day.value)"
             [attr.aria-label]="day.label"
             (click)="toggleDay(day.value)"
