@@ -314,12 +314,12 @@ Plik: `libs/src/lib/utils/event-series.utils.ts`.
 
 ### 5.1 Notifications
 
-- [ ] `EventReminderCron` - bez zmian (działa per event).
-- [ ] Dodać notyfikację dla organizatora: "Wygenerowano X kolejnych wydarzeń serii Y" (opcjonalne; raz dziennie zbiorczo). Jeśli zostawiamy na potem - dopisać do V2 w komentarzu.
+- [x] `EventReminderCron` - bez zmian (działa per event). Potwierdzone 2026-05-06: cron operuje na pojedynczych eventach, nie wymaga modyfikacji.
+- [ ] Dodać notyfikację dla organizatora: "Wygenerowano X kolejnych wydarzeń serii Y" (opcjonalne; raz dziennie zbiorczo). **V2 - odłożone** po pozytywnym QA produkcyjnym.
 
 ### 5.2 Realtime
 
-- [ ] Po wygenerowaniu nowych eventów cron powinien rozesłać `eventRealtime.invalidateEvent` lub szerszy event "newEventsCreated" - **decyzja:** generacja w nocy nie potrzebuje natychmiastowej propagacji; można pominąć w v1.
+- [ ] Po wygenerowaniu nowych eventów cron powinien rozesłać `eventRealtime.invalidateEvent` lub szerszy event "newEventsCreated" - **decyzja (potwierdzona 2026-05-06):** generacja nocna nie wymaga natychmiastowej propagacji; pominięte w v1 - do rozważenia w V2.
 
 ### 5.3 Smart cover dla serii
 
@@ -328,7 +328,7 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 - [x] `EventSeriesService.createSeries` przy `autoCoverImage = true`:
   - Pętla per generowana instancja: `cover = coverImagesService.findSmartCoverForOrganizer(disciplineSlug, organizerId, citySlug, excludeIds)`; dopisz `cover.id` do `excludeIds`.
 - [x] `EventSeriesGenerator.generateForSeries` (cron) - analogicznie. Dla globalnego cache `excludeIds` używa historii dotychczas użytych coverów w tej serii (`prisma.event.findMany({ where: { seriesId }, select: { coverImageId: true } })`).
-- [ ] Test: seria 8 instancji + 8 coverów dyscypliny → każdy event dostaje inny.
+- [x] Test: seria 8 instancji + 8 coverów dyscypliny → każdy event dostaje inny. Wdrożono 2026-05-06: `event-series.generator.spec.ts` – nested describe z fake timers (2026-05-10T08:00Z), snapshotowanie excludeIds przy każdym wywołaniu; weryfikacja 8 unikalnych coverImageId w `createMany`.
 
 ---
 
