@@ -499,6 +499,9 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
   - Stała `SERIES_SUSPEND_THRESHOLD = 3` (w pliku `event-series.constants.ts` lub lokalnie).
 - [x] `EventSeriesCron`: filtruj wykluczone serie przez `suspendedReason: null`. Wdrożono 2026-05-06.
 - [x] Zaktualizować `deactivate()` i `update()` w `EventSeriesService` — dodać `PENDING` obok `ACTIVE` przy usuwaniu przyszłych pustych eventów. Wdrożono 2026-05-06.
+- [x] **Bug fix:** `EventsService.findOne` (GET `/events/:id`) — zablokować dostęp do PENDING eventów dla nienależących organizatorów (rzut 404). Wdrożono 2026-05-06: `events.service.ts` linijki po `if (!event) throw NotFoundException`.
+- [x] **Bug fix:** `EventSeriesService.findOne` — filtr eventów zmieniony z `status: ACTIVE` na `status: { in: [ACTIVE, PENDING] }`, aby organizator widział PENDING события w szczegółach serii. Wdrożono 2026-05-06.
+- [x] **Bug fix:** `EventSeriesService.findMySeries` — identyczny fix filtra ACTIVE→ACTIVE+PENDING dla podglądu serii na liście serii organizatora. Wdrożono 2026-05-06.
 
 ### 12.3 Potwierdzanie wydarzeń — endpointy
 

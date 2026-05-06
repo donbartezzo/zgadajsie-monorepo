@@ -34,6 +34,7 @@ import { CancelPaymentDto } from './dto/cancel-payment.dto';
 import { isEventEnded } from './event-time-status.util';
 import { shouldSkipPreEnrollment } from './enrollment-phase.util';
 import { buildEventListingWhere } from '../../common/utils/event-listing.util';
+import { EventStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
@@ -272,6 +273,10 @@ export class EventsService {
     if (!event) throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
 
     const isOrganizer = !!userId && event.organizerId === userId;
+
+    if (event.status === EventStatus.PENDING && !isOrganizer) {
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
+    }
     const currentUserAccess =
       userId && !isOrganizer
         ? { isNewUser: await this.eligibility.isNewUser(userId, event.organizerId) }

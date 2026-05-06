@@ -120,7 +120,7 @@ export class EventSeriesService {
       include: {
         events: {
           where: {
-            status: EventStatus.ACTIVE,
+            status: { in: [EventStatus.ACTIVE, EventStatus.PENDING] },
             startsAt: { gte: new Date() },
           },
           orderBy: { startsAt: 'asc' },
@@ -153,7 +153,7 @@ export class EventSeriesService {
       include: {
         events: {
           where: {
-            status: EventStatus.ACTIVE,
+            status: { in: [EventStatus.ACTIVE, EventStatus.PENDING] },
             startsAt: { gte: new Date() },
           },
           orderBy: { startsAt: 'asc' },
