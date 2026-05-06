@@ -1,0 +1,208 @@
+<div class="p-4 space-y-4">
+  @if (loading()) {
+    <div class="py-12 flex justify-center">
+      <app-loading-spinner />
+    </div>
+  } @else if (error()) {
+    <app-card>
+      <div class="p-6">
+        <app-empty-state icon="alert-triangle" title="Nie udało się wczytać serii" [message]="error()!" />
+        <div class="mt-6 flex justify-center">
+          <app-button appearance="soft" color="primary" (clicked)="backToMyEvents()">
+            Wróć do moich wydarzeń
+          </app-button>
+        </div>
+      </div>
+    </app-card>
+  } @else if (series(); as series) {
+    @if (isEditing()) {
+      @let form = editForm();
+      @if (form) {
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <p class="text-xs font-medium uppercase tracking-wide text-primary-500">Seria wydarzeń</p>
+            <h1 class="text-xl font-bold text-neutral-900">Edycja serii</h1>
+          </div>
+          <app-button appearance="soft" color="neutral" size="sm" (clicked)="cancelEdit()"> Anuluj </app-button>
+        </div>
+
+        @let counts = affectedEventsCount();
+        @if (counts.withoutEnrollments > 0 || counts.withEnrollments > 0) {
+          <div class="rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 space-y-1">
+            <p class="text-sm font-semibold text-warning-700">Wpływ edycji</p>
+            @if (counts.withoutEnrollments > 0) {
+              <p class="text-sm text-warning-700">
+                {{ counts.withoutEnrollments }} wydarzeń bez zapisów zostanie usuniętych i wygenerowanych ponownie.
+              </p>
+            }
+            @if (counts.withEnrollments > 0) {
+              <p class="text-sm text-warning-600">
+                {{ counts.withEnrollments }} wydarzeń z zapisami pozostanie bez zmian.
+              </p>
+            }
+          </div>
+        }
+
+        <app-card>
+          <form [formGroup]="form" class="p-4 space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-1"> Nazwa serii </label>
+              <input type="text" formControlName="name" appFormControlError placeholder="Np. Trening badmintona" />
+            </div>
+
+            <app-recurrence-picker [formGroup]="form" [timezone]="series.timezone" />
+
+            <div class="flex items-center gap-3 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3">
+              <input
+                id="isActive"
+                type="checkbox"
+                formControlName="isActive"
+                class="h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+              />
+              <label for="isActive" class="text-sm font-medium text-neutral-700">
+                Seria aktywna (generuje nowe wydarzenia)
+              </label>
+            </div>
+
+            @if (saveError()) {
+              <p class="text-sm text-danger-600">{{ saveError() }}</p>
+            }
+
+            <div class="flex gap-3 justify-end pt-2">
+              <app-button appearance="soft" color="neutral" (clicked)="cancelEdit()"> Anuluj </app-button>
+              <app-button color="primary" [disabled]="form.invalid || saving()" (clicked)="saveEdit()">
+                {{ saving() ? 'Zapisywanie…' : 'Zapisz zmiany' }}
+              </app-button>
+            </div>
+          </form>
+        </app-card>
+      }
+    } @else {
+      <div class="flex items-start justify-between gap-3">
+        <div class="space-y-1">
+          <p class="text-xs font-medium uppercase tracking-wide text-primary-500">Seria wydarzeń</p>
+          <h1 class="text-xl font-bold text-neutral-900">{{ series.name }}</h1>
+          <p class="text-sm text-neutral-600">{{ recurrenceDescription(series) }}</p>
+        </div>
+
+        <div class="flex shrink-0 items-center gap-2">
+          @if (series.isActive) {
+            <span
+              class="inline-flex items-center rounded-full bg-success-50 px-3 py-1 text-xs font-medium text-success-600"
+            >
+              Aktywna
+            </span>
+          } @else {
+            <span
+              class="inline-flex items-center rounded-full bg-warning-50 px-3 py-1 text-xs font-medium text-warning-600"
+            >
+              Nieaktywna
+            </span>
+          }
+          <app-button appearance="soft" color="primary" size="sm" (clicked)="startEdit()"> Edytuj </app-button>
+        </div>
+      </div>
+
+      <app-card>
+        <div class="p-4 space-y-4">
+          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+              <p class="text-xs font-medium uppercase tracking-wide text-neutral-500">Start serii</p>
+              <p class="mt-1 text-sm font-semibold text-neutral-900">
+                {{ formatDateValue(series.startDate) }}
+              </p>
+              <p class="text-xs text-neutral-500">{{ series.time }} • {{ series.timezone }}</p>
+            </div>
+
+            <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+              <p class="text-xs font-medium uppercase tracking-wide text-neutral-500">Czas trwania</p>
+              <p class="mt-1 text-sm font-semibold text-neutral-900">
+                {{ formatDuration(series.durationMinutes) }}
+              </p>
+              <p class="text-xs text-neutral-500">Bufor: {{ series.bufferDays }} dni</p>
+            </div>
+
+            <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+              <p class="text-xs font-medium uppercase tracking-wide text-neutral-500">Automatyczny cover</p>
+              <p class="mt-1 text-sm font-semibold text-neutral-900">
+                {{ series.autoCoverImage ? 'Tak' : 'Nie' }}
+              </p>
+              <p class="text-xs text-neutral-500">
+                {{ series.isActive ? 'Generowanie aktywne' : 'Generowanie wyłączone' }}
+              </p>
+            </div>
+          </div>
+
+          @if (series.endDate) {
+            <div class="rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-600">
+              Seria kończy się {{ formatDateValue(series.endDate) }}.
+            </div>
+          } @else {
+            <div class="rounded-xl border border-primary-200 bg-primary-50 px-4 py-3 text-sm text-primary-700">
+              Seria jest bezterminowa i będzie generować kolejne wydarzenia do odwołania.
+            </div>
+          }
+        </div>
+      </app-card>
+
+      <app-card>
+        <div class="p-4 space-y-4">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h2 class="text-sm font-semibold text-neutral-900">Nadchodzące wydarzenia</h2>
+              <p class="text-xs text-neutral-500">Lista wygenerowanych instancji należących do tej serii.</p>
+            </div>
+            <span class="text-xs text-neutral-500">{{ series.events.length }} pozycji</span>
+          </div>
+
+          @if (series.events.length === 0) {
+            <app-empty-state
+              icon="calendar"
+              title="Brak nadchodzących wydarzeń"
+              message="Seria jeszcze nie ma wygenerowanych terminów w aktualnym buforze."
+            />
+          } @else {
+            <div class="space-y-3">
+              @for (event of series.events; track event.id) {
+                <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+                  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-neutral-900">{{ event.title }}</p>
+                      <p class="text-xs text-neutral-500">
+                        {{ formatDateValue(event.startsAt) }} • {{ formatTimeValue(event.startsAt) }} –
+                        {{ formatTimeValue(event.endsAt) }}
+                      </p>
+                      @if ((event._count?.enrollments ?? 0) > 0) {
+                        <p class="mt-0.5 text-xs text-success-600">{{ event._count?.enrollments }} zapisów</p>
+                      }
+                    </div>
+
+                    <app-button
+                      appearance="soft"
+                      color="primary"
+                      size="sm"
+                      iconLeft="settings"
+                      (clicked)="openEventManage(event.id)"
+                    >
+                      Zarządzaj
+                    </app-button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </app-card>
+
+      <div class="flex items-center justify-between gap-3">
+        <app-button appearance="soft" color="primary" (clicked)="backToMyEvents()"> Wróć do moich wydarzeń </app-button>
+
+        @if (series.isActive) {
+          <app-button appearance="soft" color="danger" size="sm" (clicked)="deactivateSeries()">
+            Dezaktywuj serię
+          </app-button>
+        }
+      </div>
+    }
+  }
+</div>

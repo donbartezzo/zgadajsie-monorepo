@@ -1,18 +1,35 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
+import { RecurrencePickerComponent } from '../../../../shared/event-form/ui/recurrence-picker/recurrence-picker.component';
+import { FormControlErrorDirective } from '../../../../shared/ui/form-control-error/form-control-error.directive';
 import { EventSeriesService } from '../../../../core/services/event-series.service';
+import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
+import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { EventSeriesView } from '../../../../shared/types';
-import { EventSeriesRecurrenceType, formatDateLong, formatTime } from '@zgadajsie/shared';
+import {
+  EventSeriesRecurrenceType,
+  formatDateLong,
+  formatTime,
+  UpdateEventSeriesPayload,
+} from '@zgadajsie/shared';
 
 const WEEKDAY_LABELS: Record<number, string> = {
   1: 'Pn',
   2: 'Wt',
   3: 'Śr',
-  4: 'Cz',
+  4: 'Czw',
   5: 'Pt',
   6: 'Sb',
   7: 'Nd',
@@ -20,172 +37,45 @@ const WEEKDAY_LABELS: Record<number, string> = {
 
 @Component({
   selector: 'app-series-details',
-  imports: [ButtonComponent, CardComponent, EmptyStateComponent, LoadingSpinnerComponent],
-  template: `
-    <div class="p-4 space-y-4">
-      @if (loading()) {
-        <div class="py-12 flex justify-center">
-          <app-loading-spinner />
-        </div>
-      } @else if (error()) {
-        <app-card>
-          <div class="p-6">
-            <app-empty-state
-              icon="alert-triangle"
-              title="Nie udało się wczytać serii"
-              [message]="error()!"
-            />
-            <div class="mt-6 flex justify-center">
-              <app-button appearance="soft" color="primary" (clicked)="backToMyEvents()">
-                Wróć do moich wydarzeń
-              </app-button>
-            </div>
-          </div>
-        </app-card>
-      } @else if (series(); as series) {
-        <div class="flex items-start justify-between gap-3">
-          <div class="space-y-1">
-            <p class="text-xs font-medium uppercase tracking-wide text-primary-500">
-              Seria wydarzeń
-            </p>
-            <h1 class="text-xl font-bold text-neutral-900">{{ series.name }}</h1>
-            <p class="text-sm text-neutral-600">{{ recurrenceDescription(series) }}</p>
-          </div>
-
-          @if (series.isActive) {
-            <span
-              class="inline-flex shrink-0 items-center rounded-full bg-success-50 px-3 py-1 text-xs font-medium text-success-600"
-            >
-              Aktywna
-            </span>
-          } @else {
-            <span
-              class="inline-flex shrink-0 items-center rounded-full bg-warning-50 px-3 py-1 text-xs font-medium text-warning-600"
-            >
-              Nieaktywna
-            </span>
-          }
-        </div>
-
-        <app-card>
-          <div class="p-4 space-y-4">
-            <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-                <p class="text-xs font-medium uppercase tracking-wide text-neutral-500">
-                  Start serii
-                </p>
-                <p class="mt-1 text-sm font-semibold text-neutral-900">
-                  {{ formatDateValue(series.startDate) }}
-                </p>
-                <p class="text-xs text-neutral-500">{{ series.time }} • {{ series.timezone }}</p>
-              </div>
-
-              <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-                <p class="text-xs font-medium uppercase tracking-wide text-neutral-500">
-                  Czas trwania
-                </p>
-                <p class="mt-1 text-sm font-semibold text-neutral-900">
-                  {{ formatDuration(series.durationMinutes) }}
-                </p>
-                <p class="text-xs text-neutral-500">Bufor: {{ series.bufferDays }} dni</p>
-              </div>
-
-              <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-                <p class="text-xs font-medium uppercase tracking-wide text-neutral-500">
-                  Automatyczny cover
-                </p>
-                <p class="mt-1 text-sm font-semibold text-neutral-900">
-                  {{ series.autoCoverImage ? 'Tak' : 'Nie' }}
-                </p>
-                <p class="text-xs text-neutral-500">
-                  {{ series.isActive ? 'Generowanie aktywne' : 'Generowanie wyłączone' }}
-                </p>
-              </div>
-            </div>
-
-            @if (series.endDate) {
-              <div
-                class="rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-600"
-              >
-                Seria kończy się {{ formatDateValue(series.endDate) }}.
-              </div>
-            } @else {
-              <div
-                class="rounded-xl border border-primary-200 bg-primary-50 px-4 py-3 text-sm text-primary-700"
-              >
-                Seria jest bezterminowa i będzie generować kolejne wydarzenia do odwołania.
-              </div>
-            }
-          </div>
-        </app-card>
-
-        <app-card>
-          <div class="p-4 space-y-4">
-            <div class="flex items-center justify-between gap-3">
-              <div>
-                <h2 class="text-sm font-semibold text-neutral-900">Nadchodzące wydarzenia</h2>
-                <p class="text-xs text-neutral-500">
-                  Lista wygenerowanych instancji należących do tej serii.
-                </p>
-              </div>
-              <span class="text-xs text-neutral-500">{{ series.events.length }} pozycji</span>
-            </div>
-
-            @if (series.events.length === 0) {
-              <app-empty-state
-                icon="calendar"
-                title="Brak nadchodzących wydarzeń"
-                message="Seria jeszcze nie ma wygenerowanych terminów w aktualnym buforze."
-              />
-            } @else {
-              <div class="space-y-3">
-                @for (event of series.events; track event.id) {
-                  <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p class="text-sm font-medium text-neutral-900">{{ event.title }}</p>
-                        <p class="text-xs text-neutral-500">
-                          {{ formatDateValue(event.startsAt) }} •
-                          {{ formatTimeValue(event.startsAt) }} –
-                          {{ formatTimeValue(event.endsAt) }}
-                        </p>
-                      </div>
-
-                      <app-button
-                        appearance="soft"
-                        color="primary"
-                        size="sm"
-                        iconLeft="settings"
-                        (clicked)="openEventManage(event.id)"
-                      >
-                        Zarządzaj wydarzeniem
-                      </app-button>
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-          </div>
-        </app-card>
-
-        <div class="flex justify-end">
-          <app-button appearance="soft" color="primary" (clicked)="backToMyEvents()">
-            Wróć do moich wydarzeń
-          </app-button>
-        </div>
-      }
-    </div>
-  `,
+  imports: [
+    ButtonComponent,
+    CardComponent,
+    EmptyStateComponent,
+    LoadingSpinnerComponent,
+    RecurrencePickerComponent,
+    ReactiveFormsModule,
+    FormControlErrorDirective,
+  ],
+  templateUrl: './series-details.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeriesDetailsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly eventSeriesService = inject(EventSeriesService);
   private readonly router = inject(Router);
+  private readonly fb = inject(FormBuilder);
+  private readonly confirmModal = inject(ConfirmModalService);
+  private readonly snackbar = inject(SnackbarService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly series = signal<EventSeriesView | null>(null);
+  readonly isEditing = signal(false);
+  readonly saving = signal(false);
+  readonly saveError = signal<string | null>(null);
+  readonly editForm = signal<FormGroup | null>(null);
+
+  readonly affectedEventsCount = computed(() => {
+    const s = this.series();
+    if (!s) {
+      return { withoutEnrollments: 0, withEnrollments: 0 };
+    }
+    const now = new Date();
+    const future = s.events.filter((e) => new Date(e.startsAt) > now);
+    const withoutEnrollments = future.filter((e) => (e._count?.enrollments ?? 0) === 0).length;
+    const withEnrollments = future.filter((e) => (e._count?.enrollments ?? 0) > 0).length;
+    return { withoutEnrollments, withEnrollments };
+  });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -203,6 +93,130 @@ export class SeriesDetailsComponent implements OnInit {
       error: (err) => {
         this.error.set(err?.error?.message || 'Nie udało się wczytać serii.');
         this.loading.set(false);
+      },
+    });
+  }
+
+  startEdit(): void {
+    const s = this.series();
+    if (!s) return;
+    this.editForm.set(
+      this.fb.group({
+        name: [s.name, [Validators.required, Validators.maxLength(120)]],
+        recurrenceType: [s.recurrenceType, Validators.required],
+        intervalDays: [s.intervalDays ?? 7],
+        daysOfWeek: [s.daysOfWeek ?? []],
+        time: [s.time, Validators.required],
+        durationMinutes: [s.durationMinutes, [Validators.required, Validators.min(15)]],
+        startDate: [s.startDate.slice(0, 10), Validators.required],
+        endDate: [s.endDate ? s.endDate.slice(0, 10) : ''],
+        isActive: [s.isActive],
+      }),
+    );
+    this.isEditing.set(true);
+  }
+
+  cancelEdit(): void {
+    this.isEditing.set(false);
+    this.editForm.set(null);
+    this.saveError.set(null);
+  }
+
+  async saveEdit(): Promise<void> {
+    const form = this.editForm();
+    if (!form || form.invalid) return;
+
+    const s = this.series();
+    if (!s) return;
+
+    const counts = this.affectedEventsCount();
+    const withoutMsg =
+      counts.withoutEnrollments > 0
+        ? `${counts.withoutEnrollments} wydarzeń bez zapisów zostanie usuniętych i wygenerowanych ponownie.`
+        : 'Brak przyszłych wydarzeń bez zapisów — zostaną wygenerowane nowe.';
+    const withMsg =
+      counts.withEnrollments > 0
+        ? ` ${counts.withEnrollments} wydarzeń z zapisami pozostanie bez zmian.`
+        : '';
+
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Potwierdź edycję serii',
+      message: withoutMsg + withMsg,
+      confirmLabel: 'Zapisz zmiany',
+      cancelLabel: 'Anuluj',
+      color: 'warning',
+    });
+
+    if (!confirmed) return;
+
+    this.saving.set(true);
+    this.saveError.set(null);
+
+    const value = form.getRawValue() as {
+      name: string;
+      recurrenceType: EventSeriesRecurrenceType;
+      intervalDays: number | null;
+      daysOfWeek: number[];
+      time: string;
+      durationMinutes: number;
+      startDate: string;
+      endDate: string;
+      isActive: boolean;
+    };
+
+    const payload: UpdateEventSeriesPayload = {
+      name: value.name,
+      recurrenceType: value.recurrenceType,
+      intervalDays: value.intervalDays ?? undefined,
+      daysOfWeek: value.daysOfWeek,
+      time: value.time,
+      durationMinutes: value.durationMinutes,
+      startDate: value.startDate,
+      endDate: value.endDate || undefined,
+      isActive: value.isActive,
+    };
+
+    this.eventSeriesService.updateSeries(s.id, payload).subscribe({
+      next: (updated) => {
+        this.series.set(updated);
+        this.isEditing.set(false);
+        this.editForm.set(null);
+        this.saving.set(false);
+        this.snackbar.success('Seria została zaktualizowana.');
+      },
+      error: (err) => {
+        this.saveError.set(err?.error?.message || 'Nie udało się zapisać zmian.');
+        this.saving.set(false);
+      },
+    });
+  }
+
+  async deactivateSeries(): Promise<void> {
+    const s = this.series();
+    if (!s) return;
+
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Dezaktywuj serię',
+      message:
+        'Seria zostanie dezaktywowana. Przyszłe wydarzenia bez zapisów zostaną usunięte. Wydarzeń z zapisami nie ruszamy.',
+      confirmLabel: 'Dezaktywuj',
+      cancelLabel: 'Anuluj',
+      color: 'danger',
+    });
+
+    if (!confirmed) return;
+
+    this.eventSeriesService.deactivate(s.id).subscribe({
+      next: (result) => {
+        this.series.update((prev) => (prev ? { ...prev, isActive: false } : null));
+        const msg =
+          result.deletedFutureEvents > 0
+            ? `Seria dezaktywowana. Usunięto ${result.deletedFutureEvents} przyszłych wydarzeń.`
+            : 'Seria dezaktywowana.';
+        this.snackbar.info(msg);
+      },
+      error: (err) => {
+        this.snackbar.error(err?.error?.message || 'Nie udało się dezaktywować serii.');
       },
     });
   }
@@ -230,16 +244,14 @@ export class SeriesDetailsComponent implements OnInit {
 
   formatDuration(minutes: number): string {
     const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
+    const remaining = minutes % 60;
     if (hours === 0) {
       return `${minutes} min`;
     }
-
-    if (remainingMinutes === 0) {
+    if (remaining === 0) {
       return `${hours} h`;
     }
-
-    return `${hours} h ${remainingMinutes} min`;
+    return `${hours} h ${remaining} min`;
   }
 
   openEventManage(eventId: string): void {

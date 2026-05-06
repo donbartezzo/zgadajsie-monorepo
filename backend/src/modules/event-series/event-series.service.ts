@@ -125,6 +125,9 @@ export class EventSeriesService {
           },
           orderBy: { startsAt: 'asc' },
           take: 30,
+          include: {
+            _count: { select: { enrollments: true } },
+          },
         },
       },
     });
