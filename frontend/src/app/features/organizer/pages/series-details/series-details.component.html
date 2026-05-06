@@ -103,6 +103,24 @@
         </div>
       </div>
 
+      @if (series.suspendedReason) {
+        <div class="rounded-xl border border-warning-200 bg-warning-50 px-4 py-3">
+          <div class="flex items-start gap-2">
+            <app-icon name="alert-triangle" size="sm" color="warning" class="mt-0.5 shrink-0"></app-icon>
+            <div>
+              <p class="text-sm font-semibold text-warning-800">Seria wstrzymana</p>
+              <p class="text-xs text-warning-700 mt-0.5">{{ series.suspendedReason }}</p>
+              <a
+                routerLink="/profile/organizer/digest"
+                class="mt-2 inline-block text-xs text-warning-700 underline font-medium"
+              >
+                Przejdź do zestawienia, aby potwierdzić wydarzenia
+              </a>
+            </div>
+          </div>
+        </div>
+      }
+
       <app-card>
         <div class="p-4 space-y-4">
           <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

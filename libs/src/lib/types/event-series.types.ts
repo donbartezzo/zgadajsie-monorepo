@@ -23,6 +23,8 @@ export interface EventSeriesBase {
   bufferDays: number;
   autoCoverImage: boolean;
   isActive: boolean;
+  suspendedReason?: string | null;
+  suspendedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }

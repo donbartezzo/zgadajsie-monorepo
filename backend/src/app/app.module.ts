@@ -21,6 +21,7 @@ import { AnnouncementsModule } from '../modules/announcements/announcements.modu
 import { CitySubscriptionsModule } from '../modules/city-subscriptions/city-subscriptions.module';
 import { SlotModule } from '../modules/slots/slot.module';
 import { EventSeriesModule } from '../modules/event-series/event-series.module';
+import { OrganizerModule } from '../modules/organizer/organizer.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { EventSeriesModule } from '../modules/event-series/event-series.module';
     UsersModule,
     EventsModule,
     EventSeriesModule,
+    OrganizerModule,
     EnrollmentModule,
     PaymentsModule,
     ChatModule,

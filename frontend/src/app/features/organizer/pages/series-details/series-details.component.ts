@@ -6,11 +6,12 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
+import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { RecurrencePickerComponent } from '../../../../shared/event-form/ui/recurrence-picker/recurrence-picker.component';
 import { FormControlErrorDirective } from '../../../../shared/ui/form-control-error/form-control-error.directive';
@@ -38,9 +39,11 @@ const WEEKDAY_LABELS: Record<number, string> = {
 @Component({
   selector: 'app-series-details',
   imports: [
+    RouterLink,
     ButtonComponent,
     CardComponent,
     EmptyStateComponent,
+    IconComponent,
     LoadingSpinnerComponent,
     RecurrencePickerComponent,
     ReactiveFormsModule,

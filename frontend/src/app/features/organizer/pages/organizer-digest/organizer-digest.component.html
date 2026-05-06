@@ -1,0 +1,189 @@
+<div class="p-4 space-y-6">
+  @if (loading()) {
+    <div class="py-12 flex justify-center">
+      <app-loading-spinner />
+    </div>
+  } @else if (error()) {
+    <app-empty-state icon="alert-triangle" title="Błąd ładowania" [message]="error()!" />
+  } @else if (digest(); as data) {
+    <div class="flex items-center justify-between gap-3">
+      <h1 class="text-xl font-bold text-neutral-900">Zestawienie</h1>
+      <app-button appearance="soft" color="neutral" size="sm" [loading]="sendingEmail()" (clicked)="sendEmail()">
+        <app-icon name="mail" size="sm"></app-icon>
+        Wyślij e-mail
+      </app-button>
+    </div>
+
+    @if (isEmpty(data)) {
+      <app-empty-state
+        icon="bar-chart"
+        title="Brak danych"
+        message="Nie masz jeszcze żadnych wydarzeń ani serii. Utwórz pierwsze wydarzenie, aby zobaczyć zestawienie."
+      />
+    }
+
+    @if (data.pendingConfirmations.length > 0) {
+      <div class="space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-wide text-warning-600 px-1">
+          Do potwierdzenia ({{ data.pendingConfirmations.length }})
+        </p>
+        @for (event of data.pendingConfirmations; track event.id) {
+          <app-card>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="space-y-0.5">
+                <p class="text-sm font-semibold text-neutral-900">{{ event.title }}</p>
+                <p class="text-xs text-neutral-500">
+                  {{ formatDate(event.startsAt) }} • {{ formatEventTime(event.startsAt) }}
+                </p>
+                @if (event.seriesName) {
+                  <p class="text-xs text-primary-600">Seria: {{ event.seriesName }}</p>
+                }
+              </div>
+              <app-button
+                color="primary"
+                size="sm"
+                [loading]="confirmingEventId() === event.id"
+                [disabled]="confirmingEventId() !== null && confirmingEventId() !== event.id"
+                (clicked)="confirmEvent(event)"
+              >
+                Potwierdź
+              </app-button>
+            </div>
+          </app-card>
+        }
+      </div>
+    }
+
+    @if (data.activeSeries.length > 0) {
+      <div class="space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Aktywne serie</p>
+        @for (s of data.activeSeries; track s.id) {
+          <app-card>
+            <div class="flex items-start justify-between gap-3">
+              <div class="space-y-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <p class="text-sm font-semibold text-neutral-900">{{ s.name }}</p>
+                  @if (s.suspendedReason) {
+                    <span
+                      class="inline-flex items-center rounded-full bg-warning-50 px-2 py-0.5 text-xs font-medium text-warning-700"
+                    >
+                      Wstrzymana
+                    </span>
+                  }
+                  @if (s.pendingCount > 0) {
+                    <span
+                      class="inline-flex items-center rounded-full bg-info-50 px-2 py-0.5 text-xs font-medium text-info-700"
+                    >
+                      {{ s.pendingCount }} oczekuje
+                    </span>
+                  }
+                </div>
+                @if (s.suspendedReason) {
+                  <p class="text-xs text-warning-600">{{ s.suspendedReason }}</p>
+                } @else if (s.nextEventAt) {
+                  <p class="text-xs text-neutral-500">Następne: {{ formatDate(s.nextEventAt) }}</p>
+                }
+              </div>
+              <app-button appearance="soft" color="primary" size="sm" (clicked)="navigateToSeries(s.id)">
+                Szczegóły
+              </app-button>
+            </div>
+          </app-card>
+        }
+      </div>
+    }
+
+    @if (data.upcoming.length > 0) {
+      <div class="space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Nadchodzące</p>
+        <app-card>
+          <div class="divide-y divide-neutral-100">
+            @for (event of data.upcoming; track event.id) {
+              <div class="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-2">
+                <div>
+                  <p class="text-sm font-medium text-neutral-900">{{ event.title }}</p>
+                  <p class="text-xs text-neutral-500">
+                    {{ formatDate(event.startsAt) }} • {{ formatEventTime(event.startsAt) }}
+                  </p>
+                </div>
+                @if (event.enrollmentCount > 0) {
+                  <span class="shrink-0 text-xs font-medium text-success-600">
+                    {{ event.enrollmentCount }} zapisów
+                  </span>
+                }
+              </div>
+            }
+          </div>
+        </app-card>
+      </div>
+    }
+
+    @if (data.recentlyCreated.length > 0) {
+      <div class="space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Ostatnio utworzone</p>
+        <app-card>
+          <div class="divide-y divide-neutral-100">
+            @for (event of data.recentlyCreated; track event.id) {
+              <div class="py-3 first:pt-0 last:pb-0">
+                <p class="text-sm font-medium text-neutral-900">{{ event.title }}</p>
+                <p class="text-xs text-neutral-500">{{ formatDate(event.startsAt) }}</p>
+              </div>
+            }
+          </div>
+        </app-card>
+      </div>
+    }
+
+    @if (data.recentlyEnded.length > 0) {
+      <div class="space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Ostatnio zakończone</p>
+        <app-card>
+          <div class="divide-y divide-neutral-100">
+            @for (event of data.recentlyEnded; track event.id) {
+              <div class="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-2">
+                <div>
+                  <p class="text-sm font-medium text-neutral-900">{{ event.title }}</p>
+                  <p class="text-xs text-neutral-500">{{ formatDate(event.endsAt) }}</p>
+                </div>
+                @if (event.enrollmentCount > 0) {
+                  <span class="shrink-0 text-xs text-neutral-500">{{ event.enrollmentCount }} uczestników</span>
+                }
+              </div>
+            }
+          </div>
+        </app-card>
+      </div>
+    }
+
+    @if (data.recentlyCancelled.length > 0) {
+      <div class="space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Odwołane</p>
+        <app-card>
+          <div class="divide-y divide-neutral-100">
+            @for (event of data.recentlyCancelled; track event.id) {
+              <div class="py-3 first:pt-0 last:pb-0">
+                <p class="text-sm font-medium text-neutral-400 line-through">{{ event.title }}</p>
+                <p class="text-xs text-neutral-400">{{ formatDate(event.startsAt) }}</p>
+              </div>
+            }
+          </div>
+        </app-card>
+      </div>
+    }
+
+    @if (data.recentlyDeactivatedSeries.length > 0) {
+      <div class="space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Dezaktywowane serie</p>
+        <app-card>
+          <div class="divide-y divide-neutral-100">
+            @for (s of data.recentlyDeactivatedSeries; track s.id) {
+              <div class="py-3 first:pt-0 last:pb-0">
+                <p class="text-sm font-medium text-neutral-400">{{ s.name }}</p>
+              </div>
+            }
+          </div>
+        </app-card>
+      </div>
+    }
+  }
+</div>

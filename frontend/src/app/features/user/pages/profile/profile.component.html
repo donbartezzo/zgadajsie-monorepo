@@ -21,42 +21,57 @@
     </app-card>
 
     @if (auth.currentUser()?.isActive) {
-      <div class="grid grid-cols-2 gap-3">
-        <a routerLink="/profile/events">
-          <app-card>
-            <div class="flex items-center gap-2">
-              <app-icon name="calendar" size="sm" color="primary"></app-icon>
-              <span class="text-sm font-medium text-neutral-700">Moje wydarzenia</span>
-            </div>
-          </app-card>
-        </a>
+      <div class="space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Panel organizatora</p>
+        <div class="grid grid-cols-2 gap-3">
+          <a routerLink="/profile/events">
+            <app-card>
+              <div class="flex items-center gap-2">
+                <app-icon name="calendar" size="sm" color="primary"></app-icon>
+                <span class="text-sm font-medium text-neutral-700">Moje wydarzenia</span>
+              </div>
+            </app-card>
+          </a>
 
-        <a routerLink="/profile/participations">
-          <app-card>
-            <div class="flex items-center gap-2">
-              <app-icon name="users" size="sm" color="primary"></app-icon>
-              <span class="text-sm font-medium text-neutral-700">Uczestnictwa</span>
-            </div>
-          </app-card>
-        </a>
+          <a routerLink="/profile/organizer/digest">
+            <app-card>
+              <div class="flex items-center gap-2">
+                <app-icon name="bar-chart" size="sm" color="primary"></app-icon>
+                <span class="text-sm font-medium text-neutral-700">Zestawienie</span>
+              </div>
+            </app-card>
+          </a>
+        </div>
 
-        <a routerLink="/payments">
-          <app-card>
-            <div class="flex items-center gap-2">
-              <app-icon name="credit-card" size="sm" color="primary"></app-icon>
-              <span class="text-sm font-medium text-neutral-700">Moje płatności</span>
-            </div>
-          </app-card>
-        </a>
+        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1 pt-2">Panel uczestnika</p>
+        <div class="grid grid-cols-2 gap-3">
+          <a routerLink="/profile/participations">
+            <app-card>
+              <div class="flex items-center gap-2">
+                <app-icon name="users" size="sm" color="primary"></app-icon>
+                <span class="text-sm font-medium text-neutral-700">Uczestnictwa</span>
+              </div>
+            </app-card>
+          </a>
 
-        <a routerLink="/vouchers">
-          <app-card>
-            <div class="flex items-center gap-2">
-              <app-icon name="wallet" size="sm" color="primary"></app-icon>
-              <span class="text-sm font-medium text-neutral-700">Moje vouchery</span>
-            </div>
-          </app-card>
-        </a>
+          <a routerLink="/payments">
+            <app-card>
+              <div class="flex items-center gap-2">
+                <app-icon name="credit-card" size="sm" color="primary"></app-icon>
+                <span class="text-sm font-medium text-neutral-700">Moje płatności</span>
+              </div>
+            </app-card>
+          </a>
+
+          <a routerLink="/vouchers">
+            <app-card>
+              <div class="flex items-center gap-2">
+                <app-icon name="wallet" size="sm" color="primary"></app-icon>
+                <span class="text-sm font-medium text-neutral-700">Moje vouchery</span>
+              </div>
+            </app-card>
+          </a>
+        </div>
       </div>
     } @else {
       <app-card class="bg-warning-50 border-warning-200">

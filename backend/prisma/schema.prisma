@@ -26,6 +26,7 @@ enum EventVisibility {
 }
 
 enum EventStatus {
+  PENDING
   ACTIVE
   CANCELLED
 }
@@ -114,6 +115,7 @@ model User {
   tpayMerchantId              String?
   donationUrl                 String?
   avatarSeed                  String?
+  weeklyDigestSentAt          DateTime?
   announcementReceipts        AnnouncementReceipt[]
   groupChatMessages           EventGroupMessage[]
   citySubscriptions           CitySubscription[]
@@ -213,6 +215,7 @@ model Event {
   recurringRule     String?
   parentEventId     String?
   seriesId          String?
+  confirmToken      String?              @unique
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
   rules             String?
@@ -261,6 +264,8 @@ model EventSeries {
   autoCoverImage   Boolean                    @default(false)
   templateSnapshot Json
   isActive         Boolean                    @default(true)
+  suspendedReason  String?
+  suspendedAt      DateTime?
   createdAt        DateTime                   @default(now())
   updatedAt        DateTime                   @updatedAt
   organizer        User                       @relation(fields: [organizerId], references: [id])

@@ -225,6 +225,33 @@ export const appRoutes: Route[] = [
     },
   },
 
+  // ── Organizer: digest ──
+  {
+    path: 'profile/organizer/digest',
+    loadComponent: () =>
+      import('./features/organizer/pages/organizer-digest/organizer-digest.component').then(
+        (m) => m.OrganizerDigestComponent,
+      ),
+    canActivate: [authGuard, activeGuard],
+    data: {
+      title: 'Zestawienie organizatora',
+      breadcrumb: BREADCRUMB_TO_PROFILE,
+    },
+  },
+
+  // ── Public: confirm series event by email token ──
+  {
+    path: 'o/confirm-event',
+    loadComponent: () =>
+      import('./features/organizer/pages/confirm-event/confirm-event.component').then(
+        (m) => m.ConfirmEventComponent,
+      ),
+    data: {
+      title: 'Potwierdzenie wydarzenia',
+      ...WHITE_BARE_LAYOUT,
+    },
+  },
+
   // ── Announcement confirm (from email link, no auth required) ──
   {
     path: 'announcements/confirm/:token',

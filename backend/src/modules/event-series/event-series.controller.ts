@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
   ForbiddenException,
 } from '@nestjs/common';
@@ -19,6 +20,12 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
 import { featureFlags } from '../../common/config/feature-flags';
 import { isOverrideAccount } from '@zgadajsie/shared';
+import { IsUUID } from 'class-validator';
+
+class ConfirmByTokenQuery {
+  @IsUUID()
+  token: string;
+}
 
 @Controller('event-series')
 export class EventSeriesController {
@@ -59,6 +66,21 @@ export class EventSeriesController {
   @Delete(':id')
   deactivate(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.eventSeriesService.deactivate(id, user);
+  }
+
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  @Patch(':id/confirm-event/:eventId')
+  confirmEvent(
+    @Param('id') seriesId: string,
+    @Param('eventId') eventId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.eventSeriesService.confirmEvent(seriesId, eventId, user);
+  }
+
+  @Patch('confirm-event-by-token')
+  confirmEventByToken(@Query() query: ConfirmByTokenQuery) {
+    return this.eventSeriesService.confirmEventByToken(query.token);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)

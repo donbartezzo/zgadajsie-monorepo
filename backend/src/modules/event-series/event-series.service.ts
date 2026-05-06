@@ -178,12 +178,12 @@ export class EventSeriesService {
 
     const now = new Date();
 
-    // Usuń przyszłe eventy bez zapisów
+    // Usuń przyszłe eventy bez zapisów (ACTIVE i PENDING)
     await this.prisma.event.deleteMany({
       where: {
         seriesId: id,
         startsAt: { gt: now },
-        status: EventStatus.ACTIVE,
+        status: { in: [EventStatus.ACTIVE, EventStatus.PENDING] },
         enrollments: { none: {} },
       },
     });
@@ -253,7 +253,7 @@ export class EventSeriesService {
       where: {
         seriesId: id,
         startsAt: { gt: now },
-        status: EventStatus.ACTIVE,
+        status: { in: [EventStatus.ACTIVE, EventStatus.PENDING] },
         enrollments: { none: {} },
       },
     });
@@ -272,6 +272,82 @@ export class EventSeriesService {
       deletedFutureEvents: deleted.count,
       remainingEventsWithEnrollments: remaining,
     };
+  }
+
+  async confirmEvent(seriesId: string, eventId: string, user: AuthUser) {
+    const series = await this.prisma.eventSeries.findUnique({ where: { id: seriesId } });
+    if (!series) throw new NotFoundException(SERIES_NOT_FOUND);
+
+    if (series.organizerId !== user.id && !isAdminUser(user)) {
+      throw new ForbiddenException(NOT_SERIES_ORGANIZER);
+    }
+
+    return this.activateEvent(eventId, seriesId);
+  }
+
+  async confirmEventByToken(token: string) {
+    const event = await this.prisma.event.findUnique({
+      where: { confirmToken: token },
+      select: { id: true, seriesId: true, status: true, title: true },
+    });
+
+    if (!event || !event.seriesId) {
+      throw new NotFoundException('Token potwierdzenia nie istnieje lub wygasł');
+    }
+
+    if (event.status === EventStatus.ACTIVE) {
+      return { confirmed: true, eventId: event.id, title: event.title, alreadyConfirmed: true };
+    }
+
+    return this.activateEvent(event.id, event.seriesId);
+  }
+
+  private async activateEvent(eventId: string, seriesId: string) {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, status: true, title: true, seriesId: true },
+    });
+
+    if (!event) throw new NotFoundException('Wydarzenie nie zostało znalezione');
+    if (event.seriesId !== seriesId)
+      throw new NotFoundException('Wydarzenie nie należy do tej serii');
+
+    await this.prisma.event.update({
+      where: { id: eventId },
+      data: { status: EventStatus.ACTIVE, confirmToken: null },
+    });
+
+    await this.resumeSeriesIfNeeded(seriesId);
+
+    return { confirmed: true, eventId: event.id, title: event.title, alreadyConfirmed: false };
+  }
+
+  private async resumeSeriesIfNeeded(seriesId: string): Promise<void> {
+    const series = await this.prisma.eventSeries.findUnique({
+      where: { id: seriesId },
+      select: { suspendedReason: true },
+    });
+
+    if (!series?.suspendedReason) return;
+
+    const recentEvents = await this.prisma.event.findMany({
+      where: { seriesId },
+      select: { status: true },
+      orderBy: { startsAt: 'desc' },
+      take: 3,
+    });
+
+    const allPending = recentEvents.every((e) => e.status === EventStatus.PENDING);
+    if (!allPending) {
+      await this.prisma.eventSeries.update({
+        where: { id: seriesId },
+        data: {
+          suspendedReason: null,
+          suspendedAt: null,
+          nextGenerationAt: new Date(),
+        },
+      });
+    }
   }
 
   previewDates(dto: PreviewEventSeriesDto) {

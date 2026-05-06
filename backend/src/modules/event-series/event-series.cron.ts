@@ -18,6 +18,7 @@ export class EventSeriesCron {
     const series = await this.prisma.eventSeries.findMany({
       where: {
         isActive: true,
+        suspendedReason: null,
         nextGenerationAt: { lte: now },
       },
       select: { id: true, name: true },

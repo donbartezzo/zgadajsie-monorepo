@@ -232,6 +232,99 @@ export class EmailService implements OnModuleInit {
     await this.send(this.fromAddress, subject, html);
   }
 
+  async sendOrganizerWeeklyDigest(
+    email: string,
+    displayName: string,
+    data: import('../organizer/organizer.service').OrganizerDigestData,
+    frontendUrl: string,
+  ): Promise<void> {
+    const hasPending = data.pendingConfirmations.length > 0;
+    const hasSuspended = data.activeSeries.some((s) => s.suspendedReason);
+
+    const pendingSection = hasPending
+      ? `
+        <h2 style="color:#d97706;">⚠️ Do potwierdzenia (${data.pendingConfirmations.length})</h2>
+        <p>Poniższe wydarzenia zostały wygenerowane automatycznie i czekają na Twoje potwierdzenie.</p>
+        <table style="width:100%;border-collapse:collapse;">
+          ${data.pendingConfirmations
+            .map(
+              (e) => `
+            <tr style="border-bottom:1px solid #e5e7eb;">
+              <td style="padding:8px 0;">
+                <strong>${e.title}</strong><br/>
+                <span style="font-size:12px;color:#6b7280;">${new Date(e.startsAt).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                ${e.seriesName ? `<br/><span style="font-size:12px;color:#6b7280;">Seria: ${e.seriesName}</span>` : ''}
+              </td>
+              <td style="padding:8px 0;text-align:right;">
+                ${
+                  e.confirmToken
+                    ? `<a href="${frontendUrl}/o/confirm-event?token=${e.confirmToken}" style="display:inline-block;padding:6px 14px;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none;font-size:13px;">Potwierdź</a>`
+                    : ''
+                }
+              </td>
+            </tr>`,
+            )
+            .join('')}
+        </table>
+      `
+      : '';
+
+    const suspendedSection = hasSuspended
+      ? `
+        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px;margin:16px 0;">
+          <strong style="color:#dc2626;">Seria wstrzymana</strong>
+          <p style="margin:4px 0;font-size:13px;color:#7f1d1d;">
+            Jedna lub więcej Twoich serii wydarzeń jest wstrzymana z powodu niepotwierdzonych wydarzeń.
+            <a href="${frontendUrl}/profile/organizer/digest" style="color:#dc2626;">Przejdź do panelu →</a>
+          </p>
+        </div>
+      `
+      : '';
+
+    const seriesSection =
+      data.activeSeries.length > 0
+        ? `
+        <h2>Aktywne serie (${data.activeSeries.length})</h2>
+        <ul style="padding-left:18px;">
+          ${data.activeSeries
+            .map(
+              (s) =>
+                `<li style="margin-bottom:6px;">
+                  <strong>${s.name}</strong>
+                  ${s.suspendedReason ? '<span style="color:#dc2626;"> — WSTRZYMANA</span>' : ''}
+                  ${s.pendingCount > 0 ? `<span style="color:#d97706;"> (${s.pendingCount} oczekujące)</span>` : ''}
+                </li>`,
+            )
+            .join('')}
+        </ul>
+      `
+        : '';
+
+    const summarySection = `
+      <h2>Podsumowanie miesiąca</h2>
+      <ul style="padding-left:18px;">
+        ${data.upcoming.length > 0 ? `<li><strong>${data.upcoming.length}</strong> nadchodzących wydarzeń</li>` : ''}
+        ${data.recentlyCreated.length > 0 ? `<li><strong>${data.recentlyCreated.length}</strong> nowo utworzonych wydarzeń</li>` : ''}
+        ${data.recentlyEnded.length > 0 ? `<li><strong>${data.recentlyEnded.length}</strong> zakończonych wydarzeń</li>` : ''}
+        ${data.recentlyCancelled.length > 0 ? `<li><strong>${data.recentlyCancelled.length}</strong> anulowanych wydarzeń</li>` : ''}
+      </ul>
+      <p><a href="${frontendUrl}/profile/organizer/digest" style="color:#2563eb;">Zobacz pełne zestawienie →</a></p>
+    `;
+
+    await this.send(
+      email,
+      `Tygodniowy raport organizatora – ${APP_BRAND.NAME}`,
+      `
+      <h2>Hej ${displayName}!</h2>
+      <p>Oto Twój tygodniowy raport z aktywnością na ${APP_BRAND.NAME}.</p>
+      ${suspendedSection}
+      ${pendingSection}
+      ${seriesSection}
+      ${summarySection}
+      `,
+    );
+  }
+
   private async send(to: string, subject: string, html: string): Promise<void> {
     try {
       await this.resend.emails.send({

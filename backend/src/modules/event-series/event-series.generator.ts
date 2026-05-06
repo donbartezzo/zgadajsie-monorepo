@@ -6,6 +6,7 @@ import {
   computeNextDates,
 } from '@zgadajsie/shared';
 import { DateTime } from 'luxon';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { SlotService } from '../slots/slot.service';
 import { CoverImagesService } from '../cover-images/cover-images.service';
@@ -38,6 +39,8 @@ export interface GenerateResult {
   skipped: number;
 }
 
+const SERIES_SUSPEND_THRESHOLD = 3;
+
 @Injectable()
 export class EventSeriesGenerator {
   private readonly logger = new Logger(EventSeriesGenerator.name);
@@ -52,6 +55,10 @@ export class EventSeriesGenerator {
     const series = await this.prisma.eventSeries.findUniqueOrThrow({ where: { id: seriesId } });
 
     if (!series.isActive) {
+      return { created: 0, skipped: 0 };
+    }
+
+    if (series.suspendedReason) {
       return { created: 0, skipped: 0 };
     }
 
@@ -110,7 +117,7 @@ export class EventSeriesGenerator {
       where: {
         seriesId,
         startsAt: { in: dates },
-        status: EventStatus.ACTIVE,
+        status: EventStatus.PENDING,
       },
       select: { id: true, startsAt: true },
       orderBy: { startsAt: 'asc' },
@@ -132,13 +139,7 @@ export class EventSeriesGenerator {
 
     const nextGenerationAt = DateTime.fromJSDate(windowEnd).minus({ days: 1 }).toJSDate();
 
-    await this.prisma.eventSeries.update({
-      where: { id: seriesId },
-      data: {
-        lastGeneratedAt: windowEnd,
-        nextGenerationAt,
-      },
-    });
+    await this.checkAndSuspendIfNeeded(seriesId, nextGenerationAt);
 
     this.logger.log(
       `Series ${seriesId}: generated ${createdCount} events, skipped ${dates.length - createdCount}`,
@@ -158,6 +159,35 @@ export class EventSeriesGenerator {
       type: EventSeriesRecurrenceType.WEEKLY as const,
       daysOfWeek: series.daysOfWeek ?? [],
     };
+  }
+
+  private async checkAndSuspendIfNeeded(seriesId: string, nextGenerationAt: Date): Promise<void> {
+    const recentEvents = await this.prisma.event.findMany({
+      where: { seriesId },
+      select: { status: true },
+      orderBy: { startsAt: 'desc' },
+      take: SERIES_SUSPEND_THRESHOLD,
+    });
+
+    const allPending =
+      recentEvents.length >= SERIES_SUSPEND_THRESHOLD &&
+      recentEvents.every((e) => e.status === EventStatus.PENDING);
+
+    if (allPending) {
+      const reason = `Seria wstrzymana automatycznie: ${SERIES_SUSPEND_THRESHOLD} ostatnich wydarzeń oczekuje na potwierdzenie organizatora.`;
+      await this.prisma.eventSeries.update({
+        where: { id: seriesId },
+        data: { suspendedReason: reason, suspendedAt: new Date() },
+      });
+      this.logger.warn(
+        `Series ${seriesId} suspended: ${SERIES_SUSPEND_THRESHOLD} unconfirmed events in a row`,
+      );
+    } else {
+      await this.prisma.eventSeries.update({
+        where: { id: seriesId },
+        data: { nextGenerationAt },
+      });
+    }
   }
 
   private async buildEventRecords(
@@ -211,7 +241,8 @@ export class EventSeriesGenerator {
           ? JSON.parse(JSON.stringify(template.roleConfig))
           : undefined,
         seriesId: series.id,
-        status: EventStatus.ACTIVE,
+        status: EventStatus.PENDING,
+        confirmToken: randomUUID(),
         startsAt,
         endsAt,
       });

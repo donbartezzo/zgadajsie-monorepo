@@ -54,4 +54,17 @@ export class EventSeriesService {
   preview(payload: PreviewPayload): Observable<EventSeriesPreviewItem[]> {
     return this.http.post<EventSeriesPreviewItem[]>(`${this.apiUrl}/preview`, payload);
   }
+
+  confirmEvent(seriesId: string, eventId: string): Observable<{ confirmed: boolean }> {
+    return this.http.patch<{ confirmed: boolean }>(
+      `${this.apiUrl}/${seriesId}/confirm-event/${eventId}`,
+      {},
+    );
+  }
+
+  confirmEventByToken(token: string): Observable<{ confirmed: boolean }> {
+    return this.http.patch<{ confirmed: boolean }>(`${this.apiUrl}/confirm-event-by-token`, null, {
+      params: { token },
+    });
+  }
 }
