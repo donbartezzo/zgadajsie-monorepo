@@ -448,13 +448,13 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 
 > Każde pytanie zaznacz jako rozstrzygnięte (`✔`) wraz z decyzją.
 
-- [ ] 1. Czy w fazie 1 zostawiamy (kasujemy) pola `Event.isRecurring`, `recurringRule`, `parentEventId` razem z migracją czy w PR finalnym po roll-outcie? (Sugerowane: po roll-outcie - punkt 8.)
-- [ ] 2. Czy seria może być "wieczna" (`endDate = null`)? (Plan zakłada tak.)
-- [ ] 3. Czy edycja serii ma respektować zapis "tylko ta instancja" / "cała seria" / "ta i przyszłe" (model 3 scope'ów jak w Google Calendar)? Czy v1 obsługuje tylko "cała seria, wpływa tylko na puste wydarzenia"?
-- [ ] 4. Bufor 30 dni - akceptowalny? (Plan: tak; konfigurowalny per seria w `bufferDays`.)
-- [ ] 5. Czy preview dat liczymy lokalnie w UI bez wywołania API (`POST /event-series/preview` nie potrzebny)? Sugerowane: **tak** - preview lokalny, endpoint tylko jako opcja debugowa.
-- [ ] 6. Strategia `autoCoverImage` przy roll-overze (gdy pula < liczba instancji): **najmniej ostatnio użyty** (zgodne z istniejącą strategią smart-cover).
-- [ ] 7. Konwencja `daysOfWeek`: 1-7 ISO (Luxon) czy 0-6 JS? **Sugerowane: 1-7 ISO.** Frontend tłumaczy na etykiety Pn-Nd.
+- [x] ✔ 1. Pola `Event.isRecurring`, `recurringRule`, `parentEventId` zostawiamy do PR finalnego po roll-outcie (punkt 8). Decyzja: po roll-outcie. 2026-05-06.
+- [x] ✔ 2. Seria może być wieczna (`endDate = null`). Potwierdzono 2026-05-06. Wymaga jednak mechanizmu "potwierdzenia ciągłości" (v2 - nowy scope).
+- [x] ✔ 3. V1: "cała seria, wpływa tylko na przyszłe puste wydarzenia". Edycja wyświetla confirm mode z licznikiem `affectedEventsCount`. Wdrożono 2026-05-06 w `SeriesDetailsComponent`.
+- [x] ✔ 4. Bufor 30 dni - akceptowalny, konfigurowalny per seria. Potwierdzono 2026-05-06.
+- [x] ✔ 5. Preview lokalny w UI (bez API). `RecurrencePickerComponent` liczy przez `previewSeriesDates`. Potwierdzono 2026-05-06.
+- [x] ✔ 6. `autoCoverImage` przy roll-overze: LRU (najmniej ostatnio użyty) - zgodne z istniejącą strategią. Potwierdzono 2026-05-06.
+- [x] ✔ 7. `daysOfWeek` 1-7 ISO (Luxon). Potwierdzono 2026-05-06.
 
 ---
 
