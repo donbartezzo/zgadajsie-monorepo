@@ -401,7 +401,7 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 ### 6.7 Testy frontend
 
 - [x] Spec dla `recurrence-picker`: zmiana trybu, dodawanie/usuwanie dni tygodnia, podgląd 5 dat.
-- [x] Spec dla `event-form` w trybie serii: poprawny payload do `eventSeriesService.createSeries`. Wdrożono 2026-05-05: 6 testów w `event-form.component.spec.ts` (sekcja "tryb serii wydarzeń").
+- [x] Spec dla `event-form` w trybie serii: poprawny payload do `eventSeriesService.createSeries`. Wdrożono 2026-05-05: 6 testów w `event-form.component.spec.ts` (sekcja "tryb serii wydarzeń"). Poprawiono 2026-05-06: dodano `queryParamMap` do mocka route (potrzebny dla `seriesMode` query param) oraz zaktualizowano asercję nawigacji (`['/series', id]` zamiast `['/o']`).
 - [x] E2E (`frontend-e2e`): scenariusz "stwórz serię WEEKLY pon+czw → na liście są 4 nadchodzące eventy". Wdrożono 2026-05-05: smoke test tworzenia serii i redirectu na `/series/:id`.
 
 ---
@@ -448,13 +448,13 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 
 > Każde pytanie zaznacz jako rozstrzygnięte (`✔`) wraz z decyzją.
 
-- [ ] Czy w fazie 1 zostawiamy (kasujemy) pola `Event.isRecurring`, `recurringRule`, `parentEventId` razem z migracją czy w PR finalnym po roll-outcie? (Sugerowane: po roll-outcie - punkt 8.)
-- [ ] Czy seria może być "wieczna" (`endDate = null`)? (Plan zakłada tak.)
-- [ ] Czy edycja serii ma respektować zapis "tylko ta instancja" / "cała seria" / "ta i przyszłe" (model 3 scope'ów jak w Google Calendar)? Czy v1 obsługuje tylko "cała seria, wpływa tylko na puste wydarzenia"?
-- [ ] Bufor 30 dni - akceptowalny? (Plan: tak; konfigurowalny per seria w `bufferDays`.)
-- [ ] Czy preview dat liczymy lokalnie w UI bez wywołania API (`POST /event-series/preview` nie potrzebny)? Sugerowane: **tak** - preview lokalny, endpoint tylko jako opcja debugowa.
-- [ ] Strategia `autoCoverImage` przy roll-overze (gdy pula < liczba instancji): **najmniej ostatnio użyty** (zgodne z istniejącą strategią smart-cover).
-- [ ] Konwencja `daysOfWeek`: 1-7 ISO (Luxon) czy 0-6 JS? **Sugerowane: 1-7 ISO.** Frontend tłumaczy na etykiety Pn-Nd.
+- [ ] 1. Czy w fazie 1 zostawiamy (kasujemy) pola `Event.isRecurring`, `recurringRule`, `parentEventId` razem z migracją czy w PR finalnym po roll-outcie? (Sugerowane: po roll-outcie - punkt 8.)
+- [ ] 2. Czy seria może być "wieczna" (`endDate = null`)? (Plan zakłada tak.)
+- [ ] 3. Czy edycja serii ma respektować zapis "tylko ta instancja" / "cała seria" / "ta i przyszłe" (model 3 scope'ów jak w Google Calendar)? Czy v1 obsługuje tylko "cała seria, wpływa tylko na puste wydarzenia"?
+- [ ] 4. Bufor 30 dni - akceptowalny? (Plan: tak; konfigurowalny per seria w `bufferDays`.)
+- [ ] 5. Czy preview dat liczymy lokalnie w UI bez wywołania API (`POST /event-series/preview` nie potrzebny)? Sugerowane: **tak** - preview lokalny, endpoint tylko jako opcja debugowa.
+- [ ] 6. Strategia `autoCoverImage` przy roll-overze (gdy pula < liczba instancji): **najmniej ostatnio użyty** (zgodne z istniejącą strategią smart-cover).
+- [ ] 7. Konwencja `daysOfWeek`: 1-7 ISO (Luxon) czy 0-6 JS? **Sugerowane: 1-7 ISO.** Frontend tłumaczy na etykiety Pn-Nd.
 
 ---
 

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
@@ -179,6 +179,7 @@ const WEEKDAY_LABELS: Record<number, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeriesDetailsComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
   private readonly eventSeriesService = inject(EventSeriesService);
   private readonly router = inject(Router);
 
@@ -187,7 +188,7 @@ export class SeriesDetailsComponent implements OnInit {
   readonly series = signal<EventSeriesView | null>(null);
 
   ngOnInit(): void {
-    const id = this.router.routerState.snapshot.root.firstChild?.paramMap.get('id');
+    const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
       this.error.set('Brak identyfikatora serii.');
       this.loading.set(false);

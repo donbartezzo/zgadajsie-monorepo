@@ -50,6 +50,7 @@ const mockBreadcrumb = { setContext: jest.fn() };
 const mockRoute = {
   snapshot: {
     paramMap: { get: jest.fn().mockReturnValue(null) },
+    queryParamMap: { get: jest.fn().mockReturnValue(null) },
     queryParams: {},
   },
 };
@@ -392,7 +393,7 @@ describe('EventFormComponent', () => {
       );
       expect(mockEventService.createEvent).not.toHaveBeenCalled();
       expect(mockSnackbar.success).toHaveBeenCalledWith('Seria wydarzeń utworzona');
-      expect(navSpy).toHaveBeenCalledWith(['/o']);
+      expect(navSpy).toHaveBeenCalledWith(['/series', 'series1']);
     }));
 
     it('gdy createSeries zwraca błąd, wywołuje snackbar.error z komunikatem', fakeAsync(() => {
