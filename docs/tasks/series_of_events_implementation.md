@@ -480,91 +480,67 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 
 ### 12.1 Schema — migracja addytywna
 
-- [ ] `EventStatus` enum: dodać wartość `PENDING` (między `ACTIVE` a `CANCELLED`).
-- [ ] `Event`: dodać `confirmToken String? @unique` — UUID generowany przy tworzeniu PENDING; kasowany po potwierdzeniu.
-- [ ] `EventSeries`: dodać `suspendedReason String?` i `suspendedAt DateTime?` — adnotacja blokady serii (>=3 niepotwierdzone z rzędu).
-- [ ] `User`: dodać `weeklyDigestSentAt DateTime?` — timestamp ostatniego wysłanego digesta; używany do deduplicji w cronie.
-- [ ] Wygenerować i zaaplikować migrację Prisma: `add_event_series_pending_and_digest`.
-- [ ] Zaktualizować `libs/src/lib/enums/event-status.enum.ts` o `PENDING = 'PENDING'`.
-- [ ] Zaktualizować `libs/src/lib/types/event-series.types.ts` o pole `suspendedReason?: string | null` i `suspendedAt?: string | null` w `EventSeriesBase`.
+- [x] `EventStatus` enum: dodać wartość `PENDING` (między `ACTIVE` a `CANCELLED`). Wdrożono 2026-05-06.
+- [x] `Event`: dodać `confirmToken String? @unique` — UUID generowany przy tworzeniu PENDING; kasowany po potwierdzeniu. Wdrożono 2026-05-06.
+- [x] `EventSeries`: dodać `suspendedReason String?` i `suspendedAt DateTime?` — adnotacja blokady serii (>=3 niepotwierdzone z rzędu). Wdrożono 2026-05-06.
+- [x] `User`: dodać `weeklyDigestSentAt DateTime?` — timestamp ostatniego wysłanego digesta; używany do deduplicji w cronie. Wdrożono 2026-05-06.
+- [x] Wygenerować i zaaplikować migrację Prisma: `20260506120000_add_event_pending_and_organizer_digest`. Wdrożono 2026-05-06.
+- [x] Zaktualizować `libs/src/lib/enums/event-status.enum.ts` o `PENDING = 'PENDING'`. Wdrożono 2026-05-06.
+- [x] Zaktualizować `libs/src/lib/types/event-series.types.ts` o pole `suspendedReason?: string | null` i `suspendedAt?: string | null` w `EventSeriesBase`. Wdrożono 2026-05-06.
 
 ### 12.2 Generator — PENDING events + blokowanie serii
 
-- [ ] `EventSeriesGenerator.generateForSeries()`:
+- [x] `EventSeriesGenerator.generateForSeries()`: wdrożono 2026-05-06.
   - Sprawdź czy seria jest wstrzymana (`suspendedReason IS NOT NULL`) → return early `{ created: 0, skipped: 0 }`.
   - Twórz eventy ze statusem `EventStatus.PENDING` zamiast `ACTIVE`.
   - Do każdego rekordu dodaj `confirmToken: crypto.randomUUID()`.
   - Po `createMany` pobieraj nowo-wygenerowane eventy filtrując po `status: PENDING` (zamiast `ACTIVE`).
   - Po generacji: policz ile ostatnich eventów serii (order `startsAt DESC`) jest PENDING pod rząd → jeśli `>= 3`, ustaw `suspendedReason` i `suspendedAt` na serii.
   - Stała `SERIES_SUSPEND_THRESHOLD = 3` (w pliku `event-series.constants.ts` lub lokalnie).
-- [ ] `EventSeriesCron`: filtruj wykluczone serie przez `suspendedReason: null`.
-- [ ] Zaktualizować `deactivate()` i `update()` w `EventSeriesService` — dodać `PENDING` obok `ACTIVE` przy usuwaniu przyszłych pustych eventów.
+- [x] `EventSeriesCron`: filtruj wykluczone serie przez `suspendedReason: null`. Wdrożono 2026-05-06.
+- [x] Zaktualizować `deactivate()` i `update()` w `EventSeriesService` — dodać `PENDING` obok `ACTIVE` przy usuwaniu przyszłych pustych eventów. Wdrożono 2026-05-06.
 
 ### 12.3 Potwierdzanie wydarzeń — endpointy
 
-- [ ] `PATCH /event-series/:seriesId/confirm-event/:eventId` (JWT) — potwierdza przez panel; waliduje że event należy do serii organizatora; ustawia `status: ACTIVE`, `confirmToken: null`; jeśli seria była wstrzymana i liczba PENDING < 3 → czyści `suspendedReason/suspendedAt` + ustawia `nextGenerationAt: now`.
-- [ ] `PATCH /event-series/confirm-event-by-token` (bez JWT) z `?token=uuid` — potwierdza z linku mailowego; wyszukuje event po `confirmToken`, identyczna logika jak wyżej; zwraca `{ confirmed: true, eventId, title }`.
-- [ ] DTO walidacja: token query param `@IsUUID()`.
-- [ ] Testy unit: potwierdzenie przez token (happy path + token nie istnieje + token już użyty → 404).
+- [x] `PATCH /event-series/:seriesId/confirm-event/:eventId` (JWT) — wdrożono 2026-05-06.
+- [x] `PATCH /event-series/confirm-event-by-token` (bez JWT) z `?token=uuid` — wdrożono 2026-05-06.
+- [x] DTO walidacja: token query param `@IsUUID()`. Wdrożono 2026-05-06.
+- [x] Testy unit: potwierdzenie przez token (happy path + token nie istnieje + token już użyty → 404). Wdrożono 2026-05-06: 4 testy w `event-series.service.spec.ts`.
 
 ### 12.4 Backend — moduł `organizer` (digest)
 
-- [ ] Nowy moduł `backend/src/modules/organizer/`:
+- [x] Nowy moduł `backend/src/modules/organizer/` — wdrożono 2026-05-06:
   - `organizer.module.ts`
   - `organizer.controller.ts`
   - `organizer.service.ts`
   - `organizer-digest.cron.ts`
-- [ ] `GET /organizer/digest` (JWT) — zwraca `OrganizerDigestData`:
-  - `period: { from, to }` — ostatnie 30 dni
-  - `pendingConfirmations: EventDigestItem[]` — PENDING eventy organizatora (z `confirmToken`)
-  - `recentlyCreated: EventDigestItem[]` — eventy wytworzone w `period`
-  - `recentlyEnded: EventDigestItem[]` — eventy zakończone w `period`
-  - `upcoming: EventDigestItem[]` — eventy startujące w ciągu 30 dni
-  - `recentlyCancelled: EventDigestItem[]` — eventy CANCELLED z `period`
-  - `activeSeries: SeriesDigestItem[]` — aktywne serie organizatora (z `pendingCount`, `suspendedReason`)
-  - `recentlyDeactivatedSeries: SeriesDigestItem[]` — `isActive=false` + `updatedAt >= period.from`
-- [ ] `POST /organizer/digest/send-email` (JWT) — ręczne wysłanie e-maila digestu z panelu; zwraca `{ sent: true }`.
-- [ ] Typy `OrganizerDigestData`, `EventDigestItem`, `SeriesDigestItem` — w module (nie w libs, backend-only).
+- [x] `GET /organizer/digest` (JWT) — wdrożono 2026-05-06.
+- [x] `POST /organizer/digest/send-email` (JWT) — wdrożono 2026-05-06.
+- [x] Typy `OrganizerDigestData`, `EventDigestItem`, `SeriesDigestItem` — w `organizer.service.ts`. Wdrożono 2026-05-06.
 
 ### 12.5 E-mail — `sendOrganizerWeeklyDigest`
 
-- [ ] `EmailService.sendOrganizerWeeklyDigest(email, displayName, data, frontendUrl)` — HTML template z:
-  - Sekcja "Wymagające uwagi" (PENDING eventy + przyciski „Potwierdź" z linkiem `{frontendUrl}/o/confirm-event?token=`).
-  - Sekcja "Aktywne serie" (ze statusem zawieszenia jeśli dotyczy).
-  - Sekcja "Podsumowanie miesiąca" (created/ended/upcoming/cancelled).
-  - Opcjonalna sekcja "Seria wstrzymana" z CTA „przejdź do panelu".
-- [ ] Cron `OrganizerDigestCron` (`@Cron('0 8 * * *')` — codziennie 8:00 Warsaw):
-  - Pobiera batch 50 organizatorów z `weeklyDigestSentAt IS NULL OR weeklyDigestSentAt < startOfCurrentISOWeek`.
-  - Dla każdego: pobiera dane digestu (reuse `OrganizerService.getDigestData`), wysyła e-mail, aktualizuje `weeklyDigestSentAt = now`.
-  - Błąd jednego organizatora nie blokuje pozostałych (try/catch per organizator).
-  - Pomija organizatorów bez żadnych wydarzeń lub serii (digest byłby pusty).
-- [ ] `OrganizerModule` importuje `EmailService` i `EventSeriesModule`.
-- [ ] Import `OrganizerModule` w `AppModule`.
+- [x] `EmailService.sendOrganizerWeeklyDigest(email, displayName, data, frontendUrl)` — wdrożono 2026-05-06.
+- [x] Cron `OrganizerDigestCron` (`@Cron('0 8 * * *')` — codziennie 8:00 Warsaw) — wdrożono 2026-05-06.
+- [x] `OrganizerModule` importuje `NotificationsModule` (zawiera `EmailService`). Wdrożono 2026-05-06.
+- [x] Import `OrganizerModule` w `AppModule`. Wdrożono 2026-05-06.
 
 ### 12.6 Frontend — profil organizatora
 
-- [ ] `/profile` (hub) — wizualny podział na "Panel organizatora" i "Panel uczestnika":
-  - Sekcja organizatora: "Moje wydarzenia" + **"Zestawienie miesięczne"** (nowy link).
-  - Sekcja uczestnika: "Uczestnictwa", "Moje płatności", "Moje vouchery".
-- [ ] Nowa trasa `/profile/organizer/digest` + `OrganizerDigestComponent`.
-- [ ] `OrganizerDigestComponent` — pełna strona zestawienia:
-  - Sekcja "Do potwierdzenia" — karty PENDING eventów z przyciskiem "Potwierdź".
-  - Sekcja "Aktywne serie" — lista z badge `Wstrzymana` jeśli `suspendedReason`.
-  - Sekcja "W tym miesiącu" — eventy created/ended/upcoming/cancelled.
-  - Przycisk "Wyślij e-mail teraz" (wywołuje `POST /organizer/digest/send-email`).
-- [ ] `OrganizerService` (frontend) — `getDigest()`, `sendDigestEmail()`, `confirmEvent(seriesId, eventId)`, `confirmEventByToken(token)`.
-- [ ] Trasa `/o/confirm-event` (publiczna, bez auth guard):
-  - Prosta strona — wczytuje `?token=` z URL, wywołuje `confirmEventByToken(token)`.
-  - Pokazuje spinner, potem komunikat sukcesu z linkiem do panelu lub błąd.
-- [ ] `SeriesDetailsComponent` — sekcja "Wstrzymana" z ostrzeżeniem i linkiem do digestu jeśli `series.suspendedReason`.
-- [ ] `EventSeriesView` (frontend type) — dodać opcjonalne `suspendedReason?: string | null` i `suspendedAt?: string | null`.
+- [x] `/profile` (hub) — podział na "Panel organizatora" i "Panel uczestnika". Wdrożono 2026-05-06.
+- [x] Nowa trasa `/profile/organizer/digest` + `OrganizerDigestComponent`. Wdrożono 2026-05-06.
+- [x] `OrganizerDigestComponent` — 7 sekcji z inline przyciskami "Potwierdź". Wdrożono 2026-05-06.
+- [x] `OrganizerService` (frontend) — `getDigest()`, `sendDigestEmail()`; `confirmEvent/confirmEventByToken` w `EventSeriesService`. Wdrożono 2026-05-06.
+- [x] Trasa `/o/confirm-event` + `ConfirmEventComponent`. Wdrożono 2026-05-06.
+- [x] `SeriesDetailsComponent` — baner "Seria wstrzymana" z linkiem do digestu. Wdrożono 2026-05-06.
+- [x] `EventSeriesBase` (libs) — `suspendedReason/At` już dodane; `EventSeriesView` dziedziczy przez `EventSeriesBase`. Wdrożono 2026-05-06.
 
 ### 12.7 Testy
 
-- [ ] Backend unit: `OrganizerService.getDigestData()` — poprawna agregacja eventów w period.
-- [ ] Backend unit: `confirmEventByToken()` — happy path + token not found + already confirmed.
-- [ ] Backend unit: `OrganizerDigestCron` — pomija organizatorów z `weeklyDigestSentAt` w bieżącym tygodniu.
-- [ ] Frontend: `OrganizerDigestComponent` — renderuje pending confirmations, wywołuje `confirmEvent()`.
+- [x] Backend unit: `OrganizerService.getDigestData()` — poprawna agregacja eventów w period. Wdrożono 2026-05-06: `organizer.service.spec.ts` (6 testów).
+- [x] Backend unit: `confirmEventByToken()` — happy path + token not found + already confirmed. Wdrożono 2026-05-06: dodano 4 testy do `event-series.service.spec.ts`.
+- [x] Backend unit: `OrganizerDigestCron` — pomija organizatorów bez treści, błąd jednego nie blokuje pozostałych. Wdrożono 2026-05-06: `organizer-digest.cron.spec.ts` (5 testów).
+- [x] Frontend: `OrganizerDigestComponent` — ładowanie, pending confirmations, confirmEvent, isEmpty. Wdrożono 2026-05-06: `organizer-digest.component.spec.ts` (9 testów).
 
 ---
 

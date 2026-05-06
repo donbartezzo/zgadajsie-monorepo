@@ -7,7 +7,7 @@ import { SlotService } from '../slots/slot.service';
 import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptions.service';
 import { PushService } from '../notifications/push.service';
 import { EventSeriesRecurrenceType } from '@zgadajsie/shared';
-import { Role } from '@prisma/client';
+import { EventStatus, Role } from '@prisma/client';
 
 const ORGANIZER_ID = 'user-organizer';
 const OTHER_USER_ID = 'user-other';
@@ -65,9 +65,11 @@ const mockPrisma = {
   },
   event: {
     findMany: jest.fn(),
+    findUnique: jest.fn(),
     deleteMany: jest.fn(),
     count: jest.fn(),
     createMany: jest.fn(),
+    update: jest.fn(),
   },
   user: {
     findUnique: jest.fn(),
@@ -194,6 +196,91 @@ describe('EventSeriesService', () => {
         }),
       );
       expect(result.remainingEventsWithEnrollments).toBe(1);
+    });
+  });
+
+  describe('confirmEventByToken', () => {
+    const TOKEN = 'valid-uuid-token-1234';
+    const EVENT_ID = 'event-pending-1';
+
+    it('happy path — potwierdza event przez token i zwraca dane', async () => {
+      mockPrisma.event.findUnique
+        .mockResolvedValueOnce({
+          id: EVENT_ID,
+          seriesId: SERIES_ID,
+          status: EventStatus.PENDING,
+          title: 'Trening poniedziałkowy',
+        })
+        .mockResolvedValueOnce({
+          id: EVENT_ID,
+          seriesId: SERIES_ID,
+          status: EventStatus.PENDING,
+          title: 'Trening poniedziałkowy',
+        });
+      mockPrisma.event.update.mockResolvedValue({});
+      mockPrisma.eventSeries.findUnique.mockResolvedValue({ suspendedReason: null });
+
+      const result = await service.confirmEventByToken(TOKEN);
+
+      expect(result.confirmed).toBe(true);
+      expect(result.alreadyConfirmed).toBe(false);
+      expect(result.eventId).toBe(EVENT_ID);
+      expect(result.title).toBe('Trening poniedziałkowy');
+      expect(mockPrisma.event.update).toHaveBeenCalledWith({
+        where: { id: EVENT_ID },
+        data: { status: EventStatus.ACTIVE, confirmToken: null },
+      });
+    });
+
+    it('rzuca 404 gdy token nie istnieje', async () => {
+      mockPrisma.event.findUnique.mockResolvedValue(null);
+      await expect(service.confirmEventByToken(TOKEN)).rejects.toThrow(NotFoundException);
+    });
+
+    it('zwraca alreadyConfirmed = true gdy event jest już ACTIVE', async () => {
+      mockPrisma.event.findUnique.mockResolvedValue({
+        id: EVENT_ID,
+        seriesId: SERIES_ID,
+        status: EventStatus.ACTIVE,
+        title: 'Trening poniedziałkowy',
+      });
+
+      const result = await service.confirmEventByToken(TOKEN);
+
+      expect(result.alreadyConfirmed).toBe(true);
+      expect(result.confirmed).toBe(true);
+      expect(mockPrisma.event.update).not.toHaveBeenCalled();
+    });
+
+    it('czyści suspendedReason na serii po potwierdzeniu gdy nie wszystkie ostatnie są PENDING', async () => {
+      mockPrisma.event.findUnique
+        .mockResolvedValueOnce({
+          id: EVENT_ID,
+          seriesId: SERIES_ID,
+          status: EventStatus.PENDING,
+          title: 'Trening',
+        })
+        .mockResolvedValueOnce({
+          id: EVENT_ID,
+          seriesId: SERIES_ID,
+          status: EventStatus.PENDING,
+          title: 'Trening',
+        });
+      mockPrisma.event.update.mockResolvedValue({});
+      mockPrisma.eventSeries.findUnique.mockResolvedValue({ suspendedReason: 'Seria wstrzymana' });
+      mockPrisma.event.findMany.mockResolvedValue([
+        { status: EventStatus.ACTIVE },
+        { status: EventStatus.PENDING },
+        { status: EventStatus.PENDING },
+      ]);
+
+      await service.confirmEventByToken(TOKEN);
+
+      expect(mockPrisma.eventSeries.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ suspendedReason: null, suspendedAt: null }),
+        }),
+      );
     });
   });
 });

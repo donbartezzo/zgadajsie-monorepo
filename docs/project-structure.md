@@ -133,6 +133,7 @@ backend/
   │   │   ├── media/
   │   │   ├── city-subscriptions/
   │   │   ├── event-series/     # serie wydarzeń: cron rolling buffer, generator, DTO
+  │   │   ├── organizer/        # zestawienie organizatora: digest, cron batched email, confirm-event
   │   │   ├── email/
   │   │   └── prisma/
   │   └── main.ts

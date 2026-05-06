@@ -198,6 +198,13 @@ Kontroler announcement używa mieszanych ścieżek bez wspólnego prefixu kontro
 - `PATCH /event-series/:id` - `auth` - edycja konfiguracji serii; regeneruje przyszłe puste wydarzenia
 - `DELETE /event-series/:id` - `auth` - dezaktywacja serii (soft delete); usuwa przyszłe puste wydarzenia
 - `POST /event-series/preview` - `auth` - podgląd dat bez zapisu do DB; używa `previewSeriesDates` z `@zgadajsie/shared`
+- `PATCH /event-series/:id/confirm-event/:eventId` - `auth + active` - potwierdza PENDING event serii przez panel organizatora; ustawia `status: ACTIVE`, czyści `confirmToken`; odblokowuje serię gdy liczba PENDING spadnie < 3
+- `PATCH /event-series/confirm-event-by-token` - `public` - potwierdza PENDING event z linku mailowego; `?token=uuid`; identyczna logika jak wyżej; zwraca `{ confirmed, eventId, title, alreadyConfirmed }`
+
+## Organizer digest (`/api/organizer`)
+
+- `GET /organizer/digest` - `auth + active` - zestawienie organizatora: `pendingConfirmations`, `recentlyCreated`, `recentlyEnded`, `upcoming`, `recentlyCancelled`, `activeSeries`, `recentlyDeactivatedSeries` za ostatnie/następne 30 dni
+- `POST /organizer/digest/send-email` - `auth + active` - ręczne wysłanie e-maila z zestawieniem; zwraca `{ sent: true }`
 
 ## Uwaga dla AI
 
