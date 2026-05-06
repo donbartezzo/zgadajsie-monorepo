@@ -65,4 +65,44 @@ export class AdminService {
   deleteDictionary(type: string, id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/admin/${type}/${id}`);
   }
+
+  getCronStatus(): Observable<{ crons: CronStatus[] }> {
+    return this.http.get<{ crons: CronStatus[] }>(`${this.apiUrl}/admin/crons`);
+  }
+
+  triggerCron(name: string): Observable<{ triggered: boolean; name: string; durationMs: number }> {
+    return this.http.post<{ triggered: boolean; name: string; durationMs: number }>(
+      `${this.apiUrl}/admin/crons/${name}/trigger`,
+      {},
+    );
+  }
+
+  getCronLogs(
+    name: string,
+    limit = 20,
+    offset = 0,
+  ): Observable<{ logs: CronLog[]; total: number; limit: number; offset: number }> {
+    return this.http.get<{ logs: CronLog[]; total: number; limit: number; offset: number }>(
+      `${this.apiUrl}/admin/crons/${name}/logs`,
+      { params: { limit, offset } },
+    );
+  }
+}
+
+export interface CronStatus {
+  name: string;
+  nextRun: string | null;
+  lastRun: string | null;
+  lastDurationMs: number | null;
+  lastError: string | null;
+}
+
+export interface CronLog {
+  id: string;
+  cronName: string;
+  startedAt: string;
+  completedAt: string | null;
+  durationMs: number | null;
+  error: string | null;
+  createdAt: string;
 }

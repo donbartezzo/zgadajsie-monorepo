@@ -1,40 +1,62 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PRE_ENROLLMENT_HOURS, MILLISECONDS_PER_HOUR } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { PushService } from './push.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
+import { CronAdminService } from '../../common/cron-admin/cron-admin.service';
+
+const CRON_NAME = 'enrollment-lottery';
 
 @Injectable()
-export class EnrollmentLotteryCron {
+export class EnrollmentLotteryCron implements OnModuleInit {
   private readonly logger = new Logger(EnrollmentLotteryCron.name);
 
   constructor(
     private prisma: PrismaService,
     private pushService: PushService,
     private eventRealtime: EventRealtimeService,
+    private cronAdmin: CronAdminService,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  onModuleInit() {
+    this.cronAdmin.registerTrigger(CRON_NAME, () => this.handleLottery());
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE, { name: CRON_NAME })
   async handleLottery(): Promise<void> {
-    const now = new Date();
-    const threshold48h = new Date(now.getTime() + PRE_ENROLLMENT_HOURS * MILLISECONDS_PER_HOUR);
+    const start = Date.now();
+    const startedAt = new Date();
+    try {
+      const now = new Date();
+      const threshold48h = new Date(now.getTime() + PRE_ENROLLMENT_HOURS * MILLISECONDS_PER_HOUR);
 
-    const eligibleEvents = await this.prisma.event.findMany({
-      where: {
-        status: 'ACTIVE',
-        lotteryExecutedAt: null,
-        startsAt: { lte: threshold48h },
-      },
-      select: { id: true, maxParticipants: true, organizerId: true, title: true },
-    });
+      const eligibleEvents = await this.prisma.event.findMany({
+        where: {
+          status: 'ACTIVE',
+          lotteryExecutedAt: null,
+          startsAt: { lte: threshold48h },
+        },
+        select: { id: true, maxParticipants: true, organizerId: true, title: true },
+      });
 
-    for (const event of eligibleEvents) {
-      try {
-        await this.executeLotteryForEvent(event);
-      } catch (err) {
-        this.logger.error(`Lottery failed for event ${event.id}: ${err}`);
+      for (const event of eligibleEvents) {
+        try {
+          await this.executeLotteryForEvent(event);
+        } catch (err) {
+          this.logger.error(`Lottery failed for event ${event.id}: ${err}`);
+        }
       }
+
+      const durationMs = Date.now() - start;
+      this.cronAdmin.recordRun(CRON_NAME, durationMs);
+      await this.cronAdmin.recordRunToDb(CRON_NAME, startedAt, new Date(), durationMs);
+    } catch (err) {
+      const durationMs = Date.now() - start;
+      const error = (err as Error).message;
+      this.cronAdmin.recordRun(CRON_NAME, durationMs, error);
+      await this.cronAdmin.recordRunToDb(CRON_NAME, startedAt, new Date(), durationMs, error);
+      this.logger.error(`Enrollment lottery cron failed: ${error}`);
     }
   }
 
@@ -45,16 +67,14 @@ export class EnrollmentLotteryCron {
     title: string;
   }): Promise<void> {
     const result = await this.prisma.$transaction(async (tx) => {
-      // Atomic lock - only one cron instance processes this event
       const locked = await tx.event.updateMany({
         where: { id: event.id, lotteryExecutedAt: null },
         data: { lotteryExecutedAt: new Date() },
       });
       if (locked.count === 0) {
-        return null; // Already processed by another instance
+        return null;
       }
 
-      // Only real users (no guests) in the waiting list
       const pendingParticipations = await tx.eventEnrollment.findMany({
         where: { eventId: event.id, wantsIn: true, slot: null, addedByUserId: null },
       });
@@ -65,7 +85,6 @@ export class EnrollmentLotteryCron {
 
       const uniqueUserIds = [...new Set(pendingParticipations.map((p) => p.userId))];
 
-      // Fetch trust and ban relations in one batch query
       const relations = await tx.organizerUserRelation.findMany({
         where: {
           organizerUserId: event.organizerId,
@@ -75,7 +94,6 @@ export class EnrollmentLotteryCron {
       });
       const relationMap = new Map(relations.map((r) => [r.targetUserId, r]));
 
-      // Lottery is open only to trusted, non-banned participants
       const eligible = pendingParticipations.filter((p) => {
         const rel = relationMap.get(p.userId);
         return rel?.isTrusted === true && rel?.isBanned !== true;
@@ -100,12 +118,11 @@ export class EnrollmentLotteryCron {
     });
 
     if (!result) {
-      return; // Already processed
+      return;
     }
 
     this.eventRealtime.invalidateEvent(event.id, 'all');
 
-    // Notify eligible participants about lottery outcome
     const { assignedIds, eligible } = result;
 
     for (const p of eligible) {

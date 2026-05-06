@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
 import { EmailService } from './email.service';
@@ -11,7 +10,7 @@ import { SlotModule } from '../slots/slot.module';
 import { EventRealtimeModule } from '../realtime/event-realtime.module';
 
 @Module({
-  imports: [ScheduleModule.forRoot(), SlotModule, EventRealtimeModule],
+  imports: [SlotModule, EventRealtimeModule],
   controllers: [NotificationsController],
   providers: [
     NotificationsService,

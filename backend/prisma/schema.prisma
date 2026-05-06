@@ -512,3 +512,16 @@ model CitySubscription {
   @@unique([userId, citySlug])
   @@index([citySlug])
 }
+
+model CronLog {
+  id           String    @id @default(uuid())
+  cronName     String
+  startedAt    DateTime
+  completedAt  DateTime?
+  durationMs   Int?
+  error        String?
+  createdAt    DateTime  @default(now())
+
+  @@index([cronName, startedAt])
+  @@index([createdAt])
+}

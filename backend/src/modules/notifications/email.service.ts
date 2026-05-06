@@ -23,6 +23,10 @@ export class EmailService implements OnModuleInit {
     return this.configService.getOrThrow<string>('FRONTEND_URL');
   }
 
+  private get adminEmail(): string {
+    return this.configService.get<string>('ADMIN_EMAIL', this.fromAddress);
+  }
+
   async sendActivationEmail(email: string, displayName: string, token: string): Promise<void> {
     const link = `${this.frontendUrl}/auth/activate?token=${token}`;
     await this.send(
@@ -322,6 +326,90 @@ export class EmailService implements OnModuleInit {
       ${seriesSection}
       ${summarySection}
       `,
+    );
+  }
+
+  async sendAdminDailyReport(data: {
+    date: string;
+    cronStatus: Array<{
+      name: string;
+      lastRun: Date | null;
+      lastError: string | null;
+      status: 'OK' | 'STUCK' | 'ERROR';
+    }>;
+    stats: { activeEvents: number; totalUsers: number; newUsersToday: number };
+    logsCleaned: number;
+  }): Promise<void> {
+    const stuckCrons = data.cronStatus.filter((c) => c.status === 'STUCK');
+    const errorCrons = data.cronStatus.filter((c) => c.status === 'ERROR');
+    const hasIssues = stuckCrons.length > 0 || errorCrons.length > 0;
+
+    const statusSection = hasIssues
+      ? `
+        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px;margin:16px 0;">
+          <strong style="color:#dc2626;">⚠️ Wykryto problemy z cronami!</strong>
+          ${stuckCrons.length > 0 ? `<p style="margin:4px 0;color:#7f1d1d;">Zatkane crony (${stuckCrons.length}): ${stuckCrons.map((c) => c.name).join(', ')}</p>` : ''}
+          ${errorCrons.length > 0 ? `<p style="margin:4px 0;color:#7f1d1d;">Crony z błędami (${errorCrons.length}): ${errorCrons.map((c) => c.name).join(', ')}</p>` : ''}
+        </div>
+      `
+      : `
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;margin:16px 0;">
+          <strong style="color:#16a34a;">✅ Wszystkie crony działają poprawnie</strong>
+        </div>
+      `;
+
+    const cronTable = `
+      <h2>Status cronów</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="background:#f9fafb;border-bottom:2px solid #e5e7eb;">
+            <th style="padding:8px;text-align:left;">Cron</th>
+            <th style="padding:8px;text-align:left;">Ostatnie uruchomienie</th>
+            <th style="padding:8px;text-align:left;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.cronStatus
+            .map(
+              (c) => `
+            <tr style="border-bottom:1px solid #e5e7eb;">
+              <td style="padding:8px;">${c.name}</td>
+              <td style="padding:8px;color:#6b7280;">${c.lastRun ? formatDateTime(c.lastRun) : 'Nigdy'}</td>
+              <td style="padding:8px;">
+                ${c.status === 'OK' ? '<span style="color:#16a34a;">✓ OK</span>' : ''}
+                ${c.status === 'STUCK' ? '<span style="color:#dc2626;">✗ ZATKANE</span>' : ''}
+                ${c.status === 'ERROR' ? '<span style="color:#d97706;">⚠ BŁĄD</span>' : ''}
+                ${c.lastError ? `<br/><span style="font-size:11px;color:#dc2626;">${c.lastError}</span>` : ''}
+              </td>
+            </tr>`,
+            )
+            .join('')}
+        </tbody>
+      </table>
+    `;
+
+    const statsSection = `
+      <h2>Statystyki dobowe</h2>
+      <ul style="padding-left:18px;">
+        <li><strong>${data.stats.activeEvents}</strong> aktywnych wydarzeń</li>
+        <li><strong>${data.stats.totalUsers}</strong> łączna liczba użytkowników</li>
+        <li><strong>${data.stats.newUsersToday}</strong> nowych użytkowników dzisiaj</li>
+      </ul>
+      ${data.logsCleaned > 0 ? `<p style="font-size:12px;color:#6b7280;">Wyczyszczono ${data.logsCleaned} starych logów cronów.</p>` : ''}
+    `;
+
+    await this.send(
+      this.adminEmail,
+      hasIssues
+        ? `[ALERT] Raport dzienny cronów – ${APP_BRAND.NAME}`
+        : `Raport dzienny cronów – ${APP_BRAND.NAME}`,
+      `
+      <h2>Raport dzienny – ${data.date}</h2>
+      ${statusSection}
+      ${cronTable}
+      ${statsSection}
+      <p style="font-size:12px;color:#6b7280;">Jeśli nie otrzymasz tego emaila jutro, oznacza to że cron monitor przestał działać.</p>
+    `,
     );
   }
 

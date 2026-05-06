@@ -4,6 +4,7 @@ import { OrganizerDigestCron } from './organizer-digest.cron';
 import { OrganizerService } from './organizer.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
+import { CronAdminService } from '../../common/cron-admin/cron-admin.service';
 
 const FRONTEND_URL = 'https://app.example.com';
 
@@ -59,6 +60,11 @@ const mockConfigService = {
   getOrThrow: jest.fn().mockReturnValue(FRONTEND_URL),
 };
 
+const mockCronAdmin = {
+  registerTrigger: jest.fn(),
+  recordRun: jest.fn(),
+};
+
 describe('OrganizerDigestCron', () => {
   let cron: OrganizerDigestCron;
 
@@ -72,6 +78,7 @@ describe('OrganizerDigestCron', () => {
         { provide: OrganizerService, useValue: mockOrganizerService },
         { provide: EmailService, useValue: mockEmailService },
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: CronAdminService, useValue: mockCronAdmin },
       ],
     }).compile();
 

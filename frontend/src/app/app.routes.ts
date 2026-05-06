@@ -472,6 +472,18 @@ export const appRoutes: Route[] = [
       breadcrumb: { parent: '/admin', label: 'Panel admina' },
     },
   },
+  {
+    path: 'admin/crons',
+    loadComponent: () =>
+      import('./features/admin/pages/admin-crons/admin-crons.component').then(
+        (m) => m.AdminCronsComponent,
+      ),
+    canActivate: [adminGuard],
+    data: {
+      title: 'Zarządzanie cronami',
+      breadcrumb: { parent: '/admin', label: 'Panel admina' },
+    },
+  },
 
   // ── Static ──
   {

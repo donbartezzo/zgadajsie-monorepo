@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { PushService } from './push.service';
 import { EnrollmentLotteryCron } from './enrollment-lottery.cron';
+import { CronAdminService } from '../../common/cron-admin/cron-admin.service';
 
 function buildTxMock() {
   return {
@@ -58,10 +59,15 @@ describe('EnrollmentLotteryCron', () => {
     tx = prisma._tx;
     push = buildPushMock();
     realtime = buildRealtimeMock();
+    const mockCronAdmin = {
+      registerTrigger: jest.fn(),
+      recordRun: jest.fn(),
+    } as unknown as CronAdminService;
     cron = new EnrollmentLotteryCron(
       prisma as PrismaService,
       push as PushService,
       realtime as EventRealtimeService,
+      mockCronAdmin,
     );
     jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
     jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);

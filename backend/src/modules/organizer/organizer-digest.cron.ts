@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 import { DateTime } from 'luxon';
@@ -6,11 +6,13 @@ import { APP_DEFAULT_TIMEZONE } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { OrganizerService } from './organizer.service';
 import { EmailService } from '../notifications/email.service';
+import { CronAdminService } from '../../common/cron-admin/cron-admin.service';
 
 const BATCH_SIZE = 50;
+const CRON_NAME = 'organizer-digest';
 
 @Injectable()
-export class OrganizerDigestCron {
+export class OrganizerDigestCron implements OnModuleInit {
   private readonly logger = new Logger(OrganizerDigestCron.name);
 
   constructor(
@@ -18,34 +20,58 @@ export class OrganizerDigestCron {
     private organizerService: OrganizerService,
     private emailService: EmailService,
     private configService: ConfigService,
+    private cronAdmin: CronAdminService,
   ) {}
 
-  @Cron('0 8 * * *', { timeZone: APP_DEFAULT_TIMEZONE })
+  onModuleInit() {
+    this.cronAdmin.registerTrigger(CRON_NAME, () => this.handleWeeklyDigestBatch());
+  }
+
+  @Cron('0 8 * * *', { timeZone: APP_DEFAULT_TIMEZONE, name: CRON_NAME })
   async handleWeeklyDigestBatch(): Promise<void> {
-    const startOfWeek = DateTime.now().setZone(APP_DEFAULT_TIMEZONE).startOf('week').toJSDate();
+    const start = Date.now();
+    const startedAt = new Date();
+    try {
+      const startOfWeek = DateTime.now().setZone(APP_DEFAULT_TIMEZONE).startOf('week').toJSDate();
 
-    const organizers = await this.prisma.user.findMany({
-      where: {
-        isActive: true,
-        OR: [{ weeklyDigestSentAt: null }, { weeklyDigestSentAt: { lt: startOfWeek } }],
-        organizedEvents: { some: {} },
-      },
-      select: { id: true, email: true, displayName: true },
-      take: BATCH_SIZE,
-    });
+      const organizers = await this.prisma.user.findMany({
+        where: {
+          isActive: true,
+          OR: [{ weeklyDigestSentAt: null }, { weeklyDigestSentAt: { lt: startOfWeek } }],
+          organizedEvents: { some: {} },
+        },
+        select: { id: true, email: true, displayName: true },
+        take: BATCH_SIZE,
+      });
 
-    if (organizers.length === 0) return;
-
-    this.logger.log(`Organizer digest cron: processing ${organizers.length} organizers`);
-
-    for (const organizer of organizers) {
-      try {
-        await this.sendDigestForUser(organizer.id);
-      } catch (err) {
-        this.logger.error(
-          `Failed to send digest to organizer ${organizer.id}: ${(err as Error).message}`,
-        );
+      if (organizers.length === 0) {
+        const durationMs = Date.now() - start;
+        this.cronAdmin.recordRun(CRON_NAME, durationMs);
+        await this.cronAdmin.recordRunToDb(CRON_NAME, startedAt, new Date(), durationMs);
+        return;
       }
+
+      this.logger.log(`Organizer digest cron: processing ${organizers.length} organizers`);
+
+      for (const organizer of organizers) {
+        try {
+          await this.sendDigestForUser(organizer.id);
+        } catch (err) {
+          this.logger.error(
+            `Failed to send digest to organizer ${organizer.id}: ${(err as Error).message}`,
+          );
+        }
+      }
+
+      const durationMs = Date.now() - start;
+      this.cronAdmin.recordRun(CRON_NAME, durationMs);
+      await this.cronAdmin.recordRunToDb(CRON_NAME, startedAt, new Date(), durationMs);
+    } catch (err) {
+      const durationMs = Date.now() - start;
+      const error = (err as Error).message;
+      this.cronAdmin.recordRun(CRON_NAME, durationMs, error);
+      await this.cronAdmin.recordRunToDb(CRON_NAME, startedAt, new Date(), durationMs, error);
+      this.logger.error(`Organizer digest cron failed: ${error}`);
     }
   }
 

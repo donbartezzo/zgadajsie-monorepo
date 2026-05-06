@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { EventSeriesCron } from './event-series.cron';
 import { EventSeriesGenerator } from './event-series.generator';
 import { PrismaService } from '../prisma/prisma.service';
+import { CronAdminService } from '../../common/cron-admin/cron-admin.service';
 
 const mockPrisma = {
   eventSeries: {
@@ -11,6 +12,11 @@ const mockPrisma = {
 
 const mockGenerator = {
   generateForSeries: jest.fn(),
+};
+
+const mockCronAdmin = {
+  registerTrigger: jest.fn(),
+  recordRun: jest.fn(),
 };
 
 describe('EventSeriesCron', () => {
@@ -24,6 +30,7 @@ describe('EventSeriesCron', () => {
         EventSeriesCron,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: EventSeriesGenerator, useValue: mockGenerator },
+        { provide: CronAdminService, useValue: mockCronAdmin },
       ],
     }).compile();
 

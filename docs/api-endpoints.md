@@ -206,6 +206,11 @@ Kontroler announcement używa mieszanych ścieżek bez wspólnego prefixu kontro
 - `GET /organizer/digest` - `auth + active` - zestawienie organizatora: `pendingConfirmations`, `recentlyCreated`, `recentlyEnded`, `upcoming`, `recentlyCancelled`, `activeSeries`, `recentlyDeactivatedSeries` za ostatnie/następne 30 dni
 - `POST /organizer/digest/send-email` - `auth + active` - ręczne wysłanie e-maila z zestawieniem; zwraca `{ sent: true }`
 
+## Admin — Cron management (`/api/admin/crons`)
+
+- `GET /admin/crons` - `auth + admin` - lista wszystkich zarejestrowanych cronów z datą następnego uruchomienia, ostatniego uruchomienia, czasem wykonania i ewentualnym błędem
+- `POST /admin/crons/:name/trigger` - `auth + admin` - ręczne wyzwolenie crona; dostępne nazwy: `event-series-generation`, `organizer-digest`, `event-reminder`, `enrollment-lottery`, `approval-reminder`
+
 ## Uwaga dla AI
 
 - Nie zakładaj shape requestów i response’ów wyłącznie na podstawie tego dokumentu.

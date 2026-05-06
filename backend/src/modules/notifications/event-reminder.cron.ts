@@ -1,35 +1,54 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { hoursFromNow } from '../../common/utils/date.util';
 import { EmailService } from './email.service';
 import { PushService } from './push.service';
+import { CronAdminService } from '../../common/cron-admin/cron-admin.service';
+
+const CRON_NAME = 'event-reminder';
 
 @Injectable()
-export class EventReminderCron {
+export class EventReminderCron implements OnModuleInit {
   private readonly logger = new Logger(EventReminderCron.name);
 
   constructor(
     private prisma: PrismaService,
     private emailService: EmailService,
     private pushService: PushService,
+    private cronAdmin: CronAdminService,
   ) {}
 
-  @Cron(CronExpression.EVERY_30_MINUTES)
+  onModuleInit() {
+    this.cronAdmin.registerTrigger(CRON_NAME, () => this.handleEventReminders());
+  }
+
+  @Cron(CronExpression.EVERY_30_MINUTES, { name: CRON_NAME })
   async handleEventReminders(): Promise<void> {
+    const start = Date.now();
+    const startedAt = new Date();
     this.logger.log('Running event reminder check...');
+    try {
+      const now = new Date();
 
-    const now = new Date();
+      const in24h = hoursFromNow(24, now);
+      const in24hLower = hoursFromNow(23.5, now);
+      await this.sendReminders(in24hLower, in24h, 24);
 
-    // 24h reminder
-    const in24h = hoursFromNow(24, now);
-    const in24hLower = hoursFromNow(23.5, now);
-    await this.sendReminders(in24hLower, in24h, 24);
+      const in2h = hoursFromNow(2, now);
+      const in2hLower = hoursFromNow(1.5, now);
+      await this.sendReminders(in2hLower, in2h, 2);
 
-    // 2h reminder
-    const in2h = hoursFromNow(2, now);
-    const in2hLower = hoursFromNow(1.5, now);
-    await this.sendReminders(in2hLower, in2h, 2);
+      const durationMs = Date.now() - start;
+      this.cronAdmin.recordRun(CRON_NAME, durationMs);
+      await this.cronAdmin.recordRunToDb(CRON_NAME, startedAt, new Date(), durationMs);
+    } catch (err) {
+      const durationMs = Date.now() - start;
+      const error = (err as Error).message;
+      this.cronAdmin.recordRun(CRON_NAME, durationMs, error);
+      await this.cronAdmin.recordRunToDb(CRON_NAME, startedAt, new Date(), durationMs, error);
+      this.logger.error(`Event reminder cron failed: ${error}`);
+    }
   }
 
   private async sendReminders(from: Date, to: Date, hoursLeft: number): Promise<void> {
