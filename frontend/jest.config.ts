@@ -12,7 +12,9 @@ export default {
       },
     ],
   },
-  transformIgnorePatterns: ['node_modules/(?!(@jsverse/transloco|@jsverse/utils|.*\\.mjs$))'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(@dicebear|@jsverse/transloco|@jsverse/utils|.*\\.mjs$))',
+  ],
   snapshotSerializers: [
     'jest-preset-angular/build/serializers/no-ng-attributes',
     'jest-preset-angular/build/serializers/ng-snapshot',

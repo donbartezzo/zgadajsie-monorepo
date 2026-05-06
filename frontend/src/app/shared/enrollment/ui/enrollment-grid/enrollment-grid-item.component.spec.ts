@@ -134,37 +134,38 @@ describe('EnrollmentGridItemComponent - computed signals', () => {
   });
 
   describe('statusIndicators()', () => {
-    it('APPROVED z payment=null → wskaźnik credit-card', () => {
+    it('APPROVED z payment=null → wskaźnik needs_payment', () => {
       const { c } = create(makeParticipant({ status: 'APPROVED', payment: null }));
-      const icons = c.statusIndicators().map((i: (typeof c.statusIndicators)[number]) => i.icon);
-      expect(icons).toContain('credit-card');
+      const indicators = c.statusIndicators();
+      expect(indicators).toContain('needs_payment');
     });
 
-    it('PENDING bez waitingReason → wskaźnik clock', () => {
+    it('PENDING bez waitingReason → brak wskaźników (pending ma requiresAction=false)', () => {
       const { c } = create(
         makeParticipant({ status: 'PENDING', payment: null, waitingReason: null }),
       );
-      const icons = c.statusIndicators().map((i: (typeof c.statusIndicators)[number]) => i.icon);
-      expect(icons).toContain('clock');
+      const indicators = c.statusIndicators();
+      expect(indicators).toEqual([]);
     });
 
-    it('PENDING z waitingReason=BANNED → wskaźniki clock i ban', () => {
+    it('PENDING z waitingReason=BANNED → wskaźnik banned (pending ma requiresAction=false)', () => {
       const { c } = create(
         makeParticipant({ status: 'PENDING', payment: null, waitingReason: 'BANNED' }),
       );
-      const icons = c.statusIndicators().map((i: (typeof c.statusIndicators)[number]) => i.icon);
-      expect(icons).toContain('clock');
-      expect(icons).toContain('ban');
+      const indicators = c.statusIndicators();
+      expect(indicators).not.toContain('pending'); // pending ma requiresAction=false
+      expect(indicators).toContain('banned');
     });
 
     it('CONFIRMED z payment → brak wskaźników ostrzegawczych', () => {
       const { c } = create(makeParticipant({ status: 'CONFIRMED', payment: makePayment() }));
-      const warnIcons = c
-        .statusIndicators()
-        .filter((i: (typeof c.statusIndicators)[number]) => i.color === 'warning')
-        .map((i: (typeof c.statusIndicators)[number]) => i.icon);
-      expect(warnIcons).not.toContain('credit-card');
-      expect(warnIcons).not.toContain('clock');
+      const indicators = c.statusIndicators();
+      // Sprawdzamy, że nie ma wskaźników warning (needs_payment, new_user_pending, banned, account_unverified, email_not_verified)
+      expect(indicators).not.toContain('needs_payment');
+      expect(indicators).not.toContain('new_user_pending');
+      expect(indicators).not.toContain('banned');
+      expect(indicators).not.toContain('account_unverified');
+      expect(indicators).not.toContain('email_not_verified');
     });
   });
 
@@ -182,14 +183,14 @@ describe('EnrollmentGridItemComponent - computed signals', () => {
   });
 
   describe('nameClass()', () => {
-    it('WITHDRAWN → text-neutral-400', () => {
+    it('zawsze zwraca text-neutral-700', () => {
       const { c } = create(makeParticipant({ status: 'WITHDRAWN' }));
-      expect(c.nameClass()).toBe('text-neutral-400');
+      expect(c.nameClass()).toBe('text-neutral-700');
     });
 
-    it('PENDING → text-warning-600', () => {
+    it('PENDING → również text-neutral-700', () => {
       const { c } = create(makeParticipant({ status: 'PENDING' }));
-      expect(c.nameClass()).toBe('text-warning-600');
+      expect(c.nameClass()).toBe('text-neutral-700');
     });
 
     it('APPROVED → text-neutral-700', () => {
