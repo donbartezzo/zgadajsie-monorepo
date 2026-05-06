@@ -6,7 +6,6 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {
-  MILLISECONDS_PER_HOUR,
   EventGender,
   EventVisibility,
   NotificationKind,
@@ -820,140 +819,6 @@ export class EventsService {
     return this.getParticipants(eventId);
   }
 
-  /** @deprecated Use EventSeriesService.createSeries instead. Will be removed after roll-out. */
-  async createSeries(organizerId: string, dto: CreateEventDto) {
-    if (!dto.isRecurring || !dto.recurringRule) {
-      return this.create(organizerId, dto);
-    }
-
-    const dates = this.generateRecurringDates(
-      new Date(dto.startsAt),
-      new Date(dto.endsAt),
-      dto.recurringRule,
-    );
-
-    // Validate roleConfig if provided
-    if (dto.roleConfig) {
-      this.validateRoleConfig(dto.roleConfig, dto.maxParticipants);
-    }
-
-    const roleConfigJson = dto.roleConfig ? JSON.parse(JSON.stringify(dto.roleConfig)) : undefined;
-
-    // Create parent event
-    const parentStartsAt = new Date(dto.startsAt);
-    const parentLotteryExecutedAt = shouldSkipPreEnrollment(parentStartsAt) ? new Date() : null;
-    const parent = await this.prisma.event.create({
-      data: {
-        title: dto.title,
-        description: dto.description,
-        discipline: { connect: { slug: dto.disciplineSlug } },
-        facility: { connect: { slug: dto.facilitySlug } },
-        level: { connect: { slug: dto.levelSlug } },
-        city: { connect: { slug: dto.citySlug } },
-        startsAt: parentStartsAt,
-        endsAt: new Date(dto.endsAt),
-        costPerPerson: dto.costPerPerson,
-        minParticipants: dto.minParticipants,
-        maxParticipants: dto.maxParticipants,
-        ageMin: dto.ageMin,
-        ageMax: dto.ageMax,
-        gender: dto.gender as EventGender,
-        visibility: dto.visibility as EventVisibility,
-        address: dto.address,
-        lat: dto.lat,
-        lng: dto.lng,
-        coverImage: dto.coverImageId ? { connect: { id: dto.coverImageId } } : undefined,
-        rules: dto.rules,
-        facilityReserved: dto.facilityReserved ?? true,
-        organizer: { connect: { id: organizerId } },
-        isRecurring: true,
-        recurringRule: dto.recurringRule,
-        lotteryExecutedAt: parentLotteryExecutedAt,
-        roleConfig: roleConfigJson,
-      },
-      include: { discipline: true, facility: true, level: true, city: true },
-    });
-
-    // Create slots for parent event
-    await this.slotService.createSlotsForEvent(parent.id, dto.maxParticipants, dto.roleConfig);
-
-    // Create child instances
-    for (const { start, end } of dates.slice(1)) {
-      const childLotteryExecutedAt = shouldSkipPreEnrollment(start) ? new Date() : null;
-      const child = await this.prisma.event.create({
-        data: {
-          title: dto.title,
-          description: dto.description,
-          discipline: { connect: { slug: dto.disciplineSlug } },
-          facility: { connect: { slug: dto.facilitySlug } },
-          level: { connect: { slug: dto.levelSlug } },
-          city: { connect: { slug: dto.citySlug } },
-          startsAt: start,
-          endsAt: end,
-          costPerPerson: dto.costPerPerson,
-          minParticipants: dto.minParticipants,
-          maxParticipants: dto.maxParticipants,
-          ageMin: dto.ageMin,
-          ageMax: dto.ageMax,
-          gender: dto.gender as EventGender,
-          visibility: dto.visibility as EventVisibility,
-          address: dto.address,
-          lat: dto.lat,
-          lng: dto.lng,
-          coverImage: dto.coverImageId ? { connect: { id: dto.coverImageId } } : undefined,
-          facilityReserved: dto.facilityReserved ?? true,
-          organizer: { connect: { id: organizerId } },
-          isRecurring: true,
-          recurringRule: dto.recurringRule,
-          parentEvent: { connect: { id: parent.id } },
-          lotteryExecutedAt: childLotteryExecutedAt,
-          roleConfig: roleConfigJson,
-        },
-        include: { discipline: true, facility: true, level: true, city: true },
-      });
-      // Create slots for child event
-      await this.slotService.createSlotsForEvent(child.id, dto.maxParticipants, dto.roleConfig);
-    }
-
-    return parent;
-  }
-
-  /** @deprecated Use EventSeriesService.update instead. Will be removed after roll-out. */
-  async updateSeries(id: string, user: AuthUser, dto: UpdateEventDto) {
-    const parent = await this.update(id, user, dto);
-
-    // Update all child events in the series
-    const data: Record<string, unknown> = {};
-    if (dto.title !== undefined) data.title = dto.title;
-    if (dto.description !== undefined) data.description = dto.description;
-    if (dto.disciplineSlug !== undefined) {
-      data.discipline = { connect: { slug: dto.disciplineSlug } };
-    }
-    if (dto.facilitySlug !== undefined) {
-      data.facility = { connect: { slug: dto.facilitySlug } };
-    }
-    if (dto.levelSlug !== undefined) {
-      data.level = { connect: { slug: dto.levelSlug } };
-    }
-    if (dto.citySlug !== undefined) {
-      data.city = { connect: { slug: dto.citySlug } };
-    }
-    if (dto.costPerPerson !== undefined) data.costPerPerson = dto.costPerPerson;
-    if (dto.maxParticipants !== undefined) data.maxParticipants = dto.maxParticipants;
-    if (dto.address !== undefined) data.address = dto.address;
-    if (dto.lat !== undefined) data.lat = dto.lat;
-    if (dto.lng !== undefined) data.lng = dto.lng;
-
-    if (Object.keys(data).length > 0) {
-      await this.prisma.event.updateMany({
-        where: { parentEventId: id, status: 'ACTIVE' },
-        data,
-      });
-    }
-
-    return parent;
-  }
-
   private async resolveCoverImageId(
     coverImageId: string | undefined,
     disciplineSlug: string,
@@ -973,29 +838,5 @@ export class EventsService {
     }
     const random = await this.coverImagesService.findRandomByDiscipline(disciplineSlug);
     return random?.id;
-  }
-
-  /** @deprecated Logic moved to libs/event-series.utils. Will be removed after roll-out. */
-  private generateRecurringDates(
-    startsAt: Date,
-    endsAt: Date,
-    rule: string,
-  ): { start: Date; end: Date }[] {
-    const duration = endsAt.getTime() - startsAt.getTime();
-    const dates: { start: Date; end: Date }[] = [];
-    const maxInstances = 52; // max 1 year of weekly events
-
-    let intervalDays = 7; // default weekly
-    if (rule === 'DAILY') intervalDays = 1;
-    else if (rule === 'BIWEEKLY') intervalDays = 14;
-    else if (rule === 'MONTHLY') intervalDays = 30;
-
-    for (let i = 0; i < maxInstances; i++) {
-      const start = new Date(startsAt.getTime() + i * intervalDays * 24 * MILLISECONDS_PER_HOUR);
-      const end = new Date(start.getTime() + duration);
-      dates.push({ start, end });
-    }
-
-    return dates;
   }
 }

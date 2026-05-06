@@ -25,10 +25,7 @@ export interface Event extends EventBase {
   organizerId: string;
   visibility: string;
   lotteryExecutedAt?: string | null;
-  isRecurring: boolean;
-  recurringRule?: string;
   roleConfig?: EventRoleConfig | null;
-  parentEventId?: string;
   seriesId?: string;
   series?: { id: string; name: string } | null;
 }

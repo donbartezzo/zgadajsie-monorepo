@@ -211,9 +211,6 @@ model Event {
   lat               Float
   lng               Float
   facilityReserved  Boolean              @default(true)
-  isRecurring       Boolean              @default(false)
-  recurringRule     String?
-  parentEventId     String?
   seriesId          String?
   confirmToken      String?              @unique
   createdAt         DateTime             @default(now())
@@ -229,8 +226,6 @@ model Event {
   facility          EventFacility        @relation(fields: [facilitySlug], references: [slug])
   level             EventLevel           @relation(fields: [levelSlug], references: [slug])
   organizer         User                 @relation("OrganizerEvents", fields: [organizerId], references: [id])
-  parentEvent       Event?               @relation("RecurringEvents", fields: [parentEventId], references: [id])
-  childEvents       Event[]              @relation("RecurringEvents")
   series            EventSeries?         @relation("SeriesEvents", fields: [seriesId], references: [id])
   announcements     EventAnnouncement[]
   enrollments       EventEnrollment[]

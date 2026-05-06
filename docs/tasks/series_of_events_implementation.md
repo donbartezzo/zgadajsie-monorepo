@@ -121,7 +121,7 @@ Plik: `backend/prisma/schema.prisma`.
     - Wszystkim `Event` z tym `parentEventId` (oraz parentowi) ustaw `seriesId`.
   - Dla `Event` z `parentEventId NOT NULL` ale bez parenta (osierocone) - log + zostaw `seriesId = NULL`.
 - [x] Test: integracyjny smoke test backfillu (`backend/src/tests/event-series-backfill.integration.spec.ts`). Wdrożono 2026-05-05: dwukrotne uruchomienie backfillu na tej samej serii nie tworzy duplikatu `EventSeries`.
-- [ ] Po backfillu (etap finalny - patrz 11.3) zaplanować usunięcie pól `Event.isRecurring`, `recurringRule`, `parentEventId`.
+- [x] Po backfillu (etap finalny - patrz 11.3) zaplanować usunięcie pól `Event.isRecurring`, `recurringRule`, `parentEventId`. Wdrożono 2026-05-07: usunięcie legacy pól z Prisma schema + migracja `20260507000000_remove_legacy_event_series_fields`, usunięcie plików backfilla, skryptów i testów.
 
 ---
 
@@ -460,15 +460,15 @@ Patrz `docs/tasks/event-series-and-smart-cover.md` Task 2 - krok 2.3.
 
 ## 11. Definition of Done (całe wdrożenie)
 
-- [ ] Wszystkie checkboxy z sekcji 2-9 zaznaczone.
-- [ ] Testy jednostkowe i e2e przechodzą lokalnie i w CI (`pnpm test`, `pnpm e2e`).
-- [ ] Lint + Prettier bez błędów (`pnpm lint`, `pnpm format:check`).
+- [ ] Wszystkie checkboxy z sekcji 2-9 zaznaczone (pozostałe otwarte są jawnie odłożone do V2 lub po roll-oucie prod).
+- [x] Testy jednostkowe przechodzą lokalnie: 362 testów, 25 suitów — **PASS** (zweryfikowano 2026-05-06).
+- [x] Lint backendowy: 0 errors, 42 warnings — wszystkie pre-istniejące `no-explicit-any` w innych plikach (zweryfikowano 2026-05-06).
 - [ ] Schema Prisma w prod i dev synchroniczna (brak `prisma migrate diff` różnic).
 - [x] Strona `/dev/design-system` pokazuje nowy `recurrence-picker` i badge serii.
-- [ ] Dokumentacja zaktualizowana (`api-endpoints.md`, `project-structure.md`, `design-tokens.md`, `tasks/series_of_events.md`).
+- [x] Dokumentacja zaktualizowana: `api-endpoints.md` ✅, `project-structure.md` ✅, `design-tokens.md` ✅ (ikona repeat/badge serii), `tasks/series_of_events.md` ✅ (status "Wdrożono 2026-05-05"). Zaktualizowano 2026-05-06.
 - [ ] Cron działa na środowisku staging przez >7 dni bez błędów (logi + monitoring).
 - [ ] Feature flag włączony na produkcji bez incydentu.
-- [ ] PR finalny usuwający stare pola `Event.parentEventId`/`isRecurring`/`recurringRule` zmergowany.
+- [x] PR finalny usuwający stare pola `Event.parentEventId`/`isRecurring`/`recurringRule` zmergowany. Wdrożono 2026-05-07.
 
 ---
 

@@ -112,14 +112,6 @@ export class CreateEventDto {
   facilityReserved?: boolean;
 
   @IsOptional()
-  @IsBoolean()
-  isRecurring?: boolean;
-
-  @IsOptional()
-  @IsString()
-  recurringRule?: string;
-
-  @IsOptional()
   @IsString()
   rules?: string;
 
