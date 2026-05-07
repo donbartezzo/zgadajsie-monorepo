@@ -17,6 +17,7 @@ import { getEnrollmentPhase } from '../events/enrollment-phase.util';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { EventRoleConfig, AvailableRole } from '../slots/slot.types';
 import {
+  buildEventUrl,
   EventRealtimeScope,
   MAX_GUESTS_PER_USER,
   EVENT_ENDED_MESSAGE,
@@ -1048,6 +1049,8 @@ export class EnrollmentService {
     }
 
     this.notifyEventChanged(event.id, 'all');
+    // Notify user about slot assignment on rejoin
+    await this.notifySlotAssigned(userId, event.title, event.id);
 
     return {
       ...withDerivedStatus(withSlot),
@@ -1243,6 +1246,10 @@ export class EnrollmentService {
     eventId: string,
   ): Promise<void> {
     try {
+      const event = await this.prisma.event.findUnique({
+        where: { id: eventId },
+        select: { city: { select: { slug: true } } },
+      });
       const user = await this.prisma.user.findUnique({
         where: { id: recipientId },
         select: { email: true, displayName: true },
@@ -1250,6 +1257,7 @@ export class EnrollmentService {
       if (!user) {
         return;
       }
+      const eventLink = event ? buildEventUrl(event.city.slug, eventId) : undefined;
       await this.pushService.notifyParticipationStatus(
         recipientId,
         eventTitle,
@@ -1261,6 +1269,7 @@ export class EnrollmentService {
         user.displayName,
         eventTitle,
         'SLOT_ASSIGNED',
+        eventLink,
       );
     } catch (err) {
       this.logger.error(`Failed to notify slot assigned: ${err}`);
@@ -1276,6 +1285,10 @@ export class EnrollmentService {
     eventId: string,
   ): Promise<void> {
     try {
+      const event = await this.prisma.event.findUnique({
+        where: { id: eventId },
+        select: { city: { select: { slug: true } } },
+      });
       const user = await this.prisma.user.findUnique({
         where: { id: recipientId },
         select: { email: true, displayName: true },
@@ -1283,12 +1296,14 @@ export class EnrollmentService {
       if (!user) {
         return;
       }
+      const eventLink = event ? buildEventUrl(event.city.slug, eventId) : undefined;
       await this.pushService.notifyParticipationStatus(recipientId, eventTitle, 'REMOVED', eventId);
       await this.emailService.sendParticipationStatusEmail(
         user.email,
         user.displayName,
         eventTitle,
         'REMOVED',
+        eventLink,
       );
     } catch (err) {
       this.logger.error(`Failed to notify removed: ${err}`);

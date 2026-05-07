@@ -1,7 +1,22 @@
 # libs
 
-This library was generated with [Nx](https://nx.dev).
+Współdzielone biblioteki dla monorepo ZgadajSie.pl.
 
-## Running unit tests
+## Struktura
 
-Run `nx test libs` to execute the unit tests via [Jest](https://jestjs.io).
+- `src/lib/` — @zgadajsie/shared (constants, utils, enums)
+- `email/` — @zgadajsie/email (szablony email oparte na React Email)
+
+## Dokumentacja
+
+- [Email templates README](./email/README.md)
+
+## Testy
+
+```bash
+# Wszystkie testy libs
+nx test libs
+
+# Testy email (snapshots)
+pnpm test:email
+```

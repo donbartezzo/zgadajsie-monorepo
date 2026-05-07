@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_24_HOURS } from '@zgadajsie/shared';
+import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_24_HOURS, buildEventUrl } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { PushService } from './push.service';
 import { EmailService } from './email.service';
@@ -69,6 +69,7 @@ export class ApprovalReminderCron implements OnModuleInit {
             recipient.displayName,
             `${p.event.title}${guestLabel}`,
             'APPROVAL_REMINDER',
+            buildEventUrl(p.event.city.slug, p.event.id),
           );
         } catch (err) {
           this.logger.error(

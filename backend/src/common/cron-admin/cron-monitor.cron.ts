@@ -58,9 +58,11 @@ export class CronMonitorCron implements OnModuleInit {
       const logsCleaned = await this.cleanOldLogs(retentionCutoff);
 
       const dateStr = DateTime.fromJSDate(now).setZone(APP_DEFAULT_TIMEZONE).toFormat('dd.MM.yyyy');
+      const environment = process.env.NODE_ENV || process.env.APP_ENV || 'local';
 
       await this.emailService.sendAdminDailyReport({
         date: dateStr,
+        environment,
         cronStatus,
         stats,
         logsCleaned,

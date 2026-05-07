@@ -5,7 +5,7 @@ import { EmailService } from '../notifications/email.service';
 import { ChatService } from '../chat/chat.service';
 import { ChatGateway } from '../chat/chat.gateway';
 import { USER_SELECT } from '../../common/prisma-selects';
-import { AnnouncementPriority, AnnouncementTrigger } from '@zgadajsie/shared';
+import { AnnouncementPriority, AnnouncementTrigger, buildEventUrl } from '@zgadajsie/shared';
 
 const CHUNK_SIZE = 50;
 
@@ -62,7 +62,7 @@ export class AnnouncementDispatcherService {
 
     const receiptsByUserId = new Map(receipts.map((r) => [r.userId, r]));
 
-    const eventUrl = `/w/${event.city.slug}/${eventId}`;
+    const eventLink = buildEventUrl(event.city.slug, eventId);
 
     this.dispatchAsync(
       event.title,
@@ -71,7 +71,7 @@ export class AnnouncementDispatcherService {
       priority,
       participants,
       receiptsByUserId,
-      eventUrl,
+      eventLink,
     );
 
     this.dispatchChatMessage(eventId, organizerId, message, priority);
@@ -86,7 +86,7 @@ export class AnnouncementDispatcherService {
     priority: string,
     participants: { userId: string; user: { id: string; email: string; displayName: string } }[],
     receiptsByUserId: Map<string, { id: string; confirmToken: string }>,
-    eventUrl: string,
+    eventLink: string,
   ): void {
     setImmediate(async () => {
       try {
@@ -104,7 +104,7 @@ export class AnnouncementDispatcherService {
                   priority,
                   p.user,
                   receipt,
-                  eventUrl,
+                  eventLink,
                 ),
               ];
             }),
@@ -127,13 +127,13 @@ export class AnnouncementDispatcherService {
     priority: string,
     user: { id: string; email: string; displayName: string },
     receipt: { id: string; confirmToken: string },
-    eventUrl: string,
+    eventLink: string,
   ): Promise<void> {
     const title =
       priority === 'CRITICAL' ? `[PILNE] Komunikat: ${eventTitle}` : `Komunikat: ${eventTitle}`;
 
     const results = await Promise.allSettled([
-      this.pushService.notifyUser(user.id, 'ANNOUNCEMENT', title, message, undefined, eventUrl),
+      this.pushService.notifyUser(user.id, 'ANNOUNCEMENT', title, message, undefined, eventLink),
       this.emailService.sendAnnouncementEmail(
         user.email,
         user.displayName,
@@ -141,6 +141,7 @@ export class AnnouncementDispatcherService {
         message,
         priority,
         receipt.confirmToken,
+        eventLink,
       ),
     ]);
 

@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@zgadajsie/shared": ["libs/src/index.ts"]
+      "@zgadajsie/shared": ["libs/src/index.ts"],
+      "@zgadajsie/email": ["libs/email/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

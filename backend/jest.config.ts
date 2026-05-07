@@ -5,9 +5,9 @@ export default {
   setupFiles: ['<rootDir>/src/test-setup.ts'],
   testPathIgnorePatterns: ['/node_modules/', '\\.integration\\.spec\\.ts$'],
   transform: {
-    '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
+    '^.+\\.[tj]sx?$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
   transformIgnorePatterns: ['node_modules/(?!(jose|uuid)/)'],
-  moduleFileExtensions: ['ts', 'js', 'html'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'html'],
   coverageDirectory: '../coverage/backend',
 };

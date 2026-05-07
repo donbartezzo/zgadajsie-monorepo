@@ -26,7 +26,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
           <p class="text-sm text-neutral-600 mb-4">
             Link do resetowania hasła został wysłany na podany adres email.
           </p>
-          <a routerLink="/auth/login">
+          <a routerLink="/auth/login" class="flex justify-center">
             <app-button appearance="outline" color="neutral">Wróć do logowania</app-button>
           </a>
         </div>

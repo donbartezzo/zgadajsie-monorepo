@@ -6,10 +6,18 @@
   "tags": [],
   "targets": {
     "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/libs"],
       "options": {
-        "jestConfig": "libs/jest.config.ts"
+        "command": "jest --config libs/jest.config.ts --passWithNoTests",
+        "env": {
+          "NODE_OPTIONS": "--experimental-vm-modules"
+        }
+      },
+      "configurations": {
+        "ci": {
+          "command": "jest --config libs/jest.config.ts --passWithNoTests --ci"
+        }
       }
     }
   }

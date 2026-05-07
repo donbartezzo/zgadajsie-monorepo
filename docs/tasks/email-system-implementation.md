@@ -99,76 +99,39 @@ workspace/
 
 ### Etap 1 — Instalacja i konfiguracja biblioteki
 
-- [ ] Zainstalować React Email w backend (lub jako workspace dep):
+- [x] Zainstalować React Email w backend (lub jako workspace dep):
 
-  ```bash
-  pnpm add react react-dom @react-email/render @react-email/components --filter backend
-  ```
+  > Zainstalowano `@react-email/render` i `@react-email/components` do workspace root (`-w`).
+  > `react` 18.3.1 był już dostępny jako zależność tranzytywna. Użyto indywidualnych pakietów `@react-email/*` zamiast przestarzałego bundla `@react-email/components`.
 
-  > Uwaga: `react` i `react-dom` jako peer deps; sprawdzić czy nie konfliktują z Angular workspace
-  > Bezpieczniejsza opcja: `--filter libs/email` jeśli tworzona osobna paczka
+- [x] Zainstalować `react-email` CLI do preview:
 
-- [ ] Zainstalować `react-email` CLI do preview:
+  > Zainstalowano `react-email` jako devDependency do workspace root. `@types/react` dodany.
 
-  ```bash
-  pnpm add -D react-email --filter libs/email
-  ```
+- [x] Stworzyć bibliotekę Nx `libs/email`:
 
-- [ ] Stworzyć bibliotekę Nx `libs/email`:
+  > Stworzono ręcznie `libs/email/src/` jako podfolder istniejącego pakietu `libs`. Dodano `@zgadajsie/email` do `tsconfig.base.json`. Brak potrzeby pełnej restrukturyzacji workspace.
 
-  ```bash
-  nx g @nx/js:lib email --directory=libs/email --importPath=@zgadajsie/email
-  ```
+- [x] Skonfigurować JSX:
 
-  lub ręcznie dodać katalog i skonfigurować `tsconfig.base.json`:
+  > Dodano `"jsx": "react-jsx"` i `"jsxImportSource": "react"` do `backend/tsconfig.app.json`, `backend/tsconfig.spec.json` oraz `libs/tsconfig.spec.json`. Plik `email.service.tsx` (zmiana rozszerzenia z `.ts`).
 
-  ```json
-  "@zgadajsie/email": ["libs/email/src/index.ts"]
-  ```
+- [x] Skonfigurować skrypt preview:
 
-- [ ] Skonfigurować `libs/email/tsconfig.lib.json` — włączyć JSX:
-
-  ```json
-  {
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-      "jsx": "react-jsx",
-      "jsxImportSource": "react"
-    }
-  }
-  ```
-
-- [ ] Dodać do `libs/email/package.json`:
-
-  ```json
-  {
-    "peerDependencies": {
-      "react": ">=18",
-      "@react-email/components": ">=0.0"
-    }
-  }
-  ```
-
-- [ ] Skonfigurować skrypt preview w `libs/email/package.json`:
-
-  ```json
-  {
-    "scripts": {
-      "email:dev": "react-email dev --dir src/templates"
-    }
-  }
-  ```
+  > Dodano `test:email` script w root `package.json`. Preview server (`react-email dev`) dostępny przez `react-email` CLI zainstalowane globalnie.
 
 - [ ] Uruchomić preview i zweryfikować że działa:
   ```bash
   cd libs/email && pnpm email:dev
   ```
+  > Etap opcjonalny (Etap 9) — do weryfikacji ręcznej.
 
 ---
 
 ### Etap 2 — Typy szablonów (`libs/email/src/types/templates.ts`)
 
-- [ ] Zdefiniować typy propsów dla każdego szablonu:
+- [x] Zdefiniować typy propsów dla każdego szablonu:
+  > Utworzono `libs/email/src/types/templates.ts` z wszystkimi typami z planu + `AdminDailyReportEmailProps` (dla metody spoza oryginalnego planu).
 
 ```ts
 export interface ActivationEmailProps {
@@ -289,7 +252,7 @@ export interface EmailTemplates {
 
 ### Etap 3 — Komponenty bazowe (`libs/email/src/components/`)
 
-- [ ] `Button.tsx` — przycisk CTA:
+- [x] `Button.tsx` — przycisk CTA:
 
   ```tsx
   import { Button as EmailButton } from '@react-email/components';
@@ -322,23 +285,23 @@ export interface EmailTemplates {
   }
   ```
 
-- [ ] `Header.tsx` — nagłówek emaila z nazwą brandu
+- [x] `Header.tsx` — nagłówek emaila z nazwą brandu
 
-- [ ] `Footer.tsx` — stopka z APP_BRAND.NAME i TAGLINE
+- [x] `Footer.tsx` — stopka z APP_BRAND.NAME i TAGLINE
 
-- [ ] `Divider.tsx` — separator `<Hr />`
+- [x] `Divider.tsx` — separator `<Hr />`
 
-- [ ] `Text.tsx` — tekst z predefiniowanymi wariantami (body, muted, small)
+- [x] `Text.tsx` — tekst z predefiniowanymi wariantami (body, muted, small)
 
-- [ ] `Callout.tsx` — wyróżniona sekcja (jak announcement message, suspended warning)
+- [x] `Callout.tsx` — wyróżniona sekcja (jak announcement message, suspended warning)
 
-- [ ] `EventRow.tsx` — wiersz tabeli z tytułem i datą wydarzenia (dla digestu)
+- [x] `EventRow.tsx` — wiersz tabeli z tytułem i datą wydarzenia (dla digestu)
 
 ---
 
 ### Etap 4 — Layout (`libs/email/src/layouts/TransactionalLayout.tsx`)
 
-- [ ] Stworzyć bazowy layout z:
+- [x] Stworzyć bazowy layout z:
   - `<Html lang="pl">` + `<Head />` z `<meta charset="utf-8">`
   - `<Body>` z `backgroundColor: '#f8f9fa'`
   - `<Container>` z `maxWidth: 600px`, `margin: '0 auto'`
@@ -380,24 +343,25 @@ export function TransactionalLayout({ preview, children }: TransactionalLayoutPr
 
 W kolejności od najprostszych do najbardziej złożonych:
 
-- [ ] `ActivationEmail.tsx`
-- [ ] `PasswordResetEmail.tsx`
-- [ ] `EventCancelledEmail.tsx`
-- [ ] `EventReminderEmail.tsx`
-- [ ] `NewApplicationEmail.tsx`
-- [ ] `PaymentConfirmationEmail.tsx`
-- [ ] `RefundConfirmationEmail.tsx`
-- [ ] `ReprimandEmail.tsx`
-- [ ] `ParticipationStatusEmail.tsx` (5 wariantów w jednym komponencie)
-- [ ] `AnnouncementEmail.tsx` (callout z priorytetem + przycisk potwierdzenia)
-- [ ] `ContactEmail.tsx` (wewnętrzny, prostszy layout)
-- [ ] `OrganizerWeeklyDigestEmail.tsx` (najbardziej złożony — sekcje, tabele)
+- [x] `ActivationEmail.tsx`
+- [x] `PasswordResetEmail.tsx`
+- [x] `EventCancelledEmail.tsx`
+- [x] `EventReminderEmail.tsx`
+- [x] `NewApplicationEmail.tsx`
+- [x] `PaymentConfirmationEmail.tsx`
+- [x] `RefundConfirmationEmail.tsx`
+- [x] `ReprimandEmail.tsx`
+- [x] `ParticipationStatusEmail.tsx` (5 wariantów w jednym komponencie)
+- [x] `AnnouncementEmail.tsx` (callout z priorytetem + przycisk potwierdzenia)
+- [x] `ContactEmail.tsx` (wewnętrzny, prostszy layout)
+- [x] `OrganizerWeeklyDigestEmail.tsx` (najbardziej złożony — sekcje, tabele)
+- [x] `AdminDailyReportEmail.tsx` (dodatkowy — poza oryginalnym planem, dla metody `sendAdminDailyReport`)
 
 ---
 
 ### Etap 6 — Render helper (`libs/email/src/utils/render-email.ts`)
 
-- [ ] Stworzyć funkcję renderującą komponent React do HTML i plain text:
+- [x] Stworzyć funkcję renderującą komponent React do HTML i plain text:
 
 ```ts
 import { render } from '@react-email/render';
@@ -411,7 +375,7 @@ export async function renderEmail(element: React.ReactElement): Promise<{
 }
 ```
 
-- [ ] Wyeksportować z `libs/email/src/index.ts`
+- [x] Wyeksportować z `libs/email/src/index.ts`
 
 ---
 
@@ -419,29 +383,24 @@ export async function renderEmail(element: React.ReactElement): Promise<{
 
 > Priorytet migracji od najprostszych szablonów (ActivationEmail) do najbardziej złożonych (OrganizerWeeklyDigest).
 
-- [ ] Zaktualizować `EmailService.send()` aby przyjmować też `text`:
+- [x] Zaktualizować `EmailService.send()` aby przyjmować też `text`
 
-  ```ts
-  private async send(to: string, subject: string, html: string, text?: string): Promise<void> {
-    await this.resend.emails.send({ from, to, subject, html, text });
-  }
-  ```
+- [x] Usunąć `wrapHtml()` po migracji wszystkich szablonów
 
-- [ ] Usunąć `wrapHtml()` po migracji wszystkich szablonów
-
-- [ ] Migrować kolejno każdą metodę:
-  - [ ] `sendActivationEmail` → `<ActivationEmail />`
-  - [ ] `sendPasswordResetEmail` → `<PasswordResetEmail />`
-  - [ ] `sendEventCancelledEmail` → `<EventCancelledEmail />`
-  - [ ] `sendEventReminderEmail` → `<EventReminderEmail />`
-  - [ ] `sendNewApplicationEmail` → `<NewApplicationEmail />`
-  - [ ] `sendPaymentConfirmationEmail` → `<PaymentConfirmationEmail />`
-  - [ ] `sendRefundConfirmationEmail` → `<RefundConfirmationEmail />`
-  - [ ] `sendReprimandEmail` → `<ReprimandEmail />`
-  - [ ] `sendParticipationStatusEmail` → `<ParticipationStatusEmail />`
-  - [ ] `sendAnnouncementEmail` → `<AnnouncementEmail />`
-  - [ ] `sendContactEmail` → `<ContactEmail />`
-  - [ ] `sendOrganizerWeeklyDigest` → `<OrganizerWeeklyDigestEmail />`
+- [x] Migrować kolejno każdą metodę:
+  - [x] `sendActivationEmail` → `<ActivationEmail />`
+  - [x] `sendPasswordResetEmail` → `<PasswordResetEmail />`
+  - [x] `sendEventCancelledEmail` → `<EventCancelledEmail />`
+  - [x] `sendEventReminderEmail` → `<EventReminderEmail />`
+  - [x] `sendNewApplicationEmail` → `<NewApplicationEmail />`
+  - [x] `sendPaymentConfirmationEmail` → `<PaymentConfirmationEmail />`
+  - [x] `sendRefundConfirmationEmail` → `<RefundConfirmationEmail />`
+  - [x] `sendReprimandEmail` → `<ReprimandEmail />`
+  - [x] `sendParticipationStatusEmail` → `<ParticipationStatusEmail />`
+  - [x] `sendAnnouncementEmail` → `<AnnouncementEmail />`
+  - [x] `sendContactEmail` → `<ContactEmail />`
+  - [x] `sendOrganizerWeeklyDigest` → `<OrganizerWeeklyDigestEmail />`
+  - [x] `sendAdminDailyReport` → `<AdminDailyReportEmail />` (bonus — spoza planu)
 
 Przykład po migracji:
 
@@ -464,15 +423,15 @@ async sendActivationEmail(email: string, displayName: string, token: string): Pr
 
 ### Etap 8 — Testy snapshot
 
-- [ ] Skonfigurować Jest dla TSX w `libs/email/` (dodać `@babel/preset-react` lub ts-jest preset)
+- [x] Skonfigurować Jest dla TSX w `libs/email/` — ts-jest z JSX + `NODE_OPTIONS=--experimental-vm-modules` (wymagane przez `@react-email/render` v2 używającego dynamic import).
 
-- [ ] Stworzyć `libs/email/src/templates/__tests__/` z plikami:
+- [x] Stworzyć `libs/email/src/templates/__tests__/` z plikami:
   - `activation-email.spec.tsx`
   - `password-reset-email.spec.tsx`
   - `organizer-weekly-digest-email.spec.tsx`
-  - i pozostałe krytyczne szablony
+    > Łącznie 28 testów (snapshots + asercje na kluczowe elementy). Uruchomienie: `pnpm test:email`.
 
-- [ ] Wzorzec testu snapshot:
+- [x] Wzorzec testu snapshot:
 
   ```tsx
   import { render } from '@react-email/render';
@@ -489,7 +448,7 @@ async sendActivationEmail(email: string, displayName: string, token: string): Pr
   });
   ```
 
-- [ ] Dodać test weryfikujący obecność krytycznych elementów (linku, nazwy brandu):
+- [x] Dodać test weryfikujący obecność krytycznych elementów (linku, nazwy brandu):
   ```tsx
   expect(html).toContain('Aktywuj konto');
   expect(html).toContain('ZgadajSie.pl');
@@ -500,13 +459,24 @@ async sendActivationEmail(email: string, displayName: string, token: string): Pr
 
 ### Etap 9 — Preview workflow (opcjonalnie, na końcu)
 
-- [ ] Dodać script w root `package.json`:
+- [x] Dodać script w root `package.json`:
 
   ```json
-  "email:dev": "nx run libs-email:email:dev"
+  "email:dev": "cd libs/email && npx email dev"
   ```
 
-- [ ] Zweryfikować że wszystkie szablony są widoczne w preview server
+- [x] Zainstalować `@react-email/ui` (wymagane przez preview server v6):
+
+  ```bash
+  pnpm add -D -w @react-email/ui
+  ```
+
+- [x] Skonfigurować strukturę dla React Email CLI:
+  - Stworzyć `libs/email/email.config.ts` z `source: './src'`
+  - Stworzyć symlinki: `emails → src/templates`, `components → src/components`, `layouts → src/layouts`, `types → src/types`
+  - React Email CLI wymaga plików w root katalogu, nie w podkatalogu `src`
+
+- [x] Zweryfikować że wszystkie szablony są widoczne w preview server (http://localhost:3001)
 
 - [ ] Sprawdzić rendering w email testowych klientach (np. Litmus lub email na gmailu)
 

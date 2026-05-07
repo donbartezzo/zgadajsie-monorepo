@@ -8,14 +8,23 @@
     "emitDecoratorMetadata": true,
     "target": "es2021",
     "composite": true,
-    "declaration": true
+    "declaration": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
   },
-  "include": ["src/**/*.ts", "../libs/src/**/*.ts"],
+  "include": ["src/**/*.{ts,tsx}", "../libs/src/**/*.ts", "../libs/email/src/**/*.{ts,tsx}"],
   "exclude": [
     "jest.config.ts",
     "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
     "src/**/*.test.ts",
+    "src/**/*.test.tsx",
     "../libs/src/**/*.spec.ts",
-    "../libs/src/**/*.test.ts"
+    "../libs/src/**/*.test.ts",
+    "../libs/email/src/**/__tests__/**",
+    "../libs/email/src/**/*.spec.ts",
+    "../libs/email/src/**/*.spec.tsx",
+    "../libs/email/src/**/*.test.ts",
+    "../libs/email/src/**/*.test.tsx"
   ]
 }

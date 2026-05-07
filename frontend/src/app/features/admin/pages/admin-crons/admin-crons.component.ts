@@ -1,13 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { AdminService, CronStatus, CronLog } from '../../../../core/services/admin.service';
 
 @Component({
   selector: 'app-admin-crons',
-  imports: [CommonModule, IconComponent, CardComponent, ButtonComponent, DatePipe],
+  imports: [CommonModule, CardComponent, ButtonComponent, DatePipe],
   template: `
     <div class="p-4">
       <h1 class="text-xl font-bold text-neutral-900 mb-6">Zarządzanie cronami</h1>

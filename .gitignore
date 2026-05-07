@@ -59,3 +59,9 @@ frontend/src/environments/version.ts
 
 # Playwright auth state
 playwright/.auth/
+
+# React Email preview symlinks (generated for CLI compatibility)
+libs/email/emails
+libs/email/components
+libs/email/layouts
+libs/email/types
