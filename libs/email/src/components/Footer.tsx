@@ -1,4 +1,4 @@
-import { Hr, Link, Section, Text } from '@react-email/ui';
+import { Hr, Link, Section, Text } from '@react-email/components';
 import { APP_BRAND } from '../constants/brand';
 import { EMAIL_THEME } from '../theme';
 import { Button } from './Button';

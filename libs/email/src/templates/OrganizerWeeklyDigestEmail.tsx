@@ -1,4 +1,4 @@
-import { Link, Section, Text } from '@react-email/ui';
+import { Link, Section, Text } from '@react-email/components';
 import React from 'react';
 import { Callout } from '../components/Callout';
 import { Divider } from '../components/Divider';

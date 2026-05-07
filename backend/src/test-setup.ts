@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
-// Mock @react-email/ui for backend tests (email components not needed in backend)
-jest.mock('@react-email/ui', () => ({
+// Mock @react-email/components for backend tests (email components not needed in backend)
+jest.mock('@react-email/components', () => ({
   Button: () => 'Button',
   Container: () => 'Container',
   Head: () => 'Head',

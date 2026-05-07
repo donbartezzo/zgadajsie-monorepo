@@ -1,4 +1,4 @@
-import { Section, Text } from '@react-email/ui';
+import { Section, Text } from '@react-email/components';
 import React from 'react';
 import { EMAIL_THEME } from '../theme';
 

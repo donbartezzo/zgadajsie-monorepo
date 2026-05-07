@@ -6,7 +6,7 @@ export default {
     '^.+\\.[tj]sx?$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
   moduleNameMapper: {
-    '@react-email/ui': '<rootDir>/email/src/__mocks__/@react-email/ui.ts',
+    '@react-email/components': '<rootDir>/email/src/__mocks__/@react-email/components.ts',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'html'],
   coverageDirectory: '../coverage/libs',
