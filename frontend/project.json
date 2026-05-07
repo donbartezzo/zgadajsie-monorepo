@@ -91,6 +91,15 @@
       "options": {
         "jestConfig": "frontend/jest.config.ts",
         "tsConfig": "frontend/tsconfig.spec.json"
+      },
+      "configurations": {
+        "ci": {
+          "jestConfig": "frontend/jest.config.ts",
+          "tsConfig": "frontend/tsconfig.spec.json",
+          "options": {
+            "--no-warnings": true
+          }
+        }
       }
     },
     "serve-static": {

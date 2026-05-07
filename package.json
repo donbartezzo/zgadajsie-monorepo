@@ -12,7 +12,7 @@
     "test:e2e": "nx run frontend-e2e:e2e",
     "test:e2e:smoke": "nx run frontend-e2e:e2e --grep @smoke",
     "test:all": "pnpm test && pnpm test:integration && pnpm test:e2e",
-    "test:ci": "nx run-many --target=test --skip-nx-cache --parallel=4",
+    "test:ci": "nx run-many --target=test --configuration=ci --skip-nx-cache --parallel=4",
     "test:coverage": "nx run-many --target=test --coverage",
     "test:email": "nx test libs --skip-nx-cache",
     "email:dev": "cd libs/email && npx email dev --dir ./src/templates",

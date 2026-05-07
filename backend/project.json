@@ -73,6 +73,15 @@
       "options": {
         "jestConfig": "backend/jest.config.ts",
         "passWithNoTests": true
+      },
+      "configurations": {
+        "ci": {
+          "jestConfig": "backend/jest.config.ts",
+          "passWithNoTests": true,
+          "options": {
+            "--no-warnings": true
+          }
+        }
       }
     },
     "test:integration": {
