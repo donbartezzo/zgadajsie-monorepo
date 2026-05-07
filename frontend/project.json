@@ -9,7 +9,7 @@
     "build": {
       "executor": "@angular/build:application",
       "outputs": ["{options.outputPath}"],
-      "dependsOn": ["frontend:version:ci"],
+      "dependsOn": ["frontend:version:ci", "frontend:tokens:generate"],
       "options": {
         "outputPath": "dist/frontend",
         "browser": "frontend/src/main.ts",
@@ -113,6 +113,18 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "GENERATE_FRONTEND_VERSION=true node scripts/generate-frontend-version.mjs"
+      }
+    },
+    "tokens:generate": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/frontend/src/styles/_tokens.scss"],
+      "inputs": [
+        "{workspaceRoot}/libs/src/lib/constants/color-palette.json",
+        "{workspaceRoot}/libs/src/lib/constants/semantic-color-mapping.json",
+        "{workspaceRoot}/scripts/generate-color-tokens.mjs"
+      ],
+      "options": {
+        "command": "node scripts/generate-color-tokens.mjs"
       }
     }
   }

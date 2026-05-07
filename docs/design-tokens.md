@@ -1,46 +1,72 @@
-# Design Tokens - System Kolorów (3-warstwowa architektura)
+# Design Tokens - System Kolorów
 
-> **Source of Truth:** CSS variables w `frontend/src/styles/_tokens.scss` > **Tailwind mapping:** `frontend/tailwind.config.js` > **Podgląd wizualny:** `/dev/design-system` (tylko dev mode, synchronizowany z live CSS vars w przeglądarce)
+> **Single Source of Truth (hex):** `libs/src/lib/constants/color-palette.json` > **Single Source of Truth (semantic→foundation mapping):** `libs/src/lib/constants/semantic-color-mapping.json` > **CSS vars (auto-generated):** `frontend/src/styles/_tokens.scss` (regenerowany przez `pnpm tokens:generate`) > **Tailwind mapping:** `frontend/tailwind.config.js` > **Podgląd wizualny:** `/dev/design-system` (tylko dev mode, synchronizowany z live CSS vars w przeglądarce)
 
 ## Architektura
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  1. FOUNDATION PALETTE (tailwind.config.js)                     │
-│     Raw hex colors: red, orange, yellow, green, mint, blue,     │
-│     magenta, pink, brown, dark                                  │
+│  0. SINGLE SOURCE OF TRUTH (JSON)                               │
+│     libs/src/lib/constants/color-palette.json (foundation hex)  │
+│     libs/src/lib/constants/semantic-color-mapping.json (mapping)│
 └─────────────────────────────────────────────────────────────────┘
-                              ↓
+            │                                       │
+            ↓                                       ↓
+┌──────────────────────────────┐    ┌──────────────────────────────┐
+│  TAILWIND CONFIG             │    │  CODEGEN SCRIPT              │
+│  tailwind.config.js          │    │  scripts/generate-color-     │
+│  require('color-palette.json')│    │  tokens.mjs                  │
+│  + withOpacity(--color-*)    │    │  (czyta oba JSON-y)          │
+└──────────────────────────────┘    └──────────────────────────────┘
+            │                                       │
+            │                                       ↓
+            │                       ┌──────────────────────────────┐
+            │                       │  AUTO-GENERATED              │
+            │                       │  frontend/src/styles/        │
+            │                       │  _tokens.scss (CSS vars)     │
+            │                       │  Format: "R G B" (RGB space) │
+            │                       └──────────────────────────────┘
+            │                                       │
+            └───────────────┬───────────────────────┘
+                            ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  2. SEMANTIC TOKENS (_tokens.scss) ← SOURCE OF TRUTH            │
-│     CSS variables: --color-primary-*, --color-neutral-*, etc.   │
-│     Format: RGB space-separated (np. "55 188 155")              │
+│  TAILWIND OUTPUT (przeglądarka)                                 │
+│  Foundation: bg-mint-500 → #37bc9b (z JSON)                     │
+│  Semantic:   bg-primary-500 → rgb(var(--color-primary-500))     │
+│              (rezolwowane z _tokens.scss runtime)               │
 └─────────────────────────────────────────────────────────────────┘
-                              ↓
+                            ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  3. TAILWIND MAPPING (tailwind.config.js)                       │
-│     Semantic palettes: primary, neutral, success, warning,      │
-│     danger, info → rgb(var(--color-*) / <alpha-value>)          │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  4. KOMPONENTY ANGULAR                                          │
-│     TYLKO semantyczne klasy: bg-primary-500, text-danger-400    │
-│     Raw palettes (bg-mint-500) tylko dla dekoracji              │
+│  KOMPONENTY ANGULAR + EMAIL TEMPLATES                           │
+│  Angular: TYLKO semantic Tailwind classes (bg-primary-500)      │
+│  Email:   EMAIL_THEME (libs/email/src/theme.ts) → COLOR_PALETTE │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Brak dark mode. Jeden statyczny theme.**
+**Brak dark mode. Jeden statyczny theme. Brak ręcznej synchronizacji** — jedna edycja JSON-a propaguje wszędzie automatycznie (Tailwind reload + `pnpm tokens:generate` regeneruje SCSS).
 
 ## Pliki konfiguracyjne
 
-| Plik                               | Rola                                                    |
-| ---------------------------------- | ------------------------------------------------------- |
-| `frontend/src/styles/_tokens.scss` | **Source of Truth** - CSS vars semantycznych palet      |
-| `frontend/tailwind.config.js`      | Foundation palettes (raw) + Semantic mapping (CSS vars) |
-| `frontend/.postcssrc.json`         | PostCSS config z `@tailwindcss/postcss` (Tailwind v4)   |
-| `frontend/src/styles.scss`         | `@use 'tailwindcss'` + `@config` + layout vars          |
-| `/dev/design-system`               | Podgląd wizualny (tylko dev mode)                       |
+| Plik                                                 | Rola                                                      |
+| ---------------------------------------------------- | --------------------------------------------------------- |
+| `libs/src/lib/constants/color-palette.json`          | **Single Source of Truth** — foundation hex values        |
+| `libs/src/lib/constants/semantic-color-mapping.json` | **Single Source of Truth** — semantic→foundation map      |
+| `libs/src/lib/constants/color-palette.ts`            | TS wrapper (re-export JSON jako `COLOR_PALETTE`)          |
+| `libs/src/lib/constants/semantic-color-mapping.ts`   | TS wrapper (re-export JSON jako `SEMANTIC_COLOR_MAPPING`) |
+| `scripts/generate-color-tokens.mjs`                  | Codegen `_tokens.scss` z JSON-ów                          |
+| `frontend/src/styles/_tokens.scss`                   | **AUTO-GENERATED** CSS vars (nie edytować ręcznie)        |
+| `frontend/tailwind.config.js`                        | Wymaga `color-palette.json` + semantic mapping (CSS vars) |
+| `frontend/.postcssrc.json`                           | PostCSS config z `@tailwindcss/postcss` (Tailwind v4)     |
+| `frontend/src/styles.scss`                           | `@use 'tailwindcss'` + `@config` + layout vars            |
+| `/dev/design-system`                                 | Podgląd wizualny (tylko dev mode)                         |
+
+## Workflow
+
+1. **Edytuj** `color-palette.json` (foundation hex) lub `semantic-color-mapping.json` (mapping).
+2. **`pnpm tokens:generate`** regeneruje `_tokens.scss`.
+   - Auto-uruchamiany przed `nx build frontend` i `nx serve frontend` (dependsOn).
+   - Manualnie: `pnpm tokens:generate` lub `nx run frontend:tokens:generate`.
+3. Tailwind od razu widzi nowe wartości z JSON (foundation) i z `_tokens.scss` (semantic).
 
 ---
 
@@ -344,22 +370,57 @@ Ikona `repeat` jest używana do oznaczenia wydarzeń należących do serii:
 | `border-card-red-border`   | `border-danger-200`      |
 | `text-card-red-text`       | `text-danger-500`        |
 
+## Tokeny w kontekście emaili (libs/email)
+
+Szablony emaili nie mogą korzystać z Tailwind ani CSS variables — klienty pocztowe wymagają inline styles z wartościami hex. Dlatego istnieje dedykowana warstwa TypeScript:
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  libs/src/lib/constants/color-palette.ts                         │
+│  (@zgadajsie/shared → COLOR_PALETTE)                             │
+│  Foundation palette — te same wartości hex co tailwind.config.js │
+│  Sync ręczny (taka sama zasada jak _tokens.scss ↔ tailwind.config)│
+└──────────────────────────────────────────────────────────────────┘
+                              ↓
+┌──────────────────────────────────────────────────────────────────┐
+│  libs/email/src/theme.ts → EMAIL_THEME                           │
+│  (@zgadajsie/email → EMAIL_THEME)                                │
+│  Semantic mapping: primary=mint, neutral=dark, success=green,    │
+│  warning=orange, danger=red, info=blue                           │
+└──────────────────────────────────────────────────────────────────┘
+                              ↓
+┌──────────────────────────────────────────────────────────────────┐
+│  libs/email/src/components/* i templates/*                       │
+│  Używają: const c = EMAIL_THEME.colors;                          │
+│  Przykład: color: c.primary[500], backgroundColor: c.neutral[50] │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+**Ważne:** `color-palette.json` jest jedynym źródłem hex values. `frontend/tailwind.config.js` (foundation) i email templates używają go bezpośrednio. `_tokens.scss` jest auto-generowany przez `scripts/generate-color-tokens.mjs` — żadna ręczna synchronizacja.
+
+---
+
 ## Jak dodać nowy kolor?
 
 ### Nowy kolor semantyczny (primary, danger, etc.)
 
-1. Dodaj CSS variables do `frontend/src/styles/_tokens.scss` w formacie RGB space-separated
-2. Dodaj mapping w `frontend/tailwind.config.js` → semantic palette z `withOpacity()`
-3. Zaktualizuj tę dokumentację
-4. Zaktualizuj stronę `/dev/design-system`
+1. Dodaj nowy mapping w `libs/src/lib/constants/semantic-color-mapping.json` (np. `"accent": "magenta"`)
+2. Dodaj `accent: { 50: withOpacity('--color-accent-50'), ... }` w `frontend/tailwind.config.js` (semantic mapping)
+3. Dodaj label do `SEMANTIC_LABELS` w `scripts/generate-color-tokens.mjs`
+4. `pnpm tokens:generate` zregeneruje `_tokens.scss` z CSS vars
+5. Zaktualizuj tę dokumentację
+6. Zaktualizuj stronę `/dev/design-system`
 
 ### Nowy kolor dekoracyjny (foundation)
 
-1. Dodaj raw hex palette do `frontend/tailwind.config.js` → foundation palette
-2. Zaktualizuj tę dokumentację
-3. Zaktualizuj stronę `/dev/design-system`
+1. Dodaj raw hex palette do `libs/src/lib/constants/color-palette.json` — **jedyne miejsce do edycji hex**
+2. `frontend/tailwind.config.js` automatycznie użyje nowej palety przez `...COLOR_PALETTE`
+3. Jeśli kolor ma być też dostępny w emailach: dodaj mapping w `libs/email/src/theme.ts`
+4. Zaktualizuj tę dokumentację
+5. Zaktualizuj stronę `/dev/design-system`
 
-### Zmiana istniejącego koloru semantycznego
+### Zmiana istniejącego koloru
 
-1. Zmień wartości RGB w `_tokens.scss` - to jest **jedyne miejsce** do edycji
-2. Tailwind automatycznie użyje nowych wartości
+1. Zmień wartości hex w `libs/src/lib/constants/color-palette.json`
+2. `pnpm tokens:generate` zregeneruje `_tokens.scss` (auto-run przed `nx build/serve frontend`)
+3. Tailwind automatycznie użyje nowych wartości — w foundation (przez JSON) i w semantic (przez CSS vars)

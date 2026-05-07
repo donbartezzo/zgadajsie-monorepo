@@ -1,12 +1,15 @@
 import { Section } from '@react-email/section';
 import { Text } from '@react-email/text';
-import { APP_BRAND } from '../../../src/lib/constants/brand.constants';
+import { APP_BRAND } from '../constants/brand';
+import { EMAIL_THEME } from '../theme';
+
+const c = EMAIL_THEME.colors;
 
 export function Header() {
   return (
     <Section
       style={{
-        backgroundColor: '#37bc9b',
+        backgroundColor: c.primary[500],
         padding: '20px 24px',
         borderRadius: '8px 8px 0 0',
         marginBottom: '0',
@@ -17,7 +20,7 @@ export function Header() {
           margin: '0',
           fontSize: '20px',
           fontWeight: '700',
-          color: '#ffffff',
+          color: c.white,
           letterSpacing: '-0.3px',
           textAlign: 'center',
         }}

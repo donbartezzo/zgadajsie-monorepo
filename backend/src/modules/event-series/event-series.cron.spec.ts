@@ -17,6 +17,7 @@ const mockGenerator = {
 const mockCronAdmin = {
   registerTrigger: jest.fn(),
   recordRun: jest.fn(),
+  recordRunToDb: jest.fn().mockResolvedValue(undefined),
 };
 
 describe('EventSeriesCron', () => {

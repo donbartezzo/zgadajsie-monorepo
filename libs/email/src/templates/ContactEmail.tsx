@@ -9,8 +9,11 @@ import React from 'react';
 import { Callout } from '../components/Callout';
 import { Divider } from '../components/Divider';
 import { Footer } from '../components/Footer';
-import { APP_BRAND } from '../../../src/lib/constants/brand.constants';
+import { APP_BRAND } from '../constants/brand';
+import { EMAIL_THEME } from '../theme';
 import type { ContactEmailProps } from '../types/templates';
+
+const c = EMAIL_THEME.colors;
 
 export default function ContactEmail({
   senderName = 'Jan Kowalski',
@@ -21,13 +24,13 @@ export default function ContactEmail({
     <Html lang="pl">
       <Head />
       <Preview>Wiadomość z formularza kontaktowego od {senderName}</Preview>
-      <Body style={{ backgroundColor: '#f8f9fa', fontFamily: 'sans-serif', margin: 0 }}>
+      <Body style={{ backgroundColor: c.neutral[50], fontFamily: 'sans-serif', margin: 0 }}>
         <Container
           style={{
             maxWidth: '600px',
             margin: '0 auto',
             padding: '20px',
-            backgroundColor: '#ffffff',
+            backgroundColor: c.white,
             borderRadius: '8px',
           }}
         >
@@ -37,15 +40,15 @@ export default function ContactEmail({
                 margin: '0 0 16px 0',
                 fontSize: '18px',
                 fontWeight: '700',
-                color: '#1c1f23',
+                color: c.neutral[900],
               }}
             >
               Wiadomość z formularza kontaktowego
             </Text>
-            <Text style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#1c1f23' }}>
+            <Text style={{ margin: '0 0 4px 0', fontSize: '14px', color: c.neutral[900] }}>
               <strong>Imię:</strong> {senderName}
             </Text>
-            <Text style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#1c1f23' }}>
+            <Text style={{ margin: '0 0 12px 0', fontSize: '14px', color: c.neutral[900] }}>
               <strong>Email:</strong> {senderEmail}
             </Text>
             <Divider />

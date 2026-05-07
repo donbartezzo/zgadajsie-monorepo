@@ -1,0 +1,8 @@
+{
+  "primary": "mint",
+  "neutral": "dark",
+  "success": "green",
+  "warning": "orange",
+  "danger": "red",
+  "info": "blue"
+}

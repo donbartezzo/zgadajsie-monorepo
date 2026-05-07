@@ -18,6 +18,7 @@
     "email:dev": "cd libs/email && npx email dev --dir ./src/templates",
     "validate": "pnpm lint && pnpm format:check && pnpm test:ci && pnpm build",
     "frontend:version:ci": "GENERATE_FRONTEND_VERSION=true node scripts/generate-frontend-version.mjs",
+    "tokens:generate": "node scripts/generate-color-tokens.mjs",
     "frontend:serve": "cd frontend && npx -y @angular/cli@21.2.5 serve",
     "frontend:build": "cd frontend && npx -y @angular/cli@21.2.5 build",
     "frontend:test": "cd frontend && npx -y @angular/cli@21.2.5 test",

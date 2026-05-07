@@ -1,6 +1,9 @@
 import { Section } from '@react-email/section';
 import { Text } from '@react-email/text';
 import React from 'react';
+import { EMAIL_THEME } from '../theme';
+
+const c = EMAIL_THEME.colors;
 
 type CalloutVariant = 'info' | 'warning' | 'danger' | 'success';
 
@@ -10,13 +13,12 @@ interface CalloutProps {
   label?: string;
 }
 
-const variantConfig: Record<CalloutVariant, { bg: string; border: string; labelColor: string }> =
-  {
-    info: { bg: '#e8faf5', border: '#37bc9b', labelColor: '#26a386' },
-    warning: { bg: '#fef9c3', border: '#fde68a', labelColor: '#92400e' },
-    danger: { bg: '#fef2f2', border: '#fecaca', labelColor: '#da4453' },
-    success: { bg: '#f0fdf4', border: '#bbf7d0', labelColor: '#8cc152' },
-  };
+const variantConfig: Record<CalloutVariant, { bg: string; border: string; labelColor: string }> = {
+  info: { bg: c.info[50], border: c.info[200], labelColor: c.info[600] },
+  warning: { bg: c.warning[50], border: c.warning[200], labelColor: c.warning[600] },
+  danger: { bg: c.danger[50], border: c.danger[200], labelColor: c.danger[500] },
+  success: { bg: c.success[50], border: c.success[200], labelColor: c.success[600] },
+};
 
 export function Callout({ children, variant = 'info', label }: CalloutProps) {
   const { bg, border, labelColor } = variantConfig[variant];
@@ -42,7 +44,7 @@ export function Callout({ children, variant = 'info', label }: CalloutProps) {
           {label}
         </Text>
       )}
-      <Text style={{ margin: '0', fontSize: '14px', color: '#1c1f23' }}>{children}</Text>
+      <Text style={{ margin: '0', fontSize: '14px', color: c.neutral[900] }}>{children}</Text>
     </Section>
   );
 }

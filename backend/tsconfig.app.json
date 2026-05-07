@@ -12,7 +12,12 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react"
   },
-  "include": ["src/**/*.{ts,tsx}", "../libs/src/**/*.ts", "../libs/email/src/**/*.{ts,tsx}"],
+  "include": [
+    "src/**/*.{ts,tsx}",
+    "../libs/src/**/*.ts",
+    "../libs/src/**/*.json",
+    "../libs/email/src/**/*.{ts,tsx}"
+  ],
   "exclude": [
     "jest.config.ts",
     "src/**/*.spec.ts",

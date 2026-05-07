@@ -62,6 +62,7 @@ describe('EnrollmentLotteryCron', () => {
     const mockCronAdmin = {
       registerTrigger: jest.fn(),
       recordRun: jest.fn(),
+      recordRunToDb: jest.fn().mockResolvedValue(undefined),
     } as unknown as CronAdminService;
     cron = new EnrollmentLotteryCron(
       prisma as PrismaService,

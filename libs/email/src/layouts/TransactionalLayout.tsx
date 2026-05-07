@@ -6,6 +6,9 @@ import { Preview } from '@react-email/preview';
 import React from 'react';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
+import { EMAIL_THEME } from '../theme';
+
+const c = EMAIL_THEME.colors;
 
 interface TransactionalLayoutProps {
   preview: string;
@@ -28,13 +31,13 @@ export function TransactionalLayout({
     <Html lang="pl">
       <Head />
       <Preview>{preview}</Preview>
-      <Body style={{ backgroundColor: '#f8f9fa', fontFamily: 'sans-serif', margin: 0 }}>
+      <Body style={{ backgroundColor: c.neutral[50], fontFamily: 'sans-serif', margin: 0 }}>
         <Container
           style={{
             maxWidth: '600px',
             margin: '0 auto',
             padding: '20px',
-            backgroundColor: '#ffffff',
+            backgroundColor: c.white,
             borderRadius: '8px',
           }}
         >

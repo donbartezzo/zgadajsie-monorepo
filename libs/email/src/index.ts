@@ -1,5 +1,7 @@
 export * from './types/templates';
 export * from './utils/render-email';
+export { EMAIL_THEME } from './theme';
+export type { EmailThemeColors } from './theme';
 
 export { Button } from './components/Button';
 export { Callout } from './components/Callout';

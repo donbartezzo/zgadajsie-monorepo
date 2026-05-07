@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '../components/Button';
 import { Text } from '../components/Text';
 import { TransactionalLayout } from '../layouts/TransactionalLayout';
-import { APP_BRAND } from '../../../src/lib/constants/brand.constants';
+import { APP_BRAND } from '../constants/brand';
 import type { PasswordResetEmailProps } from '../types/templates';
 
 export default function PasswordResetEmail({ resetLink = '#' }: PasswordResetEmailProps) {

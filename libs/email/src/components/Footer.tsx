@@ -2,8 +2,11 @@ import { Hr } from '@react-email/hr';
 import { Link } from '@react-email/link';
 import { Section } from '@react-email/section';
 import { Text } from '@react-email/text';
+import { APP_BRAND } from '../constants/brand';
+import { EMAIL_THEME } from '../theme';
 import { Button } from './Button';
-import { APP_BRAND } from '../../../src/lib/constants/brand.constants';
+
+const c = EMAIL_THEME.colors;
 
 interface FooterProps {
   eventLink?: string;
@@ -33,7 +36,7 @@ export function Footer({
             style={{
               margin: '0',
               fontSize: '12px',
-              color: '#656d78',
+              color: c.neutral[500],
               textAlign: 'center',
             }}
           >
@@ -41,7 +44,7 @@ export function Footer({
               <>
                 <Link
                   href={`${eventLink}/chat`}
-                  style={{ color: '#37bc9b', textDecoration: 'none', marginRight: '8px' }}
+                  style={{ color: c.primary[500], textDecoration: 'none', marginRight: '8px' }}
                 >
                   Napisz na chacie grupowym
                 </Link>
@@ -51,7 +54,7 @@ export function Footer({
             {showOrganizerChat && (
               <Link
                 href={`${eventLink}/host-chat`}
-                style={{ color: '#37bc9b', textDecoration: 'none', marginLeft: '8px' }}
+                style={{ color: c.primary[500], textDecoration: 'none', marginLeft: '8px' }}
               >
                 Napisz do organizatora
               </Link>
@@ -60,13 +63,13 @@ export function Footer({
         </Section>
       )}
 
-      <Hr style={{ borderTop: '1px solid #dadce2', margin: '24px 0 0 0' }} />
+      <Hr style={{ borderTop: `1px solid ${c.neutral[200]}`, margin: '24px 0 0 0' }} />
       <Section style={{ padding: '12px 0 8px 0' }}>
         <Text
           style={{
             margin: '0',
             fontSize: '12px',
-            color: '#656d78',
+            color: c.neutral[500],
             textAlign: 'center',
           }}
         >

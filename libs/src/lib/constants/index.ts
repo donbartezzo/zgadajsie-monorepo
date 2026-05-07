@@ -1,4 +1,6 @@
 export * from './brand.constants';
+export * from './color-palette';
+export * from './semantic-color-mapping';
 export * from './event-series.constants';
 export * from './cover-image.constants';
 export * from './date.constants';

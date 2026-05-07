@@ -2,7 +2,10 @@ import { Column } from '@react-email/column';
 import { Row } from '@react-email/row';
 import { Text } from '@react-email/text';
 import React from 'react';
+import { EMAIL_THEME } from '../theme';
 import { Button } from './Button';
+
+const c = EMAIL_THEME.colors;
 
 interface EventRowProps {
   title: string;
@@ -16,19 +19,21 @@ export function EventRow({ title, date, enrollmentCount, actionHref, actionLabel
   return (
     <Row
       style={{
-        borderBottom: '1px solid #dadce2',
+        borderBottom: `1px solid ${c.neutral[200]}`,
         padding: '8px 0',
       }}
     >
       <Column>
-        <Text style={{ margin: '0', fontSize: '14px', fontWeight: '600', color: '#1c1f23' }}>
+        <Text style={{ margin: '0', fontSize: '14px', fontWeight: '600', color: c.neutral[900] }}>
           {title}
         </Text>
         {date && (
-          <Text style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#656d78' }}>{date}</Text>
+          <Text style={{ margin: '2px 0 0 0', fontSize: '12px', color: c.neutral[500] }}>
+            {date}
+          </Text>
         )}
         {enrollmentCount !== undefined && (
-          <Text style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#656d78' }}>
+          <Text style={{ margin: '2px 0 0 0', fontSize: '12px', color: c.neutral[500] }}>
             Uczestników: {enrollmentCount}
           </Text>
         )}

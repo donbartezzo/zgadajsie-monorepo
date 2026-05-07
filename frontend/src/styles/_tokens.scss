@@ -1,12 +1,14 @@
 // ────────────────────────────────────────────────────────────
-// SEMANTIC COLOR TOKENS - CSS Variables (Source of Truth)
+// AUTO-GENERATED — DO NOT EDIT MANUALLY
 //
-// Format: RGB space-separated (e.g., "55 188 155") dla pełnego
-// wsparcia Tailwind opacity modifiers (bg-primary-500/30).
+// Źródła:
+//   libs/src/lib/constants/color-palette.json
+//   libs/src/lib/constants/semantic-color-mapping.json
 //
-// Architektura:
-//   tailwind.config.js (foundation hex) → _tokens.scss (CSS vars) → Tailwind semantic mapping
+// Regeneracja: pnpm tokens:generate
+// Auto-run przed nx build/serve frontend (dependsOn).
 //
+// Format: RGB space-separated dla Tailwind opacity modifiers (bg-primary-500/30).
 // Dokumentacja: docs/design-tokens.md
 // ────────────────────────────────────────────────────────────
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { Callout } from '../components/Callout';
 import { Text } from '../components/Text';
 import { TransactionalLayout } from '../layouts/TransactionalLayout';
-import { APP_BRAND } from '../../../src/lib/constants/brand.constants';
+import { APP_BRAND } from '../constants/brand';
 import type { ReprimandEmailProps } from '../types/templates';
 
 export default function ReprimandEmail({

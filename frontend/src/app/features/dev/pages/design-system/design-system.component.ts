@@ -1,6 +1,7 @@
 import { afterNextRender, ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import {
+  COLOR_PALETTE,
   EventSeriesRecurrenceType,
   STATUS_INDICATORS,
   type StatusIndicatorType,
@@ -36,6 +37,71 @@ interface ColorPalette {
   description: string;
   token?: string;
   swatches: ColorSwatch[];
+}
+
+const FOUNDATION_META: Array<{
+  key: keyof typeof COLOR_PALETTE;
+  name: string;
+  description: string;
+}> = [
+  { key: 'red', name: 'Red', description: 'Bazowy czerwony (używany przez danger)' },
+  { key: 'orange', name: 'Orange', description: 'Bazowy pomarańczowy (używany przez warning)' },
+  { key: 'yellow', name: 'Yellow', description: 'Dekoracyjny żółty' },
+  { key: 'green', name: 'Green', description: 'Bazowy zielony (używany przez success)' },
+  { key: 'mint', name: 'Mint', description: 'Bazowy miętowy (używany przez primary)' },
+  { key: 'blue', name: 'Blue', description: 'Bazowy niebieski (używany przez info)' },
+  { key: 'magenta', name: 'Magenta', description: 'Dekoracyjny fioletowy' },
+  { key: 'pink', name: 'Pink', description: 'Dekoracyjny różowy' },
+  { key: 'brown', name: 'Brown', description: 'Dekoracyjny brązowy' },
+  { key: 'dark', name: 'Dark', description: 'Bazowa skala szarości (używana przez neutral)' },
+];
+
+const SEMANTIC_META: Array<{
+  token: string;
+  key: keyof typeof COLOR_PALETTE;
+  name: string;
+  description: string;
+}> = [
+  {
+    token: 'primary',
+    key: 'mint',
+    name: 'Primary (mint)',
+    description: 'Brand, CTA, przyciski, linki, akcenty',
+  },
+  {
+    token: 'neutral',
+    key: 'dark',
+    name: 'Neutral (dark/gray)',
+    description: 'Tła, tekst, bordery, ikony muted',
+  },
+  {
+    token: 'success',
+    key: 'green',
+    name: 'Success (green)',
+    description: 'Pozytywne statusy, potwierdzenia',
+  },
+  {
+    token: 'warning',
+    key: 'orange',
+    name: 'Warning (orange)',
+    description: 'Ostrzeżenia, countdown urgent',
+  },
+  {
+    token: 'danger',
+    key: 'red',
+    name: 'Danger (red)',
+    description: 'Błędy, usuwanie, destrukcyjne akcje',
+  },
+  {
+    token: 'info',
+    key: 'blue',
+    name: 'Info (blue)',
+    description: 'Informacje, focus ring, linki informacyjne',
+  },
+];
+
+function paletteSwatches(key: keyof typeof COLOR_PALETTE): ColorSwatch[] {
+  return Object.entries(COLOR_PALETTE[key]).map(([shade, hex]) => ({ shade, hex: hex as string }));
 }
 
 @Component({
@@ -115,285 +181,32 @@ export class DesignSystemComponent {
 
   // ════════════════════════════════════════════════════════
   // SEMANTIC PALETTES - główne palety do użycia w komponentach
-  // Mapowane na CSS vars w _tokens.scss
+  // Mapowane na CSS vars w _tokens.scss; initial hex override'owane przez CSS vars w konstruktorze
   // ════════════════════════════════════════════════════════
-  readonly semanticPalettes = signal<ColorPalette[]>([
-    {
-      token: 'primary',
-      name: 'Primary (mint)',
-      description: 'Brand, CTA, przyciski, linki, akcenty',
-      swatches: [
-        { shade: '50', hex: '#e8faf5' },
-        { shade: '100', hex: '#d1f5ea' },
-        { shade: '200', hex: '#a7edd8' },
-        { shade: '300', hex: '#72dfbd' },
-        { shade: '400', hex: '#48cfad' },
-        { shade: '500', hex: '#37bc9b' },
-        { shade: '600', hex: '#26a386' },
-        { shade: '700', hex: '#1e826b' },
-        { shade: '800', hex: '#186856' },
-        { shade: '900', hex: '#124e40' },
-      ],
-    },
-    {
-      token: 'neutral',
-      name: 'Neutral (dark/gray)',
-      description: 'Tła, tekst, bordery, ikony muted',
-      swatches: [
-        { shade: '50', hex: '#f8f9fa' },
-        { shade: '100', hex: '#eaecf0' },
-        { shade: '200', hex: '#dadce2' },
-        { shade: '300', hex: '#bcc0ca' },
-        { shade: '400', hex: '#9ea2ae' },
-        { shade: '500', hex: '#656d78' },
-        { shade: '600', hex: '#434a54' },
-        { shade: '700', hex: '#343941' },
-        { shade: '800', hex: '#262a30' },
-        { shade: '900', hex: '#1c1f23' },
-        { shade: '950', hex: '#121417' },
-      ],
-    },
-    {
-      token: 'success',
-      name: 'Success (green)',
-      description: 'Pozytywne statusy, potwierdzenia',
-      swatches: [
-        { shade: '50', hex: '#f0f9e8' },
-        { shade: '100', hex: '#dcf2cc' },
-        { shade: '200', hex: '#c5e1a5' },
-        { shade: '300', hex: '#a0d468' },
-        { shade: '400', hex: '#8cc152' },
-        { shade: '500', hex: '#6fa834' },
-        { shade: '600', hex: '#558b2f' },
-        { shade: '700', hex: '#437020' },
-        { shade: '800', hex: '#305214' },
-        { shade: '900', hex: '#1e350a' },
-      ],
-    },
-    {
-      token: 'warning',
-      name: 'Warning (orange)',
-      description: 'Ostrzeżenia, countdown urgent',
-      swatches: [
-        { shade: '50', hex: '#fff3e0' },
-        { shade: '100', hex: '#ffe0b2' },
-        { shade: '200', hex: '#ffcc80' },
-        { shade: '300', hex: '#fc6e51' },
-        { shade: '400', hex: '#e9573f' },
-        { shade: '500', hex: '#d84315' },
-        { shade: '600', hex: '#bf360c' },
-        { shade: '700', hex: '#a02e0a' },
-        { shade: '800', hex: '#7f2508' },
-        { shade: '900', hex: '#5c1a05' },
-      ],
-    },
-    {
-      token: 'danger',
-      name: 'Danger (red)',
-      description: 'Błędy, usuwanie, destrukcyjne akcje',
-      swatches: [
-        { shade: '50', hex: '#feecee' },
-        { shade: '100', hex: '#fcd4d9' },
-        { shade: '200', hex: '#f9b4bc' },
-        { shade: '300', hex: '#f28c96' },
-        { shade: '400', hex: '#ed5565' },
-        { shade: '500', hex: '#da4453' },
-        { shade: '600', hex: '#c0392b' },
-        { shade: '700', hex: '#a02020' },
-        { shade: '800', hex: '#7a1a24' },
-        { shade: '900', hex: '#501015' },
-      ],
-    },
-    {
-      token: 'info',
-      name: 'Info (blue)',
-      description: 'Informacje, focus ring, linki informacyjne',
-      swatches: [
-        { shade: '50', hex: '#e8f3fe' },
-        { shade: '100', hex: '#c8e3fc' },
-        { shade: '200', hex: '#9dccf8' },
-        { shade: '300', hex: '#5d9cec' },
-        { shade: '400', hex: '#4a89dc' },
-        { shade: '500', hex: '#3070c4' },
-        { shade: '600', hex: '#1565c0' },
-        { shade: '700', hex: '#0d47a1' },
-        { shade: '800', hex: '#0a3470' },
-        { shade: '900', hex: '#072240' },
-      ],
-    },
-  ]);
+  readonly semanticPalettes = signal<ColorPalette[]>(
+    SEMANTIC_META.map(({ token, key, name, description }) => ({
+      token,
+      name,
+      description,
+      swatches: paletteSwatches(key),
+    })),
+  );
 
   constructor() {
     afterNextRender(() => this.syncSemanticPalettesFromCssVars());
   }
 
   // ════════════════════════════════════════════════════════
-  // FOUNDATION PALETTES - raw kolory z szablonu sticky-mobile
+  // FOUNDATION PALETTES - raw kolory z libs/src/lib/constants/color-palette.ts
   // Dostępne dla dekoracji, kart kolorowych, akcentów
   // ════════════════════════════════════════════════════════
-  readonly foundationPalettes: ColorPalette[] = [
-    {
-      name: 'Red',
-      description: 'Bazowy czerwony (używany przez danger)',
-      swatches: [
-        { shade: '50', hex: '#feecee' },
-        { shade: '100', hex: '#fcd4d9' },
-        { shade: '200', hex: '#f9b4bc' },
-        { shade: '300', hex: '#f28c96' },
-        { shade: '400', hex: '#ed5565' },
-        { shade: '500', hex: '#da4453' },
-        { shade: '600', hex: '#c0392b' },
-        { shade: '700', hex: '#a02020' },
-        { shade: '800', hex: '#7a1a24' },
-        { shade: '900', hex: '#501015' },
-      ],
-    },
-    {
-      name: 'Orange',
-      description: 'Bazowy pomarańczowy (używany przez warning)',
-      swatches: [
-        { shade: '50', hex: '#fff3e0' },
-        { shade: '100', hex: '#ffe0b2' },
-        { shade: '200', hex: '#ffcc80' },
-        { shade: '300', hex: '#fc6e51' },
-        { shade: '400', hex: '#e9573f' },
-        { shade: '500', hex: '#d84315' },
-        { shade: '600', hex: '#bf360c' },
-        { shade: '700', hex: '#a02e0a' },
-        { shade: '800', hex: '#7f2508' },
-        { shade: '900', hex: '#5c1a05' },
-      ],
-    },
-    {
-      name: 'Yellow',
-      description: 'Dekoracyjny żółty',
-      swatches: [
-        { shade: '50', hex: '#fffde7' },
-        { shade: '100', hex: '#fff9c4' },
-        { shade: '200', hex: '#fff59d' },
-        { shade: '300', hex: '#ffee58' },
-        { shade: '400', hex: '#ffce54' },
-        { shade: '500', hex: '#f6bb42' },
-        { shade: '600', hex: '#f9a825' },
-        { shade: '700', hex: '#f57f17' },
-        { shade: '800', hex: '#e65100' },
-        { shade: '900', hex: '#bf360c' },
-      ],
-    },
-    {
-      name: 'Green',
-      description: 'Bazowy zielony (używany przez success)',
-      swatches: [
-        { shade: '50', hex: '#f0f9e8' },
-        { shade: '100', hex: '#dcf2cc' },
-        { shade: '200', hex: '#c5e1a5' },
-        { shade: '300', hex: '#a0d468' },
-        { shade: '400', hex: '#8cc152' },
-        { shade: '500', hex: '#6fa834' },
-        { shade: '600', hex: '#558b2f' },
-        { shade: '700', hex: '#437020' },
-        { shade: '800', hex: '#305214' },
-        { shade: '900', hex: '#1e350a' },
-      ],
-    },
-    {
-      name: 'Mint',
-      description: 'Bazowy miętowy (używany przez primary)',
-      swatches: [
-        { shade: '50', hex: '#e8faf5' },
-        { shade: '100', hex: '#d1f5ea' },
-        { shade: '200', hex: '#a7edd8' },
-        { shade: '300', hex: '#72dfbd' },
-        { shade: '400', hex: '#48cfad' },
-        { shade: '500', hex: '#37bc9b' },
-        { shade: '600', hex: '#26a386' },
-        { shade: '700', hex: '#1e826b' },
-        { shade: '800', hex: '#186856' },
-        { shade: '900', hex: '#124e40' },
-      ],
-    },
-    {
-      name: 'Blue',
-      description: 'Bazowy niebieski (używany przez info)',
-      swatches: [
-        { shade: '50', hex: '#e8f3fe' },
-        { shade: '100', hex: '#c8e3fc' },
-        { shade: '200', hex: '#9dccf8' },
-        { shade: '300', hex: '#5d9cec' },
-        { shade: '400', hex: '#4a89dc' },
-        { shade: '500', hex: '#3070c4' },
-        { shade: '600', hex: '#1565c0' },
-        { shade: '700', hex: '#0d47a1' },
-        { shade: '800', hex: '#0a3470' },
-        { shade: '900', hex: '#072240' },
-      ],
-    },
-    {
-      name: 'Magenta',
-      description: 'Dekoracyjny fioletowy',
-      swatches: [
-        { shade: '50', hex: '#f3effc' },
-        { shade: '100', hex: '#e4daf8' },
-        { shade: '200', hex: '#d4c4f4' },
-        { shade: '300', hex: '#bfa8ee' },
-        { shade: '400', hex: '#ac92ec' },
-        { shade: '500', hex: '#967adc' },
-        { shade: '600', hex: '#7c5cc4' },
-        { shade: '700', hex: '#6244a8' },
-        { shade: '800', hex: '#4a3380' },
-        { shade: '900', hex: '#322258' },
-      ],
-    },
-    {
-      name: 'Pink',
-      description: 'Dekoracyjny różowy',
-      swatches: [
-        { shade: '50', hex: '#fdf2f8' },
-        { shade: '100', hex: '#fce7f3' },
-        { shade: '200', hex: '#f9c4de' },
-        { shade: '300', hex: '#f49ac2' },
-        { shade: '400', hex: '#ec87c0' },
-        { shade: '500', hex: '#d770ad' },
-        { shade: '600', hex: '#c2549a' },
-        { shade: '700', hex: '#a33e80' },
-        { shade: '800', hex: '#832f66' },
-        { shade: '900', hex: '#63234d' },
-      ],
-    },
-    {
-      name: 'Brown',
-      description: 'Dekoracyjny brązowy',
-      swatches: [
-        { shade: '50', hex: '#f5f0eb' },
-        { shade: '100', hex: '#e8ddd3' },
-        { shade: '200', hex: '#d4c4b4' },
-        { shade: '300', hex: '#baa286' },
-        { shade: '400', hex: '#aa8e69' },
-        { shade: '500', hex: '#8d6e4c' },
-        { shade: '600', hex: '#795548' },
-        { shade: '700', hex: '#5d4037' },
-        { shade: '800', hex: '#4a332c' },
-        { shade: '900', hex: '#3e2723' },
-      ],
-    },
-    {
-      name: 'Dark',
-      description: 'Bazowa skala szarości (używana przez neutral)',
-      swatches: [
-        { shade: '50', hex: '#f8f9fa' },
-        { shade: '100', hex: '#eaecf0' },
-        { shade: '200', hex: '#dadce2' },
-        { shade: '300', hex: '#bcc0ca' },
-        { shade: '400', hex: '#9ea2ae' },
-        { shade: '500', hex: '#656d78' },
-        { shade: '600', hex: '#434a54' },
-        { shade: '700', hex: '#343941' },
-        { shade: '800', hex: '#262a30' },
-        { shade: '900', hex: '#1c1f23' },
-        { shade: '950', hex: '#121417' },
-      ],
-    },
-  ];
+  readonly foundationPalettes: ColorPalette[] = FOUNDATION_META.map(
+    ({ key, name, description }) => ({
+      name,
+      description,
+      swatches: paletteSwatches(key),
+    }),
+  );
 
   readonly allIcons: IconName[] = [
     'menu',
@@ -553,15 +366,15 @@ export class DesignSystemComponent {
   // i były maksymalnie zróżnicowane wizualnie
   // ════════════════════════════════════════════════════════
   readonly badgeColorProposal = [
-    { name: 'Red', shade: '700', hex: '#a02020', tailwind: 'bg-red-700' },
-    { name: 'Yellow', shade: '800', hex: '#e65100', tailwind: 'bg-yellow-800' },
-    { name: 'Green', shade: '700', hex: '#437020', tailwind: 'bg-green-700' },
-    { name: 'Mint', shade: '700', hex: '#1e826b', tailwind: 'bg-mint-700' },
-    { name: 'Blue', shade: '700', hex: '#0d47a1', tailwind: 'bg-blue-700' },
-    { name: 'Magenta', shade: '700', hex: '#6244a8', tailwind: 'bg-magenta-700' },
-    { name: 'Pink', shade: '700', hex: '#a33e80', tailwind: 'bg-pink-700' },
-    { name: 'Brown', shade: '700', hex: '#5d4037', tailwind: 'bg-brown-700' },
-    { name: 'Dark', shade: '800', hex: '#262a30', tailwind: 'bg-dark-800' },
+    { name: 'Red', shade: '700', hex: COLOR_PALETTE.red[700], tailwind: 'bg-red-700' },
+    { name: 'Yellow', shade: '800', hex: COLOR_PALETTE.yellow[800], tailwind: 'bg-yellow-800' },
+    { name: 'Green', shade: '700', hex: COLOR_PALETTE.green[700], tailwind: 'bg-green-700' },
+    { name: 'Mint', shade: '700', hex: COLOR_PALETTE.mint[700], tailwind: 'bg-mint-700' },
+    { name: 'Blue', shade: '700', hex: COLOR_PALETTE.blue[700], tailwind: 'bg-blue-700' },
+    { name: 'Magenta', shade: '700', hex: COLOR_PALETTE.magenta[700], tailwind: 'bg-magenta-700' },
+    { name: 'Pink', shade: '700', hex: COLOR_PALETTE.pink[700], tailwind: 'bg-pink-700' },
+    { name: 'Brown', shade: '700', hex: COLOR_PALETTE.brown[700], tailwind: 'bg-brown-700' },
+    { name: 'Dark', shade: '800', hex: COLOR_PALETTE.dark[800], tailwind: 'bg-dark-800' },
   ];
 
   // ════════════════════════════════════════════════════════
@@ -570,15 +383,15 @@ export class DesignSystemComponent {
   // i były bardziej nasycone niż pastele
   // ════════════════════════════════════════════════════════
   readonly badgeBrightProposal = [
-    { name: 'Red', shade: '200', hex: '#f9b4bc', tailwind: 'bg-red-200' },
-    { name: 'Yellow', shade: '200', hex: '#fff59d', tailwind: 'bg-yellow-200' },
-    { name: 'Green', shade: '200', hex: '#c5e1a5', tailwind: 'bg-green-200' },
-    { name: 'Mint', shade: '200', hex: '#a7edd8', tailwind: 'bg-mint-200' },
-    { name: 'Blue', shade: '200', hex: '#9dccf8', tailwind: 'bg-blue-200' },
-    { name: 'Magenta', shade: '200', hex: '#d4c4f4', tailwind: 'bg-magenta-200' },
-    { name: 'Pink', shade: '200', hex: '#f9c4de', tailwind: 'bg-pink-200' },
-    { name: 'Brown', shade: '200', hex: '#d4c4b4', tailwind: 'bg-brown-200' },
-    { name: 'Dark', shade: '200', hex: '#dadce2', tailwind: 'bg-dark-200' },
+    { name: 'Red', shade: '200', hex: COLOR_PALETTE.red[200], tailwind: 'bg-red-200' },
+    { name: 'Yellow', shade: '200', hex: COLOR_PALETTE.yellow[200], tailwind: 'bg-yellow-200' },
+    { name: 'Green', shade: '200', hex: COLOR_PALETTE.green[200], tailwind: 'bg-green-200' },
+    { name: 'Mint', shade: '200', hex: COLOR_PALETTE.mint[200], tailwind: 'bg-mint-200' },
+    { name: 'Blue', shade: '200', hex: COLOR_PALETTE.blue[200], tailwind: 'bg-blue-200' },
+    { name: 'Magenta', shade: '200', hex: COLOR_PALETTE.magenta[200], tailwind: 'bg-magenta-200' },
+    { name: 'Pink', shade: '200', hex: COLOR_PALETTE.pink[200], tailwind: 'bg-pink-200' },
+    { name: 'Brown', shade: '200', hex: COLOR_PALETTE.brown[200], tailwind: 'bg-brown-200' },
+    { name: 'Dark', shade: '200', hex: COLOR_PALETTE.dark[200], tailwind: 'bg-dark-200' },
   ];
 
   // ════════════════════════════════════════════════════════
@@ -587,15 +400,15 @@ export class DesignSystemComponent {
   // i były maksymalnie zróżnicowane wizualnie
   // ════════════════════════════════════════════════════════
   readonly badgePastelProposal = [
-    { name: 'Red', shade: '100', hex: '#fcd4d9', tailwind: 'bg-red-100' },
-    { name: 'Yellow', shade: '100', hex: '#fff9c4', tailwind: 'bg-yellow-100' },
-    { name: 'Green', shade: '100', hex: '#dcf2cc', tailwind: 'bg-green-100' },
-    { name: 'Mint', shade: '100', hex: '#d1f5ea', tailwind: 'bg-mint-100' },
-    { name: 'Blue', shade: '100', hex: '#c8e3fc', tailwind: 'bg-blue-100' },
-    { name: 'Magenta', shade: '100', hex: '#e4daf8', tailwind: 'bg-magenta-100' },
-    { name: 'Pink', shade: '100', hex: '#fce7f3', tailwind: 'bg-pink-100' },
-    { name: 'Brown', shade: '100', hex: '#e8ddd3', tailwind: 'bg-brown-100' },
-    { name: 'Dark', shade: '100', hex: '#eaecf0', tailwind: 'bg-dark-100' },
+    { name: 'Red', shade: '100', hex: COLOR_PALETTE.red[100], tailwind: 'bg-red-100' },
+    { name: 'Yellow', shade: '100', hex: COLOR_PALETTE.yellow[100], tailwind: 'bg-yellow-100' },
+    { name: 'Green', shade: '100', hex: COLOR_PALETTE.green[100], tailwind: 'bg-green-100' },
+    { name: 'Mint', shade: '100', hex: COLOR_PALETTE.mint[100], tailwind: 'bg-mint-100' },
+    { name: 'Blue', shade: '100', hex: COLOR_PALETTE.blue[100], tailwind: 'bg-blue-100' },
+    { name: 'Magenta', shade: '100', hex: COLOR_PALETTE.magenta[100], tailwind: 'bg-magenta-100' },
+    { name: 'Pink', shade: '100', hex: COLOR_PALETTE.pink[100], tailwind: 'bg-pink-100' },
+    { name: 'Brown', shade: '100', hex: COLOR_PALETTE.brown[100], tailwind: 'bg-brown-100' },
+    { name: 'Dark', shade: '100', hex: COLOR_PALETTE.dark[100], tailwind: 'bg-dark-100' },
   ];
 
   setSection(id: string): void {

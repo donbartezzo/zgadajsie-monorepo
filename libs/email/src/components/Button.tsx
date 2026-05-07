@@ -1,5 +1,8 @@
 import { Button as EmailButton } from '@react-email/button';
 import React from 'react';
+import { EMAIL_THEME } from '../theme';
+
+const c = EMAIL_THEME.colors;
 
 interface ButtonProps {
   href: string;
@@ -8,7 +11,7 @@ interface ButtonProps {
 }
 
 export function Button({ href, children, variant = 'primary' }: ButtonProps) {
-  const bg = variant === 'danger' ? '#da4453' : '#37bc9b';
+  const bg = variant === 'danger' ? c.danger[500] : c.primary[500];
   return (
     <EmailButton
       href={href}
@@ -16,7 +19,7 @@ export function Button({ href, children, variant = 'primary' }: ButtonProps) {
         display: 'inline-block',
         padding: '12px 24px',
         backgroundColor: bg,
-        color: '#fff',
+        color: c.white,
         borderRadius: '8px',
         textDecoration: 'none',
         fontSize: '14px',
