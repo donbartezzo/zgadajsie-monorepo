@@ -9,11 +9,11 @@
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/libs"],
       "options": {
-        "command": "NODE_OPTIONS='--experimental-vm-modules' jest --config libs/jest.config.ts --passWithNoTests"
+        "command": "libs/run-jest.sh --passWithNoTests"
       },
       "configurations": {
         "ci": {
-          "command": "NODE_OPTIONS='--experimental-vm-modules' jest --config libs/jest.config.ts --passWithNoTests --ci --no-warnings"
+          "command": "libs/run-jest.sh --passWithNoTests --ci --no-warnings"
         }
       }
     }
