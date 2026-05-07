@@ -7,7 +7,7 @@ export default {
   transform: {
     '^.+\\.[tj]sx?$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
-  transformIgnorePatterns: ['node_modules/(?!(jose|uuid)/)'],
+  transformIgnorePatterns: ['node_modules/(?!(jose|uuid|@react-email)/)'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'html'],
   coverageDirectory: '../coverage/backend',
 };

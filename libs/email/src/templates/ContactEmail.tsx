@@ -1,10 +1,4 @@
-import { Body } from '@react-email/body';
-import { Container } from '@react-email/container';
-import { Head } from '@react-email/head';
-import { Html } from '@react-email/html';
-import { Preview } from '@react-email/preview';
-import { Section } from '@react-email/section';
-import { Text } from '@react-email/text';
+import { Body, Container, Head, Html, Preview, Section, Text } from '@react-email/ui';
 import React from 'react';
 import { Callout } from '../components/Callout';
 import { Divider } from '../components/Divider';

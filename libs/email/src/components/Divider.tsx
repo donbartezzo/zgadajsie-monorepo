@@ -1,4 +1,4 @@
-import { Hr } from '@react-email/hr';
+import { Hr } from '@react-email/ui';
 import React from 'react';
 import { EMAIL_THEME } from '../theme';
 

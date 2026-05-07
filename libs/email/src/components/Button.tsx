@@ -1,4 +1,4 @@
-import { Button as EmailButton } from '@react-email/button';
+import { Button as EmailButton } from '@react-email/ui';
 import React from 'react';
 import { EMAIL_THEME } from '../theme';
 

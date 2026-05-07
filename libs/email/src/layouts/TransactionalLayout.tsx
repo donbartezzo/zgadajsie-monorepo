@@ -1,8 +1,4 @@
-import { Body } from '@react-email/body';
-import { Container } from '@react-email/container';
-import { Head } from '@react-email/head';
-import { Html } from '@react-email/html';
-import { Preview } from '@react-email/preview';
+import { Body, Container, Head, Html, Preview } from '@react-email/ui';
 import React from 'react';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';

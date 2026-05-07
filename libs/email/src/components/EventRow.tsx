@@ -1,6 +1,4 @@
-import { Column } from '@react-email/column';
-import { Row } from '@react-email/row';
-import { Text } from '@react-email/text';
+import { Column, Row, Text } from '@react-email/ui';
 import React from 'react';
 import { EMAIL_THEME } from '../theme';
 import { Button } from './Button';

@@ -1,6 +1,4 @@
-import { Link } from '@react-email/link';
-import { Section } from '@react-email/section';
-import { Text } from '@react-email/text';
+import { Link, Section, Text } from '@react-email/ui';
 import React from 'react';
 import { Callout } from '../components/Callout';
 import { Divider } from '../components/Divider';
