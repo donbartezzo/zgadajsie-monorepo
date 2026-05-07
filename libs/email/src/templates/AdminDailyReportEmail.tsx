@@ -33,7 +33,12 @@ export default function AdminDailyReportEmail({
     >
       <Section style={{ padding: '24px 0 0 0' }}>
         <Text
-          style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '700', color: c.neutral[900] }}
+          style={{
+            margin: '0 0 16px 0',
+            fontSize: '18px',
+            fontWeight: '700',
+            color: c.neutral[900],
+          }}
         >
           Raport dzienny – {date}
         </Text>
@@ -45,12 +50,14 @@ export default function AdminDailyReportEmail({
           <Callout variant="danger" label="Wykryto problemy z cronami!">
             {stuckCrons.length > 0 && (
               <Text style={{ margin: '0 0 4px 0', fontSize: '13px', color: c.neutral[900] }}>
-                Zatkane crony ({stuckCrons.length}): {stuckCrons.map((cron) => cron.name).join(', ')}
+                Zatkane crony ({stuckCrons.length}):{' '}
+                {stuckCrons.map((cron) => cron.name).join(', ')}
               </Text>
             )}
             {errorCrons.length > 0 && (
               <Text style={{ margin: '0', fontSize: '13px', color: c.neutral[900] }}>
-                Crony z błędami ({errorCrons.length}): {errorCrons.map((cron) => cron.name).join(', ')}
+                Crony z błędami ({errorCrons.length}):{' '}
+                {errorCrons.map((cron) => cron.name).join(', ')}
               </Text>
             )}
           </Callout>
@@ -62,7 +69,12 @@ export default function AdminDailyReportEmail({
 
         <Divider />
         <Text
-          style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: c.neutral[900] }}
+          style={{
+            margin: '0 0 8px 0',
+            fontSize: '16px',
+            fontWeight: '700',
+            color: c.neutral[900],
+          }}
         >
           Status cronów
         </Text>
@@ -75,26 +87,37 @@ export default function AdminDailyReportEmail({
           }}
         >
           <Column style={{ width: '50%', padding: '4px 8px' }}>
-            <Text style={{ margin: '0', fontSize: '12px', fontWeight: '700', color: c.neutral[500] }}>
+            <Text
+              style={{ margin: '0', fontSize: '12px', fontWeight: '700', color: c.neutral[500] }}
+            >
               Cron
             </Text>
           </Column>
           <Column style={{ width: '30%', padding: '4px 8px' }}>
-            <Text style={{ margin: '0', fontSize: '12px', fontWeight: '700', color: c.neutral[500] }}>
+            <Text
+              style={{ margin: '0', fontSize: '12px', fontWeight: '700', color: c.neutral[500] }}
+            >
               Ostatnie uruchomienie
             </Text>
           </Column>
           <Column style={{ width: '20%', padding: '4px 8px' }}>
-            <Text style={{ margin: '0', fontSize: '12px', fontWeight: '700', color: c.neutral[500] }}>
+            <Text
+              style={{ margin: '0', fontSize: '12px', fontWeight: '700', color: c.neutral[500] }}
+            >
               Status
             </Text>
           </Column>
         </Row>
 
         {cronStatus.map((cron) => (
-          <Row key={cron.name} style={{ borderBottom: `1px solid ${c.neutral[200]}`, padding: '4px 0' }}>
+          <Row
+            key={cron.name}
+            style={{ borderBottom: `1px solid ${c.neutral[200]}`, padding: '4px 0' }}
+          >
             <Column style={{ width: '50%', padding: '6px 8px' }}>
-              <Text style={{ margin: '0', fontSize: '13px', color: c.neutral[900] }}>{cron.name}</Text>
+              <Text style={{ margin: '0', fontSize: '13px', color: c.neutral[900] }}>
+                {cron.name}
+              </Text>
             </Column>
             <Column style={{ width: '30%', padding: '6px 8px' }}>
               <Text style={{ margin: '0', fontSize: '12px', color: c.neutral[500] }}>
@@ -106,7 +129,9 @@ export default function AdminDailyReportEmail({
                 <Text style={{ margin: '0', fontSize: '12px', color: c.success[400] }}>✓ OK</Text>
               )}
               {cron.status === 'STUCK' && (
-                <Text style={{ margin: '0', fontSize: '12px', color: c.danger[500] }}>✗ ZATKANE</Text>
+                <Text style={{ margin: '0', fontSize: '12px', color: c.danger[500] }}>
+                  ✗ ZATKANE
+                </Text>
               )}
               {cron.status === 'ERROR' && (
                 <Text style={{ margin: '0', fontSize: '12px', color: c.warning[400] }}>⚠ BŁĄD</Text>
@@ -122,7 +147,12 @@ export default function AdminDailyReportEmail({
 
         <Divider />
         <Text
-          style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: c.neutral[900] }}
+          style={{
+            margin: '0 0 8px 0',
+            fontSize: '16px',
+            fontWeight: '700',
+            color: c.neutral[900],
+          }}
         >
           Statystyki dobowe
         </Text>

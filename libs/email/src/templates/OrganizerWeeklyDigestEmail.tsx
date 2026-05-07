@@ -82,12 +82,20 @@ export default function OrganizerWeeklyDigestEmail({
           <>
             <Divider />
             <Text
-              style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: c.neutral[900] }}
+              style={{
+                margin: '0 0 8px 0',
+                fontSize: '16px',
+                fontWeight: '700',
+                color: c.neutral[900],
+              }}
             >
               Aktywne serie ({activeSeries.length})
             </Text>
             {activeSeries.map((s) => (
-              <Text key={s.id} style={{ margin: '0 0 6px 0', fontSize: '14px', color: c.neutral[900] }}>
+              <Text
+                key={s.id}
+                style={{ margin: '0 0 6px 0', fontSize: '14px', color: c.neutral[900] }}
+              >
                 <strong>{s.name}</strong>
                 {s.suspendedReason && <span style={{ color: c.danger[500] }}> — WSTRZYMANA</span>}
                 {s.pendingCount > 0 && (
@@ -100,7 +108,12 @@ export default function OrganizerWeeklyDigestEmail({
 
         <Divider />
         <Text
-          style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: c.neutral[900] }}
+          style={{
+            margin: '0 0 8px 0',
+            fontSize: '16px',
+            fontWeight: '700',
+            color: c.neutral[900],
+          }}
         >
           Podsumowanie
         </Text>
