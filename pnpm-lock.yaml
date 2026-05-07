@@ -91,10 +91,10 @@ importers:
         version: 5.22.0(prisma@5.22.0)
       '@react-email/components':
         specifier: ^1.0.12
-        version: 1.0.12(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 1.0.12(react-dom@18.3.1(react@19.2.6))(react@19.2.6)
       '@react-email/render':
         specifier: ^2.0.8
-        version: 2.0.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.8(react-dom@18.3.1(react@19.2.6))(react@19.2.6)
       '@types/sharp':
         specifier: ^0.32.0
         version: 0.32.0
@@ -143,12 +143,15 @@ importers:
       passport-local:
         specifier: ^1.0.0
         version: 1.0.0
+      react:
+        specifier: ^19.0.0
+        version: 19.2.6
       reflect-metadata:
         specifier: ^0.1.13
         version: 0.1.14
       resend:
         specifier: ^6.10.0
-        version: 6.10.0(@react-email/render@2.0.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 6.10.0(@react-email/render@2.0.8(react-dom@18.3.1(react@19.2.6))(react@19.2.6))
       rxjs:
         specifier: ~7.8.2
         version: 7.8.2
@@ -206,7 +209,7 @@ importers:
         version: 11.1.17(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@11.1.6)(@nestjs/platform-express@11.1.6)
       '@nx/angular':
         specifier: ^21.6.4
-        version: 21.6.5(@angular-devkit/build-angular@21.2.5(9777c77778b82a916a45c7184cdd21db))(@angular-devkit/core@21.2.5(chokidar@4.0.3))(@angular-devkit/schematics@21.2.5(chokidar@4.0.3))(@angular/build@21.2.5(08d8a7f604a9cb6f2e917d5910833d03))(@babel/traverse@7.29.0)(@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@rspack/core@1.5.8(@swc/helpers@0.5.17))(@schematics/angular@21.2.5(chokidar@4.0.3))(@swc/helpers@0.5.17)(@types/express@5.0.3)(@zkochan/js-yaml@0.0.7)(eslint@8.57.1)(html-webpack-plugin@5.6.4(@rspack/core@1.5.8(@swc/helpers@0.5.17))(webpack@5.105.2))(less@4.4.2)(lightningcss@1.32.0)(nx@21.6.4)(react-dom@18.3.1(react@18.3.1))(react-refresh@0.11.0)(react@18.3.1)(rxjs@7.8.2)(typescript@5.9.3)(webpack-cli@5.1.4)
+        version: 21.6.5(@angular-devkit/build-angular@21.2.5(9777c77778b82a916a45c7184cdd21db))(@angular-devkit/core@21.2.5(chokidar@4.0.3))(@angular-devkit/schematics@21.2.5(chokidar@4.0.3))(@angular/build@21.2.5(08d8a7f604a9cb6f2e917d5910833d03))(@babel/traverse@7.29.0)(@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.105.2))(@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.105.2))(@rspack/core@1.5.8(@swc/helpers@0.5.17))(@schematics/angular@21.2.5(chokidar@4.0.3))(@swc/helpers@0.5.17)(@types/express@5.0.3)(@zkochan/js-yaml@0.0.7)(eslint@8.57.1)(html-webpack-plugin@5.6.4(@rspack/core@1.5.8(@swc/helpers@0.5.17))(webpack@5.105.2))(less@4.4.2)(lightningcss@1.32.0)(nx@21.6.4)(react-dom@18.3.1(react@19.2.6))(react-refresh@0.11.0)(react@19.2.6)(rxjs@7.8.2)(typescript@5.9.3)(webpack-cli@5.1.4)
       '@nx/devkit':
         specifier: 21.6.4
         version: 21.6.4(nx@21.6.4)
@@ -245,7 +248,7 @@ importers:
         version: 1.56.1
       '@react-email/ui':
         specifier: ^6.0.8
-        version: 6.0.8(@babel/core@7.29.0)(@playwright/test@1.56.1)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.93.2)
+        version: 6.0.8(@babel/core@7.29.0)(@playwright/test@1.56.1)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(sass@1.93.2)
       '@tailwindcss/postcss':
         specifier: ^4.2.2
         version: 4.2.2
@@ -344,7 +347,7 @@ importers:
         version: 5.22.0
       react-email:
         specifier: ^6.0.8
-        version: 6.0.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 6.0.8(react-dom@18.3.1(react@19.2.6))(react@19.2.6)
       tailwindcss:
         specifier: ^4.2.2
         version: 4.2.2
@@ -9679,8 +9682,8 @@ packages:
     resolution: {integrity: sha512-F27qZr8uUqwhWZboondsPx8tnC3Ct3SxZA3V5WyEvujRyyNv0VYPhoBg1gZ8/MV5tubQp76Trw8lTv9hzRBa+A==}
     engines: {node: '>=0.10.0'}
 
-  react@18.3.1:
-    resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
+  react@19.2.6:
+    resolution: {integrity: sha512-sfWGGfavi0xr8Pg0sVsyHMAOziVYKgPLNrS7ig+ivMNb3wbCBw3KxtflsGBAwD3gYQlE/AEZsTLgToRrSCjb0Q==}
     engines: {node: '>=0.10.0'}
 
   read-cache@1.0.0:
@@ -15237,21 +15240,21 @@ snapshots:
       - utf-8-validate
       - vue-tsc
 
-  '@module-federation/data-prefetch@0.18.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@module-federation/data-prefetch@0.18.4(react-dom@18.3.1(react@19.2.6))(react@19.2.6)':
     dependencies:
       '@module-federation/runtime': 0.18.4
       '@module-federation/sdk': 0.18.4
       fs-extra: 9.1.0
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
+      react: 19.2.6
+      react-dom: 18.3.1(react@19.2.6)
 
-  '@module-federation/data-prefetch@0.20.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@module-federation/data-prefetch@0.20.0(react-dom@18.3.1(react@19.2.6))(react@19.2.6)':
     dependencies:
       '@module-federation/runtime': 0.20.0
       '@module-federation/sdk': 0.20.0
       fs-extra: 9.1.0
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
+      react: 19.2.6
+      react-dom: 18.3.1(react@19.2.6)
 
   '@module-federation/dts-plugin@0.18.4(typescript@5.9.3)':
     dependencies:
@@ -15303,11 +15306,11 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@module-federation/enhanced@0.18.4(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.102.1(webpack-cli@5.1.4))':
+  '@module-federation/enhanced@0.18.4(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.102.1(webpack-cli@5.1.4))':
     dependencies:
       '@module-federation/bridge-react-webpack-plugin': 0.18.4
       '@module-federation/cli': 0.18.4(typescript@5.9.3)
-      '@module-federation/data-prefetch': 0.18.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@module-federation/data-prefetch': 0.18.4(react-dom@18.3.1(react@19.2.6))(react@19.2.6)
       '@module-federation/dts-plugin': 0.18.4(typescript@5.9.3)
       '@module-federation/error-codes': 0.18.4
       '@module-federation/inject-external-runtime-core-plugin': 0.18.4(@module-federation/runtime-tools@0.18.4)
@@ -15331,11 +15334,11 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.102.1(webpack-cli@5.1.4))':
+  '@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.102.1(webpack-cli@5.1.4))':
     dependencies:
       '@module-federation/bridge-react-webpack-plugin': 0.20.0
       '@module-federation/cli': 0.20.0(typescript@5.9.3)
-      '@module-federation/data-prefetch': 0.20.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@module-federation/data-prefetch': 0.20.0(react-dom@18.3.1(react@19.2.6))(react@19.2.6)
       '@module-federation/dts-plugin': 0.20.0(typescript@5.9.3)
       '@module-federation/error-codes': 0.20.0
       '@module-federation/inject-external-runtime-core-plugin': 0.20.0(@module-federation/runtime-tools@0.20.0)
@@ -15359,11 +15362,11 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2)':
+  '@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.105.2)':
     dependencies:
       '@module-federation/bridge-react-webpack-plugin': 0.20.0
       '@module-federation/cli': 0.20.0(typescript@5.9.3)
-      '@module-federation/data-prefetch': 0.20.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@module-federation/data-prefetch': 0.20.0(react-dom@18.3.1(react@19.2.6))(react@19.2.6)
       '@module-federation/dts-plugin': 0.20.0(typescript@5.9.3)
       '@module-federation/error-codes': 0.20.0
       '@module-federation/inject-external-runtime-core-plugin': 0.20.0(@module-federation/runtime-tools@0.20.0)
@@ -15443,9 +15446,9 @@ snapshots:
       - utf-8-validate
       - vue-tsc
 
-  '@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.102.1(webpack-cli@5.1.4))':
+  '@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.102.1(webpack-cli@5.1.4))':
     dependencies:
-      '@module-federation/enhanced': 0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.102.1(webpack-cli@5.1.4))
+      '@module-federation/enhanced': 0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.102.1(webpack-cli@5.1.4))
       '@module-federation/runtime': 0.20.0
       '@module-federation/sdk': 0.20.0
       btoa: 1.2.1
@@ -15453,8 +15456,8 @@ snapshots:
       node-fetch: 2.7.0(encoding@0.1.13)
       webpack: 5.102.1(webpack-cli@5.1.4)
     optionalDependencies:
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
+      react: 19.2.6
+      react-dom: 18.3.1(react@19.2.6)
     transitivePeerDependencies:
       - '@rspack/core'
       - bufferutil
@@ -15464,9 +15467,9 @@ snapshots:
       - utf-8-validate
       - vue-tsc
 
-  '@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2)':
+  '@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.105.2)':
     dependencies:
-      '@module-federation/enhanced': 0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2)
+      '@module-federation/enhanced': 0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.105.2)
       '@module-federation/runtime': 0.20.0
       '@module-federation/sdk': 0.20.0
       btoa: 1.2.1
@@ -15474,8 +15477,8 @@ snapshots:
       node-fetch: 2.7.0(encoding@0.1.13)
       webpack: 5.105.2(esbuild@0.27.3)(webpack-cli@5.1.4)
     optionalDependencies:
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
+      react: 19.2.6
+      react-dom: 18.3.1(react@19.2.6)
     transitivePeerDependencies:
       - '@rspack/core'
       - bufferutil
@@ -15991,15 +15994,15 @@ snapshots:
     dependencies:
       consola: 3.4.2
 
-  '@nx/angular@21.6.5(@angular-devkit/build-angular@21.2.5(9777c77778b82a916a45c7184cdd21db))(@angular-devkit/core@21.2.5(chokidar@4.0.3))(@angular-devkit/schematics@21.2.5(chokidar@4.0.3))(@angular/build@21.2.5(08d8a7f604a9cb6f2e917d5910833d03))(@babel/traverse@7.29.0)(@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@rspack/core@1.5.8(@swc/helpers@0.5.17))(@schematics/angular@21.2.5(chokidar@4.0.3))(@swc/helpers@0.5.17)(@types/express@5.0.3)(@zkochan/js-yaml@0.0.7)(eslint@8.57.1)(html-webpack-plugin@5.6.4(@rspack/core@1.5.8(@swc/helpers@0.5.17))(webpack@5.105.2))(less@4.4.2)(lightningcss@1.32.0)(nx@21.6.4)(react-dom@18.3.1(react@18.3.1))(react-refresh@0.11.0)(react@18.3.1)(rxjs@7.8.2)(typescript@5.9.3)(webpack-cli@5.1.4)':
+  '@nx/angular@21.6.5(@angular-devkit/build-angular@21.2.5(9777c77778b82a916a45c7184cdd21db))(@angular-devkit/core@21.2.5(chokidar@4.0.3))(@angular-devkit/schematics@21.2.5(chokidar@4.0.3))(@angular/build@21.2.5(08d8a7f604a9cb6f2e917d5910833d03))(@babel/traverse@7.29.0)(@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.105.2))(@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.105.2))(@rspack/core@1.5.8(@swc/helpers@0.5.17))(@schematics/angular@21.2.5(chokidar@4.0.3))(@swc/helpers@0.5.17)(@types/express@5.0.3)(@zkochan/js-yaml@0.0.7)(eslint@8.57.1)(html-webpack-plugin@5.6.4(@rspack/core@1.5.8(@swc/helpers@0.5.17))(webpack@5.105.2))(less@4.4.2)(lightningcss@1.32.0)(nx@21.6.4)(react-dom@18.3.1(react@19.2.6))(react-refresh@0.11.0)(react@19.2.6)(rxjs@7.8.2)(typescript@5.9.3)(webpack-cli@5.1.4)':
     dependencies:
       '@angular-devkit/core': 21.2.5(chokidar@4.0.3)
       '@angular-devkit/schematics': 21.2.5(chokidar@4.0.3)
       '@nx/devkit': 21.6.5(nx@21.6.4)
       '@nx/eslint': 21.6.5(@babel/traverse@7.29.0)(@zkochan/js-yaml@0.0.7)(eslint@8.57.1)(nx@21.6.4)
       '@nx/js': 21.6.5(@babel/traverse@7.29.0)(nx@21.6.4)
-      '@nx/module-federation': 21.6.5(@babel/traverse@7.29.0)(@swc/helpers@0.5.17)(nx@21.6.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack-cli@5.1.4)
-      '@nx/rspack': 21.6.5(@babel/traverse@7.29.0)(@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@swc/helpers@0.5.17)(@types/express@5.0.3)(less@4.4.2)(nx@21.6.4)(react-dom@18.3.1(react@18.3.1))(react-refresh@0.11.0)(react@18.3.1)(typescript@5.9.3)(webpack-cli@5.1.4)
+      '@nx/module-federation': 21.6.5(@babel/traverse@7.29.0)(@swc/helpers@0.5.17)(nx@21.6.4)(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack-cli@5.1.4)
+      '@nx/rspack': 21.6.5(@babel/traverse@7.29.0)(@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.105.2))(@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.105.2))(@swc/helpers@0.5.17)(@types/express@5.0.3)(less@4.4.2)(nx@21.6.4)(react-dom@18.3.1(react@19.2.6))(react-refresh@0.11.0)(react@19.2.6)(typescript@5.9.3)(webpack-cli@5.1.4)
       '@nx/web': 21.6.5(@babel/traverse@7.29.0)(nx@21.6.4)
       '@nx/webpack': 21.6.5(@babel/traverse@7.29.0)(@rspack/core@1.5.8(@swc/helpers@0.5.17))(html-webpack-plugin@5.6.4(@rspack/core@1.5.8(@swc/helpers@0.5.17))(webpack@5.105.2))(lightningcss@1.32.0)(nx@21.6.4)(typescript@5.9.3)(webpack-cli@5.1.4)
       '@nx/workspace': 21.6.5
@@ -16310,10 +16313,10 @@ snapshots:
       - nx
       - supports-color
 
-  '@nx/module-federation@21.6.5(@babel/traverse@7.29.0)(@swc/helpers@0.5.17)(nx@21.6.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack-cli@5.1.4)':
+  '@nx/module-federation@21.6.5(@babel/traverse@7.29.0)(@swc/helpers@0.5.17)(nx@21.6.4)(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack-cli@5.1.4)':
     dependencies:
-      '@module-federation/enhanced': 0.18.4(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.102.1(webpack-cli@5.1.4))
-      '@module-federation/node': 2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.102.1(webpack-cli@5.1.4))
+      '@module-federation/enhanced': 0.18.4(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.102.1(webpack-cli@5.1.4))
+      '@module-federation/node': 2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.102.1(webpack-cli@5.1.4))
       '@module-federation/sdk': 0.18.4
       '@nx/devkit': 21.6.5(nx@21.6.4)
       '@nx/js': 21.6.5(@babel/traverse@7.29.0)(nx@21.6.4)
@@ -16506,13 +16509,13 @@ snapshots:
       - typescript
       - verdaccio
 
-  '@nx/rspack@21.6.5(@babel/traverse@7.29.0)(@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2))(@swc/helpers@0.5.17)(@types/express@5.0.3)(less@4.4.2)(nx@21.6.4)(react-dom@18.3.1(react@18.3.1))(react-refresh@0.11.0)(react@18.3.1)(typescript@5.9.3)(webpack-cli@5.1.4)':
+  '@nx/rspack@21.6.5(@babel/traverse@7.29.0)(@module-federation/enhanced@0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.105.2))(@module-federation/node@2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.105.2))(@swc/helpers@0.5.17)(@types/express@5.0.3)(less@4.4.2)(nx@21.6.4)(react-dom@18.3.1(react@19.2.6))(react-refresh@0.11.0)(react@19.2.6)(typescript@5.9.3)(webpack-cli@5.1.4)':
     dependencies:
-      '@module-federation/enhanced': 0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2)
-      '@module-federation/node': 2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack@5.105.2)
+      '@module-federation/enhanced': 0.20.0(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.105.2)
+      '@module-federation/node': 2.7.18(@rspack/core@1.5.8(@swc/helpers@0.5.17))(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack@5.105.2)
       '@nx/devkit': 21.6.5(nx@21.6.4)
       '@nx/js': 21.6.5(@babel/traverse@7.29.0)(nx@21.6.4)
-      '@nx/module-federation': 21.6.5(@babel/traverse@7.29.0)(@swc/helpers@0.5.17)(nx@21.6.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(webpack-cli@5.1.4)
+      '@nx/module-federation': 21.6.5(@babel/traverse@7.29.0)(@swc/helpers@0.5.17)(nx@21.6.4)(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(typescript@5.9.3)(webpack-cli@5.1.4)
       '@nx/web': 21.6.5(@babel/traverse@7.29.0)(nx@21.6.4)
       '@phenomnomnominal/tsquery': 5.0.1(typescript@5.9.3)
       '@rspack/core': 1.5.8(@swc/helpers@0.5.17)
@@ -16948,141 +16951,141 @@ snapshots:
     dependencies:
       '@prisma/debug': 5.22.0
 
-  '@react-email/body@0.3.0(react@18.3.1)':
+  '@react-email/body@0.3.0(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/button@0.2.1(react@18.3.1)':
+  '@react-email/button@0.2.1(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/code-block@0.2.1(react@18.3.1)':
+  '@react-email/code-block@0.2.1(react@19.2.6)':
     dependencies:
       prismjs: 1.30.0
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/code-inline@0.0.6(react@18.3.1)':
+  '@react-email/code-inline@0.0.6(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/column@0.0.14(react@18.3.1)':
+  '@react-email/column@0.0.14(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/components@1.0.12(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@react-email/components@1.0.12(react-dom@18.3.1(react@19.2.6))(react@19.2.6)':
     dependencies:
-      '@react-email/body': 0.3.0(react@18.3.1)
-      '@react-email/button': 0.2.1(react@18.3.1)
-      '@react-email/code-block': 0.2.1(react@18.3.1)
-      '@react-email/code-inline': 0.0.6(react@18.3.1)
-      '@react-email/column': 0.0.14(react@18.3.1)
-      '@react-email/container': 0.0.16(react@18.3.1)
-      '@react-email/font': 0.0.10(react@18.3.1)
-      '@react-email/head': 0.0.13(react@18.3.1)
-      '@react-email/heading': 0.0.16(react@18.3.1)
-      '@react-email/hr': 0.0.12(react@18.3.1)
-      '@react-email/html': 0.0.12(react@18.3.1)
-      '@react-email/img': 0.0.12(react@18.3.1)
-      '@react-email/link': 0.0.13(react@18.3.1)
-      '@react-email/markdown': 0.0.18(react@18.3.1)
-      '@react-email/preview': 0.0.14(react@18.3.1)
-      '@react-email/render': 2.0.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@react-email/row': 0.0.13(react@18.3.1)
-      '@react-email/section': 0.0.17(react@18.3.1)
-      '@react-email/tailwind': 2.0.7(@react-email/body@0.3.0(react@18.3.1))(@react-email/button@0.2.1(react@18.3.1))(@react-email/code-block@0.2.1(react@18.3.1))(@react-email/code-inline@0.0.6(react@18.3.1))(@react-email/container@0.0.16(react@18.3.1))(@react-email/heading@0.0.16(react@18.3.1))(@react-email/hr@0.0.12(react@18.3.1))(@react-email/img@0.0.12(react@18.3.1))(@react-email/link@0.0.13(react@18.3.1))(@react-email/preview@0.0.14(react@18.3.1))(@react-email/text@0.1.6(react@18.3.1))(react@18.3.1)
-      '@react-email/text': 0.1.6(react@18.3.1)
-      react: 18.3.1
+      '@react-email/body': 0.3.0(react@19.2.6)
+      '@react-email/button': 0.2.1(react@19.2.6)
+      '@react-email/code-block': 0.2.1(react@19.2.6)
+      '@react-email/code-inline': 0.0.6(react@19.2.6)
+      '@react-email/column': 0.0.14(react@19.2.6)
+      '@react-email/container': 0.0.16(react@19.2.6)
+      '@react-email/font': 0.0.10(react@19.2.6)
+      '@react-email/head': 0.0.13(react@19.2.6)
+      '@react-email/heading': 0.0.16(react@19.2.6)
+      '@react-email/hr': 0.0.12(react@19.2.6)
+      '@react-email/html': 0.0.12(react@19.2.6)
+      '@react-email/img': 0.0.12(react@19.2.6)
+      '@react-email/link': 0.0.13(react@19.2.6)
+      '@react-email/markdown': 0.0.18(react@19.2.6)
+      '@react-email/preview': 0.0.14(react@19.2.6)
+      '@react-email/render': 2.0.6(react-dom@18.3.1(react@19.2.6))(react@19.2.6)
+      '@react-email/row': 0.0.13(react@19.2.6)
+      '@react-email/section': 0.0.17(react@19.2.6)
+      '@react-email/tailwind': 2.0.7(@react-email/body@0.3.0(react@19.2.6))(@react-email/button@0.2.1(react@19.2.6))(@react-email/code-block@0.2.1(react@19.2.6))(@react-email/code-inline@0.0.6(react@19.2.6))(@react-email/container@0.0.16(react@19.2.6))(@react-email/heading@0.0.16(react@19.2.6))(@react-email/hr@0.0.12(react@19.2.6))(@react-email/img@0.0.12(react@19.2.6))(@react-email/link@0.0.13(react@19.2.6))(@react-email/preview@0.0.14(react@19.2.6))(@react-email/text@0.1.6(react@19.2.6))(react@19.2.6)
+      '@react-email/text': 0.1.6(react@19.2.6)
+      react: 19.2.6
     transitivePeerDependencies:
       - react-dom
 
-  '@react-email/container@0.0.16(react@18.3.1)':
+  '@react-email/container@0.0.16(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/font@0.0.10(react@18.3.1)':
+  '@react-email/font@0.0.10(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/head@0.0.13(react@18.3.1)':
+  '@react-email/head@0.0.13(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/heading@0.0.16(react@18.3.1)':
+  '@react-email/heading@0.0.16(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/hr@0.0.12(react@18.3.1)':
+  '@react-email/hr@0.0.12(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/html@0.0.12(react@18.3.1)':
+  '@react-email/html@0.0.12(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/img@0.0.12(react@18.3.1)':
+  '@react-email/img@0.0.12(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/link@0.0.13(react@18.3.1)':
+  '@react-email/link@0.0.13(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/markdown@0.0.18(react@18.3.1)':
+  '@react-email/markdown@0.0.18(react@19.2.6)':
     dependencies:
       marked: 15.0.12
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/preview@0.0.14(react@18.3.1)':
+  '@react-email/preview@0.0.14(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/render@2.0.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
-      html-to-text: 9.0.5
-      prettier: 3.8.1
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-
-  '@react-email/render@2.0.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@react-email/render@2.0.6(react-dom@18.3.1(react@19.2.6))(react@19.2.6)':
     dependencies:
       html-to-text: 9.0.5
       prettier: 3.8.1
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
+      react: 19.2.6
+      react-dom: 18.3.1(react@19.2.6)
 
-  '@react-email/row@0.0.13(react@18.3.1)':
+  '@react-email/render@2.0.8(react-dom@18.3.1(react@19.2.6))(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      html-to-text: 9.0.5
+      prettier: 3.8.1
+      react: 19.2.6
+      react-dom: 18.3.1(react@19.2.6)
 
-  '@react-email/section@0.0.17(react@18.3.1)':
+  '@react-email/row@0.0.13(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/tailwind@2.0.7(@react-email/body@0.3.0(react@18.3.1))(@react-email/button@0.2.1(react@18.3.1))(@react-email/code-block@0.2.1(react@18.3.1))(@react-email/code-inline@0.0.6(react@18.3.1))(@react-email/container@0.0.16(react@18.3.1))(@react-email/heading@0.0.16(react@18.3.1))(@react-email/hr@0.0.12(react@18.3.1))(@react-email/img@0.0.12(react@18.3.1))(@react-email/link@0.0.13(react@18.3.1))(@react-email/preview@0.0.14(react@18.3.1))(@react-email/text@0.1.6(react@18.3.1))(react@18.3.1)':
+  '@react-email/section@0.0.17(react@19.2.6)':
     dependencies:
-      '@react-email/text': 0.1.6(react@18.3.1)
-      react: 18.3.1
+      react: 19.2.6
+
+  '@react-email/tailwind@2.0.7(@react-email/body@0.3.0(react@19.2.6))(@react-email/button@0.2.1(react@19.2.6))(@react-email/code-block@0.2.1(react@19.2.6))(@react-email/code-inline@0.0.6(react@19.2.6))(@react-email/container@0.0.16(react@19.2.6))(@react-email/heading@0.0.16(react@19.2.6))(@react-email/hr@0.0.12(react@19.2.6))(@react-email/img@0.0.12(react@19.2.6))(@react-email/link@0.0.13(react@19.2.6))(@react-email/preview@0.0.14(react@19.2.6))(@react-email/text@0.1.6(react@19.2.6))(react@19.2.6)':
+    dependencies:
+      '@react-email/text': 0.1.6(react@19.2.6)
+      react: 19.2.6
       tailwindcss: 4.2.2
     optionalDependencies:
-      '@react-email/body': 0.3.0(react@18.3.1)
-      '@react-email/button': 0.2.1(react@18.3.1)
-      '@react-email/code-block': 0.2.1(react@18.3.1)
-      '@react-email/code-inline': 0.0.6(react@18.3.1)
-      '@react-email/container': 0.0.16(react@18.3.1)
-      '@react-email/heading': 0.0.16(react@18.3.1)
-      '@react-email/hr': 0.0.12(react@18.3.1)
-      '@react-email/img': 0.0.12(react@18.3.1)
-      '@react-email/link': 0.0.13(react@18.3.1)
-      '@react-email/preview': 0.0.14(react@18.3.1)
+      '@react-email/body': 0.3.0(react@19.2.6)
+      '@react-email/button': 0.2.1(react@19.2.6)
+      '@react-email/code-block': 0.2.1(react@19.2.6)
+      '@react-email/code-inline': 0.0.6(react@19.2.6)
+      '@react-email/container': 0.0.16(react@19.2.6)
+      '@react-email/heading': 0.0.16(react@19.2.6)
+      '@react-email/hr': 0.0.12(react@19.2.6)
+      '@react-email/img': 0.0.12(react@19.2.6)
+      '@react-email/link': 0.0.13(react@19.2.6)
+      '@react-email/preview': 0.0.14(react@19.2.6)
 
-  '@react-email/text@0.1.6(react@18.3.1)':
+  '@react-email/text@0.1.6(react@19.2.6)':
     dependencies:
-      react: 18.3.1
+      react: 19.2.6
 
-  '@react-email/ui@6.0.8(@babel/core@7.29.0)(@playwright/test@1.56.1)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.93.2)':
+  '@react-email/ui@6.0.8(@babel/core@7.29.0)(@playwright/test@1.56.1)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(sass@1.93.2)':
     dependencies:
       esbuild: 0.28.0
-      next: 16.2.3(@babel/core@7.29.0)(@playwright/test@1.56.1)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.93.2)
+      next: 16.2.3(@babel/core@7.29.0)(@playwright/test@1.56.1)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(sass@1.93.2)
     transitivePeerDependencies:
       - '@babel/core'
       - '@opentelemetry/api'
@@ -22291,16 +22294,16 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  next@16.2.3(@babel/core@7.29.0)(@playwright/test@1.56.1)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.93.2):
+  next@16.2.3(@babel/core@7.29.0)(@playwright/test@1.56.1)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@19.2.6))(react@19.2.6)(sass@1.93.2):
     dependencies:
       '@next/env': 16.2.3
       '@swc/helpers': 0.5.15
       baseline-browser-mapping: 2.10.12
       caniuse-lite: 1.0.30001781
       postcss: 8.4.31
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      styled-jsx: 5.1.6(@babel/core@7.29.0)(babel-plugin-macros@3.1.0)(react@18.3.1)
+      react: 19.2.6
+      react-dom: 18.3.1(react@19.2.6)
+      styled-jsx: 5.1.6(@babel/core@7.29.0)(babel-plugin-macros@3.1.0)(react@19.2.6)
     optionalDependencies:
       '@next/swc-darwin-arm64': 16.2.3
       '@next/swc-darwin-x64': 16.2.3
@@ -23248,17 +23251,17 @@ snapshots:
       iconv-lite: 0.7.0
       unpipe: 1.0.0
 
-  react-dom@18.3.1(react@18.3.1):
+  react-dom@18.3.1(react@19.2.6):
     dependencies:
       loose-envify: 1.4.0
-      react: 18.3.1
+      react: 19.2.6
       scheduler: 0.23.2
 
-  react-email@6.0.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-email@6.0.8(react-dom@18.3.1(react@19.2.6))(react@19.2.6):
     dependencies:
       '@babel/parser': 7.27.0
       '@babel/traverse': 7.27.0
-      '@react-email/render': 2.0.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@react-email/render': 2.0.8(react-dom@18.3.1(react@19.2.6))(react@19.2.6)
       chokidar: 4.0.3
       commander: 13.1.0
       conf: 15.1.0
@@ -23275,8 +23278,8 @@ snapshots:
       picospinner: 3.0.0
       prismjs: 1.30.0
       prompts: 2.4.2
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
+      react: 19.2.6
+      react-dom: 18.3.1(react@19.2.6)
       socket.io: 4.8.3
       tailwindcss: 4.2.2
       tsconfig-paths: 4.2.0
@@ -23289,9 +23292,7 @@ snapshots:
 
   react-refresh@0.11.0: {}
 
-  react@18.3.1:
-    dependencies:
-      loose-envify: 1.4.0
+  react@19.2.6: {}
 
   read-cache@1.0.0:
     dependencies:
@@ -23370,12 +23371,12 @@ snapshots:
 
   requires-port@1.0.0: {}
 
-  resend@6.10.0(@react-email/render@2.0.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
+  resend@6.10.0(@react-email/render@2.0.8(react-dom@18.3.1(react@19.2.6))(react@19.2.6)):
     dependencies:
       postal-mime: 2.7.4
       svix: 1.88.0
     optionalDependencies:
-      '@react-email/render': 2.0.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@react-email/render': 2.0.8(react-dom@18.3.1(react@19.2.6))(react@19.2.6)
 
   resolve-cwd@3.0.0:
     dependencies:
@@ -24113,10 +24114,10 @@ snapshots:
     dependencies:
       webpack: 5.102.1(webpack-cli@5.1.4)
 
-  styled-jsx@5.1.6(@babel/core@7.29.0)(babel-plugin-macros@3.1.0)(react@18.3.1):
+  styled-jsx@5.1.6(@babel/core@7.29.0)(babel-plugin-macros@3.1.0)(react@19.2.6):
     dependencies:
       client-only: 0.0.1
-      react: 18.3.1
+      react: 19.2.6
     optionalDependencies:
       '@babel/core': 7.29.0
       babel-plugin-macros: 3.1.0
