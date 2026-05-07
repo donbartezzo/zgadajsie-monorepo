@@ -38,9 +38,6 @@ jobs:
       - name: Format check
         run: pnpm format:check
 
-      - name: Make jest script executable
-        run: chmod +x libs/run-jest.sh
-
       - name: Unit tests
         run: pnpm test:ci
 
