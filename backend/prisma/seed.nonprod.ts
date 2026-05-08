@@ -218,6 +218,106 @@ async function main() {
     },
   });
 
+  // ─── Dodatkowi użytkownicy dla dużego wydarzenia testowego ─────────────────────
+  console.log('Tworzę dodatkowych użytkowników dla dużego wydarzenia...');
+  const firstNames = [
+    'Michał',
+    'Robert',
+    'Paweł',
+    'Grzegorz',
+    'Marcin',
+    'Tomasz',
+    'Andrzej',
+    'Jakub',
+    'Krzysztof',
+    'Adam',
+    'Łukasz',
+    'Mateusz',
+    'Damian',
+    'Rafał',
+    'Patryk',
+    'Kamil',
+    'Bartosz',
+    'Daniel',
+    'Piotr',
+    'Dawid',
+    'Wiktor',
+    'Oskar',
+    'Filip',
+    'Szymon',
+    'Kacper',
+    'Maciej',
+    'Norbert',
+    'Adrian',
+    'Artur',
+    'Mariusz',
+    'Radosław',
+    'Dariusz',
+    'Jacek',
+    'Marek',
+    'Zbigniew',
+    'Wojciech',
+    'Tadeusz',
+    'Jerzy',
+    'Henryk',
+    'Stanisław',
+  ];
+  const lastNames = [
+    'Nowak',
+    'Kowalski',
+    'Wiśniewski',
+    'Wójcik',
+    'Kowalczyk',
+    'Kamiński',
+    'Lewandowski',
+    'Zieliński',
+    'Szymański',
+    'Woźniak',
+    'Kozłowski',
+    'Jankowski',
+    'Mazur',
+    'Krawczyk',
+    'Pawlowski',
+    'Grabowski',
+    'Nowicki',
+    'Piotrowski',
+    'Kozak',
+    'Michalski',
+    'Jabłoński',
+    'Górski',
+    'Adamczyk',
+    'Dudek',
+    'Zając',
+    'Król',
+    'Baran',
+    'Majchrzak',
+    'Olszewski',
+    'Szewczyk',
+    'Kowal',
+    'Czerwiński',
+    'Błaszczyk',
+    'Markowski',
+    'Wróbel',
+    'Sikora',
+  ];
+
+  const extraUsers: (typeof jan)[] = [];
+  for (let i = 0; i < 40; i++) {
+    const firstName = firstNames[i % firstNames.length];
+    const lastName = lastNames[i % lastNames.length];
+    const user = await prisma.user.create({
+      data: {
+        email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
+        passwordHash: userHash,
+        displayName: `${firstName} ${lastName}`,
+        role: 'USER',
+        isActive: true,
+        isEmailVerified: true,
+      },
+    });
+    extraUsers.push(user);
+  }
+
   console.log(
     'Użytkownicy:',
     [
@@ -234,7 +334,10 @@ async function main() {
       wojtek,
       karolina,
       sebastian,
-    ].map((u) => u.displayName),
+      ...extraUsers.slice(0, 10),
+    ]
+      .map((u) => u.displayName)
+      .concat(`... i ${extraUsers.length - 10} kolejnych`),
   );
 
   // ─── Helper functions ─────────────────────────────────────────────────────
@@ -1142,6 +1245,53 @@ async function main() {
   await addApprovedParticipant(extraFootball3.id, kuba.id);
   await addWaitingParticipant(extraFootball3.id, natalia.id);
 
+  // ─── Duże wydarzenie testowe z wieloma uczestnikami ────────────────────────────
+  console.log('Tworzę duże wydarzenie testowe z wieloma uczestnikami...');
+  const bigEvent = await createEventWithSlots({
+    title: 'Wielki turniej footballowy',
+    description:
+      'Duży turniej footballowy z wieloma uczestnikami - idealny do testowania scrollowania i avatar list.',
+    disciplineSlug: disciplines[0].slug,
+    facilitySlug: facilities[0].slug,
+    levelSlug: levels[1].slug,
+    citySlug: cities[0].slug,
+    organizerId: admin.id,
+    startsAt: hoursFromNow(48),
+    endsAt: hoursFromNow(50),
+    costPerPerson: 20,
+    maxParticipants: 50,
+    lotteryExecutedAt: hoursFromNow(-24),
+    gender: 'ANY',
+    visibility: 'PUBLIC',
+    status: 'ACTIVE',
+    address: 'ul. Sulechowska 30',
+    lat: 51.9356,
+    lng: 15.5062,
+  });
+
+  // Dodajemy wszystkich nowych użytkowników + kilku istniejących
+  const allUsersForBigEvent = [
+    jan,
+    anna,
+    marek,
+    kasia,
+    tomek,
+    ola,
+    piotr,
+    magda,
+    kuba,
+    natalia,
+    wojtek,
+    karolina,
+    sebastian,
+    ...extraUsers,
+  ];
+
+  console.log(`Dodaję ${allUsersForBigEvent.length} uczestników do dużego wydarzenia...`);
+  for (const user of allUsersForBigEvent) {
+    await addConfirmedParticipant(bigEvent.id, user.id);
+  }
+
   console.log('Seed zakończony sukcesem!');
   console.log('');
   console.log('=== Podsumowanie ===');
@@ -1157,11 +1307,12 @@ async function main() {
   console.log('  Zakończone (2): #1 football, #2 football');
   console.log('  Odwołane (2):   #3 koszykówka, #4 squash');
   console.log('  W trakcie (2):  #5 football, #6 bieg');
-  console.log('  OPEN_ENROLLMENT (8): #7 football 5h, #8 football jutro, #9 badminton pełne,');
+  console.log('  OPEN_ENROLLMENT (9): #7 football 5h, #8 football jutro, #9 badminton pełne,');
   console.log('                       #15 football last-minute 3h, #16 bieg wieczorem,');
   console.log(
-    '                       #17 turniej piłkarski (Anna), #18 sobota na boisku (Marek), #19 amatorski mecz piłkarski (Kasia)',
+    '                       #17 turniej piłkarski (Anna), #18 sobota na boisku (Marek), #19 amatorski mecz piłkarski (Kasia),',
   );
+  console.log('                       #20 Wielki turniej footballowy (50 uczestników!)');
   console.log('  PRE_ENROLLMENT (3):  #10 football 4d, #11 koszykówka 5d, #12 pływanie 7d');
   console.log('  LOTTERY_PENDING (2): #13 football ~47h, #14 kolarstwo ~40h');
 }

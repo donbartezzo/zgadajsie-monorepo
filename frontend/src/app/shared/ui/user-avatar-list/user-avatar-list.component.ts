@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { RouterLink } from '@angular/router';
 import { UserAvatarComponent } from '../../user/ui/user-avatar/user-avatar.component';
 import { BadgeComponent } from '../badge/badge.component';
+import { ButtonComponent } from '../button/button.component';
 import { UserBrief } from '../../types';
 
 export interface UserAvatarListItem {
@@ -9,12 +10,12 @@ export interface UserAvatarListItem {
   isActive?: boolean;
 }
 
-const DEFAULT_MAX_DISPLAY = 5;
+const DEFAULT_MAX_DISPLAY = 10;
 
 @Component({
   selector: 'app-user-avatar-list',
-  imports: [RouterLink, UserAvatarComponent, BadgeComponent],
-  host: { class: 'inline-flex items-center cursor-pointer' },
+  imports: [RouterLink, UserAvatarComponent, BadgeComponent, ButtonComponent],
+  host: { class: 'inline-flex items-center gap-2' },
   template: `
     <a [routerLink]="['/w', citySlug(), eventId(), 'participants']" class="flex -space-x-3">
       @for (item of displayItems(); track item.user.id) {
@@ -31,6 +32,11 @@ const DEFAULT_MAX_DISPLAY = 5;
         </app-badge>
       }
     </a>
+    @if (showButton()) {
+      <a [routerLink]="['/w', citySlug(), eventId(), 'participants']" class="hidden xs:block">
+        <app-button appearance="soft" color="neutral" size="xs"> Zobacz wszystkich </app-button>
+      </a>
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -39,6 +45,7 @@ export class UserAvatarListComponent {
   readonly citySlug = input.required<string>();
   readonly eventId = input.required<string>();
   readonly maxDisplay = input(DEFAULT_MAX_DISPLAY);
+  readonly showButton = input(true);
 
   private shuffleArray<T>(array: T[]): T[] {
     const shuffled = [...array];
