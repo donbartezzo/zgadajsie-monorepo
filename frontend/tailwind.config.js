@@ -23,6 +23,9 @@ module.exports = {
   content: ['./src/**/*.{html,ts}', './src/app/**/*.{html,ts}', './src/app/**/**/*.{html,ts}'],
   theme: {
     extend: {
+      screens: {
+        xs: '400px',
+      },
       spacing: {
         18: '4.5rem', // 72px - for xl avatar size
       },

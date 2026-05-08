@@ -57,17 +57,17 @@
         [routerLink]="['/w', e.city?.slug, e.id, 'participants']"
         class="my-2 flex items-center gap-3 w-full"
       >
-        <div class="flex items-center gap-2 w-full">
+        <div class="flex flex-wrap items-center w-full">
           @if (_participants.length > 0) {
             <app-user-avatar-list
               [items]="participantAvatarItems()"
               [citySlug]="e.city?.slug ?? ''"
               [eventId]="e.id"
-              class="mr-3"
+              class="w-full xs:w-auto mr-0 xs:mr-3"
             ></app-user-avatar-list>
           }
           <app-capacity-progress
-            class="flex-1 min-w-0"
+            class="w-full xs:flex-1 xs:min-w-0"
             [current]="participantCount()"
             [max]="e.maxParticipants"
             [enrollmentsCount]="e._count?.enrollments"
