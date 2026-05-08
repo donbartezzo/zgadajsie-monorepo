@@ -103,21 +103,26 @@ export interface ChatViewMessage {
 
       <!-- ─── Chat header ─── -->
       <div
-        class="fixed top-[var(--hero-mini-bar-h)] left-0 right-0 z-10 flex items-center px-4 py-2 border-b border-neutral-200 bg-white max-w-app mx-auto"
+        class="fixed top-[var(--hero-mini-bar-h)] left-0 right-0 z-10 flex items-center px-4 py-0.5 border-b border-neutral-200 bg-white w-full max-w-app mx-auto"
       >
-        <div class="flex items-center gap-3">
-          <h2 class="text-sm font-semibold text-neutral-900">{{ chatTitle() }} •</h2>
-          @if (_mbrs.length > 0) {
-            <span class="hidden sm:block text-xs text-neutral-400"
-              >{{ _mbrs.length }} {{ _mbrs.length === 1 ? 'uczestnik' : 'uczestników' }}</span
-            >
-          }
+        <div class="flex items-center justify-between w-full">
+          <div class="flex items-center gap-3">
+            <h2 class="text-sm font-semibold text-neutral-900">{{ chatTitle() }}</h2>
+            @if (_mbrs.length > 0) {
+              <span class="hidden sm:block text-xs text-neutral-400"
+                >{{ _mbrs.length }} {{ _mbrs.length === 1 ? 'uczestnik' : 'uczestników' }}</span
+              >
+            }
+          </div>
 
-          <app-user-avatar-list
-            [items]="_mbrs"
-            [citySlug]="citySlug()"
-            [eventId]="eventId()"
-          ></app-user-avatar-list>
+          <div class="mr-10">
+            <app-user-avatar-list
+              [items]="_mbrs"
+              [citySlug]="citySlug()"
+              [eventId]="eventId()"
+              [maxDisplay]="10"
+            ></app-user-avatar-list>
+          </div>
         </div>
       </div>
 

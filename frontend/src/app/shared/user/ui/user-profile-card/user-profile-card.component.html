@@ -1,6 +1,5 @@
 @let _editingMode = editingMode();
 @let _displayName = displayName();
-@let _variant = variant();
 @let _canEditName = canEditName();
 @let _canEditAvatar = canEditAvatar();
 @let _subtitle = subtitle();
@@ -68,31 +67,31 @@
     </div>
   }
 
-  @if (_stats.length > 0 && _variant !== 'compact' && !_editingMode) {
-    <div class="mt-4 flex w-full items-center justify-center gap-6">
-      @for (stat of _stats; track stat.label) {
-        <div class="flex flex-col items-center">
-          @if (stat.icon) {
-            <app-icon
-              [name]="$any(stat.icon)"
-              size="md"
-              [color]="stat.color ?? 'neutral'"
-              [class]="stat.color ? '' : 'text-neutral-400'"
-            />
-          }
-
-          <span class="text-lg font-bold text-neutral-900">{{ stat.value }}</span>
-          <span class="-mt-1 text-[10px] text-neutral-500">{{ stat.label }}</span>
-        </div>
-      }
-    </div>
-  }
-
-  @if (_description && _variant !== 'compact' && !_editingMode) {
-    <p class="mt-3 line-clamp-3 text-sm text-neutral-600">{{ _description }}</p>
-  }
-
   @if (!_editingMode) {
+    @if (_stats.length > 0) {
+      <div class="mt-4 flex w-full items-center justify-center gap-6">
+        @for (stat of _stats; track stat.label) {
+          <div class="flex flex-col items-center">
+            @if (stat.icon) {
+              <app-icon
+                [name]="$any(stat.icon)"
+                size="md"
+                [color]="stat.color ?? 'neutral'"
+                [class]="stat.color ? '' : 'text-neutral-400'"
+              />
+            }
+
+            <span class="text-lg font-bold text-neutral-900">{{ stat.value }}</span>
+            <span class="-mt-1 text-[10px] text-neutral-500">{{ stat.label }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (_description) {
+      <p class="mt-3 line-clamp-3 text-sm text-neutral-600">{{ _description }}</p>
+    }
+
     <ng-content></ng-content>
   }
 </div>

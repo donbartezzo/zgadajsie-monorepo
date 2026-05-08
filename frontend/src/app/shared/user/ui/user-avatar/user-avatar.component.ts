@@ -4,7 +4,7 @@ import * as pixelArt from '@dicebear/pixel-art';
 import type { AvatarUser } from '../../../types';
 
 export type { AvatarUser };
-export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 export type AvatarShape = 'circle' | 'rounded';
 
 @Component({
@@ -13,7 +13,7 @@ export type AvatarShape = 'circle' | 'rounded';
     <div class="relative inline-flex shrink-0">
       <div
         [class]="
-          'relative inline-flex items-center justify-center overflow-hidden ' +
+          'relative inline-flex items-center justify-center overflow-hidden bg-neutral-50 border-2 border-neutral-100 ' +
           sizeClass() +
           ' ' +
           shapeClass()
@@ -72,6 +72,7 @@ export class UserAvatarComponent {
       lg: 'w-14 h-14 text-base',
       xl: 'w-18 h-18 text-lg',
       '2xl': 'w-24 h-24 text-xl',
+      '3xl': 'w-32 h-32 text-2xl',
     };
     return sizes[this.size()];
   });

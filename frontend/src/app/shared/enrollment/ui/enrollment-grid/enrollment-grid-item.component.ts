@@ -38,7 +38,7 @@ export interface SlotGroup {
   template: `
     @let _statusIndicators = statusIndicators();
 
-    <div class="w-24 h-24 rounded-xl transition-colors">
+    <div class="w-22 h-26 rounded-xl transition-colors">
       <button
         type="button"
         [attr.data-user-id]="participant().userId"
@@ -48,7 +48,7 @@ export interface SlotGroup {
       >
         <div class="relative flex flex-col items-center justify-center flex-1">
           <div class="relative">
-            <app-user-avatar [user]="participant().user" size="lg" shape="rounded" />
+            <app-user-avatar [user]="participant().user" size="xl" shape="rounded" />
             @if (_statusIndicators.length > 0) {
               <div
                 class="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1"
@@ -62,7 +62,7 @@ export interface SlotGroup {
 
           <span
             [class]="
-              'text-[9px] text-center leading-tight mt-1 w-full line-clamp-2 h-[2.6em] flex-shrink-0 ' +
+              'text-[9px] px-0.5 mt-0.5 text-center leading-tight w-full line-clamp-2 ' +
               nameClass()
             "
           >

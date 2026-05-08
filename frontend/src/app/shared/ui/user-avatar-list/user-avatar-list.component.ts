@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { UserAvatarComponent } from '../../user/ui/user-avatar/user-avatar.component';
+import { BadgeComponent } from '../badge/badge.component';
 import { UserBrief } from '../../types';
 
 export interface UserAvatarListItem {
@@ -8,15 +9,14 @@ export interface UserAvatarListItem {
   isActive?: boolean;
 }
 
+const DEFAULT_MAX_DISPLAY = 5;
+
 @Component({
   selector: 'app-user-avatar-list',
-  imports: [RouterLink, UserAvatarComponent],
-  host: { class: 'inline-flex -space-x-2 cursor-pointer' },
+  imports: [RouterLink, UserAvatarComponent, BadgeComponent],
+  host: { class: 'inline-flex items-center cursor-pointer' },
   template: `
-    <a
-      [routerLink]="['/w', citySlug(), eventId(), 'participants']"
-      class="flex items-center -space-x-2"
-    >
+    <a [routerLink]="['/w', citySlug(), eventId(), 'participants']" class="flex -space-x-3">
       @for (item of displayItems(); track item.user.id) {
         <app-user-avatar
           [user]="item.user"
@@ -26,11 +26,9 @@ export interface UserAvatarListItem {
         ></app-user-avatar>
       }
       @if (remainingCount() > 0) {
-        <div
-          class="flex items-center justify-center w-6 h-6 rounded-full bg-neutral-100 border-2 border-white text-[10px] font-medium text-neutral-500"
-        >
+        <app-badge variant="soft" color="neutral" size="xs" class="z-10">
           +{{ remainingCount() }}
-        </div>
+        </app-badge>
       }
     </a>
   `,
@@ -40,7 +38,7 @@ export class UserAvatarListComponent {
   readonly items = input.required<UserAvatarListItem[]>();
   readonly citySlug = input.required<string>();
   readonly eventId = input.required<string>();
-  readonly maxDisplay = input(5);
+  readonly maxDisplay = input(DEFAULT_MAX_DISPLAY);
 
   private shuffleArray<T>(array: T[]): T[] {
     const shuffled = [...array];

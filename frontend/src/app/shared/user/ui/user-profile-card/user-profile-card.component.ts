@@ -27,7 +27,7 @@ export interface UserProfileStats {
   color?: SemanticColor;
 }
 
-export type ProfileCardVariant = 'default' | 'compact' | 'overlay';
+export type ProfileCardVariant = 'default' | 'overlay';
 export type ProfileCardContext = 'profile' | 'participant' | 'organizer';
 
 @Component({
@@ -133,17 +133,15 @@ export class UserProfileCardComponent {
   });
 
   readonly avatarSize = computed(() => {
-    const sizes: Record<ProfileCardVariant, 'lg' | 'xl' | '2xl'> = {
-      compact: 'lg',
-      overlay: 'xl',
-      default: '2xl',
+    const sizes: Record<ProfileCardVariant, 'xl' | '2xl' | '3xl'> = {
+      overlay: '3xl',
+      default: '3xl',
     };
     return sizes[this.variant()];
   });
 
   readonly containerClass = computed(() => {
     const variants: Record<ProfileCardVariant, string> = {
-      compact: 'py-2',
       overlay: 'py-4',
       default: 'py-6',
     };
@@ -152,7 +150,6 @@ export class UserProfileCardComponent {
 
   readonly nameClass = computed(() => {
     const variants: Record<ProfileCardVariant, string> = {
-      compact: 'text-base',
       overlay: 'text-lg',
       default: 'text-xl',
     };
@@ -181,7 +178,6 @@ export class UserProfileCardComponent {
 
   readonly nameInputClass = computed(() => {
     const sizes: Record<ProfileCardVariant, string> = {
-      compact: 'text-base',
       overlay: 'text-lg',
       default: 'text-xl',
     };
