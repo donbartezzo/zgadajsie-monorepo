@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import { ChatService } from '../../../core/services/chat.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
-import { PrivateChatMessage } from '../../../shared/types';
+import { PrivateChatMessage, ChatMember } from '../../../shared/types';
 import { ChatViewMessage } from '../../../shared/chat/ui/chat-view/chat-view.component';
 import { EventAreaService } from '../../event/services/event-area.service';
 import { isChatAccessDeniedError } from '../../../shared/utils';
@@ -28,8 +28,9 @@ export abstract class BaseChatComponent implements OnDestroy {
   readonly chatDisabled = signal(false);
   readonly chatAccessDenied = signal(false);
   readonly showMembers = signal(false);
-  readonly memberCount = signal(0);
+  readonly otherUserName = signal('');
   readonly inactiveUsers = signal<Map<string, 'banned' | 'withdrawn'>>(new Map());
+  readonly members = signal<ChatMember[]>([]);
   readonly isOrganizer = signal(false);
   readonly organizerId = signal('');
 
@@ -73,9 +74,6 @@ export abstract class BaseChatComponent implements OnDestroy {
     this.chatService.getMembers(this.eventId).subscribe({
       next: (res) => {
         if (res?.members) {
-          const organizerInMembers = res.members.some((m) => m.user.id === res.organizer.id);
-          this.memberCount.set(res.members.length + (organizerInMembers ? 0 : 1));
-
           const inactiveMap = new Map<string, 'banned' | 'withdrawn'>();
           res.members.forEach((m) => {
             if (m.isWithdrawn) {
@@ -83,6 +81,7 @@ export abstract class BaseChatComponent implements OnDestroy {
             }
           });
           this.inactiveUsers.set(inactiveMap);
+          this.members.set(res.members);
         }
       },
     });

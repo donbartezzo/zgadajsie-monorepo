@@ -25,7 +25,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
-import { EventAnnouncement } from '../../../../shared/types';
+import { EventAnnouncement, UserBrief } from '../../../../shared/types';
 import {
   getEventCountdown,
   EventCountdown,
@@ -44,6 +44,10 @@ import { formatEventAddress } from '../../../../shared/utils/event-format.utils'
 import { ClarityService } from '../../../../core/services/clarity.service';
 import { TimeUnitPipe } from '../../../../shared/pipes/time-unit.pipe';
 import { EventInfoItemComponent } from '../../../../shared/ui/event-info-item/event-info-item.component';
+import {
+  UserAvatarListComponent,
+  UserAvatarListItem,
+} from '../../../../shared/ui/user-avatar-list/user-avatar-list.component';
 
 @Component({
   selector: 'app-event-detail',
@@ -63,6 +67,7 @@ import { EventInfoItemComponent } from '../../../../shared/ui/event-info-item/ev
     EventInfoGridComponent,
     MapComponent,
     TimeUnitPipe,
+    UserAvatarListComponent,
   ],
   templateUrl: './event-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -97,7 +102,13 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly enrollmentCount = this.eventArea.enrollmentCount;
   readonly participantCount = this.eventArea.participantCount;
   readonly notificationBars = this.eventArea.notificationBars;
-  readonly visibleAvatars = this.eventArea.visibleAvatars;
+
+  readonly participantAvatarItems = computed<UserAvatarListItem[]>(() => {
+    return this.participants().map((p) => ({
+      user: p.user as UserBrief,
+      isActive: p.user.isActive,
+    }));
+  });
 
   // ── Local state ──
   readonly announcements = signal<EventAnnouncement[]>([]);

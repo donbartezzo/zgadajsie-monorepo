@@ -8,7 +8,6 @@
   @let _isOrganizer = isOrganizer();
   @let _participants = participants();
   @let _isPreEnrollment = isPreEnrollment();
-  @let _visibleAvatars = visibleAvatars();
   @let _countdown = countdown();
   @let _notificationBars = notificationBars();
 
@@ -60,13 +59,12 @@
       >
         <div class="flex items-center gap-2 w-full">
           @if (_participants.length > 0) {
-            <div class="flex items-center -space-x-3 mr-3">
-              @for (p of _visibleAvatars; track p.id; let i = $index) {
-                <div class="relative h-7 w-7 shrink-0 rounded-full ring-2 ring-white" [style.z-index]="6 - i">
-                  <app-user-avatar [user]="p.user" size="sm"></app-user-avatar>
-                </div>
-              }
-            </div>
+            <app-user-avatar-list
+              [items]="participantAvatarItems()"
+              [citySlug]="e.city?.slug ?? ''"
+              [eventId]="e.id"
+              class="mr-3"
+            ></app-user-avatar-list>
           }
           <app-capacity-progress
             class="flex-1 min-w-0"

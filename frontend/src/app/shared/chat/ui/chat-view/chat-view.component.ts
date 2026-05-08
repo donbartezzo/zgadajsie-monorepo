@@ -15,6 +15,10 @@ import { IconComponent } from '../../../ui/icon/icon.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../ui/loading-spinner/loading-spinner.component';
+import {
+  UserAvatarListComponent,
+  UserAvatarListItem,
+} from '../../../ui/user-avatar-list/user-avatar-list.component';
 import { UserBrief } from '../../../types';
 
 export interface ChatViewMessage {
@@ -35,6 +39,7 @@ export interface ChatViewMessage {
     ButtonComponent,
     UserAvatarComponent,
     LoadingSpinnerComponent,
+    UserAvatarListComponent,
   ],
   host: { class: 'flex flex-col flex-1 min-h-0 pb-[var(--footer-height)]' },
   template: `
@@ -92,64 +97,109 @@ export interface ChatViewMessage {
         }
       </div>
     } @else {
+      @let _msgs = messages();
+      @let _isLoading = loading();
+      @let _mbrs = members();
+
+      <!-- ─── Chat header ─── -->
       <div
-        class="flex flex-1 flex-col min-h-0 overflow-y-auto px-4 py-4 space-y-3"
-        #messagesContainer
+        class="fixed top-[var(--hero-mini-bar-h)] left-0 right-0 z-10 flex items-center px-4 py-2 border-b border-neutral-200 bg-white max-w-app mx-auto"
       >
-        @if (loading()) {
-          <app-loading-spinner></app-loading-spinner>
-        }
-        @for (msg of messages(); track msg.id) {
-          @let isInactive = inactiveUsers().has(msg.senderId);
-          <div
-            [class]="'flex gap-2 ' + (msg.senderId === currentUserId() ? 'flex-row-reverse' : '')"
-          >
-            @if (msg.sender) {
-              <app-user-avatar
-                [user]="msg.sender"
-                size="sm"
-                [class.opacity-40]="isInactive"
-              ></app-user-avatar>
-            }
-            <div
-              data-clarity-mask="True"
-              [class]="
-                msg.senderId === currentUserId()
-                  ? 'bg-primary-500 text-white rounded-2xl rounded-tr-sm px-3 py-2 max-w-[75%]'
-                  : 'bg-neutral-100 text-neutral-900 rounded-2xl rounded-tl-sm px-3 py-2 max-w-[75%]'
-              "
+        <div class="flex items-center gap-3">
+          <h2 class="text-sm font-semibold text-neutral-900">{{ chatTitle() }} •</h2>
+          @if (_mbrs.length > 0) {
+            <span class="hidden sm:block text-xs text-neutral-400"
+              >{{ _mbrs.length }} {{ _mbrs.length === 1 ? 'uczestnik' : 'uczestników' }}</span
             >
-              <div class="flex items-center gap-2 mb-0.5">
-                @if (msg.sender) {
-                  <p class="text-xs font-medium opacity-70" [class.opacity-40]="isInactive">
-                    {{ msg.sender.displayName }}
-                  </p>
-                }
-                @if (isInactive) {
-                  <span
-                    [class]="
-                      'inline-block text-[10px] px-1.5 py-0.5 rounded-md font-medium opacity-40 ' +
-                      (inactiveUsers().get(msg.senderId) === 'banned'
-                        ? 'bg-danger-50 text-danger-500'
-                        : 'bg-warning-50 text-warning-400')
-                    "
-                  >
-                    @switch (inactiveUsers().get(msg.senderId)) {
-                      @case ('banned') {
-                        Zbanowany na czacie
-                      }
-                      @case ('withdrawn') {
-                        Wypisany z wydarzenia
-                      }
-                    }
-                  </span>
-                }
-              </div>
-              <p class="text-sm whitespace-pre-wrap">{{ msg.content }}</p>
-              <p class="text-[10px] mt-1 opacity-50">{{ msg.createdAt | date: 'HH:mm' }}</p>
+          }
+
+          <app-user-avatar-list
+            [items]="_mbrs"
+            [citySlug]="citySlug()"
+            [eventId]="eventId()"
+          ></app-user-avatar-list>
+        </div>
+      </div>
+
+      <!-- ─── Messages area ─── -->
+      <div class="relative flex flex-1 flex-col min-h-0">
+        @if (_msgs.length === 0 && !_isLoading) {
+          <div
+            class="absolute inset-0 flex flex-col items-center justify-center gap-3 px-3 text-center z-10 pointer-events-none"
+          >
+            <div class="flex items-center justify-center w-12 h-12 rounded-full bg-neutral-100">
+              <app-icon name="message-circle" size="md" class="text-neutral-300"></app-icon>
             </div>
+            <p class="text-sm text-neutral-500">
+              @if (isPrivate()) {
+                Rozpocznij rozmowę z organizatorem
+              } @else {
+                Bądź pierwszy i napisz wiadomość na czacie grupowym
+              }
+            </p>
           </div>
         }
+
+        <!-- Scrollable messages -->
+        <div
+          class="flex flex-1 flex-col min-h-0 overflow-y-auto px-4 py-4 space-y-3 pt-14"
+          #messagesContainer
+        >
+          @if (_isLoading) {
+            <app-loading-spinner></app-loading-spinner>
+          }
+          @for (msg of _msgs; track msg.id) {
+            @let isInactive = inactiveUsers().has(msg.senderId);
+            <div
+              [class]="'flex gap-2 ' + (msg.senderId === currentUserId() ? 'flex-row-reverse' : '')"
+            >
+              @if (msg.sender) {
+                <app-user-avatar
+                  [user]="msg.sender"
+                  size="sm"
+                  [class.opacity-40]="isInactive"
+                ></app-user-avatar>
+              }
+              <div
+                data-clarity-mask="True"
+                [class]="
+                  msg.senderId === currentUserId()
+                    ? 'bg-primary-500 text-white rounded-2xl rounded-tr-sm px-3 py-2 max-w-[75%]'
+                    : 'bg-neutral-100 text-neutral-900 rounded-2xl rounded-tl-sm px-3 py-2 max-w-[75%]'
+                "
+              >
+                <div class="flex items-center gap-2 mb-0.5">
+                  @if (msg.sender) {
+                    <p class="text-xs font-medium opacity-70" [class.opacity-40]="isInactive">
+                      {{ msg.sender.displayName }}
+                    </p>
+                  }
+                  @if (isInactive) {
+                    <span
+                      [class]="
+                        'inline-block text-[10px] px-1.5 py-0.5 rounded-md font-medium opacity-40 ' +
+                        (inactiveUsers().get(msg.senderId) === 'banned'
+                          ? 'bg-danger-50 text-danger-500'
+                          : 'bg-warning-50 text-warning-400')
+                      "
+                    >
+                      @switch (inactiveUsers().get(msg.senderId)) {
+                        @case ('banned') {
+                          Zbanowany na czacie
+                        }
+                        @case ('withdrawn') {
+                          Wypisany z wydarzenia
+                        }
+                      }
+                    </span>
+                  }
+                </div>
+                <p class="text-sm whitespace-pre-wrap">{{ msg.content }}</p>
+                <p class="text-[10px] mt-1 opacity-50">{{ msg.createdAt | date: 'HH:mm' }}</p>
+              </div>
+            </div>
+          }
+        </div>
       </div>
 
       @if (typingUser()) {
@@ -190,6 +240,9 @@ export class ChatViewComponent {
   readonly organizerId = input('');
   readonly citySlug = input('');
   readonly isPrivate = input(false);
+  readonly chatTitle = input('');
+  readonly members = input<UserAvatarListItem[]>([]);
+  readonly organizer = input<UserBrief | null>(null);
 
   readonly messageSent = output<string>();
   readonly typing = output<void>();

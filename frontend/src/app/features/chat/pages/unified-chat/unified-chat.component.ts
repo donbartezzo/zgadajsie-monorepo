@@ -5,13 +5,15 @@ import {
   ChatViewMessage,
 } from '../../../../shared/chat/ui/chat-view/chat-view.component';
 import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay.component';
-import { ChatMessage, PrivateChatMessage } from '../../../../shared/types';
+import { ChatMessage, PrivateChatMessage, ChatMember } from '../../../../shared/types';
+import { UserAvatarListItem } from '../../../../shared/ui/user-avatar-list/user-avatar-list.component';
 import { BaseChatComponent } from '../base-chat.component';
 import { isChatAccessDeniedError, isChatAccessDeniedMessage } from '../../../../shared/utils';
 
 @Component({
   selector: 'app-unified-chat',
   imports: [EventHeroSlotsComponent, ChatViewComponent, ChatMembersOverlayComponent],
+  host: { class: 'flex flex-col flex-1 min-h-0' },
   template: `
     <app-event-hero-slots [event]="event()" />
 
@@ -28,6 +30,9 @@ import { isChatAccessDeniedError, isChatAccessDeniedMessage } from '../../../../
         [organizerId]="organizerId()"
         [citySlug]="event()?.city?.slug || ''"
         [isPrivate]="isPrivate"
+        [chatTitle]="chatTitle()"
+        [members]="chatMemberAvatarItems()"
+        [organizer]="event()?.organizer || null"
         (messageSent)="send($event)"
         (typing)="onTyping()"
       ></app-chat-view>
@@ -48,10 +53,61 @@ import { isChatAccessDeniedError, isChatAccessDeniedMessage } from '../../../../
 })
 export class UnifiedChatComponent extends BaseChatComponent implements OnInit {
   readonly groupMessages = signal<ChatMessage[]>([]);
-  readonly otherUserName = signal('');
 
   otherUserId = '';
   isPrivate = false;
+
+  readonly chatTitle = computed(() => {
+    if (this.isPrivate) {
+      return `Czat z ${this.otherUserName() || 'uczestnikiem'}`;
+    }
+    return 'Czat grupowy';
+  });
+
+  readonly chatMembers = computed<ChatMember[]>(() => {
+    // Group chat only: show all participants (organizer + members), including inactive ones
+    const allMembers = this.members();
+    const organizer = this.event()?.organizer;
+    if (!organizer) return allMembers;
+
+    const organizerInMembers = allMembers.some((m) => m.user.id === organizer.id);
+    if (organizerInMembers) {
+      return allMembers;
+    }
+    return [
+      {
+        user: organizer,
+        status: 'ORGANIZER',
+        isActive: true,
+        isWithdrawn: false,
+        inactiveReason: null,
+      } as ChatMember,
+      ...allMembers,
+    ];
+  });
+
+  readonly chatMemberAvatarItems = computed<UserAvatarListItem[]>(() => {
+    if (this.isPrivate) {
+      // Private chat: build directly from available signals, no HTTP needed
+      const result: UserAvatarListItem[] = [];
+      const currentUser = this.auth.currentUser();
+      if (currentUser) {
+        result.push({ user: currentUser, isActive: true });
+      }
+      for (const msg of this.privateMessages()) {
+        if (msg.sender?.id === this.otherUserId) {
+          result.push({ user: msg.sender, isActive: true });
+          break;
+        }
+        if (msg.recipient?.id === this.otherUserId) {
+          result.push({ user: msg.recipient, isActive: true });
+          break;
+        }
+      }
+      return result;
+    }
+    return this.chatMembers().map((m) => ({ user: m.user, isActive: m.isActive }));
+  });
 
   readonly chatViewMessages = computed<ChatViewMessage[]>(() => {
     if (this.isPrivate) {
@@ -98,7 +154,9 @@ export class UnifiedChatComponent extends BaseChatComponent implements OnInit {
       this.initGroupChat();
     }
 
-    this.loadMemberCount();
+    if (!this.isPrivate) {
+      this.loadMemberCount();
+    }
   }
 
   send(content: string): void {
@@ -115,29 +173,6 @@ export class UnifiedChatComponent extends BaseChatComponent implements OnInit {
     } else {
       this.chatService.sendTyping(this.eventId);
     }
-  }
-
-  override loadMemberCount(): void {
-    this.chatService.getMembers(this.eventId).subscribe({
-      next: (res) => {
-        if (this.isPrivate) {
-          this.memberCount.set(2);
-        } else if (res?.members) {
-          const organizerInMembers = res.members.some((m) => m.user.id === res.organizer.id);
-          this.memberCount.set(res.members.length + (organizerInMembers ? 0 : 1));
-        }
-
-        if (res?.members) {
-          const inactiveMap = new Map<string, 'banned' | 'withdrawn'>();
-          res.members.forEach((m) => {
-            if (m.isWithdrawn) {
-              inactiveMap.set(m.user.id, 'withdrawn');
-            }
-          });
-          this.inactiveUsers.set(inactiveMap);
-        }
-      },
-    });
   }
 
   private initPrivateChat(): void {

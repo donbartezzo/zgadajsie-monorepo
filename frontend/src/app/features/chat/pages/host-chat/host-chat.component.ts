@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { EventHeroSlotsComponent } from '../../../event/ui/event-hero-slots/event-hero-slots.component';
@@ -8,6 +8,7 @@ import { ChatViewComponent } from '../../../../shared/chat/ui/chat-view/chat-vie
 import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay.component';
 import { OrganizerConversation } from '../../../../shared/types';
 import { BaseChatComponent } from '../base-chat.component';
+import { UserAvatarListItem } from '../../../../shared/ui/user-avatar-list/user-avatar-list.component';
 
 @Component({
   selector: 'app-host-chat',
@@ -96,6 +97,9 @@ import { BaseChatComponent } from '../base-chat.component';
           [isPrivate]="true"
           [eventId]="eventId"
           [citySlug]="event()?.city?.slug || ''"
+          [chatTitle]="chatTitle()"
+          [members]="chatMemberAvatarItems()"
+          [organizer]="event()?.organizer || null"
           (messageSent)="send($event)"
           (typing)="onTyping()"
         ></app-chat-view>
@@ -116,9 +120,31 @@ import { BaseChatComponent } from '../base-chat.component';
 export class HostChatComponent extends BaseChatComponent implements OnInit {
   readonly conversations = signal<OrganizerConversation[]>([]);
   readonly isOrganizerMode = signal(false);
-  readonly otherUserName = signal('');
 
   private hostOrganizerId = '';
+
+  readonly chatTitle = computed(() => {
+    if (this.isOrganizerMode()) {
+      return 'Konwersacje z uczestnikami';
+    }
+    return `Czat z ${this.otherUserName() || 'organizatorem'}`;
+  });
+
+  readonly chatMemberAvatarItems = computed<UserAvatarListItem[]>(() => {
+    if (this.isOrganizerMode()) {
+      return [];
+    }
+    const result: UserAvatarListItem[] = [];
+    const currentUser = this.auth.currentUser();
+    if (currentUser) {
+      result.push({ user: currentUser, isActive: true });
+    }
+    const organizer = this.event()?.organizer;
+    if (organizer) {
+      result.push({ user: organizer, isActive: true });
+    }
+    return result;
+  });
 
   ngOnInit(): void {
     this.initBaseData();
@@ -141,8 +167,6 @@ export class HostChatComponent extends BaseChatComponent implements OnInit {
     } else {
       this.loading.set(false);
     }
-
-    this.loadMemberCount();
   }
 
   openChat(participantId: string): void {
