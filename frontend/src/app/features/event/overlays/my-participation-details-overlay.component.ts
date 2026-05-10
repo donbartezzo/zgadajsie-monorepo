@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
-import { Router } from '@angular/router';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { EnrollmentGridItemComponent } from '../../../shared/enrollment/ui/enrollment-grid/enrollment-grid-item.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
+import { NavigationService } from '../../../core/services/navigation.service';
 import { Event as EventModel, WaitingReason, Participation } from '../../../shared/types';
 import { isEventJoinable } from '../../../shared/utils';
 
@@ -78,7 +78,7 @@ import { isEventJoinable } from '../../../shared/utils';
 })
 export class MyParticipationDetailsOverlayComponent {
   private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   private readonly overlays = inject(BottomOverlaysService);
 
   readonly open = input(false);
@@ -203,7 +203,7 @@ export class MyParticipationDetailsOverlayComponent {
   navigateToParticipants(): void {
     const event = this.event();
     if (event) {
-      this.router.navigate(['/w', event.citySlug, event.id, 'participants']);
+      this.navigation.navigateToEventParticipants(event.id, event.citySlug);
     }
   }
 
@@ -218,7 +218,7 @@ export class MyParticipationDetailsOverlayComponent {
     if (item.value === 'group-chat') {
       if (event) {
         this.overlays.close();
-        this.router.navigate(['/w', event.citySlug, event.id, 'chat']);
+        this.navigation.navigateToEventChat(event.id, event.citySlug);
       }
       return;
     }
@@ -226,7 +226,7 @@ export class MyParticipationDetailsOverlayComponent {
     if (item.value === 'organizer-chat') {
       if (event) {
         this.overlays.close();
-        this.router.navigate(['/w', event.citySlug, event.id, 'host-chat']);
+        this.navigation.navigateToEventOrganizerChat(event.id, event.citySlug);
       }
       return;
     }

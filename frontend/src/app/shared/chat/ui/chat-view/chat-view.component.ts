@@ -8,7 +8,6 @@ import {
   viewChild,
   effect,
 } from '@angular/core';
-import { Router } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../ui/icon/icon.component';
@@ -20,6 +19,7 @@ import {
   UserAvatarListItem,
 } from '../../../ui/user-avatar-list/user-avatar-list.component';
 import { UserBrief } from '../../../types';
+import { NavigationService } from '../../../../core/services/navigation.service';
 
 export interface ChatViewMessage {
   id: string;
@@ -231,7 +231,7 @@ export interface ChatViewMessage {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatViewComponent {
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
 
   readonly messages = input.required<ChatViewMessage[]>();
   readonly currentUserId = input.required<string>();
@@ -275,11 +275,11 @@ export class ChatViewComponent {
   }
 
   navigateToOrganizer(): void {
-    this.router.navigate(['/w', this.citySlug(), this.eventId(), 'host-chat']);
+    this.navigation.navigateToEventOrganizerChat(this.eventId(), this.citySlug());
   }
 
   navigateToEvent(): void {
-    this.router.navigate(['/w', this.citySlug(), this.eventId()]);
+    this.navigation.navigateToEventDetail(this.eventId(), this.citySlug());
   }
 
   scrollToBottom(): void {

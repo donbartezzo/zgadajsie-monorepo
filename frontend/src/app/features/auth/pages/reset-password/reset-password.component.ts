@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 
 @Component({
   selector: 'app-reset-password',
@@ -69,7 +70,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 export class ResetPasswordComponent {
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   private readonly snackbar = inject(SnackbarService);
 
   password = '';
@@ -90,7 +91,7 @@ export class ResetPasswordComponent {
     try {
       await this.auth.resetPassword(token, this.password);
       this.snackbar.success('Hasło zostało zmienione');
-      this.router.navigateByUrl('/auth/login');
+      this.navigation.navigateToAuthLogin();
     } catch (err: unknown) {
       const msg = (err as { error?: { message?: string } })?.error?.message;
       this.snackbar.error(msg || 'Nie udało się zmienić hasła');

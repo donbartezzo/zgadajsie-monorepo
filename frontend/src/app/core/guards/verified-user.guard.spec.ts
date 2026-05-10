@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
+import { ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
+import { NavigationService } from '../services/navigation.service';
 import { verifiedUserGuard } from './verified-user.guard';
 
 function runGuard(
@@ -16,21 +17,24 @@ function runGuard(
 
 describe('verifiedUserGuard', () => {
   let mockAuthService: { isLoggedIn: jest.Mock; isActive: jest.Mock };
-  let mockRouter: { createUrlTree: jest.Mock; navigate: jest.Mock };
+  let mockNavigationService: {
+    createUrlTree: jest.Mock;
+    navigateToUnverified: jest.Mock;
+  };
 
   beforeEach(() => {
     mockAuthService = {
       isLoggedIn: jest.fn().mockReturnValue(false),
       isActive: jest.fn().mockReturnValue(false),
     };
-    mockRouter = {
-      createUrlTree: jest.fn((commands, extras) => ({ commands, extras })),
-      navigate: jest.fn(),
+    mockNavigationService = {
+      createUrlTree: jest.fn(),
+      navigateToUnverified: jest.fn(),
     };
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter },
+        { provide: NavigationService, useValue: mockNavigationService },
       ],
     });
   });
@@ -44,12 +48,14 @@ describe('verifiedUserGuard', () => {
 
   it('przekierowuje na /auth/login z returnUrl dla niezalogowanego', () => {
     mockAuthService.isLoggedIn.mockReturnValue(false);
+    mockNavigationService.createUrlTree.mockReturnValue({} as UrlTree);
 
-    runGuard({ url: '/moja-strona' });
+    const result = runGuard({ url: '/moja-strona' });
 
-    expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/auth/login'], {
-      queryParams: { returnUrl: '/moja-strona' },
+    expect(mockNavigationService.createUrlTree).toHaveBeenCalledWith(['/auth/login'], {
+      returnUrl: '/moja-strona',
     });
+    expect(result).toEqual({} as UrlTree);
   });
 
   it('nawiguje do /unverified i zwraca false dla nieaktywnego konta', () => {
@@ -58,7 +64,7 @@ describe('verifiedUserGuard', () => {
 
     const result = runGuard();
 
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/unverified'], { skipLocationChange: true });
+    expect(mockNavigationService.navigateToUnverified).toHaveBeenCalled();
     expect(result).toBe(false);
   });
 });

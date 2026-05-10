@@ -6,7 +6,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
@@ -18,6 +18,7 @@ import { FormControlErrorDirective } from '../../../../shared/ui/form-control-er
 import { EventSeriesService } from '../../../../core/services/event-series.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import { EventSeriesView } from '../../../../shared/types';
 import {
   EventSeriesRecurrenceType,
@@ -55,7 +56,7 @@ const WEEKDAY_LABELS: Record<number, string> = {
 export class SeriesDetailsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly eventSeriesService = inject(EventSeriesService);
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   private readonly fb = inject(FormBuilder);
   private readonly confirmModal = inject(ConfirmModalService);
   private readonly snackbar = inject(SnackbarService);
@@ -258,10 +259,10 @@ export class SeriesDetailsComponent implements OnInit {
   }
 
   openEventManage(eventId: string): void {
-    void this.router.navigate(['/o', 'w', eventId, 'manage']);
+    void this.navigation.navigateToEventManage(eventId);
   }
 
   backToMyEvents(): void {
-    void this.router.navigate(['/profile/events']);
+    void this.navigation.navigateToProfileEvents();
   }
 }

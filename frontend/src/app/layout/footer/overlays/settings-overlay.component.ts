@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { AuthService } from '../../../core/auth/auth.service';
+import { NavigationService } from '../../../core/services/navigation.service';
 
 @Component({
   selector: 'app-settings-overlay',
@@ -34,7 +34,7 @@ import { AuthService } from '../../../core/auth/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SettingsOverlayComponent {
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   readonly auth = inject(AuthService);
 
   readonly closed = output<void>();
@@ -56,16 +56,16 @@ export class SettingsOverlayComponent {
     if (item.value === 'logout') {
       this.auth.logout();
       this.closed.emit();
-      this.router.navigate(['/']);
+      this.navigation.navigateToRoot();
     } else if (item.value === 'profile') {
-      this.router.navigate(['/profile']);
+      this.navigation.navigateToProfile();
       this.closed.emit();
     }
   }
 
   handleInfoClick(item: LinkListItem): void {
     if (item.value) {
-      this.router.navigate([item.value]);
+      this.navigation.navigateToPath([item.value]);
       this.closed.emit();
     }
   }

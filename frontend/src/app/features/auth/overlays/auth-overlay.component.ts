@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
 import { Router } from '@angular/router';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
+import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { LoginFormComponent } from '../../../shared/auth/ui/login-form/login-form.component';
 
 @Component({
@@ -11,7 +12,7 @@ import { LoginFormComponent } from '../../../shared/auth/ui/login-form/login-for
       <div class="max-w-lg mx-auto">
         <app-login-form
           [returnUrl]="returnUrl"
-          (authenticated)="authenticated.emit()"
+          (authenticated)="onAuthenticated()"
         ></app-login-form>
       </div>
     </app-bottom-overlay>
@@ -20,6 +21,7 @@ import { LoginFormComponent } from '../../../shared/auth/ui/login-form/login-for
 })
 export class AuthOverlayComponent {
   private readonly router = inject(Router);
+  private readonly overlays = inject(BottomOverlaysService);
 
   readonly closed = output<void>();
   readonly authenticated = output<void>();
@@ -30,5 +32,11 @@ export class AuthOverlayComponent {
     const url = this.router.url;
     const separator = url.includes('?') ? '&' : '?';
     return `${url}${separator}openJoin=true`;
+  }
+
+  onAuthenticated(): void {
+    // If authSuccessCallback is set, call it instead of redirecting with openJoin=true
+    this.overlays.handleAuthSuccess();
+    this.authenticated.emit();
   }
 }

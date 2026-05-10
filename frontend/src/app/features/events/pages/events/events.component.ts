@@ -8,7 +8,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { EventCardComponent } from '../../../../shared/event/ui/event-card/event-card.component';
 import { NextEventBadgeComponent } from '../../../../shared/event/ui/next-event-badge/next-event-badge.component';
@@ -19,6 +19,7 @@ import { EventService } from '../../../../core/services/event.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { CitySubscriptionService } from '../../../../core/services/city-subscription.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import { EventBase } from '../../../../shared/types';
 import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
@@ -47,7 +48,7 @@ interface EventGroup {
 export class EventsComponent implements OnInit, OnDestroy {
   // ── Inject ──
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   private readonly eventService = inject(EventService);
   private readonly layoutConfig = inject(LayoutConfigService);
   private readonly auth = inject(AuthService);
@@ -198,10 +199,7 @@ export class EventsComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           if (err instanceof HttpErrorResponse && err.status === 404) {
-            this.router.navigateByUrl('/not-found', {
-              state: { reason: 'city-not-found' },
-              skipLocationChange: true,
-            });
+            this.navigation.navigateToNotFoundWithReason('city-not-found');
             return;
           }
           this.error.set('Nie udało się pobrać wydarzeń');
@@ -212,7 +210,7 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   onEventSelected(event: EventBase): void {
     const slug = event.city?.slug || this.citySlug;
-    this.router.navigate(['/w', slug, event.id]);
+    this.navigation.navigateToEventDetail(event.id, slug);
   }
 
   onScroll(): void {

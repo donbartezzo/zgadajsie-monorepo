@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { UserAvatarComponent } from '../../shared/user/ui/user-avatar/user-avatar.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { BottomOverlaysService } from '../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
+import { NavigationService } from '../../core/services/navigation.service';
 
 @Component({
   selector: 'app-bottom-nav',
@@ -13,7 +13,7 @@ import { BottomOverlaysService } from '../../shared/overlay/ui/bottom-overlays/b
   host: { class: 'fixed bottom-0 left-1/2 z-[60] block w-full max-w-app -translate-x-1/2' },
 })
 export class BottomNavComponent {
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   readonly auth = inject(AuthService);
   protected readonly overlays = inject(BottomOverlaysService);
 
@@ -26,15 +26,15 @@ export class BottomNavComponent {
   }
 
   navigateToEvents(): void {
-    this.router.navigate(['/w', 'zielona-gora']);
+    this.navigation.navigateToHome();
   }
 
   navigateToProfile(): void {
-    this.router.navigate(['/profile']);
+    this.navigation.navigateToProfile();
   }
 
   navigateToLogin(): void {
-    this.router.navigate(['/auth/login']);
+    this.navigation.navigateToLogin();
   }
 
   logout(): void {

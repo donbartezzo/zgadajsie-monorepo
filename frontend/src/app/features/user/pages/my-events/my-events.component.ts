@@ -7,7 +7,7 @@ import {
   computed,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
@@ -17,6 +17,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { UserService } from '../../../../core/services/user.service';
 import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import { EventStatus, isOverrideAccount } from '@zgadajsie/shared';
 import { Event as EventModel } from '../../../../shared/types';
 import {
@@ -134,7 +135,7 @@ import { environment } from '../../../../../environments/environment';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MyEventsComponent implements OnInit {
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   private readonly authService = inject(AuthService);
   private readonly userService = inject(UserService);
   private readonly eventService = inject(EventService);
@@ -171,7 +172,7 @@ export class MyEventsComponent implements OnInit {
       this.snackbar.info(reason);
       return;
     }
-    this.router.navigate(['/o', 'w', e.id, 'edit']);
+    this.navigation.navigateToEventEdit(e.id);
   }
 
   handleCancel(e: EventModel): void {
@@ -221,9 +222,7 @@ export class MyEventsComponent implements OnInit {
 
   onDuplicate(id: string): void {
     // Przekieruj do formularza tworzenia nowego wydarzenia z ID wydarzenia do duplikacji
-    this.router.navigate(['/o/w/new'], {
-      queryParams: { duplicateId: id },
-    });
+    this.navigation.navigateToEventCreateWithDuplicate(id);
   }
 
   isUpcoming(e: EventModel): boolean {

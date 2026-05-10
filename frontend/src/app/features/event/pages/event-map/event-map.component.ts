@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { MapComponent } from '../../../../shared/event-form/ui/map/map.component';
 import { EventAreaService } from '../../services/event-area.service';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
+import { NavigationService } from '../../../../core/services/navigation.service';
 
 @Component({
   selector: 'app-event-map',
@@ -22,13 +23,13 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 })
 export class EventMapComponent {
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   protected readonly eventArea = inject(EventAreaService);
 
   readonly event = this.eventArea.event;
   readonly loading = this.eventArea.loading;
 
   backToEvent(): void {
-    this.router.navigate(['..'], { relativeTo: this.route });
+    this.navigation.navigateToParent(this.route);
   }
 }

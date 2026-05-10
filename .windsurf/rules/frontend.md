@@ -21,6 +21,17 @@ Przy implementacji frontendowej ZAWSZE przeczytaj:
 
 Używaj WYŁĄCZNIE semantycznych klas Tailwind w HTML: `primary-*`, `neutral-*`, `success-*`, `warning-*`, `danger-*`, `info-*`.
 
+## Nawigacja (OBOWIĄZKOWE)
+
+**NIE używaj bezpośrednio `Router.navigate()`, `Router.navigateByUrl()` ani `Router.createUrlTree()`**. Wszystkie nawigacje muszą przejść przez `NavigationService`.
+
+Wyjątki:
+
+- W samym `NavigationService`
+- W `AuthService` (aby uniknąć circular dependency)
+
+**W guardach:** używaj `NavigationService.createUrlTree()` zamiast `Router.createUrlTree()`
+
 ## Kluczowe zasady Angular
 
 - Signals do stanu, `computed()` do pochodnych, `effect()` tylko dla side effects

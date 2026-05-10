@@ -230,7 +230,9 @@ export class BottomOverlaysService {
   }
 
   handleAuthSuccess(): void {
-    this.authSuccessCallback?.();
+    const callback = this.authSuccessCallback;
+    this.authSuccessCallback = null;
+    callback?.();
   }
 
   handlePay(): void {

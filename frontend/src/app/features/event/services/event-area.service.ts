@@ -1,6 +1,5 @@
 import { computed, effect, inject, Injectable, NgZone, signal } from '@angular/core';
 import { bufferTime, filter, finalize, forkJoin, map, Subject, Subscription } from 'rxjs';
-import { Router } from '@angular/router';
 import { EventService } from '../../../core/services/event.service';
 import { EventRealtimeService } from '../../../core/services/event-realtime.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -12,6 +11,7 @@ import {
   applyProfileChangeToList,
   ProfileBroadcastService,
 } from '../../../core/services/profile-broadcast.service';
+import { NavigationService } from '../../../core/services/navigation.service';
 import {
   Event as EventModel,
   Participation,
@@ -39,7 +39,7 @@ const AUTO_REFRESH_INTERVAL = 120000; // 120 seconds - safety-net fallback; prim
   providedIn: 'root',
 })
 export class EventAreaService {
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   private readonly eventService = inject(EventService);
   private readonly auth = inject(AuthService);
   private readonly ngZone = inject(NgZone);
@@ -486,10 +486,7 @@ export class EventAreaService {
             this.loading.set(false);
             this.event.set(null);
             this.participants.set([]);
-            this.router.navigate(['/not-found'], {
-              skipLocationChange: true,
-              state: { reason: 'event-not-found', citySlug: this._citySlug },
-            });
+            this.navigation.navigateToNotFoundWithReason('event-not-found');
             return;
           }
 
@@ -649,7 +646,7 @@ export class EventAreaService {
 
   openManageGuests(): void {
     this.overlays.close();
-    this.router.navigate(['/w', this._citySlug, this._eventId, 'participants']);
+    this.navigation.navigateToEventParticipants(this._eventId, this._citySlug);
   }
 
   handleNotificationBarAction(barId: string): void {
@@ -683,17 +680,17 @@ export class EventAreaService {
 
   openChat(): void {
     this.overlays.close();
-    this.router.navigate(['/w', this._citySlug, this._eventId, 'chat']);
+    this.navigation.navigateToEventChat(this._eventId, this._citySlug);
   }
 
   contactOrganizer(): void {
     this.overlays.close();
-    this.router.navigate(['/w', this._citySlug, this._eventId, 'host-chat']);
+    this.navigation.navigateToEventOrganizerChat(this._eventId, this._citySlug);
   }
 
   openOrganizerChats(): void {
     this.overlays.close();
-    this.router.navigate(['/w', this._citySlug, this._eventId, 'host-chat']);
+    this.navigation.navigateToEventOrganizerChat(this._eventId, this._citySlug);
   }
 
   async requestLeave(): Promise<void> {
@@ -747,7 +744,7 @@ export class EventAreaService {
             next: (participants) => {
               this.participants.set(participants);
               this.refreshCompletedSubject.next();
-              this.router.navigate(['/w', this._citySlug, this._eventId, 'participants']);
+              this.navigation.navigateToEventParticipants(this._eventId, this._citySlug);
             },
           });
         },
@@ -829,7 +826,7 @@ export class EventAreaService {
           next: (participants) => {
             this.participants.set(participants);
             this.refreshCompletedSubject.next();
-            this.router.navigate(['/w', this._citySlug, this._eventId, 'participants']);
+            this.navigation.navigateToEventParticipants(this._eventId, this._citySlug);
           },
         });
       },
@@ -855,8 +852,8 @@ export class EventAreaService {
             next: (participants) => {
               this.participants.set(participants);
               this.refreshCompletedSubject.next();
-              this.router.navigate(['/w', this._citySlug, this._eventId, 'participants'], {
-                queryParams: { newUserId: p.userId },
+              this.navigation.navigateToEventParticipantsWithQuery(this._eventId, this._citySlug, {
+                newUserId: p.userId,
               });
             },
           });

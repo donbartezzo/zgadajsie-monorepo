@@ -170,7 +170,11 @@ export class HostChatComponent extends BaseChatComponent implements OnInit {
   }
 
   openChat(participantId: string): void {
-    this.router.navigate(['/w', this.eventArea.citySlug, this.eventId, 'host-chat', participantId]);
+    this.navigation.navigateToEventOrganizerChat(
+      this.eventId,
+      this.eventArea.citySlug,
+      participantId,
+    );
   }
 
   send(content: string): void {

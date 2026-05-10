@@ -54,6 +54,8 @@ ZABRONIONE w szablonach i komponentach:
 
 Używaj TYLKO semantycznych klas Tailwind: `primary`, `neutral`, `success`, `warning`, `danger`, `info`.
 
+Reguły nawigacji (`NavigationService` zamiast `Router.navigate()`) - patrz `.windsurf/rules/frontend.md` (scoped na `frontend/**`).
+
 ## Formatowanie kodu
 
 Generowany kod musi być zgodny z `.prettierrc`. Nigdy nie nadpisuj ustawień Prettier.

@@ -15,7 +15,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
@@ -32,6 +32,7 @@ import { DictionaryService } from '../../../../core/services/dictionary.service'
 import { GeocodeService } from '../../../../core/services/geocode.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import { DictionaryItem, City, Event, CoverImage, EventRoleConfig } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 import {
@@ -636,7 +637,7 @@ interface EventRule {
 export class EventFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   private readonly auth = inject(AuthService);
   private readonly eventService = inject(EventService);
   private readonly eventSeriesService = inject(EventSeriesService);
@@ -782,7 +783,7 @@ export class EventFormComponent implements OnInit {
               ? 'Nie można edytować odwołanego wydarzenia.'
               : 'Edycja jest możliwa tylko przed rozpoczęciem wydarzenia.';
           this.snackbar.info(reason);
-          this.router.navigate(['/w', e.city?.slug, e.id]);
+          this.navigation.navigateToEventDetail(e.id, e.city?.slug ?? '');
           return;
         }
         if (e.city?.slug) {
@@ -841,7 +842,7 @@ export class EventFormComponent implements OnInit {
       return;
     }
 
-    void this.router.navigate(['/series', seriesId]);
+    void this.navigation.navigateToSeries(seriesId);
   }
 
   onMarkerMoved(pos: { lat: number; lng: number }): void {
@@ -1074,7 +1075,7 @@ export class EventFormComponent implements OnInit {
       this.eventSeriesService.createSeries(seriesPayload).subscribe({
         next: (series) => {
           this.snackbar.success('Seria wydarzeń utworzona');
-          this.router.navigate(['/series', series.id]);
+          this.navigation.navigateToSeries(series.id);
           this.submitting.set(false);
         },
         error: (err) => {
@@ -1092,7 +1093,7 @@ export class EventFormComponent implements OnInit {
     req$.subscribe({
       next: (created) => {
         this.snackbar.success(this.isEdit() ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone');
-        this.router.navigate(['/w', created.city?.slug, created.id]);
+        this.navigation.navigateToEventDetail(created.id, created.city?.slug ?? '');
         this.submitting.set(false);
       },
       error: (err) => {
@@ -1275,10 +1276,10 @@ export class EventFormComponent implements OnInit {
             // Wydarzenie nie należy do tego użytkownika, więc nie może go duplikować
             this.snackbar.error(notFound);
             // Przekieruj do bezpiecznej strony bez duplicateId
-            this.router.navigate(['/o/w/new']);
+            this.navigation.navigateToEventCreation();
           } else if (err?.status === 404) {
             this.snackbar.error(notFound);
-            this.router.navigate(['/o/w/new']);
+            this.navigation.navigateToEventCreation();
           } else {
             this.snackbar.error('Nie udało się pobrać danych wydarzenia do duplikacji');
           }

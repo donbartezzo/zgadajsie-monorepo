@@ -71,6 +71,47 @@ Praktyczne reguły dla Angular control flow:
 - Serwisy globalne deklaruj przez `providedIn: 'root'`.
 - Do czyszczenia subskrypcji RxJS używaj `takeUntilDestroyed()`.
 
+## Nawigacja (OBOWIĄZKOWE)
+
+Wszystkie nawigacje w aplikacji muszą przejść przez `NavigationService`. **NIE używaj bezpośrednio `Router.navigate()`, `Router.navigateByUrl()` ani `Router.createUrlTree()` w komponentach i serwisach.**
+
+**Dlaczego:**
+
+- Centralizacja logiki nawigacji (np. requireAuth wrapper)
+- Łatwiejsze testowanie (jeden mock zamiast wielu routerów)
+- Spójność i łatwiejsze wprowadzanie zmian (np. analytics, logging)
+- Enkapsulacja ścieżek i parametrów
+
+**Jak używać:**
+
+```typescript
+// ZLE - bezpośrednie użycie Router
+constructor(private router: Router) {}
+this.router.navigate(['/auth/login']);
+
+// DOBRZE - przez NavigationService
+constructor(private navigation: NavigationService) {}
+this.navigation.navigateToAuthLogin();
+```
+
+**Wyjątki:**
+
+- W samym `NavigationService` (oczywiście)
+- W `AuthService` - AuthService używa Router bezpośrednio w `logout()` (aby uniknąć circular dependency: NavigationService → AuthService → NavigationService)
+
+**W guardach:** używaj `NavigationService.createUrlTree()` zamiast `Router.createUrlTree()`
+
+**Dostępne metody NavigationService:**
+
+- `navigateToAuthLogin()` - nawigacja do logowania
+- `navigateToEventCreateWithDuplicate()` - tworzenie wydarzenia z duplikatem
+- `navigateToNotFoundWithReason()` - strona 404 z powodem
+- `navigateToParent()` - nawigacja w górę hierarchii
+- `navigateToEventParticipantsWithQuery()` - lista uczestników
+- `navigateToEventCreation()` - tworzenie wydarzenia
+- `createUrlTree()` - dla guardów
+- inne metody specyficzne dla aplikacji
+
 ## Struktura komponentu
 
 Rekomendowana kolejność elementów w komponencie:

@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import { APP_BRAND } from '@zgadajsie/shared';
 
 @Component({
@@ -117,7 +118,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
 export class RegisterComponent {
   protected readonly APP_BRAND = APP_BRAND;
   private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   private readonly snackbar = inject(SnackbarService);
 
   displayName = '';
@@ -135,7 +136,7 @@ export class RegisterComponent {
     try {
       await this.auth.register(this.email, this.password, this.displayName);
       this.snackbar.success('Konto utworzone! Sprawdź email, aby aktywować konto.');
-      this.router.navigateByUrl('/auth/login');
+      this.navigation.navigateToAuthLogin();
     } catch (err: unknown) {
       const msg = (err as { error?: { message?: string } })?.error?.message;
       this.snackbar.error(msg || 'Błąd rejestracji');

@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
@@ -12,6 +11,7 @@ import {
 } from '../../../../core/services/organizer.service';
 import { EventSeriesService } from '../../../../core/services/event-series.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import { formatDateLong, formatTime } from '@zgadajsie/shared';
 
 @Component({
@@ -30,7 +30,7 @@ export class OrganizerDigestComponent implements OnInit {
   private readonly organizerService = inject(OrganizerService);
   private readonly eventSeriesService = inject(EventSeriesService);
   private readonly snackbar = inject(SnackbarService);
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -101,7 +101,7 @@ export class OrganizerDigestComponent implements OnInit {
   }
 
   navigateToSeries(seriesId: string): void {
-    void this.router.navigate(['/series', seriesId]);
+    void this.navigation.navigateToSeries(seriesId);
   }
 
   formatDate(value: string): string {

@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { IconComponent } from '../../../../ui/icon/icon.component';
 import { BottomOverlaysService } from '../../../../overlay/ui/bottom-overlays/bottom-overlays.service';
 import { NotificationStatusService } from '../../../../../core/services/notification-status.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
+import { NavigationService } from '../../../../../core/services/navigation.service';
 
 @Component({
   selector: 'app-notification-alert',
@@ -15,16 +15,16 @@ export class NotificationAlertComponent {
   private readonly overlays = inject(BottomOverlaysService);
   private readonly notifStatus = inject(NotificationStatusService);
   private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
 
   readonly visible = computed(() => this.notifStatus.alertVisible());
   readonly state = computed(() => this.notifStatus.state());
   readonly config = computed(() => this.notifStatus.config());
-  readonly loginQueryParams = { returnUrl: this.router.url };
+  readonly loginQueryParams = computed(() => ({ returnUrl: this.navigation.router.url }));
 
   handleClick(): void {
     if (!this.auth.isLoggedIn()) {
-      this.router.navigate(['/auth/login'], { queryParams: this.loginQueryParams });
+      this.navigation.navigateToLogin(this.loginQueryParams().returnUrl);
       return;
     }
     this.overlays.open('notifications');

@@ -1,19 +1,18 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
+import { NavigationService } from '../services/navigation.service';
 
 export const verifiedUserGuard: CanActivateFn = (_route, state) => {
   const authService = inject(AuthService);
-  const router = inject(Router);
+  const navigation = inject(NavigationService);
 
   if (!authService.isLoggedIn()) {
-    return router.createUrlTree(['/auth/login'], {
-      queryParams: { returnUrl: state.url },
-    });
+    return navigation.createUrlTree(['/auth/login'], { returnUrl: state.url });
   }
 
   if (!authService.isActive()) {
-    router.navigate(['/unverified'], { skipLocationChange: true });
+    navigation.navigateToUnverified();
     return false;
   }
 

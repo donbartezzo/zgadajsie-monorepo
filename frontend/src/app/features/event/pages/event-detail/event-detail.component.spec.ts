@@ -88,6 +88,9 @@ describe('EventDetailComponent', () => {
   const mockAuth = {
     isLoggedIn: jest.fn().mockReturnValue(false),
     currentUser: signal(null),
+    requireAuth: jest.fn((action: string, callback: () => void) => {
+      callback();
+    }),
   };
 
   const mockSnackbar = {
@@ -310,13 +313,6 @@ describe('EventDetailComponent', () => {
     it('contactOrganizer() deleguje do eventArea.contactOrganizer()', () => {
       component.contactOrganizer();
       expect(mockEventArea.contactOrganizer).toHaveBeenCalled();
-    });
-  });
-
-  describe('onAuthSuccess', () => {
-    it('otwiera overlay joinRules', () => {
-      component.onAuthSuccess();
-      expect(mockOverlays.open).toHaveBeenCalledWith('joinRules');
     });
   });
 

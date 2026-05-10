@@ -8,7 +8,6 @@ import {
   signal,
 } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
-import { Router } from '@angular/router';
 import { UpperCasePipe } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { ModalComponent } from '../../../ui/modal/modal.component';
@@ -34,6 +33,7 @@ import { ConfirmModalService } from '../../../ui/confirm-modal/confirm-modal.ser
 import { BottomOverlaysService } from '../../../overlay/ui/bottom-overlays/bottom-overlays.service';
 import { EventAreaService } from '../../../../features/event/services/event-area.service';
 import { ProfileBroadcastService } from '../../../../core/services/profile-broadcast.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import { Enrollment, EnrolleeManageItem, OrganizerUserRelation } from '../../../types';
 import { Event } from '../../../types/event.interface';
 import { EventSlotInfo } from '../../../types/payment.interface';
@@ -94,7 +94,7 @@ function getErrorMessage(err: unknown, fallback: string): string {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EnrollmentSlotModalComponent {
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   protected readonly modalService = inject(ModalService);
   private readonly auth = inject(AuthService);
   private readonly eventService = inject(EventService);
@@ -672,7 +672,7 @@ export class EnrollmentSlotModalComponent {
     const e = this.event();
     if (!p || !e) return;
     this.modalService.close();
-    this.router.navigate(['/w', e.city?.slug, e.id, 'host-chat', p.userId]);
+    this.navigation.navigateToEventOrganizerChat(e.id, e.city?.slug ?? '', p.userId);
   }
 
   onJoin(): void {

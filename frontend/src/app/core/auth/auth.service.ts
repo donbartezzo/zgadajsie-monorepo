@@ -7,6 +7,8 @@ import { User } from '../../shared/types';
 import { NotificationService } from '../services/notification.service';
 import { ProfileBroadcastService } from '../services/profile-broadcast.service';
 import { Role } from '@zgadajsie/shared';
+import { SnackbarService } from '../../shared/ui/snackbar/snackbar.service';
+import { BottomOverlaysService } from '../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 
 interface AuthTokens {
   accessToken: string;
@@ -23,6 +25,8 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly notificationService = inject(NotificationService);
   private readonly profileBroadcast = inject(ProfileBroadcastService);
+  private readonly snackbar = inject(SnackbarService);
+  private readonly overlays = inject(BottomOverlaysService);
   private readonly apiUrl = environment.apiUrl + '/auth';
 
   currentUser = signal<User | null>(null);
@@ -159,5 +163,15 @@ export class AuthService {
 
   async refreshCurrentUser(): Promise<void> {
     await this.fetchUser();
+  }
+
+  requireAuth(action: string, callback: () => void): void {
+    if (!this.isLoggedIn()) {
+      this.snackbar.warning(`Musisz być zalogowany, aby ${action}`);
+      this.overlays.onAuthSuccess(callback);
+      this.overlays.open('auth');
+      return;
+    }
+    callback();
   }
 }

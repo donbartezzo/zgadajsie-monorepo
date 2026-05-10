@@ -1,31 +1,32 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter, ActivatedRoute } from '@angular/router';
 import { RegisterComponent } from './register.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 
 const mockAuth = { register: jest.fn() };
 const mockSnackbar = { success: jest.fn(), error: jest.fn() };
+const mockNavigation = { navigateToAuthLogin: jest.fn() };
 
 describe('RegisterComponent', () => {
   let fixture: ComponentFixture<RegisterComponent>;
   let component: RegisterComponent;
-  let router: Router;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [RegisterComponent],
       providers: [
         provideRouter([]),
+        { provide: ActivatedRoute, useValue: {} },
         { provide: AuthService, useValue: mockAuth },
         { provide: SnackbarService, useValue: mockSnackbar },
+        { provide: NavigationService, useValue: mockNavigation },
       ],
     }).compileComponents();
-    router = TestBed.inject(Router);
 
     fixture = TestBed.createComponent(RegisterComponent);
     component = fixture.componentInstance;
-    jest.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
     fixture.detectChanges();
     jest.clearAllMocks();
   });
@@ -63,7 +64,6 @@ describe('RegisterComponent', () => {
 
   it('nawiguje do /auth/login po pomyślnej rejestracji', fakeAsync(async () => {
     mockAuth.register.mockResolvedValue(undefined);
-    const navigateSpy = jest.spyOn(router, 'navigateByUrl');
 
     component.displayName = 'Jan';
     component.email = 'jan@test.com';
@@ -73,7 +73,7 @@ describe('RegisterComponent', () => {
     tick();
 
     expect(mockSnackbar.success).toHaveBeenCalled();
-    expect(navigateSpy).toHaveBeenCalledWith('/auth/login');
+    expect(mockNavigation.navigateToAuthLogin).toHaveBeenCalled();
   }));
 
   it('pokazuje snackbar error gdy rejestracja się nie powiedzie', fakeAsync(async () => {

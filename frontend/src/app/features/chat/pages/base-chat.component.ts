@@ -1,9 +1,10 @@
 import { computed, Directive, inject, OnDestroy, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ChatService } from '../../../core/services/chat.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
+import { NavigationService } from '../../../core/services/navigation.service';
 import { PrivateChatMessage, ChatMember } from '../../../shared/types';
 import { ChatViewMessage } from '../../../shared/chat/ui/chat-view/chat-view.component';
 import { EventAreaService } from '../../event/services/event-area.service';
@@ -12,7 +13,7 @@ import { isChatAccessDeniedError } from '../../../shared/utils';
 @Directive()
 export abstract class BaseChatComponent implements OnDestroy {
   protected readonly route = inject(ActivatedRoute);
-  protected readonly router = inject(Router);
+  protected readonly navigation = inject(NavigationService);
   protected readonly chatService = inject(ChatService);
   protected readonly auth = inject(AuthService);
   protected readonly snackbar = inject(SnackbarService);

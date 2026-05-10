@@ -138,14 +138,14 @@ export class UnifiedChatComponent extends BaseChatComponent implements OnInit {
       const organizerId = e?.organizerId;
 
       if (organizerId !== this.currentUserId) {
-        this.router.navigate(['/w', slug, this.eventId, 'host-chat']);
+        this.navigation.navigateToEventOrganizerChat(this.eventId, slug);
         return;
       }
 
       this.otherUserId = this.route.snapshot.paramMap.get('userId') ?? '';
 
       if (!this.otherUserId || this.otherUserId === this.currentUserId) {
-        this.router.navigate(['/w', slug, this.eventId, 'host-chat']);
+        this.navigation.navigateToEventOrganizerChat(this.eventId, slug);
         return;
       }
 

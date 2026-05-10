@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { EventService } from '../services/event.service';
+import { NavigationService } from '../services/navigation.service';
 import { organizerGuard } from './organizer.guard';
 
 function buildRoute(id: string | null): ActivatedRouteSnapshot {
@@ -18,17 +19,17 @@ function runGuard(route: ActivatedRouteSnapshot) {
 describe('organizerGuard', () => {
   let mockAuthService: { currentUser: jest.Mock };
   let mockEventService: { getEvent: jest.Mock };
-  let mockRouter: { navigate: jest.Mock };
+  let mockNavigationService: { navigateToNotFound: jest.Mock };
 
   beforeEach(() => {
     mockAuthService = { currentUser: jest.fn().mockReturnValue(null) };
     mockEventService = { getEvent: jest.fn() };
-    mockRouter = { navigate: jest.fn() };
+    mockNavigationService = { navigateToNotFound: jest.fn() };
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: mockAuthService },
         { provide: EventService, useValue: mockEventService },
-        { provide: Router, useValue: mockRouter },
+        { provide: NavigationService, useValue: mockNavigationService },
       ],
     });
   });
@@ -38,9 +39,7 @@ describe('organizerGuard', () => {
 
     (runGuard(buildRoute('event-1')) as any).subscribe((result: boolean) => {
       expect(result).toBe(false);
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/not-found'], {
-        skipLocationChange: true,
-      });
+      expect(mockNavigationService.navigateToNotFound).toHaveBeenCalled();
       done();
     });
   });
@@ -50,9 +49,7 @@ describe('organizerGuard', () => {
 
     (runGuard(buildRoute(null)) as any).subscribe((result: boolean) => {
       expect(result).toBe(false);
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/not-found'], {
-        skipLocationChange: true,
-      });
+      expect(mockNavigationService.navigateToNotFound).toHaveBeenCalled();
       done();
     });
   });
@@ -73,9 +70,7 @@ describe('organizerGuard', () => {
 
     (runGuard(buildRoute('event-1')) as any).subscribe((result: boolean) => {
       expect(result).toBe(false);
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/not-found'], {
-        skipLocationChange: true,
-      });
+      expect(mockNavigationService.navigateToNotFound).toHaveBeenCalled();
       done();
     });
   });
@@ -86,9 +81,7 @@ describe('organizerGuard', () => {
 
     (runGuard(buildRoute('event-1')) as any).subscribe((result: boolean) => {
       expect(result).toBe(false);
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/not-found'], {
-        skipLocationChange: true,
-      });
+      expect(mockNavigationService.navigateToNotFound).toHaveBeenCalled();
       done();
     });
   });

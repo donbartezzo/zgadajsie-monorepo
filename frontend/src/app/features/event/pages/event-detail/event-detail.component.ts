@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { IconName, IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
 import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
@@ -24,6 +24,7 @@ import { ChatService } from '../../../../core/services/chat.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
 import { EventAnnouncement, UserBrief } from '../../../../shared/types';
 import {
@@ -53,7 +54,6 @@ import {
   selector: 'app-event-detail',
   imports: [
     CommonModule,
-    RouterLink,
     IconComponent,
     CapacityProgressComponent,
     ButtonComponent,
@@ -75,8 +75,6 @@ import {
 export class EventDetailComponent implements OnInit, OnDestroy {
   private countdownInterval: ReturnType<typeof setInterval> | null = null;
   private readonly ngZone = inject(NgZone);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
   private readonly announcementService = inject(EventAnnouncementService);
   readonly auth = inject(AuthService);
@@ -87,6 +85,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   private readonly notifStatus = inject(NotificationStatusService);
   protected readonly eventArea = inject(EventAreaService);
   private readonly clarity = inject(ClarityService);
+  private readonly navigation = inject(NavigationService);
 
   // ── Delegated from EventAreaService ──
   readonly event = this.eventArea.event;
@@ -170,8 +169,6 @@ export class EventDetailComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Register auth success callback (specific to detail page)
-    this.overlays.onAuthSuccess(() => this.onAuthSuccess());
     this.overlays.onCancelEvent(() => this.cancelEvent());
 
     // Load chat message count when event is available and user has access
@@ -271,20 +268,23 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  onAuthSuccess(): void {
-    this.overlays.open('joinRules');
-  }
-
   openOrganizerActions(): void {
     this.overlays.open('organizerActions');
   }
 
   openChat(): void {
-    this.eventArea.openChat();
+    this.auth.requireAuth('korzystać z czatu', () => this.eventArea.openChat());
   }
 
   contactOrganizer(): void {
-    this.eventArea.contactOrganizer();
+    this.auth.requireAuth('napisać do organizatora', () => this.eventArea.contactOrganizer());
+  }
+
+  openParticipants(): void {
+    const e = this.event();
+    if (e && e.city?.slug) {
+      this.navigation.navigateToEventParticipants(e.id, e.city.slug);
+    }
   }
 
   confirmAnnouncement(announcementId: string): void {
@@ -345,29 +345,15 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  private checkOpenJoinParam(): void {
-    if (this.route.snapshot.queryParams['openJoin'] && this.auth.isLoggedIn()) {
-      if (this.isEnrolled()) {
-        this.eventArea.openJoinConfirmOverlay();
-      } else {
-        this.overlays.open('joinRules');
-      }
-      this.removeOpenJoinFromUrl();
-    }
-  }
-
-  private removeOpenJoinFromUrl(): void {
-    const url = new URL(window.location.href);
-    url.searchParams.delete('openJoin');
-    history.replaceState({}, '', url.toString());
-  }
-
   onDonationClick(): void {
     this.clarity.trackEvent('donation_click');
   }
 
   openMapPage(): void {
-    this.router.navigate(['map'], { relativeTo: this.route });
+    const e = this.event();
+    if (e && e.city?.slug) {
+      this.navigation.navigateToEventMap(e.id, e.city.slug);
+    }
   }
 
   openGoogleMaps(lat: number, lng: number): void {

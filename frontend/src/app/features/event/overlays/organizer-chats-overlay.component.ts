@@ -7,13 +7,13 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { UserAvatarComponent } from '../../../shared/user/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../shared/ui/loading-spinner/loading-spinner.component';
 import { ChatService } from '../../../core/services/chat.service';
+import { NavigationService } from '../../../core/services/navigation.service';
 import { OrganizerConversation } from '../../../shared/types';
 
 @Component({
@@ -92,7 +92,7 @@ import { OrganizerConversation } from '../../../shared/types';
 })
 export class OrganizerChatsOverlayComponent implements OnInit {
   private readonly chatService = inject(ChatService);
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
 
   readonly eventId = input.required<string>();
   readonly citySlug = input.required<string>();
@@ -113,6 +113,6 @@ export class OrganizerChatsOverlayComponent implements OnInit {
 
   openChat(participantId: string): void {
     this.closed.emit();
-    this.router.navigate(['/w', this.citySlug(), this.eventId(), 'host-chat', participantId]);
+    this.navigation.navigateToEventOrganizerChat(this.eventId(), this.citySlug(), participantId);
   }
 }

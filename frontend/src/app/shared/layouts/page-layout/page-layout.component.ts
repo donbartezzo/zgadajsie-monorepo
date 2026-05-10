@@ -10,13 +10,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import {
-  NavigationCancel,
-  NavigationEnd,
-  NavigationError,
-  NavigationStart,
-  Router,
-} from '@angular/router';
+import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { IconComponent } from '../../ui/icon/icon.component';
@@ -28,6 +22,7 @@ import {
   NotificationStatusService,
 } from '../../../core/services/notification-status.service';
 import { BottomOverlaysService } from '../../overlay/ui/bottom-overlays/bottom-overlays.service';
+import { NavigationService } from '../../../core/services/navigation.service';
 import { NotificationAlertComponent } from './notification/notification-alert/notification-alert.component';
 import { NotificationOverlayComponent } from './notification/notification-overlay/notification-overlay.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
@@ -73,7 +68,7 @@ const DEFAULT_ROUTE_DATA: RouteLayoutData = {
 })
 export class PageLayoutComponent {
   private readonly destroyRef = inject(DestroyRef);
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   private readonly auth = inject(AuthService);
   private readonly overlays = inject(BottomOverlaysService);
   readonly notifStatus = inject(NotificationStatusService);
@@ -82,11 +77,11 @@ export class PageLayoutComponent {
 
   // ── Route data → layout flags ──
   private readonly routeData = toSignal(
-    this.router.events.pipe(
+    this.navigation.router.events.pipe(
       filter((e) => e instanceof NavigationEnd),
       startWith(undefined),
       map(() => {
-        let route = this.router.routerState.root;
+        let route = this.navigation.router.routerState.root;
         while (route.firstChild) route = route.firstChild;
         return { ...DEFAULT_ROUTE_DATA, ...route.snapshot.data } as RouteLayoutData;
       }),
@@ -107,7 +102,7 @@ export class PageLayoutComponent {
 
     let readyTimer: ReturnType<typeof setTimeout> | null = null;
 
-    this.router.events.pipe(takeUntilDestroyed()).subscribe((e) => {
+    this.navigation.router.events.pipe(takeUntilDestroyed()).subscribe((e) => {
       if (e instanceof NavigationStart) {
         // Cancel any pending markReady from previous navigation (race condition fix)
         if (readyTimer) {
@@ -312,7 +307,7 @@ export class PageLayoutComponent {
   goBack(): void {
     const url = this.breadcrumb.parentUrl();
     if (url) {
-      this.router.navigateByUrl(url);
+      this.navigation.router.navigateByUrl(url);
     }
   }
 
@@ -322,7 +317,7 @@ export class PageLayoutComponent {
 
   onNotifBellClick(): void {
     if (!this.auth.isLoggedIn()) {
-      this.router.navigate(['/auth/login'], { queryParams: { returnUrl: this.router.url } });
+      this.navigation.navigateToLogin(this.navigation.router.url);
       return;
     }
     this.overlays.open('notifications');

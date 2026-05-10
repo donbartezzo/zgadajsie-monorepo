@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { LoginFormComponent } from '../../../../shared/auth/ui/login-form/login-form.component';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import { APP_BRAND } from '@zgadajsie/shared';
 
 @Component({
@@ -23,7 +24,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
 export class LoginComponent implements OnInit {
   protected readonly APP_BRAND = APP_BRAND;
   private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   private readonly route = inject(ActivatedRoute);
   private readonly snackbar = inject(SnackbarService);
 
@@ -43,6 +44,6 @@ export class LoginComponent implements OnInit {
 
   private redirectBack(): void {
     const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-    this.router.navigateByUrl(returnUrl);
+    this.navigation.navigateToLogin(returnUrl);
   }
 }

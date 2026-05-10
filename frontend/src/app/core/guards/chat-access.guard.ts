@@ -1,23 +1,24 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { ChatService } from '../services/chat.service';
+import { NavigationService } from '../services/navigation.service';
 
 export const chatAccessGuard: CanActivateFn = (route) => {
-  const router = inject(Router);
+  const navigation = inject(NavigationService);
   const authService = inject(AuthService);
   const chatService = inject(ChatService);
 
   const eventId = route.paramMap.get('id') ?? route.parent?.paramMap.get('id');
   if (!eventId) {
-    router.navigate(['/not-found'], { skipLocationChange: true });
+    navigation.navigateToNotFound();
     return false;
   }
 
   const currentUser = authService.currentUser();
   if (!currentUser) {
-    router.navigate(['/not-found'], { skipLocationChange: true });
+    navigation.navigateToNotFound();
     return false;
   }
 
@@ -37,11 +38,11 @@ export const chatAccessGuard: CanActivateFn = (route) => {
         return true;
       }
 
-      router.navigate(['/not-found'], { skipLocationChange: true });
+      navigation.navigateToNotFound();
       return false;
     }),
     catchError(() => {
-      router.navigate(['/not-found'], { skipLocationChange: true });
+      navigation.navigateToNotFound();
       return of(false);
     }),
   );

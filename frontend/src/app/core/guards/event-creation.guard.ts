@@ -1,12 +1,13 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn } from '@angular/router';
 import { SnackbarService } from '../../shared/ui/snackbar/snackbar.service';
 import { AuthService } from '../auth/auth.service';
 import { isOverrideAccount } from '@zgadajsie/shared';
 import { environment } from '../../../environments/environment';
+import { NavigationService } from '../services/navigation.service';
 
 export const eventCreationGuard: CanActivateFn = () => {
-  const router = inject(Router);
+  const navigation = inject(NavigationService);
   const snackbar = inject(SnackbarService);
   const authService = inject(AuthService);
 
@@ -15,7 +16,7 @@ export const eventCreationGuard: CanActivateFn = () => {
     snackbar.info(
       'Tworzenie nowych wydarzeń jest tymczasowo wyłączone. Przepraszamy za utrudnienia.',
     );
-    router.navigate(['/']);
+    navigation.navigateToRoot();
     return false;
   }
 

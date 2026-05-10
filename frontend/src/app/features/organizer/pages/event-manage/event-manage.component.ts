@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
@@ -23,6 +23,7 @@ import {
   applyProfileChangeToList,
   ProfileBroadcastService,
 } from '../../../../core/services/profile-broadcast.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import {
   AnnouncementReceiptStats,
   Event,
@@ -232,7 +233,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
 })
 export class EventManageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   private readonly auth = inject(AuthService);
   private readonly eventService = inject(EventService);
   private readonly announcementService = inject(EventAnnouncementService);
@@ -440,7 +441,7 @@ export class EventManageComponent implements OnInit {
 
   openChat(userId: string): void {
     const citySlug = this.eventData()?.citySlug ?? '';
-    this.router.navigate(['/w', citySlug, this.eventId, 'host-chat', userId]);
+    this.navigation.navigateToEventOrganizerChat(this.eventId, citySlug, userId);
   }
 
   private loadAnnouncementStats(announcementId: string): void {

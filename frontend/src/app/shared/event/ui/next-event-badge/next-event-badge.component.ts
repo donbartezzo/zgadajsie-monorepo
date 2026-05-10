@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input, inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { EventBase } from '../../../types';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { DateLabelsService } from '../../../services/date-labels.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import { formatTime } from '@zgadajsie/shared';
 import { EventInfoItemComponent } from '../../../ui/event-info-item/event-info-item.component';
 
@@ -19,7 +19,7 @@ interface NextEventBadgeViewModel {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NextEventBadgeComponent {
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   private readonly dateLabels = inject(DateLabelsService);
   readonly event = input<EventBase | null>(null);
 
@@ -45,7 +45,7 @@ export class NextEventBadgeComponent {
   onBadgeClick(): void {
     const vm = this.viewModel();
     if (vm) {
-      this.router.navigate(['/w', vm.citySlug, vm.eventId]);
+      this.navigation.navigateToEventDetail(vm.eventId, vm.citySlug);
     }
   }
 }

@@ -3,8 +3,6 @@
 @if (isLoading()) {
   <app-loading-spinner></app-loading-spinner>
 } @else if (event(); as e) {
-  @let _auth = auth.isLoggedIn();
-  @let _isEnrolled = isEnrolled();
   @let _isOrganizer = isOrganizer();
   @let _participants = participants();
   @let _isPreEnrollment = isPreEnrollment();
@@ -41,22 +39,19 @@
 
     <!-- Participants section -->
     @if (_isPreEnrollment) {
-      <a
+      <button
         data-testid="participant-grid"
-        [routerLink]="['/w', e.city?.slug, e.id, 'participants']"
-        class="my-2 flex items-center gap-3"
+        type="button"
+        class="my-2 flex items-center gap-3 text-left"
+        (click)="openParticipants()"
       >
         <div class="flex items-center gap-2">
           <app-icon name="users" size="sm" class="text-info-400"></app-icon>
           <span class="text-xs text-neutral-500">Trwają wstępne zapisy</span>
         </div>
-      </a>
+      </button>
     } @else {
-      <a
-        data-testid="participant-grid"
-        [routerLink]="['/w', e.city?.slug, e.id, 'participants']"
-        class="my-2 flex flex-col w-full gap-2"
-      >
+      <div class="my-2 flex flex-col w-full gap-2 text-left">
         @if (_participants.length > 0) {
           <app-user-avatar-list
             [items]="participantAvatarItems()"
@@ -65,14 +60,17 @@
             class="w-full"
           ></app-user-avatar-list>
         }
-        <app-capacity-progress
-          class="w-full"
-          [current]="participantCount()"
-          [max]="e.maxParticipants"
-          [enrollmentsCount]="e._count?.enrollments"
-          unitKey="progress.participant"
-        />
-      </a>
+
+        <button data-testid="participant-grid" type="button" (click)="openParticipants()">
+          <app-capacity-progress
+            class="w-full"
+            [current]="participantCount()"
+            [max]="e.maxParticipants"
+            [enrollmentsCount]="e._count?.enrollments"
+            unitKey="progress.participant"
+          />
+        </button>
+      </div>
     }
 
     <!-- Description -->
@@ -106,7 +104,7 @@
       <app-event-announcements
         [announcements]="announcements()"
         [hasAnnouncements]="hasAnnouncements()"
-        [isLoggedIn]="_auth"
+        [isLoggedIn]="auth.isLoggedIn()"
         [loginQueryParams]="loginQueryParams"
         (confirm)="confirmAnnouncement($event)"
         (confirmAll)="confirmAllAnnouncements()"
@@ -204,32 +202,30 @@
       </div>
     }
 
-    <!-- Group chat button - visible for participants and organizer -->
-    @if (_isEnrolled || _isOrganizer) {
-      <div class="mt-3">
-        <button
-          type="button"
-          class="flex w-full items-center gap-3 rounded-xl border border-neutral-100 bg-neutral-50 px-4 py-3 text-left transition-colors hover:bg-neutral-100"
-          (click)="openChat()"
-        >
-          <div class="relative">
-            <app-icon name="message-circle" size="sm" class="text-primary-500"></app-icon>
-            @if (chatMessageCount(); as count) {
-              <span
-                class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary-500 text-[10px] font-semibold text-white"
-              >
-                {{ count > 99 ? '99+' : count }}
-              </span>
-            }
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-neutral-900">Czat grupowy</p>
-            <p class="text-[10px] text-neutral-400">Porozmawiaj z uczestnikami</p>
-          </div>
-          <app-icon name="chevron-right" size="sm" class="text-neutral-300"></app-icon>
-        </button>
-      </div>
-    }
+    <!-- Group chat button - always visible -->
+    <div class="mt-3">
+      <button
+        type="button"
+        class="flex w-full items-center gap-3 rounded-xl border border-neutral-100 bg-neutral-50 px-4 py-3 text-left transition-colors hover:bg-neutral-100"
+        (click)="openChat()"
+      >
+        <div class="relative">
+          <app-icon name="message-circle" size="sm" class="text-primary-500"></app-icon>
+          @if (chatMessageCount(); as count) {
+            <span
+              class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary-500 text-[10px] font-semibold text-white"
+            >
+              {{ count > 99 ? '99+' : count }}
+            </span>
+          }
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-neutral-900">Czat grupowy</p>
+          <p class="text-[10px] text-neutral-400">Porozmawiaj z uczestnikami</p>
+        </div>
+        <app-icon name="chevron-right" size="sm" class="text-neutral-300"></app-icon>
+      </button>
+    </div>
 
     <!-- Organizer row with Follow button -->
     @if (e.organizer) {
@@ -260,12 +256,10 @@
                 </app-button>
               </div>
             } @else {
-              @if (_auth) {
-                <app-button appearance="outline" color="primary" size="sm" (clicked)="contactOrganizer()">
-                  <app-icon name="message-circle" size="sm"></app-icon>
-                  Napisz
-                </app-button>
-              }
+              <app-button appearance="outline" color="primary" size="sm" (clicked)="contactOrganizer()">
+                <app-icon name="message-circle" size="sm"></app-icon>
+                Napisz
+              </app-button>
             }
 
             @if (_organizerDonationUrl) {

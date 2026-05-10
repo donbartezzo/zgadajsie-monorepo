@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { SnackbarService } from '../../shared/ui/snackbar/snackbar.service';
+import { NavigationService } from '../services/navigation.service';
 import { eventCreationGuard } from './event-creation.guard';
 import { environment } from '../../../environments/environment';
 
@@ -13,18 +14,18 @@ function runGuard(): boolean {
 
 describe('eventCreationGuard', () => {
   let mockAuthService: { currentUser: jest.Mock };
-  let mockRouter: { navigate: jest.Mock };
+  let mockNavigationService: { navigateToRoot: jest.Mock };
   let mockSnackbar: { info: jest.Mock };
   const originalEnableEventCreation = environment.enableEventCreation;
 
   beforeEach(() => {
     mockAuthService = { currentUser: jest.fn().mockReturnValue(null) };
-    mockRouter = { navigate: jest.fn() };
+    mockNavigationService = { navigateToRoot: jest.fn() };
     mockSnackbar = { info: jest.fn() };
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter },
+        { provide: NavigationService, useValue: mockNavigationService },
         { provide: SnackbarService, useValue: mockSnackbar },
       ],
     });
@@ -49,7 +50,7 @@ describe('eventCreationGuard', () => {
 
     expect(result).toBe(false);
     expect(mockSnackbar.info).toHaveBeenCalled();
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
+    expect(mockNavigationService.navigateToRoot).toHaveBeenCalled();
   });
 
   it('przepuszcza konto override nawet gdy enableEventCreation === false', () => {

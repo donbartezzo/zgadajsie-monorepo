@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
-import { Router } from '@angular/router';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { NavigationService } from '../../../core/services/navigation.service';
 import { EventStatus } from '@zgadajsie/shared';
 import {
   getEventLifecycleStatus,
@@ -34,7 +34,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrganizerActionsOverlayComponent {
-  private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationService);
   private readonly overlays = inject(BottomOverlaysService);
   private readonly snackbar = inject(SnackbarService);
   private readonly auth = inject(AuthService);
@@ -126,7 +126,7 @@ export class OrganizerActionsOverlayComponent {
 
   navigateManage(): void {
     this.overlays.close();
-    this.router.navigate(['/o', 'w', this.eventId(), 'manage']);
+    this.navigation.navigateToEventManage(this.eventId());
   }
 
   handleEdit(): void {
@@ -138,7 +138,7 @@ export class OrganizerActionsOverlayComponent {
       return;
     }
     this.overlays.close();
-    this.router.navigate(['/o', 'w', this.eventId(), 'edit']);
+    this.navigation.navigateToEventEdit(this.eventId());
   }
 
   handleCancel(): void {
@@ -155,6 +155,6 @@ export class OrganizerActionsOverlayComponent {
 
   navigateConversations(): void {
     this.overlays.close();
-    this.router.navigate(['/w', this.citySlug(), this.eventId(), 'host-chat']);
+    this.navigation.navigateToEventOrganizerChat(this.eventId(), this.citySlug());
   }
 }

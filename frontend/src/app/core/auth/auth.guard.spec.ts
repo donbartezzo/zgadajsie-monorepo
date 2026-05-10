@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
+import { ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { AuthService } from './auth.service';
+import { NavigationService } from '../services/navigation.service';
 import { authGuard } from './auth.guard';
 import { adminGuard } from './admin.guard';
 import { activeGuard } from './active.guard';
@@ -15,6 +16,7 @@ function runGuard(
 
 describe('authGuard', () => {
   let mockAuthService: { isLoggedIn: jest.Mock; isAdmin: jest.Mock; isActive: jest.Mock };
+  let mockNavigationService: { createUrlTree: jest.Mock };
 
   beforeEach(() => {
     mockAuthService = {
@@ -22,15 +24,16 @@ describe('authGuard', () => {
       isAdmin: jest.fn().mockReturnValue(false),
       isActive: jest.fn().mockReturnValue(false),
     };
+    mockNavigationService = {
+      createUrlTree: jest.fn((path: string[], queryParams?: Record<string, string | string[]>) => ({
+        path,
+        queryParams,
+      })),
+    };
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: mockAuthService },
-        {
-          provide: Router,
-          useValue: {
-            createUrlTree: jest.fn((commands: string[]) => commands),
-          },
-        },
+        { provide: NavigationService, useValue: mockNavigationService },
       ],
     });
   });
@@ -44,13 +47,14 @@ describe('authGuard', () => {
   it('przekierowuje do /auth/login gdy niezalogowany', () => {
     mockAuthService.isLoggedIn.mockReturnValue(false);
 
-    const result = runGuard(authGuard);
-    expect(result).toEqual(['/auth/login']);
+    runGuard(authGuard);
+    expect(mockNavigationService.createUrlTree).toHaveBeenCalledWith(['/auth/login']);
   });
 });
 
 describe('adminGuard', () => {
   let mockAuthService: { isLoggedIn: jest.Mock; isAdmin: jest.Mock; isActive: jest.Mock };
+  let mockNavigationService: { createUrlTree: jest.Mock };
 
   beforeEach(() => {
     mockAuthService = {
@@ -58,13 +62,16 @@ describe('adminGuard', () => {
       isAdmin: jest.fn().mockReturnValue(false),
       isActive: jest.fn().mockReturnValue(false),
     };
+    mockNavigationService = {
+      createUrlTree: jest.fn((path: string[], queryParams?: Record<string, string | string[]>) => ({
+        path,
+        queryParams,
+      })),
+    };
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: mockAuthService },
-        {
-          provide: Router,
-          useValue: { createUrlTree: jest.fn((commands: string[]) => commands) },
-        },
+        { provide: NavigationService, useValue: mockNavigationService },
       ],
     });
   });
@@ -78,13 +85,14 @@ describe('adminGuard', () => {
   it('przekierowuje do / gdy nie admin', () => {
     mockAuthService.isAdmin.mockReturnValue(false);
 
-    const result = runGuard(adminGuard);
-    expect(result).toEqual(['/']);
+    runGuard(adminGuard);
+    expect(mockNavigationService.createUrlTree).toHaveBeenCalledWith(['/']);
   });
 });
 
 describe('activeGuard', () => {
   let mockAuthService: { isLoggedIn: jest.Mock; isAdmin: jest.Mock; isActive: jest.Mock };
+  let mockNavigationService: { createUrlTree: jest.Mock };
 
   beforeEach(() => {
     mockAuthService = {
@@ -92,13 +100,16 @@ describe('activeGuard', () => {
       isAdmin: jest.fn().mockReturnValue(false),
       isActive: jest.fn().mockReturnValue(false),
     };
+    mockNavigationService = {
+      createUrlTree: jest.fn((path: string[], queryParams?: Record<string, string | string[]>) => ({
+        path,
+        queryParams,
+      })),
+    };
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: mockAuthService },
-        {
-          provide: Router,
-          useValue: { createUrlTree: jest.fn((commands: string[]) => commands) },
-        },
+        { provide: NavigationService, useValue: mockNavigationService },
       ],
     });
   });
@@ -112,7 +123,7 @@ describe('activeGuard', () => {
   it('przekierowuje do /profile gdy nieaktywny', () => {
     mockAuthService.isActive.mockReturnValue(false);
 
-    const result = runGuard(activeGuard);
-    expect(result).toEqual(['/profile']);
+    runGuard(activeGuard);
+    expect(mockNavigationService.createUrlTree).toHaveBeenCalledWith(['/profile']);
   });
 });
