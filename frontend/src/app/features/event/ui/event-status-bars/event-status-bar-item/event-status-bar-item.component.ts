@@ -61,21 +61,23 @@ const VARIANTS: Record<EventStatusBarVariant, VariantClasses> = {
       <div class="{{ _variant.inner }}">
         <div class="flex items-center {{ _variant.gap }}">
           <div class="flex-1 min-w-0 text-center">
-            <div class="flex items-center justify-center gap-2">
-              <span class="font-bold truncate {{ _variant.titleSize }} text-white">
+            <div class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+              <span class="font-bold truncate max-w-full {{ _variant.titleSize }} text-white">
                 {{ _bar.title }}
               </span>
               @if (_bar.enrollments && _bar.enrollments.length > 0) {
                 @if (_bar.enrollments.length === 1) {
                   @let _enrollment = _bar.enrollments[0];
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-2 min-w-0 max-w-full">
                     <div class="relative h-7 w-7 shrink-0 rounded-full">
                       <app-user-avatar [user]="_enrollment" size="xs" />
                     </div>
-                    <span class="text-sm text-white opacity-90">{{ _enrollment.displayName }}</span>
+                    <span class="text-sm text-white opacity-90 truncate">
+                      {{ _enrollment.displayName }}
+                    </span>
                   </div>
                 } @else {
-                  <div class="flex items-center -space-x-2">
+                  <div class="flex flex-wrap items-center justify-center -space-x-2 max-w-full">
                     @for (e of _bar.enrollments; track e.id) {
                       <div class="relative h-7 w-7 shrink-0 rounded-full">
                         <app-user-avatar [user]="e" size="xs" />
@@ -92,7 +94,7 @@ const VARIANTS: Record<EventStatusBarVariant, VariantClasses> = {
               </p>
             }
           </div>
-          <app-icon name="chevron-right" size="md" class="text-white" />
+          <app-icon name="chevron-right" size="md" class="text-white shrink-0" />
         </div>
       </div>
     </div>
