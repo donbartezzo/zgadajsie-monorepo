@@ -5,7 +5,6 @@
 } @else if (event(); as e) {
   @let _isOrganizer = isOrganizer();
   @let _participants = participants();
-  @let _isPreEnrollment = isPreEnrollment();
   @let _countdown = countdown();
   @let _notificationBars = notificationBars();
 
@@ -38,40 +37,26 @@
     </div>
 
     <!-- Participants section -->
-    @if (_isPreEnrollment) {
-      <button
-        data-testid="participant-grid"
-        type="button"
-        class="my-2 flex items-center gap-3 text-left"
-        (click)="openParticipants()"
-      >
-        <div class="flex items-center gap-2">
-          <app-icon name="users" size="sm" class="text-info-400"></app-icon>
-          <span class="text-xs text-neutral-500">Trwają wstępne zapisy</span>
-        </div>
-      </button>
-    } @else {
-      <div class="my-2 flex flex-col w-full gap-2 text-left">
-        @if (_participants.length > 0) {
-          <app-user-avatar-list
-            [items]="participantAvatarItems()"
-            [citySlug]="e.city?.slug ?? ''"
-            [eventId]="e.id"
-            class="w-full"
-          ></app-user-avatar-list>
-        }
 
-        <button data-testid="participant-grid" type="button" (click)="openParticipants()">
-          <app-capacity-progress
-            class="w-full"
-            [current]="participantCount()"
-            [max]="e.maxParticipants"
-            [enrollmentsCount]="e._count?.enrollments"
-            unitKey="progress.participant"
-          />
-        </button>
-      </div>
-    }
+    <div class="my-2 flex flex-col w-full gap-2 text-left">
+      @if (_participants.length > 0) {
+        <app-user-avatar-list
+          [items]="participantAvatarItems()"
+          [citySlug]="e.city?.slug ?? ''"
+          [eventId]="e.id"
+          class="w-full"
+        ></app-user-avatar-list>
+      }
+
+      <button data-testid="participant-grid" type="button" (click)="openParticipants()">
+        <app-event-capacity-progress
+          class="w-full"
+          [event]="e"
+          [isPreEnrollment]="isPreEnrollment()"
+          [isJoinable]="canJoin()"
+        />
+      </button>
+    </div>
 
     <!-- Description -->
     @if (e.description) {

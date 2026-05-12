@@ -147,6 +147,88 @@ describe('EnrollmentGridComponent - computed signals', () => {
     });
   });
 
+  describe('slotGroups() - ograniczenie liczby slotów do konfiguracji', () => {
+    function makeSlot(id: string, roleKey: string | null, enrollmentId: string | null = null) {
+      return {
+        id,
+        roleKey,
+        enrollmentId,
+        locked: false,
+        confirmed: false,
+        assignedAt: null,
+        createdAt: new Date().toISOString(),
+      };
+    }
+
+    it('ogranicza wyświetlane sloty do maxParticipants gdy DB zawiera więcej wierszy', () => {
+      const { fixture, c } = create();
+      fixture.componentRef.setInput('event', makeEvent({ maxParticipants: 4, roleConfig: null }));
+      fixture.componentRef.setInput(
+        'slots',
+        Array.from({ length: 10 }, (_, i) => makeSlot(`s${i}`, null)),
+      );
+      const groups = c.slotGroups();
+      expect(groups[0].totalSlots).toBe(4);
+      expect(groups[0].items).toHaveLength(4);
+    });
+
+    it('ogranicza sloty per rola do role.slots gdy DB zawiera więcej wierszy', () => {
+      const { fixture, c } = create();
+      fixture.componentRef.setInput(
+        'event',
+        makeEvent({
+          maxParticipants: 4,
+          roleConfig: {
+            disciplineSlug: 'football',
+            roles: [
+              { key: 'player', slots: 2, isDefault: true },
+              { key: 'goalkeeper', slots: 2, isDefault: false },
+            ],
+          },
+        }),
+      );
+      fixture.componentRef.setInput('slots', [
+        ...Array.from({ length: 10 }, (_, i) => makeSlot(`p${i}`, 'player')),
+        ...Array.from({ length: 2 }, (_, i) => makeSlot(`g${i}`, 'goalkeeper')),
+      ]);
+      const groups = c.slotGroups();
+      const playerGroup = groups.find((g) => g.role?.key === 'player');
+      const keeperGroup = groups.find((g) => g.role?.key === 'goalkeeper');
+      expect(playerGroup?.totalSlots).toBe(2);
+      expect(playerGroup?.items).toHaveLength(2);
+      expect(keeperGroup?.items).toHaveLength(2);
+    });
+
+    it('nigdy nie ukrywa zajętego slotu nawet gdy zajętych jest więcej niż role.slots', () => {
+      const { fixture, c } = create();
+      fixture.componentRef.setInput(
+        'event',
+        makeEvent({
+          maxParticipants: 2,
+          roleConfig: {
+            disciplineSlug: 'football',
+            roles: [{ key: 'player', slots: 2, isDefault: true }],
+          },
+        }),
+      );
+      fixture.componentRef.setInput('participants', [
+        makeParticipant('p1', 'APPROVED'),
+        makeParticipant('p2', 'APPROVED'),
+        makeParticipant('p3', 'APPROVED'),
+      ]);
+      fixture.componentRef.setInput('slots', [
+        makeSlot('s1', 'player', 'p1'),
+        makeSlot('s2', 'player', 'p2'),
+        makeSlot('s3', 'player', 'p3'),
+        makeSlot('s4', 'player'),
+        makeSlot('s5', 'player'),
+      ]);
+      const groups = c.slotGroups();
+      expect(groups[0].items).toHaveLength(3);
+      expect(groups[0].items.every((i) => i.participant !== null)).toBe(true);
+    });
+  });
+
   describe('sections()', () => {
     it('pusta sekcja assigned gdy brak uczestników', () => {
       const { fixture, c } = create();
@@ -169,6 +251,60 @@ describe('EnrollmentGridComponent - computed signals', () => {
       fixture.componentRef.setInput('participants', [makeParticipant('p1', 'WITHDRAWN')]);
       const sections = c.sections();
       expect(sections.some((s) => s.type === 'withdrawn')).toBe(true);
+    });
+  });
+
+  describe('pre-enrollment - anonimizacja statusów', () => {
+    function preEnrollmentEvent() {
+      const farFuture = new Date(Date.now() + 72 * 60 * 60 * 1000);
+      return makeEvent({
+        startsAt: farFuture.toISOString(),
+        lotteryExecutedAt: null,
+      });
+    }
+
+    it('slotParticipants() zwraca pustą tablicę w pre-zapisach', () => {
+      const { fixture, c } = create();
+      fixture.componentRef.setInput('event', preEnrollmentEvent());
+      fixture.componentRef.setInput('participants', [
+        makeParticipant('p1', 'APPROVED'),
+        makeParticipant('p2', 'CONFIRMED'),
+      ]);
+      expect(c.slotParticipants()).toEqual([]);
+    });
+
+    it('pendingParticipants() zwraca wszystkich aktywnych z statusem PENDING', () => {
+      const { fixture, c } = create();
+      fixture.componentRef.setInput('event', preEnrollmentEvent());
+      fixture.componentRef.setInput('participants', [
+        makeParticipant('p1', 'APPROVED'),
+        makeParticipant('p2', 'CONFIRMED'),
+        makeParticipant('p3', 'PENDING'),
+        makeParticipant('p4', 'WITHDRAWN'),
+      ]);
+      const pending = c.pendingParticipants();
+      expect(pending.map((p) => p.id)).toEqual(['p1', 'p2', 'p3']);
+      expect(pending.every((p) => p.status === 'PENDING')).toBe(true);
+      expect(pending.every((p) => p.slot === null)).toBe(true);
+    });
+
+    it('slotGroups() zwraca pustą tablicę w pre-zapisach', () => {
+      const { fixture, c } = create();
+      fixture.componentRef.setInput('event', preEnrollmentEvent());
+      fixture.componentRef.setInput('participants', [makeParticipant('p1', 'APPROVED')]);
+      expect(c.slotGroups()).toEqual([]);
+    });
+
+    it('sections() nie zawiera sekcji assigned w pre-zapisach', () => {
+      const { fixture, c } = create();
+      fixture.componentRef.setInput('event', preEnrollmentEvent());
+      fixture.componentRef.setInput('participants', [
+        makeParticipant('p1', 'APPROVED'),
+        makeParticipant('p2', 'PENDING'),
+      ]);
+      const sections = c.sections();
+      expect(sections.some((s) => s.type === 'assigned')).toBe(false);
+      expect(sections.some((s) => s.type === 'pending')).toBe(true);
     });
   });
 });

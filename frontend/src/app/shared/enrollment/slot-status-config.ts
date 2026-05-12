@@ -42,10 +42,11 @@ export const SLOT_STATUS_CONFIG: Record<SlotDisplayStatus, SlotStatusConfig> = {
   },
   pending: {
     title: 'Oczekujący',
-    description: 'Czeka na wolne miejsce lub zatwierdzenie przez organizatora',
+    description: 'Oczekuje na wolne miejsce lub zatwierdzenie przez organizatora',
     status: 'pending',
     sectionHeader: 'Oczekujący',
-    sectionNote: 'Osoby czekające na wolny slot lub wymagające zatwierdzenia przez organizatora',
+    sectionNote:
+      'Osoby oczekujące na wolne miejsce lub wymagające zatwierdzenia przez organizatora',
     faqAnchor: 'pending-status',
   },
   withdrawn: {

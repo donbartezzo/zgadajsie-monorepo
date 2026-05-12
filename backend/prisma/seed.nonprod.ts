@@ -435,7 +435,7 @@ async function main() {
       // Add default role slots
       if (slotSchema.participantRoles?.default) {
         const defaultRole = slotSchema.participantRoles.default;
-        const defaultSlots = slotSchema.basic?.maxParticipants || data.maxParticipants;
+        const eventMaxParticipants = data.maxParticipants as number;
 
         // Reserve slots for special roles first
         let reservedSlots = 0;
@@ -446,7 +446,7 @@ async function main() {
           );
         }
 
-        const defaultSlotsCount = Math.max(0, defaultSlots - reservedSlots);
+        const defaultSlotsCount = Math.max(0, eventMaxParticipants - reservedSlots);
         for (let i = 0; i < defaultSlotsCount; i++) {
           slots.push({ eventId: event.id, roleKey: defaultRole.key });
         }

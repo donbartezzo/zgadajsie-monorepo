@@ -25,4 +25,5 @@ export class EnrollmentGridSectionComponent {
   readonly itemClicked = output<SlotItem>();
 
   readonly colors = computed(() => getSlotColorClasses(this.config().status));
+  readonly max = computed(() => this.groups().reduce((sum, group) => sum + group.totalSlots, 0));
 }

@@ -21,6 +21,7 @@ export interface EventBase
   status: EventStatus;
   createdAt: string;
   updatedAt: string;
+  lotteryExecutedAt?: string | null;
 
   discipline?: DictionaryItem;
   facility?: DictionaryItem;

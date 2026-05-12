@@ -75,24 +75,33 @@ export class EnrollmentLotteryCron implements OnModuleInit {
         return null;
       }
 
-      const pendingParticipations = await tx.eventEnrollment.findMany({
-        where: { eventId: event.id, wantsIn: true, slot: null, addedByUserId: null },
+      const allParticipations = await tx.eventEnrollment.findMany({
+        where: { eventId: event.id, wantsIn: true, addedByUserId: null },
+        include: { slot: { select: { id: true } } },
       });
 
-      if (pendingParticipations.length === 0) {
-        return { assignedIds: [], eligible: [] };
+      const preAssigned = allParticipations.filter((p) => p.slot !== null);
+      const pendingParticipations = allParticipations.filter((p) => p.slot === null);
+
+      if (allParticipations.length === 0) {
+        return { assignedIds: [], eligible: [], preAssignedIds: [] };
       }
 
       const uniqueUserIds = [...new Set(pendingParticipations.map((p) => p.userId))];
+      const relationMap = new Map<string, { isTrusted: boolean; isBanned: boolean }>();
 
-      const relations = await tx.organizerUserRelation.findMany({
-        where: {
-          organizerUserId: event.organizerId,
-          targetUserId: { in: uniqueUserIds },
-        },
-        select: { targetUserId: true, isTrusted: true, isBanned: true },
-      });
-      const relationMap = new Map(relations.map((r) => [r.targetUserId, r]));
+      if (uniqueUserIds.length > 0) {
+        const relations = await tx.organizerUserRelation.findMany({
+          where: {
+            organizerUserId: event.organizerId,
+            targetUserId: { in: uniqueUserIds },
+          },
+          select: { targetUserId: true, isTrusted: true, isBanned: true },
+        });
+        for (const r of relations) {
+          relationMap.set(r.targetUserId, { isTrusted: r.isTrusted, isBanned: r.isBanned });
+        }
+      }
 
       const eligible = pendingParticipations.filter((p) => {
         const rel = relationMap.get(p.userId);
@@ -114,7 +123,11 @@ export class EnrollmentLotteryCron implements OnModuleInit {
         assignedIds.push(participation.id);
       }
 
-      return { assignedIds, eligible };
+      return {
+        assignedIds,
+        eligible,
+        preAssignedIds: preAssigned.map((p) => ({ id: p.id, userId: p.userId })),
+      };
     });
 
     if (!result) {
@@ -123,7 +136,24 @@ export class EnrollmentLotteryCron implements OnModuleInit {
 
     this.eventRealtime.invalidateEvent(event.id, 'all');
 
-    const { assignedIds, eligible } = result;
+    const { assignedIds, eligible, preAssignedIds } = result;
+
+    // Notify participants who got a slot via lottery + those who were pre-assigned by organizer
+    // during pre-enrollment phase (notifications were suppressed until now).
+    for (const preAssigned of preAssignedIds) {
+      try {
+        await this.pushService.notifyParticipationStatus(
+          preAssigned.userId,
+          event.title,
+          'SLOT_ASSIGNED',
+          event.id,
+        );
+      } catch (err) {
+        this.logger.error(
+          `Pre-assigned notification failed for user ${preAssigned.userId}, event ${event.id}: ${err}`,
+        );
+      }
+    }
 
     for (const p of eligible) {
       const gotSlot = assignedIds.includes(p.id);
@@ -143,7 +173,8 @@ export class EnrollmentLotteryCron implements OnModuleInit {
 
     this.logger.log(
       `Lottery completed for event "${event.title}": ${assignedIds.length} slots assigned, ` +
-        `${eligible.length - assignedIds.length} eligible but not selected`,
+        `${eligible.length - assignedIds.length} eligible but not selected, ` +
+        `${preAssignedIds.length} pre-assigned notified`,
     );
   }
 }

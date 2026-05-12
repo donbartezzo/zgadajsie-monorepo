@@ -129,7 +129,13 @@ export class FaqComponent {
       anchor: 'pending-status',
       question: 'Co oznacza status "Oczekujący"?',
       answer:
-        'Na liście oczekujących możesz się znaleźć z kilku powodów: wszystkie miejsca są zajęte i czekasz na zwolnienie slotu; organizator wymaga ręcznego zatwierdzania uczestników i Twoje zgłoszenie jest w kolejce; lub jesteś nową osobą u tego organizatora i zgłoszenie trafia do wstępnej weryfikacji. Gdy status zmieni się na „Uczestnik", otrzymasz powiadomienie. W dowolnym momencie możesz wycofać zgłoszenie.',
+        'Na liście oczekujących możesz się znaleźć z kilku powodów: trwa faza pre-zapisów i oczekujesz na termin losowania; wszystkie miejsca są zajęte i czekasz na zwolnienie slotu; organizator wymaga ręcznego zatwierdzania uczestników i Twoje zgłoszenie jest w kolejce; jesteś nową osobą u tego organizatora i zgłoszenie trafia do wstępnej weryfikacji. Gdy status zmieni się na „Uczestnik", otrzymasz powiadomienie. W dowolnym momencie możesz wycofać zgłoszenie.',
+    },
+    {
+      anchor: 'pre-enrollment',
+      question: 'Czym są zapisy wstępne i jak działa losowanie?',
+      answer:
+        'Wydarzenia uruchamiane z większym wyprzedzeniem otwierają najpierw fazę zapisów wstępnych, w której zbieramy zgłoszenia bez przydzielania miejsc. Na 48 godzin przed startem wydarzenia odbywa się losowanie - miejsca są przydzielane losowo spośród wszystkich zgłoszonych "zaufanych" uczestników. Podczas pre-zapisów każdy uczestnik widnieje na liście oczekujących. Po losowaniu rozpoczynają się zapisy otwarte na ewentualne wolne miejsca.',
     },
     {
       anchor: 'withdrawn-status',

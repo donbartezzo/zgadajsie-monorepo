@@ -1,10 +1,26 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  NgZone,
+  OnDestroy,
+  output,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { Enrollment, EnrolleeManageItem, EventRoleConfig } from '../../../types';
 import { EventSlotInfo } from '../../../types/payment.interface';
 import { Event } from '../../../types/event.interface';
-import { isPreEnrollment as isPreEnrollmentFn } from '../../../utils/event-time-status.util';
+import {
+  getLotteryThreshold,
+  isPreEnrollment as isPreEnrollmentFn,
+} from '../../../utils/event-time-status.util';
+import { getEventCountdown, EventCountdown, nowInZone } from '@zgadajsie/shared';
+import { TimeUnitPipe } from '../../../pipes/time-unit.pipe';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ModalService } from '../../../ui/modal/modal.service';
 import { SnackbarService } from '../../../ui/snackbar/snackbar.service';
@@ -29,14 +45,16 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
 
 @Component({
   selector: 'app-enrollment-grid',
-  imports: [IconComponent, EnrollmentGridSectionComponent],
+  imports: [IconComponent, EnrollmentGridSectionComponent, TimeUnitPipe],
   templateUrl: './enrollment-grid.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EnrollmentGridComponent {
+export class EnrollmentGridComponent implements OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly modalService = inject(ModalService);
   private readonly snackbar = inject(SnackbarService);
+  private readonly ngZone = inject(NgZone);
+  private lotteryCountdownInterval: ReturnType<typeof setInterval> | null = null;
 
   protected readonly statusConfig = SLOT_STATUS_CONFIG;
 
@@ -51,6 +69,46 @@ export class EnrollmentGridComponent {
     this.modalService.refresh$.pipe(takeUntilDestroyed()).subscribe(() => {
       this.refreshNeeded.emit();
     });
+
+    effect(() => {
+      if (this.isPreEnrollment()) {
+        this.startLotteryCountdown(this.event().startsAt);
+      } else {
+        this.stopLotteryCountdown();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.stopLotteryCountdown();
+  }
+
+  private startLotteryCountdown(startsAt: string): void {
+    if (this.lotteryCountdownInterval) return;
+    const lotteryThreshold = getLotteryThreshold(startsAt);
+    const lotteryIso = lotteryThreshold.toISOString();
+    const update = () => {
+      this.lotteryCountdown.set(getEventCountdown(lotteryIso, startsAt, Infinity));
+      if (nowInZone().toJSDate() >= lotteryThreshold && this.lotteryCountdownInterval) {
+        clearInterval(this.lotteryCountdownInterval);
+        this.lotteryCountdownInterval = null;
+      }
+    };
+
+    this.ngZone.runOutsideAngular(() => {
+      update();
+      this.lotteryCountdownInterval = setInterval(() => {
+        this.ngZone.run(update);
+      }, 1000);
+    });
+  }
+
+  private stopLotteryCountdown(): void {
+    if (this.lotteryCountdownInterval) {
+      clearInterval(this.lotteryCountdownInterval);
+      this.lotteryCountdownInterval = null;
+    }
+    this.lotteryCountdown.set(null);
   }
 
   readonly maxSlots = computed(() => this.event().maxParticipants ?? 0);
@@ -64,13 +122,25 @@ export class EnrollmentGridComponent {
     return isPreEnrollmentFn(e.startsAt, e.lotteryExecutedAt, e.status);
   });
 
-  readonly slotParticipants = computed(() =>
-    this.participants().filter((p) => SLOT_STATUSES.includes(p.status)),
-  );
+  readonly lotteryCountdown = signal<EventCountdown | null>(null);
 
-  readonly pendingParticipants = computed(() =>
-    this.participants().filter((p) => PENDING_STATUSES.includes(p.status)),
-  );
+  readonly slotParticipants = computed(() => {
+    if (this.isPreEnrollment()) return [];
+    return this.participants().filter((p) => SLOT_STATUSES.includes(p.status));
+  });
+
+  readonly pendingParticipants = computed(() => {
+    // In pre-enrollment all active participants (regardless of derived status) go to "Oczekujący".
+    // Organizer-pre-assigned slots must not reveal themselves until the lottery executes, so we
+    // clone each participant with status='PENDING' and drop slot/payment hints from the view.
+    if (this.isPreEnrollment()) {
+      const activeStatuses = [...SLOT_STATUSES, ...PENDING_STATUSES];
+      return this.participants()
+        .filter((p) => activeStatuses.includes(p.status))
+        .map((p) => ({ ...p, status: 'PENDING' as const, slot: null, payment: null }));
+    }
+    return this.participants().filter((p) => PENDING_STATUSES.includes(p.status));
+  });
 
   readonly withdrawnParticipants = computed(() =>
     this.participants().filter((p) => WITHDRAWN_STATUSES.includes(p.status)),
@@ -143,6 +213,8 @@ export class EnrollmentGridComponent {
   });
 
   readonly slotGroups = computed<SlotGroup[]>(() => {
+    if (this.isPreEnrollment()) return [];
+
     const config = this.roleConfig();
     const allSlots = this.slots();
     const occupied = this.slotParticipants();
@@ -199,7 +271,7 @@ export class EnrollmentGridComponent {
         slotData: { slotId: slot.id, locked: slot.locked, slot },
         participant: participants.find((p) => slot.enrollmentId === p.id) ?? null,
       }));
-      return items.sort((a, b) => {
+      const sorted = items.sort((a, b) => {
         if (a.participant && !b.participant) return -1;
         if (!a.participant && b.participant) return 1;
         if (!a.participant && !b.participant) {
@@ -208,6 +280,15 @@ export class EnrollmentGridComponent {
         }
         return 0;
       });
+
+      // Defensywnie ograniczamy do liczby slotów z konfiguracji, ale nigdy nie ukrywamy
+      // zajętego slotu (gdyby dane w bazie odbiegały od konfiguracji ról).
+      if (totalSlots > 0) {
+        const occupiedCount = sorted.filter((i) => i.participant).length;
+        const cap = Math.max(totalSlots, occupiedCount);
+        return sorted.slice(0, cap);
+      }
+      return sorted;
     }
 
     const items: SlotItem[] = participants.map((p) => ({

@@ -1,0 +1,10 @@
+@let _isPreEnrollment = isPreEnrollment();
+
+<app-capacity-progress
+  [enrollmentsCount]="enrollmentsCount()"
+  [participantsCount]="participantsCount()"
+  [max]="max()"
+  [isPreEnrollment]="_isPreEnrollment"
+  [isJoinable]="isJoinable()"
+  [customStatusText]="_isPreEnrollment ? 'TRWAJĄ PRE-ZAPISY' : undefined"
+/>

@@ -68,7 +68,6 @@ describe('EventDetailComponent', () => {
   };
 
   const mockOverlays = {
-    setLotteryCountdown: jest.fn(),
     onAuthSuccess: jest.fn(),
     onCancelEvent: jest.fn(),
     autoRefreshPaused$: new Subject(),

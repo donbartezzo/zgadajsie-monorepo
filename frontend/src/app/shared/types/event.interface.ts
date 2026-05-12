@@ -24,7 +24,6 @@ export interface Event extends EventBase {
   citySlug: string;
   organizerId: string;
   visibility: string;
-  lotteryExecutedAt?: string | null;
   roleConfig?: EventRoleConfig | null;
   seriesId?: string;
   series?: { id: string; name: string } | null;

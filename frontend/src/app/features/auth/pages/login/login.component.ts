@@ -44,6 +44,6 @@ export class LoginComponent implements OnInit {
 
   private redirectBack(): void {
     const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-    this.navigation.navigateToLogin(returnUrl);
+    this.navigation.router.navigateByUrl(returnUrl);
   }
 }

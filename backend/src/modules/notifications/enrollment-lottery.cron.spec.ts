@@ -142,13 +142,14 @@ describe('EnrollmentLotteryCron', () => {
 
       const call = tx.eventEnrollment.findMany.mock.calls[0][0];
       expect(call.where.addedByUserId).toBeNull();
+      expect(call.where.wantsIn).toBe(true);
     });
 
     it('filtruje eligible: isTrusted=true AND isBanned!=true', async () => {
       const pendingUsers = [
-        { id: 'p1', userId: 'u1', eventId: 'event1' },
-        { id: 'p2', userId: 'u2', eventId: 'event1' },
-        { id: 'p3', userId: 'u3', eventId: 'event1' },
+        { id: 'p1', userId: 'u1', eventId: 'event1', slot: null },
+        { id: 'p2', userId: 'u2', eventId: 'event1', slot: null },
+        { id: 'p3', userId: 'u3', eventId: 'event1', slot: null },
       ];
       tx.event.updateMany.mockResolvedValue({ count: 1 });
       tx.eventEnrollment.findMany.mockResolvedValue(pendingUsers);
@@ -174,9 +175,9 @@ describe('EnrollmentLotteryCron', () => {
 
     it('przypisuje sloty do eligible aż do wyczerpania wolnych slotów', async () => {
       const pendingUsers = [
-        { id: 'p1', userId: 'u1', eventId: 'event1' },
-        { id: 'p2', userId: 'u2', eventId: 'event1' },
-        { id: 'p3', userId: 'u3', eventId: 'event1' },
+        { id: 'p1', userId: 'u1', eventId: 'event1', slot: null },
+        { id: 'p2', userId: 'u2', eventId: 'event1', slot: null },
+        { id: 'p3', userId: 'u3', eventId: 'event1', slot: null },
       ];
       tx.event.updateMany.mockResolvedValue({ count: 1 });
       tx.eventEnrollment.findMany.mockResolvedValue(pendingUsers);
@@ -196,8 +197,8 @@ describe('EnrollmentLotteryCron', () => {
 
     it('wysyła LOTTERY_NOT_SELECTED do eligible ale niewylosowanych', async () => {
       const pendingUsers = [
-        { id: 'p1', userId: 'u1', eventId: 'event1' },
-        { id: 'p2', userId: 'u2', eventId: 'event1' },
+        { id: 'p1', userId: 'u1', eventId: 'event1', slot: null },
+        { id: 'p2', userId: 'u2', eventId: 'event1', slot: null },
       ];
       tx.event.updateMany.mockResolvedValue({ count: 1 });
       tx.eventEnrollment.findMany.mockResolvedValue(pendingUsers);
@@ -230,7 +231,7 @@ describe('EnrollmentLotteryCron', () => {
     it('0 eligible (wszyscy nowi/zbanowani) → noop, brak przypisań', async () => {
       tx.event.updateMany.mockResolvedValue({ count: 1 });
       tx.eventEnrollment.findMany.mockResolvedValue([
-        { id: 'p1', userId: 'u1', eventId: 'event1' },
+        { id: 'p1', userId: 'u1', eventId: 'event1', slot: null },
       ]);
       tx.organizerUserRelation.findMany.mockResolvedValue([
         { targetUserId: 'u1', isTrusted: false, isBanned: false },
@@ -240,6 +241,62 @@ describe('EnrollmentLotteryCron', () => {
 
       expect(tx.eventSlot.update).not.toHaveBeenCalled();
       expect(push.notifyParticipationStatus as jest.Mock).not.toHaveBeenCalled();
+    });
+
+    it('wysyła SLOT_ASSIGNED dla użytkowników, którym organizator nadał slot przed losowaniem', async () => {
+      // Pre-assigned by organizer during pre-enrollment (slot already attached).
+      // Pending notifications were suppressed in pre-enrollment, so they must fire now.
+      const participations = [
+        { id: 'p1', userId: 'u1', eventId: 'event1', slot: { id: 'slot1' } },
+        { id: 'p2', userId: 'u2', eventId: 'event1', slot: { id: 'slot2' } },
+      ];
+      tx.event.updateMany.mockResolvedValue({ count: 1 });
+      tx.eventEnrollment.findMany.mockResolvedValue(participations);
+      tx.organizerUserRelation.findMany.mockResolvedValue([]);
+      tx.eventSlot.findFirst.mockResolvedValue(null);
+
+      await cron.executeLotteryForEvent(event);
+
+      expect(push.notifyParticipationStatus as jest.Mock).toHaveBeenCalledTimes(2);
+      expect(push.notifyParticipationStatus as jest.Mock).toHaveBeenCalledWith(
+        'u1',
+        'Test Event',
+        'SLOT_ASSIGNED',
+        'event1',
+      );
+      expect(push.notifyParticipationStatus as jest.Mock).toHaveBeenCalledWith(
+        'u2',
+        'Test Event',
+        'SLOT_ASSIGNED',
+        'event1',
+      );
+    });
+
+    it('powiadamia mix: pre-assigned + eligible lottery winners + lottery losers', async () => {
+      const participations = [
+        // Pre-assigned by organizer:
+        { id: 'p1', userId: 'u1', eventId: 'event1', slot: { id: 'slot1' } },
+        // Pending eligible:
+        { id: 'p2', userId: 'u2', eventId: 'event1', slot: null },
+        { id: 'p3', userId: 'u3', eventId: 'event1', slot: null },
+      ];
+      tx.event.updateMany.mockResolvedValue({ count: 1 });
+      tx.eventEnrollment.findMany.mockResolvedValue(participations);
+      tx.organizerUserRelation.findMany.mockResolvedValue([
+        { targetUserId: 'u2', isTrusted: true, isBanned: false },
+        { targetUserId: 'u3', isTrusted: true, isBanned: false },
+      ]);
+      // Only one free slot for the lottery
+      tx.eventSlot.findFirst.mockResolvedValueOnce({ id: 'slot2' }).mockResolvedValueOnce(null);
+      tx.eventSlot.update.mockResolvedValue({});
+
+      await cron.executeLotteryForEvent(event);
+
+      const calls = (push.notifyParticipationStatus as jest.Mock).mock.calls;
+      // 1 pre-assigned + 1 SLOT_ASSIGNED + 1 LOTTERY_NOT_SELECTED = 3
+      expect(calls).toHaveLength(3);
+      expect(calls.filter((c: unknown[]) => c[2] === 'SLOT_ASSIGNED')).toHaveLength(2);
+      expect(calls.filter((c: unknown[]) => c[2] === 'LOTTERY_NOT_SELECTED')).toHaveLength(1);
     });
   });
 });

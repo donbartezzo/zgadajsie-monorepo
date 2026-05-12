@@ -11,17 +11,20 @@ import { getPolishPluralKey } from '../../utils/pluralization.utils';
 export class CapacityProgressComponent {
   private readonly transloco = inject(TranslocoService);
 
-  readonly current = input.required<number>();
-  readonly max = input.required<number>();
   readonly enrollmentsCount = input<number | undefined>(undefined);
+  readonly participantsCount = input.required<number>();
+  readonly max = input.required<number>();
+  readonly isPreEnrollment = input<boolean>(false);
+  readonly isJoinable = input<boolean>(false);
+  readonly customStatusText = input<string | undefined>(undefined);
 
   readonly hasLimit = computed(() => this.max() > 0);
 
   readonly occupiedCount = computed(() => {
-    const current = this.current();
+    const count = this.participantsCount();
     const max = this.max();
-    if (max <= 0) return Math.max(current, 0);
-    return Math.max(0, Math.min(current, max));
+    if (max <= 0) return Math.max(count, 0);
+    return Math.max(0, Math.min(count, max));
   });
 
   readonly freeCount = computed(() => {
@@ -36,100 +39,64 @@ export class CapacityProgressComponent {
     return Math.min(100, (this.occupiedCount() / max) * 100);
   });
 
-  readonly freePercent = computed(() => {
-    const max = this.max();
-    if (max <= 0) return 0;
-    return Math.max(0, 100 - this.occupiedPercent());
-  });
+  readonly showBarFill = computed(() => !this.isPreEnrollment() && this.occupiedPercent() > 0);
 
-  readonly barStyle = computed(() => {
-    const percent = this.occupiedPercent();
+  private buildHslColor(hue: number): string {
+    return `hsl(${hue}, 65%, 85%)`;
+  }
 
-    if (percent === 0) {
-      return { backgroundColor: '#9ca3af' };
-    }
+  private getProgressColor(percent: number): string {
+    const normalized = Math.max(0, Math.min(100, percent));
+    const hue = normalized * 1.2;
+    return this.buildHslColor(hue);
+  }
 
-    let t = percent / 100;
+  readonly barStyle = computed(() => ({
+    backgroundColor: this.getProgressColor(this.occupiedPercent()),
+  }));
 
-    // 🔥 NIELINIOWE ROZCIĄGNIĘCIE KOŃCÓWKI
-    if (t > 0.7) {
-      // rozciąga 70–100% → większe różnice
-      t = 0.7 + (t - 0.7) * 1.6;
-    }
-
-    // Hue lekko wychodzi poza 120 (bardziej "żywa" zieleń)
-    const hue = Math.min(t * 130, 130);
-
-    // Saturation rośnie wyraźniej pod koniec
-    const saturation = 75 + t * 20; // 75 → 95
-
-    // 🔥 KLUCZ: mocniejszy spadek lightness na końcu
-    let lightness;
-    if (t < 0.7) {
-      lightness = 55 + t * 5; // dość płasko
-    } else {
-      lightness = 58 - (t - 0.7) * 25; // 🔥 mocny kontrast
-    }
-
-    return {
-      backgroundColor: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
-    };
-  });
-
-  readonly subtitleClass = 'mt-1 text-[10px] leading-tight text-neutral-400';
   readonly rootClass = 'w-full';
-  readonly trackClass = 'mt-2 h-3 overflow-hidden rounded-full bg-neutral-200/70 w-full';
+  readonly backgroundClass = 'bg-neutral-100/40 border border-neutral-200';
+  readonly barClass = 'h-full rounded-full transition-all duration-300 ease-out relative';
 
-  readonly barClass = computed(() => {
-    return 'h-full rounded-full transition-all duration-300 ease-out relative';
-  });
+  // @TODO: to w przyszłości prawdopodobnie przenieść trzeba do EventCapacityProgressComponent (jako analogiczny input customStatusText), bo wykracze poza odpowiedzialnośc progressbara
+  readonly enrollmentsSummaryText = computed(() => {
+    const participants = this.participantsCount();
+    const enrollments = this.enrollmentsCount() ?? 0;
+    const waiting = Math.max(0, enrollments - participants);
 
-  readonly ariaValueText = computed(() => {
-    if (!this.hasLimit()) {
-      return `${this.occupiedCount()} uczestników`;
+    if (participants === 0 && waiting === 0) {
+      const baseText = this.translate('progress.noEnrollments');
+      if (this.isJoinable()) {
+        return `${baseText} - ${this.translate('progress.beFirst')}`;
+      }
+      return baseText;
     }
 
-    if (this.freeCount() === 0) {
-      return this.translate('progress.full');
+    if (waiting === 0) {
+      if (participants > 0) {
+        return `${participants} ${this.translatePlural('progress.participants', participants)}`;
+      }
+      return null;
     }
 
-    return `${this.occupiedCount()} z ${this.max()} miejsc`;
-  });
-
-  readonly barText = computed(() => {
-    const current = this.current();
-    const max = this.max();
-
-    // Normalizuj wartości - nigdy nie mogą być undefined/null/NaN
-    const normalizedCurrent =
-      current === undefined || current === null || isNaN(current) ? 0 : Number(current);
-    const normalizedMax = max === undefined || max === null || isNaN(max) ? 0 : Number(max);
-
-    // Zawsze pokazuj format "current / max", nigdy samo "/"
-    if (normalizedMax > 0) {
-      return `${normalizedCurrent} / ${normalizedMax}`;
+    if (participants === 0) {
+      return `${waiting} ${this.translatePlural('progress.waiting', waiting)}`;
     }
 
-    // Gdy brak limitu, pokaż tylko current
-    return `${normalizedCurrent}`;
+    return `${participants} ${this.translatePlural('progress.participants', participants)} + ${waiting} ${this.translatePlural('progress.waiting', waiting)}`;
   });
 
-  readonly freeText = computed(() => {
+  readonly statusText = computed(() => {
+    const custom = this.customStatusText();
+    if (custom) return custom;
+
     if (!this.hasLimit()) return '';
 
     const freeCount = this.freeCount();
     if (freeCount === 0) return this.translate('progress.full');
 
-    return `${this.translatePlural('progress.remainingPrefix', freeCount)} ${freeCount} ${this.translatePlural(
-      'progress.freeSeat',
-      freeCount,
-    )}`;
-  });
-
-  readonly enrollmentsText = computed(() => {
-    const count = this.enrollmentsCount();
-    if (count === undefined || count === null) return '';
-    return `${count} zgłoszonych`;
+    return `${freeCount} ${this.translatePlural('progress.freeSeat', freeCount)}`;
   });
 
   private translatePlural(key: string, count: number): string {

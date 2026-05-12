@@ -81,16 +81,23 @@ export const pl: Translation = {
     },
   },
   progress: {
-    full: 'Jest komplet!',
+    full: 'JEST KOMPLET!',
+    noEnrollments: 'Brak zgłoszeń',
+    beFirst: 'bądź pierwszy!',
     freeSeat: {
       one: 'wolne miejsce',
       few: 'wolne miejsca',
       many: 'wolnych miejsc',
     },
-    remainingPrefix: {
-      one: 'Pozostało',
-      few: 'Pozostały',
-      many: 'Pozostało',
+    participants: {
+      one: 'uczestnik',
+      few: 'uczestników',
+      many: 'uczestników',
+    },
+    waiting: {
+      one: 'oczekujący',
+      few: 'oczekujących',
+      many: 'oczekujących',
     },
   },
 };

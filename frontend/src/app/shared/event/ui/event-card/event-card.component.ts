@@ -15,7 +15,7 @@ import { EventInfoItemComponent } from '../../../ui/event-info-item/event-info-i
 import { DateBadgeComponent } from '../date-badge/date-badge.component';
 import { EventStatusBadgeComponent } from '../event-status-badge/event-status-badge.component';
 import { EventBadgesComponent } from '../event-badges/event-badges.component';
-import { CapacityProgressComponent } from '../../../ui/capacity-progress/capacity-progress.component';
+import { EventCapacityProgressComponent } from '../event-capacity-progress/event-capacity-progress.component';
 import { EventBase } from '../../../types';
 import { getEventCoverUrl } from '../../../types/cover-image.interface';
 import {
@@ -28,6 +28,7 @@ import {
   nowInZone,
   EventStatus,
 } from '@zgadajsie/shared';
+import { isPreEnrollment, isEventJoinable } from '../../../utils/event-time-status.util';
 import { DateLabelsService } from '../../../services/date-labels.service';
 import { EventDurationPipe } from '../../../pipes/event-duration.pipe';
 import { IconComponent } from '../../../ui/icon/icon.component';
@@ -40,7 +41,7 @@ import { IconComponent } from '../../../ui/icon/icon.component';
     DateBadgeComponent,
     EventStatusBadgeComponent,
     EventBadgesComponent,
-    CapacityProgressComponent,
+    EventCapacityProgressComponent,
     EventDurationPipe,
     IconComponent,
   ],
@@ -118,11 +119,11 @@ import { IconComponent } from '../../../ui/icon/icon.component';
             </div>
 
             <div class="flex items-center justify-between">
-              <app-capacity-progress
+              <app-event-capacity-progress
                 class="flex-1"
-                [current]="_event._count?.participants ?? 0"
-                [max]="_event.maxParticipants"
-                [enrollmentsCount]="_event._count?.enrollments"
+                [event]="_event"
+                [isPreEnrollment]="isPreEnrollment()"
+                [isJoinable]="isJoinable()"
               />
             </div>
           </div>
@@ -198,6 +199,16 @@ export class EventCardComponent implements OnDestroy {
   readonly countdown = computed(() =>
     getEventCountdown(this.event().startsAt, this.event().endsAt),
   );
+
+  readonly isPreEnrollment = computed(() => {
+    const e = this.event();
+    return isPreEnrollment(e.startsAt, e.lotteryExecutedAt, e.status);
+  });
+
+  readonly isJoinable = computed(() => {
+    const e = this.event();
+    return isEventJoinable(e.startsAt, e.status);
+  });
 
   readonly eventMonth = computed(() => formatMonthShort(this.event().startsAt));
 

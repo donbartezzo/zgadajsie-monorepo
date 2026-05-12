@@ -16,7 +16,7 @@ import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
 import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
-import { CapacityProgressComponent } from '../../../../shared/ui/capacity-progress/capacity-progress.component';
+import { EventCapacityProgressComponent } from '../../../../shared/event/ui/event-capacity-progress/event-capacity-progress.component';
 import { EventService } from '../../../../core/services/event.service';
 import { EventAnnouncementService } from '../../../../core/services/event-announcement.service';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -27,16 +27,9 @@ import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
 import { EventAnnouncement, UserBrief } from '../../../../shared/types';
-import {
-  getEventCountdown,
-  EventCountdown,
-  EventStatus,
-  nowInZone,
-  toZonedDateTime,
-} from '@zgadajsie/shared';
+import { getEventCountdown, EventCountdown, EventStatus, nowInZone } from '@zgadajsie/shared';
 import { EventInfoGridComponent } from '../../../../shared/ui/event-info-grid/event-info-grid.component';
 import { MapComponent } from '../../../../shared/event-form/ui/map/map.component';
-import { getLotteryThreshold } from '../../../../shared/utils/event-time-status.util';
 import { EventStatusBarsInlineComponent } from '../../ui/event-status-bars/event-status-bars-inline/event-status-bars-inline.component';
 import { EventAnnouncementsComponent } from '../../ui/event-announcements/event-announcements.component';
 import { NotificationStatusService } from '../../../../core/services/notification-status.service';
@@ -55,7 +48,7 @@ import {
   imports: [
     CommonModule,
     IconComponent,
-    CapacityProgressComponent,
+    EventCapacityProgressComponent,
     ButtonComponent,
     BadgeComponent,
     UserAvatarComponent,
@@ -99,7 +92,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly canJoin = this.eventArea.canJoin;
   readonly isCancelled = this.eventArea.isCancelled;
   readonly enrollmentCount = this.eventArea.enrollmentCount;
-  readonly participantCount = this.eventArea.participantCount;
+  readonly isPreEnrollment = this.eventArea.isPreEnrollment;
   readonly notificationBars = this.eventArea.notificationBars;
 
   readonly participantAvatarItems = computed<UserAvatarListItem[]>(() => {
@@ -113,7 +106,6 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly announcements = signal<EventAnnouncement[]>([]);
   readonly hasAnnouncements = signal(false);
   readonly countdown = signal<EventCountdown | null>(null);
-  readonly lotteryCountdown = signal<EventCountdown | null>(null);
   readonly chatMessageCount = signal<number | null>(null);
   readonly loginQueryParams = { returnUrl: inject(Router).url };
   readonly fullAddress = computed(() => {
@@ -134,9 +126,6 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     { icon: 'ball', label: 'Piłki' },
     { icon: 'bookmark', label: 'Własna rezerwacja' },
   ];
-
-  readonly isPreEnrollment = this.eventArea.isPreEnrollment;
-
   readonly rulesList = computed(() => {
     const rules = this.event()?.rules;
     if (!rules?.trim()) return [];
@@ -144,11 +133,6 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   });
 
   constructor() {
-    // Sync lottery countdown to overlay service
-    effect(() => {
-      this.overlays.setLotteryCountdown(this.lotteryCountdown());
-    });
-
     // Sync notification status for event
     effect(() => {
       const e = this.event();
@@ -226,33 +210,10 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  private setupCountdown(): void {
-    // Wait for event to be loaded, then start countdown
-    effect(() => {
-      const e = this.event();
-      if (e && !this.countdownInterval) {
-        this.startCountdown(e.startsAt, e.endsAt);
-      }
-    });
-  }
-
   private startCountdown(startsAt: string, endsAt: string): void {
-    const lotteryThreshold = getLotteryThreshold(startsAt);
     const update = () => {
       const result = getEventCountdown(startsAt, endsAt, Infinity);
       this.countdown.set(result);
-
-      const now = nowInZone();
-      const startsAtDt = toZonedDateTime(startsAt);
-      const lotteryThresholdDt = toZonedDateTime(lotteryThreshold);
-
-      if (now < lotteryThresholdDt && now < startsAtDt) {
-        const lotteryIso = lotteryThreshold.toISOString();
-        const lotteryResult = getEventCountdown(lotteryIso, startsAt, Infinity);
-        this.lotteryCountdown.set(lotteryResult);
-      } else {
-        this.lotteryCountdown.set(null);
-      }
 
       if (!result && this.countdownInterval) {
         clearInterval(this.countdownInterval);

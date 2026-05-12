@@ -1,22 +1,60 @@
-@if (isPreEnrollment()) {
-  <div class="flex flex-col items-center justify-center rounded-xl border border-info-200 bg-info-50 p-6 text-center">
-    <app-icon name="users" size="lg" class="mb-3 text-info-400"></app-icon>
-    <h3 class="text-sm font-semibold text-info-700">Trwają wstępne zapisy</h3>
-    <p class="mt-1 text-xs text-neutral-500">Lista uczestników zostanie ujawniona po zakończeniu losowania.</p>
-    @if (totalCount() > 0) {
-      <p class="mt-2 text-xs font-medium text-info-600">Zgłoszonych: {{ totalCount() }}</p>
-    }
-  </div>
-} @else {
-  <div class="space-y-4">
-    @for (section of sections(); track section.type) {
-      <app-enrollment-grid-section
-        [config]="section.config"
-        [groups]="section.groups"
-        [currentUserId]="currentUserId()"
-        [count]="section.count"
-        (itemClicked)="onSlotItemClick($event)"
-      ></app-enrollment-grid-section>
-    }
+@let _isPre = isPreEnrollment();
+@let _cd = lotteryCountdown();
+
+@if (_isPre) {
+  <div class="mb-4 px-4">
+    <div class="flex flex-col items-center text-center">
+      <h1 class="text-2xl font-semibold text-info-700">TRWAJĄ PRE-ZAPISY</h1>
+
+      @if (_cd && !_cd.isEnded) {
+        <div class="mt-4 flex justify-center">
+          <!-- <h4 class="text-xs font-medium text-neutral-500 mb-3">Do losowania pozostało:</h4> -->
+          <div class="grid grid-cols-4 gap-3 max-w-lg">
+            <div
+              class="bg-white rounded-xl p-3 text-center shadow-sm aspect-square flex flex-col items-center justify-center"
+            >
+              <span class="block text-xl font-bold text-neutral-900">{{ _cd.days }}</span>
+              <span class="block text-[10px] text-neutral-400 mt-0.5">{{ _cd.days | timeUnit: 'days' }}</span>
+            </div>
+            <div
+              class="bg-white rounded-xl p-3 text-center shadow-sm aspect-square flex flex-col items-center justify-center"
+            >
+              <span class="block text-xl font-bold text-neutral-900">{{ _cd.hours }}</span>
+              <span class="block text-[10px] text-neutral-400 mt-0.5">{{ _cd.hours | timeUnit: 'hours' }}</span>
+            </div>
+            <div
+              class="bg-white rounded-xl p-3 text-center shadow-sm aspect-square flex flex-col items-center justify-center"
+            >
+              <span class="block text-xl font-bold text-neutral-900">{{ _cd.minutes }}</span>
+              <span class="block text-[10px] text-neutral-400 mt-0.5">{{ _cd.minutes | timeUnit: 'minutes' }}</span>
+            </div>
+            <div
+              class="bg-white rounded-xl p-3 text-center shadow-sm aspect-square flex flex-col items-center justify-center"
+            >
+              <span class="block text-xl font-bold text-neutral-900">{{ _cd.seconds }}</span>
+              <span class="block text-[10px] text-neutral-400 mt-0.5">{{ _cd.seconds | timeUnit: 'seconds' }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <p class="my-2 text-sm text-neutral-600 leading-relaxed">
+        Miejsca zostaną rozlosowane 48 godz. przed wydarzeniem spośród użytkowników z poniższej listy "Oczekujących". Po
+        losowaniu otrzymasz powiadomienie o wyniku.
+        <a href="/faq#pre-enrollment" class="underline text-info-600 hover:text-info-700 ml-1">Dowiedz się więcej</a>
+      </p>
+    </div>
   </div>
 }
+
+<div class="space-y-4">
+  @for (section of sections(); track section.type) {
+    <app-enrollment-grid-section
+      [config]="section.config"
+      [groups]="section.groups"
+      [currentUserId]="currentUserId()"
+      [count]="section.count"
+      (itemClicked)="onSlotItemClick($event)"
+    ></app-enrollment-grid-section>
+  }
+</div>

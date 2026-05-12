@@ -298,18 +298,18 @@ export class DesignSystemComponent {
   ];
 
   readonly progressExamples = [
-    { current: 0, max: 10 },
-    { current: 1, max: 10 },
-    { current: 2, max: 10 },
-    { current: 3, max: 10 },
-    { current: 4, max: 10 },
-    { current: 5, max: 10 },
-    { current: 6, max: 10 },
-    { current: 7, max: 10 },
-    { current: 8, max: 10 },
-    { current: 9, max: 10 },
-    { current: 10, max: 10 },
-    { current: 5, max: 0 },
+    { participantsCount: 0, max: 10 },
+    { participantsCount: 1, max: 10 },
+    { participantsCount: 2, max: 10 },
+    { participantsCount: 3, max: 10 },
+    { participantsCount: 4, max: 10 },
+    { participantsCount: 5, max: 10 },
+    { participantsCount: 6, max: 10 },
+    { participantsCount: 7, max: 10 },
+    { participantsCount: 8, max: 10 },
+    { participantsCount: 9, max: 10 },
+    { participantsCount: 10, max: 10 },
+    { participantsCount: 5, max: 0 },
   ];
 
   // ════════════════════════════════════════════════════════

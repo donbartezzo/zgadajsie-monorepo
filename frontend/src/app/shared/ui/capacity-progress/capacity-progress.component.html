@@ -1,7 +1,7 @@
-@let _barText = barText();
-@let _freeText = freeText();
-@let _ariaText = ariaValueText();
-@let _enrollmentsText = enrollmentsText();
+@let _enrollmentsSummaryText = enrollmentsSummaryText();
+@let _statusText = statusText();
+@let _showBarFill = showBarFill();
+@let _occupiedPercent = occupiedPercent();
 
 <div
   class="{{ rootClass }}"
@@ -9,22 +9,38 @@
   aria-valuemin="0"
   [attr.aria-valuemax]="max()"
   [attr.aria-valuenow]="occupiedCount()"
-  [attr.aria-valuetext]="_ariaText"
+  [attr.aria-valuetext]="_statusText"
 >
-  <div class="{{ trackClass }} relative">
-    @if (occupiedPercent() > 0) {
-      <!-- Wypełniony pasek - tekst zawsze na środku -->
-      <div class="{{ barClass() }}" [style.width.%]="occupiedPercent()" [style]="barStyle()"></div>
-    }
-
-    <div class="absolute inset-0 flex items-center justify-center">
-      <span class="text-[10px] font-semibold leading-none text-neutral-600">{{ _barText }}</span>
+  <div class="h-6 rounded-full w-full relative {{ backgroundClass }}">
+    <!-- Kolorowy pasek wypełnienia (ukryty w fazie pre-zapisów) -->
+    <div class="absolute inset-0 overflow-hidden rounded-full">
+      @if (_showBarFill) {
+        <div [class]="barClass" [style.width.%]="_occupiedPercent" [style]="barStyle()"></div>
+      }
     </div>
+
+    <!-- Warstwa tekstowa -->
+    <div class="absolute inset-0 flex items-center justify-between gap-2 px-2">
+      <span
+        class="hidden 2xs:inline-flex items-center gap-1 text-[10px] font-normal leading-tight text-neutral-700 truncate"
+      >
+        @if (_enrollmentsSummaryText) {
+          <span>{{ _enrollmentsSummaryText }}</span>
+        }
+      </span>
+
+      @if (_statusText) {
+        <span
+          class="ml-auto text-[10px] font-semibold leading-tight text-neutral-600 uppercase whitespace-nowrap"
+          [class.pr-4]="_occupiedPercent === 100"
+        >
+          {{ _statusText }}
+        </span>
+      }
+    </div>
+
+    @if (_occupiedPercent === 100) {
+      <div class="absolute -right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-2xl">🎉</div>
+    }
   </div>
-  @if (_enrollmentsText) {
-    <span class="{{ subtitleClass }} mr-1">{{ _enrollmentsText }}.</span>
-  }
-  @if (_freeText) {
-    <span class="{{ subtitleClass }}">{{ _freeText }}</span>
-  }
 </div>
