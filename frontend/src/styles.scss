@@ -32,6 +32,31 @@
   }
 }
 
+// ────────────────────────────────────────────────────────────
+// Custom utilities - kreskowane patterny dla progress bar
+// ────────────────────────────────────────────────────────────
+@layer utilities {
+  .bg-striped-light {
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 4px,
+      rgba(255, 255, 255, 0.4) 4px,
+      rgba(255, 255, 255, 0.4) 8px
+    );
+  }
+
+  .bg-striped-strong {
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 4px,
+      rgba(255, 255, 255, 0.3) 4px,
+      rgba(255, 255, 255, 0.3) 8px
+    );
+  }
+}
+
 /* Sticky layout base only */
 html,
 body {

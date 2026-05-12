@@ -57,7 +57,8 @@ export class CapacityProgressComponent {
 
   readonly rootClass = 'w-full';
   readonly backgroundClass = 'bg-neutral-100/40 border border-neutral-200';
-  readonly barClass = 'h-full rounded-full transition-all duration-300 ease-out relative';
+  readonly barClass =
+    'h-full rounded-full transition-all duration-300 ease-out relative bg-striped-strong';
 
   // @TODO: to w przyszłości prawdopodobnie przenieść trzeba do EventCapacityProgressComponent (jako analogiczny input customStatusText), bo wykracze poza odpowiedzialnośc progressbara
   readonly enrollmentsSummaryText = computed(() => {
