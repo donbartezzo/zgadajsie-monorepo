@@ -15,7 +15,7 @@
     <!-- Kolorowy pasek wypełnienia (ukryty w fazie pre-zapisów) -->
     <div class="absolute inset-0 overflow-hidden rounded-full">
       @if (_showBarFill) {
-        <div [class]="barClass" [style.width.%]="_occupiedPercent" [style]="barStyle()"></div>
+        <div [class]="barClass()" [style.width.%]="_occupiedPercent" [style]="barStyle()"></div>
       }
     </div>
 

@@ -13,6 +13,7 @@ export class EventCapacityProgressComponent {
   readonly event = input.required<EventBase>();
   readonly isPreEnrollment = input.required<boolean>();
   readonly isJoinable = input.required<boolean>();
+  readonly animated = input<boolean>(false);
 
   readonly participantsCount = computed(() => this.event()._count?.participants ?? 0);
   readonly max = computed(() => this.event().maxParticipants);

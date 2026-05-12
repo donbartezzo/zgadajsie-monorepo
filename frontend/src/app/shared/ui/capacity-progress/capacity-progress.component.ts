@@ -17,6 +17,7 @@ export class CapacityProgressComponent {
   readonly isPreEnrollment = input<boolean>(false);
   readonly isJoinable = input<boolean>(false);
   readonly customStatusText = input<string | undefined>(undefined);
+  readonly animated = input<boolean>(false);
 
   readonly hasLimit = computed(() => this.max() > 0);
 
@@ -57,8 +58,10 @@ export class CapacityProgressComponent {
 
   readonly rootClass = 'w-full';
   readonly backgroundClass = 'bg-neutral-100/40 border border-neutral-200';
-  readonly barClass =
-    'h-full rounded-full transition-all duration-300 ease-out relative bg-striped-strong';
+  readonly barClass = computed(() => {
+    const stripes = this.animated() ? 'bg-striped-strong-animated' : 'bg-striped-strong';
+    return `h-full rounded-full transition-all duration-300 ease-out relative ${stripes}`;
+  });
 
   // @TODO: to w przyszłości prawdopodobnie przenieść trzeba do EventCapacityProgressComponent (jako analogiczny input customStatusText), bo wykracze poza odpowiedzialnośc progressbara
   readonly enrollmentsSummaryText = computed(() => {
