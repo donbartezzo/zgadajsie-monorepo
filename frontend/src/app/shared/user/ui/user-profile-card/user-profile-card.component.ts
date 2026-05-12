@@ -1,10 +1,30 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  ViewChild,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { AvatarUser, UserAvatarComponent } from '../user-avatar/user-avatar.component';
+import { AvatarPickerComponent } from '../avatar-picker/avatar-picker.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { StatusIndicatorComponent } from '../../../ui/status-indicator/status-indicator.component';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { UserService } from '../../../../core/services/user.service';
+import { SnackbarService } from '../../../ui/snackbar/snackbar.service';
+import {
+  ProfileBroadcastService,
+  ProfileChange,
+} from '../../../../core/services/profile-broadcast.service';
 import { User } from '../../../types/user.interface';
 import { UserBrief } from '../../../types/common.interface';
 import { ParticipationStatus, WaitingReason } from '../../../types/participation.interface';
@@ -35,6 +55,7 @@ export type ProfileCardContext = 'profile' | 'participant' | 'organizer';
   imports: [
     CommonModule,
     UserAvatarComponent,
+    AvatarPickerComponent,
     IconComponent,
     ButtonComponent,
     FormsModule,
@@ -44,6 +65,11 @@ export type ProfileCardContext = 'profile' | 'participant' | 'organizer';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserProfileCardComponent {
+  private readonly auth = inject(AuthService);
+  private readonly userService = inject(UserService);
+  private readonly snackbar = inject(SnackbarService);
+  private readonly profileBroadcast = inject(ProfileBroadcastService);
+
   readonly user = input.required<User | UserBrief>();
   readonly context = input<ProfileCardContext>('profile');
   readonly participationStatus = input<ParticipationStatus | null>(null);
@@ -54,28 +80,45 @@ export class UserProfileCardComponent {
   readonly stats = input<UserProfileStats[]>([]);
   readonly description = input<string | null>(null);
   readonly participationId = input<string | null>(null);
-  readonly currentUserId = input<string | null>(null);
   readonly isOrganizer = input(false);
-  readonly loading = input(false);
   readonly isOwnGuest = input(false);
   readonly extraBadges = input<StatusBadgeEntry[]>([]);
 
-  readonly profileUpdated = output<{ displayName: string }>();
   readonly guestUpdated = output<{ participationId: string; displayName: string }>();
 
-  readonly editingMode = signal(false);
+  readonly editingDisplayNameMode = signal(false);
+  readonly editingAvatarMode = signal(false);
   readonly tempDisplayName = signal('');
+  readonly avatarHasPreview = signal(false);
+  readonly saving = signal(false);
+  private readonly overrideAvatarSeed = signal<string | null>(null);
+  private readonly overrideDisplayName = signal<string | null>(null);
 
-  readonly displayName = computed(() => this.user().displayName);
+  @ViewChild(AvatarPickerComponent)
+  readonly avatarPicker?: AvatarPickerComponent;
+
+  constructor() {
+    effect(() => {
+      this.user();
+      this.overrideAvatarSeed.set(null);
+      this.overrideDisplayName.set(null);
+    });
+
+    this.profileBroadcast.changes$
+      .pipe(takeUntilDestroyed())
+      .subscribe((change) => this.applyBroadcastChange(change));
+  }
+
+  readonly displayName = computed(() => this.overrideDisplayName() ?? this.user().displayName);
 
   readonly avatarUser = computed((): AvatarUser => {
     const u = this.user();
-    const avatarSeed =
+    const baseSeed =
       'avatarSeed' in u ? ((u as { avatarSeed?: string | null }).avatarSeed ?? null) : null;
     return {
-      id: this.user().id,
-      displayName: this.editingMode() ? this.tempDisplayName() : this.displayName(),
-      avatarSeed,
+      id: u.id,
+      displayName: this.editingDisplayNameMode() ? this.tempDisplayName() : this.displayName(),
+      avatarSeed: this.overrideAvatarSeed() ?? baseSeed,
     };
   });
   readonly subtitle = computed(() => {
@@ -157,21 +200,23 @@ export class UserProfileCardComponent {
   });
 
   readonly canEditName = computed(() => {
-    const userId = this.currentUserId();
-    const isGuest = this.isGuest();
-    const participationId = this.participationId();
-
-    if (userId && this.user().id === userId) return true;
-    if (isGuest && participationId && this.isOwnGuest()) return true;
-
+    const currentUserId = this.auth.currentUser()?.id ?? null;
+    if (currentUserId && this.user().id === currentUserId) return true;
+    if (this.isGuest() && this.participationId() && this.isOwnGuest()) return true;
     return false;
   });
 
   readonly canEditAvatar = computed(() => {
+    const currentUserId = this.auth.currentUser()?.id ?? null;
+    if (currentUserId && this.user().id === currentUserId) return true;
+    if (this.isGuest() && this.participationId() && this.isOwnGuest()) return true;
     return false;
   });
 
   readonly hasChanges = computed(() => {
+    if (this.editingAvatarMode()) {
+      return this.avatarHasPreview();
+    }
     const nameChanged = this.tempDisplayName().trim() !== this.displayName();
     return nameChanged;
   });
@@ -186,34 +231,97 @@ export class UserProfileCardComponent {
 
   startEditing(): void {
     this.tempDisplayName.set(this.displayName());
-    this.editingMode.set(true);
+    this.editingDisplayNameMode.set(true);
+  }
+
+  requestAvatarEdit(): void {
+    this.editingAvatarMode.set(true);
+    this.avatarHasPreview.set(false);
+  }
+
+  onAvatarPreviewReady(): void {
+    this.avatarHasPreview.set(true);
+  }
+
+  onAvatarConfirmed(newSeed: string): void {
+    this.editingAvatarMode.set(false);
+    this.avatarHasPreview.set(false);
+    this.overrideAvatarSeed.set(newSeed);
   }
 
   cancelEditing(): void {
-    this.editingMode.set(false);
+    this.editingDisplayNameMode.set(false);
+    this.editingAvatarMode.set(false);
     this.tempDisplayName.set('');
+    this.avatarHasPreview.set(false);
   }
 
-  saveChanges(): void {
-    if (!this.hasChanges()) return;
+  async saveChanges(): Promise<void> {
+    if (this.editingAvatarMode()) {
+      await this.saveAvatar();
+    } else {
+      await this.saveName();
+    }
+  }
+
+  async saveName(): Promise<void> {
+    if (!this.hasChanges() || this.saving()) return;
 
     const newDisplayName = this.tempDisplayName().trim();
+    if (newDisplayName === this.displayName()) {
+      this.editingDisplayNameMode.set(false);
+      return;
+    }
+
     const isGuest = this.isGuest();
     const participationId = this.participationId();
 
     if (isGuest && participationId) {
-      if (newDisplayName !== this.displayName()) {
-        this.guestUpdated.emit({
-          participationId,
-          displayName: newDisplayName,
-        });
-      }
-    } else {
-      if (newDisplayName !== this.displayName()) {
-        this.profileUpdated.emit({ displayName: newDisplayName });
-      }
+      this.guestUpdated.emit({ participationId, displayName: newDisplayName });
+      this.editingDisplayNameMode.set(false);
+      return;
     }
 
-    this.editingMode.set(false);
+    this.saving.set(true);
+    try {
+      const updatedUser = await firstValueFrom(
+        this.userService.updateProfile({ displayName: newDisplayName }),
+      );
+      this.auth.updateUser(updatedUser);
+      this.profileBroadcast.notifyUserChange(updatedUser.id, {
+        displayName: updatedUser.displayName,
+      });
+      this.snackbar.success('Profil zaktualizowany');
+      this.editingDisplayNameMode.set(false);
+    } catch (err: unknown) {
+      const message =
+        (err as { error?: { message?: string } })?.error?.message ?? 'Błąd aktualizacji profilu';
+      this.snackbar.error(message);
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  async saveAvatar(): Promise<void> {
+    if (this.avatarPicker) {
+      await this.avatarPicker.confirmChange();
+    }
+    this.editingAvatarMode.set(false);
+    this.avatarHasPreview.set(false);
+  }
+
+  private applyBroadcastChange(change: ProfileChange): void {
+    const u = this.user();
+    const matchesUser = change.type === 'user' && change.userId === u.id;
+    const matchesGuest =
+      change.type === 'guest' && change.participationId === this.participationId();
+    if (!matchesUser && !matchesGuest) return;
+
+    if (change.changes.displayName !== undefined) {
+      this.overrideDisplayName.set(change.changes.displayName);
+    }
+    if (change.changes.avatarSeed !== undefined) {
+      this.overrideAvatarSeed.set(change.changes.avatarSeed ?? null);
+    }
   }
 }

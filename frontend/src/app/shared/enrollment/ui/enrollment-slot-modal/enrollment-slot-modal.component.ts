@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
 import { UpperCasePipe } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -26,7 +18,6 @@ import { LinkedParticipantChipComponent } from '../linked-participant-chip/linke
 import { StatusIndicatorComponent } from '../../../ui/status-indicator/status-indicator.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { EventService } from '../../../../core/services/event.service';
-import { UserService } from '../../../../core/services/user.service';
 import { ModerationService } from '../../../../core/services/moderation.service';
 import { SnackbarService, SnackbarType } from '../../../ui/snackbar/snackbar.service';
 import { ConfirmModalService } from '../../../ui/confirm-modal/confirm-modal.service';
@@ -98,7 +89,6 @@ export class EnrollmentSlotModalComponent {
   protected readonly modalService = inject(ModalService);
   private readonly auth = inject(AuthService);
   private readonly eventService = inject(EventService);
-  private readonly userService = inject(UserService);
   private readonly moderationService = inject(ModerationService);
   private readonly snackbar = inject(SnackbarService);
   private readonly confirmModal = inject(ConfirmModalService);
@@ -111,32 +101,6 @@ export class EnrollmentSlotModalComponent {
   readonly loading = signal(false);
   readonly selectedOrganizerAction = signal('');
   readonly organizerRelation = signal<OrganizerUserRelation | null | undefined>(undefined);
-
-  constructor() {
-    effect((onCleanup) => {
-      const participant = this.participant();
-      const userId = participant?.userId;
-      const currentUserId = this.currentUserId();
-      const isOrganizer = this.isOrganizer();
-
-      if (!isOrganizer || !userId || userId === currentUserId) {
-        this.organizerRelation.set(undefined);
-        return;
-      }
-
-      this.organizerRelation.set(undefined);
-      const request = this.moderationService.getRelation(userId).subscribe({
-        next: (relation) => {
-          this.organizerRelation.set(relation);
-        },
-        error: () => {
-          this.organizerRelation.set(null);
-        },
-      });
-
-      onCleanup(() => request.unsubscribe());
-    });
-  }
 
   readonly event = computed(() => this.data()?.event ?? null);
   readonly participant = computed(() => this.data()?.participant ?? null);
@@ -750,23 +714,6 @@ export class EnrollmentSlotModalComponent {
     this.eventArea.contactOrganizer();
   }
 
-  onProfileUpdated(data: { displayName: string }): void {
-    this.loading.set(true);
-    this.userService.updateProfile(data).subscribe({
-      next: (updatedUser) => {
-        this.profileBroadcast.notifyUserChange(updatedUser.id, {
-          displayName: updatedUser.displayName,
-        });
-        this.snackbar.success('Profil zaktualizowany');
-        this.loading.set(false);
-      },
-      error: (err: unknown) => {
-        this.snackbar.error(getErrorMessage(err, 'Błąd aktualizacji profilu'));
-        this.loading.set(false);
-      },
-    });
-  }
-
   onGuestUpdated(data: { participationId: string; displayName: string }): void {
     this.loading.set(true);
     this.eventService.updateGuestName(data.participationId, data.displayName).subscribe({
@@ -779,7 +726,7 @@ export class EnrollmentSlotModalComponent {
         this.modalService.close();
       },
       error: (err: unknown) => {
-        this.snackbar.error(getErrorMessage(err, 'Błąd aktualizacji gościa'));
+        this.snackbar.error(getErrorMessage(err, 'Błąd aktualizacji nazwy gościa'));
         this.loading.set(false);
       },
     });

@@ -9,7 +9,6 @@
   @let _payment = paymentInfo();
   @let _loading = loading();
   @let _slotLocked = slotLocked();
-  @let _currentUserId = currentUserId();
   @let _config = slotStatusConfig();
   @let _canRejoin = canRejoin();
   @let _canGuestRejoin = canGuestRejoin();
@@ -60,13 +59,10 @@
           [paymentInfo]="_payment"
           [isGuest]="_participant.isGuest"
           [participationId]="_participant.id"
-          [currentUserId]="_currentUserId"
           [isOrganizer]="_isOrganizer"
-          [loading]="_loading"
           [isOwnGuest]="isGuestHost()"
           [extraBadges]="participantExtraBadges()"
           variant="overlay"
-          (profileUpdated)="onProfileUpdated($event)"
           (guestUpdated)="onGuestUpdated($event)"
         >
           <!-- Added by (for guests) -->
@@ -123,9 +119,7 @@
           context="participant"
           [isGuest]="false"
           [participationId]="null"
-          [currentUserId]="_currentUserId"
           [isOrganizer]="false"
-          [loading]="false"
           [isOwnGuest]="false"
           variant="overlay"
         />

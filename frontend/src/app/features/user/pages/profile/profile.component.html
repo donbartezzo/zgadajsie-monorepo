@@ -9,17 +9,6 @@
       }
     </app-user-profile-card>
 
-    <!-- Avatar picker -->
-    <app-card>
-      <div class="space-y-3">
-        <h3 class="text-sm font-semibold text-neutral-900">Twój avatar</h3>
-        <p class="text-xs text-neutral-500">
-          Generuj nowy avatar i zatwierdź zmianę dopiero gdy znajdziesz ten, który Ci się podoba.
-        </p>
-        <app-avatar-picker [user]="user" (avatarConfirmed)="onAvatarConfirmed($event)" />
-      </div>
-    </app-card>
-
     @if (auth.currentUser()?.isActive) {
       <div class="space-y-3">
         <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Panel organizatora</p>
@@ -97,17 +86,6 @@
     <app-card>
       <div class="space-y-4">
         <h3 class="text-sm font-semibold text-neutral-900">Edytuj profil</h3>
-
-        <div>
-          <label for="profile-display-name" class="block text-xs font-medium text-neutral-600 mb-1">
-            Nazwa wyświetlana
-          </label>
-          <input
-            id="profile-display-name"
-            [(ngModel)]="editName"
-            class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
-          />
-        </div>
 
         @if (newPassword) {
           <div>

@@ -7,6 +7,7 @@ export interface ProfileChange {
   participationId?: string; // dla zmian nazwy gościa
   changes: {
     displayName?: string;
+    avatarSeed?: string | null;
   };
 }
 
@@ -59,7 +60,10 @@ export class ProfileBroadcastService {
 
   readonly changes$ = this.changeSubject.asObservable();
 
-  notifyUserChange(userId: string, changes: { displayName?: string }): void {
+  notifyUserChange(
+    userId: string,
+    changes: { displayName?: string; avatarSeed?: string | null },
+  ): void {
     this.changeSubject.next({
       type: 'user',
       userId,
@@ -67,7 +71,10 @@ export class ProfileBroadcastService {
     });
   }
 
-  notifyGuestChange(participationId: string, changes: { displayName?: string }): void {
+  notifyGuestChange(
+    participationId: string,
+    changes: { displayName?: string; avatarSeed?: string | null },
+  ): void {
     this.changeSubject.next({
       type: 'guest',
       participationId,

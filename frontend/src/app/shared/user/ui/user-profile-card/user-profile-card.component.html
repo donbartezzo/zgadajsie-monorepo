@@ -1,73 +1,102 @@
-@let _editingMode = editingMode();
+@let _editingDisplayNameMode = editingDisplayNameMode();
+@let _editingAvatarMode = editingAvatarMode();
 @let _displayName = displayName();
 @let _canEditName = canEditName();
 @let _canEditAvatar = canEditAvatar();
 @let _subtitle = subtitle();
 @let _allStatusBadges = allStatusBadges();
 @let _hasChanges = hasChanges();
+@let _saving = saving();
 @let _stats = stats();
 @let _description = description();
 
 <div class="flex flex-col items-center text-center" [ngClass]="containerClass()">
-  <div class="relative">
-    <app-user-avatar [user]="avatarUser()" [size]="avatarSize()" shape="rounded" />
+  @if (_editingAvatarMode) {
+    <app-avatar-picker
+      [user]="avatarUser()"
+      [autoGenerate]="true"
+      (previewReady)="onAvatarPreviewReady()"
+      (avatarConfirmed)="onAvatarConfirmed($event)"
+    />
+  } @else {
+    <div class="relative">
+      <app-user-avatar [user]="avatarUser()" [size]="avatarSize()" shape="rounded" />
 
-    @if (_canEditAvatar && !_editingMode) {
-      <button
-        (click)="startEditing()"
-        class="absolute bottom-0 right-0 rounded-full bg-primary-500 p-1.5 text-white shadow-lg transition-colors hover:bg-primary-600"
-      >
-        <app-icon name="edit" size="xs" />
-      </button>
-    }
-  </div>
-
-  <div class="mt-3 flex items-center gap-2" [ngClass]="nameClass()">
-    @if (_editingMode) {
-      <input
-        [(ngModel)]="tempDisplayName"
-        class="border-b-2 border-primary-500 bg-transparent text-center font-bold text-neutral-900 outline-hidden"
-        [ngClass]="nameInputClass()"
-        (keyup.enter)="saveChanges()"
-        (keyup.escape)="cancelEditing()"
-      />
-    } @else {
-      <h2 class="font-bold text-neutral-900">{{ _displayName }}</h2>
-    }
-    @if (_canEditName && !_editingMode) {
-      <button (click)="startEditing()" class="text-primary-500 transition-colors hover:text-primary-600">
-        <app-icon name="edit" size="sm" />
-      </button>
-    }
-  </div>
-
-  @if (_subtitle && !_editingMode) {
-    <p class="-mt-0.5 text-xs font-medium text-primary-500">{{ _subtitle }}</p>
-  }
-
-  @if (_allStatusBadges.length > 0 && !_editingMode) {
-    <div class="mt-1.5 flex flex-col items-center gap-1.5">
-      @for (badge of _allStatusBadges; track badge.type) {
-        <app-status-indicator [type]="badge.type" [detail]="badge.detail ?? null" variant="icon-label" />
+      @if (_canEditAvatar && !_editingDisplayNameMode) {
+        <app-button
+          class="absolute bottom-0 right-0 shadow-lg"
+          [iconOnly]="true"
+          iconLeft="edit"
+          size="xs"
+          color="neutral"
+          appearance="outline"
+          (clicked)="requestAvatarEdit()"
+          ariaLabel="Zmień avatar"
+        />
       }
     </div>
   }
 
-  @if (_editingMode) {
+  @if (!_editingAvatarMode) {
+    <div class="mt-3 flex items-center gap-2" [ngClass]="nameClass()">
+      @if (_editingDisplayNameMode) {
+        <input
+          [(ngModel)]="tempDisplayName"
+          class="border-b-2 border-primary-500 bg-transparent text-center font-bold text-neutral-900 outline-hidden"
+          [ngClass]="nameInputClass()"
+          (keyup.enter)="saveChanges()"
+          (keyup.escape)="cancelEditing()"
+        />
+      } @else {
+        <h2 class="font-bold text-neutral-900">{{ _displayName }}</h2>
+      }
+      @if (_canEditName && !_editingDisplayNameMode) {
+        <app-button
+          [iconOnly]="true"
+          iconLeft="edit"
+          size="xs"
+          color="neutral"
+          appearance="outline"
+          (clicked)="startEditing()"
+        />
+      }
+    </div>
+
+    @if (_subtitle && !_editingDisplayNameMode) {
+      <p class="-mt-0.5 text-xs font-medium text-primary-500">{{ _subtitle }}</p>
+    }
+
+    @if (_allStatusBadges.length > 0 && !_editingDisplayNameMode) {
+      <div class="mt-1.5 flex flex-col items-center gap-1.5">
+        @for (badge of _allStatusBadges; track badge.type) {
+          <app-status-indicator [type]="badge.type" [detail]="badge.detail ?? null" variant="icon-label" />
+        }
+      </div>
+    }
+  }
+
+  @if (_editingDisplayNameMode || _editingAvatarMode) {
     <div class="mt-4 flex gap-2">
-      <app-button appearance="soft" color="primary" size="sm" [disabled]="!_hasChanges" (clicked)="saveChanges()">
+      <app-button
+        appearance="soft"
+        color="primary"
+        size="sm"
+        [disabled]="!_hasChanges || _saving"
+        [loading]="_saving"
+        (clicked)="saveChanges()"
+      >
         <app-icon name="check" size="xs" class="mr-1" />
         Zapisz
       </app-button>
 
-      <app-button appearance="outline" color="neutral" size="sm" (clicked)="cancelEditing()">
+      <app-button appearance="outline" color="neutral" size="sm" [disabled]="_saving" (clicked)="cancelEditing()">
         <app-icon name="x" size="xs" class="mr-1" />
         Anuluj
       </app-button>
     </div>
   }
 
-  @if (!_editingMode) {
+  @if (!_editingAvatarMode) {
     @if (_stats.length > 0) {
       <div class="mt-4 flex w-full items-center justify-center gap-6">
         @for (stat of _stats; track stat.label) {

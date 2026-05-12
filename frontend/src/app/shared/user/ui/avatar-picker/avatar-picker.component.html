@@ -1,9 +1,9 @@
-<div class="space-y-4">
+<div class="space-y-4 flex flex-col items-center">
   <div class="flex items-center gap-6">
     <!-- Obecny avatar -->
     <div class="flex flex-col items-center gap-1.5">
-      <p class="text-xs font-medium text-neutral-500">Obecny</p>
-      <app-user-avatar [user]="user()" size="xl" shape="rounded" />
+      <p class="text-xs font-bold text-neutral-400">Obecny:</p>
+      <app-user-avatar [user]="user()" size="2xl" shape="rounded" />
     </div>
 
     @if (hasPreview()) {
@@ -14,23 +14,13 @@
 
       <!-- Podgląd nowego avatara -->
       <div class="flex flex-col items-center gap-1.5">
-        <p class="text-xs font-medium text-primary-600">Podgląd</p>
-        <app-user-avatar [user]="previewUser()" size="xl" shape="rounded" />
+        <p class="text-xs font-bold text-neutral-400">Nowy:</p>
+        <app-user-avatar [user]="previewUser()" size="2xl" shape="rounded" />
       </div>
     }
   </div>
 
-  <div class="flex flex-wrap gap-2">
-    <app-button appearance="soft" color="primary" (clicked)="generateNew()">
-      <app-icon name="refresh-cw" size="sm" />
-      {{ hasPreview() ? 'Generuj kolejny' : 'Generuj nowy avatar' }}
-    </app-button>
-
-    @if (hasPreview() && previewDifferentFromCurrent()) {
-      <app-button appearance="solid" color="primary" (clicked)="openConfirmModal()">
-        <app-icon name="check" size="sm" />
-        Zatwierdź zmianę
-      </app-button>
-    }
-  </div>
+  <app-button appearance="outline" color="primary" (clicked)="generateNew()" size="xs">
+    <app-icon name="refresh-cw" size="sm" />Generuj inny</app-button
+  >
 </div>
