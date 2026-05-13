@@ -8,9 +8,9 @@ import { IconComponent } from '../../../ui/icon/icon.component';
     @let _icon = resolvedIcon();
     @let _label = resolvedLabel();
 
-    <div class="w-24 h-24 rounded-xl transition-colors">
+    <div class="w-22 h-28 rounded-xl transition-colors">
       <button type="button" [class]="buttonClass()" (click)="clicked.emit()">
-        <div class="relative flex flex-col items-center justify-center flex-1">
+        <div class="relative flex flex-col items-center justify-center flex-1 overflow-hidden">
           <div class="relative">
             <div [class]="avatarContainerClass()">
               <app-icon [name]="$any(_icon)" [size]="iconSize()" [class]="iconClass()" />
@@ -19,7 +19,7 @@ import { IconComponent } from '../../../ui/icon/icon.component';
 
           <span
             [class]="
-              'text-[9px] text-center leading-tight mt-1 w-full line-clamp-2 h-[2.6em] flex-shrink-0 ' +
+              'text-[9px] px-0.5 mt-0.5 text-center leading-tight w-full line-clamp-2 ' +
               nameClass()
             "
           >
@@ -80,7 +80,7 @@ export class EnrollmentGridItemEmptyComponent {
 
   readonly buttonClass = computed(() => {
     const base =
-      'flex flex-col items-center w-full h-full p-1 rounded-xl transition-colors' +
+      'flex flex-col items-center w-full h-full p-1 rounded-xl transition-colors overflow-hidden' +
       ' hover:bg-neutral-50 focus:outline-hidden';
 
     const variants: Record<'add' | 'free' | 'locked', string> = {

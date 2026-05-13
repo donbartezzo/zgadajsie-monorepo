@@ -36,6 +36,7 @@ async function main() {
   await prisma.mediaFile.deleteMany({});
   await prisma.coverImage.deleteMany({});
   await prisma.event.deleteMany({});
+  await prisma.eventSeries.deleteMany({});
   await prisma.socialAccount.deleteMany({});
   await prisma.user.deleteMany({});
   await prisma.eventDiscipline.deleteMany({});

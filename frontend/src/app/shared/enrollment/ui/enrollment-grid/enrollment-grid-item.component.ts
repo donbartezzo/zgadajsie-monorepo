@@ -38,7 +38,7 @@ export interface SlotGroup {
   template: `
     @let _statusIndicators = statusIndicators();
 
-    <div class="w-22 h-26 rounded-xl transition-colors">
+    <div class="w-22 h-28 rounded-xl transition-colors">
       <button
         type="button"
         [attr.data-user-id]="participant().userId"
@@ -46,7 +46,7 @@ export interface SlotGroup {
         [disabled]="!clickable()"
         (click)="clicked.emit()"
       >
-        <div class="relative flex flex-col items-center justify-center flex-1">
+        <div class="relative flex flex-col items-center justify-center flex-1 overflow-hidden">
           <div class="relative">
             <app-user-avatar [user]="participant().user" size="xl" shape="rounded" />
             @if (_statusIndicators.length > 0) {
@@ -183,16 +183,17 @@ export class EnrollmentGridItemComponent {
 
   readonly buttonClass = computed(() => {
     if (!this.clickable()) {
-      const base = 'flex flex-col items-center w-full h-full p-1 rounded-xl cursor-default';
+      const base =
+        'flex flex-col items-center w-full h-full p-1 rounded-xl cursor-default overflow-hidden';
       return this.isCurrentUserOrGuest() ? `${base} ring-2 ring-primary-100 ring-dashed` : base;
     }
 
     const base =
-      'flex flex-col items-center w-full h-full p-1 rounded-xl transition-colors' +
+      'flex flex-col items-center w-full h-full p-1 rounded-xl transition-colors overflow-hidden' +
       ' hover:bg-neutral-50 focus:outline-hidden';
     const status = this.slotDisplayStatus();
 
-    if (this.isCurrentUserOrGuest()) return `${base} ring-2 ring-primary-100 ring-dashed`;
+    // if (this.isCurrentUserOrGuest()) return `${base} ring-2 ring-primary-100 ring-dashed`;
     if (status === 'pending') return `${base} focus:ring-2 focus:ring-warning-200`;
     if (status === 'withdrawn') return `${base} focus:ring-2 focus:ring-neutral-200`;
     return `${base} focus:ring-2 focus:ring-primary-200`;

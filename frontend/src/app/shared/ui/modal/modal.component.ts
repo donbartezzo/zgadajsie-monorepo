@@ -33,7 +33,7 @@ import { IconComponent } from '../icon/icon.component';
         </button>
 
         <!-- Content -->
-        <div class="px-4 pt-4 pb-4">
+        <div class="px-4 pt-4 pb-4 overflow-x-hidden">
           <ng-content />
         </div>
       </div>
