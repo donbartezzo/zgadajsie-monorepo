@@ -8,6 +8,7 @@ import { DisciplineRole, STATUS_INDICATORS, type StatusIndicatorType } from '@zg
 import { Enrollment, EnrolleeManageItem } from '../../../types';
 import { SemanticColor } from '../../../types/colors';
 import { SlotDisplayStatus } from '../../slot-status-config';
+import { EnrollmentGridItemShellComponent } from './enrollment-grid-item-shell.component';
 
 export type EnrollmentItem = Enrollment | EnrolleeManageItem;
 
@@ -34,54 +35,49 @@ export interface SlotGroup {
 
 @Component({
   selector: 'app-enrollment-grid-item',
-  imports: [UserAvatarComponent, TranslocoPipe, BadgeComponent, StatusIndicatorComponent],
+  imports: [
+    UserAvatarComponent,
+    TranslocoPipe,
+    BadgeComponent,
+    StatusIndicatorComponent,
+    EnrollmentGridItemShellComponent,
+  ],
   template: `
     @let _statusIndicators = statusIndicators();
 
-    <div class="w-20 h-28 rounded-xl transition-colors">
-      <button
-        type="button"
-        [attr.data-user-id]="participant().userId"
-        [class]="buttonClass()"
-        (click)="clicked.emit()"
-      >
-        <div class="relative flex flex-col items-center justify-start flex-1 overflow-hidden">
-          <div class="relative">
-            <app-user-avatar [user]="participant().user" size="xl" shape="rounded" />
-            @if (_statusIndicators.length > 0) {
-              <div
-                class="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1"
-              >
-                @for (indicatorType of _statusIndicators; track indicatorType) {
-                  <app-status-indicator [type]="indicatorType" variant="icon" />
-                }
-              </div>
+    <app-enrollment-grid-item-shell
+      [buttonClass]="buttonClass()"
+      [dataUserId]="participant().userId ?? null"
+      [label]="displayName()"
+      [nameClass]="nameClass()"
+      (clicked)="clicked.emit()"
+    >
+      <div class="relative flex">
+        <app-user-avatar class="flex" [user]="participant().user" size="xl" shape="rounded" />
+        @if (_statusIndicators.length > 0) {
+          <div
+            class="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1"
+          >
+            @for (indicatorType of _statusIndicators; track indicatorType) {
+              <app-status-indicator [type]="indicatorType" variant="icon" />
             }
           </div>
+        }
+      </div>
 
-          <span
-            [class]="
-              'text-[9px] px-0.5 mt-0.5 text-center leading-tight w-full line-clamp-2 ' +
-              nameClass()
-            "
-          >
-            {{ displayName() }}
-          </span>
-
-          @if (showRole() && roleKey()) {
-            <app-badge
-              variant="outline"
-              color="neutral"
-              muted="light"
-              size="xs"
-              class="truncate w-full max-w-[88px]"
-            >
-              {{ 'dict.participant-role.' + roleKey() + '.title' | transloco }}
-            </app-badge>
-          }
-        </div>
-      </button>
-    </div>
+      @if (showRole() && roleKey()) {
+        <app-badge
+          afterLabel
+          variant="outline"
+          color="neutral"
+          muted="light"
+          size="xs"
+          class="truncate w-full max-w-[88px]"
+        >
+          {{ 'dict.participant-role.' + roleKey() + '.title' | transloco }}
+        </app-badge>
+      }
+    </app-enrollment-grid-item-shell>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

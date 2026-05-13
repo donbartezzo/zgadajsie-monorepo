@@ -1,33 +1,25 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { IconComponent } from '../../../ui/icon/icon.component';
+import { EnrollmentGridItemShellComponent } from './enrollment-grid-item-shell.component';
 
 @Component({
   selector: 'app-enrollment-grid-item-empty',
-  imports: [IconComponent],
+  imports: [IconComponent, EnrollmentGridItemShellComponent],
   template: `
     @let _icon = resolvedIcon();
-    @let _label = resolvedLabel();
 
-    <div class="w-20 h-28 rounded-xl transition-colors">
-      <button type="button" [class]="buttonClass()" (click)="clicked.emit()">
-        <div class="relative flex flex-col items-center justify-center flex-1 overflow-hidden">
-          <div class="relative">
-            <div [class]="avatarContainerClass()">
-              <app-icon [name]="$any(_icon)" [size]="iconSize()" [class]="iconClass()" />
-            </div>
-          </div>
-
-          <span
-            [class]="
-              'text-[9px] px-0.5 mt-0.5 text-center leading-tight w-full line-clamp-2 ' +
-              nameClass()
-            "
-          >
-            {{ _label }}
-          </span>
+    <app-enrollment-grid-item-shell
+      [buttonClass]="buttonClass()"
+      [label]="resolvedLabel()"
+      [nameClass]="nameClass()"
+      (clicked)="clicked.emit()"
+    >
+      <div class="relative flex">
+        <div [class]="avatarContainerClass()">
+          <app-icon [name]="$any(_icon)" [size]="iconSize()" [class]="iconClass()" />
         </div>
-      </button>
-    </div>
+      </div>
+    </app-enrollment-grid-item-shell>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -99,6 +91,6 @@ export class EnrollmentGridItemEmptyComponent {
       locked: 'border-2 border-dashed border-warning-300 bg-warning-50',
     };
 
-    return `w-14 h-14 rounded-xl flex items-center justify-center ${variants[this.variant()]}`;
+    return `w-18 h-18 rounded-xl flex items-center justify-center ${variants[this.variant()]}`;
   });
 }
