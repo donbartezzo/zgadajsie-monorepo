@@ -2,8 +2,12 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 import { TranslocoPipe } from '@jsverse/transloco';
 import { CapacityProgressComponent } from '../../../ui/capacity-progress/capacity-progress.component';
 import { SlotStatusConfig, getSlotColorClasses } from '../../slot-status-config';
-import { EnrollmentGridItemEmptyComponent } from './enrollment-grid-item-empty.component';
-import { EnrollmentGridItemComponent, SlotGroup, SlotItem } from './enrollment-grid-item.component';
+import { EnrollmentGridItemEmptyComponent } from './enrollment-grid-item/enrollment-grid-item-empty.component';
+import {
+  EnrollmentGridItemComponent,
+  SlotGroup,
+  SlotItem,
+} from './enrollment-grid-item/enrollment-grid-item.component';
 
 @Component({
   selector: 'app-enrollment-grid-section',

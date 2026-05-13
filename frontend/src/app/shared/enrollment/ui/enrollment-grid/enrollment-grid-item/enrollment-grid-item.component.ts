@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { UserAvatarComponent } from '../../../user/ui/user-avatar/user-avatar.component';
-import { BadgeComponent } from '../../../ui/badge/badge.component';
-import { StatusIndicatorComponent } from '../../../ui/status-indicator/status-indicator.component';
-import { EventSlotInfo } from '../../../types/payment.interface';
+import { UserAvatarComponent } from '../../../../user/ui/user-avatar/user-avatar.component';
+import { BadgeComponent } from '../../../../ui/badge/badge.component';
+import { StatusIndicatorComponent } from '../../../../ui/status-indicator/status-indicator.component';
+import { EventSlotInfo } from '../../../../types/payment.interface';
 import { DisciplineRole, STATUS_INDICATORS, type StatusIndicatorType } from '@zgadajsie/shared';
-import { Enrollment, EnrolleeManageItem } from '../../../types';
-import { SemanticColor } from '../../../types/colors';
-import { SlotDisplayStatus } from '../../slot-status-config';
+import { Enrollment, EnrolleeManageItem } from '../../../../types';
+import { SemanticColor } from '../../../../types/colors';
+import { SlotDisplayStatus } from '../../../slot-status-config';
 import { EnrollmentGridItemShellComponent } from './enrollment-grid-item-shell.component';
 
 export type EnrollmentItem = Enrollment | EnrolleeManageItem;

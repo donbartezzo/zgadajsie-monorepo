@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { IconComponent } from '../../../ui/icon/icon.component';
+import { IconComponent } from '../../../../ui/icon/icon.component';
 import { EnrollmentGridItemShellComponent } from './enrollment-grid-item-shell.component';
 
 @Component({

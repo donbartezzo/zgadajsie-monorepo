@@ -31,7 +31,7 @@ import {
   EventSlotInfo,
 } from '../../../../shared/types';
 import { EnrollmentGridComponent } from '../../../../shared/enrollment/ui/enrollment-grid/enrollment-grid.component';
-import { EnrollmentItem } from '../../../../shared/enrollment/ui/enrollment-grid/enrollment-grid-item.component';
+import { EnrollmentItem } from '../../../../shared/enrollment/ui/enrollment-grid/enrollment-grid-item/enrollment-grid-item.component';
 import { EventStatus } from '@zgadajsie/shared';
 import {
   EventLifecycleBannerComponent,

@@ -10,8 +10,8 @@ import {
 import { TranslocoPipe } from '@jsverse/transloco';
 import { Participation } from '../../../types';
 import { ParticipationStatus } from '../../../types/common.interface';
-import { EnrollmentGridItemComponent } from '../enrollment-grid/enrollment-grid-item.component';
-import { EnrollmentGridItemEmptyComponent } from '../enrollment-grid/enrollment-grid-item-empty.component';
+import { EnrollmentGridItemComponent } from '../enrollment-grid/enrollment-grid-item/enrollment-grid-item.component';
+import { EnrollmentGridItemEmptyComponent } from '../enrollment-grid/enrollment-grid-item/enrollment-grid-item-empty.component';
 
 type ParticipantFilter = 'all' | 'without-slot' | 'role';
 

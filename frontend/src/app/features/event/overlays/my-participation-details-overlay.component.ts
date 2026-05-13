@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
-import { EnrollmentGridItemComponent } from '../../../shared/enrollment/ui/enrollment-grid/enrollment-grid-item.component';
+import { EnrollmentGridItemComponent } from '../../../shared/enrollment/ui/enrollment-grid/enrollment-grid-item/enrollment-grid-item.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { NavigationService } from '../../../core/services/navigation.service';

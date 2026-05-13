@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { EnrollmentGridSectionComponent } from './enrollment-grid-section.component';
 import { SLOT_STATUS_CONFIG } from '../../slot-status-config';
-import { SlotGroup } from './enrollment-grid-item.component';
+import { SlotGroup } from './enrollment-grid-item/enrollment-grid-item.component';
 
 function makeGroup(occupiedCount: number, totalSlots: number): SlotGroup {
   return { role: null, items: [], occupiedCount, totalSlots };

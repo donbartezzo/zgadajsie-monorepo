@@ -31,7 +31,11 @@ import {
   EnrollmentModalData,
 } from '../enrollment-slot-modal/enrollment-slot-modal.component';
 import { type SlotStatusConfig, SLOT_STATUS_CONFIG } from '../../slot-status-config';
-import { EnrollmentItem, SlotItem, SlotGroup } from './enrollment-grid-item.component';
+import {
+  EnrollmentItem,
+  SlotItem,
+  SlotGroup,
+} from './enrollment-grid-item/enrollment-grid-item.component';
 import { EnrollmentGridSectionComponent } from './enrollment-grid-section.component';
 
 interface GridSection {

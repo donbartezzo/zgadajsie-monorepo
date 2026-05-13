@@ -4,7 +4,7 @@ import { Subject } from 'rxjs';
 import { EnrollmentGridComponent } from './enrollment-grid.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ModalService } from '../../../ui/modal/modal.service';
-import { EnrollmentItem } from './enrollment-grid-item.component';
+import { EnrollmentItem } from './enrollment-grid-item/enrollment-grid-item.component';
 
 function makeParticipant(id: string, status: string, userId = 'u1'): EnrollmentItem {
   return {
