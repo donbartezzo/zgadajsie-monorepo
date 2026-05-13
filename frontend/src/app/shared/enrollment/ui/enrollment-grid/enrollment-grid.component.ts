@@ -10,8 +10,10 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IconComponent } from '../../../ui/icon/icon.component';
+import { BadgeComponent } from '../../../ui/badge/badge.component';
 import { Enrollment, EnrolleeManageItem, EventRoleConfig } from '../../../types';
 import { EventSlotInfo } from '../../../types/payment.interface';
 import { Event } from '../../../types/event.interface';
@@ -45,7 +47,13 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
 
 @Component({
   selector: 'app-enrollment-grid',
-  imports: [IconComponent, EnrollmentGridSectionComponent, TimeUnitPipe],
+  imports: [
+    FormsModule,
+    IconComponent,
+    BadgeComponent,
+    EnrollmentGridSectionComponent,
+    TimeUnitPipe,
+  ],
   templateUrl: './enrollment-grid.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -62,6 +70,8 @@ export class EnrollmentGridComponent implements OnDestroy {
   readonly participants = input<EnrollmentItem[]>([]);
   readonly slots = input<EventSlotInfo[]>([]);
   readonly readOnly = input(false);
+
+  readonly highlightOwn = signal(true);
 
   readonly refreshNeeded = output<void>();
 
@@ -116,6 +126,21 @@ export class EnrollmentGridComponent implements OnDestroy {
   readonly roleConfig = computed<EventRoleConfig | null>(() => this.event().roleConfig ?? null);
 
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
+
+  readonly ownEnrollmentCount = computed(() => {
+    const uid = this.currentUserId();
+    if (!uid) return 0;
+    return this.participants().reduce((count, p) => {
+      // Bezpośredni zapis użytkownika
+      if (p.userId === uid) return count + 1;
+      // Gość dodany przez użytkownika
+      if (p.isGuest) {
+        const addedById = 'addedByUserId' in p ? p.addedByUserId : p.addedByUser?.id;
+        if (addedById === uid) return count + 1;
+      }
+      return count;
+    }, 0);
+  });
 
   readonly isPreEnrollment = computed(() => {
     const e = this.event();

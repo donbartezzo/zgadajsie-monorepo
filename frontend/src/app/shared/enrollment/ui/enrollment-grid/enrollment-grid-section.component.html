@@ -62,12 +62,13 @@
         }
 
         <!-- Items grid -->
-        <div class="flex flex-wrap justify-center gap-1 px-1">
+        <div class="flex flex-wrap justify-center gap-2 sm:gap-4 px-1">
           @for (item of group.items; track $index) {
             @if (item.participant) {
               <app-enrollment-grid-item
                 [participant]="item.participant"
                 [currentUserId]="currentUserId()"
+                [highlightOwn]="highlightOwn()"
                 (clicked)="itemClicked.emit(item)"
               />
             } @else {

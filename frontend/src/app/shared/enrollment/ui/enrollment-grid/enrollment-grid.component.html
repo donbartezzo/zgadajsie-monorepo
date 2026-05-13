@@ -1,5 +1,6 @@
 @let _isPre = isPreEnrollment();
 @let _cd = lotteryCountdown();
+@let _ownEnrollmentCount = ownEnrollmentCount();
 
 @if (_isPre) {
   <div class="mb-4 px-4">
@@ -47,6 +48,23 @@
   </div>
 }
 
+@if (!!_ownEnrollmentCount) {
+  <div class="flex items-center gap-2 mb-4 px-4">
+    <input
+      type="checkbox"
+      id="highlight-own"
+      [(ngModel)]="highlightOwn"
+      class="w-4 h-4 rounded border-neutral-200 text-primary-500 focus:ring-primary-200 cursor-pointer"
+    />
+    <label for="highlight-own" class="text-sm text-neutral-600 flex items-center gap-2 cursor-pointer">
+      Podświetl moje zapisy
+      @if (_ownEnrollmentCount > 1) {
+        <app-badge color="neutral" variant="solid" size="xs">{{ _ownEnrollmentCount }}</app-badge>
+      }
+    </label>
+  </div>
+}
+
 <div class="space-y-4">
   @for (section of sections(); track section.type) {
     <app-enrollment-grid-section
@@ -54,6 +72,7 @@
       [groups]="section.groups"
       [currentUserId]="currentUserId()"
       [count]="section.count"
+      [highlightOwn]="highlightOwn()"
       (itemClicked)="onSlotItemClick($event)"
     ></app-enrollment-grid-section>
   }

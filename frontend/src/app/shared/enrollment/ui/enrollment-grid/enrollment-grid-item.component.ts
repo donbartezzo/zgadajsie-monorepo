@@ -38,15 +38,14 @@ export interface SlotGroup {
   template: `
     @let _statusIndicators = statusIndicators();
 
-    <div class="w-22 h-28 rounded-xl transition-colors">
+    <div class="w-20 h-28 rounded-xl transition-colors">
       <button
         type="button"
         [attr.data-user-id]="participant().userId"
         [class]="buttonClass()"
-        [disabled]="!clickable()"
         (click)="clicked.emit()"
       >
-        <div class="relative flex flex-col items-center justify-center flex-1 overflow-hidden">
+        <div class="relative flex flex-col items-center justify-start flex-1 overflow-hidden">
           <div class="relative">
             <app-user-avatar [user]="participant().user" size="xl" shape="rounded" />
             @if (_statusIndicators.length > 0) {
@@ -90,7 +89,7 @@ export class EnrollmentGridItemComponent {
   readonly participant = input.required<EnrollmentItem>();
   readonly currentUserId = input<string | null>(null);
   readonly showRole = input(false);
-  readonly clickable = input(true);
+  readonly highlightOwn = input(true);
   readonly clicked = output<void>();
 
   readonly displayName = computed(() => this.participant().user?.displayName ?? 'Uczestnik');
@@ -182,18 +181,14 @@ export class EnrollmentGridItemComponent {
   });
 
   readonly buttonClass = computed(() => {
-    if (!this.clickable()) {
-      const base =
-        'flex flex-col items-center w-full h-full p-1 rounded-xl cursor-default overflow-hidden';
-      return this.isCurrentUserOrGuest() ? `${base} ring-2 ring-primary-100 ring-dashed` : base;
-    }
+    const shouldHighlight = this.highlightOwn() && this.isCurrentUserOrGuest();
+    const status = this.slotDisplayStatus();
 
     const base =
       'flex flex-col items-center w-full h-full p-1 rounded-xl transition-colors overflow-hidden' +
       ' hover:bg-neutral-50 focus:outline-hidden';
-    const status = this.slotDisplayStatus();
 
-    // if (this.isCurrentUserOrGuest()) return `${base} ring-2 ring-primary-100 ring-dashed`;
+    if (shouldHighlight) return `${base} bg-primary-50/50 ring-2 ring-primary-400`;
     if (status === 'pending') return `${base} focus:ring-2 focus:ring-warning-200`;
     if (status === 'withdrawn') return `${base} focus:ring-2 focus:ring-neutral-200`;
     return `${base} focus:ring-2 focus:ring-primary-200`;

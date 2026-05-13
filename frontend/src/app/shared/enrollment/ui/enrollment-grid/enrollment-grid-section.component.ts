@@ -21,6 +21,7 @@ export class EnrollmentGridSectionComponent {
   readonly groups = input<SlotGroup[]>([]);
   readonly currentUserId = input<string | null>(null);
   readonly count = input.required<number>();
+  readonly highlightOwn = input(true);
 
   readonly itemClicked = output<SlotItem>();
 

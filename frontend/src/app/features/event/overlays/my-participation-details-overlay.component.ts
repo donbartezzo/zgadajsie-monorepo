@@ -21,7 +21,6 @@ import { isEventJoinable } from '../../../shared/utils';
           <div class="flex flex-wrap gap-3 justify-center pb-3">
             @for (p of _userParticipations; track p.id) {
               <app-enrollment-grid-item
-                [clickable]="true"
                 [participant]="p"
                 [showRole]="true"
                 (clicked)="navigateToParticipants()"

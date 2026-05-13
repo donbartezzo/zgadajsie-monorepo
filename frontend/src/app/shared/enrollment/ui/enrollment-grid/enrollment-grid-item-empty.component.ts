@@ -8,7 +8,7 @@ import { IconComponent } from '../../../ui/icon/icon.component';
     @let _icon = resolvedIcon();
     @let _label = resolvedLabel();
 
-    <div class="w-22 h-28 rounded-xl transition-colors">
+    <div class="w-20 h-28 rounded-xl transition-colors">
       <button type="button" [class]="buttonClass()" (click)="clicked.emit()">
         <div class="relative flex flex-col items-center justify-center flex-1 overflow-hidden">
           <div class="relative">
