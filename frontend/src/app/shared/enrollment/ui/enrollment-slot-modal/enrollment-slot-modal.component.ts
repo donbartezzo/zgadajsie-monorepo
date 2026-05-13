@@ -716,20 +716,22 @@ export class EnrollmentSlotModalComponent {
 
   onGuestUpdated(data: { participationId: string; displayName: string }): void {
     this.loading.set(true);
-    this.eventService.updateGuestName(data.participationId, data.displayName).subscribe({
-      next: (updatedData) => {
-        this.profileBroadcast.notifyGuestChange(updatedData.id, {
-          displayName: updatedData.displayName,
-        });
-        this.snackbar.success('Nazwa gościa zaktualizowana');
-        this.loading.set(false);
-        this.modalService.close();
-      },
-      error: (err: unknown) => {
-        this.snackbar.error(getErrorMessage(err, 'Błąd aktualizacji nazwy gościa'));
-        this.loading.set(false);
-      },
-    });
+    this.eventService
+      .updateGuest(data.participationId, { displayName: data.displayName })
+      .subscribe({
+        next: (updatedData) => {
+          this.profileBroadcast.notifyGuestChange(updatedData.id, {
+            displayName: updatedData.displayName,
+          });
+          this.snackbar.success('Nazwa gościa zaktualizowana');
+          this.loading.set(false);
+          this.modalService.close();
+        },
+        error: (err: unknown) => {
+          this.snackbar.error(getErrorMessage(err, 'Błąd aktualizacji nazwy gościa'));
+          this.loading.set(false);
+        },
+      });
   }
 
   private async executeAction(

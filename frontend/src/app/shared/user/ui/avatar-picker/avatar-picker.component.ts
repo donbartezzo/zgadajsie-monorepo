@@ -3,19 +3,13 @@ import {
   Component,
   computed,
   effect,
-  inject,
   input,
   output,
   signal,
 } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
 import { AvatarUser, UserAvatarComponent } from '../user-avatar/user-avatar.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
-import { SnackbarService } from '../../../ui/snackbar/snackbar.service';
-import { UserService } from '../../../../core/services/user.service';
-import { AuthService } from '../../../../core/auth/auth.service';
-import { ProfileBroadcastService } from '../../../../core/services/profile-broadcast.service';
 
 @Component({
   selector: 'app-avatar-picker',
@@ -24,19 +18,12 @@ import { ProfileBroadcastService } from '../../../../core/services/profile-broad
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AvatarPickerComponent {
-  private readonly userService = inject(UserService);
-  private readonly auth = inject(AuthService);
-  private readonly snackbar = inject(SnackbarService);
-  private readonly profileBroadcast = inject(ProfileBroadcastService);
-
   readonly user = input.required<AvatarUser>();
   readonly autoGenerate = input(false);
 
-  readonly avatarConfirmed = output<string>();
-  readonly previewReady = output<void>();
+  readonly previewReady = output<string>();
 
   readonly previewSeed = signal<string | null>(null);
-  readonly saving = signal(false);
 
   readonly hasPreview = computed(() => this.previewSeed() !== null);
 
@@ -44,10 +31,6 @@ export class AvatarPickerComponent {
     const s = this.previewSeed();
     if (s === null) return null;
     return { ...this.user(), avatarSeed: s };
-  });
-
-  readonly previewDifferentFromCurrent = computed(() => {
-    return this.previewSeed() !== (this.user().avatarSeed ?? null);
   });
 
   constructor() {
@@ -64,27 +47,6 @@ export class AvatarPickerComponent {
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('');
     this.previewSeed.set(seed);
-    this.previewReady.emit();
-  }
-
-  async confirmChange(): Promise<void> {
-    const newSeed = this.previewSeed();
-    if (!newSeed || this.saving()) return;
-
-    this.saving.set(true);
-    try {
-      const updatedUser = await firstValueFrom(
-        this.userService.updateProfile({ avatarSeed: newSeed }),
-      );
-      this.auth.updateUser(updatedUser);
-      this.profileBroadcast.notifyUserChange(updatedUser.id, { avatarSeed: newSeed });
-      this.previewSeed.set(null);
-      this.snackbar.success('Avatar zmieniony');
-      this.avatarConfirmed.emit(newSeed);
-    } catch {
-      this.snackbar.error('Nie udało się zmienić avatara');
-    } finally {
-      this.saving.set(false);
-    }
+    this.previewReady.emit(seed);
   }
 }

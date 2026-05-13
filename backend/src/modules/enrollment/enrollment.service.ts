@@ -280,7 +280,11 @@ export class EnrollmentService {
     return withDerivedStatus(participation);
   }
 
-  async updateGuestName(participationId: string, addedByUser: AuthUser, displayName: string) {
+  async updateGuest(
+    participationId: string,
+    addedByUser: AuthUser,
+    changes: { displayName?: string; avatarSeed?: string | null },
+  ) {
     const { userId: addedByUserId, isAdmin } = resolveUserContext(addedByUser);
     const participation = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
@@ -304,15 +308,23 @@ export class EnrollmentService {
       throw new ForbiddenException('Możesz edytować tylko swoich gości');
     }
 
-    // Update the guest user's displayName
+    const data: { displayName?: string; avatarSeed?: string | null } = {};
+    if (changes.displayName !== undefined) data.displayName = changes.displayName;
+    if (changes.avatarSeed !== undefined) data.avatarSeed = changes.avatarSeed ?? null;
+
+    if (Object.keys(data).length === 0) {
+      throw new BadRequestException('Brak danych do aktualizacji');
+    }
+
     const updatedUser = await this.prisma.user.update({
       where: { id: participation.userId },
-      data: { displayName },
+      data,
     });
 
     return {
       id: participation.id,
       displayName: updatedUser.displayName,
+      avatarSeed: updatedUser.avatarSeed,
     };
   }
   async assignSlotToParticipant(participationId: string, organizerUser: AuthUser) {

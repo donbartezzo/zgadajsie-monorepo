@@ -12,12 +12,7 @@
 
 <div class="flex flex-col items-center text-center" [ngClass]="containerClass()">
   @if (_editingAvatarMode) {
-    <app-avatar-picker
-      [user]="avatarUser()"
-      [autoGenerate]="true"
-      (previewReady)="onAvatarPreviewReady()"
-      (avatarConfirmed)="onAvatarConfirmed($event)"
-    />
+    <app-avatar-picker [user]="avatarUser()" [autoGenerate]="true" (previewReady)="onAvatarPreviewReady($event)" />
   } @else {
     <div class="relative">
       <app-user-avatar [user]="avatarUser()" [size]="avatarSize()" shape="rounded" />

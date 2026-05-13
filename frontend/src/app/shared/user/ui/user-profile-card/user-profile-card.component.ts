@@ -7,7 +7,6 @@ import {
   input,
   output,
   signal,
-  ViewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
@@ -20,6 +19,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
 import { StatusIndicatorComponent } from '../../../ui/status-indicator/status-indicator.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { UserService } from '../../../../core/services/user.service';
+import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../ui/snackbar/snackbar.service';
 import {
   ProfileBroadcastService,
@@ -67,6 +67,7 @@ export type ProfileCardContext = 'profile' | 'participant' | 'organizer';
 export class UserProfileCardComponent {
   private readonly auth = inject(AuthService);
   private readonly userService = inject(UserService);
+  private readonly eventService = inject(EventService);
   private readonly snackbar = inject(SnackbarService);
   private readonly profileBroadcast = inject(ProfileBroadcastService);
 
@@ -89,13 +90,10 @@ export class UserProfileCardComponent {
   readonly editingDisplayNameMode = signal(false);
   readonly editingAvatarMode = signal(false);
   readonly tempDisplayName = signal('');
-  readonly avatarHasPreview = signal(false);
+  readonly pendingAvatarSeed = signal<string | null>(null);
   readonly saving = signal(false);
   private readonly overrideAvatarSeed = signal<string | null>(null);
   private readonly overrideDisplayName = signal<string | null>(null);
-
-  @ViewChild(AvatarPickerComponent)
-  readonly avatarPicker?: AvatarPickerComponent;
 
   constructor() {
     effect(() => {
@@ -215,7 +213,7 @@ export class UserProfileCardComponent {
 
   readonly hasChanges = computed(() => {
     if (this.editingAvatarMode()) {
-      return this.avatarHasPreview();
+      return this.pendingAvatarSeed() !== null;
     }
     const nameChanged = this.tempDisplayName().trim() !== this.displayName();
     return nameChanged;
@@ -236,24 +234,18 @@ export class UserProfileCardComponent {
 
   requestAvatarEdit(): void {
     this.editingAvatarMode.set(true);
-    this.avatarHasPreview.set(false);
+    this.pendingAvatarSeed.set(null);
   }
 
-  onAvatarPreviewReady(): void {
-    this.avatarHasPreview.set(true);
-  }
-
-  onAvatarConfirmed(newSeed: string): void {
-    this.editingAvatarMode.set(false);
-    this.avatarHasPreview.set(false);
-    this.overrideAvatarSeed.set(newSeed);
+  onAvatarPreviewReady(seed: string): void {
+    this.pendingAvatarSeed.set(seed);
   }
 
   cancelEditing(): void {
     this.editingDisplayNameMode.set(false);
     this.editingAvatarMode.set(false);
     this.tempDisplayName.set('');
-    this.avatarHasPreview.set(false);
+    this.pendingAvatarSeed.set(null);
   }
 
   async saveChanges(): Promise<void> {
@@ -303,11 +295,39 @@ export class UserProfileCardComponent {
   }
 
   async saveAvatar(): Promise<void> {
-    if (this.avatarPicker) {
-      await this.avatarPicker.confirmChange();
+    if (this.saving()) return;
+    const newSeed = this.pendingAvatarSeed();
+    if (newSeed === null) return;
+
+    const isGuest = this.isGuest();
+    const participationId = this.participationId();
+
+    this.saving.set(true);
+    try {
+      if (isGuest && participationId) {
+        await firstValueFrom(
+          this.eventService.updateGuest(participationId, { avatarSeed: newSeed }),
+        );
+        this.profileBroadcast.notifyGuestChange(participationId, { avatarSeed: newSeed });
+      } else {
+        const updatedUser = await firstValueFrom(
+          this.userService.updateProfile({ avatarSeed: newSeed }),
+        );
+        this.auth.updateUser(updatedUser);
+        this.profileBroadcast.notifyUserChange(updatedUser.id, { avatarSeed: newSeed });
+      }
+      this.overrideAvatarSeed.set(newSeed);
+      this.snackbar.success('Avatar zmieniony');
+      this.editingAvatarMode.set(false);
+      this.pendingAvatarSeed.set(null);
+    } catch (err: unknown) {
+      const message =
+        (err as { error?: { message?: string } })?.error?.message ??
+        'Nie udało się zmienić avatara';
+      this.snackbar.error(message);
+    } finally {
+      this.saving.set(false);
     }
-    this.editingAvatarMode.set(false);
-    this.avatarHasPreview.set(false);
   }
 
   private applyBroadcastChange(change: ProfileChange): void {

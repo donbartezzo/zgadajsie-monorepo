@@ -40,7 +40,10 @@ export class EnrollmentController {
     @CurrentUser() user: AuthUser,
     @Body() dto: UpdateGuestDto,
   ) {
-    return this.enrollmentService.updateGuestName(enrollmentId, user, dto.displayName);
+    return this.enrollmentService.updateGuest(enrollmentId, user, {
+      displayName: dto.displayName,
+      avatarSeed: dto.avatarSeed,
+    });
   }
 
   @Post('enrollments/:id/assign-slot')

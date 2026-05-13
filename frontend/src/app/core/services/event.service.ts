@@ -8,6 +8,7 @@ import {
   Enrollment,
   EventSlotInfo,
   JoinGuestRequest,
+  UpdateGuestRequest,
   UpdateGuestResponse,
   CancelPaymentRequest,
   LockSlotResponse,
@@ -112,10 +113,10 @@ export class EventService {
     return this.http.post<Enrollment>(`${this.apiUrl}/${eventId}/join-guest`, body);
   }
 
-  updateGuestName(enrollmentId: string, displayName: string): Observable<UpdateGuestResponse> {
+  updateGuest(enrollmentId: string, payload: UpdateGuestRequest): Observable<UpdateGuestResponse> {
     return this.http.patch<UpdateGuestResponse>(
       `${environment.apiUrl}/enrollments/${enrollmentId}/update-guest`,
-      { displayName },
+      payload,
     );
   }
 

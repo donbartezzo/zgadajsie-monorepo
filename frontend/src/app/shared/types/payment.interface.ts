@@ -81,6 +81,12 @@ export interface JoinGuestRequest {
 export interface UpdateGuestResponse {
   id: string;
   displayName: string;
+  avatarSeed: string | null;
+}
+
+export interface UpdateGuestRequest {
+  displayName?: string;
+  avatarSeed?: string | null;
 }
 
 export interface CancelPaymentRequest {

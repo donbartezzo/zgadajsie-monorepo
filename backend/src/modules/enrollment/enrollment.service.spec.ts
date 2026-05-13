@@ -962,18 +962,66 @@ describe('EnrollmentService', () => {
     });
   });
 
-  // ─── updateGuestName() ────────────────────────────────────────────────────
+  // ─── updateGuest() ────────────────────────────────────────────────────────
 
-  describe('updateGuestName()', () => {
+  describe('updateGuest()', () => {
     it('aktualizuje displayName gościa', async () => {
       const guest = makeEnrollment({ addedByUserId: 'host1' });
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(guest);
-      (prisma.user.update as jest.Mock).mockResolvedValue({ displayName: 'New Name' });
+      (prisma.user.update as jest.Mock).mockResolvedValue({
+        displayName: 'New Name',
+        avatarSeed: null,
+      });
 
-      await service.updateGuestName('p1', mockAuthUser('host1'), 'New Name');
+      await service.updateGuest('p1', mockAuthUser('host1'), { displayName: 'New Name' });
 
       expect(prisma.user.update as jest.Mock).toHaveBeenCalledWith(
         expect.objectContaining({ data: { displayName: 'New Name' } }),
+      );
+    });
+
+    it('aktualizuje avatarSeed gościa', async () => {
+      const guest = makeEnrollment({ addedByUserId: 'host1' });
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(guest);
+      (prisma.user.update as jest.Mock).mockResolvedValue({
+        displayName: 'Gość',
+        avatarSeed: 'abc123',
+      });
+
+      const result = await service.updateGuest('p1', mockAuthUser('host1'), {
+        avatarSeed: 'abc123',
+      });
+
+      expect(prisma.user.update as jest.Mock).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { avatarSeed: 'abc123' } }),
+      );
+      expect(result.avatarSeed).toBe('abc123');
+    });
+
+    it('akceptuje aktualizację obu pól jednocześnie', async () => {
+      const guest = makeEnrollment({ addedByUserId: 'host1' });
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(guest);
+      (prisma.user.update as jest.Mock).mockResolvedValue({
+        displayName: 'New Name',
+        avatarSeed: 'abc123',
+      });
+
+      await service.updateGuest('p1', mockAuthUser('host1'), {
+        displayName: 'New Name',
+        avatarSeed: 'abc123',
+      });
+
+      expect(prisma.user.update as jest.Mock).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { displayName: 'New Name', avatarSeed: 'abc123' } }),
+      );
+    });
+
+    it('rzuca BadRequestException gdy nie ma żadnego pola do aktualizacji', async () => {
+      const guest = makeEnrollment({ addedByUserId: 'host1' });
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(guest);
+
+      await expect(service.updateGuest('p1', mockAuthUser('host1'), {})).rejects.toThrow(
+        BadRequestException,
       );
     });
 
@@ -982,9 +1030,9 @@ describe('EnrollmentService', () => {
         makeEnrollment({ addedByUserId: null }),
       );
 
-      await expect(service.updateGuestName('p1', mockAuthUser('host1'), 'Name')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.updateGuest('p1', mockAuthUser('host1'), { displayName: 'Name' }),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('odrzuca jeśli host nie jest właścicielem gościa (ForbiddenException)', async () => {
@@ -992,9 +1040,9 @@ describe('EnrollmentService', () => {
         makeEnrollment({ addedByUserId: 'other-host' }),
       );
 
-      await expect(service.updateGuestName('p1', mockAuthUser('host1'), 'Name')).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.updateGuest('p1', mockAuthUser('host1'), { avatarSeed: 'abc123' }),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
