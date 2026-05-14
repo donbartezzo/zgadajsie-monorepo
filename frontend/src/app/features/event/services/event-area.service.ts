@@ -571,8 +571,9 @@ export class EventAreaService {
 
   private registerOverlayCallbacks(): void {
     this.overlays.onJoinConfirmed((roleKey?: string) => this.confirmJoin(roleKey));
-    this.overlays.onJoinGuestConfirmed((data: { displayName: string; roleKey?: string }) =>
-      this.confirmJoinGuest(data.displayName, data.roleKey),
+    this.overlays.onJoinGuestConfirmed(
+      (data: { displayName: string; roleKey?: string; avatarSeed?: string; userId?: string }) =>
+        this.confirmJoinGuest(data.displayName, data.roleKey, data.avatarSeed, data.userId),
     );
     this.overlays.onPay(() => this.payEvent());
     this.overlays.onLeaveRequested(() => this.requestLeave());
@@ -836,12 +837,17 @@ export class EventAreaService {
     });
   }
 
-  confirmJoinGuest(displayName: string, roleKey?: string): void {
+  confirmJoinGuest(
+    displayName: string,
+    roleKey?: string,
+    avatarSeed?: string,
+    userId?: string,
+  ): void {
     this.joining.set(true);
     this.overlays.close();
 
     this.eventService
-      .joinGuest(this._eventId, displayName, roleKey)
+      .joinGuest(this._eventId, displayName, roleKey, avatarSeed, userId)
       .pipe(finalize(() => this.joining.set(false)))
       .subscribe({
         next: (p) => {

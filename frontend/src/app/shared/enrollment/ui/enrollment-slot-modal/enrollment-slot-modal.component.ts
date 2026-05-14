@@ -25,6 +25,7 @@ import { BottomOverlaysService } from '../../../overlay/ui/bottom-overlays/botto
 import { EventAreaService } from '../../../../features/event/services/event-area.service';
 import { ProfileBroadcastService } from '../../../../core/services/profile-broadcast.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
+import { UserProfileEditService } from '../../../user/services/user-profile-edit.service';
 import { Enrollment, EnrolleeManageItem, OrganizerUserRelation } from '../../../types';
 import { Event } from '../../../types/event.interface';
 import { EventSlotInfo } from '../../../types/payment.interface';
@@ -95,10 +96,12 @@ export class EnrollmentSlotModalComponent {
   private readonly overlays = inject(BottomOverlaysService);
   readonly eventArea = inject(EventAreaService);
   private readonly profileBroadcast = inject(ProfileBroadcastService);
+  private readonly profileEdit = inject(UserProfileEditService);
 
   readonly data = input<EnrollmentModalData | null>(null);
 
   readonly loading = signal(false);
+  readonly isSavingProfile = signal(false);
   readonly selectedOrganizerAction = signal('');
   readonly organizerRelation = signal<OrganizerUserRelation | null | undefined>(undefined);
 
@@ -714,24 +717,48 @@ export class EnrollmentSlotModalComponent {
     this.eventArea.contactOrganizer();
   }
 
-  onGuestUpdated(data: { participationId: string; displayName: string }): void {
-    this.loading.set(true);
-    this.eventService
-      .updateGuest(data.participationId, { displayName: data.displayName })
-      .subscribe({
-        next: (updatedData) => {
-          this.profileBroadcast.notifyGuestChange(updatedData.id, {
-            displayName: updatedData.displayName,
-          });
-          this.snackbar.success('Nazwa gościa zaktualizowana');
-          this.loading.set(false);
-          this.modalService.close();
-        },
-        error: (err: unknown) => {
-          this.snackbar.error(getErrorMessage(err, 'Błąd aktualizacji nazwy gościa'));
-          this.loading.set(false);
-        },
-      });
+  readonly canEditProfileInModal = computed(() => {
+    const currentUserId = this.auth.currentUser()?.id ?? null;
+    const p = this.participant();
+    if (!p || !p.user) return false;
+    if (currentUserId && p.user.id === currentUserId) return true;
+    if (p.isGuest && p.id && this.isGuestHost()) return true;
+    return false;
+  });
+
+  async onDisplayNameChange(displayName: string): Promise<void> {
+    await this.executeProfileEdit((p) =>
+      this.profileEdit.commitDisplayName({
+        user: p.user,
+        displayName,
+        isGuest: p.isGuest,
+        participationId: p.id,
+      }),
+    );
+  }
+
+  async onAvatarSeedChange(avatarSeed: string): Promise<void> {
+    await this.executeProfileEdit((p) =>
+      this.profileEdit.commitAvatarSeed({
+        user: p.user,
+        avatarSeed,
+        isGuest: p.isGuest,
+        participationId: p.id,
+      }),
+    );
+  }
+
+  private async executeProfileEdit(
+    editFn: (p: Enrollment | EnrolleeManageItem) => Promise<void>,
+  ): Promise<void> {
+    const p = this.participant();
+    if (!p || !p.user) return;
+    this.isSavingProfile.set(true);
+    try {
+      await editFn(p);
+    } finally {
+      this.isSavingProfile.set(false);
+    }
   }
 
   private async executeAction(

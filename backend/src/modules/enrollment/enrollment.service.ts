@@ -177,7 +177,14 @@ export class EnrollmentService {
     return roleKey;
   }
 
-  async joinGuest(eventId: string, addedByUser: AuthUser, displayName: string, roleKey?: string) {
+  async joinGuest(
+    eventId: string,
+    addedByUser: AuthUser,
+    displayName: string,
+    roleKey?: string,
+    avatarSeed?: string,
+    userId?: string,
+  ) {
     const { userId: addedByUserId, isAdmin } = resolveUserContext(addedByUser);
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
@@ -217,8 +224,10 @@ export class EnrollmentService {
 
     const guestUser = await this.prisma.user.create({
       data: {
+        ...(userId ? { id: userId } : {}),
         email: `guest-${Date.now()}-${Math.random().toString(36).slice(2)}@guest.zgadajsie.pl`,
         displayName,
+        avatarSeed: avatarSeed ?? null,
         isActive: false,
       },
     });

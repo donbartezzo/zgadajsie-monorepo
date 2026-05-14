@@ -65,7 +65,8 @@ export interface SlotGroup {
         }
       </div>
 
-      @if (showRole() && roleKey()) {
+      <!-- @TODO: do poprawy w przyszłości - na razie nie wyświetlamy roli -->
+      <!-- @if (showRole() && roleKey()) {
         <app-badge
           afterLabel
           variant="outline"
@@ -76,7 +77,7 @@ export interface SlotGroup {
         >
           {{ 'dict.participant-role.' + roleKey() + '.title' | transloco }}
         </app-badge>
-      }
+      } -->
     </app-enrollment-grid-item-shell>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -86,6 +87,7 @@ export class EnrollmentGridItemComponent {
   readonly currentUserId = input<string | null>(null);
   readonly showRole = input(false);
   readonly highlightOwn = input(true);
+  readonly disabled = input(false);
   readonly clicked = output<void>();
 
   readonly displayName = computed(() => this.participant().user?.displayName ?? 'Uczestnik');
@@ -177,12 +179,15 @@ export class EnrollmentGridItemComponent {
   });
 
   readonly buttonClass = computed(() => {
+    const isDisabled = this.disabled();
     const shouldHighlight = this.highlightOwn() && this.isCurrentUserOrGuest();
     const status = this.slotDisplayStatus();
 
     const base =
-      'flex flex-col items-center w-full h-full p-1 rounded-xl transition-colors overflow-hidden' +
-      ' hover:bg-neutral-50 focus:outline-hidden';
+      'flex flex-col items-center w-full h-full p-1 rounded-xl overflow-hidden' +
+      (isDisabled
+        ? ' pointer-events-none cursor-default'
+        : ' transition-colors hover:bg-neutral-50 focus:outline-hidden');
 
     if (shouldHighlight) return `${base} bg-primary-50/50 ring-2 ring-primary-400`;
     if (status === 'pending') return `${base} focus:ring-2 focus:ring-warning-200`;

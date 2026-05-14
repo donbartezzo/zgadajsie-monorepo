@@ -9,6 +9,8 @@
 @let _isRoleChangeMode = isRoleChangeMode();
 @let _participantType = participantType();
 @let _participantName = participantName();
+@let _participantAvatarSeed = participantAvatarSeed();
+@let _participantGuestId = participantGuestId();
 @let _availableRoles = availableRoles();
 @let _canAddGuest = canAddGuest();
 @let _guestsRemaining = guestsRemaining();
@@ -67,7 +69,10 @@
         <app-join-rules-participant-step
           [isRoleChange]="_isRoleChangeMode"
           [participantType]="_participantType"
-          [participantName]="_participantName"
+          [currentUser]="currentUser()"
+          [draftDisplayName]="_participantName"
+          [draftAvatarSeed]="_participantAvatarSeed"
+          [draftGuestId]="_participantGuestId"
           [selectedRoleKey]="_selectedRoleKey"
           [availableRoles]="_availableRoles"
           [canAddGuest]="_canAddGuest"
@@ -76,7 +81,8 @@
           [canSubmit]="_canSubmitStep2"
           [loading]="_isLoadingAny"
           (participantTypeChange)="setParticipantType($event)"
-          (participantNameChange)="participantName.set($event)"
+          (draftDisplayNameChange)="participantName.set($event)"
+          (draftAvatarSeedChange)="participantAvatarSeed.set($event)"
           (selectedRoleKeyChange)="selectedRoleKey.set($event)"
           (submitRequested)="onSubmit()"
         />

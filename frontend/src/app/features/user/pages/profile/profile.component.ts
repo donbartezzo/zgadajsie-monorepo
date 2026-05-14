@@ -9,6 +9,7 @@ import { UserProfileCardComponent } from '../../../../shared/user/ui/user-profil
 import { AuthService } from '../../../../core/auth/auth.service';
 import { UserService } from '../../../../core/services/user.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { UserProfileEditService } from '../../../../shared/user/services/user-profile-edit.service';
 import { isSupportedDonationUrl } from '../../../../shared/utils/support-url.utils';
 
 @Component({
@@ -29,12 +30,14 @@ export class ProfileComponent implements OnInit {
   readonly auth = inject(AuthService);
   private readonly userService = inject(UserService);
   private readonly snackbar = inject(SnackbarService);
+  private readonly profileEdit = inject(UserProfileEditService);
 
   newPassword = '';
   currentPassword = '';
   editDonationUrl = '';
   readonly saving = signal(false);
   readonly donationUrlError = signal<string | null>(null);
+  readonly isSavingProfile = signal(false);
 
   ngOnInit(): void {
     const user = this.auth.currentUser();
@@ -104,5 +107,27 @@ export class ProfileComponent implements OnInit {
   logout(): void {
     this.auth.logout();
     this.snackbar.success('Wylogowano pomyślnie');
+  }
+
+  async onDisplayNameChange(displayName: string): Promise<void> {
+    const user = this.auth.currentUser();
+    if (!user) return;
+    this.isSavingProfile.set(true);
+    try {
+      await this.profileEdit.commitDisplayName({ user, displayName });
+    } finally {
+      this.isSavingProfile.set(false);
+    }
+  }
+
+  async onAvatarSeedChange(avatarSeed: string): Promise<void> {
+    const user = this.auth.currentUser();
+    if (!user) return;
+    this.isSavingProfile.set(true);
+    try {
+      await this.profileEdit.commitAvatarSeed({ user, avatarSeed });
+    } finally {
+      this.isSavingProfile.set(false);
+    }
   }
 }

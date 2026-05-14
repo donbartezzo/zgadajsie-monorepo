@@ -40,4 +40,31 @@ describe('JoinGuestDto', () => {
     const errors = await validate(dto);
     expect(errors).toHaveLength(0);
   });
+
+  it('akceptuje opcjonalne avatarSeed w JoinGuestDto', async () => {
+    const dto = plainToInstance(JoinGuestDto, { displayName: 'Jan', avatarSeed: 'abc123' });
+    const errors = await validate(dto);
+    expect(errors).toHaveLength(0);
+  });
+
+  it('przechodzi walidację bez avatarSeed (pole opcjonalne)', async () => {
+    const dto = plainToInstance(JoinGuestDto, { displayName: 'Jan' });
+    const errors = await validate(dto);
+    expect(errors).toHaveLength(0);
+  });
+
+  it('akceptuje opcjonalne userId w formacie UUID', async () => {
+    const dto = plainToInstance(JoinGuestDto, {
+      displayName: 'Jan',
+      userId: '550e8400-e29b-41d4-a716-446655440000',
+    });
+    const errors = await validate(dto);
+    expect(errors).toHaveLength(0);
+  });
+
+  it('odrzuca userId, który nie jest UUID', async () => {
+    const dto = plainToInstance(JoinGuestDto, { displayName: 'Jan', userId: 'not-a-uuid' });
+    const errors = await validate(dto);
+    expect(errors.some((e) => e.property === 'userId')).toBe(true);
+  });
 });

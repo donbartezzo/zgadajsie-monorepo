@@ -24,6 +24,7 @@ import {
   AvatarSize,
   AvatarShape,
 } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
+import { UserProfileCardComponent } from '../../../../shared/user/ui/user-profile-card/user-profile-card.component';
 import { StatusIndicatorComponent } from '../../../../shared/ui/status-indicator/status-indicator.component';
 import { ExplainerTriggerComponent } from '../../../../shared/ui/explainer/explainer-trigger.component';
 
@@ -114,6 +115,7 @@ function paletteSwatches(key: keyof typeof COLOR_PALETTE): ColorSwatch[] {
     EventInfoItemComponent,
     EventStatusBarItemComponent,
     UserAvatarComponent,
+    UserProfileCardComponent,
     StatusIndicatorComponent,
     ExplainerTriggerComponent,
     RecurrencePickerComponent,
@@ -176,8 +178,18 @@ export class DesignSystemComponent {
     { id: 'spacing', label: 'Spacing' },
     { id: 'components', label: 'Komponenty' },
     { id: 'avatars', label: 'Avatary' },
+    { id: 'profile-card', label: 'Profile Card' },
     { id: 'event-status-bars', label: 'Status bars' },
   ];
+
+  readonly profileCardDemoUser = signal({
+    id: 'demo-profile-user',
+    displayName: 'Jan Kowalski',
+    email: 'jan.kowalski@example.com',
+    avatarSeed: 'demo-seed-123',
+  });
+  readonly profileCardDraftName = signal('Nowa nazwa');
+  readonly profileCardDraftSeed = signal<string | null>('draft-seed');
 
   // ════════════════════════════════════════════════════════
   // SEMANTIC PALETTES - główne palety do użycia w komponentach

@@ -31,7 +31,14 @@ export class EnrollmentController {
     @CurrentUser() user: AuthUser,
     @Body() dto: JoinGuestDto,
   ) {
-    return this.enrollmentService.joinGuest(eventId, user, dto.displayName, dto.roleKey);
+    return this.enrollmentService.joinGuest(
+      eventId,
+      user,
+      dto.displayName,
+      dto.roleKey,
+      dto.avatarSeed,
+      dto.userId,
+    );
   }
 
   @Patch('enrollments/:id/update-guest')

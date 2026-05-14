@@ -7,20 +7,17 @@ import {
   input,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
 import { AvatarUser, UserAvatarComponent } from '../user-avatar/user-avatar.component';
 import { AvatarPickerComponent } from '../avatar-picker/avatar-picker.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
+import { BadgeComponent } from '../../../ui/badge/badge.component';
 import { StatusIndicatorComponent } from '../../../ui/status-indicator/status-indicator.component';
-import { AuthService } from '../../../../core/auth/auth.service';
-import { UserService } from '../../../../core/services/user.service';
-import { EventService } from '../../../../core/services/event.service';
-import { SnackbarService } from '../../../ui/snackbar/snackbar.service';
 import {
   ProfileBroadcastService,
   ProfileChange,
@@ -58,6 +55,7 @@ export type ProfileCardContext = 'profile' | 'participant' | 'organizer';
     AvatarPickerComponent,
     IconComponent,
     ButtonComponent,
+    BadgeComponent,
     FormsModule,
     StatusIndicatorComponent,
   ],
@@ -65,10 +63,6 @@ export type ProfileCardContext = 'profile' | 'participant' | 'organizer';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserProfileCardComponent {
-  private readonly auth = inject(AuthService);
-  private readonly userService = inject(UserService);
-  private readonly eventService = inject(EventService);
-  private readonly snackbar = inject(SnackbarService);
   private readonly profileBroadcast = inject(ProfileBroadcastService);
 
   readonly user = input.required<User | UserBrief>();
@@ -85,21 +79,51 @@ export class UserProfileCardComponent {
   readonly isOwnGuest = input(false);
   readonly extraBadges = input<StatusBadgeEntry[]>([]);
 
-  readonly guestUpdated = output<{ participationId: string; displayName: string }>();
+  readonly canEditName = input(false);
+  readonly canEditAvatar = input(false);
+  readonly isSaving = input(false);
+  readonly forceEditingDisplayName = input(false);
+
+  readonly displayNameChange = output<string>();
+  readonly avatarSeedChange = output<string>();
+  readonly displayNameInput = output<string>();
+  readonly avatarSeedPreview = output<string>();
 
   readonly editingDisplayNameMode = signal(false);
   readonly editingAvatarMode = signal(false);
   readonly tempDisplayName = signal('');
   readonly pendingAvatarSeed = signal<string | null>(null);
-  readonly saving = signal(false);
   private readonly overrideAvatarSeed = signal<string | null>(null);
   private readonly overrideDisplayName = signal<string | null>(null);
+  private lastUserId: string | undefined = undefined;
 
   constructor() {
+    // Reset state and re-init tempDisplayName ONLY when user identity (id) changes.
+    // In draft mode the parent regenerates the user object on every keystroke,
+    // so resetting on every user() change would close the input mid-typing.
+    // Reads forceEditingDisplayName via untracked() to avoid coupling - changes to
+    // force are handled by the dedicated effect below.
     effect(() => {
-      this.user();
-      this.overrideAvatarSeed.set(null);
-      this.overrideDisplayName.set(null);
+      const u = this.user();
+      if (this.lastUserId !== u.id) {
+        this.lastUserId = u.id;
+        const isForce = untracked(() => this.forceEditingDisplayName());
+        this.overrideAvatarSeed.set(null);
+        this.overrideDisplayName.set(null);
+        this.editingAvatarMode.set(false);
+        this.tempDisplayName.set(u.displayName);
+        this.pendingAvatarSeed.set(null);
+        // In force mode the input must stay visible across user.id changes
+        // (e.g. switching JA ↔ guest in join-rules overlay).
+        this.editingDisplayNameMode.set(isForce);
+      }
+    });
+
+    // Force editing display name mode when forceEditingDisplayName toggles to true
+    effect(() => {
+      if (this.forceEditingDisplayName()) {
+        this.editingDisplayNameMode.set(true);
+      }
     });
 
     this.profileBroadcast.changes$
@@ -197,20 +221,6 @@ export class UserProfileCardComponent {
     return variants[this.variant()];
   });
 
-  readonly canEditName = computed(() => {
-    const currentUserId = this.auth.currentUser()?.id ?? null;
-    if (currentUserId && this.user().id === currentUserId) return true;
-    if (this.isGuest() && this.participationId() && this.isOwnGuest()) return true;
-    return false;
-  });
-
-  readonly canEditAvatar = computed(() => {
-    const currentUserId = this.auth.currentUser()?.id ?? null;
-    if (currentUserId && this.user().id === currentUserId) return true;
-    if (this.isGuest() && this.participationId() && this.isOwnGuest()) return true;
-    return false;
-  });
-
   readonly hasChanges = computed(() => {
     if (this.editingAvatarMode()) {
       return this.pendingAvatarSeed() !== null;
@@ -218,6 +228,11 @@ export class UserProfileCardComponent {
     const nameChanged = this.tempDisplayName().trim() !== this.displayName();
     return nameChanged;
   });
+
+  readonly _canEditName = computed(() => this.canEditName());
+  readonly _canEditAvatar = computed(() => this.canEditAvatar());
+  readonly _forceEditingDisplayName = computed(() => this.forceEditingDisplayName());
+  readonly _isSaving = computed(() => this.isSaving());
 
   readonly nameInputClass = computed(() => {
     const sizes: Record<ProfileCardVariant, string> = {
@@ -238,95 +253,66 @@ export class UserProfileCardComponent {
   }
 
   onAvatarPreviewReady(seed: string): void {
+    // Preview only locally - don't emit yet. Emitting on every preview would push
+    // the new seed up to the parent immediately; in draft/force mode the parent
+    // updates user.avatarSeed → the picker would lose the "current vs new" diff.
+    // Emit happens in confirmEdit() (after user clicks "Zapisz" in the picker).
     this.pendingAvatarSeed.set(seed);
   }
 
+  onTempDisplayNameChange(value: string): void {
+    this.tempDisplayName.set(value);
+    this.displayNameInput.emit(value);
+  }
+
+  onEscapeKey(): void {
+    // In force mode, Escape does not close the name input
+    if (this.forceEditingDisplayName()) {
+      return;
+    }
+    this.cancelEditing();
+  }
+
   cancelEditing(): void {
+    const wasAvatarMode = this.editingAvatarMode();
     this.editingDisplayNameMode.set(false);
     this.editingAvatarMode.set(false);
     this.tempDisplayName.set('');
     this.pendingAvatarSeed.set(null);
+    // In force mode, keep name editing visible after avatar cancel
+    if (this.forceEditingDisplayName() && wasAvatarMode) {
+      this.editingDisplayNameMode.set(true);
+    }
   }
 
-  async saveChanges(): Promise<void> {
+  confirmEdit(): void {
+    if (!this.hasChanges() || this._isSaving()) return;
     if (this.editingAvatarMode()) {
-      await this.saveAvatar();
-    } else {
-      await this.saveName();
-    }
-  }
-
-  async saveName(): Promise<void> {
-    if (!this.hasChanges() || this.saving()) return;
-
-    const newDisplayName = this.tempDisplayName().trim();
-    if (newDisplayName === this.displayName()) {
-      this.editingDisplayNameMode.set(false);
-      return;
-    }
-
-    const isGuest = this.isGuest();
-    const participationId = this.participationId();
-
-    if (isGuest && participationId) {
-      this.guestUpdated.emit({ participationId, displayName: newDisplayName });
-      this.editingDisplayNameMode.set(false);
-      return;
-    }
-
-    this.saving.set(true);
-    try {
-      const updatedUser = await firstValueFrom(
-        this.userService.updateProfile({ displayName: newDisplayName }),
-      );
-      this.auth.updateUser(updatedUser);
-      this.profileBroadcast.notifyUserChange(updatedUser.id, {
-        displayName: updatedUser.displayName,
-      });
-      this.snackbar.success('Profil zaktualizowany');
-      this.editingDisplayNameMode.set(false);
-    } catch (err: unknown) {
-      const message =
-        (err as { error?: { message?: string } })?.error?.message ?? 'Błąd aktualizacji profilu';
-      this.snackbar.error(message);
-    } finally {
-      this.saving.set(false);
-    }
-  }
-
-  async saveAvatar(): Promise<void> {
-    if (this.saving()) return;
-    const newSeed = this.pendingAvatarSeed();
-    if (newSeed === null) return;
-
-    const isGuest = this.isGuest();
-    const participationId = this.participationId();
-
-    this.saving.set(true);
-    try {
-      if (isGuest && participationId) {
-        await firstValueFrom(
-          this.eventService.updateGuest(participationId, { avatarSeed: newSeed }),
-        );
-        this.profileBroadcast.notifyGuestChange(participationId, { avatarSeed: newSeed });
-      } else {
-        const updatedUser = await firstValueFrom(
-          this.userService.updateProfile({ avatarSeed: newSeed }),
-        );
-        this.auth.updateUser(updatedUser);
-        this.profileBroadcast.notifyUserChange(updatedUser.id, { avatarSeed: newSeed });
+      const seed = this.pendingAvatarSeed();
+      if (seed !== null) {
+        // In draft/force mode: parent collects the seed in its own state and
+        // commits everything together on overlay submit. In commit mode: parent
+        // calls API (e.g. via UserProfileEditService) on each change.
+        if (this.forceEditingDisplayName()) {
+          this.avatarSeedPreview.emit(seed);
+        } else {
+          this.avatarSeedChange.emit(seed);
+        }
+        this.editingAvatarMode.set(false);
+        this.pendingAvatarSeed.set(null);
+        // In force mode, keep name editing visible after avatar edit is done
+        if (this.forceEditingDisplayName()) {
+          this.editingDisplayNameMode.set(true);
+        }
       }
-      this.overrideAvatarSeed.set(newSeed);
-      this.snackbar.success('Avatar zmieniony');
-      this.editingAvatarMode.set(false);
-      this.pendingAvatarSeed.set(null);
-    } catch (err: unknown) {
-      const message =
-        (err as { error?: { message?: string } })?.error?.message ??
-        'Nie udało się zmienić avatara';
-      this.snackbar.error(message);
-    } finally {
-      this.saving.set(false);
+    } else if (this.editingDisplayNameMode()) {
+      const name = this.tempDisplayName().trim();
+      if (name && name !== this.displayName()) {
+        this.displayNameChange.emit(name);
+        if (!this.forceEditingDisplayName()) {
+          this.editingDisplayNameMode.set(false);
+        }
+      }
     }
   }
 

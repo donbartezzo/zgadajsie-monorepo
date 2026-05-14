@@ -62,8 +62,12 @@
           [isOrganizer]="_isOrganizer"
           [isOwnGuest]="isGuestHost()"
           [extraBadges]="participantExtraBadges()"
+          [canEditName]="canEditProfileInModal()"
+          [canEditAvatar]="canEditProfileInModal()"
+          [isSaving]="isSavingProfile()"
+          (displayNameChange)="onDisplayNameChange($event)"
+          (avatarSeedChange)="onAvatarSeedChange($event)"
           variant="overlay"
-          (guestUpdated)="onGuestUpdated($event)"
         >
           <!-- Added by (for guests) -->
           @if (_hostParticipant && _event) {
@@ -121,6 +125,8 @@
           [participationId]="null"
           [isOrganizer]="false"
           [isOwnGuest]="false"
+          [canEditName]="false"
+          [canEditAvatar]="false"
           variant="overlay"
         />
         <div class="mt-3 py-2 text-center text-sm text-neutral-400">Użytkownik nie uczestniczy w tym wydarzeniu</div>

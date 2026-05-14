@@ -10,6 +10,7 @@ import {
 import { AvatarUser, UserAvatarComponent } from '../user-avatar/user-avatar.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
+import { generateAvatarSeed } from '../../utils/avatar-seed.util';
 
 @Component({
   selector: 'app-avatar-picker',
@@ -42,10 +43,7 @@ export class AvatarPickerComponent {
   }
 
   generateNew(): void {
-    const bytes = crypto.getRandomValues(new Uint8Array(6));
-    const seed = Array.from(bytes)
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
+    const seed = generateAvatarSeed();
     this.previewSeed.set(seed);
     this.previewReady.emit(seed);
   }

@@ -2,12 +2,13 @@
   @let _type = participantType();
   @let _roles = availableRoles();
   @let _showForm = showForm();
-  @let _showNameField = showNameField();
   @let _showGuestInfo = showGuestInfo();
   @let _showRoleSelection = showRoleSelection();
   @let _loading = loading();
   @let _canSubmit = canSubmit();
   @let _primaryButtonLabel = primaryButtonLabel();
+  @let _profileUser = profileUser();
+  @let _guestRulesExpanded = guestRulesExpanded();
 
   @if (!isRoleChange()) {
     <div>
@@ -38,68 +39,106 @@
   }
 
   @if (_showGuestInfo) {
+    @if (canAddGuest()) {
+      @if (canShowGuestLimitSummary()) {
+        <div class="rounded-lg border border-primary-200 bg-primary-50 px-3 py-2">
+          <p class="text-sm font-medium text-primary-700">
+            <app-icon name="users" size="sm" class="mr-1" />
+            Możesz dodać jeszcze maksymalnie
+            <strong class="text-primary-900">{{ guestsRemaining() }}</strong> gości
+          </p>
+        </div>
+      }
+    } @else {
+      <div class="rounded-lg border border-danger-200 bg-danger-50 px-3 py-2">
+        <p class="text-sm font-medium text-danger-700">
+          <app-icon name="alert-triangle" size="sm" class="mr-1" />
+          Wykorzystano limit
+          <strong class="text-danger-900">{{ maxGuests() }}</strong> możliwych gości
+        </p>
+        <p class="mt-1 text-xs text-danger-600">Nie możesz dodać więcej gości do tego wydarzenia</p>
+      </div>
+    }
+
     <div class="rounded-xl border border-secondary-200 bg-secondary-50 p-3">
       <div class="flex items-start gap-3">
-        <app-icon name="help-circle" size="sm" class="shrink-0 mt-0.5 text-secondary-500" />
-        <div class="space-y-2 text-xs text-secondary-800">
-          <p>
-            <strong>Zasady dodawania osoby towarzyszącej:</strong> Dodana osoba uzyska własne miejsce i będzie widoczna
-            na liście uczestników.
-          </p>
-          <p>
-            Jako osoba zapraszająca w pełni zarządzasz uczestnictwem swojego gościa. Wszystkie powiadomienia będą
-            wysyłane bezpośrednio do Ciebie.
-          </p>
-          <p>
-            Odpowiadasz za każdą dodaną w ten sposób osobę oraz ponosisz konsekwencje w przypadku naruszenia przez nich
-            regulaminu.
-          </p>
-          @if (canAddGuest()) {
-            @if (canShowGuestLimitSummary()) {
-              <div class="rounded-lg border border-primary-200 bg-primary-50 px-3 py-2">
-                <p class="text-sm font-medium text-primary-700">
-                  <app-icon name="users" size="sm" class="mr-1" />
-                  Możesz dodać jeszcze maksymalnie
-                  <strong class="text-primary-900">{{ guestsRemaining() }}</strong> gości
-                </p>
-              </div>
+        <div class="text-xs text-secondary-800">
+          <ul class="space-y-1">
+            <li class="flex items-start gap-2.5">
+              <span
+                class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-danger-100 text-[10px] font-bold text-danger-500"
+              >
+                1
+              </span>
+              <span class="text-xs text-danger-700 font-medium">
+                {{ guestRules[0].text }}
+                @if (!_guestRulesExpanded) {
+                  <a
+                    class="ml-1 cursor-pointer text-xs font-medium text-danger-700 underline inline-flex items-center gap-0.5"
+                    tabindex="0"
+                    (click)="expandGuestRules()"
+                    (keyup.enter)="expandGuestRules()"
+                  >
+                    <app-icon name="chevron-down" size="xs" />
+                    Pokaż więcej zasad
+                  </a>
+                }
+              </span>
+            </li>
+            @for (rule of guestRules; track rule; let i = $index) {
+              @if (i >= 1 && _guestRulesExpanded) {
+                <li class="flex items-start gap-2.5">
+                  <span
+                    [class]="
+                      'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ' +
+                      (rule.variant === 'danger'
+                        ? 'bg-danger-100 text-danger-500'
+                        : 'bg-secondary-100 text-secondary-500')
+                    "
+                  >
+                    {{ i + 1 }}
+                  </span>
+                  <span
+                    [class]="
+                      'text-xs ' + (rule.variant === 'danger' ? 'text-danger-700 font-medium' : 'text-secondary-600')
+                    "
+                  >
+                    {{ rule.text }}
+                  </span>
+                </li>
+              }
             }
-          } @else {
-            <div class="rounded-lg border border-danger-200 bg-danger-50 px-3 py-2">
-              <p class="text-sm font-medium text-danger-700">
-                <app-icon name="alert-triangle" size="sm" class="mr-1" />
-                Wykorzystano limit
-                <strong class="text-danger-900">{{ maxGuests() }}</strong> możliwych gości
-              </p>
-              <p class="mt-1 text-xs text-danger-600">Nie możesz dodać więcej gości do tego wydarzenia</p>
-            </div>
-          }
+          </ul>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+      <div class="flex items-start gap-3">
+        <app-icon name="alert-triangle" size="sm" class="shrink-0 mt-0.5 text-neutral-500" />
+        <div class="space-y-1 text-xs text-neutral-800">
+          <p>
+            Zmieniona tutaj <strong>nazwa użytkownika</strong> lub <strong>avatar</strong> zostaną zapisane w Twoim
+            profilu i wyświetlone przy każdych innych (wcześniejszych i obecnych) oraz kolejnych zapisach. Możesz je
+            zmienić w dowolnym momencie w ustawieniach profilu.
+          </p>
         </div>
       </div>
     </div>
   }
 
   @if (_showForm) {
-    @if (_showNameField) {
-      <div>
-        <label for="participantNameInput" class="mb-1 block text-sm font-medium text-neutral-700">
-          Nazwa uczestnika
-          <span class="ml-0.5 text-danger-500">*</span>
-        </label>
-        <input
-          id="participantNameInput"
-          type="text"
-          [ngModel]="participantName()"
-          (ngModelChange)="participantNameChange.emit($event)"
-          class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-hidden focus:ring-1 focus:ring-primary-500"
-          [placeholder]="participantNamePlaceholder()"
-          (keyup.enter)="submitRequested.emit()"
-        />
-        <p class="mt-1 text-xs text-neutral-500">
-          {{ participantNameHint() }}
-        </p>
-      </div>
-    }
+    <app-user-profile-card
+      [user]="_profileUser"
+      context="participant"
+      [isGuest]="_type === 'guest'"
+      [canEditName]="true"
+      [canEditAvatar]="true"
+      [forceEditingDisplayName]="true"
+      (displayNameInput)="draftDisplayNameChange.emit($event)"
+      (avatarSeedPreview)="draftAvatarSeedChange.emit($event)"
+      variant="overlay"
+    />
 
     @if (_showRoleSelection) {
       <div>

@@ -76,6 +76,11 @@ export interface EventSlotInfo {
 export interface JoinGuestRequest {
   displayName: string;
   roleKey?: string;
+  avatarSeed?: string;
+  // Optional client-generated UUID for the new guest user. Sent so that the avatar
+  // preview shown during enrollment (computed from userId + avatarSeed) matches
+  // the final avatar in the participants grid.
+  userId?: string;
 }
 
 export interface UpdateGuestResponse {

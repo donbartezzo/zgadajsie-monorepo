@@ -1133,6 +1133,91 @@ describe('EnrollmentService', () => {
 
       expect(result.waitingReason).toBe('NEW_USER');
     });
+
+    it('zapisuje avatarSeed na nowym User gdy podany', async () => {
+      const guestEnrollment = makeEnrollment({
+        id: 'pg1',
+        userId: 'guest1',
+        addedByUserId: 'host1',
+        wantsIn: true,
+        slot: { id: 'slot1', confirmed: false },
+      });
+      tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
+      tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
+
+      await service.joinGuest('event1', mockAuthUser('host1'), 'Gość', undefined, 'abc123');
+
+      expect(prisma.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ avatarSeed: 'abc123' }),
+        }),
+      );
+    });
+
+    it('ustawia avatarSeed=null gdy nie podany', async () => {
+      const guestEnrollment = makeEnrollment({
+        id: 'pg1',
+        userId: 'guest1',
+        addedByUserId: 'host1',
+        wantsIn: true,
+        slot: { id: 'slot1', confirmed: false },
+      });
+      tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
+      tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
+
+      await service.joinGuest('event1', mockAuthUser('host1'), 'Gość');
+
+      expect(prisma.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ avatarSeed: null }),
+        }),
+      );
+    });
+
+    it('używa klienckiego userId gdy podany', async () => {
+      const clientId = '550e8400-e29b-41d4-a716-446655440000';
+      const guestEnrollment = makeEnrollment({
+        id: 'pg1',
+        userId: 'guest1',
+        addedByUserId: 'host1',
+        wantsIn: true,
+        slot: { id: 'slot1', confirmed: false },
+      });
+      tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
+      tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
+
+      await service.joinGuest(
+        'event1',
+        mockAuthUser('host1'),
+        'Gość',
+        undefined,
+        undefined,
+        clientId,
+      );
+
+      expect(prisma.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ id: clientId }),
+        }),
+      );
+    });
+
+    it('nie przekazuje id do prisma.user.create gdy userId niepodany', async () => {
+      const guestEnrollment = makeEnrollment({
+        id: 'pg1',
+        userId: 'guest1',
+        addedByUserId: 'host1',
+        wantsIn: true,
+        slot: { id: 'slot1', confirmed: false },
+      });
+      tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
+      tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
+
+      await service.joinGuest('event1', mockAuthUser('host1'), 'Gość');
+
+      const callArg = (prisma.user.create as jest.Mock).mock.calls[0][0];
+      expect(callArg.data).not.toHaveProperty('id');
+    });
   });
 
   // ─── rejoinById() ────────────────────────────────────────────────────────

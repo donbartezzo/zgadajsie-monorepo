@@ -1,7 +1,15 @@
 <div class="p-4 space-y-4">
   @if (auth.currentUser(); as user) {
     <!-- User profile card (wizytówka) -->
-    <app-user-profile-card [user]="user" context="profile">
+    <app-user-profile-card
+      [user]="user"
+      context="profile"
+      [canEditName]="true"
+      [canEditAvatar]="true"
+      [isSaving]="isSavingProfile()"
+      (displayNameChange)="onDisplayNameChange($event)"
+      (avatarSeedChange)="onAvatarSeedChange($event)"
+    >
       @if (!user.isEmailVerified) {
         <button (click)="resendActivation()" class="mt-2 text-xs text-primary-500 underline font-medium">
           Wyślij link aktywacyjny ponownie

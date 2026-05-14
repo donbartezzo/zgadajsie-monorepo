@@ -1139,6 +1139,82 @@
       </section>
     }
 
+    <!-- ══════════════ PROFILE CARD ══════════════ -->
+    @if (activeSection() === 'profile-card') {
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-4">User Profile Card (app-user-profile-card)</h2>
+        <p class="text-sm text-neutral-500 mb-4">
+          Karta profilu użytkownika. Komponent prezentacyjny – nie wywołuje API. Zmiany emitowane przez outputy
+          <code class="bg-white px-1 rounded text-xs">(displayNameChange)</code> /
+          <code class="bg-white px-1 rounded text-xs">(avatarSeedChange)</code> (po klik „Zapisz") oraz
+          <code class="bg-white px-1 rounded text-xs">(displayNameInput)</code> /
+          <code class="bg-white px-1 rounded text-xs">(avatarSeedPreview)</code> (live, dla draftu w overlay'u). Commit
+          do API wykonuje parent (zwykle przez
+          <code class="bg-white px-1 rounded text-xs">UserProfileEditService</code>).
+        </p>
+
+        <div class="space-y-6">
+          <div class="bg-white rounded-xl border border-neutral-200 p-4">
+            <p class="text-xs text-neutral-500 mb-3 font-medium uppercase tracking-wider">
+              Tryb edytowalny (commit) – używany w /profile, enrollment-slot-modal
+            </p>
+            <app-user-profile-card
+              [user]="profileCardDemoUser()"
+              context="profile"
+              [canEditName]="true"
+              [canEditAvatar]="true"
+            />
+            <p class="text-xs text-neutral-400 mt-3">
+              Klik „edit" obok nazwy/avatara → tryb edycji + przyciski „Zapisz/Anuluj". Parent łapie
+              <code class="bg-white px-1 rounded text-[10px]">displayNameChange</code> /
+              <code class="bg-white px-1 rounded text-[10px]">avatarSeedChange</code>.
+            </p>
+          </div>
+
+          <div class="bg-white rounded-xl border border-neutral-200 p-4">
+            <p class="text-xs text-neutral-500 mb-3 font-medium uppercase tracking-wider">
+              Tryb tylko do odczytu (canEdit*=false)
+            </p>
+            <app-user-profile-card
+              [user]="profileCardDemoUser()"
+              context="participant"
+              [canEditName]="false"
+              [canEditAvatar]="false"
+            />
+            <p class="text-xs text-neutral-400 mt-3">Brak przycisków edycji – widok statyczny.</p>
+          </div>
+
+          <div class="bg-white rounded-xl border border-neutral-200 p-4">
+            <p class="text-xs text-neutral-500 mb-3 font-medium uppercase tracking-wider">
+              Tryb draft (forceEditingDisplayName=true) – używany w app-join-rules-overlay
+            </p>
+            <app-user-profile-card
+              [user]="{
+                id: 'draft-demo',
+                displayName: profileCardDraftName(),
+                avatarSeed: profileCardDraftSeed(),
+              }"
+              context="participant"
+              [canEditName]="true"
+              [canEditAvatar]="true"
+              [forceEditingDisplayName]="true"
+              (displayNameInput)="profileCardDraftName.set($event)"
+              (avatarSeedPreview)="profileCardDraftSeed.set($event)"
+              variant="overlay"
+            />
+            <p class="text-xs text-neutral-400 mt-3">
+              Input nazwy widoczny od razu (live emit
+              <code class="bg-white px-1 rounded text-[10px]">displayNameInput</code>
+              przy każdej zmianie). Avatar edytowany identycznie jak w commit – picker „Obecny / Nowy" z przyciskami
+              „Zapisz/Anuluj"; po klik „Zapisz" emit przez
+              <code class="bg-white px-1 rounded text-[10px]">avatarSeedPreview</code>. Parent commituje całość przy
+              submit.
+            </p>
+          </div>
+        </div>
+      </section>
+    }
+
     <!-- ══════════════ EVENT STATUS BARS ══════════════ -->
     @if (activeSection() === 'event-status-bars') {
       <section class="space-y-8">

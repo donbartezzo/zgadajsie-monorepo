@@ -105,10 +105,22 @@ export class EventService {
     return this.payEnrollment(enrollmentId);
   }
 
-  joinGuest(eventId: string, displayName: string, roleKey?: string): Observable<Enrollment> {
+  joinGuest(
+    eventId: string,
+    displayName: string,
+    roleKey?: string,
+    avatarSeed?: string,
+    userId?: string,
+  ): Observable<Enrollment> {
     const body: JoinGuestRequest = { displayName };
     if (roleKey) {
       body.roleKey = roleKey;
+    }
+    if (avatarSeed) {
+      body.avatarSeed = avatarSeed;
+    }
+    if (userId) {
+      body.userId = userId;
     }
     return this.http.post<Enrollment>(`${this.apiUrl}/${eventId}/join-guest`, body);
   }

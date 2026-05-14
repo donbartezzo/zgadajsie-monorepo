@@ -16,8 +16,10 @@ import { Event as EventModel, Participation } from '../../../shared/types';
 import { JoinWizardConfig } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { UserService } from '../../../core/services/user.service';
+import { ProfileBroadcastService } from '../../../core/services/profile-broadcast.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
 import { ConfirmModalService } from '../../../shared/ui/confirm-modal/confirm-modal.service';
+import { generateAvatarSeed } from '../../../shared/user/utils/avatar-seed.util';
 import { MAX_GUESTS_PER_USER, MAX_GUESTS_PER_ORGANIZER, DisciplineRole } from '@zgadajsie/shared';
 import { JoinRulesMyParticipantsStepComponent } from './join-rules/join-rules-my-participants-step.component';
 import { JoinRulesAcceptanceStepComponent } from './join-rules/join-rules-acceptance-step.component';
@@ -40,6 +42,7 @@ const WITHOUT_SLOT_STATUSES = ['PENDING', 'WITHDRAWN', 'REJECTED'] as const;
 export class JoinRulesOverlayComponent {
   private readonly auth = inject(AuthService);
   private readonly userService = inject(UserService);
+  private readonly profileBroadcast = inject(ProfileBroadcastService);
   private readonly snackbar = inject(SnackbarService);
   private readonly confirmModal = inject(ConfirmModalService);
   private readonly transloco = inject(TranslocoService);
@@ -53,7 +56,12 @@ export class JoinRulesOverlayComponent {
 
   readonly closed = output<void>();
   readonly joinConfirmed = output<string | undefined>();
-  readonly guestConfirmed = output<{ displayName: string; roleKey?: string }>();
+  readonly guestConfirmed = output<{
+    displayName: string;
+    avatarSeed?: string;
+    roleKey?: string;
+    userId?: string;
+  }>();
   readonly rejoinParticipantConfirmed = output<Participation>();
   readonly roleChangeConfirmed = output<{ participationId: string; roleKey: string }>();
 
@@ -61,6 +69,7 @@ export class JoinRulesOverlayComponent {
   readonly isAccountVerified = computed(() => this.auth.isActive());
 
   // ── Step 0 state ──
+  readonly currentUser = computed(() => this.auth.currentUser());
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
 
   readonly participantsWithoutSlot = computed(() => {
@@ -79,6 +88,11 @@ export class JoinRulesOverlayComponent {
   // ── Step 2 state ──
   readonly participantType = signal<'self' | 'guest'>('self');
   readonly participantName = signal('');
+  readonly participantAvatarSeed = signal<string | null>(null);
+  // Client-generated UUID for new guests. Pinned for the whole step-2 session so
+  // the avatar preview (computed from id + seed) is identical to the avatar in
+  // the participants grid after creation. Null for 'self' (we use real user id).
+  readonly participantGuestId = signal<string | null>(null);
   readonly selectedRoleKey = signal<string | null>(null);
   readonly submitting = signal(false);
 
@@ -226,11 +240,12 @@ export class JoinRulesOverlayComponent {
       }
     });
 
-    // When type changes on step 2, sync name field
+    // When type changes on step 2, sync name field and avatar seed
     effect(() => {
       const type = this.participantType();
       if (this.currentStep() === 2) {
         this.syncNameFromType(type);
+        this.syncAvatarSeedFromType(type);
       }
     });
 
@@ -241,6 +256,8 @@ export class JoinRulesOverlayComponent {
         this.currentStep.set(1);
         this.participantType.set('self');
         this.participantName.set('');
+        this.participantAvatarSeed.set(null);
+        this.participantGuestId.set(null);
         this.selectedRoleKey.set(null);
         this.submitting.set(false);
       }
@@ -255,6 +272,19 @@ export class JoinRulesOverlayComponent {
     }
   }
 
+  private syncAvatarSeedFromType(type: 'self' | 'guest'): void {
+    if (type === 'self') {
+      this.participantAvatarSeed.set(this.auth.currentUser()?.avatarSeed ?? null);
+      this.participantGuestId.set(null);
+    } else {
+      // Generate fresh seed AND stable UUID for guest. Avatar fingerprint uses
+      // both (userId + avatarSeed), so we pre-generate the user id here and
+      // send it to backend at submit time — keeps preview consistent with final.
+      this.participantAvatarSeed.set(generateAvatarSeed());
+      this.participantGuestId.set(crypto.randomUUID());
+    }
+  }
+
   goToStep1(): void {
     this.currentStep.set(1);
   }
@@ -263,6 +293,7 @@ export class JoinRulesOverlayComponent {
     if (!this.canProceedStep1()) return;
     this.currentStep.set(2);
     this.syncNameFromType(this.participantType());
+    this.syncAvatarSeedFromType(this.participantType());
   }
 
   async onRejoinParticipant(p: Participation): Promise<void> {
@@ -331,21 +362,41 @@ export class JoinRulesOverlayComponent {
         );
         return;
       }
-      this.guestConfirmed.emit({ displayName: name, roleKey });
+      this.guestConfirmed.emit({
+        displayName: name,
+        avatarSeed: this.participantAvatarSeed() ?? undefined,
+        roleKey,
+        userId: this.participantGuestId() ?? undefined,
+      });
       return;
     }
 
-    // Self join - update profile first if name was changed
+    // Self join - update profile first if name or avatar was changed
     const originalName = this.currentUserDisplayName();
-    if (name !== originalName) {
+    const originalAvatarSeed = this.auth.currentUser()?.avatarSeed ?? null;
+    const currentAvatarSeed = this.participantAvatarSeed();
+
+    const nameChanged = name !== originalName;
+    const avatarChanged = currentAvatarSeed !== null && currentAvatarSeed !== originalAvatarSeed;
+
+    if (nameChanged || avatarChanged) {
+      const payload: { displayName?: string; avatarSeed?: string } = {};
+      if (nameChanged) payload.displayName = name;
+      if (avatarChanged) payload.avatarSeed = currentAvatarSeed;
+
       this.submitting.set(true);
-      this.userService.updateProfile({ displayName: name }).subscribe({
-        next: () => {
+      this.userService.updateProfile(payload).subscribe({
+        next: (updatedUser) => {
+          this.auth.updateUser(updatedUser);
+          this.profileBroadcast.notifyUserChange(updatedUser.id, {
+            displayName: nameChanged ? updatedUser.displayName : undefined,
+            avatarSeed: avatarChanged ? (updatedUser.avatarSeed ?? null) : undefined,
+          });
           this.submitting.set(false);
           this.joinConfirmed.emit(roleKey);
         },
         error: () => {
-          this.snackbar.error('Nie udało się zaktualizować nazwy profilu');
+          this.snackbar.error('Nie udało się zaktualizować profilu');
           this.submitting.set(false);
         },
       });

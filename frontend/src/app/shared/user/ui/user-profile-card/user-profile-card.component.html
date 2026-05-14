@@ -1,12 +1,13 @@
 @let _editingDisplayNameMode = editingDisplayNameMode();
 @let _editingAvatarMode = editingAvatarMode();
 @let _displayName = displayName();
-@let _canEditName = canEditName();
-@let _canEditAvatar = canEditAvatar();
+@let _canEditNameVal = _canEditName();
+@let _canEditAvatarVal = _canEditAvatar();
+@let _forceEditingDisplayNameVal = _forceEditingDisplayName();
 @let _subtitle = subtitle();
 @let _allStatusBadges = allStatusBadges();
 @let _hasChanges = hasChanges();
-@let _saving = saving();
+@let _isSavingVal = _isSaving();
 @let _stats = stats();
 @let _description = description();
 
@@ -17,7 +18,7 @@
     <div class="relative">
       <app-user-avatar [user]="avatarUser()" [size]="avatarSize()" shape="rounded" />
 
-      @if (_canEditAvatar && !_editingDisplayNameMode) {
+      @if (_canEditAvatarVal && (!_editingDisplayNameMode || _forceEditingDisplayNameVal)) {
         <app-button
           class="absolute bottom-0 right-0 shadow-lg"
           [iconOnly]="true"
@@ -36,16 +37,16 @@
     <div class="mt-3 flex items-center gap-2" [ngClass]="nameClass()">
       @if (_editingDisplayNameMode) {
         <input
-          [(ngModel)]="tempDisplayName"
-          class="border-b-2 border-primary-500 bg-transparent text-center font-bold text-neutral-900 outline-hidden"
-          [ngClass]="nameInputClass()"
-          (keyup.enter)="saveChanges()"
-          (keyup.escape)="cancelEditing()"
+          [ngModel]="tempDisplayName()"
+          (ngModelChange)="onTempDisplayNameChange($event)"
+          class="rounded-xl border bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500 border-neutral-300"
+          (keyup.enter)="confirmEdit()"
+          (keyup.escape)="onEscapeKey()"
         />
       } @else {
         <h2 class="font-bold text-neutral-900">{{ _displayName }}</h2>
       }
-      @if (_canEditName && !_editingDisplayNameMode) {
+      @if (_canEditNameVal && !_editingDisplayNameMode) {
         <app-button
           [iconOnly]="true"
           iconLeft="edit"
@@ -58,10 +59,10 @@
     </div>
 
     @if (_subtitle && !_editingDisplayNameMode) {
-      <p class="-mt-0.5 text-xs font-medium text-primary-500">{{ _subtitle }}</p>
+      <app-badge class="mt-1" color="primary" size="xs">{{ _subtitle }}</app-badge>
     }
 
-    @if (_allStatusBadges.length > 0 && !_editingDisplayNameMode) {
+    @if (_allStatusBadges.length > 0) {
       <div class="mt-1.5 flex flex-col items-center gap-1.5">
         @for (badge of _allStatusBadges; track badge.type) {
           <app-status-indicator [type]="badge.type" [detail]="badge.detail ?? null" variant="icon-label" />
@@ -70,21 +71,25 @@
     }
   }
 
-  @if (_editingDisplayNameMode || _editingAvatarMode) {
+  <!-- Save/Cancel buttons:
+       - commit mode: visible while editing name OR avatar
+       - force mode: name input is always visible (no save/cancel for it),
+         but avatar still uses the picker so we show Save/Cancel for avatar only -->
+  @if (_editingAvatarMode || (_editingDisplayNameMode && !_forceEditingDisplayNameVal)) {
     <div class="mt-4 flex gap-2">
       <app-button
         appearance="soft"
         color="primary"
         size="sm"
-        [disabled]="!_hasChanges || _saving"
-        [loading]="_saving"
-        (clicked)="saveChanges()"
+        [disabled]="!_hasChanges || _isSavingVal"
+        [loading]="_isSavingVal"
+        (clicked)="confirmEdit()"
       >
         <app-icon name="check" size="xs" class="mr-1" />
         Zapisz
       </app-button>
 
-      <app-button appearance="outline" color="neutral" size="sm" [disabled]="_saving" (clicked)="cancelEditing()">
+      <app-button appearance="outline" color="neutral" size="sm" [disabled]="_isSavingVal" (clicked)="cancelEditing()">
         <app-icon name="x" size="xs" class="mr-1" />
         Anuluj
       </app-button>

@@ -5,6 +5,11 @@ import { EnrollmentGridItemComponent } from '../../../shared/enrollment/ui/enrol
 import { AuthService } from '../../../core/auth/auth.service';
 import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { NavigationService } from '../../../core/services/navigation.service';
+import { ModalService } from '../../../shared/ui/modal/modal.service';
+import {
+  EnrollmentSlotModalComponent,
+  EnrollmentModalData,
+} from '../../../shared/enrollment/ui/enrollment-slot-modal/enrollment-slot-modal.component';
 import { Event as EventModel, WaitingReason, Participation } from '../../../shared/types';
 import { isEventJoinable } from '../../../shared/utils';
 
@@ -23,7 +28,7 @@ import { isEventJoinable } from '../../../shared/utils';
               <app-enrollment-grid-item
                 [participant]="p"
                 [showRole]="true"
-                (clicked)="navigateToParticipants()"
+                (clicked)="onParticipantClick(p)"
               />
             }
           </div>
@@ -79,6 +84,7 @@ export class MyParticipationDetailsOverlayComponent {
   private readonly auth = inject(AuthService);
   private readonly navigation = inject(NavigationService);
   private readonly overlays = inject(BottomOverlaysService);
+  private readonly modalService = inject(ModalService);
 
   readonly open = input(false);
   readonly event = input<EventModel | null>(null);
@@ -204,6 +210,19 @@ export class MyParticipationDetailsOverlayComponent {
     if (event) {
       this.navigation.navigateToEventParticipants(event.id, event.citySlug);
     }
+  }
+
+  onParticipantClick(participation: Participation): void {
+    const event = this.event();
+    if (!event) return;
+
+    const data: EnrollmentModalData = {
+      participant: participation,
+      slot: participation.slot ?? null,
+      event,
+      allParticipants: this.participants(),
+    };
+    this.modalService.open(EnrollmentSlotModalComponent, { data });
   }
 
   handleParticipantOption(item: LinkListItem): void {
