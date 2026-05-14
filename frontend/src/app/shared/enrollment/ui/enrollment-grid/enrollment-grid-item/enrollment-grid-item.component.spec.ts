@@ -170,10 +170,10 @@ describe('EnrollmentGridItemComponent - computed signals', () => {
   });
 
   describe('buttonClass()', () => {
-    it('dla bieżącego użytkownika zawiera ring-primary-100', () => {
+    it('dla bieżącego użytkownika zawiera ring-primary-400', () => {
       const { fixture, c } = create(makeParticipant({ userId: 'me' }));
       fixture.componentRef.setInput('currentUserId', 'me');
-      expect(c.buttonClass()).toContain('ring-primary-100');
+      expect(c.buttonClass()).toContain('ring-primary-400');
     });
 
     it('dla WITHDRAWN zawiera ring-neutral-200', () => {
