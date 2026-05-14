@@ -68,6 +68,64 @@ export const COMMON_SEED_DATA = {
       'f6b092ca-bac9-497e-a217-d1cb3ccd5444.webp',
     ],
   } as Record<string, string[]>,
+
+  // Fake users - imiona polskie
+  fakeUsers: {
+    maleNames: [
+      'Paweł Kowalski',
+      'Tomek Zieliński',
+      'Marek Woźniak',
+      'Krzysztof Bąk',
+      'Michał Lewandowski',
+      'Robert Dąbrowski',
+      'Piotr Szymański',
+      'Andrzej Jankowski',
+      'Grzegorz Mazur',
+      'Jacek Piątek',
+      'Adam Romanowski',
+      'Łukasz Tomczak',
+      'Marcin Nowak',
+      'Tadeusz Figurski',
+      'Jan Czerwiński',
+      'Stanisław Górski',
+      'Rafał Hoffman',
+      'Daniel Iwański',
+      'Bartosz Ostrowski',
+      'Jakub Adamski',
+      'Kamil Walczak',
+      'Patryk Kowalczyk',
+      'Maciej Wróbel',
+      'Damian Urban',
+      'Hubert Kwiatkowski',
+      'Filip Zając',
+      'Wiktor Ekiert',
+      'Oskar Rybak',
+      'Antoni Sikora',
+      'Franciszek Tylek',
+      'Leon Urbanowski',
+      'Szymon Wiśniewski',
+      'Ignacy Wójcik',
+      'Konrad Kowalewski',
+      'Borys Nowicki',
+      'Tymoteusz Zawadzki',
+      'Błażej Adamczyk',
+      'Cyprian Baran',
+      'Eryk Cieślik',
+      'Fryderyk Dobrowolski',
+    ] as const,
+    femaleNames: [
+      'Anna Michalak',
+      'Kasia Wójcik',
+      'Magda Zając',
+      'Monika Kowalska',
+      'Joanna Sadowska',
+      'Agnieszka Pawlak',
+      'Marta Lewandowska',
+      'Natalia Tomczak',
+      'Wiktoria Romanowska',
+      'Zuzanna Nowak',
+    ] as const,
+  } as const,
 } as const;
 
 // Funkcje pomocnicze do tworzenia danych
@@ -159,4 +217,57 @@ export async function createCommonSeedData(prisma: any) {
   const coverImages = await createCoverImages(prisma);
 
   return { cities, disciplines, facilities, levels, coverImages };
+}
+
+// Funkcja do tworzenia fake users
+export async function createFakeUsers(prisma: any) {
+  console.log('Tworzę fake users...');
+
+  function generateAvatarSeed(): string {
+    return Math.random().toString(36).substring(2, 10);
+  }
+
+  for (const name of COMMON_SEED_DATA.fakeUsers.maleNames) {
+    const uuid = crypto.randomUUID();
+    const email = `fake-${uuid}@fake.zgadajsie.pl`;
+    const avatarSeed = generateAvatarSeed();
+
+    await prisma.user.create({
+      data: {
+        email,
+        displayName: name,
+        passwordHash: null,
+        accountType: 'FAKE',
+        gender: 'MALE',
+        isActive: true,
+        avatarSeed,
+        role: 'USER',
+        isEmailVerified: true,
+      },
+    });
+  }
+
+  for (const name of COMMON_SEED_DATA.fakeUsers.femaleNames) {
+    const uuid = crypto.randomUUID();
+    const email = `fake-${uuid}@fake.zgadajsie.pl`;
+    const avatarSeed = generateAvatarSeed();
+
+    await prisma.user.create({
+      data: {
+        email,
+        displayName: name,
+        passwordHash: null,
+        accountType: 'FAKE',
+        gender: 'FEMALE',
+        isActive: true,
+        avatarSeed,
+        role: 'USER',
+        isEmailVerified: true,
+      },
+    });
+  }
+
+  console.log(
+    `Fake users utworzeni (${COMMON_SEED_DATA.fakeUsers.maleNames.length} mężczyzn, ${COMMON_SEED_DATA.fakeUsers.femaleNames.length} kobiet)`,
+  );
 }

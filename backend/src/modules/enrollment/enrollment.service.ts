@@ -4,6 +4,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
@@ -16,6 +17,7 @@ import { isEventEnded, isEventJoinable } from '../events/event-time-status.util'
 import { getEnrollmentPhase } from '../events/enrollment-phase.util';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { EventRoleConfig, AvailableRole } from '../slots/slot.types';
+import { FakeUsersMonitorService } from '../fake-users/fake-users-monitor.service';
 import {
   buildEventUrl,
   EventRealtimeScope,
@@ -29,6 +31,7 @@ import {
   PARTICIPANT_WITHDREW_MESSAGE,
   PARTICIPANT_ALREADY_HAS_SLOT_MESSAGE,
   ENROLLMENT_BLOCKED,
+  FAKE_USERS_MIN_FREE_SLOTS_BUFFER,
 } from '@zgadajsie/shared';
 import { featureFlags } from '../../common/config/feature-flags';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
@@ -50,7 +53,7 @@ type JoinEventLike = {
 
 function deriveStatus(p: EnrollmentWithSlot): string {
   if (!p.wantsIn) {
-    return p.withdrawnBy === 'ORGANIZER' ? 'REJECTED' : 'WITHDRAWN';
+    return p.withdrawnBy === 'ORGANIZER' || p.withdrawnBy === 'ADMIN' ? 'REJECTED' : 'WITHDRAWN';
   }
   if (p.slot) {
     return p.slot.confirmed ? 'CONFIRMED' : 'APPROVED';
@@ -75,6 +78,7 @@ export class EnrollmentService {
     private slotService: SlotService,
     private eligibility: EnrollmentEligibilityService,
     private eventRealtime: EventRealtimeService,
+    @Optional() private fakeUsersMonitor?: FakeUsersMonitorService,
   ) {}
 
   async join(eventId: string, user: AuthUser, roleKey?: string) {
@@ -130,6 +134,7 @@ export class EnrollmentService {
       });
 
       this.notifyEventChanged(eventId, 'all');
+      await this.triggerFakeUserWithdrawIfNeeded(eventId);
       return result;
     }
 
@@ -799,6 +804,7 @@ export class EnrollmentService {
     };
 
     this.notifyEventChanged(eventId, 'participants');
+    await this.triggerFakeUserWithdrawIfNeeded(eventId);
     return result;
   }
 
@@ -888,6 +894,7 @@ export class EnrollmentService {
     });
 
     this.notifyEventChanged(eventId, 'all');
+    await this.triggerFakeUserWithdrawIfNeeded(eventId);
     return result;
   }
 
@@ -1312,9 +1319,13 @@ export class EnrollmentService {
       });
       const user = await this.prisma.user.findUnique({
         where: { id: recipientId },
-        select: { email: true, displayName: true },
+        select: { email: true, displayName: true, accountType: true },
       });
       if (!user) {
+        return;
+      }
+      // Skip powiadomień dla fake users
+      if (user.accountType === 'FAKE') {
         return;
       }
       const eventLink = event ? buildEventUrl(event.city.slug, eventId) : undefined;
@@ -1368,5 +1379,95 @@ export class EnrollmentService {
         this.logger.error(`Failed to notify waiting about free slot: ${err}`);
       }
     });
+  }
+
+  private async triggerFakeUserWithdrawIfNeeded(eventId: string): Promise<void> {
+    if (!this.fakeUsersMonitor || !featureFlags.enableFakeUsers) {
+      return;
+    }
+
+    // Sprawdź czy brakuje wolnych miejsc (z uwzględnieniem bufora)
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { maxParticipants: true },
+    });
+
+    if (!event) {
+      return;
+    }
+
+    const activeEnrollments = await this.prisma.eventEnrollment.count({
+      where: {
+        eventId,
+        wantsIn: true,
+      },
+    });
+
+    const freePlaces = event.maxParticipants - activeEnrollments;
+
+    // Jeśli brak wolnych miejsc (mniej niż bufor), zaplanuj withdrawal fake usera
+    if (freePlaces < FAKE_USERS_MIN_FREE_SLOTS_BUFFER) {
+      try {
+        await this.fakeUsersMonitor.monitorSingleEvent(eventId);
+      } catch (err) {
+        this.logger.error(`Failed to trigger fake user withdrawal for event ${eventId}: ${err}`);
+      }
+    }
+  }
+
+  async adminWithdrawUser(enrollmentId: string, adminUser: AuthUser): Promise<void> {
+    const { isAdmin } = resolveUserContext(adminUser);
+
+    if (!isAdmin) {
+      throw new ForbiddenException('Tylko administrator może wypisać użytkownika');
+    }
+
+    const enrollment = await this.prisma.eventEnrollment.findUnique({
+      where: { id: enrollmentId },
+      include: { event: true, user: true, slot: true },
+    });
+
+    if (!enrollment) {
+      throw new NotFoundException(PARTICIPATION_NOT_FOUND_MESSAGE);
+    }
+
+    // Fake user: withdrawnBy = USER, brak powiadomienia
+    if (enrollment.user.accountType === 'FAKE') {
+      await this.prisma.eventEnrollment.update({
+        where: { id: enrollmentId },
+        data: {
+          wantsIn: false,
+          withdrawnBy: 'USER',
+        },
+      });
+      return;
+    }
+
+    // Real user: withdrawnBy = ADMIN, powiadomienie "administrator serwisu"
+    await this.prisma.eventEnrollment.update({
+      where: { id: enrollmentId },
+      data: {
+        wantsIn: false,
+        withdrawnBy: 'ADMIN',
+      },
+    });
+
+    // Powiadomienie użytkownika
+    await this.emailService.sendParticipationStatusEmail(
+      enrollment.user.email,
+      enrollment.user.displayName,
+      enrollment.event.title,
+      'REJECTED',
+      'Administrator serwisu wypisał Cię z tego wydarzenia.',
+    );
+
+    await this.pushService.notifyParticipationStatus(
+      enrollment.userId,
+      enrollment.event.title,
+      'REJECTED',
+      'Administrator serwisu wypisał Cię z tego wydarzenia.',
+    );
+
+    this.notifyEventChanged(enrollment.eventId, 'participants');
   }
 }

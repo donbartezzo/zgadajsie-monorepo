@@ -18,6 +18,7 @@ import { LinkedParticipantChipComponent } from '../linked-participant-chip/linke
 import { StatusIndicatorComponent } from '../../../ui/status-indicator/status-indicator.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { EventService } from '../../../../core/services/event.service';
+import { AdminService } from '../../../../core/services/admin.service';
 import { ModerationService } from '../../../../core/services/moderation.service';
 import { SnackbarService, SnackbarType } from '../../../ui/snackbar/snackbar.service';
 import { ConfirmModalService } from '../../../ui/confirm-modal/confirm-modal.service';
@@ -90,6 +91,7 @@ export class EnrollmentSlotModalComponent {
   protected readonly modalService = inject(ModalService);
   private readonly auth = inject(AuthService);
   private readonly eventService = inject(EventService);
+  private readonly adminService = inject(AdminService);
   private readonly moderationService = inject(ModerationService);
   private readonly snackbar = inject(SnackbarService);
   private readonly confirmModal = inject(ConfirmModalService);
@@ -142,6 +144,8 @@ export class EnrollmentSlotModalComponent {
     return !!userId && e?.organizerId === userId;
   });
 
+  readonly isAdmin = computed(() => this.auth.isAdmin());
+
   readonly isCurrentUserParticipant = computed(() => {
     const p = this.participant();
     return !!p && p.userId === this.currentUserId();
@@ -161,6 +165,12 @@ export class EnrollmentSlotModalComponent {
   readonly isWithdrawnStatus = computed(() => {
     const s = this.participant()?.status;
     return s === 'WITHDRAWN' || s === 'REJECTED';
+  });
+
+  readonly isWithdrawnByAdmin = computed(() => {
+    const p = this.participant();
+    if (!p) return false;
+    return 'withdrawnBy' in p && p.withdrawnBy === 'ADMIN';
   });
 
   readonly isBanned = computed(
@@ -310,7 +320,7 @@ export class EnrollmentSlotModalComponent {
     const p = this.participant();
     const slotId = this.slotId();
 
-    if (!this.isOrganizer()) return [];
+    if (!this.isOrganizer() && !this.isAdmin()) return [];
 
     if (!p) {
       if (!slotId) return [];
@@ -344,6 +354,9 @@ export class EnrollmentSlotModalComponent {
     }
     if (isActive) {
       transitions.push({ value: 'kick', label: 'Wypisz uczestnika' });
+    }
+    if (this.isAdmin() && isActive) {
+      transitions.push({ value: 'adminWithdraw', label: 'Wypisz przez admina (z powiadomieniem)' });
     }
     if (isWithdrawn && !isBanned) {
       transitions.push({ value: 'rejoinParticipant', label: 'Przywróć uczestnika' });
@@ -411,6 +424,8 @@ export class EnrollmentSlotModalComponent {
         return this.onReject();
       case 'kick':
         return this.onKick();
+      case 'adminWithdraw':
+        return this.onAdminWithdraw();
       case 'rejoinParticipant':
         return this.onOrganizerRejoin();
       case 'changeRole':
@@ -474,6 +489,26 @@ export class EnrollmentSlotModalComponent {
     await this.executeAction(
       this.eventService.releaseSlot(p.id),
       'Uczestnik wypisany z wydarzenia',
+      'Nie udało się wypisać uczestnika',
+      'info',
+    );
+  }
+
+  private async onAdminWithdraw(): Promise<void> {
+    const p = this.participant();
+    if (!p) return;
+    const name = p.user?.displayName ?? 'uczestnika';
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Wypisać uczestnika przez admina?',
+      message: `Użytkownik ${name} zostanie wypisany z wydarzenia przez administratora serwisu z powiadomieniem.`,
+      confirmLabel: 'Wypisz',
+      cancelLabel: 'Anuluj',
+      color: 'danger',
+    });
+    if (!confirmed) return;
+    await this.executeAction(
+      this.adminService.adminWithdrawUser(p.id),
+      'Uczestnik wypisany przez admina',
       'Nie udało się wypisać uczestnika',
       'info',
     );

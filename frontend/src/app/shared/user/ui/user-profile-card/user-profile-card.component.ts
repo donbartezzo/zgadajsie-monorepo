@@ -88,6 +88,7 @@ export class UserProfileCardComponent {
   readonly avatarSeedChange = output<string>();
   readonly displayNameInput = output<string>();
   readonly avatarSeedPreview = output<string>();
+  readonly cancelled = output<void>();
 
   readonly editingDisplayNameMode = signal(false);
   readonly editingAvatarMode = signal(false);
@@ -225,7 +226,7 @@ export class UserProfileCardComponent {
     if (this.editingAvatarMode()) {
       return this.pendingAvatarSeed() !== null;
     }
-    const nameChanged = this.tempDisplayName().trim() !== this.displayName();
+    const nameChanged = (this.tempDisplayName() ?? '').trim() !== this.displayName();
     return nameChanged;
   });
 
@@ -279,6 +280,7 @@ export class UserProfileCardComponent {
     this.editingAvatarMode.set(false);
     this.tempDisplayName.set('');
     this.pendingAvatarSeed.set(null);
+    this.cancelled.emit();
     // In force mode, keep name editing visible after avatar cancel
     if (this.forceEditingDisplayName() && wasAvatarMode) {
       this.editingDisplayNameMode.set(true);
@@ -306,7 +308,7 @@ export class UserProfileCardComponent {
         }
       }
     } else if (this.editingDisplayNameMode()) {
-      const name = this.tempDisplayName().trim();
+      const name = (this.tempDisplayName() ?? '').trim();
       if (name && name !== this.displayName()) {
         this.displayNameChange.emit(name);
         if (!this.forceEditingDisplayName()) {

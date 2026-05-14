@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { hashPasswordForSeed } from '../src/common/utils/password.util';
-import { createCommonSeedData, COMMON_SEED_DATA } from './seed-common';
+import { createCommonSeedData, createFakeUsers, COMMON_SEED_DATA } from './seed-common';
 import { syncCoverImagesFromFilesystem } from '../src/modules/cover-images/cover-images-sync.util';
 import { E2E_SEED } from './e2e-constants';
 
@@ -218,6 +218,9 @@ async function main() {
       isEmailVerified: true,
     },
   });
+
+  // ─── Fake users ───────────────────────────────────────────────────────────────
+  await createFakeUsers(prisma);
 
   // ─── Dodatkowi użytkownicy dla dużego wydarzenia testowego ─────────────────────
   console.log('Tworzę dodatkowych użytkowników dla dużego wydarzenia...');
@@ -1302,6 +1305,10 @@ async function main() {
   console.log('             anna.nowak@example.com, marek.wisniewski@example.com,');
   console.log(
     '             kasia.zielinska@example.com, tomek.lewandowski@example.com (Test1234!)',
+  );
+  console.log('             + 40 dodatkowych użytkowników testowych');
+  console.log(
+    `             + ${COMMON_SEED_DATA.fakeUsers.maleNames.length + COMMON_SEED_DATA.fakeUsers.femaleNames.length} fake users (${COMMON_SEED_DATA.fakeUsers.maleNames.length} mężczyzn, ${COMMON_SEED_DATA.fakeUsers.femaleNames.length} kobiet)`,
   );
   console.log('');
   console.log('Wydarzenia:');

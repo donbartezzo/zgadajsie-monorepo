@@ -3,7 +3,6 @@
 @if (isLoading()) {
   <app-loading-spinner></app-loading-spinner>
 } @else if (event(); as e) {
-  @let _isOrganizer = isOrganizer();
   @let _participants = participants();
   @let _countdown = countdown();
   @let _notificationBars = notificationBars();
@@ -230,7 +229,7 @@
             </div>
           </div>
           <div class="flex flex-wrap gap-2">
-            @if (_isOrganizer) {
+            @if (canManageEvent()) {
               <div data-testid="organizer-panel" class="flex flex-wrap gap-2">
                 <app-button appearance="outline" color="primary" size="sm" (clicked)="openOrganizerActions()">
                   <app-icon name="settings" size="sm"></app-icon>

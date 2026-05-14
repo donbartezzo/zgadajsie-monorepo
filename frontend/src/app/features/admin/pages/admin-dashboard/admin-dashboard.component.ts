@@ -72,6 +72,14 @@ import { AdminService } from '../../../../core/services/admin.service';
             </div></app-card
           ></a
         >
+        <a routerLink="/admin/fake-users"
+          ><app-card
+            ><div class="flex items-center gap-3">
+              <app-icon name="user" size="sm"></app-icon>
+              <span class="text-sm font-medium text-neutral-900">Fake users</span>
+            </div></app-card
+          ></a
+        >
       </div>
     </div>
   `,

@@ -44,6 +44,10 @@ import { EventStatus } from '@zgadajsie/shared';
                   </p>
                 </div>
                 <div class="flex gap-1">
+                  <a [routerLink]="['/o', 'w', e.id, 'manage']"
+                    ><app-button appearance="outline" color="neutral" size="sm"
+                      ><app-icon name="settings" size="sm"></app-icon></app-button
+                  ></a>
                   <a [routerLink]="['/o', 'w', e.id, 'edit']"
                     ><app-button appearance="outline" color="neutral" size="sm"
                       ><app-icon name="edit" size="sm"></app-icon></app-button

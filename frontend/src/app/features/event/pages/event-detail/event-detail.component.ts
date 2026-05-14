@@ -95,6 +95,9 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly isPreEnrollment = this.eventArea.isPreEnrollment;
   readonly notificationBars = this.eventArea.notificationBars;
 
+  // Admin can manage events like organizer
+  readonly canManageEvent = computed(() => this.isOrganizer() || this.auth.isAdmin());
+
   readonly participantAvatarItems = computed<UserAvatarListItem[]>(() => {
     return this.participants().map((p) => ({
       user: p.user as UserBrief,

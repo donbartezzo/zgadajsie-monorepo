@@ -8,3 +8,4 @@ export * from './enrollment.constants';
 export * from './error-messages';
 export * from './participant.constants';
 export * from './timezone.constants';
+export * from './fake-users.constants';

@@ -205,6 +205,8 @@
         <div class="py-2 text-center text-sm text-neutral-400">
           @if (_participant?.status === 'REJECTED') {
             Zgłoszenie zostało odrzucone przez organizatora.
+          } @else if (isWithdrawnByAdmin()) {
+            Uczestnik został usunięty przez administratora serwisu.
           } @else {
             Uczestnik zrezygnował z udziału w wydarzeniu.
           }

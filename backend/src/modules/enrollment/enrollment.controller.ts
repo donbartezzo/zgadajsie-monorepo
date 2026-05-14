@@ -5,7 +5,9 @@ import { JoinEventDto, JoinGuestDto, ChangeRoleDto } from './dto/join-event.dto'
 import { UpdateGuestDto } from './dto/update-guest.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { IsActiveGuard } from '../auth/guards/is-active.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
 @UseGuards(JwtAuthGuard, IsActiveGuard)
@@ -115,5 +117,12 @@ export class EnrollmentController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.slotService.assignParticipantToLockedSlot(slotId, enrollmentId, user);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @Post('enrollments/:id/admin-withdraw')
+  adminWithdraw(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.enrollmentService.adminWithdrawUser(id, user);
   }
 }

@@ -29,7 +29,8 @@ export const organizerGuard: CanActivateFn = (route) => {
         return false;
       }
 
-      if (event.organizerId === currentUser.id) {
+      // Admin has access to all events
+      if (authService.isAdmin() || event.organizerId === currentUser.id) {
         // Store event in a temporary property for the component to use
         (route as any)._resolvedEvent = event;
         return true;

@@ -6,9 +6,10 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { SlotModule } from '../slots/slot.module';
 import { EventRealtimeModule } from '../realtime/event-realtime.module';
+import { FakeUsersModule } from '../fake-users/fake-users.module';
 
 @Module({
-  imports: [NotificationsModule, PaymentsModule, SlotModule, EventRealtimeModule],
+  imports: [NotificationsModule, PaymentsModule, SlotModule, EventRealtimeModule, FakeUsersModule],
   controllers: [EnrollmentController],
   providers: [EnrollmentService, EnrollmentEligibilityService],
   exports: [EnrollmentService, EnrollmentEligibilityService],

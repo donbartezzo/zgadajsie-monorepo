@@ -7,6 +7,8 @@ export const USER_SELECT = {
   id: true,
   displayName: true,
   avatarSeed: true,
+  accountType: true,
+  gender: true,
 } as const;
 
 export const USER_SELECT_WITH_EMAIL = {

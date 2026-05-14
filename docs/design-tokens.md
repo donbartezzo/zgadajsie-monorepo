@@ -424,3 +424,24 @@ Szablony emaili nie mogą korzystać z Tailwind ani CSS variables — klienty po
 1. Zmień wartości hex w `libs/src/lib/constants/color-palette.json`
 2. `pnpm tokens:generate` zregeneruje `_tokens.scss` (auto-run przed `nx build/serve frontend`)
 3. Tailwind automatycznie użyje nowych wartości — w foundation (przez JSON) i w semantic (przez CSS vars)
+
+---
+
+## Ikony (IconComponent)
+
+**Single Source of Truth:** `frontend/src/app/shared/ui/icon/icon.component.ts`
+
+### Jak dodać nową ikonę?
+
+1. Dodaj nazwę do typu `IconName` w `frontend/src/app/shared/ui/icon/icon.component.ts`
+2. Dodaj SVG w `@switch` bloku w template komponentu
+3. Użyj `currentColor` dla stroke/fill, aby kolor był ustawiany przez Tailwind classes
+4. Zaktualizuj tę dokumentację
+5. Zaktualizuj stronę `/dev/design-system`
+
+### Zasady
+
+- Zawsze używaj inline SVG przez `IconComponent`
+- Nigdy nie używaj `mat-icon`, font icons ani `<img src="*.svg">` dla ikon dekoracyjnych
+- SVG muszą używać `currentColor`, a kolor ustawiaj klasami Tailwind (np. `text-primary-500`)
+- Ikony są semantyczne — wybieraj nazwę odpowiadającą znaczeniu (np. `user`, `calendar`, `power`)

@@ -423,4 +423,37 @@ export class EventSeriesService {
       }
     });
   }
+
+  async setTargetOccupancy(seriesId: string, targetOccupancy: number | null) {
+    const series = await this.prisma.eventSeries.findUnique({
+      where: { id: seriesId },
+    });
+
+    if (!series) {
+      throw new NotFoundException('Serie wydarzeń nie została znaleziona');
+    }
+
+    // Walidacja: 1-100, null/0 = wyłączone
+    if (targetOccupancy !== null && targetOccupancy !== undefined) {
+      if (targetOccupancy < 0 || targetOccupancy > 100) {
+        throw new BadRequestException('targetOccupancy musi być między 0 a 100 (null = wyłączone)');
+      }
+      if (targetOccupancy === 0) {
+        targetOccupancy = null;
+      }
+    }
+
+    const updated = await this.prisma.eventSeries.update({
+      where: { id: seriesId },
+      data: { targetOccupancy },
+    });
+
+    // TODO: Propagacja w generatorze serii
+    // Będzie zaimplementowane w Faziie 4 (generator serii)
+
+    // TODO: Trigger natychmiastowego przeliczenia monitora po zmianie
+    // Będzie zaimplementowane w Faziie 6 (FakeUsersMonitorService)
+
+    return updated;
+  }
 }

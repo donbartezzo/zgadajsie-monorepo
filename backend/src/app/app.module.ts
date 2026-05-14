@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CronAdminModule } from '../common/cron-admin/cron-admin.module';
+import { ScheduledJobsModule } from '../common/scheduled-jobs/scheduled-jobs.module';
 import { PrismaModule } from '../modules/prisma/prisma.module';
 import { AuthModule } from '../modules/auth/auth.module';
 import { UsersModule } from '../modules/users/users.module';
@@ -24,6 +25,7 @@ import { CitySubscriptionsModule } from '../modules/city-subscriptions/city-subs
 import { SlotModule } from '../modules/slots/slot.module';
 import { EventSeriesModule } from '../modules/event-series/event-series.module';
 import { OrganizerModule } from '../modules/organizer/organizer.module';
+import { FakeUsersModule } from '../modules/fake-users/fake-users.module';
 
 @Module({
   imports: [
@@ -31,6 +33,7 @@ import { OrganizerModule } from '../modules/organizer/organizer.module';
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     CronAdminModule,
+    ScheduledJobsModule,
     PrismaModule,
     AuthModule,
     UsersModule,
@@ -49,6 +52,7 @@ import { OrganizerModule } from '../modules/organizer/organizer.module';
     CoverImagesModule,
     AnnouncementsModule,
     CitySubscriptionsModule,
+    FakeUsersModule,
     SlotModule,
   ],
   controllers: [AppController],

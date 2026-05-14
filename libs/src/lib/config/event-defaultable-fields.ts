@@ -9,4 +9,5 @@ export interface EventDefaultableFields {
   ageMin?: number;
   ageMax?: number;
   gender?: string;
+  targetOccupancy?: number | null;
 }

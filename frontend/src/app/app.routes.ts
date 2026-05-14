@@ -484,6 +484,18 @@ export const appRoutes: Route[] = [
       breadcrumb: { parent: '/admin', label: 'Panel admina' },
     },
   },
+  {
+    path: 'admin/fake-users',
+    loadComponent: () =>
+      import('./features/admin/pages/admin-fake-users/admin-fake-users.component').then(
+        (m) => m.AdminFakeUsersComponent,
+      ),
+    canActivate: [adminGuard],
+    data: {
+      title: 'Fake users',
+      breadcrumb: { parent: '/admin', label: 'Panel admina' },
+    },
+  },
 
   // ── Static ──
   {

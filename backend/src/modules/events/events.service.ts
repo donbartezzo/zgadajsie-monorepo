@@ -839,4 +839,34 @@ export class EventsService {
     const random = await this.coverImagesService.findRandomByDiscipline(disciplineSlug);
     return random?.id;
   }
+
+  async setTargetOccupancy(eventId: string, targetOccupancy: number | null) {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+    });
+
+    if (!event) {
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
+    }
+
+    // Walidacja: 1-100, null/0 = wyłączone
+    if (targetOccupancy !== null && targetOccupancy !== undefined) {
+      if (targetOccupancy < 0 || targetOccupancy > 100) {
+        throw new BadRequestException('targetOccupancy musi być między 0 a 100 (null = wyłączone)');
+      }
+      if (targetOccupancy === 0) {
+        targetOccupancy = null;
+      }
+    }
+
+    const updated = await this.prisma.event.update({
+      where: { id: eventId },
+      data: { targetOccupancy },
+    });
+
+    // Trigger natychmiastowego przeliczenia monitora po zmianie
+    // Jest realizowane przez cron fake-users-monitor przy kolejnym przebiegu
+
+    return updated;
+  }
 }

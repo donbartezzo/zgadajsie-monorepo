@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
@@ -16,6 +16,7 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { AuthService } from '../../../../core/auth/auth.service';
 import { EventService } from '../../../../core/services/event.service';
 import { EventAnnouncementService } from '../../../../core/services/event-announcement.service';
+import { AdminService } from '../../../../core/services/admin.service';
 import { FormsModule } from '@angular/forms';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
@@ -226,6 +227,65 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
             mode="organizer"
           />
         </div>
+
+        <!-- Fake users (admin only) -->
+        @if (auth.isAdmin()) {
+          <div class="mt-6 border-t border-neutral-100 pt-4">
+            <h2 class="text-sm font-semibold text-neutral-900 mb-3">Fake users</h2>
+            <div class="space-y-3">
+              <app-card>
+                <div class="p-3 flex items-center gap-3">
+                  <div class="flex-1">
+                    <label
+                      for="target-occupancy-input"
+                      class="block text-xs font-medium text-neutral-700 mb-1"
+                      >Target occupancy</label
+                    >
+                    <div class="flex items-center gap-2">
+                      <input
+                        id="target-occupancy-input"
+                        type="number"
+                        [value]="targetOccupancyInput()"
+                        (input)="targetOccupancyInput.set($any($event.target).value)"
+                        placeholder="np. 35"
+                        class="w-24 px-2 py-1 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        [disabled]="updatingTargetOccupancy()"
+                      />
+                      <span class="text-xs text-neutral-500">lub puste aby wyłączyć</span>
+                      <app-button
+                        appearance="soft"
+                        color="primary"
+                        size="sm"
+                        [loading]="updatingTargetOccupancy()"
+                        (clicked)="updateTargetOccupancy()"
+                      >
+                        Zapisz
+                      </app-button>
+                    </div>
+                  </div>
+                </div>
+              </app-card>
+              <app-card>
+                <div class="p-3 flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-neutral-900">Ręczne dodanie fake usera</p>
+                    <p class="text-xs text-neutral-500">
+                      Dodaje jednego fake usera z zachowaniem bufora
+                    </p>
+                  </div>
+                  <app-button
+                    appearance="soft"
+                    color="primary"
+                    size="sm"
+                    (clicked)="enrollFakeUser()"
+                  >
+                    <app-icon name="user-plus" size="sm" />
+                  </app-button>
+                </div>
+              </app-card>
+            </div>
+          </div>
+        }
       }
     </div>
   `,
@@ -233,10 +293,12 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
 })
 export class EventManageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly navigation = inject(NavigationService);
-  private readonly auth = inject(AuthService);
+  public readonly auth = inject(AuthService);
   private readonly eventService = inject(EventService);
   private readonly announcementService = inject(EventAnnouncementService);
+  private readonly adminService = inject(AdminService);
   private readonly snackbar = inject(SnackbarService);
   private readonly breadcrumb = inject(BreadcrumbService);
   private readonly overlays = inject(BottomOverlaysService);
@@ -249,6 +311,9 @@ export class EventManageComponent implements OnInit {
   readonly eventData = signal<Event | null>(null);
   readonly sendingAnnouncement = signal(false);
   readonly lastAnnouncementStats = signal<AnnouncementReceiptStats | null>(null);
+  readonly targetOccupancy = signal<number | null>(null);
+  readonly targetOccupancyInput = signal('');
+  readonly updatingTargetOccupancy = signal(false);
   announcementMessage = '';
   announcementPriority = 'INFORMATIONAL';
   private eventId = '';
@@ -301,7 +366,12 @@ export class EventManageComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.eventId = this.route.snapshot.paramMap.get('id')!;
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.navigation.navigateToHome();
+      return;
+    }
+    this.eventId = id;
     this.loadEvent();
     this.loadManageParticipants();
     this.loadSlots();
@@ -335,6 +405,8 @@ export class EventManageComponent implements OnInit {
     this.eventService.getEvent(this.eventId).subscribe({
       next: (event) => {
         this.eventData.set(event);
+        this.targetOccupancy.set(event.targetOccupancy ?? null);
+        this.targetOccupancyInput.set(event.targetOccupancy?.toString() ?? '');
         this.breadcrumb.setContext({ eventTitle: event.title });
       },
     });
@@ -450,5 +522,35 @@ export class EventManageComponent implements OnInit {
         next: (stats) => this.lastAnnouncementStats.set(stats),
       });
     }, 2000);
+  }
+
+  updateTargetOccupancy(): void {
+    const value = this.targetOccupancyInput();
+    const parsed = value ? parseInt(value, 10) : null;
+    this.targetOccupancy.set(parsed);
+    this.updatingTargetOccupancy.set(true);
+    this.adminService.setEventTargetOccupancy(this.eventId, parsed).subscribe({
+      next: () => {
+        this.updatingTargetOccupancy.set(false);
+        this.snackbar.success('Zaktualizowano target occupancy');
+      },
+      error: (err) => {
+        this.updatingTargetOccupancy.set(false);
+        this.snackbar.error(err?.error?.message || 'Nie udało się zaktualizować');
+      },
+    });
+  }
+
+  enrollFakeUser(): void {
+    this.adminService.enrollFakeUserToEvent(this.eventId).subscribe({
+      next: () => {
+        this.snackbar.success('Dodano fake usera');
+        this.loadManageParticipants();
+        this.loadSlots();
+      },
+      error: (err) => {
+        this.snackbar.error(err?.error?.message || 'Nie udało się dodać fake usera');
+      },
+    });
   }
 }

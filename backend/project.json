@@ -117,6 +117,18 @@
           "command": "dotenv -e ../config/env/.env.dev -- npx tsx prisma/seed.nonprod.ts"
         }
       }
+    },
+    "db-seed-fake-users": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotenv -e ../config/env/.env.local -- npx tsx prisma/data-migrations/20260514_seed_fake_users.ts",
+        "cwd": "backend"
+      },
+      "configurations": {
+        "development": {
+          "command": "dotenv -e ../config/env/.env.dev -- npx tsx prisma/data-migrations/20260514_seed_fake_users.ts"
+        }
+      }
     }
   }
 }

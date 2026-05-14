@@ -6,7 +6,7 @@ import { CoverImage } from './cover-image.interface';
 export interface EventBase
   extends
     Required<Pick<EventDefaultableFields, 'maxParticipants' | 'gender'>>,
-    Pick<EventDefaultableFields, 'minParticipants' | 'ageMin' | 'ageMax'> {
+    Pick<EventDefaultableFields, 'minParticipants' | 'ageMin' | 'ageMax' | 'targetOccupancy'> {
   id: string;
   title: string;
   coverImageId?: string;

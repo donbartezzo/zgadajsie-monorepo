@@ -38,5 +38,6 @@ export class AuthOverlayComponent {
     // If authSuccessCallback is set, call it instead of redirecting with openJoin=true
     this.overlays.handleAuthSuccess();
     this.authenticated.emit();
+    this.overlays.close();
   }
 }

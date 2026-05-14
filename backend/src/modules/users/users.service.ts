@@ -3,6 +3,7 @@ import { hashPassword, comparePassword } from '../../common/utils/password.util'
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { AdminUpdateUserDto } from './dto/admin-update-user.dto';
+import { AccountType } from '@zgadajsie/shared';
 
 @Injectable()
 export class UsersService {
@@ -101,8 +102,9 @@ export class UsersService {
     search?: string;
     role?: string;
     isActive?: boolean;
+    accountType?: AccountType;
   }) {
-    const { page = 1, limit = 20, search, role, isActive } = params;
+    const { page = 1, limit = 20, search, role, isActive, accountType } = params;
     const where: Record<string, unknown> = {};
     if (search) {
       where.OR = [
@@ -112,6 +114,7 @@ export class UsersService {
     }
     if (role) where.role = role;
     if (isActive !== undefined) where.isActive = isActive;
+    if (accountType) where.accountType = accountType;
 
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({

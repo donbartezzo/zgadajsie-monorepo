@@ -87,6 +87,20 @@ export class AdminService {
       { params: { limit, offset } },
     );
   }
+
+  setEventTargetOccupancy(eventId: string, targetOccupancy: number | null): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/events/${eventId}/target-occupancy`, {
+      targetOccupancy,
+    });
+  }
+
+  adminWithdrawUser(enrollmentId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/enrollments/${enrollmentId}/admin-withdraw`, {});
+  }
+
+  enrollFakeUserToEvent(eventId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/admin/fake-users/events/${eventId}/enroll`, {});
+  }
 }
 
 export interface CronStatus {
