@@ -17,12 +17,15 @@ function runGuard(route: ActivatedRouteSnapshot) {
 }
 
 describe('organizerGuard', () => {
-  let mockAuthService: { currentUser: jest.Mock };
+  let mockAuthService: { currentUser: jest.Mock; isAdmin: jest.Mock };
   let mockEventService: { getEvent: jest.Mock };
   let mockNavigationService: { navigateToNotFound: jest.Mock };
 
   beforeEach(() => {
-    mockAuthService = { currentUser: jest.fn().mockReturnValue(null) };
+    mockAuthService = {
+      currentUser: jest.fn().mockReturnValue(null),
+      isAdmin: jest.fn().mockReturnValue(false),
+    };
     mockEventService = { getEvent: jest.fn() };
     mockNavigationService = { navigateToNotFound: jest.fn() };
     TestBed.configureTestingModule({
