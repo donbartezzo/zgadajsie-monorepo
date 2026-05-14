@@ -52,19 +52,26 @@ export class EventStatusBadgeComponent {
   readonly canceled = input<boolean>(false);
 
   readonly badgeClasses = computed(() => {
-    const defaultColor = 'bg-neutral-500/75 border-neutral-500';
     const countdownColor = 'bg-yellow-700/75 border-yellow-700';
+    const endedColor = 'bg-neutral-500/75 border-neutral-500';
+    const canceledColor = 'bg-danger-400/75 border-danger-400';
 
     const classesByState: Record<BadgeVariant, string> = {
-      days: defaultColor,
+      days: countdownColor, // 'bg-blue-700/75 border-blue-700',
       ongoing: 'bg-success-400/75 border-success-400',
       'countdown-urgent': countdownColor,
       'countdown-soon': countdownColor,
     };
 
-    const state: BadgeVariant = this.ended() || this.canceled() ? 'days' : this.variant();
+    if (this.ended()) {
+      return endedColor;
+    }
 
-    return classesByState[state];
+    if (this.canceled()) {
+      return canceledColor;
+    }
+
+    return classesByState[this.variant()];
   });
 
   readonly displayLabel = computed(() => {
