@@ -44,7 +44,7 @@ export class EnrollmentGridItemEmptyComponent {
     const labels = {
       add: 'Dodaj nowego',
       free: 'Wolne miejsce',
-      locked: 'Zablokowane miejce',
+      locked: 'Zablokowane miejsce',
     };
 
     return this.label() ?? labels[this.variant()];

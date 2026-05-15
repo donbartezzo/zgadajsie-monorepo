@@ -51,10 +51,10 @@ describe('EnrollmentGridItemEmptyComponent - computed signals', () => {
       expect(c.resolvedLabel()).toBe('Dodaj nowego');
     });
 
-    it('zwraca "Zablokowane miejce" dla variant locked', () => {
+    it('zwraca "Zablokowane miejsce" dla variant locked', () => {
       const { fixture, c } = create();
       fixture.componentRef.setInput('variant', 'locked');
-      expect(c.resolvedLabel()).toBe('Zablokowane miejce');
+      expect(c.resolvedLabel()).toBe('Zablokowane miejsce');
     });
 
     it('własna etykieta nadpisuje domyślną', () => {
