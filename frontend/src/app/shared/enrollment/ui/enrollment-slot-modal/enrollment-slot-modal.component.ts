@@ -27,6 +27,7 @@ import { EventAreaService } from '../../../../features/event/services/event-area
 import { ProfileBroadcastService } from '../../../../core/services/profile-broadcast.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { UserProfileEditService } from '../../../user/services/user-profile-edit.service';
+import { TrustPromptService } from '../../../services/trust-prompt.service';
 import { Enrollment, EnrolleeManageItem, OrganizerUserRelation } from '../../../types';
 import { Event } from '../../../types/event.interface';
 import { EventSlotInfo } from '../../../types/payment.interface';
@@ -99,6 +100,7 @@ export class EnrollmentSlotModalComponent {
   readonly eventArea = inject(EventAreaService);
   private readonly profileBroadcast = inject(ProfileBroadcastService);
   private readonly profileEdit = inject(UserProfileEditService);
+  private readonly trustPrompt = inject(TrustPromptService);
 
   readonly data = input<EnrollmentModalData | null>(null);
 
@@ -456,11 +458,17 @@ export class EnrollmentSlotModalComponent {
   private async onApprove(): Promise<void> {
     const p = this.participant();
     if (!p) return;
-    await this.executeAction(
-      this.eventService.assignSlot(p.id),
-      'Zatwierdzono uczestnika',
-      'Nie udało się zatwierdzić',
-    );
+    this.loading.set(true);
+    try {
+      const result = await firstValueFrom(this.eventService.assignSlot(p.id));
+      this.snackbar.success('Zatwierdzono uczestnika');
+      this.loading.set(false);
+      this.closeAndRefresh();
+      await this.trustPrompt.promptTrustIfNeeded(result);
+    } catch (err: unknown) {
+      this.snackbar.error(getErrorMessage(err, 'Nie udało się zatwierdzić'));
+      this.loading.set(false);
+    }
   }
 
   private async onReject(): Promise<void> {

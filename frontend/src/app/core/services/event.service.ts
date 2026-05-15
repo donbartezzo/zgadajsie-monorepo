@@ -6,6 +6,7 @@ import {
   Event,
   EventBase,
   Enrollment,
+  AssignSlotResult,
   EventSlotInfo,
   JoinGuestRequest,
   UpdateGuestRequest,
@@ -171,8 +172,8 @@ export class EventService {
     return this.leaveEnrollment(enrollmentId);
   }
 
-  assignSlot(enrollmentId: string): Observable<Enrollment> {
-    return this.http.post<Enrollment>(
+  assignSlot(enrollmentId: string): Observable<AssignSlotResult> {
+    return this.http.post<AssignSlotResult>(
       `${environment.apiUrl}/enrollments/${enrollmentId}/assign-slot`,
       {},
     );

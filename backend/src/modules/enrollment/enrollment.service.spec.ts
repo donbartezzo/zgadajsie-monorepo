@@ -37,7 +37,7 @@ function buildPrismaMock() {
     },
     eventSlot: { update: jest.fn() },
     user: { findUnique: jest.fn(), create: jest.fn(), update: jest.fn() },
-    organizerUserRelation: { upsert: jest.fn() },
+    organizerUserRelation: { upsert: jest.fn(), findUnique: jest.fn() },
     payment: { findMany: jest.fn() },
     $transaction: jest.fn((fn: (tx: ReturnType<typeof buildTxMock>) => unknown) => fn(tx)),
     _tx: tx,
@@ -639,7 +639,7 @@ describe('EnrollmentService', () => {
       );
     });
 
-    it('auto-trust: oznacza real usera jako zaufanego u organizatora', async () => {
+    it('nie nadaje auto-trust: zwraca needsTrustDecision dla nieufanego real usera', async () => {
       const participation = makeEnrollment({
         wantsIn: true,
         slot: null,
@@ -653,17 +653,62 @@ describe('EnrollmentService', () => {
         waitingReason: null,
         event: { id: 'event1', title: 'Test Event' },
       });
-      (prisma.organizerUserRelation.upsert as jest.Mock).mockResolvedValue({});
+      (prisma.organizerUserRelation.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await service.assignSlotToParticipant('p1', mockAuthUser('org1'));
+      const result = await service.assignSlotToParticipant('p1', mockAuthUser('org1'));
 
-      expect(prisma.organizerUserRelation.upsert as jest.Mock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          create: expect.objectContaining({ isTrusted: true }),
-          update: expect.objectContaining({ isTrusted: true }),
-        }),
-      );
+      expect(prisma.organizerUserRelation.upsert as jest.Mock).not.toHaveBeenCalled();
+      expect(result).toEqual(expect.objectContaining({ needsTrustDecision: true }));
+    });
+
+    it('zwraca needsTrustDecision=false gdy real user jest już zaufany', async () => {
+      const participation = makeEnrollment({
+        wantsIn: true,
+        slot: null,
+        addedByUserId: null,
+        event: makeEvent({ lotteryExecutedAt: new Date() }),
+      });
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(participation);
+      (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
+      (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue({
+        ...participation,
+        waitingReason: null,
+        event: { id: 'event1', title: 'Test Event' },
+      });
+      (prisma.organizerUserRelation.findUnique as jest.Mock).mockResolvedValue({
+        isTrusted: true,
+        isBanned: false,
+      });
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+
+      const result = await service.assignSlotToParticipant('p1', mockAuthUser('org1'));
+
+      expect(prisma.organizerUserRelation.upsert as jest.Mock).not.toHaveBeenCalled();
+      expect(result).toEqual(expect.objectContaining({ needsTrustDecision: false }));
+    });
+
+    it('nie sprawdza zaufania dla gościa (addedByUserId != null)', async () => {
+      const participation = makeEnrollment({
+        wantsIn: true,
+        slot: null,
+        addedByUserId: 'host1',
+        event: makeEvent({ lotteryExecutedAt: new Date() }),
+      });
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(participation);
+      (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
+      (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue({
+        ...participation,
+        waitingReason: null,
+        addedByUserId: 'host1',
+        event: { id: 'event1', title: 'Test Event' },
+      });
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+
+      const result = await service.assignSlotToParticipant('p1', mockAuthUser('org1'));
+
+      expect(prisma.organizerUserRelation.findUnique as jest.Mock).not.toHaveBeenCalled();
+      expect(result).toEqual(expect.objectContaining({ needsTrustDecision: false }));
     });
 
     it('wysyła push do uczestnika w OPEN_ENROLLMENT po przydzieleniu slotu', async () => {

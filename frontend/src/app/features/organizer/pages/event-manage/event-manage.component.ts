@@ -19,6 +19,7 @@ import { EventAnnouncementService } from '../../../../core/services/event-announ
 import { AdminService } from '../../../../core/services/admin.service';
 import { FormsModule } from '@angular/forms';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { TrustPromptService } from '../../../../shared/services/trust-prompt.service';
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
 import {
   applyProfileChangeToList,
@@ -300,6 +301,7 @@ export class EventManageComponent implements OnInit {
   private readonly announcementService = inject(EventAnnouncementService);
   private readonly adminService = inject(AdminService);
   private readonly snackbar = inject(SnackbarService);
+  private readonly trustPrompt = inject(TrustPromptService);
   private readonly breadcrumb = inject(BreadcrumbService);
   private readonly overlays = inject(BottomOverlaysService);
   private readonly profileBroadcast = inject(ProfileBroadcastService);
@@ -447,11 +449,12 @@ export class EventManageComponent implements OnInit {
     }
 
     this.eventService.assignSlot(id).subscribe({
-      next: () => {
+      next: (result) => {
         this.manageParticipants.update((prev) =>
           prev.map((p) => (p.id === id ? { ...p, status: 'APPROVED' } : p)),
         );
         this.snackbar.success('Przydzielono miejsce');
+        void this.trustPrompt.promptTrustIfNeeded(result);
       },
       error: (err) => this.snackbar.error(err?.error?.message || 'Brak wolnych miejsc'),
     });

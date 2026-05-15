@@ -401,35 +401,22 @@ export class EnrollmentService {
       },
     });
 
-    // Auto-trust: mark real user as trusted upon first organizer-approved slot assignment.
-    // Guests (addedByUserId != null) are virtual accounts - trust does not apply to them.
-    // Non-critical: failure must not roll back the slot assignment already committed above.
+    // Brak auto-trust: zaufanie nadaje organizator wyłącznie świadomie i ręcznie.
+    // Po przydzieleniu slotu sygnalizujemy tylko, czy real user nie jest jeszcze
+    // zaufany - frontend zapyta wtedy organizatora w modalu.
+    // Goście (addedByUserId != null) to wirtualne konta - zaufanie ich nie dotyczy.
+    let needsTrustDecision = false;
     if (!participation.addedByUserId) {
-      const organizerId = participation.event.organizerId;
-      this.prisma.organizerUserRelation
-        .upsert({
-          where: {
-            organizerUserId_targetUserId: {
-              organizerUserId: organizerId,
-              targetUserId: participation.userId,
-            },
-          },
-          create: {
-            organizerUserId: organizerId,
+      const relation = await this.prisma.organizerUserRelation.findUnique({
+        where: {
+          organizerUserId_targetUserId: {
+            organizerUserId: participation.event.organizerId,
             targetUserId: participation.userId,
-            isTrusted: true,
-            trustedAt: new Date(),
           },
-          update: {
-            isTrusted: true,
-            trustedAt: new Date(),
-          },
-        })
-        .catch((err: unknown) => {
-          this.logger.error(
-            `Auto-trust upsert failed for user ${participation.userId} / organizer ${organizerId}: ${(err as Error).message}`,
-          );
-        });
+        },
+        select: { isTrusted: true, isBanned: true },
+      });
+      needsTrustDecision = !relation?.isTrusted && !relation?.isBanned;
     }
 
     this.notifyEventChanged(participation.eventId, 'all');
@@ -440,7 +427,7 @@ export class EnrollmentService {
       await this.notifySlotAssigned(recipientId, updated.event.title, updated.eventId);
     }
 
-    return updated;
+    return { ...updated, needsTrustDecision };
   }
 
   /**

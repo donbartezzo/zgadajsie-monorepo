@@ -68,3 +68,12 @@ export interface Enrollment {
 
 /** @deprecated Use Enrollment */
 export type Participation = Enrollment;
+
+/**
+ * Wynik przydzielenia slotu przez organizatora.
+ * `needsTrustDecision` = real user nie jest jeszcze zaufany u organizatora -
+ * frontend zapyta organizatora, czy oznaczyć go jako zaufanego.
+ */
+export interface AssignSlotResult extends Enrollment {
+  needsTrustDecision: boolean;
+}
