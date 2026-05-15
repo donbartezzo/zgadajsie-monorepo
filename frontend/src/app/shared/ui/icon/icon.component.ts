@@ -15,6 +15,7 @@ export type IconName =
   | 'home'
   | 'calendar'
   | 'user'
+  | 'user-check'
   | 'search'
   | 'settings'
   | 'plus'
@@ -156,6 +157,11 @@ export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
           @case ('user') {
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
+          }
+          @case ('user-check') {
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="8.5" cy="7" r="4" />
+            <polyline points="17 11 19 13 23 9" />
           }
           @case ('search') {
             <circle cx="11" cy="11" r="6" />

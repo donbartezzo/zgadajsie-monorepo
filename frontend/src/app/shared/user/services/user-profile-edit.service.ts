@@ -24,6 +24,11 @@ export class UserProfileEditService {
   }): Promise<void> {
     const { user: _user, displayName, isGuest = false, participationId = null } = opts;
 
+    if (displayName.trim().length < 3) {
+      this.snackbar.error('Nazwa wyświetlana musi mieć co najmniej 3 znaki');
+      return;
+    }
+
     try {
       if (isGuest && participationId) {
         const updated = await firstValueFrom(

@@ -116,9 +116,9 @@ export class EnrollmentGridItemComponent {
     return 'waitingReason' in participant && participant.waitingReason === 'BANNED';
   });
 
-  readonly isNewUserPending = computed(() => {
+  readonly isAwaitingApproval = computed(() => {
     const participant = this.participant();
-    return 'waitingReason' in participant && participant.waitingReason === 'NEW_USER';
+    return 'waitingReason' in participant && participant.waitingReason === 'NOT_TRUSTED';
   });
 
   readonly isAccountUnverified = computed(() => {
@@ -151,8 +151,8 @@ export class EnrollmentGridItemComponent {
       indicators.push('pending');
     }
 
-    if (this.isNewUserPending()) {
-      indicators.push('new_user_pending');
+    if (this.isAwaitingApproval()) {
+      indicators.push('awaiting_approval');
     }
 
     if (this.isCurrentUserGuest()) {

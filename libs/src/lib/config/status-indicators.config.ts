@@ -14,7 +14,7 @@ export type StatusIndicatorType =
   | 'pending'
   | 'approved'
   | 'withdrawn'
-  | 'new_user_pending'
+  | 'awaiting_approval'
   | 'is_guest'
   | 'banned'
   | 'trusted'
@@ -71,12 +71,11 @@ export const STATUS_INDICATORS: Record<StatusIndicatorType, StatusIndicatorConfi
     color: 'neutral',
     requiresAction: false,
   },
-  new_user_pending: {
-    icon: 'help-circle',
-    label: 'Nowy uczestnik',
-    description:
-      'Pierwsze wydarzenie u tego organizatora. Zgłoszenie wymaga dodatkowej weryfikacji.',
-    color: 'info',
+  awaiting_approval: {
+    icon: 'user-check',
+    label: 'Wymaga zatwierdzenia',
+    description: 'Zgłoszenie czeka na decyzję organizatora przed przydzieleniem miejsca.',
+    color: 'warning',
     requiresAction: true,
   },
   is_guest: {

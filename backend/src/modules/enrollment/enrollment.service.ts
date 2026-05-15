@@ -220,11 +220,11 @@ export class EnrollmentService {
     }
 
     // Check host eligibility once (fixes double-check race and missing ban check)
-    const [isHostBanned, isHostNew] = isOrganizer
-      ? [false, false]
+    const [isHostBanned, isHostTrusted] = isOrganizer
+      ? [false, true]
       : await Promise.all([
           this.eligibility.isBannedByOrganizer(addedByUserId, event.organizerId),
-          this.eligibility.isNewUser(addedByUserId, event.organizerId),
+          this.eligibility.isTrusted(addedByUserId, event.organizerId),
         ]);
 
     const guestUser = await this.prisma.user.create({
@@ -238,7 +238,7 @@ export class EnrollmentService {
     });
 
     // In open enrollment with free slots → assign slot (confirmed=false, user must confirm)
-    if (phase === 'OPEN_ENROLLMENT' && !isHostBanned && !isHostNew) {
+    if (phase === 'OPEN_ENROLLMENT' && !isHostBanned && isHostTrusted) {
       const roleConfig = event.roleConfig as unknown as EventRoleConfig | null;
       const validatedRoleKey = this.validateRoleKey(roleConfig, roleKey);
       const freeSlots = await this.slotService.getFreeSlotCount(eventId, validatedRoleKey);
@@ -273,8 +273,8 @@ export class EnrollmentService {
     // No free slots, pre-enrollment, banned host, or new host → waiting list
     const waitingReason = isHostBanned
       ? 'BANNED'
-      : isHostNew
-        ? 'NEW_USER'
+      : !isHostTrusted
+        ? 'NOT_TRUSTED'
         : phase === 'PRE_ENROLLMENT'
           ? 'PRE_ENROLLMENT'
           : 'NO_SLOTS';
@@ -742,7 +742,7 @@ export class EnrollmentService {
 
   /**
    * Create a waiting participation (no slot assigned).
-   * @param waitingReason - Why user didn't get automatic slot: NEW_USER, BANNED, NO_SLOTS, NO_SLOTS_FOR_ROLE, PRE_ENROLLMENT
+   * @param waitingReason - Why user didn't get automatic slot: NOT_TRUSTED, BANNED, NO_SLOTS, NO_SLOTS_FOR_ROLE, PRE_ENROLLMENT
    */
   private async createWaiting(
     eventId: string,
@@ -754,7 +754,7 @@ export class EnrollmentService {
       roleConfig?: unknown;
     },
     isPaid: boolean,
-    waitingReason?: 'NEW_USER' | 'BANNED' | 'NO_SLOTS' | 'NO_SLOTS_FOR_ROLE' | 'PRE_ENROLLMENT',
+    waitingReason?: 'NOT_TRUSTED' | 'BANNED' | 'NO_SLOTS' | 'NO_SLOTS_FOR_ROLE' | 'PRE_ENROLLMENT',
     roleKey?: string,
     availableRoles?: AvailableRole[],
   ) {
@@ -816,9 +816,9 @@ export class EnrollmentService {
     isPaid: boolean,
     roleKey?: string,
   ) {
-    const [isBanned, isNew] = await Promise.all([
+    const [isBanned, isTrusted] = await Promise.all([
       this.eligibility.isBannedByOrganizer(userId, event.organizerId),
-      this.eligibility.isNewUser(userId, event.organizerId),
+      this.eligibility.isTrusted(userId, event.organizerId),
     ]);
 
     const roleConfig = event.roleConfig as EventRoleConfig | null;
@@ -828,9 +828,9 @@ export class EnrollmentService {
       return this.createWaiting(eventId, userId, event, isPaid, 'BANNED', roleKey);
     }
 
-    // New users need organizer approval
-    if (isNew) {
-      return this.createWaiting(eventId, userId, event, isPaid, 'NEW_USER', roleKey);
+    // Not trusted users need organizer approval
+    if (!isTrusted) {
+      return this.createWaiting(eventId, userId, event, isPaid, 'NOT_TRUSTED', roleKey);
     }
 
     // Check slot availability (role-specific if roleKey provided)
@@ -980,9 +980,9 @@ export class EnrollmentService {
     }
 
     // Re-check eligibility on rejoin - user status may have changed since they left
-    const [isBanned, isNew] = await Promise.all([
+    const [isBanned, isTrusted] = await Promise.all([
       this.eligibility.isBannedByOrganizer(userId, event.organizerId),
-      this.eligibility.isNewUser(userId, event.organizerId),
+      this.eligibility.isTrusted(userId, event.organizerId),
     ]);
 
     if (isBanned) {
@@ -1000,10 +1000,10 @@ export class EnrollmentService {
       };
     }
 
-    if (isNew) {
+    if (!isTrusted) {
       const withReason = await this.prisma.eventEnrollment.update({
         where: { id: participationId },
-        data: { waitingReason: 'NEW_USER' },
+        data: { waitingReason: 'NOT_TRUSTED' },
         include: { user: { select: USER_SELECT }, slot: true },
       });
       this.notifyEventChanged(event.id, 'participants');
@@ -1011,7 +1011,7 @@ export class EnrollmentService {
         ...withDerivedStatus(withReason),
         isPaid,
         costPerPerson: isPaid ? event.costPerPerson.toNumber() : 0,
-        waitingReason: 'NEW_USER' as const,
+        waitingReason: 'NOT_TRUSTED' as const,
       };
     }
 
@@ -1142,9 +1142,9 @@ export class EnrollmentService {
     }
 
     // Re-check eligibility - user status may have changed
-    const [isBannedCR, isNewCR] = await Promise.all([
+    const [isBannedCR, isTrustedCR] = await Promise.all([
       this.eligibility.isBannedByOrganizer(participation.userId, event.organizerId),
-      this.eligibility.isNewUser(participation.userId, event.organizerId),
+      this.eligibility.isTrusted(participation.userId, event.organizerId),
     ]);
 
     // Try to assign slot for the new role
@@ -1154,10 +1154,10 @@ export class EnrollmentService {
           where: { id: participationId },
           data: { waitingReason: 'BANNED' },
         });
-      } else if (isNewCR) {
+      } else if (!isTrustedCR) {
         await this.prisma.eventEnrollment.update({
           where: { id: participationId },
-          data: { waitingReason: 'NEW_USER' },
+          data: { waitingReason: 'NOT_TRUSTED' },
         });
       } else {
         const freeSlots = await this.slotService.getFreeSlotCount(event.id, validatedRoleKey);

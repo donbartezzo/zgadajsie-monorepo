@@ -232,6 +232,7 @@ export class DesignSystemComponent {
     'home',
     'calendar',
     'user',
+    'user-check',
     'search',
     'settings',
     'plus',

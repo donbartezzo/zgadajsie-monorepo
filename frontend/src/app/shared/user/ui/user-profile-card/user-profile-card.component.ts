@@ -190,8 +190,8 @@ export class UserProfileCardComponent {
     }
 
     if (ctx === 'participant' || ctx === 'organizer') {
-      if (this.waitingReason() === 'NEW_USER') {
-        badges.push({ type: 'new_user_pending' });
+      if (this.waitingReason() === 'NOT_TRUSTED') {
+        badges.push({ type: 'awaiting_approval' });
       }
     }
 
@@ -309,7 +309,7 @@ export class UserProfileCardComponent {
       }
     } else if (this.editingDisplayNameMode()) {
       const name = (this.tempDisplayName() ?? '').trim();
-      if (name && name !== this.displayName()) {
+      if (name && name.length >= 3 && name !== this.displayName()) {
         this.displayNameChange.emit(name);
         if (!this.forceEditingDisplayName()) {
           this.editingDisplayNameMode.set(false);

@@ -39,24 +39,24 @@ describe('EnrollmentEligibilityService', () => {
     });
   });
 
-  describe('isNewUser()', () => {
-    it('zwraca true gdy brak relacji z organizatorem (brak rekordu)', async () => {
+  describe('isTrusted()', () => {
+    it('zwraca false gdy brak relacji z organizatorem (brak rekordu)', async () => {
       (prisma.organizerUserRelation.findUnique as jest.Mock).mockResolvedValue(null);
-      await expect(service.isNewUser('user1', 'org1')).resolves.toBe(true);
+      await expect(service.isTrusted('user1', 'org1')).resolves.toBe(false);
     });
 
-    it('zwraca true gdy relacja istnieje ale isTrusted=false', async () => {
+    it('zwraca false gdy relacja istnieje ale isTrusted=false', async () => {
       (prisma.organizerUserRelation.findUnique as jest.Mock).mockResolvedValue({
         isTrusted: false,
       });
-      await expect(service.isNewUser('user1', 'org1')).resolves.toBe(true);
+      await expect(service.isTrusted('user1', 'org1')).resolves.toBe(false);
     });
 
-    it('zwraca false gdy relacja istnieje i isTrusted=true', async () => {
+    it('zwraca true gdy relacja istnieje i isTrusted=true', async () => {
       (prisma.organizerUserRelation.findUnique as jest.Mock).mockResolvedValue({
         isTrusted: true,
       });
-      await expect(service.isNewUser('user1', 'org1')).resolves.toBe(false);
+      await expect(service.isTrusted('user1', 'org1')).resolves.toBe(true);
     });
   });
 
@@ -87,12 +87,12 @@ describe('EnrollmentEligibilityService', () => {
   });
 
   describe('canAddGuests()', () => {
-    it('zwraca true jeśli użytkownik nie jest nowy (zaufany)', async () => {
+    it('zwraca true jeśli użytkownik jest zaufany', async () => {
       (prisma.organizerUserRelation.findUnique as jest.Mock).mockResolvedValue({ isTrusted: true });
       await expect(service.canAddGuests('user1', 'org1')).resolves.toBe(true);
     });
 
-    it('zwraca false jeśli użytkownik jest nowy', async () => {
+    it('zwraca false jeśli użytkownik nie jest zaufany', async () => {
       (prisma.organizerUserRelation.findUnique as jest.Mock).mockResolvedValue(null);
       await expect(service.canAddGuests('user1', 'org1')).resolves.toBe(false);
     });

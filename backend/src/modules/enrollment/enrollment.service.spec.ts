@@ -78,7 +78,7 @@ function buildSlotMock() {
 function buildEligibilityMock() {
   return {
     isBannedByOrganizer: jest.fn().mockResolvedValue(false),
-    isNewUser: jest.fn().mockResolvedValue(false),
+    isTrusted: jest.fn().mockResolvedValue(true),
     getGuestCount: jest.fn().mockResolvedValue(0),
   } as unknown as EnrollmentEligibilityService;
 }
@@ -316,7 +316,7 @@ describe('EnrollmentService', () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(openEvent);
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(null);
       (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(false);
-      (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
+      (eligibility.isTrusted as jest.Mock).mockResolvedValue(true);
       (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
     });
 
@@ -366,15 +366,15 @@ describe('EnrollmentService', () => {
       );
     });
 
-    it('nowy użytkownik → PENDING z waitingReason=NEW_USER', async () => {
-      (eligibility.isNewUser as jest.Mock).mockResolvedValue(true);
-      const participation = makeEnrollment({ waitingReason: 'NEW_USER', slot: null });
+    it('niezaufany użytkownik → PENDING z waitingReason=NOT_TRUSTED', async () => {
+      (eligibility.isTrusted as jest.Mock).mockResolvedValue(false);
+      const participation = makeEnrollment({ waitingReason: 'NOT_TRUSTED', slot: null });
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
       const result = await service.join('event1', mockAuthUser('user1'));
 
-      expect(result.waitingReason).toBe('NEW_USER');
+      expect(result.waitingReason).toBe('NOT_TRUSTED');
     });
 
     it('zbanowany użytkownik → PENDING z waitingReason=BANNED', async () => {
@@ -411,7 +411,7 @@ describe('EnrollmentService', () => {
       );
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(null);
       (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(false);
-      (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
+      (eligibility.isTrusted as jest.Mock).mockResolvedValue(true);
       (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(0);
       (slots.getAvailableRoles as jest.Mock).mockResolvedValue([{ key: 'a', slots: 5 }]);
       const participation = makeEnrollment({ waitingReason: 'NO_SLOTS_FOR_ROLE', slot: null });
@@ -473,7 +473,7 @@ describe('EnrollmentService', () => {
       );
       (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue(makeEnrollment());
       (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(false);
-      (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
+      (eligibility.isTrusted as jest.Mock).mockResolvedValue(true);
       (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
       const withSlot = makeEnrollment({ wantsIn: true, slot: { confirmed: true } });
       (prisma.eventEnrollment.findUnique as jest.Mock)
@@ -1099,7 +1099,7 @@ describe('EnrollmentService', () => {
     beforeEach(() => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(openEvent);
       (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(false);
-      (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
+      (eligibility.isTrusted as jest.Mock).mockResolvedValue(true);
       (eligibility.getGuestCount as jest.Mock).mockResolvedValue(0);
       (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
       (prisma.user.create as jest.Mock).mockResolvedValue({ id: 'guest1', displayName: 'Gość' });
@@ -1163,20 +1163,20 @@ describe('EnrollmentService', () => {
       expect(result.waitingReason).toBe('BANNED');
     });
 
-    it('nowy host → gość na liście oczekujących z waitingReason=NEW_USER', async () => {
-      (eligibility.isNewUser as jest.Mock).mockResolvedValue(true);
+    it('niezaufany host → gość na liście oczekujących z waitingReason=NOT_TRUSTED', async () => {
+      (eligibility.isTrusted as jest.Mock).mockResolvedValue(false);
       const guestEnrollment = makeEnrollment({
         userId: 'guest1',
         addedByUserId: 'host1',
         wantsIn: true,
         slot: null,
-        waitingReason: 'NEW_USER',
+        waitingReason: 'NOT_TRUSTED',
       });
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(guestEnrollment);
 
       const result = await service.joinGuest('event1', mockAuthUser('host1'), 'Gość');
 
-      expect(result.waitingReason).toBe('NEW_USER');
+      expect(result.waitingReason).toBe('NOT_TRUSTED');
     });
 
     it('zapisuje avatarSeed na nowym User gdy podany', async () => {
@@ -1283,7 +1283,7 @@ describe('EnrollmentService', () => {
         makeEnrollment({ wantsIn: true }),
       );
       (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(false);
-      (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
+      (eligibility.isTrusted as jest.Mock).mockResolvedValue(true);
       (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
 
       await service.rejoinById('p1', mockAuthUser('user1'));
@@ -1352,7 +1352,7 @@ describe('EnrollmentService', () => {
         .mockResolvedValue(makeEnrollment({ event: openEvent, slot: null, roleKey: 'bramkarz' }));
       (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue({});
       (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(false);
-      (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
+      (eligibility.isTrusted as jest.Mock).mockResolvedValue(true);
       (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
 
       await service.changeRole('p1', mockAuthUser('user1'), 'bramkarz');
@@ -1374,7 +1374,7 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.update.mockResolvedValue({});
       (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue({});
       (eligibility.isBannedByOrganizer as jest.Mock).mockResolvedValue(false);
-      (eligibility.isNewUser as jest.Mock).mockResolvedValue(false);
+      (eligibility.isTrusted as jest.Mock).mockResolvedValue(true);
       (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
 
       await service.changeRole('p1', mockAuthUser('user1'), 'bramkarz');

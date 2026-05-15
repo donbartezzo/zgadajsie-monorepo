@@ -12,7 +12,7 @@ export class JoinEventDto extends BaseJoinEventDto {
 
 export class JoinGuestDto extends BaseJoinEventDto {
   @IsString()
-  @MinLength(2)
+  @MinLength(3)
   displayName: string;
 
   @IsOptional()

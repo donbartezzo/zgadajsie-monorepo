@@ -22,9 +22,9 @@ export class JoinRulesAcceptanceStepComponent {
 
   readonly hasRules = computed(() => this.rules().length > 0);
 
-  readonly showNewUserNotice = computed(() => {
+  readonly showApprovalRequiredNotice = computed(() => {
     const event = this.event();
-    return !!event?.currentUserAccess?.isNewUser && !this.isOrganizer();
+    return !event?.currentUserAccess?.isTrusted && !this.isOrganizer();
   });
 
   readonly showOrganizerNotice = computed(() => {

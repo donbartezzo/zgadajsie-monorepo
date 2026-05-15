@@ -5,14 +5,14 @@ import { PrismaService } from '../prisma/prisma.service';
 export class EnrollmentEligibilityService {
   constructor(private prisma: PrismaService) {}
 
-  async isNewUser(userId: string, organizerId: string): Promise<boolean> {
+  async isTrusted(userId: string, organizerId: string): Promise<boolean> {
     const relation = await this.prisma.organizerUserRelation.findUnique({
       where: {
         organizerUserId_targetUserId: { organizerUserId: organizerId, targetUserId: userId },
       },
       select: { isTrusted: true },
     });
-    return !relation?.isTrusted;
+    return relation?.isTrusted === true;
   }
 
   async isBannedByOrganizer(userId: string, organizerId: string): Promise<boolean> {
@@ -26,16 +26,16 @@ export class EnrollmentEligibilityService {
   }
 
   async isEligibleForOpenEnrollment(userId: string, organizerId: string): Promise<boolean> {
-    const [banned, isNew] = await Promise.all([
+    const [banned, trusted] = await Promise.all([
       this.isBannedByOrganizer(userId, organizerId),
-      this.isNewUser(userId, organizerId),
+      this.isTrusted(userId, organizerId),
     ]);
-    return !banned && !isNew;
+    return !banned && trusted;
   }
 
   async canAddGuests(userId: string, organizerId: string): Promise<boolean> {
-    const isNew = await this.isNewUser(userId, organizerId);
-    return !isNew;
+    const trusted = await this.isTrusted(userId, organizerId);
+    return trusted;
   }
 
   async getGuestCount(eventId: string, addedByUserId: string): Promise<number> {

@@ -5,7 +5,7 @@ import { IsSupportedSupportUrl } from '../../../common/validators/support-url.va
 export class UpdateProfileDto {
   @IsOptional()
   @IsString()
-  @MinLength(2)
+  @MinLength(3)
   displayName?: string;
 
   @IsOptional()

@@ -160,9 +160,9 @@ describe('EnrollmentGridItemComponent - computed signals', () => {
     it('CONFIRMED z payment → brak wskaźników ostrzegawczych', () => {
       const { c } = create(makeParticipant({ status: 'CONFIRMED', payment: makePayment() }));
       const indicators = c.statusIndicators();
-      // Sprawdzamy, że nie ma wskaźników warning (needs_payment, new_user_pending, banned, account_unverified, email_not_verified)
+      // Sprawdzamy, że nie ma wskaźników warning (needs_payment, awaiting_approval, banned, account_unverified, email_not_verified)
       expect(indicators).not.toContain('needs_payment');
-      expect(indicators).not.toContain('new_user_pending');
+      expect(indicators).not.toContain('awaiting_approval');
       expect(indicators).not.toContain('banned');
       expect(indicators).not.toContain('account_unverified');
       expect(indicators).not.toContain('email_not_verified');

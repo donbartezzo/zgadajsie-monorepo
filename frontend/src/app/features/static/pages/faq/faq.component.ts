@@ -162,11 +162,11 @@ export class FaqComponent {
         'Po zalogowaniu kliknij"Dodaj" w nawigacji dolnej. Wypełnij formularz z datą, lokalizacją, dyscypliną i innymi szczegółami.',
     },
     {
-      anchor: 'new-user-verification',
+      anchor: 'approval-required',
       question:
-        'Dlaczego nowy użytkownik nie dostaje miejsca automatycznie, nawet jeśli są wolne sloty?',
+        'Dlaczego moje zgłoszenie wymaga akceptacji organizatora, nawet jeśli są wolne sloty?',
       answer:
-        'Status "NOWY" oznacza, że to Twoje pierwsze zgłoszenie do tego organizatora. Nawet jeśli w wydarzeniu są aktualnie wolne miejsca, system nie przydzieli Ci ich automatycznie. Zgłoszenie trafia do weryfikacji organizatora, a miejsce zostaje przypisane dopiero po jego akceptacji. Dzięki temu organizator może sprawdzić nowe osoby przed wejściem do wydarzenia. Sytuacja zmienia się po pierwszym zaakceptowanym udziale, ponieważ przy kolejnych wydarzeniach tego samego organizatora nie będziesz już traktowany jako nowy i przy wolnych miejscach możesz dostać slot od razu.',
+        'Jeśli nie jesteś jeszcze zaufanym uczestnikiem u danego organizatora, Twoje zgłoszenie wymaga akceptacji przed przydzieleniem miejsca. Nawet jeśli w wydarzeniu są wolne sloty, system nie przydzieli ich automatycznie — zgłoszenie trafia do kolejki oczekujących i musi zostać zatwierdzone przez organizatora. Dzięki temu organizator może sprawdzić osoby przed wejściem do wydarzenia. Po pierwszym zaakceptowanym udziale przy kolejnych wydarzeniach tego samego organizatora zostaniesz oznaczony jako zaufany i przy wolnych miejscach będziesz mógł dostać slot od razu.',
     },
     {
       anchor: 'warnings-ban',

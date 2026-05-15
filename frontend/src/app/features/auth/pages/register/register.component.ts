@@ -32,9 +32,11 @@ import { APP_BRAND } from '@zgadajsie/shared';
             [(ngModel)]="displayName"
             name="displayName"
             required
+            minlength="3"
             class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
             placeholder="Jan Kowalski"
           />
+          <p class="mt-1 text-xs text-neutral-400">Co najmniej 3 znaki</p>
         </div>
 
         <div>
@@ -130,6 +132,10 @@ export class RegisterComponent {
   async onSubmit(): Promise<void> {
     if (this.password !== this.confirmPassword) {
       this.snackbar.error('Hasła nie są identyczne');
+      return;
+    }
+    if (this.displayName.trim().length < 3) {
+      this.snackbar.error('Nazwa wyświetlana musi mieć co najmniej 3 znaki');
       return;
     }
     this.loading.set(true);

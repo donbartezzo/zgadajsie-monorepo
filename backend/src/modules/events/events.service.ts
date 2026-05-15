@@ -278,7 +278,7 @@ export class EventsService {
     }
     const currentUserAccess =
       userId && !isOrganizer
-        ? { isNewUser: await this.eligibility.isNewUser(userId, event.organizerId) }
+        ? { isTrusted: await this.eligibility.isTrusted(userId, event.organizerId) }
         : null;
 
     const participantCount = await this.prisma.eventEnrollment.count({

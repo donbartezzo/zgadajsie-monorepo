@@ -142,7 +142,7 @@ describe('EventsService', () => {
       buildCitySubsMock(),
       slots,
       realtime,
-      { isBannedByOrganizer: jest.fn(), isNewUser: jest.fn() } as any,
+      { isBannedByOrganizer: jest.fn(), isTrusted: jest.fn() } as any,
     );
     jest.clearAllMocks();
   });
@@ -402,7 +402,7 @@ describe('EventsService', () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent({ organizerId: 'org1' }));
       const eligibilityMock = {
         isBannedByOrganizer: jest.fn(),
-        isNewUser: jest.fn().mockResolvedValue(false),
+        isTrusted: jest.fn().mockResolvedValue(true),
       };
       service = new EventsService(
         prisma as PrismaService,
@@ -425,7 +425,7 @@ describe('EventsService', () => {
       const result = await service.findOne('event1', 'user1');
 
       expect(result.currentUserAccess).not.toBeNull();
-      expect(eligibilityMock.isNewUser).toHaveBeenCalledWith('user1', 'org1');
+      expect(eligibilityMock.isTrusted).toHaveBeenCalledWith('user1', 'org1');
     });
 
     it('rzuca NotFoundException gdy event nie istnieje', async () => {
@@ -554,7 +554,7 @@ describe('EventsService', () => {
         buildCitySubsMock(),
         slots,
         realtime,
-        { isBannedByOrganizer: jest.fn(), isNewUser: jest.fn() } as any,
+        { isBannedByOrganizer: jest.fn(), isTrusted: jest.fn() } as any,
       );
       const event = makeEvent();
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);

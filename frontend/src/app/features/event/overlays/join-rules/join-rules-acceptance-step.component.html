@@ -1,7 +1,7 @@
 <div class="space-y-4">
   @let _event = event();
   @let _hasRules = hasRules();
-  @let _showNewUserNotice = showNewUserNotice();
+  @let _showApprovalRequiredNotice = showApprovalRequiredNotice();
   @let _showOrganizerNotice = showOrganizerNotice();
   @let _rulesAccepted = rulesAccepted();
   @let _canProceed = canProceed();
@@ -40,19 +40,19 @@
       </div>
     }
 
-    @if (_showNewUserNotice) {
+    @if (_showApprovalRequiredNotice) {
       <div class="rounded-lg border border-warning-200 bg-warning-50 p-3">
         <div class="flex items-start gap-3">
           <app-icon name="help-circle" size="sm" class="mt-0.5 text-warning-400" />
           <div class="flex-1">
-            <p class="text-sm font-semibold text-warning-700">To Twój pierwszy raz? :)</p>
+            <p class="text-sm font-semibold text-warning-700">Twoje zgłoszenie wymaga akceptacji</p>
             <p class="mt-1 text-xs text-warning-600">
-              Jako nowy uczestnik w wydarzeniach u tego organizatora Twoje zgłoszenie musi zostać najpierw zweryfikowane
-              (przez organizatora) przed przydzieleniem miejsca. To samo dotyczy gości, których dodasz - do czasu
-              weryfikacji Twojego konta trafią do kolejki oczekujących.
+              Nie jesteś jeszcze zaufanym uczestnikiem u tego organizatora — Twoje zgłoszenie trafi do kolejki
+              oczekujących i musi zostać zatwierdzone przed przydzieleniem miejsca. To samo dotyczy gości, których
+              dodasz.
             </p>
             <a
-              href="/faq#new-user-verification"
+              href="/faq#approval-required"
               target="_blank"
               rel="noopener noreferrer"
               class="mt-2 inline-flex items-center gap-1 text-xs text-warning-700 underline hover:text-warning-800"

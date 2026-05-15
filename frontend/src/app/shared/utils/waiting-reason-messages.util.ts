@@ -9,11 +9,12 @@ export interface WaitingReasonMessages {
 // const aaa = 'To Twoje pierwsze zgłoszenie u tego organizatora i musi zostać przez niego zaakceptowane';
 
 const MESSAGES: Record<WaitingReason, WaitingReasonMessages> = {
-  NEW_USER: {
+  NOT_TRUSTED: {
     toast:
-      'Zgłoszenie wysłane! To Twoje pierwsze zgłoszenie u tego organizatora, więc musi być dodatkowo przez niego zatwierdzone.',
+      'Zgłoszenie wysłane! Twoje zgłoszenie wymaga akceptacji organizatora przed przydzieleniem miejsca.',
     title: 'Oczekujesz na akceptację',
-    description: 'To Twój pierwszy raz u tego organizatora. Nowi uczestnicy wymagają akceptacji.',
+    description:
+      'Nie jesteś jeszcze zaufanym uczestnikiem u tego organizatora. Twoje zgłoszenie wymaga akceptacji.',
   },
   BANNED: {
     toast: 'Zgłoszenie wysłane. Organizator ograniczył Twój dostęp – skontaktuj się z nim.',
@@ -49,7 +50,12 @@ export function getWaitingReasonMessages(reason: WaitingReason | null): WaitingR
   if (!reason) {
     return DEFAULT_MESSAGES;
   }
-  return MESSAGES[reason] ?? DEFAULT_MESSAGES;
+  const messages = MESSAGES[reason as keyof typeof MESSAGES];
+  if (!messages) {
+    console.warn(`Unknown waiting reason: ${reason}. Using default messages.`);
+    return DEFAULT_MESSAGES;
+  }
+  return messages;
 }
 
 export function getWaitingReasonToast(reason: WaitingReason | null): string {

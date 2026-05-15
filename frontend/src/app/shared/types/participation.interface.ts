@@ -14,7 +14,7 @@ export interface EventSlot {
 
 // Reason why user is waiting (didn't get automatic slot)
 export type WaitingReason =
-  | 'NEW_USER' // First time with this organizer, needs approval
+  | 'NOT_TRUSTED' // Not trusted by organizer, needs approval
   | 'BANNED' // Banned by organizer
   | 'NO_SLOTS' // No free slots available
   | 'NO_SLOTS_FOR_ROLE' // No free slots for selected role (but other roles available)

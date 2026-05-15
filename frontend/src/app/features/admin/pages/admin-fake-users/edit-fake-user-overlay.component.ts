@@ -51,6 +51,10 @@ export class EditFakeUserOverlayComponent {
   readonly saving = signal(false);
 
   async onDisplayNameChange(value: string): Promise<void> {
+    if (value.trim().length < 3) {
+      this.snackbar.show('Nazwa wyświetlana musi mieć co najmniej 3 znaki', 'error');
+      return;
+    }
     this.saving.set(true);
     try {
       await firstValueFrom(

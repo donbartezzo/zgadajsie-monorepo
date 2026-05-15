@@ -2,7 +2,7 @@ import { DisciplineRole } from '@zgadajsie/shared';
 import { EventBase } from './event-base.interface';
 
 export interface CurrentUserAccess {
-  isNewUser: boolean;
+  isTrusted: boolean;
 }
 
 export interface EventRoleConfig {

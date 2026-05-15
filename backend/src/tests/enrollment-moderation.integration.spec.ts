@@ -109,13 +109,13 @@ describe('[Integration] Moderation → Eligibility', () => {
     });
   });
 
-  describe('isNewUser()', () => {
-    it('użytkownik bez relacji jest traktowany jako nowy', async () => {
-      const isNew = await eligibilityService.isNewUser(userId, organizerId);
-      expect(isNew).toBe(true);
+  describe('isTrusted()', () => {
+    it('użytkownik bez relacji jest traktowany jako niezaufany', async () => {
+      const isTrusted = await eligibilityService.isTrusted(userId, organizerId);
+      expect(isTrusted).toBe(false);
     });
 
-    it('po ustawieniu isTrusted=true - isNewUser() zwraca false', async () => {
+    it('po ustawieniu isTrusted=true - isTrusted() zwraca true', async () => {
       await prisma.organizerUserRelation.create({
         data: {
           organizerUserId: organizerId,
@@ -125,8 +125,8 @@ describe('[Integration] Moderation → Eligibility', () => {
           isBanned: false,
         },
       });
-      const isNew = await eligibilityService.isNewUser(userId, organizerId);
-      expect(isNew).toBe(false);
+      const isTrusted = await eligibilityService.isTrusted(userId, organizerId);
+      expect(isTrusted).toBe(true);
     });
   });
 
