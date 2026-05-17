@@ -33,6 +33,7 @@ import { GeocodeService } from '../../../../core/services/geocode.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
+import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { DictionaryItem, City, Event, CoverImage, EventRoleConfig } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 import {
@@ -621,7 +622,7 @@ interface EventRule {
             color="primary"
             [fullWidth]="true"
             [loading]="submitting()"
-            [disabled]="form.invalid"
+            [disabled]="form.invalid && !isAdmin()"
           >
             <app-icon name="check" size="sm"></app-icon>
             {{
@@ -645,6 +646,7 @@ export class EventFormComponent implements OnInit {
   private readonly dictService = inject(DictionaryService);
   private readonly snackbar = inject(SnackbarService);
   private readonly breadcrumb = inject(BreadcrumbService);
+  private readonly confirmModal = inject(ConfirmModalService);
 
   readonly seriesAvailable = environment.enableEventSeries;
 
@@ -655,6 +657,7 @@ export class EventFormComponent implements OnInit {
   readonly geocoding = signal(false);
   readonly mapLat = signal(51.935);
   readonly mapLng = signal(15.506);
+  readonly isAdmin = computed(() => this.auth.isAdmin());
 
   private readonly geocodeService = inject(GeocodeService);
 
@@ -920,84 +923,109 @@ export class EventFormComponent implements OnInit {
       }));
   }
 
-  onSubmit(): void {
-    if (this.form.invalid) {
-      // Zaznacz pola z błędami
-      this.markFormGroupTouched(this.form);
-      this.snackbar.error('Formularz zawiera błędy. Popraw wszystkie wymagane pola.');
-      return;
-    }
-
-    // Dodatkowa walidacja kompletności danych
+  async onSubmit(): Promise<void> {
+    const isAdmin = this.isAdmin();
     const val = this.form.getRawValue();
 
-    // Sprawdź podstawowe dane
-    if (!val.title?.trim()) {
-      this.snackbar.error('Tytuł jest wymagany.');
-      return;
+    // Jeśli formularz jest niezwalidowany
+    if (this.form.invalid) {
+      if (isAdmin) {
+        // Administrator może pominąć walidację po potwierdzeniu
+        const errors = this.getValidationErrors();
+        const errorMessage =
+          errors.length > 0
+            ? `Formularz zawiera błędy:\n\n${errors.map((e) => `• ${e}`).join('\n')}`
+            : 'Formularz zawiera błędy walidacji.';
+
+        const confirmed = await this.confirmModal.confirm({
+          title: 'Pomiń walidację?',
+          message: `Jesteś administratorem. Czy na pewno chcesz zapisać wydarzenie z pominięciem walidacji?\n\n${errorMessage}`,
+          confirmLabel: 'Zapisz mimo to',
+          cancelLabel: 'Anuluj',
+          color: 'warning',
+        });
+
+        if (!confirmed) {
+          return;
+        }
+      } else {
+        // Zwykły użytkownik - zaznacz pola z błędami
+        this.markFormGroupTouched(this.form);
+        this.snackbar.error('Formularz zawiera błędy. Popraw wszystkie wymagane pola.');
+        return;
+      }
     }
 
-    if (!val.disciplineSlug) {
-      this.snackbar.error('Dyscyplina jest wymagana.');
-      return;
-    }
+    // Dodatkowa walidacja kompletności danych (tylko dla nie-adminów)
+    if (!isAdmin) {
+      // Sprawdź podstawowe dane
+      if (!val.title?.trim()) {
+        this.snackbar.error('Tytuł jest wymagany.');
+        return;
+      }
 
-    if (!val.facilitySlug) {
-      this.snackbar.error('Obiekt jest wymagany.');
-      return;
-    }
+      if (!val.disciplineSlug) {
+        this.snackbar.error('Dyscyplina jest wymagana.');
+        return;
+      }
 
-    if (!val.levelSlug) {
-      this.snackbar.error('Poziom jest wymagany.');
-      return;
-    }
+      if (!val.facilitySlug) {
+        this.snackbar.error('Obiekt jest wymagany.');
+        return;
+      }
 
-    if (!val.citySlug) {
-      this.snackbar.error('Miasto jest wymagane.');
-      return;
-    }
+      if (!val.levelSlug) {
+        this.snackbar.error('Poziom jest wymagany.');
+        return;
+      }
 
-    if (!val.address?.trim()) {
-      this.snackbar.error('Adres jest wymagany.');
-      return;
-    }
+      if (!val.citySlug) {
+        this.snackbar.error('Miasto jest wymagane.');
+        return;
+      }
 
-    // Sprawdź daty
-    if (!val.startsAt) {
-      this.snackbar.error('Data rozpoczęcia jest wymagana.');
-      return;
-    }
+      if (!val.address?.trim()) {
+        this.snackbar.error('Adres jest wymagany.');
+        return;
+      }
 
-    if (!val.endsAt) {
-      this.snackbar.error('Data zakończenia jest wymagana.');
-      return;
-    }
+      // Sprawdź daty
+      if (!val.startsAt) {
+        this.snackbar.error('Data rozpoczęcia jest wymagana.');
+        return;
+      }
 
-    const startUtc = fromLocalInputValue(val.startsAt);
-    const endUtc = fromLocalInputValue(val.endsAt);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const nowUtc = nowInZone().toISO()!;
+      if (!val.endsAt) {
+        this.snackbar.error('Data zakończenia jest wymagana.');
+        return;
+      }
 
-    if (startUtc <= nowUtc) {
-      this.snackbar.error('Data rozpoczęcia musi być w przyszłości.');
-      return;
-    }
+      const startUtc = fromLocalInputValue(val.startsAt);
+      const endUtc = fromLocalInputValue(val.endsAt);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const nowUtc = nowInZone().toISO()!;
 
-    if (endUtc <= startUtc) {
-      this.snackbar.error('Data zakończenia musi być późniejsza niż data rozpoczęcia.');
-      return;
-    }
+      if (startUtc <= nowUtc) {
+        this.snackbar.error('Data rozpoczęcia musi być w przyszłości.');
+        return;
+      }
 
-    // Sprawdź liczbę uczestników
-    if (val.maxParticipants && val.minParticipants && val.maxParticipants < val.minParticipants) {
-      this.snackbar.error('Maksymalna liczba uczestników musi być większa lub równa minimalnej.');
-      return;
-    }
+      if (endUtc <= startUtc) {
+        this.snackbar.error('Data zakończenia musi być późniejsza niż data rozpoczęcia.');
+        return;
+      }
 
-    // Sprawdź przedział wiekowy
-    if (val.ageMin && val.ageMax && val.ageMax < val.ageMin) {
-      this.snackbar.error('Maksymalny wiek musi być większy lub równy minimalnemu wiekowi.');
-      return;
+      // Sprawdź liczbę uczestników
+      if (val.maxParticipants && val.minParticipants && val.maxParticipants < val.minParticipants) {
+        this.snackbar.error('Maksymalna liczba uczestników musi być większa lub równa minimalnej.');
+        return;
+      }
+
+      // Sprawdź przedział wiekowy
+      if (val.ageMin && val.ageMax && val.ageMax < val.ageMin) {
+        this.snackbar.error('Maksymalny wiek musi być większy lub równy minimalnemu wiekowi.');
+        return;
+      }
     }
 
     this.submitting.set(true);
@@ -1335,6 +1363,50 @@ export class EventFormComponent implements OnInit {
         this.markFormGroupTouched(control);
       }
     });
+  }
+
+  private getValidationErrors(): string[] {
+    const errors: string[] = [];
+    const val = this.form.getRawValue();
+
+    // Sprawdź pola wymagane
+    if (!val.title?.trim()) errors.push('Brak tytułu');
+    if (!val.disciplineSlug) errors.push('Brak dyscypliny');
+    if (!val.facilitySlug) errors.push('Brak obiektu');
+    if (!val.levelSlug) errors.push('Brak poziomu');
+    if (!val.citySlug) errors.push('Brak miasta');
+    if (!val.address?.trim()) errors.push('Brak adresu');
+    if (!val.startsAt) errors.push('Brak daty rozpoczęcia');
+    if (!val.endsAt) errors.push('Brak daty zakończenia');
+
+    // Sprawdź daty
+    if (val.startsAt && val.endsAt) {
+      const startUtc = fromLocalInputValue(val.startsAt);
+      const endUtc = fromLocalInputValue(val.endsAt);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const nowUtc = nowInZone().toISO()!;
+
+      if (startUtc <= nowUtc) errors.push('Data rozpoczęcia jest w przeszłości');
+      if (endUtc <= startUtc)
+        errors.push('Data zakończenia jest wcześniejsza lub równa dacie rozpoczęcia');
+    }
+
+    // Sprawdź liczbę uczestników
+    if (val.maxParticipants && val.minParticipants && val.maxParticipants < val.minParticipants) {
+      errors.push('Maksymalna liczba uczestników jest mniejsza niż minimalna');
+    }
+
+    // Sprawdź przedział wiekowy
+    if (val.ageMin && val.ageMax && val.ageMax < val.ageMin) {
+      errors.push('Maksymalny wiek jest mniejszy niż minimalny');
+    }
+
+    // Sprawdź sumę slotów ról
+    if (this.rolesEnabled() && this.roleSlotsSum() !== this.form.get('maxParticipants')?.value) {
+      errors.push('Suma slotów ról nie zgadza się z liczbą uczestników');
+    }
+
+    return errors;
   }
 
   private setDefaultValues(): void {
