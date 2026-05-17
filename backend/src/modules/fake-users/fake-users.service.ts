@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Gender as PrismaGender } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { AccountType, FAKE_USERS_MIN_FREE_SLOTS_BUFFER, Gender } from '@zgadajsie/shared';
+import { AccountType, Gender } from '@zgadajsie/shared';
 import { FakeUserPickerService } from './fake-user-picker.service';
 import { ScheduledJobsService } from '../../common/scheduled-jobs/scheduled-jobs.service';
 
@@ -252,7 +252,7 @@ export class FakeUsersService {
       throw new NotFoundException('Event not found');
     }
 
-    // Sprawdź warunek bufora
+    // Dla ręcznego dodania przez admina: wymagane minimum 1 wolne miejsce (bez bufora)
     const activeEnrollments = await this.prisma.eventEnrollment.count({
       where: {
         eventId,
@@ -262,10 +262,8 @@ export class FakeUsersService {
 
     const freePlaces = event.maxParticipants - activeEnrollments;
 
-    if (freePlaces < FAKE_USERS_MIN_FREE_SLOTS_BUFFER) {
-      throw new BadRequestException(
-        `Brak wystarczających miejsc (wymagane minimum ${FAKE_USERS_MIN_FREE_SLOTS_BUFFER} wolnych miejsc)`,
-      );
+    if (freePlaces <= 0) {
+      throw new BadRequestException('Brak wolnych miejsc w wydarzeniu');
     }
 
     // Wybierz fake usera
