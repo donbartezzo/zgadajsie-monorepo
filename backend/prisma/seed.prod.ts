@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { createCommonSeedData } from './seed-common';
+import { createCommonSeedData, createFakeUsers } from './seed-common';
 
 const prisma = new PrismaClient();
 
