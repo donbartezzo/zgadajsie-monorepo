@@ -4,6 +4,7 @@ import { ScheduledJobsService } from '../../common/scheduled-jobs/scheduled-jobs
 import { FakeUserPickerService } from './fake-user-picker.service';
 import { featureFlags } from '../../common/config/feature-flags';
 import { FAKE_USERS_MIN_FREE_SLOTS_BUFFER } from '@zgadajsie/shared';
+import { EventRoleConfig } from '../slots/slot.types';
 
 const FAKE_USER_ENROLL = 'FAKE_USER_ENROLL';
 const FAKE_USER_WITHDRAW = 'FAKE_USER_WITHDRAW';
@@ -45,6 +46,7 @@ export class FakeUsersHandlersService implements OnModuleInit {
         targetOccupancy: true,
         status: true,
         startsAt: true,
+        roleConfig: true,
       },
     });
 
@@ -91,6 +93,10 @@ export class FakeUsersHandlersService implements OnModuleInit {
       throw new BadRequestException('Fake user jest już zapisany');
     }
 
+    // Wyznacz roleKey: dla wydarzeń z rolami użyj roli domyślnej
+    const roleConfig = event.roleConfig as EventRoleConfig | null;
+    const roleKey = roleConfig?.roles.find((r) => r.isDefault)?.key ?? undefined;
+
     // Utwórz enrollment (addedByUserId = null - fake user "zapisał się sam")
     await this.prisma.eventEnrollment.create({
       data: {
@@ -98,6 +104,7 @@ export class FakeUsersHandlersService implements OnModuleInit {
         userId: fakeUserId,
         addedByUserId: null,
         wantsIn: true,
+        roleKey,
       },
     });
 

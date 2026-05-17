@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AccountType, Gender } from '@zgadajsie/shared';
 import { FakeUserPickerService } from './fake-user-picker.service';
 import { ScheduledJobsService } from '../../common/scheduled-jobs/scheduled-jobs.service';
+import { EventRoleConfig } from '../slots/slot.types';
 
 export interface CreateFakeUserDto {
   displayName: string;
@@ -245,7 +246,7 @@ export class FakeUsersService {
   async enrollFakeUserToEvent(eventId: string): Promise<void> {
     const event = await this.prisma.event.findUnique({
       where: { id: eventId },
-      select: { maxParticipants: true },
+      select: { maxParticipants: true, roleConfig: true },
     });
 
     if (!event) {
@@ -273,6 +274,10 @@ export class FakeUsersService {
       throw new BadRequestException('Brak dostępnych fake users dla tego wydarzenia');
     }
 
+    // Wyznacz roleKey: dla wydarzeń z rolami użyj roli domyślnej
+    const roleConfig = event.roleConfig as EventRoleConfig | null;
+    const roleKey = roleConfig?.roles.find((r) => r.isDefault)?.key ?? undefined;
+
     // Natychmiastowe utworzenie enrollment (bez planowania joba)
     await this.prisma.eventEnrollment.create({
       data: {
@@ -280,6 +285,7 @@ export class FakeUsersService {
         userId: fakeUserId,
         addedByUserId: null,
         wantsIn: true,
+        roleKey,
       },
     });
 

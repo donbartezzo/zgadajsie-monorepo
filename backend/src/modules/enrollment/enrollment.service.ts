@@ -362,10 +362,22 @@ export class EnrollmentService {
     }
 
     const roleKey = participation.roleKey;
-    const freeSlots = await this.slotService.getFreeSlotCount(participation.eventId, roleKey);
+    const roleConfig = participation.event.roleConfig as EventRoleConfig | null;
+
+    // Zapisy bez roli w wydarzeniu z roleConfig traktujemy jako zapis na rolę domyślną.
+    // Dotyczy to przede wszystkim fake userów dodanych przed wprowadzeniem obsługi ról.
+    const effectiveRoleKey =
+      roleKey === null && roleConfig
+        ? (roleConfig.roles.find((r) => r.isDefault)?.key ?? null)
+        : roleKey;
+
+    const freeSlots = await this.slotService.getFreeSlotCount(
+      participation.eventId,
+      effectiveRoleKey,
+    );
+
     if (freeSlots === 0) {
-      if (roleKey && participation.event.roleConfig) {
-        const roleConfig = participation.event.roleConfig as unknown as EventRoleConfig;
+      if (effectiveRoleKey && roleConfig) {
         const availableRoles = await this.slotService.getAvailableRoles(
           participation.eventId,
           roleConfig,
@@ -388,12 +400,20 @@ export class EnrollmentService {
       participationId,
       false,
       undefined,
-      roleKey,
+      effectiveRoleKey,
     );
+
+    // Jeśli zastosowano fallback do roli domyślnej, utrwal ją w enrollment dla spójności danych
+    const enrollmentUpdateData: { waitingReason: null; roleKey?: string } = {
+      waitingReason: null,
+    };
+    if (effectiveRoleKey !== rawRoleKey && effectiveRoleKey !== null) {
+      enrollmentUpdateData.roleKey = effectiveRoleKey;
+    }
 
     const updated = await this.prisma.eventEnrollment.update({
       where: { id: participationId },
-      data: { waitingReason: null },
+      data: enrollmentUpdateData,
       include: {
         user: { select: USER_SELECT },
         event: { select: { id: true, title: true } },
