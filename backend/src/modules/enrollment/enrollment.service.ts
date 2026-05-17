@@ -362,7 +362,7 @@ export class EnrollmentService {
     }
 
     const roleKey = participation.roleKey;
-    const roleConfig = participation.event.roleConfig as EventRoleConfig | null;
+    const roleConfig = participation.event.roleConfig as unknown as EventRoleConfig | null;
 
     // Zapisy bez roli w wydarzeniu z roleConfig traktujemy jako zapis na rolę domyślną.
     // Dotyczy to przede wszystkim fake userów dodanych przed wprowadzeniem obsługi ról.
@@ -407,7 +407,7 @@ export class EnrollmentService {
     const enrollmentUpdateData: { waitingReason: null; roleKey?: string } = {
       waitingReason: null,
     };
-    if (effectiveRoleKey !== rawRoleKey && effectiveRoleKey !== null) {
+    if (effectiveRoleKey !== roleKey && effectiveRoleKey !== null) {
       enrollmentUpdateData.roleKey = effectiveRoleKey;
     }
 
