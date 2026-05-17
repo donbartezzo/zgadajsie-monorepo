@@ -72,6 +72,20 @@ export class JoinRulesOverlayComponent {
   readonly currentUser = computed(() => this.auth.currentUser());
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
 
+  // In roleChange mode initiated by organizer, we display the target participant's data,
+  // not the currently logged-in user (organizer).
+  readonly targetParticipantForRoleChange = computed(() => {
+    const config = this.wizardConfig();
+    if (config?.mode !== 'roleChange' || !config.participationId) return null;
+    return this.participants().find((p) => p.id === config.participationId) ?? null;
+  });
+
+  readonly effectiveParticipantUser = computed(() => {
+    const target = this.targetParticipantForRoleChange();
+    if (target) return target.user as unknown as ReturnType<typeof this.auth.currentUser>;
+    return this.auth.currentUser();
+  });
+
   readonly participantsWithoutSlot = computed(() => {
     const uid = this.currentUserId();
     if (!uid) return [];
@@ -118,7 +132,9 @@ export class JoinRulesOverlayComponent {
     return roles.find((r) => r.isDefault)?.key ?? null;
   });
 
-  readonly currentUserDisplayName = computed(() => this.auth.currentUser()?.displayName ?? '');
+  readonly currentUserDisplayName = computed(
+    () => this.effectiveParticipantUser()?.displayName ?? '',
+  );
 
   readonly headerCopy = computed(() => {
     if (!this.isAccountVerified()) {
@@ -129,9 +145,13 @@ export class JoinRulesOverlayComponent {
     }
 
     if (this.isRoleChangeMode()) {
+      const target = this.targetParticipantForRoleChange();
+      const isOtherParticipant = target && target.userId !== this.currentUserId();
       return {
         title: 'Ustaw rolę',
-        description: 'Wybierz rolę dla swojego uczestnictwa.',
+        description: isOtherParticipant
+          ? `Wybierz rolę dla uczestnika ${target.user.displayName}.`
+          : 'Wybierz rolę dla swojego uczestnictwa.',
       };
     }
 
@@ -274,7 +294,7 @@ export class JoinRulesOverlayComponent {
 
   private syncAvatarSeedFromType(type: 'self' | 'guest'): void {
     if (type === 'self') {
-      this.participantAvatarSeed.set(this.auth.currentUser()?.avatarSeed ?? null);
+      this.participantAvatarSeed.set(this.effectiveParticipantUser()?.avatarSeed ?? null);
       this.participantGuestId.set(null);
     } else {
       // Generate fresh seed AND stable UUID for guest. Avatar fingerprint uses
