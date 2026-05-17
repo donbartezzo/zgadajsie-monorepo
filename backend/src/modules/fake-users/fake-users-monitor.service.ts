@@ -72,10 +72,12 @@ export class FakeUsersMonitorService {
       return;
     }
 
-    // Finalny cleanup: X godzin przed startem
-    const hoursUntilStart = (event.startsAt.getTime() - now.getTime()) / (1000 * 60 * 60);
-    if (hoursUntilStart <= FAKE_USERS_FINAL_CLEANUP_HOURS) {
-      await this.scheduleFinalCleanup(event.id);
+    // Finalny cleanup: X godzin przed startem (tylko jeśli monitorowanie jest aktywne)
+    if (event.targetOccupancy) {
+      const hoursUntilStart = (event.startsAt.getTime() - now.getTime()) / (1000 * 60 * 60);
+      if (hoursUntilStart <= FAKE_USERS_FINAL_CLEANUP_HOURS) {
+        await this.scheduleFinalCleanup(event.id);
+      }
       return;
     }
 

@@ -235,34 +235,54 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
             <h2 class="text-sm font-semibold text-neutral-900 mb-3">Fake users</h2>
             <div class="space-y-3">
               <app-card>
-                <div class="p-3 flex items-center gap-3">
-                  <div class="flex-1">
-                    <label
-                      for="target-occupancy-input"
-                      class="block text-xs font-medium text-neutral-700 mb-1"
+                <div class="p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <label for="target-occupancy-input" class="text-xs font-medium text-neutral-700"
                       >Target occupancy</label
                     >
-                    <div class="flex items-center gap-2">
-                      <input
-                        id="target-occupancy-input"
-                        type="number"
-                        [value]="targetOccupancyInput()"
-                        (input)="targetOccupancyInput.set($any($event.target).value)"
-                        placeholder="np. 35"
-                        class="w-24 px-2 py-1 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
-                        [disabled]="updatingTargetOccupancy()"
-                      />
-                      <span class="text-xs text-neutral-500">lub puste aby wyłączyć</span>
-                      <app-button
-                        appearance="soft"
-                        color="primary"
-                        size="sm"
-                        [loading]="updatingTargetOccupancy()"
-                        (clicked)="updateTargetOccupancy()"
+                    @if (targetOccupancy()) {
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full bg-success-100 text-success-700 text-xs font-semibold"
                       >
-                        Zapisz
-                      </app-button>
-                    </div>
+                        Aktywne: {{ targetOccupancy() }}%
+                      </span>
+                    } @else {
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-500 text-xs"
+                      >
+                        Wyłączone
+                      </span>
+                    }
+                  </div>
+                  @if (!targetOccupancy()) {
+                    <p class="text-xs text-neutral-500 mb-2">
+                      Brak auto-zarządzania – fake users dodani ręcznie pozostają do wypisania.
+                    </p>
+                  } @else {
+                    <p class="text-xs text-neutral-500 mb-2">
+                      Cron co 15 min utrzymuje ~{{ targetOccupancy() }}% obłożenia automatycznie.
+                    </p>
+                  }
+                  <div class="flex items-center gap-2">
+                    <input
+                      id="target-occupancy-input"
+                      type="number"
+                      [value]="targetOccupancyInput()"
+                      (input)="targetOccupancyInput.set($any($event.target).value)"
+                      placeholder="np. 35"
+                      class="w-24 px-2 py-1 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      [disabled]="updatingTargetOccupancy()"
+                    />
+                    <span class="text-xs text-neutral-500">lub puste aby wyłączyć</span>
+                    <app-button
+                      appearance="soft"
+                      color="primary"
+                      size="sm"
+                      [loading]="updatingTargetOccupancy()"
+                      (clicked)="updateTargetOccupancy()"
+                    >
+                      Zapisz
+                    </app-button>
                   </div>
                 </div>
               </app-card>
@@ -271,7 +291,7 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
                   <div>
                     <p class="text-sm font-medium text-neutral-900">Ręczne dodanie fake usera</p>
                     <p class="text-xs text-neutral-500">
-                      Dodaje jednego fake usera z zachowaniem bufora
+                      Dodaje jednego fake usera (wymaga co najmniej 1 wolnego miejsca)
                     </p>
                   </div>
                   <app-button
