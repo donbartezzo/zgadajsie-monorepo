@@ -10,6 +10,9 @@ async function main() {
   const { cities, disciplines, facilities, levels, coverImages } =
     await createCommonSeedData(prisma);
 
+  // Tworzymy fake users (tylko na produkcji, jeśli nie istnieją)
+  await createFakeUsers(prisma);
+
   console.log('Dane production zostały zainicjalizowane pomyślnie');
   console.log(
     `Utworzono: ${cities.length} miast, ${disciplines.length} dyscyplin, ${facilities.length} obiektów, ${levels.length} poziomów, ${coverImages.length} cover images`,

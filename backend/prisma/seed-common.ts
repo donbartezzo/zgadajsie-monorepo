@@ -232,8 +232,10 @@ export async function createFakeUsers(prisma: any) {
     const email = `fake-${uuid}@fake.zgadajsie.pl`;
     const avatarSeed = generateAvatarSeed();
 
-    await prisma.user.create({
-      data: {
+    await prisma.user.upsert({
+      where: { email },
+      update: {},
+      create: {
         email,
         displayName: name,
         passwordHash: null,
@@ -252,8 +254,10 @@ export async function createFakeUsers(prisma: any) {
     const email = `fake-${uuid}@fake.zgadajsie.pl`;
     const avatarSeed = generateAvatarSeed();
 
-    await prisma.user.create({
-      data: {
+    await prisma.user.upsert({
+      where: { email },
+      update: {},
+      create: {
         email,
         displayName: name,
         passwordHash: null,
