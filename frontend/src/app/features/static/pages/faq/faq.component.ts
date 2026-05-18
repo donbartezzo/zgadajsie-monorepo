@@ -144,6 +144,12 @@ export class FaqComponent {
         'Status „Wypisany" oznacza, że nie uczestniczysz w tym wydarzeniu. Może to wynikać z Twojej własnej rezygnacji, odrzucenia zgłoszenia przez organizatora lub usunięcia z listy uczestników. Jeśli chcesz ponownie dołączyć do otwartego wydarzenia, skorzystaj z przycisku dołączenia. Pamiętaj, że organizator może ograniczyć możliwość ponownego zapisu.',
     },
     {
+      anchor: 'cancelled-event',
+      question: 'Co oznacza status „Odwołane" i co się dzieje z uczestnikami?',
+      answer:
+        'Wydarzenie odwołane to wydarzenie, które organizator zdecydował się anulować przed jego rozpoczęciem. W momencie odwołania wszyscy ówcześni uczestnicy oraz osoby z listy oczekujących zostają automatycznie wypisani - widnieją wtedy w sekcji „Wypisani". Jeśli wydarzenie było płatne, opłaty są zwracane w formie voucherów organizatora, które możesz wykorzystać przy zapisie na kolejne jego wydarzenia. Powiadomienie o odwołaniu otrzymasz e-mailem oraz w aplikacji.',
+    },
+    {
       anchor: 'leave-flow',
       question: 'Czy mogę anulować uczestnictwo?',
       answer:

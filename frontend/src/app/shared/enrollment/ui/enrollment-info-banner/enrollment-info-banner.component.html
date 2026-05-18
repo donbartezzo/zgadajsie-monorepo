@@ -1,0 +1,47 @@
+@let _config = config();
+@let _faqHref = faqHref();
+@let _cd = countdown();
+
+<div class="mb-4 px-4">
+  <div class="flex flex-col items-center text-center">
+    <h1 class="text-2xl font-semibold text-info-700">{{ _config.title }}</h1>
+
+    @if (showCountdown() && _cd) {
+      <div class="mt-4 flex justify-center">
+        <div class="grid grid-cols-4 gap-3 max-w-lg">
+          <div
+            class="bg-white rounded-xl p-3 text-center shadow-sm aspect-square flex flex-col items-center justify-center"
+          >
+            <span class="block text-xl font-bold text-neutral-900">{{ _cd.days }}</span>
+            <span class="block text-[10px] text-neutral-400 mt-0.5">{{ _cd.days | timeUnit: 'days' }}</span>
+          </div>
+          <div
+            class="bg-white rounded-xl p-3 text-center shadow-sm aspect-square flex flex-col items-center justify-center"
+          >
+            <span class="block text-xl font-bold text-neutral-900">{{ _cd.hours }}</span>
+            <span class="block text-[10px] text-neutral-400 mt-0.5">{{ _cd.hours | timeUnit: 'hours' }}</span>
+          </div>
+          <div
+            class="bg-white rounded-xl p-3 text-center shadow-sm aspect-square flex flex-col items-center justify-center"
+          >
+            <span class="block text-xl font-bold text-neutral-900">{{ _cd.minutes }}</span>
+            <span class="block text-[10px] text-neutral-400 mt-0.5">{{ _cd.minutes | timeUnit: 'minutes' }}</span>
+          </div>
+          <div
+            class="bg-white rounded-xl p-3 text-center shadow-sm aspect-square flex flex-col items-center justify-center"
+          >
+            <span class="block text-xl font-bold text-neutral-900">{{ _cd.seconds }}</span>
+            <span class="block text-[10px] text-neutral-400 mt-0.5">{{ _cd.seconds | timeUnit: 'seconds' }}</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <p class="my-2 text-sm text-neutral-600 leading-relaxed">
+      {{ _config.description }}
+      @if (_faqHref) {
+        <a [href]="_faqHref" class="underline text-info-600 hover:text-info-700 ml-1">{{ _config.faqLinkLabel }}</a>
+      }
+    </p>
+  </div>
+</div>

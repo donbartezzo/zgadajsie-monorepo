@@ -11,11 +11,10 @@ import { getPolishPluralKey } from '../../utils/pluralization.utils';
 export class CapacityProgressComponent {
   private readonly transloco = inject(TranslocoService);
 
-  readonly enrollmentsCount = input<number | undefined>(undefined);
   readonly participantsCount = input.required<number>();
   readonly max = input.required<number>();
-  readonly isPreEnrollment = input<boolean>(false);
-  readonly isJoinable = input<boolean>(false);
+  readonly fillVisible = input<boolean>(true);
+  readonly summaryText = input<string | undefined>(undefined);
   readonly customStatusText = input<string | undefined>(undefined);
   readonly animated = input<boolean>(false);
 
@@ -40,7 +39,7 @@ export class CapacityProgressComponent {
     return Math.min(100, (this.occupiedCount() / max) * 100);
   });
 
-  readonly showBarFill = computed(() => !this.isPreEnrollment() && this.occupiedPercent() > 0);
+  readonly showBarFill = computed(() => this.fillVisible() && this.occupiedPercent() > 0);
 
   private buildHslColor(hue: number): string {
     return `hsl(${hue}, 65%, 85%)`;
@@ -61,34 +60,6 @@ export class CapacityProgressComponent {
   readonly barClass = computed(() => {
     const stripes = this.animated() ? 'bg-striped-strong-animated' : 'bg-striped-strong';
     return `h-full rounded-full transition-all duration-300 ease-out relative ${stripes}`;
-  });
-
-  // @TODO: to w przyszłości prawdopodobnie przenieść trzeba do EventCapacityProgressComponent (jako analogiczny input customStatusText), bo wykracze poza odpowiedzialnośc progressbara
-  readonly enrollmentsSummaryText = computed(() => {
-    const participants = this.participantsCount();
-    const enrollments = this.enrollmentsCount() ?? 0;
-    const waiting = Math.max(0, enrollments - participants);
-
-    if (participants === 0 && waiting === 0) {
-      const baseText = this.translate('progress.noEnrollments');
-      if (this.isJoinable()) {
-        return `${baseText} - ${this.translate('progress.beFirst')}`;
-      }
-      return baseText;
-    }
-
-    if (waiting === 0) {
-      if (participants > 0) {
-        return `${participants} ${this.translatePlural('progress.participants', participants)}`;
-      }
-      return null;
-    }
-
-    if (participants === 0) {
-      return `${waiting} ${this.translatePlural('progress.waiting', waiting)}`;
-    }
-
-    return `${participants} ${this.translatePlural('progress.participants', participants)} + ${waiting} ${this.translatePlural('progress.waiting', waiting)}`;
   });
 
   readonly statusText = computed(() => {

@@ -102,7 +102,7 @@
     "start-db": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker-compose up -d",
+        "command": "docker-compose up -d --remove-orphans",
         "cwd": "."
       }
     },

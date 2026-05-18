@@ -307,4 +307,50 @@ describe('EnrollmentGridComponent - computed signals', () => {
       expect(sections.some((s) => s.type === 'pending')).toBe(true);
     });
   });
+
+  describe('CANCELLED - sekcje i banner', () => {
+    function cancelledEvent() {
+      return makeEvent({ status: 'CANCELLED' });
+    }
+
+    it('slotParticipants() zwraca pustą tablicę dla CANCELLED nawet gdy są APPROVED', () => {
+      const { fixture, c } = create();
+      fixture.componentRef.setInput('event', cancelledEvent());
+      fixture.componentRef.setInput('participants', [
+        makeParticipant('p1', 'APPROVED'),
+        makeParticipant('p2', 'CONFIRMED'),
+      ]);
+      expect(c.slotParticipants()).toEqual([]);
+    });
+
+    it('pendingParticipants() zwraca pustą tablicę dla CANCELLED nawet gdy są PENDING', () => {
+      const { fixture, c } = create();
+      fixture.componentRef.setInput('event', cancelledEvent());
+      fixture.componentRef.setInput('participants', [
+        makeParticipant('p1', 'PENDING'),
+        makeParticipant('p2', 'APPROVED'),
+      ]);
+      expect(c.pendingParticipants()).toEqual([]);
+    });
+
+    it('sections() zawiera wyłącznie sekcję withdrawn dla CANCELLED', () => {
+      const { fixture, c } = create();
+      fixture.componentRef.setInput('event', cancelledEvent());
+      fixture.componentRef.setInput('participants', [
+        makeParticipant('p1', 'APPROVED'),
+        makeParticipant('p2', 'PENDING'),
+        makeParticipant('p3', 'WITHDRAWN'),
+        makeParticipant('p4', 'REJECTED'),
+      ]);
+      const sections = c.sections();
+      expect(sections.map((s) => s.type)).toEqual(['withdrawn']);
+      expect(sections[0].count).toBe(2);
+    });
+
+    it('bannerVariant() = "cancelled" dla CANCELLED', () => {
+      const { fixture, c } = create();
+      fixture.componentRef.setInput('event', cancelledEvent());
+      expect(c.bannerVariant()).toBe('cancelled');
+    });
+  });
 });

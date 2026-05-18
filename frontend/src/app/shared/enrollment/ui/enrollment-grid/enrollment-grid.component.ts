@@ -12,7 +12,6 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { IconComponent } from '../../../ui/icon/icon.component';
 import { BadgeComponent } from '../../../ui/badge/badge.component';
 import { Enrollment, EnrolleeManageItem, EventRoleConfig } from '../../../types';
 import { EventSlotInfo } from '../../../types/payment.interface';
@@ -21,8 +20,11 @@ import {
   getLotteryThreshold,
   isPreEnrollment as isPreEnrollmentFn,
 } from '../../../utils/event-time-status.util';
-import { getEventCountdown, EventCountdown, nowInZone } from '@zgadajsie/shared';
-import { TimeUnitPipe } from '../../../pipes/time-unit.pipe';
+import { getEventCountdown, EventCountdown, EventStatus, nowInZone } from '@zgadajsie/shared';
+import {
+  EnrollmentInfoBannerComponent,
+  EnrollmentInfoBannerVariant,
+} from '../enrollment-info-banner/enrollment-info-banner.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ModalService } from '../../../ui/modal/modal.service';
 import { SnackbarService } from '../../../ui/snackbar/snackbar.service';
@@ -53,10 +55,9 @@ const WITHDRAWN_STATUSES = ['WITHDRAWN', 'REJECTED'];
   selector: 'app-enrollment-grid',
   imports: [
     FormsModule,
-    IconComponent,
     BadgeComponent,
     EnrollmentGridSectionComponent,
-    TimeUnitPipe,
+    EnrollmentInfoBannerComponent,
   ],
   templateUrl: './enrollment-grid.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -151,14 +152,26 @@ export class EnrollmentGridComponent implements OnDestroy {
     return isPreEnrollmentFn(e.startsAt, e.lotteryExecutedAt, e.status);
   });
 
+  readonly isCancelled = computed(() => this.event().status === EventStatus.CANCELLED);
+
+  readonly bannerVariant = computed<EnrollmentInfoBannerVariant | null>(() => {
+    if (this.isCancelled()) return 'cancelled';
+    if (this.isPreEnrollment()) return 'pre-enrollment';
+    return null;
+  });
+
   readonly lotteryCountdown = signal<EventCountdown | null>(null);
 
   readonly slotParticipants = computed(() => {
-    if (this.isPreEnrollment()) return [];
+    if (this.isPreEnrollment() || this.isCancelled()) return [];
     return this.participants().filter((p) => SLOT_STATUSES.includes(p.status));
   });
 
   readonly pendingParticipants = computed(() => {
+    // Wydarzenie odwołane: po cancel() wszyscy z wantsIn=true zostają wypisani z withdrawnBy=ORGANIZER,
+    // więc nie powinno być żadnych PENDING. Defensywnie wymuszamy pustą sekcję.
+    if (this.isCancelled()) return [];
+
     // In pre-enrollment all active participants (regardless of derived status) go to "Oczekujący".
     // Organizer-pre-assigned slots must not reveal themselves until the lottery executes, so we
     // clone each participant with status='PENDING' and drop slot/payment hints from the view.
@@ -242,7 +255,7 @@ export class EnrollmentGridComponent implements OnDestroy {
   });
 
   readonly slotGroups = computed<SlotGroup[]>(() => {
-    if (this.isPreEnrollment()) return [];
+    if (this.isPreEnrollment() || this.isCancelled()) return [];
 
     const config = this.roleConfig();
     const allSlots = this.slots();
