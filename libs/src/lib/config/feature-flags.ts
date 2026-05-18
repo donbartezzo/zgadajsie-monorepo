@@ -28,5 +28,5 @@ export const PRODUCTION_FEATURE_FLAGS: FeatureFlags = {
   enableEventCreation: false,
   enableOnlinePayments: true,
   enableEventSeries: true,
-  enableFakeUsers: false,
+  enableFakeUsers: true,
 };
