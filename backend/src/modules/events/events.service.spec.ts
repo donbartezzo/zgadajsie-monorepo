@@ -556,7 +556,7 @@ describe('EventsService', () => {
         realtime,
         { isBannedByOrganizer: jest.fn(), isTrusted: jest.fn() } as any,
       );
-      const event = makeEvent();
+      const event = makeEvent({ city: { slug: 'warszawa' } });
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);
       tx.event.update.mockResolvedValue({ ...event, status: 'CANCELLED' });
       tx.eventEnrollment.findMany.mockResolvedValue([]);
@@ -571,6 +571,7 @@ describe('EventsService', () => {
         'user@test.com',
         'User 1',
         event.title,
+        'http://localhost:4300/w/warszawa/event1',
       );
     });
   });
