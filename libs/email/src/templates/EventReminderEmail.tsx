@@ -10,7 +10,7 @@ export default function EventReminderEmail({
   displayName = 'Jan Kowalski',
   eventTitle = 'Przykładowe wydarzenie',
   eventTime = '2024-01-01 12:00',
-  eventLink = 'https://zgadajsie.pl/w/warszawa/123',
+  eventLink = '',
   showGroupChat = true,
   showOrganizerChat = true,
 }: EventReminderEmailProps) {

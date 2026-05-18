@@ -86,7 +86,7 @@ export default function ParticipationStatusEmail({
   displayName = 'Jan Kowalski',
   eventTitle = 'Przykładowe wydarzenie',
   status = 'SLOT_ASSIGNED',
-  eventLink = 'https://zgadajsie.pl/w/warszawa/123',
+  eventLink,
   showGroupChat = true,
   showOrganizerChat = true,
 }: ParticipationStatusEmailProps) {

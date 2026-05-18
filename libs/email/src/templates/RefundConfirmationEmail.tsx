@@ -9,7 +9,7 @@ export default function RefundConfirmationEmail({
   displayName = 'Jan Kowalski',
   eventTitle = 'Przykładowe wydarzenie',
   amount = 50,
-  eventLink = 'https://zgadajsie.pl/w/warszawa/123',
+  eventLink,
   showGroupChat = true,
   showOrganizerChat = true,
 }: RefundConfirmationEmailProps) {

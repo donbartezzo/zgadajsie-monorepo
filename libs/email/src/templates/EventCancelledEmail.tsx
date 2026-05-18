@@ -9,9 +9,9 @@ import type { EventCancelledEmailProps } from '../types/templates';
 export default function EventCancelledEmail({
   displayName = 'Jan Kowalski',
   eventTitle = 'Przykładowe wydarzenie',
-  eventLink = 'https://zgadajsie.pl/w/warszawa/123',
-  showGroupChat = true,
-  showOrganizerChat = true,
+  eventLink,
+  showGroupChat = false,
+  showOrganizerChat = false,
 }: EventCancelledEmailProps) {
   return (
     <TransactionalLayout

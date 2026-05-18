@@ -23,7 +23,7 @@ export default function AnnouncementEmail({
   message = 'Przykładowa wiadomość',
   priority = 'INFO',
   confirmLink = '#',
-  eventLink = 'https://zgadajsie.pl/w/warszawa/123',
+  eventLink,
   showGroupChat = true,
   showOrganizerChat = true,
 }: AnnouncementEmailProps) {

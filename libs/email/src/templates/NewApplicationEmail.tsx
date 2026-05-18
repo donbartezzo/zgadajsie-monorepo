@@ -10,9 +10,9 @@ export default function NewApplicationEmail({
   applicantName = 'Jan Kowalski',
   eventTitle = 'Przykładowe wydarzenie',
   manageLink = '#',
-  eventLink = 'https://zgadajsie.pl/w/warszawa/123',
-  showGroupChat = true,
-  showOrganizerChat = true,
+  eventLink,
+  showGroupChat = false,
+  showOrganizerChat = false,
 }: NewApplicationEmailProps) {
   return (
     <TransactionalLayout

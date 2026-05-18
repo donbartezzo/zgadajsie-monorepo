@@ -49,7 +49,7 @@ export class ApprovalReminderCron implements OnModuleInit {
         include: {
           user: { select: { id: true, email: true, displayName: true } },
           addedBy: { select: { id: true, email: true, displayName: true } },
-          event: { select: { id: true, title: true } },
+          event: { select: { id: true, title: true, city: { select: { slug: true } } } },
         },
       });
 

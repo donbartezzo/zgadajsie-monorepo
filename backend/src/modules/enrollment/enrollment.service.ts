@@ -804,6 +804,7 @@ export class EnrollmentService {
         organizer.displayName,
         participation.user.displayName,
         event.title,
+        eventId,
       );
     }
 

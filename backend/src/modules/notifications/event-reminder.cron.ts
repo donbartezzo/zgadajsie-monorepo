@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { buildEventUrl } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { hoursFromNow } from '../../common/utils/date.util';
 import { EmailService } from './email.service';
@@ -58,6 +59,7 @@ export class EventReminderCron implements OnModuleInit {
         startsAt: { gte: from, lt: to },
       },
       include: {
+        city: { select: { slug: true } },
         enrollments: {
           where: { wantsIn: true, slot: { isNot: null } },
           include: {
@@ -68,6 +70,7 @@ export class EventReminderCron implements OnModuleInit {
     });
 
     for (const event of events) {
+      const eventLink = buildEventUrl(event.city.slug, event.id);
       for (const p of event.enrollments) {
         try {
           await this.pushService.notifyEventReminder(p.user.id, event.title, event.id, hoursLeft);
@@ -76,6 +79,7 @@ export class EventReminderCron implements OnModuleInit {
             p.user.displayName,
             event.title,
             event.startsAt,
+            eventLink,
           );
         } catch (err) {
           this.logger.error(`Reminder failed for user ${p.user.id}, event ${event.id}: ${err}`);

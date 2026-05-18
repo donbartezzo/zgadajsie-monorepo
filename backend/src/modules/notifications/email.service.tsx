@@ -97,6 +97,8 @@ export class EmailService implements OnModuleInit {
         displayName={displayName}
         eventTitle={eventTitle}
         eventLink={eventLink}
+        showGroupChat={false}
+        showOrganizerChat={false}
       />,
     );
     await this.send(email, `Wydarzenie anulowane – ${eventTitle}`, html, text);
@@ -107,16 +109,17 @@ export class EmailService implements OnModuleInit {
     organizerName: string,
     applicantName: string,
     eventTitle: string,
-    eventLink?: string,
+    eventId: string,
   ): Promise<void> {
-    const manageLink = `${this.frontendUrl}/o/events`;
+    const manageLink = `${this.frontendUrl}/o/w/${eventId}/manage`;
     const { html, text } = await renderEmail(
       <NewApplicationEmail
         organizerName={organizerName}
         applicantName={applicantName}
         eventTitle={eventTitle}
         manageLink={manageLink}
-        eventLink={eventLink}
+        showGroupChat={false}
+        showOrganizerChat={false}
       />,
     );
     await this.send(email, `Nowe zgłoszenie – ${eventTitle}`, html, text);

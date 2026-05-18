@@ -10,9 +10,9 @@ export default function ReprimandEmail({
   displayName = 'Jan Kowalski',
   eventTitle = 'Przykładowe wydarzenie',
   reason = 'Powód reprymendy',
-  eventLink = 'https://zgadajsie.pl/w/warszawa/123',
-  showGroupChat = true,
-  showOrganizerChat = true,
+  eventLink,
+  showGroupChat = false,
+  showOrganizerChat = false,
 }: ReprimandEmailProps) {
   return (
     <TransactionalLayout

@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { buildEventUrl } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { daysFromNow } from '../../common/utils/date.util';
 import { EmailService } from '../notifications/email.service';
@@ -26,11 +27,14 @@ export class ModerationService {
       },
     });
 
-    const eventTitle = dto.eventId
-      ? await this.prisma.event
-          .findUnique({ where: { id: dto.eventId }, select: { title: true } })
-          .then((e) => e?.title ?? '')
-      : '';
+    const eventData = dto.eventId
+      ? await this.prisma.event.findUnique({
+          where: { id: dto.eventId },
+          select: { title: true, city: { select: { slug: true } } },
+        })
+      : null;
+    const eventTitle = eventData?.title ?? '';
+    const eventLink = eventData ? buildEventUrl(eventData.city.slug, dto.eventId!) : undefined;
 
     const user = await this.prisma.user.findUnique({
       where: { id: dto.toUserId },
@@ -50,6 +54,7 @@ export class ModerationService {
           user.displayName,
           eventTitle,
           dto.reason,
+          eventLink,
         );
       }
     }

@@ -16,6 +16,7 @@ import {
   PAYMENT_NOT_FOUND_MESSAGE,
   NOT_ORGANIZER_MESSAGE,
   EVENT_CANCELLED_MESSAGE,
+  buildEventUrl,
 } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
@@ -421,7 +422,10 @@ export class EventsService {
 
   async cancel(id: string, user: AuthUser) {
     const { userId, isAdmin } = resolveUserContext(user);
-    const event = await this.prisma.event.findUnique({ where: { id } });
+    const event = await this.prisma.event.findUnique({
+      where: { id },
+      include: { city: { select: { slug: true } } },
+    });
     if (!event) throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
     if (!isAdmin && event.organizerId !== userId) {
       throw new ForbiddenException(NOT_ORGANIZER_MESSAGE);
@@ -550,6 +554,7 @@ export class EventsService {
           p.user.email,
           p.user.displayName,
           event.title,
+          buildEventUrl(event.city.slug, id),
         );
       } catch (err) {
         notificationErrors.push(`email:${p.user.email}:${(err as Error).message}`);
