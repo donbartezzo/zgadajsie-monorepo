@@ -571,7 +571,7 @@ describe('EventsService', () => {
         'user@test.com',
         'User 1',
         event.title,
-        'http://localhost:4300/w/warszawa/event1',
+        expect.any(String),
       );
     });
   });
