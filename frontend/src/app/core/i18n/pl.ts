@@ -99,5 +99,10 @@ export const pl: Translation = {
       few: 'oczekujących',
       many: 'oczekujących',
     },
+    enrollments: {
+      one: 'zgłoszenie',
+      few: 'zgłoszenia',
+      many: 'zgłoszeń',
+    },
   },
 };

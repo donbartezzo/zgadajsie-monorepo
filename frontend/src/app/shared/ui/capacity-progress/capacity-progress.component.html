@@ -1,4 +1,4 @@
-@let _enrollmentsSummaryText = enrollmentsSummaryText();
+@let _summaryText = summaryText();
 @let _statusText = statusText();
 @let _showBarFill = showBarFill();
 @let _occupiedPercent = occupiedPercent();
@@ -24,8 +24,8 @@
       <span
         class="hidden 2xs:inline-flex items-center gap-1 text-[10px] font-normal leading-tight text-neutral-700 truncate"
       >
-        @if (_enrollmentsSummaryText) {
-          <span>{{ _enrollmentsSummaryText }}</span>
+        @if (_summaryText) {
+          <span>{{ _summaryText }}</span>
         }
       </span>
 

@@ -124,6 +124,7 @@ import { IconComponent } from '../../../ui/icon/icon.component';
                 [event]="_event"
                 [isPreEnrollment]="isPreEnrollment()"
                 [isJoinable]="isJoinable()"
+                [isCancelled]="isCancelled()"
               />
             </div>
           </div>

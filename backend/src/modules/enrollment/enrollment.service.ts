@@ -755,8 +755,13 @@ export class EnrollmentService {
     event: { startsAt: Date; endsAt: Date; status: string },
     isAdmin: boolean,
   ): void {
-    if (!isAdmin && isEventEnded(event)) {
-      throw new BadRequestException(EVENT_ENDED_MESSAGE);
+    if (!isAdmin) {
+      if (event.status === 'CANCELLED') {
+        throw new BadRequestException(EVENT_CANCELLED_MESSAGE);
+      }
+      if (isEventEnded(event)) {
+        throw new BadRequestException(EVENT_ENDED_MESSAGE);
+      }
     }
   }
 

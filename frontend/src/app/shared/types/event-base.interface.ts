@@ -29,6 +29,6 @@ export interface EventBase
   city?: City;
   organizer?: UserBrief;
   coverImage?: CoverImage;
-  _count?: { enrollments: number; participants: number };
+  _count?: { enrollments: number; participants: number; totalEnrollments?: number };
   seriesId?: string | null;
 }

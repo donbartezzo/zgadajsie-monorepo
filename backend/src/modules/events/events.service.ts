@@ -209,20 +209,28 @@ export class EventsService {
     ]);
 
     const eventIds = events.map((e) => e.id);
-    const participantCounts = await this.prisma.eventEnrollment.groupBy({
-      by: ['eventId'],
-      where: {
-        eventId: { in: eventIds },
-        withdrawnBy: null,
-        slot: { isNot: null },
-      },
-      _count: {
-        eventId: true,
-      },
-    });
+    const [participantCounts, totalEnrollmentCounts] = await Promise.all([
+      this.prisma.eventEnrollment.groupBy({
+        by: ['eventId'],
+        where: {
+          eventId: { in: eventIds },
+          withdrawnBy: null,
+          slot: { isNot: null },
+        },
+        _count: { eventId: true },
+      }),
+      this.prisma.eventEnrollment.groupBy({
+        by: ['eventId'],
+        where: { eventId: { in: eventIds } },
+        _count: { eventId: true },
+      }),
+    ]);
 
     const participantCountMap = new Map(
       participantCounts.map((pc) => [pc.eventId, pc._count.eventId]),
+    );
+    const totalEnrollmentCountMap = new Map(
+      totalEnrollmentCounts.map((pc) => [pc.eventId, pc._count.eventId]),
     );
 
     const eventsWithParticipantCount = events.map((event) => ({
@@ -230,6 +238,7 @@ export class EventsService {
       _count: {
         ...event._count,
         participants: participantCountMap.get(event.id) ?? 0,
+        totalEnrollments: totalEnrollmentCountMap.get(event.id) ?? 0,
       },
     }));
 
@@ -281,13 +290,18 @@ export class EventsService {
         ? { isTrusted: await this.eligibility.isTrusted(userId, event.organizerId) }
         : null;
 
-    const participantCount = await this.prisma.eventEnrollment.count({
-      where: {
-        eventId: id,
-        withdrawnBy: null,
-        slot: { isNot: null },
-      },
-    });
+    const [participantCount, totalEnrollmentCount] = await Promise.all([
+      this.prisma.eventEnrollment.count({
+        where: {
+          eventId: id,
+          withdrawnBy: null,
+          slot: { isNot: null },
+        },
+      }),
+      this.prisma.eventEnrollment.count({
+        where: { eventId: id },
+      }),
+    ]);
 
     return {
       ...event,
@@ -295,6 +309,7 @@ export class EventsService {
       _count: {
         ...event._count,
         participants: participantCount,
+        totalEnrollments: totalEnrollmentCount,
       },
     };
   }
