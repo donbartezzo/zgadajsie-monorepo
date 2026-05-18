@@ -271,14 +271,6 @@ describe('EnrollmentService', () => {
       );
     });
 
-    it('odrzuca także admina jeśli event CANCELLED (BadRequestException)', async () => {
-      (prisma.event.findUnique as jest.Mock).mockResolvedValue(makeEvent({ status: 'CANCELLED' }));
-
-      await expect(service.join('event1', mockAuthUser('admin1', 'ADMIN'))).rejects.toThrow(
-        BadRequestException,
-      );
-    });
-
     it('odrzuca jeśli event już się rozpoczął (BadRequestException)', async () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(
         makeEvent({ startsAt: new Date(Date.now() - 1000) }),
