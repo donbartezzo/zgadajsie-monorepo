@@ -34,7 +34,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
-import { DictionaryItem, City, Event, CoverImage, EventRoleConfig } from '../../../../shared/types';
+import { Event, CoverImage, EventRoleConfig } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 import {
   EventStatus,
@@ -46,6 +46,8 @@ import {
   toLocalInputValue,
   fromLocalInputValue,
   EventSeriesRecurrenceType,
+  DictionaryItem,
+  City,
 } from '@zgadajsie/shared';
 import { isEventJoinable } from '../../../../shared/utils/event-time-status.util';
 import { EventValidators } from '../../validators/event.validators';

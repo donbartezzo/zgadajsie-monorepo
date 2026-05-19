@@ -13,7 +13,6 @@ import { SemanticColor } from '../../../types/colors';
 
 export type OverlayType =
   | 'share'
-  | 'settings'
   | 'auth'
   | 'joinRules'
   | 'joinConfirm'
@@ -21,6 +20,8 @@ export type OverlayType =
   | 'notifications'
   | 'cancelPayment'
   | 'enrollmentDetails'
+  | 'navigation'
+  | 'cityOptions'
   | null;
 
 export interface JoinWizardConfig {

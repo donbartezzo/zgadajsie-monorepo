@@ -1,10 +1,23 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { CoverImage, EventDiscipline, EventFacility, EventLevel, City } from '@prisma/client';
+
+interface CityEntry {
+  slug: string;
+  name: string;
+  province: string | null;
+  lat: number | null;
+  lng: number | null;
+  isActive: boolean;
+}
+
+function loadCities(): CityEntry[] {
+  const filePath = join(__dirname, 'cities.json');
+  return JSON.parse(readFileSync(filePath, 'utf-8')) as CityEntry[];
+}
 
 // Wspólne dane dla seed.prod.ts i seed.nonprod.ts
 export const COMMON_SEED_DATA = {
-  // Miasta
-  cities: [{ name: 'Zielona Góra', slug: 'zielona-gora' }] as const,
-
   // Dyscypliny - tylko football ma schemat z rolami
   disciplines: [
     {
@@ -130,12 +143,19 @@ export const COMMON_SEED_DATA = {
 
 // Funkcje pomocnicze do tworzenia danych
 export async function createCities(prisma: any): Promise<City[]> {
-  console.log('Tworze miasta...');
+  console.log('Tworzę miasta...');
+  const cities = loadCities();
   return Promise.all(
-    COMMON_SEED_DATA.cities.map((data) =>
+    cities.map((data) =>
       prisma.city.upsert({
         where: { slug: data.slug },
-        update: { name: data.name },
+        update: {
+          name: data.name,
+          province: data.province,
+          lat: data.lat,
+          lng: data.lng,
+          isActive: data.isActive,
+        },
         create: data,
       }),
     ),

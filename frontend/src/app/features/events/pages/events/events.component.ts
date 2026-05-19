@@ -18,6 +18,7 @@ import { AppTitleService } from '../../../../core/services/app-title.service';
 import { EventService } from '../../../../core/services/event.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { CitySubscriptionService } from '../../../../core/services/city-subscription.service';
+import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { EventBase } from '../../../../shared/types';
@@ -25,6 +26,7 @@ import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layo
 import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layout-config.service';
 import { nowInZone, daysFromNow, toZonedDateTime, formatDateNoYear } from '@zgadajsie/shared';
 import { NotificationStatusService } from '../../../../core/services/notification-status.service';
+import { CitySearchComponent } from '../../../../shared/city/city-search/city-search.component';
 
 interface EventGroup {
   key: string;
@@ -41,6 +43,7 @@ interface EventGroup {
     LoadingSpinnerComponent,
     EmptyStateComponent,
     LayoutSlotDirective,
+    CitySearchComponent,
   ],
   templateUrl: './events.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,6 +56,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   private readonly layoutConfig = inject(LayoutConfigService);
   private readonly auth = inject(AuthService);
   private readonly citySubscriptionService = inject(CitySubscriptionService);
+  private readonly dictionary = inject(DictionaryService);
   private readonly snackbar = inject(SnackbarService);
   private readonly notifStatus = inject(NotificationStatusService);
   private readonly appTitle = inject(AppTitleService);
@@ -62,6 +66,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   readonly error = signal<string | null>(null);
   readonly cityName = signal('');
   readonly cityId = signal('');
+  readonly cityIsActive = signal(true);
   readonly citySubscribed = signal(false);
 
   readonly isLoggedIn = computed(() => this.auth.isLoggedIn());
@@ -168,6 +173,7 @@ export class EventsComponent implements OnInit, OnDestroy {
 
     if (this.citySlug) {
       this.layoutConfig.coverImageUrl.set(`assets/covers/cities/${this.citySlug}.webp`);
+      this.loadCityInfo(this.citySlug);
     }
     this.tickInterval = setInterval(() => this.nowMs.set(nowInZone().toMillis()), 60_000);
     this.loadEvents();
@@ -224,7 +230,7 @@ export class EventsComponent implements OnInit, OnDestroy {
     this.notifStatus.clearConfig();
   }
 
-  private subscribeToCityInternal(): void {
+  protected subscribeToCityInternal(): void {
     const id = this.cityId();
     if (!id || this.citySubscribed()) return;
     this.citySubscriptionService.subscribe(id).subscribe({
@@ -254,6 +260,21 @@ export class EventsComponent implements OnInit, OnDestroy {
     if (!this.isLoggedIn() || !cityId) return;
     this.citySubscriptionService.isSubscribed(cityId).subscribe({
       next: (res) => this.citySubscribed.set(res.subscribed),
+    });
+  }
+
+  private loadCityInfo(slug: string): void {
+    this.dictionary.getCityBySlug(slug).subscribe({
+      next: (city) => {
+        this.cityIsActive.set(city.isActive);
+        if (!this.cityName()) {
+          this.cityName.set(city.name);
+          this.cityId.set(city.slug);
+          this.layoutConfig.title.set(city.name);
+          this.appTitle.setResolvedTitle('Lista wydarzeń', city.name);
+          this.loadCitySubscription(city.slug);
+        }
+      },
     });
   }
 }

@@ -59,7 +59,16 @@ describe('OrganizerDigestComponent', () => {
         { provide: OrganizerService, useValue: organizerService },
         { provide: EventSeriesService, useValue: eventSeriesService },
         { provide: SnackbarService, useValue: snackbar },
-        { provide: Router, useValue: { navigate: jest.fn() } },
+        {
+          provide: Router,
+          useValue: {
+            navigate: jest.fn(),
+            events: of(),
+            routerState: {
+              snapshot: { root: { paramMap: { get: () => null }, firstChild: null } },
+            },
+          },
+        },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();

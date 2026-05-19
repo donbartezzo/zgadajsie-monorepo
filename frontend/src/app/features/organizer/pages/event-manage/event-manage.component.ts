@@ -390,7 +390,7 @@ export class EventManageComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
-      this.navigation.navigateToHome();
+      this.navigation.navigateToCurrentCity();
       return;
     }
     this.eventId = id;

@@ -141,7 +141,14 @@ describe('EventDetailComponent', () => {
         { provide: ClarityService, useValue: mockClarity },
         {
           provide: Router,
-          useValue: { url: '/w/warszawa/event-1', navigate: jest.fn() },
+          useValue: {
+            url: '/w/warszawa/event-1',
+            navigate: jest.fn(),
+            events: of(),
+            routerState: {
+              snapshot: { root: { paramMap: { get: () => null }, firstChild: null } },
+            },
+          },
         },
         {
           provide: ActivatedRoute,

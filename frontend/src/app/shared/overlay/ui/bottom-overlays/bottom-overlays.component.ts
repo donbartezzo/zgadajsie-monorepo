@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ShareOverlayComponent } from '../../../../layout/footer/overlays/share-overlay.component';
-import { SettingsOverlayComponent } from '../../../../layout/footer/overlays/settings-overlay.component';
+import { NavigationOverlayComponent } from '../../../../layout/footer/overlays/navigation-overlay.component';
+import { CityOptionsOverlayComponent } from '../../../../layout/footer/overlays/city-options-overlay.component';
 import { AuthOverlayComponent } from '../../../../features/auth/overlays/auth-overlay.component';
 import { JoinRulesOverlayComponent } from '../../../../features/event/overlays/join-rules-overlay.component';
 import { MyParticipationDetailsOverlayComponent } from '../../../../features/event/overlays/my-participation-details-overlay.component';
@@ -13,7 +14,8 @@ import { BottomOverlaysService } from './bottom-overlays.service';
   selector: 'app-bottom-overlays',
   imports: [
     ShareOverlayComponent,
-    SettingsOverlayComponent,
+    NavigationOverlayComponent,
+    CityOptionsOverlayComponent,
     AuthOverlayComponent,
     JoinRulesOverlayComponent,
     MyParticipationDetailsOverlayComponent,

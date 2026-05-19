@@ -28,9 +28,9 @@ export class CitySubscriptionsService {
 
   async getSubscriberIds(citySlug: string): Promise<string[]> {
     const subs = await this.prisma.citySubscription.findMany({
-      where: { citySlug },
+      where: { citySlug, userId: { not: null } },
       select: { userId: true },
     });
-    return subs.map((s) => s.userId);
+    return subs.map((s) => s.userId as string);
   }
 }

@@ -1,17 +1,17 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { City, DictionaryItem } from '../../shared/types';
-import { DisciplineSchema } from '@zgadajsie/shared';
+import { City, DictionaryItem, DisciplineSchema } from '@zgadajsie/shared';
 
 @Injectable({ providedIn: 'root' })
 export class DictionaryService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl + '/dictionaries';
+  private readonly cities$ = this.http.get<City[]>(`${this.apiUrl}/cities`).pipe(shareReplay(1));
 
   getCities(): Observable<City[]> {
-    return this.http.get<City[]>(`${this.apiUrl}/cities`);
+    return this.cities$;
   }
 
   getDisciplines(): Observable<DictionaryItem[]> {

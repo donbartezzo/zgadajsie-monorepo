@@ -178,7 +178,10 @@ model SocialAccount {
 model City {
   slug          String             @id
   name          String
-  isActive      Boolean            @default(true)
+  province      String?
+  lat           Float?
+  lng           Float?
+  isActive      Boolean            @default(false)
   subscriptions CitySubscription[]
   events        Event[]
 }
@@ -529,14 +532,17 @@ model AnnouncementReceipt {
 
 model CitySubscription {
   id        String   @id @default(uuid())
-  userId    String
+  userId    String?
+  email     String?
   citySlug  String
   createdAt DateTime @default(now())
   city      City     @relation(fields: [citySlug], references: [slug], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, citySlug])
+  @@unique([email, citySlug])
   @@index([citySlug])
+  @@index([email])
 }
 
 model ScheduledJob {

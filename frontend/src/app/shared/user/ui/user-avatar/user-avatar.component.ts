@@ -13,7 +13,9 @@ export type AvatarShape = 'circle' | 'rounded';
     <div class="relative inline-flex shrink-0">
       <div
         [class]="
-          'relative inline-flex items-center justify-center overflow-hidden bg-neutral-50 border-2 border-neutral-100 ' +
+          'relative inline-flex items-center justify-center overflow-hidden border-2 ' +
+          bgBorderClass() +
+          ' ' +
           sizeClass() +
           ' ' +
           shapeClass()
@@ -46,6 +48,7 @@ export class UserAvatarComponent {
   readonly user = input<AvatarUser | null>(null);
   readonly size = input<AvatarSize>('md');
   readonly shape = input<AvatarShape>('rounded');
+  readonly transparent = input(false);
 
   readonly pixelArtDataUri = computed(() => {
     const u = this.user();
@@ -67,14 +70,20 @@ export class UserAvatarComponent {
   readonly sizeClass = computed(() => {
     const sizes: Record<AvatarSize, string> = {
       xs: 'w-6 h-6 text-[10px]',
-      sm: 'w-8 h-8 text-xs',
-      md: 'w-10 h-10 text-sm',
-      lg: 'w-14 h-14 text-base',
-      xl: 'w-18 h-18 text-lg',
+      sm: 'w-7 h-7 text-xs',
+      md: 'w-9 h-9 text-sm',
+      lg: 'w-11 h-11 text-base',
+      xl: 'w-17 h-17 text-lg',
       '2xl': 'w-24 h-24 text-xl',
       '3xl': 'w-32 h-32 text-2xl',
     };
     return sizes[this.size()];
+  });
+
+  readonly bgBorderClass = computed(() => {
+    return this.transparent()
+      ? 'bg-transparent border-transparent'
+      : 'bg-neutral-50 border-neutral-100';
   });
 
   readonly shapeClass = computed(() => {
