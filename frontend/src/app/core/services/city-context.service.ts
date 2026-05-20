@@ -4,6 +4,7 @@ import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
 import { filter, startWith } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DictionaryService } from './dictionary.service';
+import { City } from '@zgadajsie/shared';
 
 const STORAGE_KEY = 'zs.city.selected';
 
@@ -20,7 +21,8 @@ export class CityContextService {
   private readonly platformId = inject(PLATFORM_ID);
 
   private readonly currentCitySignal = signal<StoredCity | null>(this.loadFromStorage());
-  private readonly citiesSignal = signal<{ slug: string; name: string }[]>([]);
+  private readonly citiesSignal = signal<City[]>([]);
+  private pendingUrlSlug: string | null = null;
 
   readonly citySlug = computed<string | null>(() => this.currentCitySignal()?.slug ?? null);
 
@@ -46,13 +48,13 @@ export class CityContextService {
       .subscribe(() => {
         const slug = this.extractCitySlug(this.router.routerState.snapshot.root);
         if (slug) {
-          this.persistFromUrl(slug);
+          this.handleUrlSlug(slug);
         }
       });
 
     this.dictionary.getCities().subscribe((cities) => {
       this.citiesSignal.set(cities);
-      this.hydrateCityNameIfMissing();
+      this.reconcileWithDictionary();
     });
   }
 
@@ -85,23 +87,49 @@ export class CityContextService {
     return null;
   }
 
-  private persistFromUrl(slug: string): void {
-    const current = this.currentCitySignal();
-    if (current?.slug === slug) {
-      return;
+  private findCityBySlug(slug: string): City | null {
+    const cities = this.citiesSignal();
+    if (cities.length === 0) {
+      return null;
     }
-    const name = this.citiesSignal().find((c) => c.slug === slug)?.name ?? '';
-    this.selectCity({ slug, name });
+    const match = cities.find((c) => c.slug === slug);
+    if (!match) {
+      return null;
+    }
+    return match;
   }
 
-  private hydrateCityNameIfMissing(): void {
-    const current = this.currentCitySignal();
-    if (!current || current.name) {
+  private handleUrlSlug(slug: string): void {
+    const match = this.findCityBySlug(slug);
+    if (!match) {
+      this.pendingUrlSlug = slug;
       return;
     }
-    const name = this.citiesSignal().find((c) => c.slug === current.slug)?.name;
-    if (name) {
-      this.selectCity({ slug: current.slug, name });
+    const current = this.currentCitySignal();
+    if (current?.slug === match.slug && current.name === match.name) {
+      return;
+    }
+    this.selectCity({ slug: match.slug, name: match.name });
+  }
+
+  private reconcileWithDictionary(): void {
+    if (this.pendingUrlSlug) {
+      const pending = this.pendingUrlSlug;
+      this.pendingUrlSlug = null;
+      this.handleUrlSlug(pending);
+    }
+
+    const current = this.currentCitySignal();
+    if (!current) {
+      return;
+    }
+    const match = this.findCityBySlug(current.slug);
+    if (!match) {
+      this.clearCity();
+      return;
+    }
+    if (current.name !== match.name) {
+      this.selectCity({ slug: match.slug, name: match.name });
     }
   }
 

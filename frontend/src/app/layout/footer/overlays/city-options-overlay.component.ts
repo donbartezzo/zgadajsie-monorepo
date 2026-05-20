@@ -12,24 +12,24 @@ import { NavigationService } from '../../../core/services/navigation.service';
   template: `
     <app-bottom-overlay [open]="true" title="Twoje bieżące miasto" (closed)="closed.emit()">
       <div class="space-y-4 max-w-lg mx-auto">
-        @if (cityOptions().length > 0) {
-          <app-link-list [items]="cityOptions()" (itemClicked)="handleOptionClick($event)" />
-
-          <div class="flex items-center gap-3 pt-1">
-            <div class="h-px flex-1 bg-neutral-200"></div>
-            <span class="text-[10px] font-medium uppercase tracking-widest text-neutral-400">
-              albo wybierz inne miasto
-            </span>
-            <div class="h-px flex-1 bg-neutral-200"></div>
-          </div>
-        }
-
         <app-city-search
           variant="light"
           dropdownPosition="top"
           placeholder="Wpisz miasto…"
           (citySelected)="onCitySelected($event)"
         />
+
+        @if (cityOptions().length > 0) {
+          <div class="flex items-center gap-3 pt-1">
+            <div class="h-px flex-1 bg-neutral-200"></div>
+            <span class="text-[10px] font-medium uppercase tracking-widest text-neutral-400">
+              dostępne opcje
+            </span>
+            <div class="h-px flex-1 bg-neutral-200"></div>
+          </div>
+
+          <app-link-list [items]="cityOptions()" (itemClicked)="handleOptionClick($event)" />
+        }
       </div>
     </app-bottom-overlay>
   `,
@@ -46,13 +46,14 @@ export class CityOptionsOverlayComponent {
     if (!citySlug) {
       return [];
     }
-    const cityName = this.cityContext.cityName() || 'miasto';
+
     return [
       {
-        label: `Wyświetl wydarzenia w mieście ${cityName}`,
-        icon: 'map-pin',
+        label: `Wyświetl wydarzenia w tym mieście`,
+        icon: 'list',
         value: 'cityEvents',
-        iconColor: 'neutral',
+        appearance: 'soft',
+        color: 'primary',
       },
     ];
   });

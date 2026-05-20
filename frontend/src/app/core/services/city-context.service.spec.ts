@@ -5,12 +5,23 @@ import {
   Router,
   RouterStateSnapshot,
 } from '@angular/router';
-import { of, Subject } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { PLATFORM_ID } from '@angular/core';
 import { CityContextService } from './city-context.service';
 import { DictionaryService } from './dictionary.service';
 
 const STORAGE_KEY = 'zs.city.selected';
+
+interface CityDto {
+  slug: string;
+  name: string;
+  isActive: boolean;
+}
+
+const DEFAULT_CITIES: CityDto[] = [
+  { slug: 'zielona-gora', name: 'Zielona Góra', isActive: true },
+  { slug: 'wroclaw', name: 'Wrocław', isActive: true },
+];
 
 const makeSnapshot = (citySlug: string | null): ActivatedRouteSnapshot => {
   const child = citySlug
@@ -35,7 +46,10 @@ describe('CityContextService', () => {
     events$.next(new NavigationEnd(1, '/', '/'));
   };
 
-  const setup = (options?: { initialUrlCitySlug?: string | null }) => {
+  const setup = (options?: {
+    initialUrlCitySlug?: string | null;
+    citiesSource?: Observable<CityDto[]>;
+  }) => {
     events$ = new Subject<NavigationEnd>();
     routerState = {
       snapshot: { root: makeSnapshot(options?.initialUrlCitySlug ?? null) } as RouterStateSnapshot,
@@ -52,11 +66,7 @@ describe('CityContextService', () => {
         {
           provide: DictionaryService,
           useValue: {
-            getCities: () =>
-              of([
-                { slug: 'zielona-gora', name: 'Zielona Góra', isActive: true },
-                { slug: 'wroclaw', name: 'Wrocław', isActive: true },
-              ]),
+            getCities: () => options?.citiesSource ?? of(DEFAULT_CITIES),
           },
         },
         { provide: PLATFORM_ID, useValue: 'browser' },
@@ -177,6 +187,74 @@ describe('CityContextService', () => {
     it('zwraca null gdy brak kontekstu', () => {
       const service = setup();
       expect(service.cityName()).toBeNull();
+    });
+  });
+
+  describe('walidacja słownika', () => {
+    it('nie zapisuje slug nieobsługiwanego (poza słownikiem) z URL', () => {
+      const service = setup();
+      emitNavigation('nieistniejace-miasto');
+      expect(service.citySlug()).toBeNull();
+      expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    });
+
+    it('zachowuje wcześniejsze miasto gdy nowy URL slug jest poza słownikiem', () => {
+      const service = setup();
+      emitNavigation('wroclaw');
+      emitNavigation('nieistniejace-miasto');
+      expect(service.citySlug()).toBe('wroclaw');
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
+      expect(stored.slug).toBe('wroclaw');
+    });
+
+    it('czyści localStorage gdy hydrate slug nie istnieje w słowniku', () => {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ slug: 'usuniete-miasto', name: 'Usunięte', savedAt: '2026-01-01' }),
+      );
+      const service = setup();
+      expect(service.citySlug()).toBeNull();
+      expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    });
+
+    it('odświeża nazwę z localStorage gdy słownik ma inną wartość', () => {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ slug: 'wroclaw', name: 'Wrocłąw', savedAt: '2026-01-01' }),
+      );
+      const service = setup();
+      expect(service.cityName()).toBe('Wrocław');
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
+      expect(stored.name).toBe('Wrocław');
+    });
+
+    it('odracza walidację URL slug do załadowania słownika i akceptuje obsługiwany', () => {
+      const citiesSubject = new Subject<CityDto[]>();
+      const service = setup({
+        initialUrlCitySlug: 'wroclaw',
+        citiesSource: citiesSubject.asObservable(),
+      });
+
+      expect(service.citySlug()).toBeNull();
+      expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+
+      citiesSubject.next(DEFAULT_CITIES);
+      expect(service.citySlug()).toBe('wroclaw');
+      expect(service.cityName()).toBe('Wrocław');
+    });
+
+    it('odracza walidację URL slug do załadowania słownika i odrzuca nieobsługiwany', () => {
+      const citiesSubject = new Subject<CityDto[]>();
+      const service = setup({
+        initialUrlCitySlug: 'nieistniejace-miasto',
+        citiesSource: citiesSubject.asObservable(),
+      });
+
+      expect(service.citySlug()).toBeNull();
+
+      citiesSubject.next(DEFAULT_CITIES);
+      expect(service.citySlug()).toBeNull();
+      expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
     });
   });
 });

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 import { CommonModule } from '@angular/common';
 import { IconComponent, IconName, IconSize } from '../icon/icon.component';
 import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
+import { Muted } from '../../types';
 
 export type ButtonVariant =
   | 'primary'
@@ -41,6 +42,7 @@ export class ButtonComponent {
   readonly fullWidth = input(false);
   readonly type = input<'button' | 'submit' | 'reset'>('button');
   readonly ariaLabel = input<string>('');
+  readonly muted = input<Muted>();
 
   readonly clicked = output<MouseEvent>();
 
@@ -244,9 +246,19 @@ export class ButtonComponent {
     const appearance = this.resolvedAppearance();
     const color = this.resolvedColor();
 
-    return [base, sizeClasses[this.size()], appearanceClasses[appearance][color], widthClass]
+    let classes = [base, sizeClasses[this.size()], appearanceClasses[appearance][color], widthClass]
       .filter(Boolean)
       .join(' ');
+
+    // Apply muted opacity
+    const mutedValue = this.muted();
+    if (mutedValue === 'light') {
+      classes += ' opacity-50';
+    } else if (mutedValue === 'heavy') {
+      classes += ' opacity-30';
+    }
+
+    return classes;
   });
 
   private hasContent(): boolean {

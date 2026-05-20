@@ -18,6 +18,10 @@ import { DictionaryService } from '../../../core/services/dictionary.service';
 import { CityContextService } from '../../../core/services/city-context.service';
 import { City } from '@zgadajsie/shared';
 import { IconComponent } from '../../ui/icon/icon.component';
+import { ButtonComponent } from '../../ui/button/button.component';
+import { SnackbarService } from '../../ui/snackbar/snackbar.service';
+
+const DEFAULT_CITY_NAME_CONST = 'Zielona Góra';
 
 const NON_DECOMPOSABLE: Record<string, string> = {
   ł: 'l',
@@ -46,7 +50,7 @@ function normalize(s: string): string {
 
 @Component({
   selector: 'app-city-search',
-  imports: [FormsModule, IconComponent],
+  imports: [FormsModule, IconComponent, ButtonComponent],
   templateUrl: './city-search.component.html',
   host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -55,6 +59,7 @@ export class CitySearchComponent implements OnInit {
   private readonly dictionary = inject(DictionaryService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly cityContext = inject(CityContextService);
+  private readonly snackbar = inject(SnackbarService);
 
   readonly placeholder = input.required<string>();
   readonly overrideInitialValue = input<string | undefined>(undefined);
@@ -62,6 +67,13 @@ export class CitySearchComponent implements OnInit {
   readonly dropdownPosition = input<'bottom' | 'top'>('bottom');
 
   readonly citySelected = output<{ slug: string; name: string }>();
+
+  readonly DEFAULT_CITY_NAME = DEFAULT_CITY_NAME_CONST;
+
+  readonly showDefaultCityHint = computed(() => {
+    const currentCityName = this.cityContext.cityName();
+    return currentCityName !== DEFAULT_CITY_NAME_CONST;
+  });
 
   private readonly inputRef = viewChild<ElementRef<HTMLInputElement>>('inputEl');
   private readonly query$ = new Subject<string>();
@@ -137,10 +149,8 @@ export class CitySearchComponent implements OnInit {
   ngOnInit(): void {
     const override = this.overrideInitialValue();
     const currentCityName = this.cityContext.cityName();
-    const initialValue = override ?? currentCityName;
-    if (initialValue) {
-      this.query.set(initialValue);
-    }
+    const initialValue = override ?? currentCityName ?? DEFAULT_CITY_NAME_CONST;
+    this.query.set(initialValue);
   }
 
   protected onInput(value: string): void {
@@ -161,10 +171,8 @@ export class CitySearchComponent implements OnInit {
       if (this.query().trim() === '') {
         const override = this.overrideInitialValue();
         const currentCityName = this.cityContext.cityName();
-        const initialValue = override ?? currentCityName;
-        if (initialValue) {
-          this.query.set(initialValue);
-        }
+        const initialValue = override ?? currentCityName ?? DEFAULT_CITY_NAME_CONST;
+        this.query.set(initialValue);
       }
     }, 150);
   }
@@ -193,6 +201,32 @@ export class CitySearchComponent implements OnInit {
     this.query.set(city.name);
     this.isOpen.set(false);
     this.citySelected.emit({ slug: city.slug, name: city.name });
+  }
+
+  protected handleSearchSubmit(): void {
+    const queryValue = this.query().trim();
+    if (!queryValue) return;
+
+    const normalizedQuery = normalize(queryValue);
+    const cities = this.allCities();
+    const matchedCity = cities.find((c) => normalize(c.name) === normalizedQuery);
+
+    if (matchedCity) {
+      this.selectCity(matchedCity);
+    } else {
+      this.snackbar.warning(`Miasto "${queryValue}" nie jest obecnie obsługiwane`);
+    }
+  }
+
+  protected selectDefaultCity(): void {
+    const cities = this.allCities();
+    const matchedCity = cities.find(
+      (c) => normalize(c.name) === normalize(DEFAULT_CITY_NAME_CONST),
+    );
+
+    if (matchedCity) {
+      this.selectCity(matchedCity);
+    }
   }
 
   protected activeDescendantId(index: number): string {

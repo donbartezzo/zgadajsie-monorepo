@@ -31,7 +31,33 @@
       (keydown)="onKeydown($event)"
       [class]="inputClasses()"
     />
+
+    <div class="absolute right-4 top-1/2 -translate-y-1/2 z-1">
+      <app-button
+        iconLeft="search"
+        size="sm"
+        appearance="soft"
+        color="neutral"
+        muted="light"
+        (clicked)="handleSearchSubmit()"
+        ariaLabel="Szukaj miasta"
+        >Pokaż</app-button
+      >
+    </div>
   </div>
+
+  @if (showDefaultCityHint()) {
+    <div class="mt-0 text-right mr-3">
+      <span class="text-sm text-neutral-300">Polecamy: </span>
+      <button
+        type="button"
+        (click)="selectDefaultCity()"
+        class="text-sm font-medium text-primary-600 hover:text-primary-700 underline"
+      >
+        {{ DEFAULT_CITY_NAME }}
+      </button>
+    </div>
+  }
 
   @if (_isOpen && _filtered.length > 0) {
     <ul
