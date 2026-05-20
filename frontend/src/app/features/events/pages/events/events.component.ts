@@ -9,7 +9,9 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
+import { distinctUntilChanged, map } from 'rxjs';
 import { EventCardComponent } from '../../../../shared/event/ui/event-card/event-card.component';
 import { NextEventBadgeComponent } from '../../../../shared/event/ui/next-event-badge/next-event-badge.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
@@ -61,12 +63,20 @@ export class EventsComponent implements OnInit, OnDestroy {
   private readonly notifStatus = inject(NotificationStatusService);
   private readonly appTitle = inject(AppTitleService);
 
+  // ── Reactive citySlug from route params (reacts to navigation on reused component) ──
+  readonly citySlug = toSignal(
+    this.route.paramMap.pipe(
+      map((p) => p.get('citySlug') ?? ''),
+      distinctUntilChanged(),
+    ),
+    { initialValue: this.route.snapshot.paramMap.get('citySlug') ?? '' },
+  );
+
   readonly events = signal<EventBase[]>([]);
   readonly isLoading = signal(true);
   readonly error = signal<string | null>(null);
   readonly cityName = signal('');
   readonly cityId = signal('');
-  readonly cityIsActive = signal(true);
   readonly citySubscribed = signal(false);
 
   readonly isLoggedIn = computed(() => this.auth.isLoggedIn());
@@ -145,89 +155,63 @@ export class EventsComponent implements OnInit, OnDestroy {
     return upcomingGroup?.events[0] ?? null;
   });
 
-  private citySlug = '';
   private page = 1;
   private hasMore = true;
 
   constructor() {
+    // Slug-driven: apply hero cover + reload city data. Fires in a microtask
+    // after PageLayout's synchronous NavigationStart reset, so the cover wins.
+    effect(() => {
+      const slug = this.citySlug();
+      if (!slug) return;
+      this.layoutConfig.coverImageUrl.set(`assets/covers/cities/${slug}.webp`);
+      this.resetCityState();
+      this.loadCityInfo(slug);
+      this.loadEvents(slug);
+    });
+
+    // Name-driven: apply hero + document title once the resolved name lands.
+    effect(() => {
+      const name = this.cityName();
+      if (!name) return;
+      this.layoutConfig.title.set(name);
+      this.appTitle.setResolvedTitle('Lista wydarzeń', name);
+    });
+
+    // Notification status follows the city resource.
     effect(() => {
       const id = this.cityId();
-      const name = this.cityName();
-      const subscribed = this.citySubscribed();
-      if (id) {
-        this.notifStatus.setConfig({
-          resourceType: 'city',
-          resourceId: id,
-          resourceLabel: name,
-          subscribed,
-          canToggle: true,
-          onSubscribe: () => this.subscribeToCityInternal(),
-          onUnsubscribe: () => this.unsubscribeFromCityInternal(),
-        });
-      }
+      if (!id) return;
+      this.notifStatus.setConfig({
+        resourceType: 'city',
+        resourceId: id,
+        resourceLabel: this.cityName(),
+        subscribed: this.citySubscribed(),
+        canToggle: true,
+        onSubscribe: () => this.subscribeToCityInternal(),
+        onUnsubscribe: () => this.unsubscribeFromCityInternal(),
+      });
     });
   }
 
   ngOnInit(): void {
-    this.citySlug = this.route.snapshot.paramMap.get('citySlug') ?? '';
-
-    if (this.citySlug) {
-      this.layoutConfig.coverImageUrl.set(`assets/covers/cities/${this.citySlug}.webp`);
-      this.loadCityInfo(this.citySlug);
-    }
     this.tickInterval = setInterval(() => this.nowMs.set(nowInZone().toMillis()), 60_000);
-    this.loadEvents();
-  }
-
-  loadEvents(): void {
-    if (!this.hasMore) return;
-    this.eventService
-      .getEvents({ page: this.page, limit: 20, sortBy: 'startsAt', citySlug: this.citySlug })
-      .subscribe({
-        next: (res) => {
-          this.events.update((prev) => [...prev, ...res.data]);
-          if (!this.cityName() && res.data.length > 0) {
-            const city = res.data[0].city;
-
-            if (city) {
-              const name = city.name || '';
-              const id = city.slug || '';
-              this.cityName.set(name);
-              this.cityId.set(id);
-              this.layoutConfig.title.set(name);
-              this.appTitle.setResolvedTitle('Lista wydarzeń', name);
-              this.loadCitySubscription(id);
-            }
-          }
-          this.hasMore = res.data.length === 20;
-          this.page++;
-          this.isLoading.set(false);
-        },
-        error: (err) => {
-          if (err instanceof HttpErrorResponse && err.status === 404) {
-            this.navigation.navigateToNotFoundWithReason('city-not-found');
-            return;
-          }
-          this.error.set('Nie udało się pobrać wydarzeń');
-          this.isLoading.set(false);
-        },
-      });
-  }
-
-  onEventSelected(event: EventBase): void {
-    const slug = event.city?.slug || this.citySlug;
-    this.navigation.navigateToEventDetail(event.id, slug);
-  }
-
-  onScroll(): void {
-    if (!this.isLoading() && this.hasMore) {
-      this.loadEvents();
-    }
   }
 
   ngOnDestroy(): void {
     clearInterval(this.tickInterval);
     this.notifStatus.clearConfig();
+  }
+
+  onEventSelected(event: EventBase): void {
+    const slug = event.city?.slug || this.citySlug();
+    this.navigation.navigateToEventDetail(event.id, slug);
+  }
+
+  onScroll(): void {
+    if (!this.isLoading() && this.hasMore) {
+      this.loadEvents(this.citySlug());
+    }
   }
 
   protected subscribeToCityInternal(): void {
@@ -256,6 +240,53 @@ export class EventsComponent implements OnInit, OnDestroy {
     });
   }
 
+  private resetCityState(): void {
+    this.events.set([]);
+    this.cityName.set('');
+    this.cityId.set('');
+    this.citySubscribed.set(false);
+    this.error.set(null);
+    this.isLoading.set(true);
+    this.page = 1;
+    this.hasMore = true;
+    this.notifStatus.clearConfig();
+  }
+
+  private loadEvents(slug: string): void {
+    if (!this.hasMore || !slug) return;
+    this.eventService
+      .getEvents({ page: this.page, limit: 20, sortBy: 'startsAt', citySlug: slug })
+      .subscribe({
+        next: (res) => {
+          if (this.citySlug() !== slug) return;
+          this.events.update((prev) => [...prev, ...res.data]);
+          if (!this.cityName() && res.data.length > 0) {
+            const city = res.data[0].city;
+
+            if (city) {
+              const name = city.name || '';
+              const id = city.slug || '';
+              this.cityName.set(name);
+              this.cityId.set(id);
+              this.loadCitySubscription(id);
+            }
+          }
+          this.hasMore = res.data.length === 20;
+          this.page++;
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          if (this.citySlug() !== slug) return;
+          if (err instanceof HttpErrorResponse && err.status === 404) {
+            this.navigation.navigateToNotFoundWithReason('city-not-found');
+            return;
+          }
+          this.error.set('Nie udało się pobrać wydarzeń');
+          this.isLoading.set(false);
+        },
+      });
+  }
+
   private loadCitySubscription(cityId: string): void {
     if (!this.isLoggedIn() || !cityId) return;
     this.citySubscriptionService.isSubscribed(cityId).subscribe({
@@ -266,12 +297,10 @@ export class EventsComponent implements OnInit, OnDestroy {
   private loadCityInfo(slug: string): void {
     this.dictionary.getCityBySlug(slug).subscribe({
       next: (city) => {
-        this.cityIsActive.set(city.isActive);
+        if (this.citySlug() !== slug) return;
         if (!this.cityName()) {
           this.cityName.set(city.name);
           this.cityId.set(city.slug);
-          this.layoutConfig.title.set(city.name);
-          this.appTitle.setResolvedTitle('Lista wydarzeń', city.name);
           this.loadCitySubscription(city.slug);
         }
       },

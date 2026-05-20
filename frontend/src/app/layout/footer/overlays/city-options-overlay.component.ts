@@ -64,7 +64,6 @@ export class CityOptionsOverlayComponent {
   }
 
   onCitySelected(city: { slug: string; name: string }): void {
-    this.cityContext.selectCity(city);
     this.navigation.navigateToEvents(city.slug);
     this.closed.emit();
   }
