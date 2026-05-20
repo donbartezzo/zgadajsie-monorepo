@@ -185,7 +185,7 @@ export class CoverImagesService {
         fit: 'cover',
         position: 'centre',
       })
-      .webp({ quality: 85 })
+      .webp({ quality: 75 })
       .toBuffer();
   }
 

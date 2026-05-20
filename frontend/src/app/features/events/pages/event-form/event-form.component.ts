@@ -479,6 +479,9 @@ interface EventRule {
                         [src]="coverUrl(cover)"
                         [alt]="cover.filename"
                         class="w-full aspect-[700/250] object-cover"
+                        decoding="async"
+                        width="700"
+                        height="250"
                       />
                       <div
                         class="absolute inset-0 bg-primary-500/10 flex items-end justify-end p-2"
@@ -529,6 +532,10 @@ interface EventRule {
                           [src]="coverUrl(cover)"
                           [alt]="cover.filename"
                           class="w-full aspect-[700/250] object-cover"
+                          loading="lazy"
+                          decoding="async"
+                          width="700"
+                          height="250"
                         />
                         @if (selectedCoverImageId() === cover.id) {
                           <div
