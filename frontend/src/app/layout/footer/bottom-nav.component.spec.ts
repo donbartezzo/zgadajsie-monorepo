@@ -55,13 +55,13 @@ describe('BottomNavComponent', () => {
 
     it('powinien renderować przycisk kontekstu miasta', () => {
       const el = fixture.nativeElement as HTMLElement;
-      const cityButton = el.querySelector('button[aria-label^="Wydarzenia w"]');
+      const cityButton = el.querySelector('app-button[aria-label^="Wydarzenia w"]');
       expect(cityButton).toBeTruthy();
     });
 
     it('powinien renderować przycisk "Udostępnij"', () => {
       const el = fixture.nativeElement as HTMLElement;
-      const shareButton = el.querySelector('button[aria-label="Udostępnij"]');
+      const shareButton = el.querySelector('app-button[aria-label="Udostępnij"]');
       expect(shareButton).toBeTruthy();
     });
 

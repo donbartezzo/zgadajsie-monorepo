@@ -1,4 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { Component } from '@angular/core';
 import { of } from 'rxjs';
 import { CitySearchComponent } from './city-search.component';
 import { DictionaryService } from '../../../core/services/dictionary.service';
@@ -12,17 +14,24 @@ const CITIES = [
 
 const makeDictionary = () => ({ getCities: () => of(CITIES) });
 
+@Component({
+  standalone: true,
+  imports: [CitySearchComponent],
+  template: `<app-city-search placeholder="Szukaj miasta" />`,
+})
+class TestWrapperComponent {}
+
 describe('CitySearchComponent', () => {
-  let fixture: ComponentFixture<CitySearchComponent>;
+  let fixture: ComponentFixture<TestWrapperComponent>;
   let component: CitySearchComponent;
 
   const setup = async () => {
     await TestBed.configureTestingModule({
-      imports: [CitySearchComponent],
+      imports: [TestWrapperComponent],
       providers: [{ provide: DictionaryService, useValue: makeDictionary() }],
     }).compileComponents();
-    fixture = TestBed.createComponent(CitySearchComponent);
-    component = fixture.componentInstance;
+    fixture = TestBed.createComponent(TestWrapperComponent);
+    component = fixture.debugElement.query(By.directive(CitySearchComponent)).componentInstance;
     fixture.detectChanges();
   };
 
