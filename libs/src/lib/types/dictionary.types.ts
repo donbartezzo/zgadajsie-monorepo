@@ -8,5 +8,6 @@ export interface City {
   province: string | null;
   lat: number | null;
   lng: number | null;
+  priority: number;
   isActive: boolean;
 }

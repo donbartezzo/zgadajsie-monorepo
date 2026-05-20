@@ -181,9 +181,12 @@ model City {
   province      String?
   lat           Float?
   lng           Float?
+  priority      Int                @default(0)
   isActive      Boolean            @default(false)
   subscriptions CitySubscription[]
   events        Event[]
+
+  @@index([priority])
 }
 
 model EventDiscipline {

@@ -8,6 +8,7 @@ interface CityEntry {
   province: string | null;
   lat: number | null;
   lng: number | null;
+  priority: number;
   isActive: boolean;
 }
 
@@ -154,6 +155,7 @@ export async function createCities(prisma: any): Promise<City[]> {
           province: data.province,
           lat: data.lat,
           lng: data.lng,
+          priority: data.priority,
           isActive: data.isActive,
         },
         create: data,

@@ -60,7 +60,7 @@
         >
           <app-icon name="map-pin" size="xs" color="neutral" class="shrink-0 text-neutral-400"></app-icon>
           <span class="flex-1">{{ city.name }}</span>
-          @if (!city.isActive) {
+          @if (!city.isActive && city.priority >= 3) {
             <span class="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-400">wkrótce</span>
           }
         </li>
