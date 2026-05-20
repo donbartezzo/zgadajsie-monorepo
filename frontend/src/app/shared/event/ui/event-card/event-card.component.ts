@@ -62,6 +62,10 @@ import { IconComponent } from '../../../ui/icon/icon.component';
                 [src]="_coverUrl"
                 [alt]="_event.title"
                 class="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+                decoding="async"
+                width="700"
+                height="250"
               />
             } @else {
               <div class="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-500"></div>

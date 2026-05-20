@@ -245,6 +245,10 @@ import {
                   [src]="getCoverUrl(cover)"
                   [alt]="cover.filename"
                   class="w-full aspect-[700/250] object-cover"
+                  loading="lazy"
+                  decoding="async"
+                  width="700"
+                  height="250"
                 />
                 <div class="p-3 space-y-2">
                   <div class="flex items-center justify-between">
