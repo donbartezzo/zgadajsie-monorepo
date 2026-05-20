@@ -1,6 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { of } from 'rxjs';
 import { CitySearchComponent } from './city-search.component';
 import { DictionaryService } from '../../../core/services/dictionary.service';
@@ -18,6 +18,7 @@ const makeDictionary = () => ({ getCities: () => of(CITIES) });
   standalone: true,
   imports: [CitySearchComponent],
   template: `<app-city-search placeholder="Szukaj miasta" />`,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 class TestWrapperComponent {}
 
