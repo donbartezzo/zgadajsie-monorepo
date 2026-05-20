@@ -80,6 +80,10 @@ export const COMMON_SEED_DATA = {
       'ac570d55-76d2-442d-9aa0-156c40932822.webp',
       'c928d017-d6e2-42d6-be7c-d93fc11a5ca6.webp',
       'f6b092ca-bac9-497e-a217-d1cb3ccd5444.webp',
+      '34fb9244-e63d-438e-9079-6aae8889b4b6.webp',
+      '6fa08f5b-e1c9-49c0-b497-a21cd300e75d.webp',
+      '826ec623-be94-4bd6-b73e-59fafa197dfc.webp',
+      '94072c0d-5c62-4488-9ab1-5a10187f7f62.webp',
     ],
   } as Record<string, string[]>,
 
