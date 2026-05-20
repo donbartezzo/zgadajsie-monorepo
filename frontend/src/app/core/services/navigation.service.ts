@@ -1,11 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { Router, ActivatedRoute, UrlTree } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
+import { CityContextService } from './city-context.service';
 
 @Injectable({ providedIn: 'root' })
 export class NavigationService {
   readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  private readonly cityContext = inject(CityContextService);
 
   navigateToEventParticipants(eventId: string, citySlug: string): void {
     this.auth.requireAuth('zobaczyć listę uczestników', () => {
@@ -77,7 +79,16 @@ export class NavigationService {
   }
 
   navigateToHome(): void {
-    this.router.navigate(['/w', 'zielona-gora']);
+    this.router.navigate(['/']);
+  }
+
+  navigateToCurrentCity(): void {
+    const citySlug = this.cityContext.citySlug();
+    if (citySlug) {
+      this.router.navigate(['/w', citySlug]);
+    } else {
+      this.router.navigate(['/']);
+    }
   }
 
   navigateToLogin(returnUrl?: string): void {

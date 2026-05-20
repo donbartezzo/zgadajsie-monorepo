@@ -1,5 +1,4 @@
-import { EventDefaultableFields, EventStatus } from '@zgadajsie/shared';
-import { DictionaryItem, City } from './dictionary.interface';
+import { EventDefaultableFields, EventStatus, DictionaryItem, City } from '@zgadajsie/shared';
 import { UserBrief } from './common.interface';
 import { CoverImage } from './cover-image.interface';
 

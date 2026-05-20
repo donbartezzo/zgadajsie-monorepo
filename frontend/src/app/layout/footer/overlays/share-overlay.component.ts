@@ -11,8 +11,8 @@ import { APP_BRAND } from '@zgadajsie/shared';
   template: `
     <app-bottom-overlay [open]="true" title="Udostępnij" (closed)="closed.emit()">
       <div class="space-y-3 max-w-lg mx-auto">
-        <p class="text-sm text-neutral-500">
-          Przekaż informację o wydarzeniu znajomym jednym kliknięciem.
+        <p class="text-sm text-neutral-500 text-center">
+          Podziel się tą stroną ze znajomym jednym kliknięciem.
         </p>
 
         <app-link-list [items]="shareLinks" (itemClicked)="handleShareClick($event)" />

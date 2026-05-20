@@ -1,58 +1,61 @@
-<!-- Bottom Nav Bar -->
+<!-- Bottom Nav Bar — split: kontekst miasta (lewa) | akcje (prawa) -->
+@let _cityLabel = cityLabel();
+@let _cityButtonAppearance = cityButtonAppearance();
+@let _isLoggedIn = auth.isLoggedIn();
+@let _currentUser = auth.currentUser();
+
 <footer
   class="h-[var(--footer-height)] border-t border-neutral-200 bg-white/95 px-2 py-2 shadow-[0_-4px_12px_rgba(15,23,42,0.12)] backdrop-blur-md relative"
   aria-label="Główna nawigacja dolna"
 >
-  <nav class="flex items-center justify-center text-xs font-medium text-neutral-500">
-    <!-- Centered Actions -->
-    <div class="grid grid-cols-4 gap-x-3">
-      <button
-        type="button"
-        (click)="navigateToEvents()"
-        class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
+  <nav class="flex items-stretch justify-between text-xs font-medium text-neutral-500">
+    <div class="flex min-w-0 flex-col items-center justify-center px-2 py-1.5">
+      <app-button
+        [appearance]="_cityButtonAppearance"
+        size="lg"
+        color="neutral"
+        aria-label="Wydarzenia w {{ _cityLabel }}"
+        (clicked)="toggleCityOptions()"
+        iconLeft="map-pin"
       >
-        <app-icon name="calendar" size="lg" color="neutral" class="mb-1"></app-icon>
-        <span>Wydarzenia</span>
-      </button>
+        <span class="truncate text-sm font-medium leading-tight sm:text-base">{{ _cityLabel }}</span>
+      </app-button>
+    </div>
 
-      <button
-        type="button"
-        (click)="toggleShareMenu()"
-        class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
+    <!-- <div class="my-1 w-px bg-neutral-200 ml-8"></div> -->
+
+    <div class="flex flex-1 items-center justify-end gap-2">
+      <app-button
+        appearance="soft"
+        size="lg"
+        color="neutral"
         aria-label="Udostępnij"
-      >
-        <app-icon name="share" size="lg" color="neutral" class="mb-1"></app-icon>
-        <span>Udostępnij</span>
-      </button>
+        (clicked)="toggleShareMenu()"
+        [iconOnly]="true"
+        iconLeft="share"
+      />
 
-      <button
-        type="button"
-        (click)="toggleSettingsMenu()"
-        class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
-        aria-label="Ustawienia"
-      >
-        <app-icon name="settings" size="lg" color="neutral" class="mb-1"></app-icon>
-        <span>Ustawienia</span>
-      </button>
-
-      @if (auth.isLoggedIn()) {
-        <button
-          type="button"
-          (click)="navigateToProfile()"
-          class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
+      @if (_isLoggedIn) {
+        <app-button
+          appearance="ghost"
+          color="neutral"
+          size="lg"
+          aria-label="Nawigacja"
+          (clicked)="toggleNavigation()"
+          [iconOnly]="true"
         >
-          <app-user-avatar [user]="auth.currentUser()" size="md" class="mb-1"></app-user-avatar>
-          <!-- <span>Profil</span> -->
-        </button>
+          <app-user-avatar [user]="_currentUser" size="lg" [transparent]="true"></app-user-avatar>
+        </app-button>
       } @else {
-        <button
-          type="button"
-          (click)="navigateToLogin()"
-          class="flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors hover:text-primary-500"
-        >
-          <app-icon name="log-in" size="lg" color="neutral" class="mb-1"></app-icon>
-          <span>Zaloguj</span>
-        </button>
+        <app-button
+          appearance="soft"
+          color="primary"
+          size="lg"
+          aria-label="Nawigacja"
+          (clicked)="toggleNavigation()"
+          [iconOnly]="true"
+          iconLeft="menu"
+        />
       }
     </div>
   </nav>

@@ -2,8 +2,11 @@
   @case ('share') {
     <app-share-overlay (closed)="overlays.close()" />
   }
-  @case ('settings') {
-    <app-settings-overlay (closed)="overlays.close()" />
+  @case ('navigation') {
+    <app-navigation-overlay (closed)="overlays.close()" />
+  }
+  @case ('cityOptions') {
+    <app-city-options-overlay (closed)="overlays.close()" />
   }
   @case ('auth') {
     <app-auth-overlay (closed)="overlays.close()" (authenticated)="overlays.handleAuthSuccess()" />

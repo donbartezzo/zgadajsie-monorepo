@@ -1,0 +1,9182 @@
+[
+  {
+    "slug": "zielona-gora",
+    "name": "Zielona Góra",
+    "province": "lubuskie",
+    "lat": 51.927623,
+    "lng": 15.529186,
+    "priority": 3,
+    "isActive": true
+  },
+  {
+    "slug": "aleksandrow-kujawski",
+    "name": "Aleksandrów Kujawski",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.876433,
+    "lng": 18.700433,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "aleksandrow-lodzki",
+    "name": "Aleksandrów Łódzki",
+    "province": "łódzkie",
+    "lat": 51.81602,
+    "lng": 19.303808,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "alwernia",
+    "name": "Alwernia",
+    "province": "małopolskie",
+    "lat": 50.056381,
+    "lng": 19.535017,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "andrychow",
+    "name": "Andrychów",
+    "province": "małopolskie",
+    "lat": 49.853807,
+    "lng": 19.339295,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "annopol",
+    "name": "Annopol",
+    "province": "lubelskie",
+    "lat": 50.892092,
+    "lng": 21.867484,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "augustow",
+    "name": "Augustów",
+    "province": "podlaskie",
+    "lat": 53.844897,
+    "lng": 23.009893,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "babimost",
+    "name": "Babimost",
+    "province": "lubuskie",
+    "lat": 52.164728,
+    "lng": 15.828776,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "baborow",
+    "name": "Baborów",
+    "province": "opolskie",
+    "lat": 50.163264,
+    "lng": 17.985241,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "baranow-sandomierski",
+    "name": "Baranów Sandomierski",
+    "province": "podkarpackie",
+    "lat": 50.493447,
+    "lng": 21.537111,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "barcin",
+    "name": "Barcin",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.864021,
+    "lng": 17.939943,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "barczewo",
+    "name": "Barczewo",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.835139,
+    "lng": 20.690873,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bardo",
+    "name": "Bardo",
+    "province": "dolnośląskie",
+    "lat": 50.500703,
+    "lng": 16.747516,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "barlinek",
+    "name": "Barlinek",
+    "province": "zachodniopomorskie",
+    "lat": 52.997458,
+    "lng": 15.208931,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bartoszyce",
+    "name": "Bartoszyce",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.253431,
+    "lng": 20.810384,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "barwice",
+    "name": "Barwice",
+    "province": "zachodniopomorskie",
+    "lat": 53.742945,
+    "lng": 16.351303,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "belchatow",
+    "name": "Bełchatów",
+    "province": "łódzkie",
+    "lat": 51.354579,
+    "lng": 19.362703,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "belzyce",
+    "name": "Bełżyce",
+    "province": "lubelskie",
+    "lat": 51.166216,
+    "lng": 22.265324,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bedzin",
+    "name": "Będzin",
+    "province": "śląskie",
+    "lat": 50.335706,
+    "lng": 19.123989,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "biala",
+    "name": "Biała",
+    "province": "opolskie",
+    "lat": 50.383636,
+    "lng": 17.670121,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "biala-piska",
+    "name": "Biała Piska",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.611452,
+    "lng": 22.06483,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "biala-podlaska",
+    "name": "Biała Podlaska",
+    "province": "lubelskie",
+    "lat": 52.02902,
+    "lng": 23.138281,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "biala-rawska",
+    "name": "Biała Rawska",
+    "province": "łódzkie",
+    "lat": 51.798429,
+    "lng": 20.47409,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bialaczow",
+    "name": "Białaczów",
+    "province": "łódzkie",
+    "lat": 51.290988,
+    "lng": 20.282267,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bialobrzegi",
+    "name": "Białobrzegi",
+    "province": "mazowieckie",
+    "lat": 51.647691,
+    "lng": 20.943274,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bialogard",
+    "name": "Białogard",
+    "province": "zachodniopomorskie",
+    "lat": 54.014051,
+    "lng": 15.975629,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bialy-bor",
+    "name": "Biały Bór",
+    "province": "zachodniopomorskie",
+    "lat": 53.875242,
+    "lng": 16.842909,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bialystok",
+    "name": "Białystok",
+    "province": "podlaskie",
+    "lat": 53.127598,
+    "lng": 23.156495,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "biecz",
+    "name": "Biecz",
+    "province": "małopolskie",
+    "lat": 49.732251,
+    "lng": 21.25902,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bielawa",
+    "name": "Bielawa",
+    "province": "dolnośląskie",
+    "lat": 50.675471,
+    "lng": 16.602826,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bielsk-podlaski",
+    "name": "Bielsk Podlaski",
+    "province": "podlaskie",
+    "lat": 52.764218,
+    "lng": 23.190266,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bielsko-biala",
+    "name": "Bielsko-Biała",
+    "province": "śląskie",
+    "lat": 49.812061,
+    "lng": 19.03878,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "bierun",
+    "name": "Bieruń",
+    "province": "śląskie",
+    "lat": 50.084379,
+    "lng": 19.143632,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bierutow",
+    "name": "Bierutów",
+    "province": "dolnośląskie",
+    "lat": 51.129187,
+    "lng": 17.545863,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "biezun",
+    "name": "Bieżuń",
+    "province": "mazowieckie",
+    "lat": 52.962889,
+    "lng": 19.877725,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bilgoraj",
+    "name": "Biłgoraj",
+    "province": "lubelskie",
+    "lat": 50.539011,
+    "lng": 22.711695,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bircza",
+    "name": "Bircza",
+    "province": "podkarpackie",
+    "lat": 49.689165,
+    "lng": 22.481414,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "biskupiec",
+    "name": "Biskupiec",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.862133,
+    "lng": 20.952195,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bisztynek",
+    "name": "Bisztynek",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.086035,
+    "lng": 20.907277,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "blachownia",
+    "name": "Blachownia",
+    "province": "śląskie",
+    "lat": 50.796839,
+    "lng": 18.94672,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "blaszki",
+    "name": "Błaszki",
+    "province": "łódzkie",
+    "lat": 51.652401,
+    "lng": 18.441739,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "blazowa",
+    "name": "Błażowa",
+    "province": "podkarpackie",
+    "lat": 49.886553,
+    "lng": 22.101991,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "blonie",
+    "name": "Błonie",
+    "province": "mazowieckie",
+    "lat": 52.195484,
+    "lng": 20.622809,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bobolice",
+    "name": "Bobolice",
+    "province": "zachodniopomorskie",
+    "lat": 53.958217,
+    "lng": 16.58665,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bobowa",
+    "name": "Bobowa",
+    "province": "małopolskie",
+    "lat": 49.711927,
+    "lng": 20.955984,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bobrowniki",
+    "name": "Bobrowniki",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.776295,
+    "lng": 18.95668,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bochnia",
+    "name": "Bochnia",
+    "province": "małopolskie",
+    "lat": 49.974731,
+    "lng": 20.429361,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "bodzanow",
+    "name": "Bodzanów",
+    "province": "mazowieckie",
+    "lat": 52.507603,
+    "lng": 20.028033,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bodzentyn",
+    "name": "Bodzentyn",
+    "province": "świętokrzyskie",
+    "lat": 50.945655,
+    "lng": 20.958741,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bogatynia",
+    "name": "Bogatynia",
+    "province": "dolnośląskie",
+    "lat": 50.922347,
+    "lng": 14.938376,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bogoria",
+    "name": "Bogoria",
+    "province": "świętokrzyskie",
+    "lat": 50.644057,
+    "lng": 21.247604,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "boguchwala",
+    "name": "Boguchwała",
+    "province": "podkarpackie",
+    "lat": 49.983683,
+    "lng": 21.936695,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "boguszow-gorce",
+    "name": "Boguszów-Gorce",
+    "province": "dolnośląskie",
+    "lat": 50.7551,
+    "lng": 16.205505,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bojanowo",
+    "name": "Bojanowo",
+    "province": "wielkopolskie",
+    "lat": 51.702856,
+    "lng": 16.757947,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "boleslawiec",
+    "name": "Bolesławiec",
+    "province": "dolnośląskie",
+    "lat": 51.262169,
+    "lng": 15.55163,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "boleslawiec-lodzkie",
+    "name": "Bolesławiec",
+    "province": "łódzkie",
+    "lat": 51.19538,
+    "lng": 18.209082,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "bolimow",
+    "name": "Bolimów",
+    "province": "łódzkie",
+    "lat": 52.073967,
+    "lng": 20.163275,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bolkow",
+    "name": "Bolków",
+    "province": "dolnośląskie",
+    "lat": 50.920607,
+    "lng": 16.100639,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "borek-wielkopolski",
+    "name": "Borek Wielkopolski",
+    "province": "wielkopolskie",
+    "lat": 51.91137,
+    "lng": 17.228884,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "borne-sulinowo",
+    "name": "Borne Sulinowo",
+    "province": "zachodniopomorskie",
+    "lat": 53.573667,
+    "lng": 16.53051,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "braniewo",
+    "name": "Braniewo",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.379451,
+    "lng": 19.82084,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bransk",
+    "name": "Brańsk",
+    "province": "podlaskie",
+    "lat": 52.767756,
+    "lng": 22.848094,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "brodnica",
+    "name": "Brodnica",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.257961,
+    "lng": 19.406477,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "brody",
+    "name": "Brody",
+    "province": "lubuskie",
+    "lat": 51.787466,
+    "lng": 14.762856,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "brok",
+    "name": "Brok",
+    "province": "mazowieckie",
+    "lat": 52.69851,
+    "lng": 21.880314,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "brusy",
+    "name": "Brusy",
+    "province": "pomorskie",
+    "lat": 53.886064,
+    "lng": 17.723092,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "brwinow",
+    "name": "Brwinów",
+    "province": "mazowieckie",
+    "lat": 52.150682,
+    "lng": 20.726087,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "brzeg",
+    "name": "Brzeg",
+    "province": "opolskie",
+    "lat": 50.858877,
+    "lng": 17.462846,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "brzeg-dolny",
+    "name": "Brzeg Dolny",
+    "province": "dolnośląskie",
+    "lat": 51.268419,
+    "lng": 16.719603,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "brzesko",
+    "name": "Brzesko",
+    "province": "małopolskie",
+    "lat": 49.974532,
+    "lng": 20.610792,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "brzeszcze",
+    "name": "Brzeszcze",
+    "province": "małopolskie",
+    "lat": 49.990733,
+    "lng": 19.145799,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "brzesc-kujawski",
+    "name": "Brześć Kujawski",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.604518,
+    "lng": 18.900914,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "brzeziny",
+    "name": "Brzeziny",
+    "province": "łódzkie",
+    "lat": 51.800661,
+    "lng": 19.749435,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "brzostek",
+    "name": "Brzostek",
+    "province": "podkarpackie",
+    "lat": 49.879826,
+    "lng": 21.408361,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "brzozow",
+    "name": "Brzozów",
+    "province": "podkarpackie",
+    "lat": 49.697744,
+    "lng": 22.019457,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "budzyn",
+    "name": "Budzyń",
+    "province": "wielkopolskie",
+    "lat": 52.892541,
+    "lng": 16.990084,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "buk",
+    "name": "Buk",
+    "province": "wielkopolskie",
+    "lat": 52.352792,
+    "lng": 16.521656,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bukowno",
+    "name": "Bukowno",
+    "province": "małopolskie",
+    "lat": 50.260986,
+    "lng": 19.417138,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "busko-zdroj",
+    "name": "Busko-Zdrój",
+    "province": "świętokrzyskie",
+    "lat": 50.470299,
+    "lng": 20.716431,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bychawa",
+    "name": "Bychawa",
+    "province": "lubelskie",
+    "lat": 51.017274,
+    "lng": 22.534894,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "byczyna",
+    "name": "Byczyna",
+    "province": "opolskie",
+    "lat": 51.112415,
+    "lng": 18.214788,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bydgoszcz",
+    "name": "Bydgoszcz",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.129727,
+    "lng": 18.038381,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "bystrzyca-klodzka",
+    "name": "Bystrzyca Kłodzka",
+    "province": "dolnośląskie",
+    "lat": 50.295351,
+    "lng": 16.649944,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bytom",
+    "name": "Bytom",
+    "province": "śląskie",
+    "lat": 50.365727,
+    "lng": 18.87634,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "bytom-odrzanski",
+    "name": "Bytom Odrzański",
+    "province": "lubuskie",
+    "lat": 51.728172,
+    "lng": 15.824124,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "bytow",
+    "name": "Bytów",
+    "province": "pomorskie",
+    "lat": 54.179849,
+    "lng": 17.500617,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "cedynia",
+    "name": "Cedynia",
+    "province": "zachodniopomorskie",
+    "lat": 52.876911,
+    "lng": 14.207159,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ceglow",
+    "name": "Cegłów",
+    "province": "mazowieckie",
+    "lat": 52.147178,
+    "lng": 21.745284,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chelm",
+    "name": "Chełm",
+    "province": "lubelskie",
+    "lat": 51.135601,
+    "lng": 23.496203,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "chelmek",
+    "name": "Chełmek",
+    "province": "małopolskie",
+    "lat": 50.111155,
+    "lng": 19.250043,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chelmno",
+    "name": "Chełmno",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.352402,
+    "lng": 18.425496,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chelmza",
+    "name": "Chełmża",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.192392,
+    "lng": 18.608813,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "checiny",
+    "name": "Chęciny",
+    "province": "świętokrzyskie",
+    "lat": 50.811122,
+    "lng": 20.467102,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chmielnik",
+    "name": "Chmielnik",
+    "province": "świętokrzyskie",
+    "lat": 50.611509,
+    "lng": 20.748607,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chocianow",
+    "name": "Chocianów",
+    "province": "dolnośląskie",
+    "lat": 51.418318,
+    "lng": 15.906169,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chociwel",
+    "name": "Chociwel",
+    "province": "zachodniopomorskie",
+    "lat": 53.466374,
+    "lng": 15.342241,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chocz",
+    "name": "Chocz",
+    "province": "wielkopolskie",
+    "lat": 51.982957,
+    "lng": 17.872695,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chodecz",
+    "name": "Chodecz",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.408249,
+    "lng": 19.028018,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chodziez",
+    "name": "Chodzież",
+    "province": "wielkopolskie",
+    "lat": 52.99497,
+    "lng": 16.915715,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chojna",
+    "name": "Chojna",
+    "province": "zachodniopomorskie",
+    "lat": 52.956257,
+    "lng": 14.428766,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chojnice",
+    "name": "Chojnice",
+    "province": "pomorskie",
+    "lat": 53.69997,
+    "lng": 17.560158,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chojnow",
+    "name": "Chojnów",
+    "province": "dolnośląskie",
+    "lat": 51.272214,
+    "lng": 15.935727,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "choroszcz",
+    "name": "Choroszcz",
+    "province": "podlaskie",
+    "lat": 53.136506,
+    "lng": 22.987445,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chorzele",
+    "name": "Chorzele",
+    "province": "mazowieckie",
+    "lat": 53.260366,
+    "lng": 20.91482,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chorzow",
+    "name": "Chorzów",
+    "province": "śląskie",
+    "lat": 50.288479,
+    "lng": 18.962897,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "choszczno",
+    "name": "Choszczno",
+    "province": "zachodniopomorskie",
+    "lat": 53.168721,
+    "lng": 15.427001,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "chrzanow",
+    "name": "Chrzanów",
+    "province": "małopolskie",
+    "lat": 50.129189,
+    "lng": 19.35945,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ciechanowiec",
+    "name": "Ciechanowiec",
+    "province": "podlaskie",
+    "lat": 52.676307,
+    "lng": 22.507273,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ciechanow",
+    "name": "Ciechanów",
+    "province": "mazowieckie",
+    "lat": 52.871085,
+    "lng": 20.614905,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ciechocinek",
+    "name": "Ciechocinek",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.884338,
+    "lng": 18.794961,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ciepielow",
+    "name": "Ciepielów",
+    "province": "mazowieckie",
+    "lat": 51.24208,
+    "lng": 21.576169,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "cieszanow",
+    "name": "Cieszanów",
+    "province": "podkarpackie",
+    "lat": 50.245316,
+    "lng": 23.13093,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "cieszyn",
+    "name": "Cieszyn",
+    "province": "śląskie",
+    "lat": 49.755781,
+    "lng": 18.65144,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "ciezkowice",
+    "name": "Ciężkowice",
+    "province": "małopolskie",
+    "lat": 49.786517,
+    "lng": 20.988796,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "cybinka",
+    "name": "Cybinka",
+    "province": "lubuskie",
+    "lat": 52.1945,
+    "lng": 14.798822,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czaplinek",
+    "name": "Czaplinek",
+    "province": "zachodniopomorskie",
+    "lat": 53.557082,
+    "lng": 16.225695,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czarna-bialostocka",
+    "name": "Czarna Białostocka",
+    "province": "podlaskie",
+    "lat": 53.302357,
+    "lng": 23.267936,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czarna-woda",
+    "name": "Czarna Woda",
+    "province": "pomorskie",
+    "lat": 53.840585,
+    "lng": 18.111634,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czarne",
+    "name": "Czarne",
+    "province": "pomorskie",
+    "lat": 53.671453,
+    "lng": 16.92384,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czarnkow",
+    "name": "Czarnków",
+    "province": "wielkopolskie",
+    "lat": 52.901212,
+    "lng": 16.551841,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czarny-dunajec",
+    "name": "Czarny Dunajec",
+    "province": "małopolskie",
+    "lat": 49.446954,
+    "lng": 19.839357,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czchow",
+    "name": "Czchów",
+    "province": "małopolskie",
+    "lat": 49.82748,
+    "lng": 20.661062,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czechowice-dziedzice",
+    "name": "Czechowice-Dziedzice",
+    "province": "śląskie",
+    "lat": 49.904085,
+    "lng": 19.000511,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "czeladz",
+    "name": "Czeladź",
+    "province": "śląskie",
+    "lat": 50.319162,
+    "lng": 19.08231,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czemierniki",
+    "name": "Czemierniki",
+    "province": "lubelskie",
+    "lat": 51.676637,
+    "lng": 22.642111,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czempin",
+    "name": "Czempiń",
+    "province": "wielkopolskie",
+    "lat": 52.139678,
+    "lng": 16.762504,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czerniejewo",
+    "name": "Czerniejewo",
+    "province": "wielkopolskie",
+    "lat": 52.431521,
+    "lng": 17.480868,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czersk",
+    "name": "Czersk",
+    "province": "pomorskie",
+    "lat": 53.78997,
+    "lng": 17.977319,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czerwiensk",
+    "name": "Czerwieńsk",
+    "province": "lubuskie",
+    "lat": 52.018508,
+    "lng": 15.403687,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czerwinsk-nad-wisla",
+    "name": "Czerwińsk nad Wisłą",
+    "province": "mazowieckie",
+    "lat": 52.403806,
+    "lng": 20.31738,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czerwionka-leszczyny",
+    "name": "Czerwionka-Leszczyny",
+    "province": "śląskie",
+    "lat": 50.164843,
+    "lng": 18.680233,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czestochowa",
+    "name": "Częstochowa",
+    "province": "śląskie",
+    "lat": 50.809635,
+    "lng": 19.122219,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "czlopa",
+    "name": "Człopa",
+    "province": "zachodniopomorskie",
+    "lat": 53.083766,
+    "lng": 16.133116,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czluchow",
+    "name": "Człuchów",
+    "province": "pomorskie",
+    "lat": 53.664779,
+    "lng": 17.368084,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "czyzew",
+    "name": "Czyżew",
+    "province": "podlaskie",
+    "lat": 52.79388,
+    "lng": 22.321485,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "cmielow",
+    "name": "Ćmielów",
+    "province": "świętokrzyskie",
+    "lat": 50.895903,
+    "lng": 21.525406,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "daleszyce",
+    "name": "Daleszyce",
+    "province": "świętokrzyskie",
+    "lat": 50.803368,
+    "lng": 20.801615,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "darlowo",
+    "name": "Darłowo",
+    "province": "zachodniopomorskie",
+    "lat": 54.428735,
+    "lng": 16.409811,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dabie",
+    "name": "Dąbie",
+    "province": "wielkopolskie",
+    "lat": 52.099215,
+    "lng": 18.823767,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dabrowa-bialostocka",
+    "name": "Dąbrowa Białostocka",
+    "province": "podlaskie",
+    "lat": 53.648265,
+    "lng": 23.328993,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dabrowa-gornicza",
+    "name": "Dąbrowa Górnicza",
+    "province": "śląskie",
+    "lat": 50.369745,
+    "lng": 19.321354,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "dabrowa-tarnowska",
+    "name": "Dąbrowa Tarnowska",
+    "province": "małopolskie",
+    "lat": 50.169652,
+    "lng": 20.994023,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dabrowice",
+    "name": "Dąbrowice",
+    "province": "łódzkie",
+    "lat": 52.311068,
+    "lng": 19.085402,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "debrzno",
+    "name": "Debrzno",
+    "province": "pomorskie",
+    "lat": 53.543303,
+    "lng": 17.245134,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "debica",
+    "name": "Dębica",
+    "province": "podkarpackie",
+    "lat": 50.045955,
+    "lng": 21.416003,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "deblin",
+    "name": "Dęblin",
+    "province": "lubelskie",
+    "lat": 51.567256,
+    "lng": 21.874336,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "debno",
+    "name": "Dębno",
+    "province": "zachodniopomorskie",
+    "lat": 52.741508,
+    "lng": 14.695138,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dobczyce",
+    "name": "Dobczyce",
+    "province": "małopolskie",
+    "lat": 49.879513,
+    "lng": 20.086149,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dobiegniew",
+    "name": "Dobiegniew",
+    "province": "lubuskie",
+    "lat": 52.968609,
+    "lng": 15.764942,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dobra",
+    "name": "Dobra",
+    "province": "zachodniopomorskie",
+    "lat": 53.581276,
+    "lng": 15.304902,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dobra-wielkopolskie",
+    "name": "Dobra",
+    "province": "wielkopolskie",
+    "lat": 51.913945,
+    "lng": 18.610099,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dobre",
+    "name": "Dobre",
+    "province": "mazowieckie",
+    "lat": 52.321223,
+    "lng": 21.672635,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dobre-miasto",
+    "name": "Dobre Miasto",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.98701,
+    "lng": 20.397869,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dobrodzien",
+    "name": "Dobrodzień",
+    "province": "opolskie",
+    "lat": 50.716799,
+    "lng": 18.435484,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dobrzany",
+    "name": "Dobrzany",
+    "province": "zachodniopomorskie",
+    "lat": 53.358165,
+    "lng": 15.433416,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dobrzyca",
+    "name": "Dobrzyca",
+    "province": "wielkopolskie",
+    "lat": 51.860977,
+    "lng": 17.599057,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dobrzyn-nad-wisla",
+    "name": "Dobrzyń nad Wisłą",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.640173,
+    "lng": 19.319114,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dolsk",
+    "name": "Dolsk",
+    "province": "wielkopolskie",
+    "lat": 51.982469,
+    "lng": 17.057745,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "drawno",
+    "name": "Drawno",
+    "province": "zachodniopomorskie",
+    "lat": 53.217915,
+    "lng": 15.756172,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "drawsko-pomorskie",
+    "name": "Drawsko Pomorskie",
+    "province": "zachodniopomorskie",
+    "lat": 53.533646,
+    "lng": 15.806855,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "drezdenko",
+    "name": "Drezdenko",
+    "province": "lubuskie",
+    "lat": 52.844623,
+    "lng": 15.841279,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "drobin",
+    "name": "Drobin",
+    "province": "mazowieckie",
+    "lat": 52.742049,
+    "lng": 19.989697,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "drohiczyn",
+    "name": "Drohiczyn",
+    "province": "podlaskie",
+    "lat": 52.406328,
+    "lng": 22.653877,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "drzewica",
+    "name": "Drzewica",
+    "province": "łódzkie",
+    "lat": 51.446538,
+    "lng": 20.471113,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dubiecko",
+    "name": "Dubiecko",
+    "province": "podkarpackie",
+    "lat": 49.831244,
+    "lng": 22.396233,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dukla",
+    "name": "Dukla",
+    "province": "podkarpackie",
+    "lat": 49.557524,
+    "lng": 21.675361,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "duszniki-zdroj",
+    "name": "Duszniki-Zdrój",
+    "province": "dolnośląskie",
+    "lat": 50.370361,
+    "lng": 16.381847,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dynow",
+    "name": "Dynów",
+    "province": "podkarpackie",
+    "lat": 49.813805,
+    "lng": 22.234036,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dzialdowo",
+    "name": "Działdowo",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.240222,
+    "lng": 20.1807,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dzialoszyce",
+    "name": "Działoszyce",
+    "province": "świętokrzyskie",
+    "lat": 50.36665,
+    "lng": 20.350773,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dzialoszyn",
+    "name": "Działoszyn",
+    "province": "łódzkie",
+    "lat": 51.117628,
+    "lng": 18.870346,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dzierzgon",
+    "name": "Dzierzgoń",
+    "province": "pomorskie",
+    "lat": 53.91732,
+    "lng": 19.342435,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dzierzoniow",
+    "name": "Dzierżoniów",
+    "province": "dolnośląskie",
+    "lat": 50.729179,
+    "lng": 16.64731,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "dziwnow",
+    "name": "Dziwnów",
+    "province": "zachodniopomorskie",
+    "lat": 54.019043,
+    "lng": 14.749814,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "elblag",
+    "name": "Elbląg",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.198853,
+    "lng": 19.434352,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "elk",
+    "name": "Ełk",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.82393,
+    "lng": 22.35998,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "frampol",
+    "name": "Frampol",
+    "province": "lubelskie",
+    "lat": 50.67408,
+    "lng": 22.665172,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "frombork",
+    "name": "Frombork",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.358325,
+    "lng": 19.685649,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "garwolin",
+    "name": "Garwolin",
+    "province": "mazowieckie",
+    "lat": 51.895951,
+    "lng": 21.623194,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gabin",
+    "name": "Gąbin",
+    "province": "mazowieckie",
+    "lat": 52.40089,
+    "lng": 19.730994,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gasawa",
+    "name": "Gąsawa",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.761905,
+    "lng": 17.763665,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gdansk",
+    "name": "Gdańsk",
+    "province": "pomorskie",
+    "lat": 54.428826,
+    "lng": 18.749899,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "gdynia",
+    "name": "Gdynia",
+    "province": "pomorskie",
+    "lat": 54.523455,
+    "lng": 18.633904,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "gielniow",
+    "name": "Gielniów",
+    "province": "mazowieckie",
+    "lat": 51.393763,
+    "lng": 20.482368,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gizycko",
+    "name": "Giżycko",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.03596,
+    "lng": 21.769379,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "glinojeck",
+    "name": "Glinojeck",
+    "province": "mazowieckie",
+    "lat": 52.820569,
+    "lng": 20.296629,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gliwice",
+    "name": "Gliwice",
+    "province": "śląskie",
+    "lat": 50.301176,
+    "lng": 18.649657,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "glogow",
+    "name": "Głogów",
+    "province": "dolnośląskie",
+    "lat": 51.670185,
+    "lng": 16.043507,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "glogow-malopolski",
+    "name": "Głogów Małopolski",
+    "province": "podkarpackie",
+    "lat": 50.151167,
+    "lng": 21.954888,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "glogowek",
+    "name": "Głogówek",
+    "province": "opolskie",
+    "lat": 50.345886,
+    "lng": 17.860017,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "glowaczow",
+    "name": "Głowaczów",
+    "province": "mazowieckie",
+    "lat": 51.620409,
+    "lng": 21.305075,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "glowno",
+    "name": "Głowno",
+    "province": "łódzkie",
+    "lat": 51.961993,
+    "lng": 19.714108,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "glubczyce",
+    "name": "Głubczyce",
+    "province": "opolskie",
+    "lat": 50.204275,
+    "lng": 17.831128,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "glucholazy",
+    "name": "Głuchołazy",
+    "province": "opolskie",
+    "lat": 50.313729,
+    "lng": 17.368516,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gluszyca",
+    "name": "Głuszyca",
+    "province": "dolnośląskie",
+    "lat": 50.688635,
+    "lng": 16.389186,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gniew",
+    "name": "Gniew",
+    "province": "pomorskie",
+    "lat": 53.841072,
+    "lng": 18.811325,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gniewkowo",
+    "name": "Gniewkowo",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.899902,
+    "lng": 18.420918,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gniezno",
+    "name": "Gniezno",
+    "province": "wielkopolskie",
+    "lat": 52.524872,
+    "lng": 17.603341,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "gogolin",
+    "name": "Gogolin",
+    "province": "opolskie",
+    "lat": 50.488822,
+    "lng": 18.022432,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "golczewo",
+    "name": "Golczewo",
+    "province": "zachodniopomorskie",
+    "lat": 53.825352,
+    "lng": 14.979926,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "goleniow",
+    "name": "Goleniów",
+    "province": "zachodniopomorskie",
+    "lat": 53.560687,
+    "lng": 14.838289,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "golina",
+    "name": "Golina",
+    "province": "wielkopolskie",
+    "lat": 52.246109,
+    "lng": 18.095267,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "golub-dobrzyn",
+    "name": "Golub-Dobrzyń",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.112231,
+    "lng": 19.054137,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "golancz",
+    "name": "Gołańcz",
+    "province": "wielkopolskie",
+    "lat": 52.950736,
+    "lng": 17.306793,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "goldap",
+    "name": "Gołdap",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.313222,
+    "lng": 22.298366,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "goniadz",
+    "name": "Goniądz",
+    "province": "podlaskie",
+    "lat": 53.489819,
+    "lng": 22.73716,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "goraj",
+    "name": "Goraj",
+    "province": "lubelskie",
+    "lat": 50.715014,
+    "lng": 22.644338,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gorlice",
+    "name": "Gorlice",
+    "province": "małopolskie",
+    "lat": 49.666316,
+    "lng": 21.165942,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gorzow-slaski",
+    "name": "Gorzów Śląski",
+    "province": "opolskie",
+    "lat": 51.021031,
+    "lng": 18.410687,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gorzow-wielkopolski",
+    "name": "Gorzów Wielkopolski",
+    "province": "lubuskie",
+    "lat": 52.730556,
+    "lng": 15.217154,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "gostynin",
+    "name": "Gostynin",
+    "province": "mazowieckie",
+    "lat": 52.424231,
+    "lng": 19.46258,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gostyn",
+    "name": "Gostyń",
+    "province": "wielkopolskie",
+    "lat": 51.881563,
+    "lng": 17.009232,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "goscino",
+    "name": "Gościno",
+    "province": "zachodniopomorskie",
+    "lat": 54.046737,
+    "lng": 15.650257,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gowarczow",
+    "name": "Gowarczów",
+    "province": "świętokrzyskie",
+    "lat": 51.272213,
+    "lng": 20.432302,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gozdnica",
+    "name": "Gozdnica",
+    "province": "lubuskie",
+    "lat": 51.453662,
+    "lng": 15.085685,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gora",
+    "name": "Góra",
+    "province": "dolnośląskie",
+    "lat": 51.670225,
+    "lng": 16.550623,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gora-kalwaria",
+    "name": "Góra Kalwaria",
+    "province": "mazowieckie",
+    "lat": 51.981904,
+    "lng": 21.197119,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gorowo-ilaweckie",
+    "name": "Górowo Iławeckie",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.288514,
+    "lng": 20.488308,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gorzno",
+    "name": "Górzno",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.196639,
+    "lng": 19.645653,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "grabow",
+    "name": "Grabów",
+    "province": "łódzkie",
+    "lat": 52.126232,
+    "lng": 19.001044,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "grabow-nad-prosna",
+    "name": "Grabów nad Prosną",
+    "province": "wielkopolskie",
+    "lat": 51.506367,
+    "lng": 18.112664,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "grajewo",
+    "name": "Grajewo",
+    "province": "podlaskie",
+    "lat": 53.640184,
+    "lng": 22.450971,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "grodkow",
+    "name": "Grodków",
+    "province": "opolskie",
+    "lat": 50.694286,
+    "lng": 17.380184,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "grodzisk-mazowiecki",
+    "name": "Grodzisk Mazowiecki",
+    "province": "mazowieckie",
+    "lat": 52.105217,
+    "lng": 20.633201,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "grodzisk-wielkopolski",
+    "name": "Grodzisk Wielkopolski",
+    "province": "wielkopolskie",
+    "lat": 52.226182,
+    "lng": 16.366037,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "grojec",
+    "name": "Grójec",
+    "province": "mazowieckie",
+    "lat": 51.868165,
+    "lng": 20.872463,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "grudziadz",
+    "name": "Grudziądz",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.472458,
+    "lng": 18.778493,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "grybow",
+    "name": "Grybów",
+    "province": "małopolskie",
+    "lat": 49.614936,
+    "lng": 20.957285,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gryfice",
+    "name": "Gryfice",
+    "province": "zachodniopomorskie",
+    "lat": 53.917172,
+    "lng": 15.202772,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gryfino",
+    "name": "Gryfino",
+    "province": "zachodniopomorskie",
+    "lat": 53.256045,
+    "lng": 14.49734,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gryfow-slaski",
+    "name": "Gryfów Śląski",
+    "province": "dolnośląskie",
+    "lat": 51.026287,
+    "lng": 15.419522,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "gubin",
+    "name": "Gubin",
+    "province": "lubuskie",
+    "lat": 51.957309,
+    "lng": 14.748739,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "hajnowka",
+    "name": "Hajnówka",
+    "province": "podlaskie",
+    "lat": 52.731988,
+    "lng": 23.576308,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "halinow",
+    "name": "Halinów",
+    "province": "mazowieckie",
+    "lat": 52.225271,
+    "lng": 21.356882,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "hel",
+    "name": "Hel",
+    "province": "pomorskie",
+    "lat": 54.623855,
+    "lng": 18.744311,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "hrubieszow",
+    "name": "Hrubieszów",
+    "province": "lubelskie",
+    "lat": 50.806796,
+    "lng": 23.890501,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ilawa",
+    "name": "Iława",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.596001,
+    "lng": 19.559402,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "ilowa",
+    "name": "Iłowa",
+    "province": "lubuskie",
+    "lat": 51.502454,
+    "lng": 15.204456,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ilza",
+    "name": "Iłża",
+    "province": "mazowieckie",
+    "lat": 51.160061,
+    "lng": 21.244168,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "imielin",
+    "name": "Imielin",
+    "province": "śląskie",
+    "lat": 50.143864,
+    "lng": 19.199927,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "inowlodz",
+    "name": "Inowłódz",
+    "province": "łódzkie",
+    "lat": 51.520184,
+    "lng": 20.22456,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "inowroclaw",
+    "name": "Inowrocław",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.781666,
+    "lng": 18.250236,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "insko",
+    "name": "Ińsko",
+    "province": "zachodniopomorskie",
+    "lat": 53.443409,
+    "lng": 15.538962,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "iwaniska",
+    "name": "Iwaniska",
+    "province": "świętokrzyskie",
+    "lat": 50.725979,
+    "lng": 21.276734,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "iwonicz-zdroj",
+    "name": "Iwonicz-Zdrój",
+    "province": "podkarpackie",
+    "lat": 49.56307,
+    "lng": 21.785517,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "izbica",
+    "name": "Izbica",
+    "province": "lubelskie",
+    "lat": 50.892018,
+    "lng": 23.156687,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "izbica-kujawska",
+    "name": "Izbica Kujawska",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.419247,
+    "lng": 18.760441,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jablonowo-pomorskie",
+    "name": "Jabłonowo Pomorskie",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.391873,
+    "lng": 19.160318,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jadow",
+    "name": "Jadów",
+    "province": "mazowieckie",
+    "lat": 52.474018,
+    "lng": 21.628129,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "janikowo",
+    "name": "Janikowo",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.756713,
+    "lng": 18.111593,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "janowiec-wielkopolski",
+    "name": "Janowiec Wielkopolski",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.758053,
+    "lng": 17.488043,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "janow-lubelski",
+    "name": "Janów Lubelski",
+    "province": "lubelskie",
+    "lat": 50.700699,
+    "lng": 22.413651,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jaraczewo",
+    "name": "Jaraczewo",
+    "province": "wielkopolskie",
+    "lat": 51.972837,
+    "lng": 17.295758,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jarocin",
+    "name": "Jarocin",
+    "province": "wielkopolskie",
+    "lat": 51.958472,
+    "lng": 17.507554,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jaroslaw",
+    "name": "Jarosław",
+    "province": "podkarpackie",
+    "lat": 50.040009,
+    "lng": 22.670535,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jasien",
+    "name": "Jasień",
+    "province": "lubuskie",
+    "lat": 51.752297,
+    "lng": 15.015442,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jaslo",
+    "name": "Jasło",
+    "province": "podkarpackie",
+    "lat": 49.74701,
+    "lng": 21.471723,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jastarnia",
+    "name": "Jastarnia",
+    "province": "pomorskie",
+    "lat": 54.691944,
+    "lng": 18.605553,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jastrowie",
+    "name": "Jastrowie",
+    "province": "wielkopolskie",
+    "lat": 53.407518,
+    "lng": 16.788806,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jastrzab",
+    "name": "Jastrząb",
+    "province": "mazowieckie",
+    "lat": 51.244293,
+    "lng": 20.957825,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jastrzebie-zdroj",
+    "name": "Jastrzębie-Zdrój",
+    "province": "śląskie",
+    "lat": 49.960629,
+    "lng": 18.600587,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "jawor",
+    "name": "Jawor",
+    "province": "dolnośląskie",
+    "lat": 51.067685,
+    "lng": 16.185091,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jawornik-polski",
+    "name": "Jawornik Polski",
+    "province": "podkarpackie",
+    "lat": 49.889938,
+    "lng": 22.293156,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jaworzno",
+    "name": "Jaworzno",
+    "province": "śląskie",
+    "lat": 50.189415,
+    "lng": 19.301327,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "jaworzyna-slaska",
+    "name": "Jaworzyna Śląska",
+    "province": "dolnośląskie",
+    "lat": 50.912212,
+    "lng": 16.435841,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jedlicze",
+    "name": "Jedlicze",
+    "province": "podkarpackie",
+    "lat": 49.717012,
+    "lng": 21.646834,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jedlina-zdroj",
+    "name": "Jedlina-Zdrój",
+    "province": "dolnośląskie",
+    "lat": 50.724186,
+    "lng": 16.339558,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jedlnia-letnisko",
+    "name": "Jedlnia-Letnisko",
+    "province": "mazowieckie",
+    "lat": 51.434066,
+    "lng": 21.333028,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jedwabne",
+    "name": "Jedwabne",
+    "province": "podlaskie",
+    "lat": 53.287047,
+    "lng": 22.303179,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jelcz-laskowice",
+    "name": "Jelcz-Laskowice",
+    "province": "dolnośląskie",
+    "lat": 51.032777,
+    "lng": 17.330008,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jelenia-gora",
+    "name": "Jelenia Góra",
+    "province": "dolnośląskie",
+    "lat": 50.850165,
+    "lng": 15.727517,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "jeziorany",
+    "name": "Jeziorany",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.97474,
+    "lng": 20.747043,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jezow",
+    "name": "Jeżów",
+    "province": "łódzkie",
+    "lat": 51.820749,
+    "lng": 19.975455,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jedrzejow",
+    "name": "Jędrzejów",
+    "province": "świętokrzyskie",
+    "lat": 50.639541,
+    "lng": 20.2894,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jordanow",
+    "name": "Jordanów",
+    "province": "małopolskie",
+    "lat": 49.648881,
+    "lng": 19.837081,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jozefow",
+    "name": "Józefów",
+    "province": "mazowieckie",
+    "lat": 52.128574,
+    "lng": 21.220061,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jozefow-lubelskie",
+    "name": "Józefów",
+    "province": "lubelskie",
+    "lat": 50.478691,
+    "lng": 23.053722,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jozefow-nad-wisla",
+    "name": "Józefów nad Wisłą",
+    "province": "lubelskie",
+    "lat": 51.040853,
+    "lng": 21.842875,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "jutrosin",
+    "name": "Jutrosin",
+    "province": "wielkopolskie",
+    "lat": 51.649881,
+    "lng": 17.170596,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kaczory",
+    "name": "Kaczory",
+    "province": "wielkopolskie",
+    "lat": 53.110675,
+    "lng": 16.868257,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kalety",
+    "name": "Kalety",
+    "province": "śląskie",
+    "lat": 50.568768,
+    "lng": 18.92971,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kalisz",
+    "name": "Kalisz",
+    "province": "wielkopolskie",
+    "lat": 51.747316,
+    "lng": 18.076058,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "kalisz-pomorski",
+    "name": "Kalisz Pomorski",
+    "province": "zachodniopomorskie",
+    "lat": 53.292981,
+    "lng": 15.903146,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kalwaria-zebrzydowska",
+    "name": "Kalwaria Zebrzydowska",
+    "province": "małopolskie",
+    "lat": 49.86718,
+    "lng": 19.666406,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kaluszyn",
+    "name": "Kałuszyn",
+    "province": "mazowieckie",
+    "lat": 52.214353,
+    "lng": 21.813706,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kamieniec-zabkowicki",
+    "name": "Kamieniec Ząbkowicki",
+    "province": "dolnośląskie",
+    "lat": 50.522914,
+    "lng": 16.873614,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kamienna-gora",
+    "name": "Kamienna Góra",
+    "province": "dolnośląskie",
+    "lat": 50.784689,
+    "lng": 16.033688,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kamien-krajenski",
+    "name": "Kamień Krajeński",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.532834,
+    "lng": 17.527265,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kamien-pomorski",
+    "name": "Kamień Pomorski",
+    "province": "zachodniopomorskie",
+    "lat": 53.96956,
+    "lng": 14.782954,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kamiensk",
+    "name": "Kamieńsk",
+    "province": "łódzkie",
+    "lat": 51.195216,
+    "lng": 19.499488,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kamionka",
+    "name": "Kamionka",
+    "province": "lubelskie",
+    "lat": 51.470953,
+    "lng": 22.466907,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kanczuga",
+    "name": "Kańczuga",
+    "province": "podkarpackie",
+    "lat": 49.977269,
+    "lng": 22.395411,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "karczew",
+    "name": "Karczew",
+    "province": "mazowieckie",
+    "lat": 52.065732,
+    "lng": 21.277654,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kargowa",
+    "name": "Kargowa",
+    "province": "lubuskie",
+    "lat": 52.069122,
+    "lng": 15.863094,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "karlino",
+    "name": "Karlino",
+    "province": "zachodniopomorskie",
+    "lat": 54.039985,
+    "lng": 15.869032,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "karpacz",
+    "name": "Karpacz",
+    "province": "dolnośląskie",
+    "lat": 50.763867,
+    "lng": 15.74444,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kartuzy",
+    "name": "Kartuzy",
+    "province": "pomorskie",
+    "lat": 54.334619,
+    "lng": 18.21097,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "katowice",
+    "name": "Katowice",
+    "province": "śląskie",
+    "lat": 50.213877,
+    "lng": 19.007983,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "kazanow",
+    "name": "Kazanów",
+    "province": "mazowieckie",
+    "lat": 51.272895,
+    "lng": 21.466028,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kazimierz-dolny",
+    "name": "Kazimierz Dolny",
+    "province": "lubelskie",
+    "lat": 51.30692,
+    "lng": 21.950078,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kazimierza-wielka",
+    "name": "Kazimierza Wielka",
+    "province": "świętokrzyskie",
+    "lat": 50.269357,
+    "lng": 20.486149,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "katy-wroclawskie",
+    "name": "Kąty Wrocławskie",
+    "province": "dolnośląskie",
+    "lat": 51.028353,
+    "lng": 16.759278,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kcynia",
+    "name": "Kcynia",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.990937,
+    "lng": 17.487141,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kedzierzyn-kozle",
+    "name": "Kędzierzyn-Koźle",
+    "province": "opolskie",
+    "lat": 50.345441,
+    "lng": 18.245532,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "kepice",
+    "name": "Kępice",
+    "province": "pomorskie",
+    "lat": 54.235314,
+    "lng": 16.886124,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kepno",
+    "name": "Kępno",
+    "province": "wielkopolskie",
+    "lat": 51.285467,
+    "lng": 17.986835,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ketrzyn",
+    "name": "Kętrzyn",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.082321,
+    "lng": 21.375075,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kety",
+    "name": "Kęty",
+    "province": "małopolskie",
+    "lat": 49.879535,
+    "lng": 19.210053,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kielce",
+    "name": "Kielce",
+    "province": "świętokrzyskie",
+    "lat": 50.854186,
+    "lng": 20.615575,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "kiernozia",
+    "name": "Kiernozia",
+    "province": "łódzkie",
+    "lat": 52.271242,
+    "lng": 19.871229,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kietrz",
+    "name": "Kietrz",
+    "province": "opolskie",
+    "lat": 50.080898,
+    "lng": 18.012701,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kikol",
+    "name": "Kikół",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.911411,
+    "lng": 19.12171,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kisielice",
+    "name": "Kisielice",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.606048,
+    "lng": 19.260374,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kleczew",
+    "name": "Kleczew",
+    "province": "wielkopolskie",
+    "lat": 52.366731,
+    "lng": 18.177326,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kleszczele",
+    "name": "Kleszczele",
+    "province": "podlaskie",
+    "lat": 52.577613,
+    "lng": 23.33046,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "klimontow",
+    "name": "Klimontów",
+    "province": "świętokrzyskie",
+    "lat": 50.653637,
+    "lng": 21.453067,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kluczbork",
+    "name": "Kluczbork",
+    "province": "opolskie",
+    "lat": 50.974564,
+    "lng": 18.220485,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "klecko",
+    "name": "Kłecko",
+    "province": "wielkopolskie",
+    "lat": 52.626811,
+    "lng": 17.442092,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "klobuck",
+    "name": "Kłobuck",
+    "province": "śląskie",
+    "lat": 50.906887,
+    "lng": 18.940266,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "klodawa",
+    "name": "Kłodawa",
+    "province": "wielkopolskie",
+    "lat": 52.248744,
+    "lng": 18.91515,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "klodzko",
+    "name": "Kłodzko",
+    "province": "dolnośląskie",
+    "lat": 50.433746,
+    "lng": 16.649035,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "knurow",
+    "name": "Knurów",
+    "province": "śląskie",
+    "lat": 50.207225,
+    "lng": 18.662957,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "knyszyn",
+    "name": "Knyszyn",
+    "province": "podlaskie",
+    "lat": 53.319587,
+    "lng": 22.897502,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kobylin",
+    "name": "Kobylin",
+    "province": "wielkopolskie",
+    "lat": 51.71708,
+    "lng": 17.239129,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kobylnica",
+    "name": "Kobylnica",
+    "province": "pomorskie",
+    "lat": 54.435753,
+    "lng": 16.995668,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kobylka",
+    "name": "Kobyłka",
+    "province": "mazowieckie",
+    "lat": 52.340023,
+    "lng": 21.198776,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kock",
+    "name": "Kock",
+    "province": "lubelskie",
+    "lat": 51.651924,
+    "lng": 22.427822,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kolbuszowa",
+    "name": "Kolbuszowa",
+    "province": "podkarpackie",
+    "lat": 50.236018,
+    "lng": 21.766611,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kolno",
+    "name": "Kolno",
+    "province": "podlaskie",
+    "lat": 53.401834,
+    "lng": 21.936138,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kolonowskie",
+    "name": "Kolonowskie",
+    "province": "opolskie",
+    "lat": 50.661449,
+    "lng": 18.392522,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "koluszki",
+    "name": "Koluszki",
+    "province": "łódzkie",
+    "lat": 51.745766,
+    "lng": 19.816799,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kolaczyce",
+    "name": "Kołaczyce",
+    "province": "podkarpackie",
+    "lat": 49.810656,
+    "lng": 21.434203,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kolo",
+    "name": "Koło",
+    "province": "wielkopolskie",
+    "lat": 52.198384,
+    "lng": 18.635746,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kolobrzeg",
+    "name": "Kołobrzeg",
+    "province": "zachodniopomorskie",
+    "lat": 54.175776,
+    "lng": 15.596982,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "koniecpol",
+    "name": "Koniecpol",
+    "province": "śląskie",
+    "lat": 50.771122,
+    "lng": 19.692439,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "konin",
+    "name": "Konin",
+    "province": "wielkopolskie",
+    "lat": 52.256117,
+    "lng": 18.262651,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "konstancin-jeziorna",
+    "name": "Konstancin-Jeziorna",
+    "province": "mazowieckie",
+    "lat": 52.083873,
+    "lng": 21.105609,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "konstantynow-lodzki",
+    "name": "Konstantynów Łódzki",
+    "province": "łódzkie",
+    "lat": 51.757178,
+    "lng": 19.310148,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "konskie",
+    "name": "Końskie",
+    "province": "świętokrzyskie",
+    "lat": 51.184476,
+    "lng": 20.40553,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "konskowola",
+    "name": "Końskowola",
+    "province": "lubelskie",
+    "lat": 51.410813,
+    "lng": 22.061417,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "koprzywnica",
+    "name": "Koprzywnica",
+    "province": "świętokrzyskie",
+    "lat": 50.594848,
+    "lng": 21.576094,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "korfantow",
+    "name": "Korfantów",
+    "province": "opolskie",
+    "lat": 50.484758,
+    "lng": 17.598506,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "koronowo",
+    "name": "Koronowo",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.321996,
+    "lng": 17.947898,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "korsze",
+    "name": "Korsze",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.171866,
+    "lng": 21.142285,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kosow-lacki",
+    "name": "Kosów Lacki",
+    "province": "mazowieckie",
+    "lat": 52.595133,
+    "lng": 22.153541,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kostrzyn",
+    "name": "Kostrzyn",
+    "province": "wielkopolskie",
+    "lat": 52.397933,
+    "lng": 17.223208,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kostrzyn-nad-odra",
+    "name": "Kostrzyn nad Odrą",
+    "province": "lubuskie",
+    "lat": 52.616278,
+    "lng": 14.640237,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "koszalin",
+    "name": "Koszalin",
+    "province": "zachodniopomorskie",
+    "lat": 54.207179,
+    "lng": 16.201919,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "koszyce",
+    "name": "Koszyce",
+    "province": "małopolskie",
+    "lat": 50.17466,
+    "lng": 20.580442,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "koscian",
+    "name": "Kościan",
+    "province": "wielkopolskie",
+    "lat": 52.08346,
+    "lng": 16.649453,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "koscierzyna",
+    "name": "Kościerzyna",
+    "province": "pomorskie",
+    "lat": 54.120781,
+    "lng": 17.984633,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "kowal",
+    "name": "Kowal",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.532383,
+    "lng": 19.145075,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kowalewo-pomorskie",
+    "name": "Kowalewo Pomorskie",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.157255,
+    "lng": 18.887338,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kowary",
+    "name": "Kowary",
+    "province": "dolnośląskie",
+    "lat": 50.778723,
+    "lng": 15.842766,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kozieglowy",
+    "name": "Koziegłowy",
+    "province": "śląskie",
+    "lat": 50.615851,
+    "lng": 19.16756,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kozienice",
+    "name": "Kozienice",
+    "province": "mazowieckie",
+    "lat": 51.586042,
+    "lng": 21.53641,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kozmin-wielkopolski",
+    "name": "Koźmin Wielkopolski",
+    "province": "wielkopolskie",
+    "lat": 51.829053,
+    "lng": 17.45299,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kozminek",
+    "name": "Koźminek",
+    "province": "wielkopolskie",
+    "lat": 51.793222,
+    "lng": 18.338182,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kozuchow",
+    "name": "Kożuchów",
+    "province": "lubuskie",
+    "lat": 51.746792,
+    "lng": 15.597404,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kornik",
+    "name": "Kórnik",
+    "province": "wielkopolskie",
+    "lat": 52.240317,
+    "lng": 17.09179,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krajenka",
+    "name": "Krajenka",
+    "province": "wielkopolskie",
+    "lat": 53.292748,
+    "lng": 16.983735,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krakow",
+    "name": "Kraków",
+    "province": "małopolskie",
+    "lat": 50.0469,
+    "lng": 20.00479,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "krapkowice",
+    "name": "Krapkowice",
+    "province": "opolskie",
+    "lat": 50.478605,
+    "lng": 17.957385,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krasnobrod",
+    "name": "Krasnobród",
+    "province": "lubelskie",
+    "lat": 50.540363,
+    "lng": 23.212017,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krasnystaw",
+    "name": "Krasnystaw",
+    "province": "lubelskie",
+    "lat": 50.991889,
+    "lng": 23.16979,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krasnik",
+    "name": "Kraśnik",
+    "province": "lubelskie",
+    "lat": 50.943449,
+    "lng": 22.213482,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krobia",
+    "name": "Krobia",
+    "province": "wielkopolskie",
+    "lat": 51.772108,
+    "lng": 16.990441,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krosno",
+    "name": "Krosno",
+    "province": "podkarpackie",
+    "lat": 49.689269,
+    "lng": 21.76132,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "krosno-odrzanskie",
+    "name": "Krosno Odrzańskie",
+    "province": "lubuskie",
+    "lat": 52.041076,
+    "lng": 15.101489,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krosniewice",
+    "name": "Krośniewice",
+    "province": "łódzkie",
+    "lat": 52.255402,
+    "lng": 19.17055,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krotoszyn",
+    "name": "Krotoszyn",
+    "province": "wielkopolskie",
+    "lat": 51.695115,
+    "lng": 17.443903,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kruszwica",
+    "name": "Kruszwica",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.670725,
+    "lng": 18.334585,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krynica-morska",
+    "name": "Krynica Morska",
+    "province": "pomorskie",
+    "lat": 54.389637,
+    "lng": 19.490052,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krynica-zdroj",
+    "name": "Krynica-Zdrój",
+    "province": "małopolskie",
+    "lat": 49.415805,
+    "lng": 20.934244,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krynki",
+    "name": "Krynki",
+    "province": "podlaskie",
+    "lat": 53.263935,
+    "lng": 23.763372,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krzanowice",
+    "name": "Krzanowice",
+    "province": "śląskie",
+    "lat": 50.014817,
+    "lng": 18.126455,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krzepice",
+    "name": "Krzepice",
+    "province": "śląskie",
+    "lat": 50.960894,
+    "lng": 18.725729,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krzeszowice",
+    "name": "Krzeszowice",
+    "province": "małopolskie",
+    "lat": 50.144008,
+    "lng": 19.630928,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krzywin",
+    "name": "Krzywiń",
+    "province": "wielkopolskie",
+    "lat": 51.963364,
+    "lng": 16.824495,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "krzyz-wielkopolski",
+    "name": "Krzyż Wielkopolski",
+    "province": "wielkopolskie",
+    "lat": 52.880693,
+    "lng": 16.010519,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ksiaz-wielki",
+    "name": "Książ Wielki",
+    "province": "małopolskie",
+    "lat": 50.443763,
+    "lng": 20.139963,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ksiaz-wielkopolski",
+    "name": "Książ Wielkopolski",
+    "province": "wielkopolskie",
+    "lat": 52.059034,
+    "lng": 17.248657,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kudowa-zdroj",
+    "name": "Kudowa-Zdrój",
+    "province": "dolnośląskie",
+    "lat": 50.445798,
+    "lng": 16.268897,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kunow",
+    "name": "Kunów",
+    "province": "świętokrzyskie",
+    "lat": 50.958477,
+    "lng": 21.282422,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kurow",
+    "name": "Kurów",
+    "province": "lubelskie",
+    "lat": 51.390775,
+    "lng": 22.169068,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kutno",
+    "name": "Kutno",
+    "province": "łódzkie",
+    "lat": 52.222282,
+    "lng": 19.371138,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "kuznia-raciborska",
+    "name": "Kuźnia Raciborska",
+    "province": "śląskie",
+    "lat": 50.213451,
+    "lng": 18.326627,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "kwidzyn",
+    "name": "Kwidzyn",
+    "province": "pomorskie",
+    "lat": 53.720466,
+    "lng": 18.945284,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "latowicz",
+    "name": "Latowicz",
+    "province": "mazowieckie",
+    "lat": 52.024052,
+    "lng": 21.809004,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ladek-zdroj",
+    "name": "Lądek-Zdrój",
+    "province": "dolnośląskie",
+    "lat": 50.348213,
+    "lng": 16.88332,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "legionowo",
+    "name": "Legionowo",
+    "province": "mazowieckie",
+    "lat": 52.404894,
+    "lng": 20.939314,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "legnica",
+    "name": "Legnica",
+    "province": "dolnośląskie",
+    "lat": 51.204688,
+    "lng": 16.158232,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "lesko",
+    "name": "Lesko",
+    "province": "podkarpackie",
+    "lat": 49.468499,
+    "lng": 22.325669,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "leszno",
+    "name": "Leszno",
+    "province": "wielkopolskie",
+    "lat": 51.843962,
+    "lng": 16.574029,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "lesna",
+    "name": "Leśna",
+    "province": "dolnośląskie",
+    "lat": 51.027503,
+    "lng": 15.277193,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lesnica",
+    "name": "Leśnica",
+    "province": "opolskie",
+    "lat": 50.429234,
+    "lng": 18.181571,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lewin-brzeski",
+    "name": "Lewin Brzeski",
+    "province": "opolskie",
+    "lat": 50.754558,
+    "lng": 17.630319,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lezajsk",
+    "name": "Leżajsk",
+    "province": "podkarpackie",
+    "lat": 50.265524,
+    "lng": 22.418622,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lebork",
+    "name": "Lębork",
+    "province": "pomorskie",
+    "lat": 54.535593,
+    "lng": 17.757786,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "ledziny",
+    "name": "Lędziny",
+    "province": "śląskie",
+    "lat": 50.128468,
+    "lng": 19.123538,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "libiaz",
+    "name": "Libiąż",
+    "province": "małopolskie",
+    "lat": 50.094903,
+    "lng": 19.318334,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lidzbark",
+    "name": "Lidzbark",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.259999,
+    "lng": 19.82381,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lidzbark-warminski",
+    "name": "Lidzbark Warmiński",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.130731,
+    "lng": 20.567466,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "limanowa",
+    "name": "Limanowa",
+    "province": "małopolskie",
+    "lat": 49.714993,
+    "lng": 20.410296,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lipiany",
+    "name": "Lipiany",
+    "province": "zachodniopomorskie",
+    "lat": 53.007926,
+    "lng": 14.957066,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lipno",
+    "name": "Lipno",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.842485,
+    "lng": 19.175493,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lipsk",
+    "name": "Lipsk",
+    "province": "podlaskie",
+    "lat": 53.737613,
+    "lng": 23.401484,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lipsko",
+    "name": "Lipsko",
+    "province": "mazowieckie",
+    "lat": 51.163053,
+    "lng": 21.648508,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lubaczow",
+    "name": "Lubaczów",
+    "province": "podkarpackie",
+    "lat": 50.157191,
+    "lng": 23.120249,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "luban",
+    "name": "Lubań",
+    "province": "dolnośląskie",
+    "lat": 51.114691,
+    "lng": 15.280862,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lubartow",
+    "name": "Lubartów",
+    "province": "lubelskie",
+    "lat": 51.458407,
+    "lng": 22.605893,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lubawa",
+    "name": "Lubawa",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.500508,
+    "lng": 19.754878,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lubawka",
+    "name": "Lubawka",
+    "province": "dolnośląskie",
+    "lat": 50.698597,
+    "lng": 16.006421,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lubien-kujawski",
+    "name": "Lubień Kujawski",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.40187,
+    "lng": 19.167962,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lubin",
+    "name": "Lubin",
+    "province": "dolnośląskie",
+    "lat": 51.399417,
+    "lng": 16.193942,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "lublin",
+    "name": "Lublin",
+    "province": "lubelskie",
+    "lat": 51.218183,
+    "lng": 22.563665,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "lubliniec",
+    "name": "Lubliniec",
+    "province": "śląskie",
+    "lat": 50.643248,
+    "lng": 18.708685,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "lubniewice",
+    "name": "Lubniewice",
+    "province": "lubuskie",
+    "lat": 52.51012,
+    "lng": 15.238637,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lubomierz",
+    "name": "Lubomierz",
+    "province": "dolnośląskie",
+    "lat": 51.004584,
+    "lng": 15.511061,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lubon",
+    "name": "Luboń",
+    "province": "wielkopolskie",
+    "lat": 52.336724,
+    "lng": 16.872891,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lubowidz",
+    "name": "Lubowidz",
+    "province": "mazowieckie",
+    "lat": 53.116478,
+    "lng": 19.855961,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lubraniec",
+    "name": "Lubraniec",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.537931,
+    "lng": 18.830141,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lubsko",
+    "name": "Lubsko",
+    "province": "lubuskie",
+    "lat": 51.779079,
+    "lng": 14.955479,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lubycza-krolewska",
+    "name": "Lubycza Królewska",
+    "province": "lubelskie",
+    "lat": 50.338788,
+    "lng": 23.518628,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lutomiersk",
+    "name": "Lutomiersk",
+    "province": "łódzkie",
+    "lat": 51.755763,
+    "lng": 19.202143,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lututow",
+    "name": "Lututów",
+    "province": "łódzkie",
+    "lat": 51.376743,
+    "lng": 18.436049,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lwowek",
+    "name": "Lwówek",
+    "province": "wielkopolskie",
+    "lat": 52.446813,
+    "lng": 16.181793,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lwowek-slaski",
+    "name": "Lwówek Śląski",
+    "province": "dolnośląskie",
+    "lat": 51.110852,
+    "lng": 15.605829,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "labiszyn",
+    "name": "Łabiszyn",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.952006,
+    "lng": 17.915342,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lagow",
+    "name": "Łagów",
+    "province": "świętokrzyskie",
+    "lat": 50.777607,
+    "lng": 21.083428,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lancut",
+    "name": "Łańcut",
+    "province": "podkarpackie",
+    "lat": 50.069565,
+    "lng": 22.224528,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "lapy",
+    "name": "Łapy",
+    "province": "podlaskie",
+    "lat": 52.993786,
+    "lng": 22.877182,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lasin",
+    "name": "Łasin",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.517927,
+    "lng": 19.098685,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lask",
+    "name": "Łask",
+    "province": "łódzkie",
+    "lat": 51.601807,
+    "lng": 19.158291,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "laskarzew",
+    "name": "Łaskarzew",
+    "province": "mazowieckie",
+    "lat": 51.785514,
+    "lng": 21.608307,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "laszczow",
+    "name": "Łaszczów",
+    "province": "lubelskie",
+    "lat": 50.529824,
+    "lng": 23.718871,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "laziska-gorne",
+    "name": "Łaziska Górne",
+    "province": "śląskie",
+    "lat": 50.143491,
+    "lng": 18.852699,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lazy",
+    "name": "Łazy",
+    "province": "śląskie",
+    "lat": 50.425247,
+    "lng": 19.391999,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "leba",
+    "name": "Łeba",
+    "province": "pomorskie",
+    "lat": 54.760338,
+    "lng": 17.581854,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "leczna",
+    "name": "Łęczna",
+    "province": "lubelskie",
+    "lat": 51.302593,
+    "lng": 22.885179,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "leczyca",
+    "name": "Łęczyca",
+    "province": "łódzkie",
+    "lat": 52.054392,
+    "lng": 19.19911,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "leknica",
+    "name": "Łęknica",
+    "province": "lubuskie",
+    "lat": 51.5473,
+    "lng": 14.756294,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lobez",
+    "name": "Łobez",
+    "province": "zachodniopomorskie",
+    "lat": 53.635996,
+    "lng": 15.615795,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lobzenica",
+    "name": "Łobżenica",
+    "province": "wielkopolskie",
+    "lat": 53.266527,
+    "lng": 17.253093,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lochow",
+    "name": "Łochów",
+    "province": "mazowieckie",
+    "lat": 52.524885,
+    "lng": 21.716641,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lomianki",
+    "name": "Łomianki",
+    "province": "mazowieckie",
+    "lat": 52.333277,
+    "lng": 20.893915,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lomza",
+    "name": "Łomża",
+    "province": "podlaskie",
+    "lat": 53.182572,
+    "lng": 22.058877,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "lopuszno",
+    "name": "Łopuszno",
+    "province": "świętokrzyskie",
+    "lat": 50.945938,
+    "lng": 20.251362,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "losice",
+    "name": "Łosice",
+    "province": "mazowieckie",
+    "lat": 52.195961,
+    "lng": 22.71989,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lowicz",
+    "name": "Łowicz",
+    "province": "łódzkie",
+    "lat": 52.101134,
+    "lng": 19.94471,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "lodz",
+    "name": "Łódź",
+    "province": "łódzkie",
+    "lat": 51.772985,
+    "lng": 19.480405,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "lukow",
+    "name": "Łuków",
+    "province": "lubelskie",
+    "lat": 51.925294,
+    "lng": 22.385492,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "maciejowice",
+    "name": "Maciejowice",
+    "province": "mazowieckie",
+    "lat": 51.700235,
+    "lng": 21.560654,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "magnuszew",
+    "name": "Magnuszew",
+    "province": "mazowieckie",
+    "lat": 51.754485,
+    "lng": 21.385284,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "makow-mazowiecki",
+    "name": "Maków Mazowiecki",
+    "province": "mazowieckie",
+    "lat": 52.861701,
+    "lng": 21.093103,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "makow-podhalanski",
+    "name": "Maków Podhalański",
+    "province": "małopolskie",
+    "lat": 49.739802,
+    "lng": 19.661252,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "malbork",
+    "name": "Malbork",
+    "province": "pomorskie",
+    "lat": 54.028507,
+    "lng": 19.044351,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "malogoszcz",
+    "name": "Małogoszcz",
+    "province": "świętokrzyskie",
+    "lat": 50.813497,
+    "lng": 20.264764,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "malomice",
+    "name": "Małomice",
+    "province": "lubuskie",
+    "lat": 51.556891,
+    "lng": 15.45617,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "margonin",
+    "name": "Margonin",
+    "province": "wielkopolskie",
+    "lat": 52.970529,
+    "lng": 17.099873,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "marki",
+    "name": "Marki",
+    "province": "mazowieckie",
+    "lat": 52.337004,
+    "lng": 21.119964,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "maszewo",
+    "name": "Maszewo",
+    "province": "zachodniopomorskie",
+    "lat": 53.494731,
+    "lng": 15.061664,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "miasteczko-krajenskie",
+    "name": "Miasteczko Krajeńskie",
+    "province": "wielkopolskie",
+    "lat": 53.098994,
+    "lng": 17.006252,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "miasteczko-slaskie",
+    "name": "Miasteczko Śląskie",
+    "province": "śląskie",
+    "lat": 50.494511,
+    "lng": 18.94638,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "miastko",
+    "name": "Miastko",
+    "province": "pomorskie",
+    "lat": 54.004277,
+    "lng": 16.971303,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "michalowo",
+    "name": "Michałowo",
+    "province": "podlaskie",
+    "lat": 53.033146,
+    "lng": 23.61031,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "miechow",
+    "name": "Miechów",
+    "province": "małopolskie",
+    "lat": 50.358764,
+    "lng": 20.027499,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "miejska-gorka",
+    "name": "Miejska Górka",
+    "province": "wielkopolskie",
+    "lat": 51.653505,
+    "lng": 16.956031,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mielec",
+    "name": "Mielec",
+    "province": "podkarpackie",
+    "lat": 50.280397,
+    "lng": 21.483686,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "mielno",
+    "name": "Mielno",
+    "province": "zachodniopomorskie",
+    "lat": 54.27024,
+    "lng": 16.119883,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mieroszow",
+    "name": "Mieroszów",
+    "province": "dolnośląskie",
+    "lat": 50.670183,
+    "lng": 16.187789,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mieszkowice",
+    "name": "Mieszkowice",
+    "province": "zachodniopomorskie",
+    "lat": 52.785909,
+    "lng": 14.490676,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "miescisko",
+    "name": "Mieścisko",
+    "province": "wielkopolskie",
+    "lat": 52.740324,
+    "lng": 17.33006,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "miedzyborz",
+    "name": "Międzybórz",
+    "province": "dolnośląskie",
+    "lat": 51.401721,
+    "lng": 17.672417,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "miedzychod",
+    "name": "Międzychód",
+    "province": "wielkopolskie",
+    "lat": 52.6008,
+    "lng": 15.887387,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "miedzylesie",
+    "name": "Międzylesie",
+    "province": "dolnośląskie",
+    "lat": 50.144306,
+    "lng": 16.646721,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "miedzyrzec-podlaski",
+    "name": "Międzyrzec Podlaski",
+    "province": "lubelskie",
+    "lat": 51.981009,
+    "lng": 22.776972,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "miedzyrzecz",
+    "name": "Międzyrzecz",
+    "province": "lubuskie",
+    "lat": 52.446132,
+    "lng": 15.579628,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "miedzyzdroje",
+    "name": "Międzyzdroje",
+    "province": "zachodniopomorskie",
+    "lat": 53.926201,
+    "lng": 14.436096,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "miekinia",
+    "name": "Miękinia",
+    "province": "dolnośląskie",
+    "lat": 51.197453,
+    "lng": 16.734143,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mikolajki",
+    "name": "Mikołajki",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.801961,
+    "lng": 21.58098,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mikolow",
+    "name": "Mikołów",
+    "province": "śląskie",
+    "lat": 50.196067,
+    "lng": 18.861887,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "mikstat",
+    "name": "Mikstat",
+    "province": "wielkopolskie",
+    "lat": 51.535286,
+    "lng": 17.976069,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "milanowek",
+    "name": "Milanówek",
+    "province": "mazowieckie",
+    "lat": 52.124752,
+    "lng": 20.670342,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "milicz",
+    "name": "Milicz",
+    "province": "dolnośląskie",
+    "lat": 51.521576,
+    "lng": 17.269943,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "milakowo",
+    "name": "Miłakowo",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.003974,
+    "lng": 20.072893,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "milomlyn",
+    "name": "Miłomłyn",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.771075,
+    "lng": 19.844298,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "miloslaw",
+    "name": "Miłosław",
+    "province": "wielkopolskie",
+    "lat": 52.208352,
+    "lng": 17.486114,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "minsk-mazowiecki",
+    "name": "Mińsk Mazowiecki",
+    "province": "mazowieckie",
+    "lat": 52.178966,
+    "lng": 21.556624,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "miroslawiec",
+    "name": "Mirosławiec",
+    "province": "zachodniopomorskie",
+    "lat": 53.342875,
+    "lng": 16.086118,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mirsk",
+    "name": "Mirsk",
+    "province": "dolnośląskie",
+    "lat": 50.96646,
+    "lng": 15.38372,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mlawa",
+    "name": "Mława",
+    "province": "mazowieckie",
+    "lat": 53.134251,
+    "lng": 20.381682,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "mlynary",
+    "name": "Młynary",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.188578,
+    "lng": 19.726463,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "modliborzyce",
+    "name": "Modliborzyce",
+    "province": "lubelskie",
+    "lat": 50.750072,
+    "lng": 22.337688,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mogielnica",
+    "name": "Mogielnica",
+    "province": "mazowieckie",
+    "lat": 51.692152,
+    "lng": 20.703167,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mogilno",
+    "name": "Mogilno",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.658863,
+    "lng": 17.954184,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "monki",
+    "name": "Mońki",
+    "province": "podlaskie",
+    "lat": 53.404245,
+    "lng": 22.804923,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "morawica",
+    "name": "Morawica",
+    "province": "świętokrzyskie",
+    "lat": 50.74028,
+    "lng": 20.613588,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "morag",
+    "name": "Morąg",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.916959,
+    "lng": 19.927579,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mordy",
+    "name": "Mordy",
+    "province": "mazowieckie",
+    "lat": 52.207084,
+    "lng": 22.510725,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "moryn",
+    "name": "Moryń",
+    "province": "zachodniopomorskie",
+    "lat": 52.860173,
+    "lng": 14.400767,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mosina",
+    "name": "Mosina",
+    "province": "wielkopolskie",
+    "lat": 52.247067,
+    "lng": 16.850734,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mragowo",
+    "name": "Mrągowo",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.86843,
+    "lng": 21.298835,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mrocza",
+    "name": "Mrocza",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.242414,
+    "lng": 17.596957,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mrozy",
+    "name": "Mrozy",
+    "province": "mazowieckie",
+    "lat": 52.169747,
+    "lng": 21.808386,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mszana-dolna",
+    "name": "Mszana Dolna",
+    "province": "małopolskie",
+    "lat": 49.681094,
+    "lng": 20.079355,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mszczonow",
+    "name": "Mszczonów",
+    "province": "mazowieckie",
+    "lat": 51.977161,
+    "lng": 20.532185,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "murowana-goslina",
+    "name": "Murowana Goślina",
+    "province": "wielkopolskie",
+    "lat": 52.569862,
+    "lng": 17.010164,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "muszyna",
+    "name": "Muszyna",
+    "province": "małopolskie",
+    "lat": 49.347238,
+    "lng": 20.910988,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "myslowice",
+    "name": "Mysłowice",
+    "province": "śląskie",
+    "lat": 50.209618,
+    "lng": 19.154582,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "myszkow",
+    "name": "Myszków",
+    "province": "śląskie",
+    "lat": 50.564663,
+    "lng": 19.327018,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "myszyniec",
+    "name": "Myszyniec",
+    "province": "mazowieckie",
+    "lat": 53.376602,
+    "lng": 21.348095,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "myslenice",
+    "name": "Myślenice",
+    "province": "małopolskie",
+    "lat": 49.82774,
+    "lng": 19.936396,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "mysliborz",
+    "name": "Myślibórz",
+    "province": "zachodniopomorskie",
+    "lat": 52.94417,
+    "lng": 14.867663,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "naklo-nad-notecia",
+    "name": "Nakło nad Notecią",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.141437,
+    "lng": 17.601743,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "naleczow",
+    "name": "Nałęczów",
+    "province": "lubelskie",
+    "lat": 51.281223,
+    "lng": 22.212174,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "namyslow",
+    "name": "Namysłów",
+    "province": "opolskie",
+    "lat": 51.076894,
+    "lng": 17.695437,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "narol",
+    "name": "Narol",
+    "province": "podkarpackie",
+    "lat": 50.346617,
+    "lng": 23.30233,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nasielsk",
+    "name": "Nasielsk",
+    "province": "mazowieckie",
+    "lat": 52.59377,
+    "lng": 20.811773,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nekla",
+    "name": "Nekla",
+    "province": "wielkopolskie",
+    "lat": 52.385076,
+    "lng": 17.406046,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nidzica",
+    "name": "Nidzica",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.363005,
+    "lng": 20.42298,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "niemcza",
+    "name": "Niemcza",
+    "province": "dolnośląskie",
+    "lat": 50.71767,
+    "lng": 16.839576,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "niemodlin",
+    "name": "Niemodlin",
+    "province": "opolskie",
+    "lat": 50.638655,
+    "lng": 17.619395,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "niepolomice",
+    "name": "Niepołomice",
+    "province": "małopolskie",
+    "lat": 50.034395,
+    "lng": 20.211898,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nieszawa",
+    "name": "Nieszawa",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.839616,
+    "lng": 18.886434,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nisko",
+    "name": "Nisko",
+    "province": "podkarpackie",
+    "lat": 50.503229,
+    "lng": 22.12912,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowa-deba",
+    "name": "Nowa Dęba",
+    "province": "podkarpackie",
+    "lat": 50.424586,
+    "lng": 21.754072,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowa-ruda",
+    "name": "Nowa Ruda",
+    "province": "dolnośląskie",
+    "lat": 50.5735,
+    "lng": 16.51985,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowa-sarzyna",
+    "name": "Nowa Sarzyna",
+    "province": "podkarpackie",
+    "lat": 50.325445,
+    "lng": 22.321497,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowa-slupia",
+    "name": "Nowa Słupia",
+    "province": "świętokrzyskie",
+    "lat": 50.861278,
+    "lng": 21.063281,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowa-sol",
+    "name": "Nowa Sól",
+    "province": "lubuskie",
+    "lat": 51.803404,
+    "lng": 15.711852,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowe",
+    "name": "Nowe",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.648484,
+    "lng": 18.725281,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowe-brzesko",
+    "name": "Nowe Brzesko",
+    "province": "małopolskie",
+    "lat": 50.133027,
+    "lng": 20.363119,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowe-miasteczko",
+    "name": "Nowe Miasteczko",
+    "province": "lubuskie",
+    "lat": 51.689877,
+    "lng": 15.733585,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowe-miasto",
+    "name": "Nowe Miasto",
+    "province": "mazowieckie",
+    "lat": 52.659502,
+    "lng": 20.621719,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowe-miasto-lubawskie",
+    "name": "Nowe Miasto Lubawskie",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.425281,
+    "lng": 19.583881,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowe-miasto-nad-pilica",
+    "name": "Nowe Miasto nad Pilicą",
+    "province": "mazowieckie",
+    "lat": 51.624845,
+    "lng": 20.56583,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowe-skalmierzyce",
+    "name": "Nowe Skalmierzyce",
+    "province": "wielkopolskie",
+    "lat": 51.708842,
+    "lng": 17.996151,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowe-warpno",
+    "name": "Nowe Warpno",
+    "province": "zachodniopomorskie",
+    "lat": 53.715603,
+    "lng": 14.312984,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowogard",
+    "name": "Nowogard",
+    "province": "zachodniopomorskie",
+    "lat": 53.671931,
+    "lng": 15.118669,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowogrodziec",
+    "name": "Nowogrodziec",
+    "province": "dolnośląskie",
+    "lat": 51.199231,
+    "lng": 15.393906,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowogrod",
+    "name": "Nowogród",
+    "province": "podlaskie",
+    "lat": 53.216646,
+    "lng": 21.874626,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowogrod-bobrzanski",
+    "name": "Nowogród Bobrzański",
+    "province": "lubuskie",
+    "lat": 51.801866,
+    "lng": 15.232221,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowy-dwor-gdanski",
+    "name": "Nowy Dwór Gdański",
+    "province": "pomorskie",
+    "lat": 54.211957,
+    "lng": 19.120205,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowy-dwor-mazowiecki",
+    "name": "Nowy Dwór Mazowiecki",
+    "province": "mazowieckie",
+    "lat": 52.434251,
+    "lng": 20.69179,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowy-korczyn",
+    "name": "Nowy Korczyn",
+    "province": "świętokrzyskie",
+    "lat": 50.307615,
+    "lng": 20.795283,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowy-sacz",
+    "name": "Nowy Sącz",
+    "province": "małopolskie",
+    "lat": 49.61025,
+    "lng": 20.706641,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "nowy-staw",
+    "name": "Nowy Staw",
+    "province": "pomorskie",
+    "lat": 54.138979,
+    "lng": 19.009879,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowy-targ",
+    "name": "Nowy Targ",
+    "province": "małopolskie",
+    "lat": 49.489259,
+    "lng": 20.042968,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowy-tomysl",
+    "name": "Nowy Tomyśl",
+    "province": "wielkopolskie",
+    "lat": 52.311181,
+    "lng": 16.133198,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nowy-wisnicz",
+    "name": "Nowy Wiśnicz",
+    "province": "małopolskie",
+    "lat": 49.915098,
+    "lng": 20.45088,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "nysa",
+    "name": "Nysa",
+    "province": "opolskie",
+    "lat": 50.47358,
+    "lng": 17.336965,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "oborniki",
+    "name": "Oborniki",
+    "province": "wielkopolskie",
+    "lat": 52.652699,
+    "lng": 16.805314,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "oborniki-slaskie",
+    "name": "Oborniki Śląskie",
+    "province": "dolnośląskie",
+    "lat": 51.296141,
+    "lng": 16.909343,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "obrzycko",
+    "name": "Obrzycko",
+    "province": "wielkopolskie",
+    "lat": 52.701995,
+    "lng": 16.530462,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "odolanow",
+    "name": "Odolanów",
+    "province": "wielkopolskie",
+    "lat": 51.578072,
+    "lng": 17.669912,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "odrzywol",
+    "name": "Odrzywół",
+    "province": "mazowieckie",
+    "lat": 51.521251,
+    "lng": 20.563552,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ogrodzieniec",
+    "name": "Ogrodzieniec",
+    "province": "śląskie",
+    "lat": 50.439048,
+    "lng": 19.502386,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "okonek",
+    "name": "Okonek",
+    "province": "wielkopolskie",
+    "lat": 53.528452,
+    "lng": 16.853741,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "olecko",
+    "name": "Olecko",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.036197,
+    "lng": 22.49811,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "olesno",
+    "name": "Olesno",
+    "province": "opolskie",
+    "lat": 50.87599,
+    "lng": 18.413042,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "oleszyce",
+    "name": "Oleszyce",
+    "province": "podkarpackie",
+    "lat": 50.162763,
+    "lng": 23.036998,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "olesnica",
+    "name": "Oleśnica",
+    "province": "dolnośląskie",
+    "lat": 51.210509,
+    "lng": 17.386044,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "olesnica-swietokrzyskie",
+    "name": "Oleśnica",
+    "province": "świętokrzyskie",
+    "lat": 50.445422,
+    "lng": 21.065359,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "olkusz",
+    "name": "Olkusz",
+    "province": "małopolskie",
+    "lat": 50.285722,
+    "lng": 19.56178,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "olsztyn",
+    "name": "Olsztyn",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.776611,
+    "lng": 20.466568,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "olsztyn-slaskie",
+    "name": "Olsztyn",
+    "province": "śląskie",
+    "lat": 50.738666,
+    "lng": 19.245722,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "olsztynek",
+    "name": "Olsztynek",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.587192,
+    "lng": 20.28168,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "olszyna",
+    "name": "Olszyna",
+    "province": "dolnośląskie",
+    "lat": 51.075697,
+    "lng": 15.371389,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "olawa",
+    "name": "Oława",
+    "province": "dolnośląskie",
+    "lat": 50.957452,
+    "lng": 17.294202,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "opalenica",
+    "name": "Opalenica",
+    "province": "wielkopolskie",
+    "lat": 52.313306,
+    "lng": 16.413548,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "opatowiec",
+    "name": "Opatowiec",
+    "province": "świętokrzyskie",
+    "lat": 50.24785,
+    "lng": 20.716889,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "opatow",
+    "name": "Opatów",
+    "province": "świętokrzyskie",
+    "lat": 50.806109,
+    "lng": 21.423516,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "opatowek",
+    "name": "Opatówek",
+    "province": "wielkopolskie",
+    "lat": 51.739097,
+    "lng": 18.206038,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "opoczno",
+    "name": "Opoczno",
+    "province": "łódzkie",
+    "lat": 51.377455,
+    "lng": 20.270065,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "opole",
+    "name": "Opole",
+    "province": "opolskie",
+    "lat": 50.678796,
+    "lng": 17.906141,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "opole-lubelskie",
+    "name": "Opole Lubelskie",
+    "province": "lubelskie",
+    "lat": 51.148592,
+    "lng": 21.969693,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "orneta",
+    "name": "Orneta",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.115875,
+    "lng": 20.12634,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "orzesze",
+    "name": "Orzesze",
+    "province": "śląskie",
+    "lat": 50.108196,
+    "lng": 18.794604,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "orzysz",
+    "name": "Orzysz",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.804085,
+    "lng": 21.956866,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "osieck",
+    "name": "Osieck",
+    "province": "mazowieckie",
+    "lat": 51.98015,
+    "lng": 21.423653,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "osieczna",
+    "name": "Osieczna",
+    "province": "wielkopolskie",
+    "lat": 51.903957,
+    "lng": 16.686166,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "osiek",
+    "name": "Osiek",
+    "province": "świętokrzyskie",
+    "lat": 50.527315,
+    "lng": 21.45543,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "osjakow",
+    "name": "Osjaków",
+    "province": "łódzkie",
+    "lat": 51.294556,
+    "lng": 18.805281,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ostroleka",
+    "name": "Ostrołęka",
+    "province": "mazowieckie",
+    "lat": 53.07785,
+    "lng": 21.600843,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "ostrorog",
+    "name": "Ostroróg",
+    "province": "wielkopolskie",
+    "lat": 52.624065,
+    "lng": 16.45461,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ostrowiec-swietokrzyski",
+    "name": "Ostrowiec Świętokrzyski",
+    "province": "świętokrzyskie",
+    "lat": 50.950204,
+    "lng": 21.406432,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "ostroda",
+    "name": "Ostróda",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.70278,
+    "lng": 19.95299,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "ostrow-lubelski",
+    "name": "Ostrów Lubelski",
+    "province": "lubelskie",
+    "lat": 51.491182,
+    "lng": 22.846187,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ostrow-mazowiecka",
+    "name": "Ostrów Mazowiecka",
+    "province": "mazowieckie",
+    "lat": 52.807089,
+    "lng": 21.891092,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "ostrow-wielkopolski",
+    "name": "Ostrów Wielkopolski",
+    "province": "wielkopolskie",
+    "lat": 51.646877,
+    "lng": 17.803984,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "ostrzeszow",
+    "name": "Ostrzeszów",
+    "province": "wielkopolskie",
+    "lat": 51.4244,
+    "lng": 17.932339,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "osno-lubuskie",
+    "name": "Ośno Lubuskie",
+    "province": "lubuskie",
+    "lat": 52.456171,
+    "lng": 14.871481,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "oswiecim",
+    "name": "Oświęcim",
+    "province": "małopolskie",
+    "lat": 50.033318,
+    "lng": 19.256152,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "otmuchow",
+    "name": "Otmuchów",
+    "province": "opolskie",
+    "lat": 50.466326,
+    "lng": 17.153492,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "otwock",
+    "name": "Otwock",
+    "province": "mazowieckie",
+    "lat": 52.116088,
+    "lng": 21.289344,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "otyn",
+    "name": "Otyń",
+    "province": "lubuskie",
+    "lat": 51.854363,
+    "lng": 15.718259,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ozimek",
+    "name": "Ozimek",
+    "province": "opolskie",
+    "lat": 50.673461,
+    "lng": 18.213068,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ozorkow",
+    "name": "Ozorków",
+    "province": "łódzkie",
+    "lat": 51.958695,
+    "lng": 19.29671,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ozarow",
+    "name": "Ożarów",
+    "province": "świętokrzyskie",
+    "lat": 50.886382,
+    "lng": 21.666789,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ozarow-mazowiecki",
+    "name": "Ożarów Mazowiecki",
+    "province": "mazowieckie",
+    "lat": 52.213747,
+    "lng": 20.802953,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pabianice",
+    "name": "Pabianice",
+    "province": "łódzkie",
+    "lat": 51.665742,
+    "lng": 19.354854,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "pacanow",
+    "name": "Pacanów",
+    "province": "świętokrzyskie",
+    "lat": 50.403482,
+    "lng": 21.038312,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "paczkow",
+    "name": "Paczków",
+    "province": "opolskie",
+    "lat": 50.466433,
+    "lng": 17.003902,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pajeczno",
+    "name": "Pajęczno",
+    "province": "łódzkie",
+    "lat": 51.135647,
+    "lng": 18.99793,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pakosc",
+    "name": "Pakość",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.805392,
+    "lng": 18.086421,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "parczew",
+    "name": "Parczew",
+    "province": "lubelskie",
+    "lat": 51.638762,
+    "lng": 22.893066,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "parzeczew",
+    "name": "Parzęczew",
+    "province": "łódzkie",
+    "lat": 51.944802,
+    "lng": 19.202056,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "paslek",
+    "name": "Pasłęk",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.061323,
+    "lng": 19.666834,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pasym",
+    "name": "Pasym",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.650386,
+    "lng": 20.794561,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pelplin",
+    "name": "Pelplin",
+    "province": "pomorskie",
+    "lat": 53.925847,
+    "lng": 18.700157,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pelczyce",
+    "name": "Pełczyce",
+    "province": "zachodniopomorskie",
+    "lat": 53.046892,
+    "lng": 15.297384,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "piaseczno",
+    "name": "Piaseczno",
+    "province": "mazowieckie",
+    "lat": 52.073475,
+    "lng": 21.017137,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "piaski",
+    "name": "Piaski",
+    "province": "lubelskie",
+    "lat": 51.12793,
+    "lng": 22.837384,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "piastow",
+    "name": "Piastów",
+    "province": "mazowieckie",
+    "lat": 52.185566,
+    "lng": 20.846304,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "piatek",
+    "name": "Piątek",
+    "province": "łódzkie",
+    "lat": 52.076357,
+    "lng": 19.466019,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "piechowice",
+    "name": "Piechowice",
+    "province": "dolnośląskie",
+    "lat": 50.827738,
+    "lng": 15.587755,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "piekary-slaskie",
+    "name": "Piekary Śląskie",
+    "province": "śląskie",
+    "lat": 50.375829,
+    "lng": 18.978013,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "piekoszow",
+    "name": "Piekoszów",
+    "province": "świętokrzyskie",
+    "lat": 50.875945,
+    "lng": 20.464647,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pieniezno",
+    "name": "Pieniężno",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.234944,
+    "lng": 20.120269,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "piensk",
+    "name": "Pieńsk",
+    "province": "dolnośląskie",
+    "lat": 51.250515,
+    "lng": 15.056191,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pierzchnica",
+    "name": "Pierzchnica",
+    "province": "świętokrzyskie",
+    "lat": 50.700588,
+    "lng": 20.762521,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pieszyce",
+    "name": "Pieszyce",
+    "province": "dolnośląskie",
+    "lat": 50.708232,
+    "lng": 16.586813,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pilawa",
+    "name": "Pilawa",
+    "province": "mazowieckie",
+    "lat": 51.961273,
+    "lng": 21.532314,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pilica",
+    "name": "Pilica",
+    "province": "śląskie",
+    "lat": 50.467738,
+    "lng": 19.649514,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pilzno",
+    "name": "Pilzno",
+    "province": "podkarpackie",
+    "lat": 49.974569,
+    "lng": 21.283378,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pila",
+    "name": "Piła",
+    "province": "wielkopolskie",
+    "lat": 53.134895,
+    "lng": 16.760176,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "pilawa-gorna",
+    "name": "Piława Górna",
+    "province": "dolnośląskie",
+    "lat": 50.682876,
+    "lng": 16.755003,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pinczow",
+    "name": "Pińczów",
+    "province": "świętokrzyskie",
+    "lat": 50.514898,
+    "lng": 20.53109,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pionki",
+    "name": "Pionki",
+    "province": "mazowieckie",
+    "lat": 51.471773,
+    "lng": 21.447539,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "piotrkow-kujawski",
+    "name": "Piotrków Kujawski",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.545015,
+    "lng": 18.496857,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "piotrkow-trybunalski",
+    "name": "Piotrków Trybunalski",
+    "province": "łódzkie",
+    "lat": 51.412893,
+    "lng": 19.716577,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "pisz",
+    "name": "Pisz",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.627311,
+    "lng": 21.809603,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "piszczac",
+    "name": "Piszczac",
+    "province": "lubelskie",
+    "lat": 51.978993,
+    "lng": 23.380833,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "piwniczna-zdroj",
+    "name": "Piwniczna-Zdrój",
+    "province": "małopolskie",
+    "lat": 49.432561,
+    "lng": 20.672414,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pleszew",
+    "name": "Pleszew",
+    "province": "wielkopolskie",
+    "lat": 51.894007,
+    "lng": 17.786438,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "plock",
+    "name": "Płock",
+    "province": "mazowieckie",
+    "lat": 52.535415,
+    "lng": 19.71497,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "plonsk",
+    "name": "Płońsk",
+    "province": "mazowieckie",
+    "lat": 52.626472,
+    "lng": 20.363008,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ploty",
+    "name": "Płoty",
+    "province": "zachodniopomorskie",
+    "lat": 53.805496,
+    "lng": 15.265497,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pniewy",
+    "name": "Pniewy",
+    "province": "wielkopolskie",
+    "lat": 52.510822,
+    "lng": 16.264457,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pobiedziska",
+    "name": "Pobiedziska",
+    "province": "wielkopolskie",
+    "lat": 52.480255,
+    "lng": 17.26392,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "poddebice",
+    "name": "Poddębice",
+    "province": "łódzkie",
+    "lat": 51.894827,
+    "lng": 18.964523,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "podkowa-lesna",
+    "name": "Podkowa Leśna",
+    "province": "mazowieckie",
+    "lat": 52.111247,
+    "lng": 20.746949,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pogorzela",
+    "name": "Pogorzela",
+    "province": "wielkopolskie",
+    "lat": 51.823024,
+    "lng": 17.229991,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "polanica-zdroj",
+    "name": "Polanica-Zdrój",
+    "province": "dolnośląskie",
+    "lat": 50.398894,
+    "lng": 16.499473,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "polanow",
+    "name": "Polanów",
+    "province": "zachodniopomorskie",
+    "lat": 54.119941,
+    "lng": 16.675743,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "police",
+    "name": "Police",
+    "province": "zachodniopomorskie",
+    "lat": 53.56775,
+    "lng": 14.579553,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "polkowice",
+    "name": "Polkowice",
+    "province": "dolnośląskie",
+    "lat": 51.50133,
+    "lng": 16.068245,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "polaniec",
+    "name": "Połaniec",
+    "province": "świętokrzyskie",
+    "lat": 50.434272,
+    "lng": 21.269048,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "polczyn-zdroj",
+    "name": "Połczyn-Zdrój",
+    "province": "zachodniopomorskie",
+    "lat": 53.76156,
+    "lng": 16.092758,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "poniatowa",
+    "name": "Poniatowa",
+    "province": "lubelskie",
+    "lat": 51.183035,
+    "lng": 22.057894,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "poniec",
+    "name": "Poniec",
+    "province": "wielkopolskie",
+    "lat": 51.763073,
+    "lng": 16.804228,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "poreba",
+    "name": "Poręba",
+    "province": "śląskie",
+    "lat": 50.489176,
+    "lng": 19.331071,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "poznan",
+    "name": "Poznań",
+    "province": "wielkopolskie",
+    "lat": 52.400626,
+    "lng": 16.901647,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "prabuty",
+    "name": "Prabuty",
+    "province": "pomorskie",
+    "lat": 53.749522,
+    "lng": 19.214688,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "praszka",
+    "name": "Praszka",
+    "province": "opolskie",
+    "lat": 51.04833,
+    "lng": 18.45297,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "prochowice",
+    "name": "Prochowice",
+    "province": "dolnośląskie",
+    "lat": 51.267662,
+    "lng": 16.365813,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "proszowice",
+    "name": "Proszowice",
+    "province": "małopolskie",
+    "lat": 50.188754,
+    "lng": 20.29297,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "proszkow",
+    "name": "Prószków",
+    "province": "opolskie",
+    "lat": 50.572246,
+    "lng": 17.875147,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pruchnik",
+    "name": "Pruchnik",
+    "province": "podkarpackie",
+    "lat": 49.89502,
+    "lng": 22.503997,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "prudnik",
+    "name": "Prudnik",
+    "province": "opolskie",
+    "lat": 50.305862,
+    "lng": 17.568839,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "prusice",
+    "name": "Prusice",
+    "province": "dolnośląskie",
+    "lat": 51.380562,
+    "lng": 16.97238,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pruszcz",
+    "name": "Pruszcz",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.334124,
+    "lng": 18.20408,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pruszcz-gdanski",
+    "name": "Pruszcz Gdański",
+    "province": "pomorskie",
+    "lat": 54.257781,
+    "lng": 18.6453,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "pruszkow",
+    "name": "Pruszków",
+    "province": "mazowieckie",
+    "lat": 52.172013,
+    "lng": 20.798982,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "przasnysz",
+    "name": "Przasnysz",
+    "province": "mazowieckie",
+    "lat": 53.018504,
+    "lng": 20.885019,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "przeclaw",
+    "name": "Przecław",
+    "province": "podkarpackie",
+    "lat": 50.188493,
+    "lng": 21.448586,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "przedborz",
+    "name": "Przedbórz",
+    "province": "łódzkie",
+    "lat": 51.082692,
+    "lng": 19.874579,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "przedecz",
+    "name": "Przedecz",
+    "province": "wielkopolskie",
+    "lat": 52.330533,
+    "lng": 18.904698,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "przemkow",
+    "name": "Przemków",
+    "province": "dolnośląskie",
+    "lat": 51.531098,
+    "lng": 15.780624,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "przemysl",
+    "name": "Przemyśl",
+    "province": "podkarpackie",
+    "lat": 49.783554,
+    "lng": 22.784247,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "przeworsk",
+    "name": "Przeworsk",
+    "province": "podkarpackie",
+    "lat": 50.05452,
+    "lng": 22.501153,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "przyrow",
+    "name": "Przyrów",
+    "province": "śląskie",
+    "lat": 50.798565,
+    "lng": 19.522959,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "przysucha",
+    "name": "Przysucha",
+    "province": "mazowieckie",
+    "lat": 51.352419,
+    "lng": 20.626411,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "przytyk",
+    "name": "Przytyk",
+    "province": "mazowieckie",
+    "lat": 51.468864,
+    "lng": 20.906137,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pszczyna",
+    "name": "Pszczyna",
+    "province": "śląskie",
+    "lat": 49.98637,
+    "lng": 18.933004,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pszow",
+    "name": "Pszów",
+    "province": "śląskie",
+    "lat": 50.045051,
+    "lng": 18.391023,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "puck",
+    "name": "Puck",
+    "province": "pomorskie",
+    "lat": 54.729514,
+    "lng": 18.424105,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pulawy",
+    "name": "Puławy",
+    "province": "lubelskie",
+    "lat": 51.426583,
+    "lng": 21.977218,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "pultusk",
+    "name": "Pułtusk",
+    "province": "mazowieckie",
+    "lat": 52.701582,
+    "lng": 21.085235,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "puszczykowo",
+    "name": "Puszczykowo",
+    "province": "wielkopolskie",
+    "lat": 52.277614,
+    "lng": 16.851781,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pyrzyce",
+    "name": "Pyrzyce",
+    "province": "zachodniopomorskie",
+    "lat": 53.141912,
+    "lng": 14.893037,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pyskowice",
+    "name": "Pyskowice",
+    "province": "śląskie",
+    "lat": 50.391636,
+    "lng": 18.600956,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "pyzdry",
+    "name": "Pyzdry",
+    "province": "wielkopolskie",
+    "lat": 52.168413,
+    "lng": 17.684056,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rabka-zdroj",
+    "name": "Rabka-Zdrój",
+    "province": "małopolskie",
+    "lat": 49.619057,
+    "lng": 19.972871,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "raciaz",
+    "name": "Raciąż",
+    "province": "mazowieckie",
+    "lat": 52.782734,
+    "lng": 20.120469,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "raciborz",
+    "name": "Racibórz",
+    "province": "śląskie",
+    "lat": 50.090615,
+    "lng": 18.221759,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "radkow",
+    "name": "Radków",
+    "province": "dolnośląskie",
+    "lat": 50.501579,
+    "lng": 16.390303,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "radlin",
+    "name": "Radlin",
+    "province": "śląskie",
+    "lat": 50.041105,
+    "lng": 18.466002,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "radlow",
+    "name": "Radłów",
+    "province": "małopolskie",
+    "lat": 50.083696,
+    "lng": 20.841964,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "radom",
+    "name": "Radom",
+    "province": "mazowieckie",
+    "lat": 51.417238,
+    "lng": 21.156131,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "radomsko",
+    "name": "Radomsko",
+    "province": "łódzkie",
+    "lat": 51.071199,
+    "lng": 19.442788,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "radomysl-wielki",
+    "name": "Radomyśl Wielki",
+    "province": "podkarpackie",
+    "lat": 50.196335,
+    "lng": 21.275792,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "radoszyce",
+    "name": "Radoszyce",
+    "province": "świętokrzyskie",
+    "lat": 51.076682,
+    "lng": 20.267659,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "radymno",
+    "name": "Radymno",
+    "province": "podkarpackie",
+    "lat": 49.954062,
+    "lng": 22.829781,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "radziejow",
+    "name": "Radziejów",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.619102,
+    "lng": 18.531002,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "radzionkow",
+    "name": "Radzionków",
+    "province": "śląskie",
+    "lat": 50.401493,
+    "lng": 18.900718,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "radzymin",
+    "name": "Radzymin",
+    "province": "mazowieckie",
+    "lat": 52.426067,
+    "lng": 21.165392,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "radzyn-chelminski",
+    "name": "Radzyń Chełmiński",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.386217,
+    "lng": 18.936151,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "radzyn-podlaski",
+    "name": "Radzyń Podlaski",
+    "province": "lubelskie",
+    "lat": 51.776838,
+    "lng": 22.626461,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rajgrod",
+    "name": "Rajgród",
+    "province": "podlaskie",
+    "lat": 53.730096,
+    "lng": 22.680297,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rakoniewice",
+    "name": "Rakoniewice",
+    "province": "wielkopolskie",
+    "lat": 52.141017,
+    "lng": 16.271966,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "raszkow",
+    "name": "Raszków",
+    "province": "wielkopolskie",
+    "lat": 51.722621,
+    "lng": 17.722108,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rawa-mazowiecka",
+    "name": "Rawa Mazowiecka",
+    "province": "łódzkie",
+    "lat": 51.758284,
+    "lng": 20.255037,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rawicz",
+    "name": "Rawicz",
+    "province": "wielkopolskie",
+    "lat": 51.616979,
+    "lng": 16.878665,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "recz",
+    "name": "Recz",
+    "province": "zachodniopomorskie",
+    "lat": 53.25479,
+    "lng": 15.55381,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "reda",
+    "name": "Reda",
+    "province": "pomorskie",
+    "lat": 54.620976,
+    "lng": 18.33441,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "rejowiec",
+    "name": "Rejowiec",
+    "province": "lubelskie",
+    "lat": 51.089648,
+    "lng": 23.296981,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rejowiec-fabryczny",
+    "name": "Rejowiec Fabryczny",
+    "province": "lubelskie",
+    "lat": 51.119214,
+    "lng": 23.24986,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "resko",
+    "name": "Resko",
+    "province": "zachodniopomorskie",
+    "lat": 53.76906,
+    "lng": 15.406488,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "reszel",
+    "name": "Reszel",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.051156,
+    "lng": 21.142893,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rogozno",
+    "name": "Rogoźno",
+    "province": "wielkopolskie",
+    "lat": 52.744273,
+    "lng": 17.003363,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ropczyce",
+    "name": "Ropczyce",
+    "province": "podkarpackie",
+    "lat": 50.049044,
+    "lng": 21.612707,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rozprza",
+    "name": "Rozprza",
+    "province": "łódzkie",
+    "lat": 51.306878,
+    "lng": 19.64612,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rozan",
+    "name": "Różan",
+    "province": "mazowieckie",
+    "lat": 52.878501,
+    "lng": 21.39216,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ruciane-nida",
+    "name": "Ruciane-Nida",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.650121,
+    "lng": 21.548711,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ruda-slaska",
+    "name": "Ruda Śląska",
+    "province": "śląskie",
+    "lat": 50.270062,
+    "lng": 18.874253,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "rudnik-nad-sanem",
+    "name": "Rudnik nad Sanem",
+    "province": "podkarpackie",
+    "lat": 50.430329,
+    "lng": 22.236004,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rumia",
+    "name": "Rumia",
+    "province": "pomorskie",
+    "lat": 54.569276,
+    "lng": 18.384915,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "rybnik",
+    "name": "Rybnik",
+    "province": "śląskie",
+    "lat": 50.110519,
+    "lng": 18.549262,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "rychtal",
+    "name": "Rychtal",
+    "province": "wielkopolskie",
+    "lat": 51.153702,
+    "lng": 17.860769,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rychwal",
+    "name": "Rychwał",
+    "province": "wielkopolskie",
+    "lat": 52.07234,
+    "lng": 18.17387,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rydultowy",
+    "name": "Rydułtowy",
+    "province": "śląskie",
+    "lat": 50.066526,
+    "lng": 18.42105,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rydzyna",
+    "name": "Rydzyna",
+    "province": "wielkopolskie",
+    "lat": 51.790342,
+    "lng": 16.664066,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ryglice",
+    "name": "Ryglice",
+    "province": "małopolskie",
+    "lat": 49.877613,
+    "lng": 21.141456,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ryki",
+    "name": "Ryki",
+    "province": "lubelskie",
+    "lat": 51.625974,
+    "lng": 21.926352,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rymanow",
+    "name": "Rymanów",
+    "province": "podkarpackie",
+    "lat": 49.575761,
+    "lng": 21.872752,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ryn",
+    "name": "Ryn",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.938443,
+    "lng": 21.546437,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rypin",
+    "name": "Rypin",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.063068,
+    "lng": 19.420671,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rzepin",
+    "name": "Rzepin",
+    "province": "lubuskie",
+    "lat": 52.343739,
+    "lng": 14.836335,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "rzeszow",
+    "name": "Rzeszów",
+    "province": "podkarpackie",
+    "lat": 50.013387,
+    "lng": 21.976416,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "rzgow",
+    "name": "Rzgów",
+    "province": "łódzkie",
+    "lat": 51.659329,
+    "lng": 19.493479,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sandomierz",
+    "name": "Sandomierz",
+    "province": "świętokrzyskie",
+    "lat": 50.67958,
+    "lng": 21.747097,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sanniki",
+    "name": "Sanniki",
+    "province": "mazowieckie",
+    "lat": 52.331198,
+    "lng": 19.864168,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sanok",
+    "name": "Sanok",
+    "province": "podkarpackie",
+    "lat": 49.558954,
+    "lng": 22.215537,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "sejny",
+    "name": "Sejny",
+    "province": "podlaskie",
+    "lat": 54.110554,
+    "lng": 23.347777,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "serock",
+    "name": "Serock",
+    "province": "mazowieckie",
+    "lat": 52.517097,
+    "lng": 21.052111,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sedziszow",
+    "name": "Sędziszów",
+    "province": "świętokrzyskie",
+    "lat": 50.56638,
+    "lng": 20.060045,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sedziszow-malopolski",
+    "name": "Sędziszów Małopolski",
+    "province": "podkarpackie",
+    "lat": 50.088193,
+    "lng": 21.696631,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sepopol",
+    "name": "Sępopol",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.265177,
+    "lng": 21.01316,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sepolno-krajenskie",
+    "name": "Sępólno Krajeńskie",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.452547,
+    "lng": 17.528625,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sianow",
+    "name": "Sianów",
+    "province": "zachodniopomorskie",
+    "lat": 54.22412,
+    "lng": 16.318903,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "siechnice",
+    "name": "Siechnice",
+    "province": "dolnośląskie",
+    "lat": 51.032592,
+    "lng": 17.15711,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "siedlce",
+    "name": "Siedlce",
+    "province": "mazowieckie",
+    "lat": 52.16175,
+    "lng": 22.275751,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "siedliszcze",
+    "name": "Siedliszcze",
+    "province": "lubelskie",
+    "lat": 51.192901,
+    "lng": 23.161026,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "siemianowice-slaskie",
+    "name": "Siemianowice Śląskie",
+    "province": "śląskie",
+    "lat": 50.312366,
+    "lng": 19.023326,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "siemiatycze",
+    "name": "Siemiatycze",
+    "province": "podlaskie",
+    "lat": 52.420556,
+    "lng": 22.87519,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sieniawa",
+    "name": "Sieniawa",
+    "province": "podkarpackie",
+    "lat": 50.172701,
+    "lng": 22.593873,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "siennica",
+    "name": "Siennica",
+    "province": "mazowieckie",
+    "lat": 52.091765,
+    "lng": 21.6244,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sienno",
+    "name": "Sienno",
+    "province": "mazowieckie",
+    "lat": 51.098323,
+    "lng": 21.485149,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sieradz",
+    "name": "Sieradz",
+    "province": "łódzkie",
+    "lat": 51.601723,
+    "lng": 18.738381,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "sierakow",
+    "name": "Sieraków",
+    "province": "wielkopolskie",
+    "lat": 52.649933,
+    "lng": 16.072528,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sierpc",
+    "name": "Sierpc",
+    "province": "mazowieckie",
+    "lat": 52.853228,
+    "lng": 19.665053,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "siewierz",
+    "name": "Siewierz",
+    "province": "śląskie",
+    "lat": 50.464814,
+    "lng": 19.215824,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "skalbmierz",
+    "name": "Skalbmierz",
+    "province": "świętokrzyskie",
+    "lat": 50.320628,
+    "lng": 20.391756,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "skala",
+    "name": "Skała",
+    "province": "małopolskie",
+    "lat": 50.22765,
+    "lng": 19.85342,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "skarszewy",
+    "name": "Skarszewy",
+    "province": "pomorskie",
+    "lat": 54.065533,
+    "lng": 18.44557,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "skaryszew",
+    "name": "Skaryszew",
+    "province": "mazowieckie",
+    "lat": 51.301731,
+    "lng": 21.252396,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "skarzysko-kamienna",
+    "name": "Skarżysko-Kamienna",
+    "province": "świętokrzyskie",
+    "lat": 51.122987,
+    "lng": 20.875292,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "skawina",
+    "name": "Skawina",
+    "province": "małopolskie",
+    "lat": 49.973031,
+    "lng": 19.825049,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "skepe",
+    "name": "Skępe",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.864887,
+    "lng": 19.34638,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "skierniewice",
+    "name": "Skierniewice",
+    "province": "łódzkie",
+    "lat": 51.958073,
+    "lng": 20.169121,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "skoczow",
+    "name": "Skoczów",
+    "province": "śląskie",
+    "lat": 49.799367,
+    "lng": 18.800111,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "skoki",
+    "name": "Skoki",
+    "province": "wielkopolskie",
+    "lat": 52.664784,
+    "lng": 17.166385,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "skorcz",
+    "name": "Skórcz",
+    "province": "pomorskie",
+    "lat": 53.794356,
+    "lng": 18.516164,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "skwierzyna",
+    "name": "Skwierzyna",
+    "province": "lubuskie",
+    "lat": 52.59111,
+    "lng": 15.505935,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "slawa",
+    "name": "Sława",
+    "province": "lubuskie",
+    "lat": 51.893911,
+    "lng": 16.02433,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "slawkow",
+    "name": "Sławków",
+    "province": "śląskie",
+    "lat": 50.291785,
+    "lng": 19.347487,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "slawno",
+    "name": "Sławno",
+    "province": "zachodniopomorskie",
+    "lat": 54.361185,
+    "lng": 16.662228,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "slomniki",
+    "name": "Słomniki",
+    "province": "małopolskie",
+    "lat": 50.239952,
+    "lng": 20.076895,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "slubice",
+    "name": "Słubice",
+    "province": "lubuskie",
+    "lat": 52.359001,
+    "lng": 14.58991,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "slupca",
+    "name": "Słupca",
+    "province": "wielkopolskie",
+    "lat": 52.290737,
+    "lng": 17.868654,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "slupsk",
+    "name": "Słupsk",
+    "province": "pomorskie",
+    "lat": 54.463575,
+    "lng": 17.011429,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "sobkow",
+    "name": "Sobków",
+    "province": "świętokrzyskie",
+    "lat": 50.697838,
+    "lng": 20.46175,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sobotka",
+    "name": "Sobótka",
+    "province": "dolnośląskie",
+    "lat": 50.876389,
+    "lng": 16.724725,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sochaczew",
+    "name": "Sochaczew",
+    "province": "mazowieckie",
+    "lat": 52.236269,
+    "lng": 20.244531,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "sochocin",
+    "name": "Sochocin",
+    "province": "mazowieckie",
+    "lat": 52.691412,
+    "lng": 20.478194,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sokolow-malopolski",
+    "name": "Sokołów Małopolski",
+    "province": "podkarpackie",
+    "lat": 50.236727,
+    "lng": 22.119655,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sokolow-podlaski",
+    "name": "Sokołów Podlaski",
+    "province": "mazowieckie",
+    "lat": 52.414232,
+    "lng": 22.234014,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sokolka",
+    "name": "Sokółka",
+    "province": "podlaskie",
+    "lat": 53.406884,
+    "lng": 23.502292,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "solec-kujawski",
+    "name": "Solec Kujawski",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.074547,
+    "lng": 18.233922,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "solec-nad-wisla",
+    "name": "Solec nad Wisłą",
+    "province": "mazowieckie",
+    "lat": 51.146673,
+    "lng": 21.726544,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sompolno",
+    "name": "Sompolno",
+    "province": "wielkopolskie",
+    "lat": 52.393751,
+    "lng": 18.500258,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sopot",
+    "name": "Sopot",
+    "province": "pomorskie",
+    "lat": 54.443043,
+    "lng": 18.560512,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "sosnowiec",
+    "name": "Sosnowiec",
+    "province": "śląskie",
+    "lat": 50.271233,
+    "lng": 19.194633,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "sosnicowice",
+    "name": "Sośnicowice",
+    "province": "śląskie",
+    "lat": 50.272909,
+    "lng": 18.535146,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "stalowa-wola",
+    "name": "Stalowa Wola",
+    "province": "podkarpackie",
+    "lat": 50.566497,
+    "lng": 22.017432,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "starachowice",
+    "name": "Starachowice",
+    "province": "świętokrzyskie",
+    "lat": 51.038332,
+    "lng": 21.071575,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "stargard",
+    "name": "Stargard",
+    "province": "zachodniopomorskie",
+    "lat": 53.309032,
+    "lng": 15.01162,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "starogard-gdanski",
+    "name": "Starogard Gdański",
+    "province": "pomorskie",
+    "lat": 53.965461,
+    "lng": 18.526449,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "stary-sacz",
+    "name": "Stary Sącz",
+    "province": "małopolskie",
+    "lat": 49.561803,
+    "lng": 20.635109,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "staszow",
+    "name": "Staszów",
+    "province": "świętokrzyskie",
+    "lat": 50.562023,
+    "lng": 21.19077,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "stawiski",
+    "name": "Stawiski",
+    "province": "podlaskie",
+    "lat": 53.375764,
+    "lng": 22.152749,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "stawiszyn",
+    "name": "Stawiszyn",
+    "province": "wielkopolskie",
+    "lat": 51.920594,
+    "lng": 18.110501,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "staporkow",
+    "name": "Stąporków",
+    "province": "świętokrzyskie",
+    "lat": 51.144203,
+    "lng": 20.568487,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "stepnica",
+    "name": "Stepnica",
+    "province": "zachodniopomorskie",
+    "lat": 53.566157,
+    "lng": 15.007018,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "steszew",
+    "name": "Stęszew",
+    "province": "wielkopolskie",
+    "lat": 52.282737,
+    "lng": 16.705111,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "stoczek-lukowski",
+    "name": "Stoczek Łukowski",
+    "province": "lubelskie",
+    "lat": 51.957077,
+    "lng": 21.957995,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "stopnica",
+    "name": "Stopnica",
+    "province": "świętokrzyskie",
+    "lat": 50.433175,
+    "lng": 20.938672,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "stronie-slaskie",
+    "name": "Stronie Śląskie",
+    "province": "dolnośląskie",
+    "lat": 50.297045,
+    "lng": 16.878989,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "strumien",
+    "name": "Strumień",
+    "province": "śląskie",
+    "lat": 49.918706,
+    "lng": 18.754261,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "strykow",
+    "name": "Stryków",
+    "province": "łódzkie",
+    "lat": 51.902278,
+    "lng": 19.615718,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "strzegom",
+    "name": "Strzegom",
+    "province": "dolnośląskie",
+    "lat": 50.95995,
+    "lng": 16.344252,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "strzelce-krajenskie",
+    "name": "Strzelce Krajeńskie",
+    "province": "lubuskie",
+    "lat": 52.875957,
+    "lng": 15.532543,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "strzelce-opolskie",
+    "name": "Strzelce Opolskie",
+    "province": "opolskie",
+    "lat": 50.529713,
+    "lng": 18.300084,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "strzeleczki",
+    "name": "Strzeleczki",
+    "province": "opolskie",
+    "lat": 50.473842,
+    "lng": 17.836927,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "strzelin",
+    "name": "Strzelin",
+    "province": "dolnośląskie",
+    "lat": 50.777772,
+    "lng": 17.076798,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "strzelno",
+    "name": "Strzelno",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.631568,
+    "lng": 18.161959,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "strzyzow",
+    "name": "Strzyżów",
+    "province": "podkarpackie",
+    "lat": 49.87129,
+    "lng": 21.788843,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sucha-beskidzka",
+    "name": "Sucha Beskidzka",
+    "province": "małopolskie",
+    "lat": 49.732741,
+    "lng": 19.577693,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "suchan",
+    "name": "Suchań",
+    "province": "zachodniopomorskie",
+    "lat": 53.279437,
+    "lng": 15.324766,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "suchedniow",
+    "name": "Suchedniów",
+    "province": "świętokrzyskie",
+    "lat": 51.051778,
+    "lng": 20.831757,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "suchowola",
+    "name": "Suchowola",
+    "province": "podlaskie",
+    "lat": 53.582108,
+    "lng": 23.098773,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sulechow",
+    "name": "Sulechów",
+    "province": "lubuskie",
+    "lat": 52.086064,
+    "lng": 15.614294,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sulejow",
+    "name": "Sulejów",
+    "province": "łódzkie",
+    "lat": 51.353971,
+    "lng": 19.87864,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sulejowek",
+    "name": "Sulejówek",
+    "province": "mazowieckie",
+    "lat": 52.244467,
+    "lng": 21.281617,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sulecin",
+    "name": "Sulęcin",
+    "province": "lubuskie",
+    "lat": 52.447545,
+    "lng": 15.120314,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sulmierzyce",
+    "name": "Sulmierzyce",
+    "province": "wielkopolskie",
+    "lat": 51.616145,
+    "lng": 17.522268,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sulkowice",
+    "name": "Sułkowice",
+    "province": "małopolskie",
+    "lat": 49.840066,
+    "lng": 19.793073,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "suprasl",
+    "name": "Supraśl",
+    "province": "podlaskie",
+    "lat": 53.211521,
+    "lng": 23.346364,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "suraz",
+    "name": "Suraż",
+    "province": "podlaskie",
+    "lat": 52.951989,
+    "lng": 22.953086,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "susz",
+    "name": "Susz",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.71229,
+    "lng": 19.344875,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "suwalki",
+    "name": "Suwałki",
+    "province": "podlaskie",
+    "lat": 54.102717,
+    "lng": 22.929215,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "swarzedz",
+    "name": "Swarzędz",
+    "province": "wielkopolskie",
+    "lat": 52.409429,
+    "lng": 17.066517,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sycow",
+    "name": "Syców",
+    "province": "dolnośląskie",
+    "lat": 51.303249,
+    "lng": 17.729459,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szadek",
+    "name": "Szadek",
+    "province": "łódzkie",
+    "lat": 51.702786,
+    "lng": 18.980293,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szamocin",
+    "name": "Szamocin",
+    "province": "wielkopolskie",
+    "lat": 53.031185,
+    "lng": 17.122381,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szamotuly",
+    "name": "Szamotuły",
+    "province": "wielkopolskie",
+    "lat": 52.610102,
+    "lng": 16.575234,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szczawnica",
+    "name": "Szczawnica",
+    "province": "małopolskie",
+    "lat": 49.438553,
+    "lng": 20.497778,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szczawno-zdroj",
+    "name": "Szczawno-Zdrój",
+    "province": "dolnośląskie",
+    "lat": 50.795181,
+    "lng": 16.235313,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szczebrzeszyn",
+    "name": "Szczebrzeszyn",
+    "province": "lubelskie",
+    "lat": 50.701737,
+    "lng": 22.951142,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szczecin",
+    "name": "Szczecin",
+    "province": "zachodniopomorskie",
+    "lat": 53.4297,
+    "lng": 14.624621,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "szczecinek",
+    "name": "Szczecinek",
+    "province": "zachodniopomorskie",
+    "lat": 53.702753,
+    "lng": 16.694611,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szczekociny",
+    "name": "Szczekociny",
+    "province": "śląskie",
+    "lat": 50.62134,
+    "lng": 19.827768,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szczucin",
+    "name": "Szczucin",
+    "province": "małopolskie",
+    "lat": 50.312808,
+    "lng": 21.08012,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szczuczyn",
+    "name": "Szczuczyn",
+    "province": "podlaskie",
+    "lat": 53.566589,
+    "lng": 22.281442,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szczyrk",
+    "name": "Szczyrk",
+    "province": "śląskie",
+    "lat": 49.696389,
+    "lng": 19.008087,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szczytna",
+    "name": "Szczytna",
+    "province": "dolnośląskie",
+    "lat": 50.399237,
+    "lng": 16.437415,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szczytno",
+    "name": "Szczytno",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.56364,
+    "lng": 20.997865,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szepietowo",
+    "name": "Szepietowo",
+    "province": "podlaskie",
+    "lat": 52.867318,
+    "lng": 22.538229,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szklarska-poreba",
+    "name": "Szklarska Poręba",
+    "province": "dolnośląskie",
+    "lat": 50.814304,
+    "lng": 15.466421,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szlichtyngowa",
+    "name": "Szlichtyngowa",
+    "province": "lubuskie",
+    "lat": 51.708131,
+    "lng": 16.239446,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szprotawa",
+    "name": "Szprotawa",
+    "province": "lubuskie",
+    "lat": 51.560901,
+    "lng": 15.521988,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sztum",
+    "name": "Sztum",
+    "province": "pomorskie",
+    "lat": 53.922065,
+    "lng": 19.035946,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szubin",
+    "name": "Szubin",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.011012,
+    "lng": 17.746274,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szydlowiec",
+    "name": "Szydłowiec",
+    "province": "mazowieckie",
+    "lat": 51.22388,
+    "lng": 20.838075,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "szydlow",
+    "name": "Szydłów",
+    "province": "świętokrzyskie",
+    "lat": 50.596879,
+    "lng": 21.002618,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "scinawa",
+    "name": "Ścinawa",
+    "province": "dolnośląskie",
+    "lat": 51.410124,
+    "lng": 16.425165,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "slesin",
+    "name": "Ślesin",
+    "province": "wielkopolskie",
+    "lat": 52.383126,
+    "lng": 18.309934,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "smigiel",
+    "name": "Śmigiel",
+    "province": "wielkopolskie",
+    "lat": 52.01023,
+    "lng": 16.516177,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "srem",
+    "name": "Śrem",
+    "province": "wielkopolskie",
+    "lat": 52.086759,
+    "lng": 17.018221,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sroda-slaska",
+    "name": "Środa Śląska",
+    "province": "dolnośląskie",
+    "lat": 51.170304,
+    "lng": 16.597117,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "sroda-wielkopolska",
+    "name": "Środa Wielkopolska",
+    "province": "wielkopolskie",
+    "lat": 52.223786,
+    "lng": 17.280332,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "swiatniki-gorne",
+    "name": "Świątniki Górne",
+    "province": "małopolskie",
+    "lat": 49.932354,
+    "lng": 19.954691,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "swidnica",
+    "name": "Świdnica",
+    "province": "dolnośląskie",
+    "lat": 50.840617,
+    "lng": 16.492523,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "swidnik",
+    "name": "Świdnik",
+    "province": "lubelskie",
+    "lat": 51.216713,
+    "lng": 22.684936,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "swidwin",
+    "name": "Świdwin",
+    "province": "zachodniopomorskie",
+    "lat": 53.774265,
+    "lng": 15.797311,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "swiebodzice",
+    "name": "Świebodzice",
+    "province": "dolnośląskie",
+    "lat": 50.872491,
+    "lng": 16.338542,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "swiebodzin",
+    "name": "Świebodzin",
+    "province": "lubuskie",
+    "lat": 52.248948,
+    "lng": 15.5257,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "swiecie",
+    "name": "Świecie",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.407956,
+    "lng": 18.417351,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "swieradow-zdroj",
+    "name": "Świeradów-Zdrój",
+    "province": "dolnośląskie",
+    "lat": 50.916952,
+    "lng": 15.323227,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "swierzawa",
+    "name": "Świerzawa",
+    "province": "dolnośląskie",
+    "lat": 51.017275,
+    "lng": 15.899086,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "swietochlowice",
+    "name": "Świętochłowice",
+    "province": "śląskie",
+    "lat": 50.29784,
+    "lng": 18.910223,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "swinoujscie",
+    "name": "Świnoujście",
+    "province": "zachodniopomorskie",
+    "lat": 53.853054,
+    "lng": 14.313143,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "tarczyn",
+    "name": "Tarczyn",
+    "province": "mazowieckie",
+    "lat": 51.984983,
+    "lng": 20.83203,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tarnobrzeg",
+    "name": "Tarnobrzeg",
+    "province": "podkarpackie",
+    "lat": 50.58376,
+    "lng": 21.698737,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "tarnogrod",
+    "name": "Tarnogród",
+    "province": "lubelskie",
+    "lat": 50.36421,
+    "lng": 22.742983,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tarnowskie-gory",
+    "name": "Tarnowskie Góry",
+    "province": "śląskie",
+    "lat": 50.465577,
+    "lng": 18.842062,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "tarnow",
+    "name": "Tarnów",
+    "province": "małopolskie",
+    "lat": 50.026065,
+    "lng": 20.97798,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "tczew",
+    "name": "Tczew",
+    "province": "pomorskie",
+    "lat": 54.090717,
+    "lng": 18.78161,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "terespol",
+    "name": "Terespol",
+    "province": "lubelskie",
+    "lat": 52.076533,
+    "lng": 23.619012,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tluszcz",
+    "name": "Tłuszcz",
+    "province": "mazowieckie",
+    "lat": 52.431589,
+    "lng": 21.432276,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tolkmicko",
+    "name": "Tolkmicko",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.321491,
+    "lng": 19.531075,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tomaszow-lubelski",
+    "name": "Tomaszów Lubelski",
+    "province": "lubelskie",
+    "lat": 50.447875,
+    "lng": 23.426498,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tomaszow-mazowiecki",
+    "name": "Tomaszów Mazowiecki",
+    "province": "łódzkie",
+    "lat": 51.520598,
+    "lng": 20.025975,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "torun",
+    "name": "Toruń",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.014484,
+    "lng": 18.601448,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "torzym",
+    "name": "Torzym",
+    "province": "lubuskie",
+    "lat": 52.311687,
+    "lng": 15.080895,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "toszek",
+    "name": "Toszek",
+    "province": "śląskie",
+    "lat": 50.459944,
+    "lng": 18.524895,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "trzcianka",
+    "name": "Trzcianka",
+    "province": "wielkopolskie",
+    "lat": 53.042675,
+    "lng": 16.446571,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "trzciel",
+    "name": "Trzciel",
+    "province": "lubuskie",
+    "lat": 52.36383,
+    "lng": 15.876096,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "trzcinsko-zdroj",
+    "name": "Trzcińsko-Zdrój",
+    "province": "zachodniopomorskie",
+    "lat": 52.968273,
+    "lng": 14.611048,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "trzebiatow",
+    "name": "Trzebiatów",
+    "province": "zachodniopomorskie",
+    "lat": 54.055716,
+    "lng": 15.282597,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "trzebinia",
+    "name": "Trzebinia",
+    "province": "małopolskie",
+    "lat": 50.179508,
+    "lng": 19.438095,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "trzebnica",
+    "name": "Trzebnica",
+    "province": "dolnośląskie",
+    "lat": 51.311557,
+    "lng": 17.059168,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "trzemeszno",
+    "name": "Trzemeszno",
+    "province": "wielkopolskie",
+    "lat": 52.560507,
+    "lng": 17.813669,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tuchola",
+    "name": "Tuchola",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.577952,
+    "lng": 17.880246,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tuchow",
+    "name": "Tuchów",
+    "province": "małopolskie",
+    "lat": 49.894082,
+    "lng": 21.059451,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tuczno",
+    "name": "Tuczno",
+    "province": "zachodniopomorskie",
+    "lat": 53.199655,
+    "lng": 16.168466,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tuliszkow",
+    "name": "Tuliszków",
+    "province": "wielkopolskie",
+    "lat": 52.074172,
+    "lng": 18.275319,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tulowice",
+    "name": "Tułowice",
+    "province": "opolskie",
+    "lat": 50.594843,
+    "lng": 17.656441,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "turek",
+    "name": "Turek",
+    "province": "wielkopolskie",
+    "lat": 52.016194,
+    "lng": 18.511509,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "turobin",
+    "name": "Turobin",
+    "province": "lubelskie",
+    "lat": 50.827109,
+    "lng": 22.744778,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tuszyn",
+    "name": "Tuszyn",
+    "province": "łódzkie",
+    "lat": 51.605417,
+    "lng": 19.534649,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "twardogora",
+    "name": "Twardogóra",
+    "province": "dolnośląskie",
+    "lat": 51.366895,
+    "lng": 17.457675,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tychowo",
+    "name": "Tychowo",
+    "province": "zachodniopomorskie",
+    "lat": 53.927854,
+    "lng": 16.256409,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tychy",
+    "name": "Tychy",
+    "province": "śląskie",
+    "lat": 50.126501,
+    "lng": 19.008393,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "tyczyn",
+    "name": "Tyczyn",
+    "province": "podkarpackie",
+    "lat": 49.962804,
+    "lng": 22.025742,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tykocin",
+    "name": "Tykocin",
+    "province": "podlaskie",
+    "lat": 53.195824,
+    "lng": 22.759671,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "tyszowce",
+    "name": "Tyszowce",
+    "province": "lubelskie",
+    "lat": 50.62467,
+    "lng": 23.723374,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ujazd",
+    "name": "Ujazd",
+    "province": "opolskie",
+    "lat": 50.396438,
+    "lng": 18.355613,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ujazd-lodzkie",
+    "name": "Ujazd",
+    "province": "łódzkie",
+    "lat": 51.599542,
+    "lng": 19.920043,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ujscie",
+    "name": "Ujście",
+    "province": "wielkopolskie",
+    "lat": 53.054859,
+    "lng": 16.727856,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ulanow",
+    "name": "Ulanów",
+    "province": "podkarpackie",
+    "lat": 50.490749,
+    "lng": 22.295901,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "uniejow",
+    "name": "Uniejów",
+    "province": "łódzkie",
+    "lat": 51.968339,
+    "lng": 18.797351,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "urzedow",
+    "name": "Urzędów",
+    "province": "lubelskie",
+    "lat": 50.984278,
+    "lng": 22.151402,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ustka",
+    "name": "Ustka",
+    "province": "pomorskie",
+    "lat": 54.573491,
+    "lng": 16.859753,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ustron",
+    "name": "Ustroń",
+    "province": "śląskie",
+    "lat": 49.718581,
+    "lng": 18.831329,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ustrzyki-dolne",
+    "name": "Ustrzyki Dolne",
+    "province": "podkarpackie",
+    "lat": 49.430235,
+    "lng": 22.578245,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wadowice",
+    "name": "Wadowice",
+    "province": "małopolskie",
+    "lat": 49.884067,
+    "lng": 19.49545,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "walbrzych",
+    "name": "Wałbrzych",
+    "province": "dolnośląskie",
+    "lat": 50.785116,
+    "lng": 16.291224,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "walcz",
+    "name": "Wałcz",
+    "province": "zachodniopomorskie",
+    "lat": 53.272619,
+    "lng": 16.449497,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "warka",
+    "name": "Warka",
+    "province": "mazowieckie",
+    "lat": 51.78472,
+    "lng": 21.176313,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "warszawa",
+    "name": "Warszawa",
+    "province": "mazowieckie",
+    "lat": 52.233001,
+    "lng": 21.06142,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "warta",
+    "name": "Warta",
+    "province": "łódzkie",
+    "lat": 51.127556,
+    "lng": 18.702486,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wasilkow",
+    "name": "Wasilków",
+    "province": "podlaskie",
+    "lat": 53.212963,
+    "lng": 23.195914,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wabrzezno",
+    "name": "Wąbrzeźno",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.278356,
+    "lng": 18.952394,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wachock",
+    "name": "Wąchock",
+    "province": "świętokrzyskie",
+    "lat": 51.071541,
+    "lng": 21.043187,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wagrowiec",
+    "name": "Wągrowiec",
+    "province": "wielkopolskie",
+    "lat": 52.812254,
+    "lng": 17.197613,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wasosz",
+    "name": "Wąsosz",
+    "province": "dolnośląskie",
+    "lat": 51.561193,
+    "lng": 16.693182,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wawolnica",
+    "name": "Wąwolnica",
+    "province": "lubelskie",
+    "lat": 51.276105,
+    "lng": 22.146585,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wejherowo",
+    "name": "Wejherowo",
+    "province": "pomorskie",
+    "lat": 54.60609,
+    "lng": 18.233624,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "wegliniec",
+    "name": "Węgliniec",
+    "province": "dolnośląskie",
+    "lat": 51.283744,
+    "lng": 15.225858,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wegorzewo",
+    "name": "Węgorzewo",
+    "province": "warmińsko-mazurskie",
+    "lat": 54.208008,
+    "lng": 21.748918,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wegorzyno",
+    "name": "Węgorzyno",
+    "province": "zachodniopomorskie",
+    "lat": 53.538263,
+    "lng": 15.56458,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wegrow",
+    "name": "Węgrów",
+    "province": "mazowieckie",
+    "lat": 52.400814,
+    "lng": 22.02964,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wiazow",
+    "name": "Wiązów",
+    "province": "dolnośląskie",
+    "lat": 50.81975,
+    "lng": 17.199399,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wielbark",
+    "name": "Wielbark",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.391584,
+    "lng": 20.933701,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wielen",
+    "name": "Wieleń",
+    "province": "wielkopolskie",
+    "lat": 52.897415,
+    "lng": 16.174973,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wielichowo",
+    "name": "Wielichowo",
+    "province": "wielkopolskie",
+    "lat": 52.1188,
+    "lng": 16.349714,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wieliczka",
+    "name": "Wieliczka",
+    "province": "małopolskie",
+    "lat": 49.987749,
+    "lng": 20.04584,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wielun",
+    "name": "Wieluń",
+    "province": "łódzkie",
+    "lat": 51.225455,
+    "lng": 18.569132,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wieruszow",
+    "name": "Wieruszów",
+    "province": "łódzkie",
+    "lat": 51.296401,
+    "lng": 18.151886,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wiecbork",
+    "name": "Więcbork",
+    "province": "kujawsko-pomorskie",
+    "lat": 53.354316,
+    "lng": 17.492464,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wilamowice",
+    "name": "Wilamowice",
+    "province": "śląskie",
+    "lat": 49.919526,
+    "lng": 19.159285,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wiskitki",
+    "name": "Wiskitki",
+    "province": "mazowieckie",
+    "lat": 52.083433,
+    "lng": 20.389497,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wisla",
+    "name": "Wisła",
+    "province": "śląskie",
+    "lat": 49.635796,
+    "lng": 18.911028,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wislica",
+    "name": "Wiślica",
+    "province": "świętokrzyskie",
+    "lat": 50.343869,
+    "lng": 20.675853,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "witkowo",
+    "name": "Witkowo",
+    "province": "wielkopolskie",
+    "lat": 52.43731,
+    "lng": 17.775315,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "witnica",
+    "name": "Witnica",
+    "province": "lubuskie",
+    "lat": 52.678224,
+    "lng": 14.888591,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wlen",
+    "name": "Wleń",
+    "province": "dolnośląskie",
+    "lat": 51.018124,
+    "lng": 15.672232,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wladyslawowo",
+    "name": "Władysławowo",
+    "province": "pomorskie",
+    "lat": 54.78423,
+    "lng": 18.426838,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wloclawek",
+    "name": "Włocławek",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.665381,
+    "lng": 19.060831,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "wlodawa",
+    "name": "Włodawa",
+    "province": "lubelskie",
+    "lat": 51.541303,
+    "lng": 23.533804,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wlodowice",
+    "name": "Włodowice",
+    "province": "śląskie",
+    "lat": 50.555396,
+    "lng": 19.428309,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wloszczowa",
+    "name": "Włoszczowa",
+    "province": "świętokrzyskie",
+    "lat": 50.857379,
+    "lng": 19.986653,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wodzislaw",
+    "name": "Wodzisław",
+    "province": "świętokrzyskie",
+    "lat": 50.520513,
+    "lng": 20.196197,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wodzislaw-slaski",
+    "name": "Wodzisław Śląski",
+    "province": "śląskie",
+    "lat": 50.002292,
+    "lng": 18.439974,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "wojcieszow",
+    "name": "Wojcieszów",
+    "province": "dolnośląskie",
+    "lat": 50.955933,
+    "lng": 15.928362,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wojkowice",
+    "name": "Wojkowice",
+    "province": "śląskie",
+    "lat": 50.365974,
+    "lng": 19.031549,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wojnicz",
+    "name": "Wojnicz",
+    "province": "małopolskie",
+    "lat": 49.957305,
+    "lng": 20.823475,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wolborz",
+    "name": "Wolbórz",
+    "province": "łódzkie",
+    "lat": 51.496652,
+    "lng": 19.832273,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wolbrom",
+    "name": "Wolbrom",
+    "province": "małopolskie",
+    "lat": 50.379862,
+    "lng": 19.771999,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wolin",
+    "name": "Wolin",
+    "province": "zachodniopomorskie",
+    "lat": 53.831792,
+    "lng": 14.598056,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wolsztyn",
+    "name": "Wolsztyn",
+    "province": "wielkopolskie",
+    "lat": 52.111777,
+    "lng": 16.113675,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wolczyn",
+    "name": "Wołczyn",
+    "province": "opolskie",
+    "lat": 51.023639,
+    "lng": 18.056743,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wolomin",
+    "name": "Wołomin",
+    "province": "mazowieckie",
+    "lat": 52.342697,
+    "lng": 21.236141,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "wolow",
+    "name": "Wołów",
+    "province": "dolnośląskie",
+    "lat": 51.338568,
+    "lng": 16.63505,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wozniki",
+    "name": "Woźniki",
+    "province": "śląskie",
+    "lat": 50.568404,
+    "lng": 19.037425,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wroclaw",
+    "name": "Wrocław",
+    "province": "dolnośląskie",
+    "lat": 51.126365,
+    "lng": 16.991779,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "wronki",
+    "name": "Wronki",
+    "province": "wielkopolskie",
+    "lat": 52.708974,
+    "lng": 16.376931,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wrzesnia",
+    "name": "Września",
+    "province": "wielkopolskie",
+    "lat": 52.325814,
+    "lng": 17.568515,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wschowa",
+    "name": "Wschowa",
+    "province": "lubuskie",
+    "lat": 51.807416,
+    "lng": 16.321501,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wyrzysk",
+    "name": "Wyrzysk",
+    "province": "wielkopolskie",
+    "lat": 53.151709,
+    "lng": 17.269103,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wysoka",
+    "name": "Wysoka",
+    "province": "wielkopolskie",
+    "lat": 53.184369,
+    "lng": 17.071052,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wysokie-mazowieckie",
+    "name": "Wysokie Mazowieckie",
+    "province": "podlaskie",
+    "lat": 52.924916,
+    "lng": 22.51358,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wyszkow",
+    "name": "Wyszków",
+    "province": "mazowieckie",
+    "lat": 52.592308,
+    "lng": 21.447292,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wyszogrod",
+    "name": "Wyszogród",
+    "province": "mazowieckie",
+    "lat": 52.391737,
+    "lng": 20.191111,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "wysmierzyce",
+    "name": "Wyśmierzyce",
+    "province": "mazowieckie",
+    "lat": 51.621197,
+    "lng": 20.809803,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zabludow",
+    "name": "Zabłudów",
+    "province": "podlaskie",
+    "lat": 53.012612,
+    "lng": 23.341851,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zabrze",
+    "name": "Zabrze",
+    "province": "śląskie",
+    "lat": 50.314244,
+    "lng": 18.7965,
+    "priority": 3,
+    "isActive": false
+  },
+  {
+    "slug": "zagorow",
+    "name": "Zagórów",
+    "province": "wielkopolskie",
+    "lat": 52.165032,
+    "lng": 17.891394,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zagorz",
+    "name": "Zagórz",
+    "province": "podkarpackie",
+    "lat": 49.50779,
+    "lng": 22.265196,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zakliczyn",
+    "name": "Zakliczyn",
+    "province": "małopolskie",
+    "lat": 49.853004,
+    "lng": 20.805566,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zaklikow",
+    "name": "Zaklików",
+    "province": "podkarpackie",
+    "lat": 50.760836,
+    "lng": 22.091542,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zakopane",
+    "name": "Zakopane",
+    "province": "małopolskie",
+    "lat": 49.27576,
+    "lng": 19.971772,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zakroczym",
+    "name": "Zakroczym",
+    "province": "mazowieckie",
+    "lat": 52.442366,
+    "lng": 20.615159,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zalewo",
+    "name": "Zalewo",
+    "province": "warmińsko-mazurskie",
+    "lat": 53.83894,
+    "lng": 19.591755,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zambrow",
+    "name": "Zambrów",
+    "province": "podlaskie",
+    "lat": 52.976018,
+    "lng": 22.247289,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zamosc",
+    "name": "Zamość",
+    "province": "lubelskie",
+    "lat": 50.721397,
+    "lng": 23.248516,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "zaniemysl",
+    "name": "Zaniemyśl",
+    "province": "wielkopolskie",
+    "lat": 52.150911,
+    "lng": 17.162882,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zator",
+    "name": "Zator",
+    "province": "małopolskie",
+    "lat": 49.98599,
+    "lng": 19.431056,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zawadzkie",
+    "name": "Zawadzkie",
+    "province": "opolskie",
+    "lat": 50.607972,
+    "lng": 18.448222,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zawichost",
+    "name": "Zawichost",
+    "province": "świętokrzyskie",
+    "lat": 50.799311,
+    "lng": 21.834842,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zawidow",
+    "name": "Zawidów",
+    "province": "dolnośląskie",
+    "lat": 51.024505,
+    "lng": 15.045271,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zawiercie",
+    "name": "Zawiercie",
+    "province": "śląskie",
+    "lat": 50.505618,
+    "lng": 19.470427,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "zabki",
+    "name": "Ząbki",
+    "province": "mazowieckie",
+    "lat": 52.292485,
+    "lng": 21.112516,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "zabkowice-slaskie",
+    "name": "Ząbkowice Śląskie",
+    "province": "dolnośląskie",
+    "lat": 50.587351,
+    "lng": 16.822879,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zbaszynek",
+    "name": "Zbąszynek",
+    "province": "lubuskie",
+    "lat": 52.247057,
+    "lng": 15.825884,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zbaszyn",
+    "name": "Zbąszyń",
+    "province": "wielkopolskie",
+    "lat": 52.251407,
+    "lng": 15.911891,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zduny",
+    "name": "Zduny",
+    "province": "wielkopolskie",
+    "lat": 51.645906,
+    "lng": 17.375357,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zdunska-wola",
+    "name": "Zduńska Wola",
+    "province": "łódzkie",
+    "lat": 51.595085,
+    "lng": 18.964758,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zdzieszowice",
+    "name": "Zdzieszowice",
+    "province": "opolskie",
+    "lat": 50.421349,
+    "lng": 18.114561,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zelow",
+    "name": "Zelów",
+    "province": "łódzkie",
+    "lat": 51.472888,
+    "lng": 19.22507,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zgierz",
+    "name": "Zgierz",
+    "province": "łódzkie",
+    "lat": 51.855602,
+    "lng": 19.394062,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "zgorzelec",
+    "name": "Zgorzelec",
+    "province": "dolnośląskie",
+    "lat": 51.151795,
+    "lng": 15.017091,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zielonka",
+    "name": "Zielonka",
+    "province": "mazowieckie",
+    "lat": 52.291356,
+    "lng": 21.290825,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "ziebice",
+    "name": "Ziębice",
+    "province": "dolnośląskie",
+    "lat": 50.592462,
+    "lng": 17.035141,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zlocieniec",
+    "name": "Złocieniec",
+    "province": "zachodniopomorskie",
+    "lat": 53.525236,
+    "lng": 16.015208,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zloczew",
+    "name": "Złoczew",
+    "province": "łódzkie",
+    "lat": 51.412287,
+    "lng": 18.600858,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zlotoryja",
+    "name": "Złotoryja",
+    "province": "dolnośląskie",
+    "lat": 51.122384,
+    "lng": 15.918558,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zlotow",
+    "name": "Złotów",
+    "province": "wielkopolskie",
+    "lat": 53.359183,
+    "lng": 17.045127,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zloty-stok",
+    "name": "Złoty Stok",
+    "province": "dolnośląskie",
+    "lat": 50.434391,
+    "lng": 16.871868,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zwierzyniec",
+    "name": "Zwierzyniec",
+    "province": "lubelskie",
+    "lat": 50.606313,
+    "lng": 22.973176,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zwolen",
+    "name": "Zwoleń",
+    "province": "mazowieckie",
+    "lat": 51.35685,
+    "lng": 21.586459,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zabno",
+    "name": "Żabno",
+    "province": "małopolskie",
+    "lat": 50.137877,
+    "lng": 20.876898,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zagan",
+    "name": "Żagań",
+    "province": "lubuskie",
+    "lat": 51.614984,
+    "lng": 15.315669,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zarki",
+    "name": "Żarki",
+    "province": "śląskie",
+    "lat": 50.623848,
+    "lng": 19.375195,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zarnow",
+    "name": "Żarnów",
+    "province": "łódzkie",
+    "lat": 51.244578,
+    "lng": 20.180488,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zarow",
+    "name": "Żarów",
+    "province": "dolnośląskie",
+    "lat": 50.944474,
+    "lng": 16.49921,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zary",
+    "name": "Żary",
+    "province": "lubuskie",
+    "lat": 51.624549,
+    "lng": 15.145445,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zelechow",
+    "name": "Żelechów",
+    "province": "mazowieckie",
+    "lat": 51.799568,
+    "lng": 21.900947,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zerkow",
+    "name": "Żerków",
+    "province": "wielkopolskie",
+    "lat": 52.068062,
+    "lng": 17.560042,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zmigrod",
+    "name": "Żmigród",
+    "province": "dolnośląskie",
+    "lat": 51.471173,
+    "lng": 16.907488,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "znin",
+    "name": "Żnin",
+    "province": "kujawsko-pomorskie",
+    "lat": 52.844653,
+    "lng": 17.729941,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zory",
+    "name": "Żory",
+    "province": "śląskie",
+    "lat": 50.038947,
+    "lng": 18.688398,
+    "priority": 2,
+    "isActive": false
+  },
+  {
+    "slug": "zukowo",
+    "name": "Żukowo",
+    "province": "pomorskie",
+    "lat": 54.344683,
+    "lng": 18.359621,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zuromin",
+    "name": "Żuromin",
+    "province": "mazowieckie",
+    "lat": 53.061548,
+    "lng": 19.913083,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zychlin",
+    "name": "Żychlin",
+    "province": "łódzkie",
+    "lat": 52.246025,
+    "lng": 19.623557,
+    "priority": 0,
+    "isActive": false
+  },
+  {
+    "slug": "zyrardow",
+    "name": "Żyrardów",
+    "province": "mazowieckie",
+    "lat": 52.055549,
+    "lng": 20.440572,
+    "priority": 1,
+    "isActive": false
+  },
+  {
+    "slug": "zywiec",
+    "name": "Żywiec",
+    "province": "śląskie",
+    "lat": 49.706497,
+    "lng": 19.209905,
+    "priority": 0,
+    "isActive": false
+  }
+]

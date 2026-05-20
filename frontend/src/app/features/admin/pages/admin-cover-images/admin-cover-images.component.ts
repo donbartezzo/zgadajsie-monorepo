@@ -19,13 +19,14 @@ import {
 } from '../../../../core/services/cover-image.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { CoverImage, DictionaryItem } from '../../../../shared/types';
+import { CoverImage } from '../../../../shared/types';
 import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
 import { TranslocoPipe } from '@jsverse/transloco';
 import {
   ImageCropperModalComponent,
   ImageCropperResult,
 } from '../../../../shared/ui/image-cropper-modal';
+import { DictionaryItem } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-admin-cover-images',

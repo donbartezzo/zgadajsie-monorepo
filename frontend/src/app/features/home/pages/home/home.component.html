@@ -28,31 +28,24 @@
 
   <div class="home-animate-delayed mt-auto w-sm">
     <div class="flex max-w-sm flex-col gap-3 px-4">
-      <p class="mt-6 text-center text-xs sm:text-sm text-white/90">
-        Jesteśmy w trakcie rebrandingu – bądź częścią zmian:
-      </p>
+      <p class="mt-6 text-center text-xs sm:text-sm text-white/90">Wpisz swoje miasto:</p>
+
+      <app-city-search placeholder="Wpisz miasto…" (citySelected)="onCitySelected($event)"></app-city-search>
+
+      <!-- <div class="my-3 flex items-center gap-3">
+        <div class="h-px flex-1 bg-white/10"></div>
+        <span class="text-[10px] font-medium uppercase tracking-widest text-white/45">lub</span>
+        <div class="h-px flex-1 bg-white/10"></div>
+      </div>
+
+      <p class="text-center text-xs sm:text-sm text-white/90">Jesteśmy w trakcie rebrandingu – bądź częścią zmian:</p>
       <a
         routerLink="/join-us"
         class="flex w-full items-center justify-center rounded-2xl border border-white/40 bg-white/20 px-6 py-4 text-sm sm:text-base font-bold text-white shadow-lg backdrop-blur-xs transition-all hover:bg-white/40"
       >
         <app-icon name="users" size="sm" class="mr-2 text-white"></app-icon>
         Dołącz do nas
-      </a>
-
-      <div class="flex items-center gap-3">
-        <div class="h-px flex-1 bg-white/10"></div>
-        <span class="text-[10px] font-medium uppercase tracking-widest text-white/45">lub</span>
-        <div class="h-px flex-1 bg-white/10"></div>
-      </div>
-
-      <p class="text-center text-xs sm:text-sm text-white/80">Obecnie działamy w Zielonej Górze - sprawdź:</p>
-      <a
-        routerLink="/w/zielona-gora"
-        class="flex w-full items-center justify-center rounded-2xl border border-primary-500/40 bg-primary-500/20 px-6 py-4 text-sm sm:text-base font-bold text-white shadow-lg transition-all hover:bg-primary-500/40"
-      >
-        <app-icon name="calendar" size="sm" class="mr-2 text-white"></app-icon>
-        Zobacz wydarzenia
-      </a>
+      </a> -->
     </div>
   </div>
 </div>

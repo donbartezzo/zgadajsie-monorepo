@@ -73,9 +73,9 @@ Publiczne endpointy słownikowe:
 
 ## City subscriptions (`/api/cities`)
 
-- `GET /cities/:cityId/subscription` - `auth`
-- `POST /cities/:cityId/subscribe` - `auth`
-- `DELETE /cities/:cityId/subscribe` - `auth`
+- `GET /cities/:citySlug/subscription` - `auth`
+- `POST /cities/:citySlug/subscribe` - `auth`
+- `DELETE /cities/:citySlug/subscribe` - `auth`
 
 ## Events (`/api/events`)
 

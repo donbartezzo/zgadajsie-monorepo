@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ButtonComponent } from '../button/button.component';
+import { ButtonComponent, ButtonAppearance } from '../button/button.component';
 import { IconName } from '../icon/icon.component';
 import { SemanticColor } from '../../types/colors';
 
@@ -14,6 +14,7 @@ export interface LinkListItem {
   color?: SemanticColor;
   iconColor?: SemanticColor;
   iconBackground?: boolean;
+  appearance?: ButtonAppearance;
 }
 
 @Component({
@@ -23,7 +24,7 @@ export interface LinkListItem {
     <div>
       @for (item of items(); track item.value || item.label; let isLast = $last) {
         <app-button
-          appearance="ghost"
+          [appearance]="item.appearance || 'ghost'"
           [color]="item.color || 'neutral'"
           [fullWidth]="true"
           alignment="start"
@@ -48,7 +49,7 @@ export interface LinkListItem {
           </div>
         </app-button>
         @if (!isLast) {
-          <div class="mx-3 border-b border-neutral-100"></div>
+          <div class="mx-3 my-1 border-b border-neutral-100"></div>
         }
       }
     </div>

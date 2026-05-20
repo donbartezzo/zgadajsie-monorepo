@@ -32,8 +32,9 @@ export class LayoutConfigService {
     this.contentClass.set(LayoutConfigService.DEFAULT_CONTENT);
     this.title.set('');
     this.subtitle.set('');
-    this.subtitleTemplate.set(null);
-    this.stickyTemplate.set(null);
+    // subtitleTemplate / stickyTemplate are owned by LayoutSlotDirective via its
+    // own lifecycle - resetting them here would orphan reused component instances
+    // whose directive ngOnInit fires only once.
   }
 
   markReady(): void {

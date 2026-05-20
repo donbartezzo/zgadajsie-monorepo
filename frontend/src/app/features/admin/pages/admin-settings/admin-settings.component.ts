@@ -8,8 +8,8 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { AdminService } from '../../../../core/services/admin.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { DictionaryItem } from '../../../../shared/types';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { DictionaryItem } from '@zgadajsie/shared';
 
 interface Setting {
   key: string;

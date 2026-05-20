@@ -6,7 +6,9 @@ export class DictionariesService {
   constructor(private prisma: PrismaService) {}
 
   getCities() {
-    return this.prisma.city.findMany({ where: { isActive: true }, orderBy: { slug: 'asc' } });
+    return this.prisma.city.findMany({
+      orderBy: [{ priority: 'desc' }, { name: 'asc' }],
+    });
   }
 
   getDisciplines() {

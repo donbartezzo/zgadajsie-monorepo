@@ -1,0 +1,96 @@
+@let _query = query();
+@let _isOpen = isOpen();
+@let _filtered = filteredCities();
+@let _activeIndex = activeIndex();
+@let _dropdownStyle = dropdownStyle();
+@let _dropdownPosition = dropdownPosition();
+
+<div class="relative w-full">
+  <div class="relative">
+    <app-icon
+      name="map-pin"
+      size="lg"
+      color="neutral"
+      [class]="'pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 z-1 ' + iconClasses()"
+    ></app-icon>
+
+    <input
+      #inputEl
+      type="text"
+      role="combobox"
+      [attr.aria-expanded]="_isOpen && _filtered.length > 0"
+      [attr.aria-controls]="listboxId"
+      [attr.aria-activedescendant]="_activeIndex >= 0 ? activeDescendantId(_activeIndex) : null"
+      aria-autocomplete="list"
+      autocomplete="off"
+      [placeholder]="placeholder()"
+      [value]="_query"
+      (input)="onInput($any($event.target).value)"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+      (keydown)="onKeydown($event)"
+      [class]="inputClasses()"
+    />
+
+    <div class="absolute right-4 top-1/2 -translate-y-1/2 z-1">
+      <app-button
+        iconLeft="search"
+        size="sm"
+        appearance="soft"
+        color="neutral"
+        muted="light"
+        (clicked)="handleSearchSubmit()"
+        ariaLabel="Szukaj miasta"
+        >Pokaż</app-button
+      >
+    </div>
+  </div>
+
+  @if (showDefaultCityHint()) {
+    <div class="mt-0 text-right mr-3">
+      <span class="text-sm text-neutral-300">Polecamy: </span>
+      <button
+        type="button"
+        (click)="selectDefaultCity()"
+        class="text-sm font-medium text-primary-600 hover:text-primary-700 underline"
+      >
+        {{ DEFAULT_CITY_NAME }}
+      </button>
+    </div>
+  }
+
+  @if (_isOpen && _filtered.length > 0) {
+    <ul
+      [id]="listboxId"
+      role="listbox"
+      aria-label="Dostępne miasta"
+      [style.top]="_dropdownPosition === 'top' && _dropdownStyle ? (_dropdownStyle.top ?? 'auto') : null"
+      [style.bottom]="_dropdownPosition === 'top' && _dropdownStyle ? (_dropdownStyle.bottom ?? 'auto') : null"
+      [style.left]="_dropdownPosition === 'top' && _dropdownStyle ? _dropdownStyle.left : null"
+      [style.width]="_dropdownPosition === 'top' && _dropdownStyle ? _dropdownStyle.width : null"
+      [class]="
+        'max-h-[300px] overflow-hidden overflow-y-auto rounded-xl border border-neutral-200 bg-white shadow-lg ' +
+        (_dropdownPosition === 'top' && _dropdownStyle ? 'fixed z-[100]' : 'absolute z-50 mt-1 w-full')
+      "
+    >
+      @for (city of _filtered; track city.slug; let i = $index) {
+        <li
+          [id]="activeDescendantId(i)"
+          role="option"
+          [attr.aria-selected]="i === _activeIndex"
+          (mousedown)="selectCity(city)"
+          [class]="
+            'flex cursor-pointer items-center gap-3 px-5 py-4 text-base transition-colors ' +
+            (i === _activeIndex ? 'bg-primary-50 text-primary-700' : 'text-neutral-700 hover:bg-neutral-50')
+          "
+        >
+          <app-icon name="map-pin" size="xs" color="neutral" class="shrink-0 text-neutral-400"></app-icon>
+          <span class="flex-1">{{ city.name }}</span>
+          @if (!city.isActive && city.priority >= 3) {
+            <span class="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-400">wkrótce</span>
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>

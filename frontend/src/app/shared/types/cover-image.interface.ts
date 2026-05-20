@@ -1,4 +1,4 @@
-import { DictionaryItem } from './dictionary.interface';
+import { DictionaryItem } from '@zgadajsie/shared';
 
 export const COVER_EVENTS_PATH = 'assets/covers/events';
 
