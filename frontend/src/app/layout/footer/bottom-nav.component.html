@@ -1,5 +1,6 @@
 <!-- Bottom Nav Bar — split: kontekst miasta (lewa) | akcje (prawa) -->
 @let _cityLabel = cityLabel();
+@let _cityButtonAppearance = cityButtonAppearance();
 @let _isLoggedIn = auth.isLoggedIn();
 @let _currentUser = auth.currentUser();
 
@@ -10,7 +11,7 @@
   <nav class="flex items-stretch justify-between text-xs font-medium text-neutral-500">
     <div class="flex min-w-0 flex-col items-center justify-center px-2 py-1.5">
       <app-button
-        appearance="ghost"
+        [appearance]="_cityButtonAppearance"
         size="lg"
         color="neutral"
         aria-label="Wydarzenia w {{ _cityLabel }}"

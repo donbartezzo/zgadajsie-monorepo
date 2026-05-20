@@ -28,6 +28,10 @@ export class BottomNavComponent {
     return name.length > 31 ? name.slice(0, 30) + '…' : name;
   });
 
+  readonly cityButtonAppearance = computed(() => {
+    return this.cityContext.cityName() ? 'ghost' : 'soft';
+  });
+
   toggleShareMenu(): void {
     this.overlays.toggle('share');
   }

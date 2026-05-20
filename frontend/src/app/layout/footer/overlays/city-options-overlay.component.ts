@@ -10,17 +10,19 @@ import { NavigationService } from '../../../core/services/navigation.service';
   selector: 'app-city-options-overlay',
   imports: [CommonModule, BottomOverlayComponent, LinkListComponent, CitySearchComponent],
   template: `
-    <app-bottom-overlay [open]="true" title="Opcje bieżącego miasta" (closed)="closed.emit()">
+    <app-bottom-overlay [open]="true" title="Twoje bieżące miasto" (closed)="closed.emit()">
       <div class="space-y-4 max-w-lg mx-auto">
-        <app-link-list [items]="cityOptions()" (itemClicked)="handleOptionClick($event)" />
+        @if (cityOptions().length > 0) {
+          <app-link-list [items]="cityOptions()" (itemClicked)="handleOptionClick($event)" />
 
-        <div class="flex items-center gap-3 pt-1">
-          <div class="h-px flex-1 bg-neutral-200"></div>
-          <span class="text-[10px] font-medium uppercase tracking-widest text-neutral-400">
-            albo wybierz inne miasto
-          </span>
-          <div class="h-px flex-1 bg-neutral-200"></div>
-        </div>
+          <div class="flex items-center gap-3 pt-1">
+            <div class="h-px flex-1 bg-neutral-200"></div>
+            <span class="text-[10px] font-medium uppercase tracking-widest text-neutral-400">
+              albo wybierz inne miasto
+            </span>
+            <div class="h-px flex-1 bg-neutral-200"></div>
+          </div>
+        }
 
         <app-city-search
           variant="light"
@@ -40,6 +42,10 @@ export class CityOptionsOverlayComponent {
   readonly closed = output<void>();
 
   readonly cityOptions = computed<LinkListItem[]>(() => {
+    const citySlug = this.cityContext.citySlug();
+    if (!citySlug) {
+      return [];
+    }
     const cityName = this.cityContext.cityName() || 'miasto';
     return [
       {

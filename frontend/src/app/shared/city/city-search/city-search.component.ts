@@ -156,7 +156,17 @@ export class CitySearchComponent implements OnInit {
   }
 
   protected onBlur(): void {
-    setTimeout(() => this.isOpen.set(false), 150);
+    setTimeout(() => {
+      this.isOpen.set(false);
+      if (this.query().trim() === '') {
+        const override = this.overrideInitialValue();
+        const currentCityName = this.cityContext.cityName();
+        const initialValue = override ?? currentCityName;
+        if (initialValue) {
+          this.query.set(initialValue);
+        }
+      }
+    }, 150);
   }
 
   protected onKeydown(event: KeyboardEvent): void {
