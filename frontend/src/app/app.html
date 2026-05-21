@@ -19,16 +19,20 @@
     <!-- Main app container (styled on desktop via styles.scss) -->
     <div class="app-container">
       <app-snackbar></app-snackbar>
-      <app-explainer />
 
       <app-page-layout>
         <router-outlet></router-outlet>
       </app-page-layout>
 
       <app-bottom-overlays />
-      <app-modal-host />
       <app-confirm-modal />
     </div>
+
+    <!-- Explainer: outside container so it appears above modals (z-index 90 > modal z-index 70) -->
+    <app-explainer />
+
+    <!-- Modal host: fixed outside container so z-index works correctly -->
+    <app-modal-host />
 
     <!-- Bottom nav: fixed outside container so overflow:hidden doesn't affect it -->
     <app-bottom-nav></app-bottom-nav>

@@ -1,79 +1,78 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { EnrollmentGridItemComponent } from '../../../shared/enrollment/ui/enrollment-grid/enrollment-grid-item/enrollment-grid-item.component';
+import { EnrollmentParticipantActionsComponent } from '../../../shared/enrollment/ui/enrollment-participant-actions/enrollment-participant-actions.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { NavigationService } from '../../../core/services/navigation.service';
-import { ModalService } from '../../../shared/ui/modal/modal.service';
-import {
-  EnrollmentSlotModalComponent,
-  EnrollmentModalData,
-} from '../../../shared/enrollment/ui/enrollment-slot-modal/enrollment-slot-modal.component';
-import { Event as EventModel, WaitingReason, Participation } from '../../../shared/types';
-import { isEventJoinable } from '../../../shared/utils';
+import { Event as EventModel, Participation } from '../../../shared/types';
+import { SectionSeparatorComponent } from '../../../shared/ui/section-separator/section-separator.component';
 
 @Component({
   selector: 'app-my-participation-details-overlay',
-  imports: [BottomOverlayComponent, LinkListComponent, EnrollmentGridItemComponent],
+  imports: [
+    BottomOverlayComponent,
+    LinkListComponent,
+    EnrollmentGridItemComponent,
+    EnrollmentParticipantActionsComponent,
+    SectionSeparatorComponent,
+  ],
   template: `
     <app-bottom-overlay [open]="open()" title="Twoje zapisy" (closed)="closed.emit()">
       @let _userParticipations = userParticipations();
+      @let _activeParticipation = activeParticipation();
+      @let _event = event();
 
-      <div class="space-y-4 mx-auto">
-        <!-- User participations listing -->
-        @if (_userParticipations.length > 0) {
-          <div class="flex flex-wrap gap-3 justify-center pb-3">
-            @for (p of _userParticipations; track p.id) {
-              <app-enrollment-grid-item
-                [participant]="p"
-                [showRole]="true"
-                (clicked)="onParticipantClick(p)"
-              />
-            }
-          </div>
-        }
-
-        <div class="mx-auto max-w-lg mt-2 justify-center">
-          <!-- Payment CTA (highlighted) -->
-          <!-- @if (needsPayment()) {
-            <div class="rounded-xl border-2 border-danger-200">
-              <div class="p-2">
-                <p class="text-sm font-bold text-danger-400 text-center">Wymagana płatność</p>
-                <p class="text-xs text-danger-400 mt-0.5 text-center">
-                  Opłać {{ _event?.costPerPerson }} zł, aby potwierdzić swój udział.
-                </p>
-              </div>
-              <div>
-                <app-link-list [items]="paymentLinks()" (itemClicked)="payRequested.emit()" />
-              </div>
-            </div>
-          } -->
-
-          <!-- Rejoin CTA for withdrawn users -->
-          @if (isWithdrawnOrRejected() && canRejoin()) {
-            <div class="rounded-xl border-2 border-primary-200 mt-2">
-              <div class="p-2">
-                <p class="text-sm font-bold text-primary-600 text-center">Chcesz wrócić?</p>
-                <p class="text-xs text-primary-500 mt-0.5 text-center">
-                  Możesz ponownie dołączyć do tego wydarzenia.
-                </p>
-              </div>
-              <div>
-                <app-link-list [items]="rejoinLinks()" (itemClicked)="rejoinRequested.emit()" />
-              </div>
+      <div>
+        <div class="mx-auto p-1 rounded-xl border-2 border-neutral-300">
+          <!-- Tab bar for user participations -->
+          @if (_userParticipations.length > 0) {
+            <div class="flex flex-wrap gap-3 justify-center py-1">
+              @for (p of _userParticipations; track p.id) {
+                <app-enrollment-grid-item
+                  [participant]="p"
+                  [showRole]="true"
+                  [active]="p.id === _activeParticipation?.id"
+                  (clicked)="activeParticipationId.set(p.id)"
+                />
+              }
             </div>
           }
 
-          <!-- Participant options (hidden for withdrawn/rejected) -->
-          @if (!isWithdrawnOrRejected()) {
-            <div class="mt-2">
-              <app-link-list
-                [items]="participantLinks()"
-                (itemClicked)="handleParticipantOption($event)"
-              />
+          <!-- Active participation content -->
+          @if (_activeParticipation) {
+            <div class="mx-auto max-w-lg">
+              <!-- Participant actions -->
+              <div>
+                <app-enrollment-participant-actions
+                  [participant]="_activeParticipation"
+                  [event]="_event!"
+                  (actionCompleted)="handleActionCompleted()"
+                  (closeRequested)="closed.emit()"
+                />
+              </div>
             </div>
           }
+        </div>
+
+        <!-- General event options -->
+        <div class="mx-auto max-w-lg border-2 border-transparent">
+          <app-section-separator label="Opcje wydarzenia" />
+
+          <app-link-list
+            [items]="participantLinks()"
+            (itemClicked)="handleParticipantOption($event)"
+          />
         </div>
       </div>
     </app-bottom-overlay>
@@ -84,22 +83,15 @@ export class MyParticipationDetailsOverlayComponent {
   private readonly auth = inject(AuthService);
   private readonly navigation = inject(NavigationService);
   private readonly overlays = inject(BottomOverlaysService);
-  private readonly modalService = inject(ModalService);
 
   readonly open = input(false);
   readonly event = input<EventModel | null>(null);
   readonly loading = input(false);
-  readonly participantStatus = input<string | null>(null);
-  readonly waitingReason = input<WaitingReason | null>(null);
   readonly participants = input<Participation[]>([]);
 
   readonly closed = output<void>();
   readonly payRequested = output<void>();
-  readonly leaveRequested = output<void>();
-  readonly rejoinRequested = output<void>();
   readonly addGuestRequested = output<void>();
-  readonly manageGuests = output<void>();
-  readonly participantClicked = output<Participation>();
 
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
 
@@ -111,58 +103,56 @@ export class MyParticipationDetailsOverlayComponent {
     );
   });
 
-  readonly isWithdrawnOrRejected = computed(() => {
-    const s = this.participantStatus();
-    return s === 'WITHDRAWN' || s === 'REJECTED';
+  readonly activeParticipationId = signal<string | null>(null);
+
+  readonly activeParticipation = computed(() => {
+    const id = this.activeParticipationId();
+    const participations = this.userParticipations();
+    if (!id) {
+      // Prefer host (isGuest = false), fallback to first
+      const host = participations.find((p) => !p.isGuest);
+      return host ?? participations[0] ?? null;
+    }
+    return participations.find((p) => p.id === id) ?? null;
   });
 
-  readonly needsPayment = computed(() => {
-    const status = this.participantStatus();
-    const cost = this.event()?.costPerPerson ?? 0;
-    return status === 'APPROVED' && cost > 0;
-  });
+  constructor() {
+    effect(() => {
+      const participations = this.userParticipations();
+      const currentId = this.activeParticipationId();
 
-  readonly canRejoin = computed(() => {
-    const e = this.event();
-    if (!e) return false;
-    return isEventJoinable(e.startsAt, e.status);
-  });
+      // Set default to host when participations change and no ID is set
+      if (participations.length > 0 && !currentId) {
+        const host = participations.find((p) => !p.isGuest);
+        this.activeParticipationId.set((host ?? participations[0]).id);
+      }
 
-  readonly paymentLinks = computed<LinkListItem[]>(() => [
-    {
-      label: 'Opłać udział',
-      icon: 'dollar-sign',
-      value: 'pay',
-      color: 'success',
-      iconColor: 'success',
-      iconBackground: true,
-      loading: this.loading(),
-    },
-  ]);
-
-  readonly rejoinLinks = computed<LinkListItem[]>(() => [
-    {
-      label: 'Dołącz ponownie',
-      icon: 'user-plus',
-      value: 'rejoin',
-      color: 'primary',
-      iconColor: 'primary',
-      iconBackground: true,
-      loading: this.loading(),
-    },
-  ]);
+      // Reset to host if current ID is no longer valid
+      if (currentId && !participations.find((p) => p.id === currentId)) {
+        const host = participations.find((p) => !p.isGuest);
+        this.activeParticipationId.set((host ?? participations[0])?.id ?? null);
+      }
+    });
+  }
 
   readonly participantLinks = computed<LinkListItem[]>(() => {
     const organizerName = this.event()?.organizer?.displayName || 'organizatorem wydarzenia';
 
     const links: LinkListItem[] = [
       {
+        label: 'Dodaj kolejną osobę',
+        description: 'Zgłoś do wydarzenia także swego znajomego',
+        icon: 'user-plus',
+        value: 'add-guest',
+        appearance: 'soft',
+        color: 'success',
+      },
+      {
         label: 'Lista uczestników',
         description: 'Zobacz wszystkich uczestników wydarzenia',
         icon: 'users',
         value: 'participants-list',
         iconColor: 'info',
-        iconBackground: true,
       },
       {
         label: 'Czat grupowy',
@@ -170,7 +160,6 @@ export class MyParticipationDetailsOverlayComponent {
         icon: 'message-circle',
         value: 'group-chat',
         iconColor: 'info',
-        iconBackground: true,
       },
       {
         label: 'Czat prywatny z organizatorem',
@@ -178,29 +167,8 @@ export class MyParticipationDetailsOverlayComponent {
         icon: 'user',
         value: 'organizer-chat',
         iconColor: 'neutral',
-        iconBackground: true,
       },
     ];
-
-    links.push({
-      label: 'Dodaj kolejną osobę',
-      description: 'Zgłoś do wydarzenia także swego znajomego',
-      icon: 'user-plus',
-      value: 'add-guest',
-      color: 'success',
-      iconColor: 'success',
-      iconBackground: true,
-    });
-
-    links.push({
-      label: 'Wypisz się z wydarzenia',
-      description: 'Stracisz swoje miejsce',
-      icon: 'user-x',
-      value: 'leave',
-      color: 'danger',
-      iconColor: 'danger',
-      iconBackground: true,
-    });
 
     return links;
   });
@@ -212,17 +180,8 @@ export class MyParticipationDetailsOverlayComponent {
     }
   }
 
-  onParticipantClick(participation: Participation): void {
-    const event = this.event();
-    if (!event) return;
-
-    const data: EnrollmentModalData = {
-      participant: participation,
-      slot: participation.slot ?? null,
-      event,
-      allParticipants: this.participants(),
-    };
-    this.modalService.open(EnrollmentSlotModalComponent, { data });
+  handleActionCompleted(): void {
+    this.closed.emit();
   }
 
   handleParticipantOption(item: LinkListItem): void {
@@ -249,18 +208,9 @@ export class MyParticipationDetailsOverlayComponent {
       return;
     }
 
-    if (item.value === 'manage-guests') {
-      this.manageGuests.emit();
-      return;
-    }
-
     if (item.value === 'add-guest') {
       this.addGuestRequested.emit();
       return;
-    }
-
-    if (item.value === 'leave') {
-      this.leaveRequested.emit();
     }
   }
 }

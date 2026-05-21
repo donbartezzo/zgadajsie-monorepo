@@ -31,15 +31,10 @@
       [open]="true"
       [event]="overlays.event()"
       [loading]="overlays.loading()"
-      [participantStatus]="overlays.participantStatus()"
-      [waitingReason]="overlays.waitingReason()"
       [participants]="overlays.participants()"
       (closed)="overlays.close()"
       (payRequested)="overlays.handlePay()"
-      (leaveRequested)="overlays.handleLeaveRequested()"
-      (rejoinRequested)="overlays.handleRejoinRequested()"
       (addGuestRequested)="overlays.handleAddGuestRequested()"
-      (manageGuests)="overlays.handleManageGuests()"
     />
   }
   @case ('organizerActions') {

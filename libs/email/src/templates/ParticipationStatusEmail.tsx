@@ -13,21 +13,24 @@ type StatusConfig = {
   calloutLabel: string;
   body: (eventTitle: string) => React.ReactNode;
   showLink: boolean;
+  buttonLabel: string;
 };
 
 const STATUS_CONFIG: Record<ParticipationStatus, StatusConfig> = {
   SLOT_ASSIGNED: {
     subject: 'Przydzielono miejsce',
     preview: 'Masz przydzielone miejsce — potwierdź uczestnictwo',
-    calloutVariant: 'info',
-    calloutLabel: 'Przydzielono miejsce',
+    calloutVariant: 'warning',
+    calloutLabel: 'Wymagane potwierdzenie',
     body: (eventTitle) => (
       <>
-        Masz przydzielone miejsce na wydarzeniu <strong>{eventTitle}</strong>. Potwierdź swoje
-        uczestnictwo na stronie wydarzenia.
+        Masz przydzielone miejsce na wydarzeniu <strong>{eventTitle}</strong>, jednak organizator
+        wymaga potwierdzenia uczestnictwa - kliknij poniższy przycisk, aby potwierdzić swój udział.
+        <u>Bez potwierdzenia Twoje uczestnictwo może zostać anulowane</u>.
       </>
     ),
     showLink: true,
+    buttonLabel: 'Potwierdź uczestnictwo',
   },
   APPROVAL_REMINDER: {
     subject: 'Przypomnienie o potwierdzeniu',
@@ -41,6 +44,7 @@ const STATUS_CONFIG: Record<ParticipationStatus, StatusConfig> = {
       </>
     ),
     showLink: true,
+    buttonLabel: 'Potwierdź uczestnictwo',
   },
   CONFIRMED: {
     subject: 'Uczestnictwo potwierdzone',
@@ -54,6 +58,7 @@ const STATUS_CONFIG: Record<ParticipationStatus, StatusConfig> = {
       </>
     ),
     showLink: true,
+    buttonLabel: 'Zobacz wydarzenie',
   },
   REMOVED: {
     subject: 'Usunięcie z wydarzenia',
@@ -67,6 +72,7 @@ const STATUS_CONFIG: Record<ParticipationStatus, StatusConfig> = {
       </>
     ),
     showLink: false,
+    buttonLabel: 'Zobacz wydarzenie',
   },
   REJECTED: {
     subject: 'Zgłoszenie odrzucone',
@@ -79,6 +85,7 @@ const STATUS_CONFIG: Record<ParticipationStatus, StatusConfig> = {
       </>
     ),
     showLink: false,
+    buttonLabel: 'Zobacz wydarzenie',
   },
 };
 
@@ -106,7 +113,7 @@ export default function ParticipationStatusEmail({
         </Callout>
         {config.showLink && eventLink && (
           <Section style={{ textAlign: 'center' }}>
-            <Button href={eventLink}>Zobacz wydarzenie</Button>
+            <Button href={eventLink}>{config.buttonLabel}</Button>
           </Section>
         )}
       </Section>

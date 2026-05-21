@@ -19,12 +19,21 @@ export type StatusIndicatorVariant = 'icon' | 'icon-label';
           variant="soft"
           size="xs"
           [square]="true"
+          [borderColor]="config.color"
+          [hasShadow]="true"
         />
       }
 
       @case ('icon-label') {
         <app-explainer-trigger [title]="config.label" [description]="_description()">
-          <app-badge [icon]="config.icon" [color]="config.color" variant="soft" size="sm">
+          <app-badge
+            [icon]="config.icon"
+            [color]="config.color"
+            variant="soft"
+            size="sm"
+            [borderColor]="config.color"
+            [hasShadow]="true"
+          >
             {{ config.label }}
             @if (detail()) {
               <span class="opacity-70">· {{ detail() }}</span>

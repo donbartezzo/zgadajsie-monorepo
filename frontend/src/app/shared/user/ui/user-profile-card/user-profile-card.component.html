@@ -4,7 +4,6 @@
 @let _canEditNameVal = _canEditName();
 @let _canEditAvatarVal = _canEditAvatar();
 @let _forceEditingDisplayNameVal = _forceEditingDisplayName();
-@let _subtitle = subtitle();
 @let _allStatusBadges = allStatusBadges();
 @let _hasChanges = hasChanges();
 @let _isSavingVal = _isSaving();
@@ -59,12 +58,8 @@
       }
     </div>
 
-    @if (_subtitle && !_editingDisplayNameMode) {
-      <app-badge class="mt-1" color="primary" size="xs">{{ _subtitle }}</app-badge>
-    }
-
     @if (_allStatusBadges.length > 0) {
-      <div class="mt-1.5 flex flex-col items-center gap-1.5">
+      <div class="mt-1.5 flex flex-row flex-wrap justify-center gap-1.5">
         @for (badge of _allStatusBadges; track badge.type) {
           <app-status-indicator [type]="badge.type" [detail]="badge.detail ?? null" variant="icon-label" />
         }
@@ -122,6 +117,8 @@
       <p class="mt-3 line-clamp-3 text-sm text-neutral-600">{{ _description }}</p>
     }
 
-    <ng-content></ng-content>
+    <div class="w-full">
+      <ng-content></ng-content>
+    </div>
   }
 </div>

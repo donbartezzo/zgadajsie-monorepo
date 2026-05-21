@@ -61,7 +61,7 @@ export class NavigationOverlayComponent {
     return [
       ...baseLinks,
       {
-        label: 'Zaloguj się',
+        label: 'Zaloguj się lub zarejestruj',
         icon: 'log-in',
         value: 'login',
         appearance: 'soft',

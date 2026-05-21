@@ -1,0 +1,25 @@
+<div class="space-y-3">
+  <!-- @let _participant = participant();
+  @let _isWithdrawn = isWithdrawnStatus();
+
+  <div class="py-3 text-center text-base font-semibold text-neutral-600">
+    @if (needsConfirmation()) {
+      Wymagane potwierdzenie uczestnictwa
+    } @else if (_participant?.status === 'REJECTED') {
+      Zgłoszenie zostało odrzucone przez organizatora.
+    } @else if (isWithdrawnByAdmin()) {
+      Uczestnik został usunięty przez administratora serwisu.
+    } @else if (_isWithdrawn) {
+      Uczestnik zrezygnował z udziału w wydarzeniu.
+    } @else {
+      Uczestnik wydarzenia
+    }
+  </div> -->
+
+  <app-section-separator label="Opcje uczestnictwa" />
+
+  <!-- ── Action links ── -->
+  <section class="space-y-1.5">
+    <app-link-list [items]="actionLinks()" (itemClicked)="handleActionClick($event)" />
+  </section>
+</div>

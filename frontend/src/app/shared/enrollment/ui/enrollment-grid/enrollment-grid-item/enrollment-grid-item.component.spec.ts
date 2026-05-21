@@ -43,6 +43,7 @@ function makePayment(overrides: Partial<ParticipantPaymentInfo> = {}): Participa
 }
 
 describe('EnrollmentGridItemComponent - computed signals', () => {
+  // Testy zakładają enableOnlinePayments = true (domyślna wartość w DEV environment)
   function create(participant: EnrollmentItem) {
     TestBed.configureTestingModule({
       imports: [EnrollmentGridItemComponent],

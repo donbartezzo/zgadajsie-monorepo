@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, ElementRef, inject, input } from '@angular/core';
 import { ExplainerService } from './explainer.service';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-explainer-trigger',
+  imports: [IconComponent],
   template: `
     <span
       class="relative inline-flex cursor-help"
@@ -11,10 +13,12 @@ import { ExplainerService } from './explainer.service';
       (keydown.enter)="open($event)"
     >
       <ng-content />
-      <span
-        class="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-info-400 shrink-0"
+      <app-icon
+        name="help"
+        size="xs"
+        class="absolute -top-0.5 -right-0.5 bg-neutral-900 text-white rounded-full shrink-0 opacity-25"
         aria-hidden="true"
-      ></span>
+      />
     </span>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

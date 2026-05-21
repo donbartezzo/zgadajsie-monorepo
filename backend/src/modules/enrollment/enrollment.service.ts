@@ -266,6 +266,11 @@ export class EnrollmentService {
           return withDerivedStatus(withSlot);
         });
         this.notifyEventChanged(eventId, 'participants');
+        try {
+          await this.notifySlotAssigned(addedByUserId, event.title, eventId, guestUser.displayName);
+        } catch (err) {
+          this.logger.error(`Failed to notify slot assigned for guest: ${err}`);
+        }
         return result;
       }
     }
@@ -444,7 +449,13 @@ export class EnrollmentService {
     // Notify only in OPEN_ENROLLMENT (not during pre-enrollment)
     if (phase === 'OPEN_ENROLLMENT' && updated) {
       const recipientId = updated.addedByUserId ?? updated.userId;
-      await this.notifySlotAssigned(recipientId, updated.event.title, updated.eventId);
+      const guestDisplayName = updated.addedByUserId ? updated.user.displayName : undefined;
+      await this.notifySlotAssigned(
+        recipientId,
+        updated.event.title,
+        updated.eventId,
+        guestDisplayName,
+      );
     }
 
     return { ...updated, needsTrustDecision };
@@ -481,12 +492,27 @@ export class EnrollmentService {
       where: { id: participationId },
       include: {
         user: { select: USER_SELECT },
-        event: { select: { id: true, title: true } },
+        event: { select: { id: true, title: true, city: { select: { slug: true } } } },
         slot: true,
       },
     });
 
     this.notifyEventChanged(participation.eventId, 'all');
+
+    // Send confirmation email
+    if (updated?.user && updated.event) {
+      const eventLink = buildEventUrl(updated.event.city.slug, updated.event.id);
+      this.emailService
+        .sendParticipationStatusEmail(
+          updated.user.email,
+          updated.user.displayName,
+          updated.event.title,
+          'CONFIRMED',
+          eventLink,
+        )
+        .catch((err) => this.logger.error(`Failed to send confirmation email: ${err}`));
+    }
+
     return updated;
   }
 
@@ -880,16 +906,15 @@ export class EnrollmentService {
       return this.createWaiting(eventId, userId, event, isPaid, 'NO_SLOTS', roleKey);
     }
 
-    // Eligible + free slot → assign slot (confirmed=true for free events, false for paid)
+    // Eligible + free slot → assign slot (confirmed=true because user self-assigns)
     const result = await this.prisma.$transaction(async (tx) => {
       const participation = await tx.eventEnrollment.create({
         data: { eventId, userId, wantsIn: true, roleKey },
         include: { user: { select: USER_SELECT } },
       });
 
-      // For free events, auto-confirm. For paid, user must pay first.
-      const confirmed = !isPaid;
-      await this.slotService.assignSlot(eventId, participation.id, confirmed, tx, roleKey);
+      // User joins directly → auto-confirm (payment is tracked separately)
+      await this.slotService.assignSlot(eventId, participation.id, true, tx, roleKey);
 
       const withSlot = await tx.eventEnrollment.findUnique({
         where: { id: participation.id },
@@ -1077,9 +1102,11 @@ export class EnrollmentService {
       };
     }
 
-    // Assign slot
-    const confirmed = !isPaid;
-    await this.slotService.assignSlot(event.id, participationId, confirmed, undefined, roleKey);
+    // Rejoin assigns a slot but user must explicitly confirm participation again.
+    // This applies both when the user rejoins themselves and when an organizer/host
+    // re-adds them — the participant remains APPROVED with slot.confirmed=false
+    // until they tap "Potwierdź uczestnictwo".
+    await this.slotService.assignSlot(event.id, participationId, false, undefined, roleKey);
 
     const withSlot = await this.prisma.eventEnrollment.findUnique({
       where: { id: participationId },
@@ -1188,10 +1215,11 @@ export class EnrollmentService {
       } else {
         const freeSlots = await this.slotService.getFreeSlotCount(event.id, validatedRoleKey);
         if (freeSlots > 0) {
+          // User initiates role change → auto-confirm
           await this.slotService.assignSlot(
             event.id,
             participationId,
-            !isPaid,
+            true,
             undefined,
             validatedRoleKey,
           );
@@ -1285,6 +1313,7 @@ export class EnrollmentService {
     recipientId: string,
     eventTitle: string,
     eventId: string,
+    guestDisplayName?: string,
   ): Promise<void> {
     try {
       const event = await this.prisma.event.findUnique({
@@ -1299,16 +1328,19 @@ export class EnrollmentService {
         return;
       }
       const eventLink = event ? buildEventUrl(event.city.slug, eventId) : undefined;
+      const displayTitle = guestDisplayName
+        ? `${eventTitle} (gość: ${guestDisplayName})`
+        : eventTitle;
       await this.pushService.notifyParticipationStatus(
         recipientId,
-        eventTitle,
+        displayTitle,
         'SLOT_ASSIGNED',
         eventId,
       );
       await this.emailService.sendParticipationStatusEmail(
         user.email,
         user.displayName,
-        eventTitle,
+        displayTitle,
         'SLOT_ASSIGNED',
         eventLink,
       );
