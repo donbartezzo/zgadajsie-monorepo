@@ -1,16 +1,5 @@
 import { computed, effect, inject, Injectable, NgZone, signal } from '@angular/core';
-import {
-  bufferTime,
-  filter,
-  finalize,
-  forkJoin,
-  map,
-  Subject,
-  Subscription,
-  from,
-  concatMap,
-  catchError,
-} from 'rxjs';
+import { bufferTime, filter, finalize, forkJoin, map, Subject, Subscription } from 'rxjs';
 import { EventService } from '../../../core/services/event.service';
 import { EventRealtimeService } from '../../../core/services/event-realtime.service';
 import { AuthService } from '../../../core/auth/auth.service';
