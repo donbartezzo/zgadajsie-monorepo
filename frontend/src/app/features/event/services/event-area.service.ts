@@ -1,5 +1,16 @@
 import { computed, effect, inject, Injectable, NgZone, signal } from '@angular/core';
-import { bufferTime, filter, finalize, forkJoin, map, Subject, Subscription } from 'rxjs';
+import {
+  bufferTime,
+  filter,
+  finalize,
+  forkJoin,
+  map,
+  Subject,
+  Subscription,
+  from,
+  concatMap,
+  catchError,
+} from 'rxjs';
 import { EventService } from '../../../core/services/event.service';
 import { EventRealtimeService } from '../../../core/services/event-realtime.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -144,6 +155,12 @@ export class EventAreaService {
     const e = this.event();
     if (!e) return false;
     return isEventJoinable(e.startsAt, e.status);
+  });
+
+  readonly needsConfirmation = computed(() => {
+    const p = this.currentUserParticipation();
+    if (!p) return false;
+    return p.status === 'APPROVED' && p.slot?.confirmed === false;
   });
 
   readonly ctaLabel = computed(() => {
@@ -576,11 +593,8 @@ export class EventAreaService {
         this.confirmJoinGuest(data.displayName, data.roleKey, data.avatarSeed, data.userId),
     );
     this.overlays.onPay(() => this.payEvent());
-    this.overlays.onLeaveRequested(() => this.requestLeave());
-    this.overlays.onRejoinRequested(() => this.confirmJoin());
     this.overlays.onRejoinParticipantRequested((p) => this.confirmRejoinParticipant(p));
     this.overlays.onAddGuestRequested(() => this.openAddGuest());
-    this.overlays.onManageGuests(() => this.openManageGuests());
     this.overlays.onRoleChangeConfirmed((data) =>
       this.handleRoleChange(data.participationId, data.roleKey),
     );
@@ -588,7 +602,6 @@ export class EventAreaService {
   }
 
   openJoinConfirmOverlay(): void {
-    this.overlays.setParticipantStatus(this.participantStatus(), this.waitingReason());
     this.overlays.setParticipants(this.participants());
     this.overlays.open('joinConfirm');
   }
@@ -643,11 +656,6 @@ export class EventAreaService {
     ).length;
 
     return Math.max(0, maxGuests - currentGuests);
-  }
-
-  openManageGuests(): void {
-    this.overlays.close();
-    this.navigation.navigateToEventParticipants(this._eventId, this._citySlug);
   }
 
   handleNotificationBarAction(barId: string): void {
@@ -725,6 +733,26 @@ export class EventAreaService {
       error: () => {
         this.snackbar.error('Nie udało się wypisać');
         this.joining.set(false);
+      },
+    });
+  }
+
+  confirmSlot(): void {
+    const participationId = this.currentParticipationId();
+    if (!participationId) return;
+
+    this.joining.set(true);
+    this.overlays.close();
+
+    this.eventService.confirmSlot(participationId).subscribe({
+      next: () => {
+        this.joining.set(false);
+        this.snackbar.success('Uczestnictwo potwierdzone!');
+        this.refreshParticipants();
+        this.modalService.requestRefresh();
+      },
+      error: (err: { error?: { message?: string } }) => {
+        this.snackbar.error(err.error?.message ?? 'Nie udało się potwierdzić uczestnictwa');
       },
     });
   }
@@ -881,7 +909,6 @@ export class EventAreaService {
         this.joining.set(false);
         if (result.paidByVoucher) {
           this.snackbar.success('Opłacono voucherem!');
-          this.overlays.setParticipantStatus('CONFIRMED');
           this.refreshParticipants();
           return;
         }

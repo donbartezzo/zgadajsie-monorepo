@@ -28,6 +28,7 @@ import { ParticipationStatus, WaitingReason } from '../../../types/participation
 import { ParticipantPaymentInfo } from '../../../types/payment.interface';
 import { SemanticColor } from '../../../types/colors';
 import { type StatusIndicatorType, type StatusBadgeEntry } from '@zgadajsie/shared';
+import { environment } from '../../../../../environments/environment';
 
 const PARTICIPATION_STATUS_TO_BADGE: Record<ParticipationStatus, StatusIndicatorType> = {
   CONFIRMED: 'confirmed',
@@ -70,6 +71,7 @@ export class UserProfileCardComponent {
   readonly participationStatus = input<ParticipationStatus | null>(null);
   readonly waitingReason = input<WaitingReason | null>(null);
   readonly paymentInfo = input<ParticipantPaymentInfo | null>(null);
+  readonly slotConfirmed = input<boolean | null>(null);
   readonly isGuest = input(false);
   readonly variant = input<ProfileCardVariant>('default');
   readonly stats = input<UserProfileStats[]>([]);
@@ -164,16 +166,25 @@ export class UserProfileCardComponent {
     if (status) {
       const inEnrollmentCtx = ctx === 'participant' || ctx === 'organizer';
       if (status === 'APPROVED' && inEnrollmentCtx) {
-        const payment = this.paymentInfo();
-        const amountDetail = payment?.amount ? `${payment.amount} zł` : null;
-        if (!payment) {
-          badges.push({ type: 'needs_payment' });
-        } else {
-          const s = payment.status;
-          if (s === 'COMPLETED') badges.push({ type: 'payment_completed', detail: amountDetail });
-          else if (s === 'VOUCHER_REFUNDED' || s === 'REFUNDED')
-            badges.push({ type: 'payment_refunded', detail: amountDetail });
-          else badges.push({ type: 'payment_pending', detail: amountDetail });
+        // Slot przydzielony, ale nie potwierdzony przez uczestnika → wymaga potwierdzenia.
+        // Pokazujemy ten wskaźnik niezależnie od stanu płatności, bo potwierdzenie
+        // uczestnictwa jest pierwszą wymaganą akcją uczestnika po rejoinie / dodaniu przez organizatora.
+        if (this.slotConfirmed() === false) {
+          badges.push({ type: 'needs_confirmation' });
+        }
+        // Płatności online są wyłączone → nie pokazujemy badge'ów płatności
+        if (environment.enableOnlinePayments) {
+          const payment = this.paymentInfo();
+          const amountDetail = payment?.amount ? `${payment.amount} zł` : null;
+          if (!payment) {
+            badges.push({ type: 'needs_payment' });
+          } else {
+            const s = payment.status;
+            if (s === 'COMPLETED') badges.push({ type: 'payment_completed', detail: amountDetail });
+            else if (s === 'VOUCHER_REFUNDED' || s === 'REFUNDED')
+              badges.push({ type: 'payment_refunded', detail: amountDetail });
+            else badges.push({ type: 'payment_pending', detail: amountDetail });
+          }
         }
       } else {
         badges.push({ type: PARTICIPATION_STATUS_TO_BADGE[status] });

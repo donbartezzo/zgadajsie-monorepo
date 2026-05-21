@@ -340,7 +340,7 @@ describe('EnrollmentService', () => {
       expect(result.status).toBe('CONFIRMED');
     });
 
-    it('zaufany użytkownik + wolny slot (płatny event) → slot assigned confirmed=false', async () => {
+    it('zaufany użytkownik + wolny slot (płatny event) → slot assigned confirmed=true', async () => {
       const paidEvent = makeEvent({
         startsAt: FUTURE_FAR,
         lotteryExecutedAt: new Date(),
@@ -350,17 +350,18 @@ describe('EnrollmentService', () => {
 
       const participationWithSlot = makeEnrollment({
         wantsIn: true,
-        slot: { id: 'slot1', confirmed: false },
+        slot: { id: 'slot1', confirmed: true },
       });
       tx.eventEnrollment.create.mockResolvedValue(participationWithSlot);
       tx.eventEnrollment.findUnique.mockResolvedValue(participationWithSlot);
+      (slots.assignSlot as jest.Mock).mockResolvedValue(undefined);
 
       await service.join('event1', mockAuthUser('user1'));
 
       expect(slots.assignSlot as jest.Mock).toHaveBeenCalledWith(
         'event1',
         participationWithSlot.id,
-        false, // confirmed=false for paid events
+        true, // confirmed=true for all OPEN_ENROLLMENT joins (payment tracked separately)
         expect.anything(),
         undefined,
       );
@@ -763,6 +764,49 @@ describe('EnrollmentService', () => {
 
       expect(prisma.organizerUserRelation.upsert as jest.Mock).not.toHaveBeenCalled();
     });
+
+    it('w OPEN_ENROLLMENT wysyła powiadomienie do hosta z sufiksem (gość: ...)', async () => {
+      const guestParticipation = makeEnrollment({
+        wantsIn: true,
+        slot: null,
+        addedByUserId: 'host1',
+        event: makeEvent({ lotteryExecutedAt: new Date() }),
+      });
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(guestParticipation);
+      (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
+      (prisma.eventEnrollment.update as jest.Mock).mockResolvedValue({
+        ...guestParticipation,
+        waitingReason: null,
+        eventId: 'event1',
+        addedByUserId: 'host1',
+        event: { id: 'event1', title: 'Test Event' },
+        user: { displayName: 'Anna Nowak' },
+      });
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({
+        id: 'event1',
+        city: { slug: 'warszawa' },
+      });
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        email: 'host@test.com',
+        displayName: 'Host',
+      });
+
+      await service.assignSlotToParticipant('p1', mockAuthUser('org1'));
+
+      expect(push.notifyParticipationStatus as jest.Mock).toHaveBeenCalledWith(
+        'host1',
+        'Test Event (gość: Anna Nowak)',
+        'SLOT_ASSIGNED',
+        'event1',
+      );
+      expect(email.sendParticipationStatusEmail as jest.Mock).toHaveBeenCalledWith(
+        'host@test.com',
+        'Host',
+        'Test Event (gość: Anna Nowak)',
+        'SLOT_ASSIGNED',
+        expect.any(String),
+      );
+    });
   });
 
   // ─── confirmSlot() ────────────────────────────────────────────────────────
@@ -773,9 +817,17 @@ describe('EnrollmentService', () => {
         wantsIn: true,
         slot: { id: 'slot1', confirmed: false },
       });
+      const participationWithCity = {
+        ...participation,
+        event: {
+          ...participation.event,
+          city: { slug: 'warszawa' },
+        },
+        slot: { confirmed: true },
+      };
       (prisma.eventEnrollment.findUnique as jest.Mock)
         .mockResolvedValueOnce(participation)
-        .mockResolvedValue({ ...participation, slot: { confirmed: true } });
+        .mockResolvedValue(participationWithCity);
 
       await service.confirmSlot('p1', mockAuthUser('user1'));
 
@@ -1262,6 +1314,46 @@ describe('EnrollmentService', () => {
 
       const callArg = (prisma.user.create as jest.Mock).mock.calls[0][0];
       expect(callArg.data).not.toHaveProperty('id');
+    });
+
+    it('w OPEN_ENROLLMENT wysyła powiadomienie do hosta z sufiksem (gość: ...)', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({
+        ...openEvent,
+        city: { slug: 'warszawa' },
+      });
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        email: 'host@test.com',
+        displayName: 'Host',
+      });
+      (prisma.user.create as jest.Mock).mockResolvedValue({
+        id: 'guest1',
+        displayName: 'Jan Kowalski',
+      });
+      const guestEnrollment = makeEnrollment({
+        id: 'pg1',
+        userId: 'guest1',
+        addedByUserId: 'host1',
+        wantsIn: true,
+        slot: { id: 'slot1', confirmed: false },
+      });
+      tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
+      tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
+
+      await service.joinGuest('event1', mockAuthUser('host1'), 'Jan Kowalski');
+
+      expect(push.notifyParticipationStatus as jest.Mock).toHaveBeenCalledWith(
+        'host1',
+        'Test Event (gość: Jan Kowalski)',
+        'SLOT_ASSIGNED',
+        'event1',
+      );
+      expect(email.sendParticipationStatusEmail as jest.Mock).toHaveBeenCalledWith(
+        'host@test.com',
+        'Host',
+        'Test Event (gość: Jan Kowalski)',
+        'SLOT_ASSIGNED',
+        expect.any(String),
+      );
     });
   });
 

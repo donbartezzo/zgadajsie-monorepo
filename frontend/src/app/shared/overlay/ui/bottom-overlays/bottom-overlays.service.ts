@@ -3,7 +3,6 @@ import {
   Event as EventModel,
   ParticipantPaymentInfo,
   Participation,
-  WaitingReason,
   JoinGuestRequest,
   CancelPaymentRequest,
 } from '../../../types';
@@ -42,8 +41,6 @@ export class BottomOverlaysService {
   private readonly eventSignal = signal<EventModel | null>(null);
   private readonly loadingSignal = signal(false);
   private readonly isParticipantSignal = signal(false);
-  private readonly participantStatusSignal = signal<string | null>(null);
-  private readonly waitingReasonSignal = signal<WaitingReason | null>(null);
   private readonly isOrganizerSignal = signal(false);
   private readonly participantsSignal = signal<Participation[]>([]);
 
@@ -52,10 +49,7 @@ export class BottomOverlaysService {
   private authSuccessCallback: (() => void) | null = null;
   private payCallback: (() => void) | null = null;
   private cancelEventCallback: (() => void) | null = null;
-  private leaveCallback: (() => void) | null = null;
-  private rejoinCallback: (() => void) | null = null;
   private rejoinParticipantCallback: ((p: Participation) => void) | null = null;
-  private manageGuestsCallback: (() => void) | null = null;
   private cancelPaymentCallback: ((options: CancelPaymentRequest) => void) | null = null;
   private addGuestRequestedCallback: (() => void) | null = null;
   private changeRoleCallback:
@@ -86,8 +80,6 @@ export class BottomOverlaysService {
   readonly event = this.eventSignal.asReadonly();
   readonly loading = this.loadingSignal.asReadonly();
   readonly isParticipant = this.isParticipantSignal.asReadonly();
-  readonly participantStatus = this.participantStatusSignal.asReadonly();
-  readonly waitingReason = this.waitingReasonSignal.asReadonly();
   readonly isOrganizer = this.isOrganizerSignal.asReadonly();
   readonly participants = this.participantsSignal.asReadonly();
 
@@ -133,11 +125,6 @@ export class BottomOverlaysService {
     this.isParticipantSignal.set(value);
   }
 
-  setParticipantStatus(status: string | null, waitingReason?: WaitingReason | null): void {
-    this.participantStatusSignal.set(status);
-    this.waitingReasonSignal.set(waitingReason ?? null);
-  }
-
   setIsOrganizer(value: boolean): void {
     this.isOrganizerSignal.set(value);
   }
@@ -178,24 +165,12 @@ export class BottomOverlaysService {
     this.cancelEventCallback = callback;
   }
 
-  onLeaveRequested(callback: () => void): void {
-    this.leaveCallback = callback;
-  }
-
-  onRejoinRequested(callback: () => void): void {
-    this.rejoinCallback = callback;
-  }
-
   onRejoinParticipantRequested(callback: (p: Participation) => void): void {
     this.rejoinParticipantCallback = callback;
   }
 
   onAddGuestRequested(callback: () => void): void {
     this.addGuestRequestedCallback = callback;
-  }
-
-  onManageGuests(callback: () => void): void {
-    this.manageGuestsCallback = callback;
   }
 
   onCancelPaymentConfirmed(callback: (options: CancelPaymentRequest) => void): void {
@@ -244,24 +219,12 @@ export class BottomOverlaysService {
     this.cancelEventCallback?.();
   }
 
-  handleLeaveRequested(): void {
-    this.leaveCallback?.();
-  }
-
-  handleRejoinRequested(): void {
-    this.rejoinCallback?.();
-  }
-
   handleRejoinParticipant(p: Participation): void {
     this.rejoinParticipantCallback?.(p);
   }
 
   handleAddGuestRequested(): void {
     this.addGuestRequestedCallback?.();
-  }
-
-  handleManageGuests(): void {
-    this.manageGuestsCallback?.();
   }
 
   handleCancelPayment(options: CancelPaymentRequest): void {
@@ -282,11 +245,8 @@ export class BottomOverlaysService {
     this.authSuccessCallback = null;
     this.payCallback = null;
     this.cancelEventCallback = null;
-    this.leaveCallback = null;
-    this.rejoinCallback = null;
     this.rejoinParticipantCallback = null;
     this.addGuestRequestedCallback = null;
-    this.manageGuestsCallback = null;
     this.cancelPaymentCallback = null;
     this.changeRoleCallback = null;
     this.enrollmentActionCallback = null;

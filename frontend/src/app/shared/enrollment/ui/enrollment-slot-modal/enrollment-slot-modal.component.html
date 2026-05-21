@@ -3,15 +3,11 @@
   @let _participant = participant();
   @let _slot = slot();
   @let _isOrganizer = isOrganizer();
-  @let _isWithdrawn = isWithdrawnStatus();
   @let _isBanned = isBanned();
   @let _waitingReason = waitingReason();
   @let _payment = paymentInfo();
-  @let _loading = loading();
   @let _slotLocked = slotLocked();
   @let _config = slotStatusConfig();
-  @let _canRejoin = canRejoin();
-  @let _canGuestRejoin = canGuestRejoin();
   @let _actions = organizerActions();
   @let _hostParticipant = hostParticipant();
   @let _hostUserInfo = hostUserInfo();
@@ -57,6 +53,7 @@
           [participationStatus]="_participant.status"
           [waitingReason]="_waitingReason"
           [paymentInfo]="_payment"
+          [slotConfirmed]="_participant.slot?.confirmed ?? null"
           [isGuest]="_participant.isGuest"
           [participationId]="_participant.id"
           [isOrganizer]="_isOrganizer"
@@ -165,66 +162,14 @@
         </app-button>
       }
 
-      <!-- ── Own participation (active) ── -->
-      @if (canChangeRole()) {
-        <app-button
-          appearance="outline"
-          color="primary"
-          [fullWidth]="true"
-          [loading]="_loading"
-          (clicked)="onChangeRole()"
-        >
-          <app-icon name="edit" size="sm" />
-          Zmień rolę
-        </app-button>
-      }
-
-      @if (isCurrentUserParticipant() && !_isWithdrawn && eventArea.canLeave()) {
-        <app-button appearance="outline" color="danger" [fullWidth]="true" [loading]="_loading" (clicked)="onLeave()">
-          <app-icon name="user-x" size="sm" />
-          Wypisz się z wydarzenia
-        </app-button>
-      }
-
-      <!-- ── Guest host (active) ── -->
-      @if (isGuestHost() && !_isWithdrawn) {
-        <app-button
-          appearance="soft"
-          color="danger"
-          [fullWidth]="true"
-          [loading]="_loading"
-          (clicked)="onRemoveGuest()"
-        >
-          <app-icon name="user-x" size="sm" />
-          Wypisz gościa z wydarzenia
-        </app-button>
-      }
-
-      <!-- ── Withdrawn ── -->
-      @if (_isWithdrawn) {
-        <div class="py-2 text-center text-sm text-neutral-400">
-          @if (_participant?.status === 'REJECTED') {
-            Zgłoszenie zostało odrzucone przez organizatora.
-          } @else if (isWithdrawnByAdmin()) {
-            Uczestnik został usunięty przez administratora serwisu.
-          } @else {
-            Uczestnik zrezygnował z udziału w wydarzeniu.
-          }
-        </div>
-
-        @if (_canRejoin) {
-          <app-button appearance="solid" color="primary" [fullWidth]="true" (clicked)="onRejoin()">
-            <app-icon name="user-plus" size="sm" />
-            Wróć do wydarzenia
-          </app-button>
-        }
-
-        @if (_canGuestRejoin) {
-          <app-button appearance="soft" color="primary" [fullWidth]="true" (clicked)="onRejoinGuest()">
-            <app-icon name="user-plus" size="sm" />
-            Dodaj gościa ponownie
-          </app-button>
-        }
+      <!-- ── Participant actions (own participation / guest host) ── -->
+      @if (_participant && (isCurrentUserParticipant() || isGuestHost())) {
+        <app-enrollment-participant-actions
+          [participant]="_participant"
+          [event]="_event!"
+          (actionCompleted)="onActionCompleted()"
+          (closeRequested)="modalService.close()"
+        />
       }
 
       <!-- ── View-only (other user's participation, nie dla organizatora) ── -->

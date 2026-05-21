@@ -9,6 +9,7 @@ import { Enrollment, EnrolleeManageItem } from '../../../../types';
 import { SemanticColor } from '../../../../types/colors';
 import { SlotDisplayStatus } from '../../../slot-status-config';
 import { EnrollmentGridItemShellComponent } from './enrollment-grid-item-shell.component';
+import { environment } from '../../../../../../environments/environment';
 
 export type EnrollmentItem = Enrollment | EnrolleeManageItem;
 
@@ -88,6 +89,7 @@ export class EnrollmentGridItemComponent {
   readonly showRole = input(false);
   readonly highlightOwn = input(true);
   readonly disabled = input(false);
+  readonly active = input(false);
   readonly clicked = output<void>();
 
   readonly displayName = computed(() => this.participant().user?.displayName ?? 'Uczestnik');
@@ -127,8 +129,16 @@ export class EnrollmentGridItemComponent {
     return p.user?.isActive === false || p.user?.isEmailVerified === false;
   });
 
+  readonly needsConfirmation = computed(() => {
+    const p = this.participant();
+    return p.status === 'APPROVED' && p.slot?.confirmed === false;
+  });
+
   readonly needsPayment = computed(
-    () => this.participant().payment === null && this.participant().status === 'APPROVED',
+    () =>
+      environment.enableOnlinePayments &&
+      this.participant().payment === null &&
+      this.participant().status === 'APPROVED',
   );
 
   readonly isPending = computed(() => this.participant().status === 'PENDING');
@@ -142,6 +152,10 @@ export class EnrollmentGridItemComponent {
 
   readonly statusIndicators = computed<StatusIndicatorType[]>(() => {
     const indicators: StatusIndicatorType[] = [];
+
+    if (this.needsConfirmation()) {
+      indicators.push('needs_confirmation');
+    }
 
     if (this.needsPayment()) {
       indicators.push('needs_payment');

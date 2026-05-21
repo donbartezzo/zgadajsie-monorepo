@@ -1,79 +1,109 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { EnrollmentGridItemComponent } from '../../../shared/enrollment/ui/enrollment-grid/enrollment-grid-item/enrollment-grid-item.component';
+import { EnrollmentParticipantActionsComponent } from '../../../shared/enrollment/ui/enrollment-participant-actions/enrollment-participant-actions.component';
+import { UserProfileCardComponent } from '../../../shared/user/ui/user-profile-card/user-profile-card.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { NavigationService } from '../../../core/services/navigation.service';
-import { ModalService } from '../../../shared/ui/modal/modal.service';
-import {
-  EnrollmentSlotModalComponent,
-  EnrollmentModalData,
-} from '../../../shared/enrollment/ui/enrollment-slot-modal/enrollment-slot-modal.component';
-import { Event as EventModel, WaitingReason, Participation } from '../../../shared/types';
-import { isEventJoinable } from '../../../shared/utils';
+import { Event as EventModel, Participation } from '../../../shared/types';
 
 @Component({
   selector: 'app-my-participation-details-overlay',
-  imports: [BottomOverlayComponent, LinkListComponent, EnrollmentGridItemComponent],
+  imports: [
+    BottomOverlayComponent,
+    LinkListComponent,
+    EnrollmentGridItemComponent,
+    EnrollmentParticipantActionsComponent,
+    UserProfileCardComponent,
+  ],
   template: `
     <app-bottom-overlay [open]="open()" title="Twoje zapisy" (closed)="closed.emit()">
       @let _userParticipations = userParticipations();
+      @let _activeParticipation = activeParticipation();
+      @let _event = event();
 
       <div class="space-y-4 mx-auto">
-        <!-- User participations listing -->
+        <!-- Tab bar for user participations -->
         @if (_userParticipations.length > 0) {
           <div class="flex flex-wrap gap-3 justify-center pb-3">
             @for (p of _userParticipations; track p.id) {
               <app-enrollment-grid-item
                 [participant]="p"
                 [showRole]="true"
-                (clicked)="onParticipantClick(p)"
+                [active]="p.id === _activeParticipation?.id"
+                (clicked)="activeParticipationId.set(p.id)"
               />
             }
           </div>
         }
 
-        <div class="mx-auto max-w-lg mt-2 justify-center">
-          <!-- Payment CTA (highlighted) -->
-          <!-- @if (needsPayment()) {
-            <div class="rounded-xl border-2 border-danger-200">
-              <div class="p-2">
-                <p class="text-sm font-bold text-danger-400 text-center">Wymagana płatność</p>
-                <p class="text-xs text-danger-400 mt-0.5 text-center">
-                  Opłać {{ _event?.costPerPerson }} zł, aby potwierdzić swój udział.
-                </p>
-              </div>
-              <div>
-                <app-link-list [items]="paymentLinks()" (itemClicked)="payRequested.emit()" />
-              </div>
+        <!-- Active participation content -->
+        @if (_activeParticipation) {
+          <div class="mx-auto max-w-lg mt-2">
+            <!-- Status header -->
+            <div class="rounded-xl border-2 border-neutral-200 p-4 mb-4">
+              <p class="text-sm text-neutral-600 text-center">
+                @if (
+                  _activeParticipation.status === 'APPROVED' &&
+                  _activeParticipation.slot?.confirmed === false
+                ) {
+                  Wymagane potwierdzenie uczestnictwa
+                } @else if (_activeParticipation.status === 'WITHDRAWN') {
+                  Uczestnik zrezygnował z udziału
+                } @else if (_activeParticipation.status === 'REJECTED') {
+                  Zgłoszenie odrzucone
+                } @else {
+                  Uczestnik wydarzenia
+                }
+              </p>
             </div>
-          } -->
 
-          <!-- Rejoin CTA for withdrawn users -->
-          @if (isWithdrawnOrRejected() && canRejoin()) {
-            <div class="rounded-xl border-2 border-primary-200 mt-2">
-              <div class="p-2">
-                <p class="text-sm font-bold text-primary-600 text-center">Chcesz wrócić?</p>
-                <p class="text-xs text-primary-500 mt-0.5 text-center">
-                  Możesz ponownie dołączyć do tego wydarzenia.
-                </p>
+            <!-- User profile card -->
+            @if (_activeParticipation.user) {
+              <div class="mb-4">
+                <app-user-profile-card
+                  [user]="_activeParticipation.user"
+                  context="participant"
+                  [participationStatus]="_activeParticipation.status"
+                  [isGuest]="_activeParticipation.isGuest"
+                  [participationId]="_activeParticipation.id"
+                  [isOwnGuest]="false"
+                  [isOrganizer]="false"
+                  [canEditName]="false"
+                  [canEditAvatar]="false"
+                  variant="overlay"
+                />
               </div>
-              <div>
-                <app-link-list [items]="rejoinLinks()" (itemClicked)="rejoinRequested.emit()" />
-              </div>
-            </div>
-          }
+            }
 
-          <!-- Participant options (hidden for withdrawn/rejected) -->
-          @if (!isWithdrawnOrRejected()) {
-            <div class="mt-2">
-              <app-link-list
-                [items]="participantLinks()"
-                (itemClicked)="handleParticipantOption($event)"
+            <!-- Participant actions -->
+            <div class="mb-4">
+              <app-enrollment-participant-actions
+                [participant]="_activeParticipation"
+                [event]="_event!"
+                (actionCompleted)="handleActionCompleted()"
+                (closeRequested)="closed.emit()"
               />
             </div>
-          }
+          </div>
+        }
+
+        <!-- General event options -->
+        <div class="mx-auto max-w-lg mt-2">
+          <app-link-list
+            [items]="participantLinks()"
+            (itemClicked)="handleParticipantOption($event)"
+          />
         </div>
       </div>
     </app-bottom-overlay>
@@ -84,22 +114,15 @@ export class MyParticipationDetailsOverlayComponent {
   private readonly auth = inject(AuthService);
   private readonly navigation = inject(NavigationService);
   private readonly overlays = inject(BottomOverlaysService);
-  private readonly modalService = inject(ModalService);
 
   readonly open = input(false);
   readonly event = input<EventModel | null>(null);
   readonly loading = input(false);
-  readonly participantStatus = input<string | null>(null);
-  readonly waitingReason = input<WaitingReason | null>(null);
   readonly participants = input<Participation[]>([]);
 
   readonly closed = output<void>();
   readonly payRequested = output<void>();
-  readonly leaveRequested = output<void>();
-  readonly rejoinRequested = output<void>();
   readonly addGuestRequested = output<void>();
-  readonly manageGuests = output<void>();
-  readonly participantClicked = output<Participation>();
 
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? null);
 
@@ -111,46 +134,14 @@ export class MyParticipationDetailsOverlayComponent {
     );
   });
 
-  readonly isWithdrawnOrRejected = computed(() => {
-    const s = this.participantStatus();
-    return s === 'WITHDRAWN' || s === 'REJECTED';
+  readonly activeParticipationId = signal<string | null>(null);
+
+  readonly activeParticipation = computed(() => {
+    const id = this.activeParticipationId();
+    const participations = this.userParticipations();
+    if (!id) return participations[0] ?? null;
+    return participations.find((p) => p.id === id) ?? null;
   });
-
-  readonly needsPayment = computed(() => {
-    const status = this.participantStatus();
-    const cost = this.event()?.costPerPerson ?? 0;
-    return status === 'APPROVED' && cost > 0;
-  });
-
-  readonly canRejoin = computed(() => {
-    const e = this.event();
-    if (!e) return false;
-    return isEventJoinable(e.startsAt, e.status);
-  });
-
-  readonly paymentLinks = computed<LinkListItem[]>(() => [
-    {
-      label: 'Opłać udział',
-      icon: 'dollar-sign',
-      value: 'pay',
-      color: 'success',
-      iconColor: 'success',
-      iconBackground: true,
-      loading: this.loading(),
-    },
-  ]);
-
-  readonly rejoinLinks = computed<LinkListItem[]>(() => [
-    {
-      label: 'Dołącz ponownie',
-      icon: 'user-plus',
-      value: 'rejoin',
-      color: 'primary',
-      iconColor: 'primary',
-      iconBackground: true,
-      loading: this.loading(),
-    },
-  ]);
 
   readonly participantLinks = computed<LinkListItem[]>(() => {
     const organizerName = this.event()?.organizer?.displayName || 'organizatorem wydarzenia';
@@ -212,17 +203,8 @@ export class MyParticipationDetailsOverlayComponent {
     }
   }
 
-  onParticipantClick(participation: Participation): void {
-    const event = this.event();
-    if (!event) return;
-
-    const data: EnrollmentModalData = {
-      participant: participation,
-      slot: participation.slot ?? null,
-      event,
-      allParticipants: this.participants(),
-    };
-    this.modalService.open(EnrollmentSlotModalComponent, { data });
+  handleActionCompleted(): void {
+    this.closed.emit();
   }
 
   handleParticipantOption(item: LinkListItem): void {
@@ -249,18 +231,9 @@ export class MyParticipationDetailsOverlayComponent {
       return;
     }
 
-    if (item.value === 'manage-guests') {
-      this.manageGuests.emit();
-      return;
-    }
-
     if (item.value === 'add-guest') {
       this.addGuestRequested.emit();
       return;
-    }
-
-    if (item.value === 'leave') {
-      this.leaveRequested.emit();
     }
   }
 }
