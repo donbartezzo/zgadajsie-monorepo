@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   output,
@@ -11,11 +12,11 @@ import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overla
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { EnrollmentGridItemComponent } from '../../../shared/enrollment/ui/enrollment-grid/enrollment-grid-item/enrollment-grid-item.component';
 import { EnrollmentParticipantActionsComponent } from '../../../shared/enrollment/ui/enrollment-participant-actions/enrollment-participant-actions.component';
-import { UserProfileCardComponent } from '../../../shared/user/ui/user-profile-card/user-profile-card.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { Event as EventModel, Participation } from '../../../shared/types';
+import { SectionSeparatorComponent } from '../../../shared/ui/section-separator/section-separator.component';
 
 @Component({
   selector: 'app-my-participation-details-overlay',
@@ -24,7 +25,7 @@ import { Event as EventModel, Participation } from '../../../shared/types';
     LinkListComponent,
     EnrollmentGridItemComponent,
     EnrollmentParticipantActionsComponent,
-    UserProfileCardComponent,
+    SectionSeparatorComponent,
   ],
   template: `
     <app-bottom-overlay [open]="open()" title="Twoje zapisy" (closed)="closed.emit()">
@@ -32,74 +33,42 @@ import { Event as EventModel, Participation } from '../../../shared/types';
       @let _activeParticipation = activeParticipation();
       @let _event = event();
 
-      <div class="space-y-4 mx-auto">
-        <!-- Tab bar for user participations -->
-        @if (_userParticipations.length > 0) {
-          <div class="flex flex-wrap gap-3 justify-center pb-3">
-            @for (p of _userParticipations; track p.id) {
-              <app-enrollment-grid-item
-                [participant]="p"
-                [showRole]="true"
-                [active]="p.id === _activeParticipation?.id"
-                (clicked)="activeParticipationId.set(p.id)"
-              />
-            }
-          </div>
-        }
-
-        <!-- Active participation content -->
-        @if (_activeParticipation) {
-          <div class="mx-auto max-w-lg mt-2">
-            <!-- Status header -->
-            <div class="rounded-xl border-2 border-neutral-200 p-4 mb-4">
-              <p class="text-sm text-neutral-600 text-center">
-                @if (
-                  _activeParticipation.status === 'APPROVED' &&
-                  _activeParticipation.slot?.confirmed === false
-                ) {
-                  Wymagane potwierdzenie uczestnictwa
-                } @else if (_activeParticipation.status === 'WITHDRAWN') {
-                  Uczestnik zrezygnował z udziału
-                } @else if (_activeParticipation.status === 'REJECTED') {
-                  Zgłoszenie odrzucone
-                } @else {
-                  Uczestnik wydarzenia
-                }
-              </p>
+      <div>
+        <div class="mx-auto p-1 rounded-xl border-2 border-neutral-300">
+          <!-- Tab bar for user participations -->
+          @if (_userParticipations.length > 0) {
+            <div class="flex flex-wrap gap-3 justify-center py-1">
+              @for (p of _userParticipations; track p.id) {
+                <app-enrollment-grid-item
+                  [participant]="p"
+                  [showRole]="true"
+                  [active]="p.id === _activeParticipation?.id"
+                  (clicked)="activeParticipationId.set(p.id)"
+                />
+              }
             </div>
+          }
 
-            <!-- User profile card -->
-            @if (_activeParticipation.user) {
-              <div class="mb-4">
-                <app-user-profile-card
-                  [user]="_activeParticipation.user"
-                  context="participant"
-                  [participationStatus]="_activeParticipation.status"
-                  [isGuest]="_activeParticipation.isGuest"
-                  [participationId]="_activeParticipation.id"
-                  [isOwnGuest]="false"
-                  [isOrganizer]="false"
-                  [canEditName]="false"
-                  [canEditAvatar]="false"
-                  variant="overlay"
+          <!-- Active participation content -->
+          @if (_activeParticipation) {
+            <div class="mx-auto max-w-lg">
+              <!-- Participant actions -->
+              <div>
+                <app-enrollment-participant-actions
+                  [participant]="_activeParticipation"
+                  [event]="_event!"
+                  (actionCompleted)="handleActionCompleted()"
+                  (closeRequested)="closed.emit()"
                 />
               </div>
-            }
-
-            <!-- Participant actions -->
-            <div class="mb-4">
-              <app-enrollment-participant-actions
-                [participant]="_activeParticipation"
-                [event]="_event!"
-                (actionCompleted)="handleActionCompleted()"
-                (closeRequested)="closed.emit()"
-              />
             </div>
-          </div>
-        }
+          }
+        </div>
 
         <!-- General event options -->
-        <div class="mx-auto max-w-lg mt-2">
+        <div class="mx-auto max-w-lg border-2 border-transparent">
+          <app-section-separator label="Opcje wydarzenia" />
+
           <app-link-list
             [items]="participantLinks()"
             (itemClicked)="handleParticipantOption($event)"
@@ -139,21 +108,51 @@ export class MyParticipationDetailsOverlayComponent {
   readonly activeParticipation = computed(() => {
     const id = this.activeParticipationId();
     const participations = this.userParticipations();
-    if (!id) return participations[0] ?? null;
+    if (!id) {
+      // Prefer host (isGuest = false), fallback to first
+      const host = participations.find((p) => !p.isGuest);
+      return host ?? participations[0] ?? null;
+    }
     return participations.find((p) => p.id === id) ?? null;
   });
+
+  constructor() {
+    effect(() => {
+      const participations = this.userParticipations();
+      const currentId = this.activeParticipationId();
+
+      // Set default to host when participations change and no ID is set
+      if (participations.length > 0 && !currentId) {
+        const host = participations.find((p) => !p.isGuest);
+        this.activeParticipationId.set((host ?? participations[0]).id);
+      }
+
+      // Reset to host if current ID is no longer valid
+      if (currentId && !participations.find((p) => p.id === currentId)) {
+        const host = participations.find((p) => !p.isGuest);
+        this.activeParticipationId.set((host ?? participations[0])?.id ?? null);
+      }
+    });
+  }
 
   readonly participantLinks = computed<LinkListItem[]>(() => {
     const organizerName = this.event()?.organizer?.displayName || 'organizatorem wydarzenia';
 
     const links: LinkListItem[] = [
       {
+        label: 'Dodaj kolejną osobę',
+        description: 'Zgłoś do wydarzenia także swego znajomego',
+        icon: 'user-plus',
+        value: 'add-guest',
+        appearance: 'soft',
+        color: 'success',
+      },
+      {
         label: 'Lista uczestników',
         description: 'Zobacz wszystkich uczestników wydarzenia',
         icon: 'users',
         value: 'participants-list',
         iconColor: 'info',
-        iconBackground: true,
       },
       {
         label: 'Czat grupowy',
@@ -161,7 +160,6 @@ export class MyParticipationDetailsOverlayComponent {
         icon: 'message-circle',
         value: 'group-chat',
         iconColor: 'info',
-        iconBackground: true,
       },
       {
         label: 'Czat prywatny z organizatorem',
@@ -169,29 +167,8 @@ export class MyParticipationDetailsOverlayComponent {
         icon: 'user',
         value: 'organizer-chat',
         iconColor: 'neutral',
-        iconBackground: true,
       },
     ];
-
-    links.push({
-      label: 'Dodaj kolejną osobę',
-      description: 'Zgłoś do wydarzenia także swego znajomego',
-      icon: 'user-plus',
-      value: 'add-guest',
-      color: 'success',
-      iconColor: 'success',
-      iconBackground: true,
-    });
-
-    links.push({
-      label: 'Wypisz się z wydarzenia',
-      description: 'Stracisz swoje miejsce',
-      icon: 'user-x',
-      value: 'leave',
-      color: 'danger',
-      iconColor: 'danger',
-      iconBackground: true,
-    });
 
     return links;
   });

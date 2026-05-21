@@ -20,7 +20,7 @@ import { IconComponent } from '../icon/icon.component';
 
       <!-- Dialog -->
       <div
-        class="relative z-10 w-full max-w-sm rounded-2xl bg-white shadow-2xl animate-modal-in overflow-y-auto max-h-[calc(100dvh-2rem)]"
+        class="relative z-10 w-full max-w-sm rounded-2xl bg-white shadow-2xl animate-modal-in overflow-y-auto max-h-full"
       >
         <!-- Close button -->
         <button

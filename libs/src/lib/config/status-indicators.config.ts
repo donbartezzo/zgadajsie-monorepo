@@ -150,8 +150,8 @@ export const STATUS_INDICATORS: Record<StatusIndicatorType, StatusIndicatorConfi
   },
   confirmed: {
     icon: 'check',
-    label: 'Potwierdzony',
-    description: 'Potwierdzone miejsce na wydarzeniu. Należy pamiętać o terminie i lokalizacji.',
+    label: 'Uczestnictwo potwierdzone',
+    description: 'Uczestnik ma gwarantowane miejsce w wydarzeniu i potwierdził swój udział.',
     color: 'success',
     requiresAction: false,
   },

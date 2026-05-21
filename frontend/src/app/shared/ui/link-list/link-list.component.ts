@@ -38,13 +38,23 @@ export interface LinkListItem {
           class="!min-h-0 !rounded-none !px-0 !py-2"
         >
           <div class="min-w-0 flex-1 text-left">
-            <span class="block text-sm font-medium leading-5 text-neutral-900">{{
-              item.label
-            }}</span>
+            <span
+              [class]="
+                item.appearance === 'solid'
+                  ? 'block text-sm font-medium leading-5 text-white'
+                  : 'block text-sm font-medium leading-5 text-neutral-900'
+              "
+              >{{ item.label }}</span
+            >
             @if (item.description) {
-              <span class="mt-0.5 block text-xs leading-4 text-neutral-500">{{
-                item.description
-              }}</span>
+              <span
+                [class]="
+                  item.appearance === 'solid'
+                    ? 'mt-0.5 block text-xs leading-4 text-white/80'
+                    : 'mt-0.5 block text-xs leading-4 text-neutral-500'
+                "
+                >{{ item.description }}</span
+              >
             }
           </div>
         </app-button>

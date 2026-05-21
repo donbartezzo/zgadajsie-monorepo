@@ -20,6 +20,8 @@ export class BadgeComponent {
   readonly muted = input<Muted>();
   readonly icon = input<string>();
   readonly square = input(false);
+  readonly borderColor = input<SemanticColor | null>(null);
+  readonly hasShadow = input(false);
 
   readonly classes = computed(() => {
     const base = 'inline-flex items-center gap-1 font-medium rounded-full transition-colors';
@@ -54,13 +56,22 @@ export class BadgeComponent {
       neutral: 'bg-neutral-100 text-neutral-700',
     };
 
+    const borderColors: Record<SemanticColor, string> = {
+      primary: 'border-primary-300',
+      success: 'border-success-200',
+      danger: 'border-danger-200',
+      warning: 'border-warning-200',
+      info: 'border-info-200',
+      neutral: 'border-neutral-200',
+    };
+
     const outlineClasses: Record<SemanticColor, string> = {
-      primary: 'border border-primary-300 bg-white text-primary-600',
-      success: 'border border-success-200 bg-white text-success-600',
-      danger: 'border border-danger-200 bg-white text-danger-500',
-      warning: 'border border-warning-200 bg-white text-warning-600',
-      info: 'border border-info-200 bg-white text-info-600',
-      neutral: 'border border-neutral-200 bg-white text-neutral-700',
+      primary: `${borderColors.primary} bg-white text-primary-600`,
+      success: `${borderColors.success} bg-white text-success-600`,
+      danger: `${borderColors.danger} bg-white text-danger-500`,
+      warning: `${borderColors.warning} bg-white text-warning-600`,
+      info: `${borderColors.info} bg-white text-info-600`,
+      neutral: `${borderColors.neutral} bg-white text-neutral-700`,
     };
 
     const ghostClasses: Record<SemanticColor, string> = {
@@ -82,12 +93,29 @@ export class BadgeComponent {
     const variant = this.variant();
     const color = this.color();
     const mutedValue = this.muted();
+    const borderColorValue = this.borderColor();
+    const hasShadowValue = this.hasShadow();
 
     const activeSizeClasses = this.square() ? squareSizeClasses : sizeClasses;
 
     let classes = [base, activeSizeClasses[this.size()], variantClasses[variant][color]]
       .filter(Boolean)
       .join(' ');
+
+    if (hasShadowValue) {
+      classes += ' shadow-md';
+    }
+
+    classes += ` border`;
+
+    // Add border for all variants except outline (which already has it)
+    if (variant !== 'outline') {
+      if (borderColorValue) {
+        classes += ` ${borderColors[borderColorValue]}`;
+      } else {
+        classes += ' border-transparent';
+      }
+    }
 
     // Apply muted opacity
     if (mutedValue === 'light') {

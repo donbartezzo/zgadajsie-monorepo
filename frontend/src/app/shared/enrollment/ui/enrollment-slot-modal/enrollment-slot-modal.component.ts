@@ -41,6 +41,7 @@ import { Enrollment, EnrolleeManageItem, OrganizerUserRelation } from '../../../
 import { Event } from '../../../types/event.interface';
 import { EventSlotInfo } from '../../../types/payment.interface';
 import { formatDateTime, type StatusBadgeEntry } from '@zgadajsie/shared';
+import { SectionSeparatorComponent } from '../../../ui/section-separator/section-separator.component';
 
 export interface EnrollmentModalUserInfo {
   id: string;
@@ -93,6 +94,7 @@ function getErrorMessage(err: unknown, fallback: string): string {
     LinkedParticipantChipComponent,
     StatusIndicatorComponent,
     EnrollmentParticipantActionsComponent,
+    SectionSeparatorComponent,
   ],
   templateUrl: './enrollment-slot-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

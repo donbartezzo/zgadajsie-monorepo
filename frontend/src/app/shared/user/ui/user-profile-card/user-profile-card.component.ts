@@ -16,7 +16,6 @@ import { AvatarUser, UserAvatarComponent } from '../user-avatar/user-avatar.comp
 import { AvatarPickerComponent } from '../avatar-picker/avatar-picker.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
-import { BadgeComponent } from '../../../ui/badge/badge.component';
 import { StatusIndicatorComponent } from '../../../ui/status-indicator/status-indicator.component';
 import {
   ProfileBroadcastService,
@@ -56,7 +55,6 @@ export type ProfileCardContext = 'profile' | 'participant' | 'organizer';
     AvatarPickerComponent,
     IconComponent,
     ButtonComponent,
-    BadgeComponent,
     FormsModule,
     StatusIndicatorComponent,
   ],
@@ -146,18 +144,6 @@ export class UserProfileCardComponent {
       avatarSeed: this.overrideAvatarSeed() ?? baseSeed,
     };
   });
-  readonly subtitle = computed(() => {
-    const user = this.user();
-    switch (this.context()) {
-      case 'profile':
-        return 'email' in user ? user.email : null;
-      case 'participant':
-      case 'organizer':
-        return this.isGuest() ? 'Gość' : null;
-      default:
-        return null;
-    }
-  });
   readonly allStatusBadges = computed<StatusBadgeEntry[]>(() => {
     const badges: StatusBadgeEntry[] = [];
     const status = this.participationStatus();
@@ -191,7 +177,9 @@ export class UserProfileCardComponent {
       }
     }
 
-    if (!this.isGuest()) {
+    if (this.isGuest()) {
+      badges.push({ type: 'is_guest' });
+    } else {
       const user = this.user();
       const isActive = 'isActive' in user ? user.isActive : undefined;
       const isEmailVerified = 'isEmailVerified' in user ? user.isEmailVerified : undefined;
@@ -219,7 +207,7 @@ export class UserProfileCardComponent {
 
   readonly containerClass = computed(() => {
     const variants: Record<ProfileCardVariant, string> = {
-      overlay: 'py-4',
+      overlay: 'py-2',
       default: 'py-6',
     };
     return variants[this.variant()];
