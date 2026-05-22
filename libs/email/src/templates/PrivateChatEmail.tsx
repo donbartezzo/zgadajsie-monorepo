@@ -30,8 +30,8 @@ export default function PrivateChatEmail({
       <Section style={{ padding: '24px 0 0 0' }}>
         <Text>Hej {displayName}!</Text>
         <Text>
-          Masz {unreadCount} nieprzeczytanych wiadomości od <strong>{senderName}</strong> w wydarzeniu{' '}
-          <strong>{eventTitle}</strong>.
+          Masz {unreadCount} nieprzeczytanych wiadomości od <strong>{senderName}</strong> w
+          wydarzeniu <strong>{eventTitle}</strong>.
         </Text>
         <Text variant="muted">Kliknij poniżej, aby przejść do czatu.</Text>
         <Section style={{ textAlign: 'center' }}>
