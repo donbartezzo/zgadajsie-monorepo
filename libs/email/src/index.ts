@@ -24,5 +24,6 @@ export { default as OrganizerWeeklyDigestEmail } from './templates/OrganizerWeek
 export { default as ParticipationStatusEmail } from './templates/ParticipationStatusEmail';
 export { default as PasswordResetEmail } from './templates/PasswordResetEmail';
 export { default as PaymentConfirmationEmail } from './templates/PaymentConfirmationEmail';
+export { default as PrivateChatEmail } from './templates/PrivateChatEmail';
 export { default as RefundConfirmationEmail } from './templates/RefundConfirmationEmail';
 export { default as ReprimandEmail } from './templates/ReprimandEmail';

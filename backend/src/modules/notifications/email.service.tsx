@@ -15,6 +15,7 @@ import {
   ParticipationStatusEmail,
   PasswordResetEmail,
   PaymentConfirmationEmail,
+  PrivateChatEmail,
   RefundConfirmationEmail,
   ReprimandEmail,
   renderEmail,
@@ -304,6 +305,27 @@ export class EmailService implements OnModuleInit {
       />,
     );
     await this.send(this.adminEmail, subject, html, text);
+  }
+
+  async sendPrivateChatEmail(
+    email: string,
+    displayName: string,
+    senderName: string,
+    eventTitle: string,
+    unreadCount: number,
+    chatUrl: string,
+  ): Promise<void> {
+    const subject = `Nowa prywatna wiadomość – ${eventTitle}`;
+    const { html, text } = await renderEmail(
+      <PrivateChatEmail
+        displayName={displayName}
+        senderName={senderName}
+        eventTitle={eventTitle}
+        unreadCount={unreadCount}
+        chatUrl={chatUrl}
+      />,
+    );
+    await this.send(email, subject, html, text);
   }
 
   private async send(to: string, subject: string, html: string, text?: string): Promise<void> {

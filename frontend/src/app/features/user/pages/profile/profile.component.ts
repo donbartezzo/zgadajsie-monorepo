@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { DEFAULT_WELCOME_MESSAGE } from '@zgadajsie/shared';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -35,14 +36,20 @@ export class ProfileComponent implements OnInit {
   newPassword = '';
   currentPassword = '';
   editDonationUrl = '';
+  editWelcomeMessage = '';
+  editWelcomeMessageEnabled = true;
   readonly saving = signal(false);
+  readonly savingWelcome = signal(false);
   readonly donationUrlError = signal<string | null>(null);
   readonly isSavingProfile = signal(false);
+  readonly defaultWelcomeMessage = DEFAULT_WELCOME_MESSAGE;
 
   ngOnInit(): void {
     const user = this.auth.currentUser();
     if (user) {
       this.editDonationUrl = user.donationUrl ?? '';
+      this.editWelcomeMessage = user.welcomeMessage ?? '';
+      this.editWelcomeMessageEnabled = user.welcomeMessageEnabled ?? true;
     }
   }
 
@@ -100,6 +107,25 @@ export class ProfileComponent implements OnInit {
       error: (err) => {
         this.snackbar.error(err?.error?.message || 'Błąd zapisu');
         this.saving.set(false);
+      },
+    });
+  }
+
+  saveWelcomeMessage(): void {
+    this.savingWelcome.set(true);
+    const data = {
+      welcomeMessage: this.editWelcomeMessage.trim() || null,
+      welcomeMessageEnabled: this.editWelcomeMessageEnabled,
+    };
+    this.userService.updateProfile(data).subscribe({
+      next: (updatedUser) => {
+        this.auth.updateUser(updatedUser);
+        this.snackbar.success('Ustawienia wiadomości powitalnej zapisane');
+        this.savingWelcome.set(false);
+      },
+      error: (err) => {
+        this.snackbar.error(err?.error?.message || 'Błąd zapisu');
+        this.savingWelcome.set(false);
       },
     });
   }

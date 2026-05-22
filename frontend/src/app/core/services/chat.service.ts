@@ -1,6 +1,6 @@
 import { inject, Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, map } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
 import {
@@ -165,6 +165,21 @@ export class ChatService {
     return this.http.get<OrganizerConversation[]>(
       `${environment.apiUrl}/events/${eventId}/chat/private/conversations`,
     );
+  }
+
+  markAsRead(eventId: string, otherUserId: string): Observable<void> {
+    return this.http.post<void>(
+      `${environment.apiUrl}/events/${eventId}/chat/private/${otherUserId}/read`,
+      {},
+    );
+  }
+
+  getUnreadSummary(eventId: string): Observable<Map<string, number>> {
+    return this.http
+      .get<
+        Record<string, number>
+      >(`${environment.apiUrl}/events/${eventId}/chat/private/unread-summary`)
+      .pipe(map((data) => new Map(Object.entries(data))));
   }
 
   // ─── Members ───────────────────────────────────────────────────────────────

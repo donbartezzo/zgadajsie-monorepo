@@ -7,9 +7,17 @@ import { PaymentsModule } from '../payments/payments.module';
 import { SlotModule } from '../slots/slot.module';
 import { EventRealtimeModule } from '../realtime/event-realtime.module';
 import { FakeUsersModule } from '../fake-users/fake-users.module';
+import { ChatModule } from '../chat/chat.module';
 
 @Module({
-  imports: [NotificationsModule, PaymentsModule, SlotModule, EventRealtimeModule, FakeUsersModule],
+  imports: [
+    NotificationsModule,
+    PaymentsModule,
+    SlotModule,
+    EventRealtimeModule,
+    FakeUsersModule,
+    ChatModule,
+  ],
   controllers: [EnrollmentController],
   providers: [EnrollmentService, EnrollmentEligibilityService],
   exports: [EnrollmentService, EnrollmentEligibilityService],

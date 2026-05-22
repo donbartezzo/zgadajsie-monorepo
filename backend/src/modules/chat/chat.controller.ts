@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { IsActiveGuard } from '../auth/guards/is-active.guard';
@@ -50,5 +50,19 @@ export class ChatController {
       page ? +page : 1,
       limit ? +limit : 50,
     );
+  }
+
+  @Post('private/:userId/read')
+  markConversationRead(
+    @Param('eventId') eventId: string,
+    @Param('userId') otherUserId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.chatService.markConversationRead(eventId, user.id, otherUserId);
+  }
+
+  @Get('private/unread-summary')
+  getUnreadSummary(@Param('eventId') eventId: string, @CurrentUser() user: AuthUser) {
+    return this.chatService.getUnreadCountsForUser(eventId, user.id);
   }
 }

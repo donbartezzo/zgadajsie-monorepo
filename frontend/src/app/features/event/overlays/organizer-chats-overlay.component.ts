@@ -15,6 +15,7 @@ import { LoadingSpinnerComponent } from '../../../shared/ui/loading-spinner/load
 import { ChatService } from '../../../core/services/chat.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { OrganizerConversation } from '../../../shared/types';
+import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 
 @Component({
   selector: 'app-organizer-chats-overlay',
@@ -24,6 +25,7 @@ import { OrganizerConversation } from '../../../shared/types';
     UserAvatarComponent,
     LoadingSpinnerComponent,
     DatePipe,
+    PluralPipe,
   ],
   template: `
     <app-bottom-overlay [open]="true" title="Konwersacje prywatne" (closed)="closed.emit()">
@@ -68,12 +70,11 @@ import { OrganizerConversation } from '../../../shared/types';
                     {{ conv.lastMessage.content }}
                   </p>
                 }
-                @if (conv.messageCount > 0) {
+                @if (conv.unreadCount > 0) {
                   <span
                     class="inline-block mt-0.5 text-[10px] bg-primary-50 text-primary-500 px-1.5 py-0.5 rounded-full"
                   >
-                    {{ conv.messageCount }}
-                    {{ conv.messageCount === 1 ? 'wiadomość' : 'wiadomości' }}
+                    {{ conv.unreadCount }} {{ conv.unreadCount | translatePlural: 'chat.messages' }}
                   </span>
                 }
               </div>

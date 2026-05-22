@@ -9,4 +9,6 @@ export interface User {
   isEmailVerified: boolean;
   createdAt: string;
   updatedAt: string;
+  welcomeMessage?: string | null;
+  welcomeMessageEnabled?: boolean;
 }

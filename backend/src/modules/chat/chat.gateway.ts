@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
+import { ChatNotificationService } from './chat-notification.service';
 
 @WebSocketGateway({
   namespace: '/chat',
@@ -18,7 +19,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  constructor(private chatService: ChatService) {}
+  constructor(
+    private chatService: ChatService,
+    private chatNotificationService: ChatNotificationService,
+  ) {}
 
   handleConnection(_client: Socket) {
     // TODO: verify JWT from handshake
@@ -132,6 +136,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
     const room = this.getPrivateRoomName(data.eventId, data.senderId, data.recipientId);
     this.server.to(room).emit('newPrivateMessage', message);
+    setImmediate(() => {
+      this.chatNotificationService
+        .onNewPrivateMessage(data.eventId, data.senderId, data.recipientId)
+        .catch((err) => this.logger.error(`Failed to send notification: ${err.message}`));
+    });
     return message;
   }
 

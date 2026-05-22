@@ -138,6 +138,8 @@ model User {
   donationUrl                 String?
   avatarSeed                  String?
   weeklyDigestSentAt          DateTime?
+  welcomeMessage              String?
+  welcomeMessageEnabled       Boolean                 @default(true)
   announcementReceipts        AnnouncementReceipt[]
   groupChatMessages           EventGroupMessage[]
   citySubscriptions           CitySubscription[]
@@ -250,6 +252,7 @@ model Event {
   lotteryExecutedAt DateTime?
   roleConfig        Json?
   targetOccupancy   Int?
+  welcomeMessageEnabled Boolean           @default(true)
   groupChatMessages EventGroupMessage[]
   city              City                 @relation(fields: [citySlug], references: [slug])
   coverImage        CoverImage?          @relation(fields: [coverImageId], references: [id])
@@ -442,6 +445,31 @@ model PrivateChatMessage {
 
   @@index([eventId, senderId, recipientId, createdAt])
   @@index([eventId, recipientId, senderId, createdAt])
+}
+
+model PrivateChatReadReceipt {
+  id          String   @id @default(uuid())
+  eventId     String
+  userId      String
+  otherUserId String
+  lastReadAt  DateTime @default(now())
+
+  @@unique([eventId, userId, otherUserId])
+  @@index([userId, eventId])
+}
+
+model PendingChatNotification {
+  id          String    @id @default(uuid())
+  eventId     String
+  recipientId String
+  senderId    String
+  scheduledAt DateTime
+  processedAt DateTime?
+  cancelled   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  @@index([processedAt, scheduledAt])
+  @@index([recipientId, eventId, senderId])
 }
 
 model Reprimand {

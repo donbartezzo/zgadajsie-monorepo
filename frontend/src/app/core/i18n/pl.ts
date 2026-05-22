@@ -105,4 +105,16 @@ export const pl: Translation = {
       many: 'zgłoszeń',
     },
   },
+  chat: {
+    messages: {
+      one: 'wiadomość',
+      few: 'wiadomości',
+      many: 'wiadomości',
+    },
+    participants: {
+      one: 'uczestnik',
+      few: 'uczestników',
+      many: 'uczestników',
+    },
+  },
 };
