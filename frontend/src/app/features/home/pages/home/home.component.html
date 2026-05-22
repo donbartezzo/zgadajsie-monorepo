@@ -13,22 +13,23 @@
 
 <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/65 to-black/85"></div>
 
+<div class="absolute bottom-0 left-0 right-0 z-20 flex justify-center p-2">
+  <p class="text-center text-[10px] sm:text-base leading-relaxed font-bold uppercase text-white/85">
+    Budujemy przyszłość lokalnych wydarzeń sportowych
+  </p>
+</div>
+
 <div class="relative z-10 flex flex-col items-center px-6">
   <div class="home-animate flex flex-1 flex-col items-center justify-center">
-    <h1
-      class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white text-center flex flex-col sm:flex-row sm:items-center sm:justify-center gap-1 sm:gap-2"
-    >
-      <span>Zgadaj się</span>
-      <span class="text-primary-400">na wspólną grę!</span>
+    <h1 class="font-extrabold tracking-tight text-white text-center flex flex-col items-center justify-center gap-1">
+      <span class="text-4xl 2xs:text-5xl">Zgadaj się</span>
+      <span class="text-primary-400 text-2xl 2xs:text-3xl">na wspólną grę!</span>
     </h1>
-    <p class="text-center sm:mt-2 text-xs sm:text-sm leading-relaxed font-semibold uppercase text-white/60">
-      Budujemy przyszłość lokalnych wydarzeń sportowych
-    </p>
   </div>
 
-  <div class="home-animate-delayed mt-auto w-sm">
-    <div class="flex max-w-sm flex-col gap-3 px-4">
-      <p class="mt-6 text-center text-xs sm:text-sm text-white/90">Wpisz swoje miasto:</p>
+  <div class="home-animate-delayed mt-auto w-full max-w-lg">
+    <div class="flex flex-col gap-3 px-1 mt-8">
+      <p class="text-center text-xs sm:text-sm text-white/90">Gdzie się widzimy? Wpisz swoje miasto:</p>
 
       <app-city-search placeholder="Wpisz miasto…" (citySelected)="onCitySelected($event)"></app-city-search>
 

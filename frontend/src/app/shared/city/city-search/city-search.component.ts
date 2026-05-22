@@ -100,7 +100,7 @@ export class CitySearchComponent implements OnInit {
 
   protected readonly inputClasses = computed(() => {
     const base =
-      'w-full rounded-2xl border py-5 pl-12 pr-5 text-lg backdrop-blur-xs transition-all focus:outline-none';
+      'w-full rounded-2xl border py-5 pl-4 2xs:pl-12 pr-5 text-lg backdrop-blur-xs transition-all focus:outline-none';
     if (this.variant() === 'light') {
       return `${base} border-neutral-200 bg-neutral-50 text-neutral-900 placeholder-neutral-400 focus:border-primary-500 focus:bg-white`;
     }
