@@ -1,7 +1,8 @@
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Logger, forwardRef, Inject } from '@nestjs/common';
+import { Injectable, Logger, forwardRef, Inject } from '@nestjs/common';
 import { ChatNotificationService } from './chat-notification.service';
 
+@Injectable()
 export class ChatNotificationCron {
   private readonly logger = new Logger(ChatNotificationCron.name);
 

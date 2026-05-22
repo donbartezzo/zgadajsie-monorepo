@@ -12,12 +12,14 @@ WHERE "email" LIKE '%@guest.zgadajsie.pl'
   AND "accountType" = 'REAL';
 
 -- Step 2: Ensure hosts (users who added guests) are REAL
--- Users who appear as addedByUserId in EventEnrollment are hosts (real users who added guests)
+-- Users who appear as addedByUserId are hosts (real users who added guests).
+-- NOTE: model EventEnrollment is mapped to the physical table "EventParticipation"
+-- via @@map in schema.prisma; raw SQL must use the physical table name.
 UPDATE "User"
 SET "accountType" = 'REAL'
 WHERE id IN (
   SELECT DISTINCT "addedByUserId"
-  FROM "EventEnrollment"
+  FROM "EventParticipation"
   WHERE "addedByUserId" IS NOT NULL
 )
 AND "accountType" = 'GUEST';
