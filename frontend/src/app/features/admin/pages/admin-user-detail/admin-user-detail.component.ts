@@ -40,15 +40,24 @@ interface PaymentListItem {
           <app-user-avatar [user]="u" size="lg"></app-user-avatar>
           <h1 class="mt-3 text-xl font-bold text-neutral-900">{{ u.displayName }}</h1>
           <p class="text-sm text-neutral-500">{{ u.email }}</p>
-          <span
-            [class]="
-              'text-xs px-2 py-0.5 rounded-full mt-1 inline-block ' +
-              (u.role === 'ADMIN'
-                ? 'bg-danger-50 text-danger-500'
-                : 'bg-neutral-100 text-neutral-600')
-            "
-            >{{ u.role }}</span
-          >
+          <div class="flex items-center justify-center gap-2 mt-1">
+            <span
+              [class]="
+                'text-xs px-2 py-0.5 rounded-full inline-block ' +
+                (u.role === 'ADMIN'
+                  ? 'bg-danger-50 text-danger-500'
+                  : 'bg-neutral-100 text-neutral-600')
+              "
+              >{{ u.role }}</span
+            >
+            @if (!u.isActive || !u.isEmailVerified) {
+              <span
+                class="text-xs px-2 py-0.5 rounded-full bg-warning-50 text-warning-600 inline-block"
+              >
+                Nieaktywne
+              </span>
+            }
+          </div>
         </div>
 
         <app-card>
@@ -68,6 +77,25 @@ interface PaymentListItem {
             >
           </div>
         </app-card>
+
+        @if (!u.isActive || !u.isEmailVerified) {
+          <app-card>
+            <div class="space-y-3 mt-4">
+              <h3 class="text-sm font-semibold text-neutral-900">Aktywacja konta</h3>
+              <p class="text-xs text-neutral-500">
+                Konto nie jest aktywne lub email nie został zweryfikowany. Możesz aktywować konto
+                ręcznie.
+              </p>
+              <app-button
+                appearance="soft"
+                color="success"
+                [loading]="saving()"
+                (clicked)="activateAccount()"
+                >Aktywuj konto</app-button
+              >
+            </div>
+          </app-card>
+        }
 
         <app-card>
           <div class="space-y-3 mt-4">
@@ -112,7 +140,7 @@ export class AdminUserDetailComponent implements OnInit {
   editName = '';
 
   private get userId(): string {
-    return this.route.snapshot.paramMap.get('id')!;
+    return this.route.snapshot.paramMap.get('id') ?? '';
   }
 
   ngOnInit(): void {
@@ -134,6 +162,21 @@ export class AdminUserDetailComponent implements OnInit {
     this.adminService.updateUser(this.userId, { displayName: this.editName }).subscribe({
       next: () => {
         this.snackbar.success('Zapisano');
+        this.saving.set(false);
+      },
+      error: () => {
+        this.snackbar.error('Błąd');
+        this.saving.set(false);
+      },
+    });
+  }
+
+  activateAccount(): void {
+    this.saving.set(true);
+    this.adminService.updateUser(this.userId, { isEmailVerified: true }).subscribe({
+      next: () => {
+        this.snackbar.success('Konto aktywowane');
+        this.user.update((u) => (u ? { ...u, isActive: true, isEmailVerified: true } : null));
         this.saving.set(false);
       },
       error: () => {

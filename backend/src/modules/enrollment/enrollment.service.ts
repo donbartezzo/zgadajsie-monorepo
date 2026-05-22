@@ -523,6 +523,7 @@ export class EnrollmentService {
 
   /**
    * User confirms their slot (acknowledges they want to participate).
+   * Organizer and admin can also confirm on behalf of the user.
    */
   async confirmSlot(participationId: string, currentUser: AuthUser) {
     const { userId: currentUserId, isAdmin } = resolveUserContext(currentUser);

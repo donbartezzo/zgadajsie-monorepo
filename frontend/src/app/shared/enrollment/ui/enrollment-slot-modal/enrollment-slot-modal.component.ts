@@ -378,6 +378,9 @@ export class EnrollmentSlotModalComponent {
       transitions.push({ value: 'approve', label: 'Zatwierdź uczestnika' });
       transitions.push({ value: 'reject', label: 'Odrzuć uczestnika' });
     }
+    if (status === 'APPROVED' && !isBanned) {
+      transitions.push({ value: 'confirmSlot', label: 'Potwierdź uczestnictwo' });
+    }
     if (isActive) {
       transitions.push({ value: 'kick', label: 'Wypisz uczestnika' });
     }
@@ -449,6 +452,8 @@ export class EnrollmentSlotModalComponent {
         return this.onApprove();
       case 'reject':
         return this.onReject();
+      case 'confirmSlot':
+        return this.onOrganizerConfirmSlot();
       case 'kick':
         return this.onKick();
       case 'adminWithdraw':
@@ -506,6 +511,17 @@ export class EnrollmentSlotModalComponent {
       'Odrzucono uczestnika',
       'Nie udało się odrzucić',
       'info',
+    );
+  }
+
+  private async onOrganizerConfirmSlot(): Promise<void> {
+    const p = this.participant();
+    if (!p) return;
+    await this.executeAction(
+      this.eventService.confirmSlot(p.id),
+      'Slot potwierdzony',
+      'Nie udało się potwierdzić slotu',
+      'success',
     );
   }
 

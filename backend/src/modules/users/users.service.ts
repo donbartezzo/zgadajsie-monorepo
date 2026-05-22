@@ -149,6 +149,15 @@ export class UsersService {
     if (dto.displayName) data.displayName = dto.displayName;
     if (dto.role) data.role = dto.role;
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
+    if (dto.isEmailVerified !== undefined) {
+      data.isEmailVerified = dto.isEmailVerified;
+      // If verifying email, also activate account and clear token
+      if (dto.isEmailVerified) {
+        data.isActive = true;
+        data.activationToken = null;
+        data.activationTokenExpiresAt = null;
+      }
+    }
 
     const user = await this.prisma.user.update({ where: { id }, data });
 
