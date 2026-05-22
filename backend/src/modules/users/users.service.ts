@@ -22,6 +22,8 @@ export class UsersService {
         isActive: true,
         isEmailVerified: true,
         createdAt: true,
+        welcomeMessage: true,
+        welcomeMessageEnabled: true,
       },
     });
   }
@@ -32,6 +34,9 @@ export class UsersService {
     if (dto.avatarSeed !== undefined) data.avatarSeed = dto.avatarSeed ?? null;
     if (dto.email) data.email = dto.email;
     if (dto.donationUrl !== undefined) data.donationUrl = dto.donationUrl || null;
+    if (dto.welcomeMessage !== undefined) data.welcomeMessage = dto.welcomeMessage ?? null;
+    if (dto.welcomeMessageEnabled !== undefined)
+      data.welcomeMessageEnabled = dto.welcomeMessageEnabled;
 
     if (dto.newPassword) {
       if (!dto.currentPassword) {
@@ -60,6 +65,8 @@ export class UsersService {
         role: true,
         isActive: true,
         isEmailVerified: true,
+        welcomeMessage: true,
+        welcomeMessageEnabled: true,
       },
     });
   }

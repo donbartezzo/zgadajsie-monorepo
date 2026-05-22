@@ -25,7 +25,8 @@ export type StatusIndicatorType =
   | 'account_unverified'
   | 'email_not_verified'
   | 'confirmed'
-  | 'rejected';
+  | 'rejected'
+  | 'new_to_organizer';
 
 export interface StatusIndicatorConfig {
   icon: string;
@@ -144,7 +145,7 @@ export const STATUS_INDICATORS: Record<StatusIndicatorType, StatusIndicatorConfi
     icon: 'mail',
     label: 'Email nie zweryfikowany',
     description:
-      'Należy zweryfikować adres email, aby w pełni korzystać z serwisu. Należy sprawdzić skrzynkę odbiorczą.',
+      'Niezweryfiowane konto. Należy potwierdzić adres email, aby w pełni korzystać z serwisu.',
     color: 'warning',
     requiresAction: true,
   },
@@ -161,6 +162,13 @@ export const STATUS_INDICATORS: Record<StatusIndicatorType, StatusIndicatorConfi
     description:
       'Organizator odrzucił zgłoszenie. W przypadku pytań należy skontaktować się z organizatorem.',
     color: 'danger',
+    requiresAction: false,
+  },
+  new_to_organizer: {
+    icon: 'sparkles',
+    label: 'Nowy',
+    description: 'Uczestnik zgłasza się pierwszy raz do wydarzeń tego organizatora.',
+    color: 'info',
     requiresAction: false,
   },
 };

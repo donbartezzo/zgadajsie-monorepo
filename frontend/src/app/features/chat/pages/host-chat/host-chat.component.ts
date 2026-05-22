@@ -9,6 +9,7 @@ import { ChatMembersOverlayComponent } from '../../overlays/chat-members-overlay
 import { OrganizerConversation } from '../../../../shared/types';
 import { BaseChatComponent } from '../base-chat.component';
 import { UserAvatarListItem } from '../../../../shared/ui/user-avatar-list/user-avatar-list.component';
+import { PluralPipe } from '../../../../shared/pipes/plural.pipe';
 
 @Component({
   selector: 'app-host-chat',
@@ -20,6 +21,7 @@ import { UserAvatarListItem } from '../../../../shared/ui/user-avatar-list/user-
     LoadingSpinnerComponent,
     ChatViewComponent,
     ChatMembersOverlayComponent,
+    PluralPipe,
   ],
   host: { class: 'flex flex-col flex-1 min-h-0' },
   template: `
@@ -65,12 +67,12 @@ import { UserAvatarListItem } from '../../../../shared/ui/user-avatar-list/user-
                       {{ conv.lastMessage.content }}
                     </p>
                   }
-                  @if (conv.messageCount > 0) {
+                  @if (conv.unreadCount > 0) {
                     <span
                       class="inline-block mt-0.5 text-[10px] bg-primary-50 text-primary-500 px-1.5 py-0.5 rounded-full"
                     >
-                      {{ conv.messageCount }}
-                      {{ conv.messageCount === 1 ? 'wiadomość' : 'wiadomości' }}
+                      {{ conv.unreadCount }}
+                      {{ conv.unreadCount | translatePlural: 'chat.messages' }}
                     </span>
                   }
                 </div>

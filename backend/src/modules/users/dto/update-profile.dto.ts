@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsOptional, IsString, MaxLength, MinLength, IsBoolean } from 'class-validator';
 import { IsStrongPassword } from '../../../common/validators/password.decorator';
 import { IsSupportedSupportUrl } from '../../../common/validators/support-url.validator';
 
@@ -29,4 +29,13 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsStrongPassword()
   newPassword?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  welcomeMessage?: string | null;
+
+  @IsOptional()
+  @IsBoolean()
+  welcomeMessageEnabled?: boolean;
 }

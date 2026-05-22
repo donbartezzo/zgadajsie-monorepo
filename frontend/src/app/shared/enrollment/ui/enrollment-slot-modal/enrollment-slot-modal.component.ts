@@ -387,9 +387,7 @@ export class EnrollmentSlotModalComponent {
     }
 
     const communication: Action[] = [];
-    if (isActive) {
-      communication.push({ value: 'chat', label: 'Napisz wiadomość' });
-    }
+    communication.push({ value: 'chat', label: 'Napisz wiadomość' });
 
     const payments: Action[] = [];
     if (isPaid && !payment && status === 'APPROVED') {

@@ -233,4 +233,21 @@ export class PushService {
       url,
     );
   }
+
+  async notifyNewPrivateMessage(
+    userId: string,
+    senderName: string,
+    eventTitle: string,
+    eventId: string,
+    chatUrl: string,
+  ): Promise<void> {
+    await this.notifyUser(
+      userId,
+      'NEW_PRIVATE_MESSAGE',
+      `Nowa wiadomość – ${eventTitle}`,
+      `${senderName} napisał do Ciebie prywatną wiadomość`,
+      eventId,
+      chatUrl,
+    );
+  }
 }

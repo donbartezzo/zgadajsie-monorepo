@@ -48,6 +48,8 @@ export interface Enrollment {
 
   availableRoles?: AvailableRole[] | null;
 
+  isNewToOrganizer?: boolean;
+
   event?: {
     id: string;
     title: string;

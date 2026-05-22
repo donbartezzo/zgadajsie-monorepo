@@ -1,13 +1,24 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+  forwardRef,
+  Inject,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { USER_NOT_PARTICIPANT_MESSAGE, EVENT_NOT_FOUND_MESSAGE } from '@zgadajsie/shared';
 import { USER_SELECT } from '../../common/prisma-selects';
+import { ChatNotificationService } from './chat-notification.service';
 
 // Chat access: wantsIn=true
 
 @Injectable()
 export class ChatService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(forwardRef(() => ChatNotificationService))
+    private chatNotificationService: ChatNotificationService,
+  ) {}
 
   // ─── Group Chat ─────────────────────────────────────────────────────────────
 
@@ -157,13 +168,7 @@ export class ChatService {
           select: { content: true, createdAt: true, senderId: true },
         });
 
-        const unreadCount = await this.prisma.privateChatMessage.count({
-          where: {
-            eventId,
-            senderId: user.id,
-            recipientId: organizerId,
-          },
-        });
+        const unreadCount = await this.getUnreadCount(eventId, organizerId, user.id);
 
         return {
           participant: user,
@@ -175,6 +180,7 @@ export class ChatService {
               }
             : null,
           messageCount: unreadCount,
+          unreadCount,
         };
       }),
     );
@@ -184,6 +190,99 @@ export class ChatService {
       const bTime = b.lastMessage?.createdAt?.getTime() ?? 0;
       return bTime - aTime;
     });
+  }
+
+  // ─── Read Tracking ─────────────────────────────────────────────────────────
+
+  async markConversationRead(eventId: string, userId: string, otherUserId: string): Promise<void> {
+    await this.validatePrivateChatAccess(eventId, userId, otherUserId);
+
+    await this.prisma.privateChatReadReceipt.upsert({
+      where: {
+        eventId_userId_otherUserId: {
+          eventId,
+          userId,
+          otherUserId,
+        },
+      },
+      update: {
+        lastReadAt: new Date(),
+      },
+      create: {
+        eventId,
+        userId,
+        otherUserId,
+        lastReadAt: new Date(),
+      },
+    });
+
+    await this.chatNotificationService.cancelPendingForConversation(eventId, userId, otherUserId);
+  }
+
+  async getUnreadCount(eventId: string, userId: string, otherUserId: string): Promise<number> {
+    const receipt = await this.prisma.privateChatReadReceipt.findUnique({
+      where: {
+        eventId_userId_otherUserId: {
+          eventId,
+          userId,
+          otherUserId,
+        },
+      },
+    });
+
+    const whereClause: {
+      eventId: string;
+      senderId: string;
+      recipientId: string;
+      createdAt?: { gt: Date };
+    } = {
+      eventId,
+      senderId: otherUserId,
+      recipientId: userId,
+    };
+
+    if (receipt) {
+      whereClause.createdAt = { gt: receipt.lastReadAt };
+    }
+
+    return this.prisma.privateChatMessage.count({
+      where: whereClause,
+    });
+  }
+
+  async getUnreadCountsForUser(eventId: string, userId: string): Promise<Map<string, number>> {
+    const receipts = await this.prisma.privateChatReadReceipt.findMany({
+      where: {
+        eventId,
+        userId,
+      },
+    });
+
+    const receiptMap = new Map<string, Date>();
+    for (const r of receipts) {
+      receiptMap.set(r.otherUserId, r.lastReadAt);
+    }
+
+    const allMessages = await this.prisma.privateChatMessage.findMany({
+      where: {
+        eventId,
+        recipientId: userId,
+      },
+      select: {
+        senderId: true,
+        createdAt: true,
+      },
+    });
+
+    const unreadCounts = new Map<string, number>();
+    for (const msg of allMessages) {
+      const lastRead = receiptMap.get(msg.senderId);
+      if (!lastRead || msg.createdAt > lastRead) {
+        unreadCounts.set(msg.senderId, (unreadCounts.get(msg.senderId) ?? 0) + 1);
+      }
+    }
+
+    return unreadCounts;
   }
 
   // ─── Chat Members ──────────────────────────────────────────────────────────
@@ -249,7 +348,10 @@ export class ChatService {
 
     if (!participation) return false;
 
-    // Banned by organizer - no access
+    // Banned by organizer - no group chat access
+    if (participation.waitingReason === 'BANNED') return false;
+
+    // Kicked by organizer - no group chat access
     if (!participation.wantsIn && participation.withdrawnBy === 'ORGANIZER') return false;
 
     return true;

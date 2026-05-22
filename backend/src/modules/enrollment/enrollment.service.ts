@@ -13,6 +13,7 @@ import { PushService } from '../notifications/push.service';
 import { PaymentsService } from '../payments/payments.service';
 import { SlotService } from '../slots/slot.service';
 import { EnrollmentEligibilityService } from './enrollment-eligibility.service';
+import { ChatService } from '../chat/chat.service';
 import { isEventEnded, isEventJoinable } from '../events/event-time-status.util';
 import { getEnrollmentPhase } from '../events/enrollment-phase.util';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
@@ -32,6 +33,7 @@ import {
   PARTICIPANT_ALREADY_HAS_SLOT_MESSAGE,
   ENROLLMENT_BLOCKED,
   FAKE_USERS_MIN_FREE_SLOTS_BUFFER,
+  DEFAULT_WELCOME_MESSAGE,
 } from '@zgadajsie/shared';
 import { featureFlags } from '../../common/config/feature-flags';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
@@ -77,6 +79,7 @@ export class EnrollmentService {
     private paymentsService: PaymentsService,
     private slotService: SlotService,
     private eligibility: EnrollmentEligibilityService,
+    private chatService: ChatService,
     private eventRealtime: EventRealtimeService,
     @Optional() private fakeUsersMonitor?: FakeUsersMonitorService,
   ) {}
@@ -140,11 +143,28 @@ export class EnrollmentService {
 
     // PRE_ENROLLMENT: always waiting (no slot)
     if (phase === 'PRE_ENROLLMENT') {
-      return this.createWaiting(eventId, userId, event, isPaid, 'PRE_ENROLLMENT', validatedRoleKey);
+      const result = await this.createWaiting(
+        eventId,
+        userId,
+        event,
+        isPaid,
+        'PRE_ENROLLMENT',
+        validatedRoleKey,
+      );
+      this.sendWelcomeMessageIfNeeded(eventId, event.organizerId, userId);
+      return result;
     }
 
     // OPEN_ENROLLMENT: depends on eligibility + slot availability
-    return this.handleOpenEnrollmentJoin(eventId, userId, event, isPaid, validatedRoleKey);
+    const result = await this.handleOpenEnrollmentJoin(
+      eventId,
+      userId,
+      event,
+      isPaid,
+      validatedRoleKey,
+    );
+    this.sendWelcomeMessageIfNeeded(eventId, event.organizerId, userId);
+    return result;
   }
 
   /**
@@ -180,6 +200,45 @@ export class EnrollmentService {
     }
 
     return roleKey;
+  }
+
+  /**
+   * Send welcome message if enabled on organizer and event.
+   * Fire-and-forget - doesn't block join flow.
+   */
+  private async sendWelcomeMessageIfNeeded(
+    eventId: string,
+    organizerId: string,
+    userId: string,
+  ): Promise<void> {
+    setImmediate(async () => {
+      try {
+        const [organizer, event] = await Promise.all([
+          this.prisma.user.findUnique({
+            where: { id: organizerId },
+            select: { welcomeMessage: true, welcomeMessageEnabled: true },
+          }),
+          this.prisma.event.findUnique({
+            where: { id: eventId },
+            select: { welcomeMessageEnabled: true },
+          }),
+        ]);
+
+        if (!organizer || !event) {
+          return;
+        }
+
+        if (!organizer.welcomeMessageEnabled || !event.welcomeMessageEnabled) {
+          return;
+        }
+
+        const welcomeBody = organizer.welcomeMessage ?? DEFAULT_WELCOME_MESSAGE;
+        const messageText = `AUTOMATYCZNIE WYGENEROWANA WIADOMOŚĆ POWITALNA ORGANIZATORA:\n\n${welcomeBody}`;
+        await this.chatService.createPrivateMessage(eventId, organizerId, userId, messageText);
+      } catch (error) {
+        this.logger.error(`Failed to send welcome message: ${error}`);
+      }
+    });
   }
 
   async joinGuest(

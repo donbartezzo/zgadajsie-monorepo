@@ -78,6 +78,7 @@ export class UserProfileCardComponent {
   readonly isOrganizer = input(false);
   readonly isOwnGuest = input(false);
   readonly extraBadges = input<StatusBadgeEntry[]>([]);
+  readonly isNewToOrganizer = input(false);
 
   readonly canEditName = input(false);
   readonly canEditAvatar = input(false);
@@ -192,6 +193,10 @@ export class UserProfileCardComponent {
       if (this.waitingReason() === 'NOT_TRUSTED') {
         badges.push({ type: 'awaiting_approval' });
       }
+    }
+
+    if (this.isNewToOrganizer()) {
+      badges.push({ type: 'new_to_organizer' });
     }
 
     return [...badges, ...this.extraBadges()];

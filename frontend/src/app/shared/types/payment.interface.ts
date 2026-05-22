@@ -60,6 +60,7 @@ export interface EnrolleeManageItem {
     isEmailVerified?: boolean;
   };
   payment: ParticipantPaymentInfo | null;
+  isNewToOrganizer?: boolean;
 }
 
 export interface EventSlotInfo {

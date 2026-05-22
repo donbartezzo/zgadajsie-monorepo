@@ -9,6 +9,7 @@ import { PaymentsService } from '../payments/payments.service';
 import { SlotService } from '../slots/slot.service';
 import { EnrollmentEligibilityService } from './enrollment-eligibility.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
+import { ChatService } from '../chat/chat.service';
 import { EnrollmentService } from './enrollment.service';
 import { mockAuthUser } from '../../tests/test-helpers';
 
@@ -89,6 +90,19 @@ function buildRealtimeMock() {
   } as unknown as EventRealtimeService;
 }
 
+function buildEventRealtimeMock() {
+  return {
+    broadcastEnrollmentChange: jest.fn(),
+    invalidateEvent: jest.fn(),
+  } as unknown as EventRealtimeService;
+}
+
+function buildChatServiceMock() {
+  return {
+    createPrivateMessage: jest.fn(),
+  } as unknown as ChatService;
+}
+
 const FUTURE_FAR = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days ahead → PRE_ENROLLMENT
 const FUTURE_NEAR = new Date(Date.now() + 60 * 60 * 1000); // 1h ahead → within 48h threshold
 
@@ -135,7 +149,6 @@ describe('EnrollmentService', () => {
   let payments: ReturnType<typeof buildPaymentsMock>;
   let slots: ReturnType<typeof buildSlotMock>;
   let eligibility: ReturnType<typeof buildEligibilityMock>;
-  let realtime: ReturnType<typeof buildRealtimeMock>;
 
   beforeEach(() => {
     prisma = buildPrismaMock();
@@ -145,7 +158,9 @@ describe('EnrollmentService', () => {
     payments = buildPaymentsMock();
     slots = buildSlotMock();
     eligibility = buildEligibilityMock();
-    realtime = buildRealtimeMock();
+    const _realtime = buildRealtimeMock();
+    const eventRealtime = buildEventRealtimeMock();
+    const chatService = buildChatServiceMock();
     service = new EnrollmentService(
       prisma as PrismaService,
       {
@@ -156,7 +171,8 @@ describe('EnrollmentService', () => {
       payments,
       slots,
       eligibility,
-      realtime,
+      chatService,
+      eventRealtime,
     );
     jest.clearAllMocks();
   });

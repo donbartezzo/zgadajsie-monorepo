@@ -1,6 +1,7 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatService } from './chat.service';
+import { ChatNotificationService } from './chat-notification.service';
 
 function buildPrismaMock() {
   return {
@@ -22,6 +23,11 @@ function buildPrismaMock() {
       create: jest.fn(),
       findFirst: jest.fn(),
     },
+    privateChatReadReceipt: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      upsert: jest.fn(),
+    },
     eventSlot: {
       findUnique: jest.fn(),
     },
@@ -31,13 +37,22 @@ function buildPrismaMock() {
   } as unknown as PrismaService;
 }
 
+function buildChatNotificationServiceMock() {
+  return {
+    onNewPrivateMessage: jest.fn(),
+    cancelPendingForConversation: jest.fn(),
+  } as unknown as ChatNotificationService;
+}
+
 describe('ChatService', () => {
   let service: ChatService;
   let prisma: ReturnType<typeof buildPrismaMock>;
+  let chatNotificationService: ReturnType<typeof buildChatNotificationServiceMock>;
 
   beforeEach(() => {
     prisma = buildPrismaMock();
-    service = new ChatService(prisma as PrismaService);
+    chatNotificationService = buildChatNotificationServiceMock();
+    service = new ChatService(prisma as PrismaService, chatNotificationService);
     jest.clearAllMocks();
   });
 
@@ -92,6 +107,22 @@ describe('ChatService', () => {
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue({
         wantsIn: false,
         withdrawnBy: 'ORGANIZER',
+      });
+
+      const result = await service.hasEventAccess('event1', 'user1');
+
+      expect(result).toBe(false);
+    });
+
+    it('uczestnik zbanowany (waitingReason=BANNED) NIE ma dostępu do czatu grupowego', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({
+        id: 'event1',
+        organizerId: 'org1',
+      });
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue({
+        wantsIn: true,
+        withdrawnBy: null,
+        waitingReason: 'BANNED',
       });
 
       const result = await service.hasEventAccess('event1', 'user1');
