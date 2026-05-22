@@ -41,7 +41,7 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/home/pages/home/home.component').then((m) => m.HomeComponent),
     canActivate: [paymentRedirectGuard],
-    data: { title: 'Strona główna', centerContent: true, showFooter: false },
+    data: { title: 'Strona główna', fullscreenContent: true, showFooter: false },
   },
 
   // ── Public: event list per city ──

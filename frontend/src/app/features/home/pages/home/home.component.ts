@@ -9,6 +9,7 @@ import { RouterModule } from '@angular/router';
   imports: [RouterModule, IconComponent, CitySearchComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
+  host: { class: 'relative flex flex-1 flex-col min-h-0' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent {
