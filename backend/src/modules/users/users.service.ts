@@ -154,4 +154,37 @@ export class UsersService {
 
     return user;
   }
+
+  async verifyUserByOrganizer(targetUserId: string, _organizerUserId: string) {
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+    });
+
+    if (!targetUser) {
+      throw new BadRequestException('Użytkownik nie istnieje');
+    }
+
+    if (targetUser.isActive && targetUser.isEmailVerified) {
+      throw new BadRequestException('Konto jest już aktywne i zweryfikowane');
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: targetUserId },
+      data: {
+        isActive: true,
+        isEmailVerified: true,
+        activationToken: null,
+        activationTokenExpiresAt: null,
+      },
+      select: {
+        id: true,
+        email: true,
+        displayName: true,
+        isActive: true,
+        isEmailVerified: true,
+      },
+    });
+
+    return updatedUser;
+  }
 }

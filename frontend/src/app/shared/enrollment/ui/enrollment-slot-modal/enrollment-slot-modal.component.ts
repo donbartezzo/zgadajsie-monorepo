@@ -368,6 +368,11 @@ export class EnrollmentSlotModalComponent {
     const trustStatus = this.trustStatus();
     const isTrusted = trustStatus?.isTrusted ?? false;
 
+    const user = p.user;
+    const isUserUnverified =
+      (user && 'isActive' in user && user.isActive === false) ||
+      ('isEmailVerified' in user && user.isEmailVerified === false);
+
     const transitions: Action[] = [];
     if (status === 'PENDING' && !isBanned) {
       transitions.push({ value: 'approve', label: 'Zatwierdź uczestnika' });
@@ -406,6 +411,9 @@ export class EnrollmentSlotModalComponent {
     }
 
     const moderation: Action[] = [];
+    if (isUserUnverified) {
+      moderation.push({ value: 'verifyUser', label: 'Potwierdź konto użytkownika' });
+    }
     if (!isWithdrawn && !isBanned) {
       moderation.push({ value: 'ban', label: 'Zbanuj uczestnika' });
     }
@@ -467,6 +475,8 @@ export class EnrollmentSlotModalComponent {
         return this.updateTrustStatus(true);
       case 'untrust':
         return this.updateTrustStatus(false);
+      case 'verifyUser':
+        return this.onVerifyUser();
       case 'deleteEnrollment':
         return this.onDeleteEnrollment();
     }
@@ -670,6 +680,26 @@ export class EnrollmentSlotModalComponent {
         : this.moderationService.untrustUser(p.userId),
       shouldTrust ? 'Uczestnik oznaczony jako zaufany' : 'Status zaufania cofnięty',
       shouldTrust ? 'Nie udało się oznaczyć jako zaufanego' : 'Nie udało się cofnąć zaufania',
+      'success',
+    );
+  }
+
+  private async onVerifyUser(): Promise<void> {
+    const p = this.participant();
+    if (!p || !p.user) return;
+    const name = p.user.displayName ?? 'uczestnika';
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Potwierdzić konto użytkownika?',
+      message: `Konto użytkownika ${name} zostanie aktywowane i zweryfikowane. Użytkownik będzie mógł w pełni korzystać z serwisu.`,
+      confirmLabel: 'Potwierdź',
+      cancelLabel: 'Anuluj',
+      color: 'success',
+    });
+    if (!confirmed) return;
+    await this.executeAction(
+      this.adminService.verifyUserByOrganizer(p.userId),
+      'Konto użytkownika zostało potwierdzone',
+      'Nie udało się potwierdzić konta',
       'success',
     );
   }

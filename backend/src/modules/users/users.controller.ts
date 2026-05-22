@@ -75,4 +75,13 @@ export class UsersController {
   adminUpdate(@Param('id') id: string, @Body() dto: AdminUpdateUserDto) {
     return this.usersService.adminUpdate(id, dto);
   }
+
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  @Patch(':targetUserId/verify-by-organizer')
+  verifyUserByOrganizer(
+    @Param('targetUserId') targetUserId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.usersService.verifyUserByOrganizer(targetUserId, user.id);
+  }
 }
