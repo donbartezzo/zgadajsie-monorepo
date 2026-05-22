@@ -22,6 +22,7 @@ import {
   type ParticipationStatus,
 } from '@zgadajsie/email';
 import type { OrganizerDigestData } from '../organizer/organizer.service';
+import { featureFlags } from '../../common/config/feature-flags';
 
 @Injectable()
 export class EmailService implements OnModuleInit {
@@ -329,6 +330,11 @@ export class EmailService implements OnModuleInit {
   }
 
   private async send(to: string, subject: string, html: string, text?: string): Promise<void> {
+    if (!featureFlags.enableEmails) {
+      this.logger.log(`Email sending disabled, skipping email to ${to}: ${subject}`);
+      return;
+    }
+
     try {
       await this.resend.emails.send({
         from: this.fromAddress,
