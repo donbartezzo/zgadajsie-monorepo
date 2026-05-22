@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA, Pipe, PipeTransform } from '@angular/core';
 import { EnrollmentGridItemComponent, EnrollmentItem } from './enrollment-grid-item.component';
 import { ParticipantPaymentInfo } from '../../../types/payment.interface';
+import { environment } from '../../../../../../environments/environment';
 
 @Pipe({ name: 'transloco', standalone: true })
 class MockTranslocoPipe implements PipeTransform {
@@ -43,7 +44,18 @@ function makePayment(overrides: Partial<ParticipantPaymentInfo> = {}): Participa
 }
 
 describe('EnrollmentGridItemComponent - computed signals', () => {
-  // Testy zakładają enableOnlinePayments = true (domyślna wartość w DEV environment)
+  let originalEnableOnlinePayments: boolean;
+
+  beforeEach(() => {
+    originalEnableOnlinePayments = environment['enableOnlinePayments'];
+    (environment as unknown as Record<string, unknown>)['enableOnlinePayments'] = true;
+  });
+
+  afterEach(() => {
+    (environment as unknown as Record<string, unknown>)['enableOnlinePayments'] =
+      originalEnableOnlinePayments;
+  });
+
   function create(participant: EnrollmentItem) {
     TestBed.configureTestingModule({
       imports: [EnrollmentGridItemComponent],

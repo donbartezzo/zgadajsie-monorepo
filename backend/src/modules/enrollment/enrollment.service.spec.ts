@@ -1496,6 +1496,17 @@ describe('EnrollmentService', () => {
 
   describe('initiateEventPayment()', () => {
     const paidEvent = makeEvent({ costPerPerson: new Decimal(50) });
+    let originalEnableOnlinePayments: boolean;
+
+    beforeEach(() => {
+      originalEnableOnlinePayments = featureFlags.enableOnlinePayments;
+      (featureFlags as unknown as Record<string, unknown>).enableOnlinePayments = true;
+    });
+
+    afterEach(() => {
+      (featureFlags as unknown as Record<string, unknown>).enableOnlinePayments =
+        originalEnableOnlinePayments;
+    });
 
     it('rzuca BadRequestException gdy uczestnik nie ma slotu', async () => {
       (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(
@@ -1570,15 +1581,10 @@ describe('EnrollmentService', () => {
     });
 
     it('rzuca ForbiddenException gdy feature flag płatności online jest wyłączony', async () => {
-      const original = featureFlags.enableOnlinePayments;
       (featureFlags as unknown as Record<string, unknown>).enableOnlinePayments = false;
-      try {
-        await expect(service.initiateEventPayment('p1', mockAuthUser('user1'))).rejects.toThrow(
-          ForbiddenException,
-        );
-      } finally {
-        (featureFlags as unknown as Record<string, unknown>).enableOnlinePayments = original;
-      }
+      await expect(service.initiateEventPayment('p1', mockAuthUser('user1'))).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 });
