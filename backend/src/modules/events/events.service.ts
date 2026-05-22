@@ -542,25 +542,30 @@ export class EventsService {
     // Notifications (fire-and-forget, outside transaction)
     const notificationErrors: string[] = [];
     const participants = await this.prisma.eventEnrollment.findMany({
-      where: { eventId: id },
-      include: { user: { select: { id: true, email: true, displayName: true } } },
+      where: { eventId: id, user: { accountType: { not: 'FAKE' } } },
+      include: {
+        user: { select: { id: true, email: true, displayName: true, accountType: true } },
+        addedBy: { select: { id: true, email: true, displayName: true } },
+      },
     });
 
     for (const p of participants) {
+      // For GUEST users, notify and email the host instead
+      const recipient = p.user.accountType === 'GUEST' && p.addedBy ? p.addedBy : p.user;
       try {
-        await this.pushService.notifyEventCancelled(p.user.id, event.title, id);
+        await this.pushService.notifyEventCancelled(recipient.id, event.title, id);
       } catch (err) {
-        notificationErrors.push(`push:${p.user.id}:${(err as Error).message}`);
+        notificationErrors.push(`push:${recipient.id}:${(err as Error).message}`);
       }
       try {
         await this.emailService.sendEventCancelledEmail(
-          p.user.email,
-          p.user.displayName,
+          recipient.email,
+          recipient.displayName,
           event.title,
           buildEventUrl(event.city.slug, id),
         );
       } catch (err) {
-        notificationErrors.push(`email:${p.user.email}:${(err as Error).message}`);
+        notificationErrors.push(`email:${recipient.email}:${(err as Error).message}`);
       }
     }
 

@@ -291,6 +291,7 @@ export class EnrollmentService {
         ...(userId ? { id: userId } : {}),
         email: `guest-${Date.now()}-${Math.random().toString(36).slice(2)}@guest.zgadajsie.pl`,
         displayName,
+        accountType: 'GUEST',
         avatarSeed: avatarSeed ?? null,
         isActive: false,
       },

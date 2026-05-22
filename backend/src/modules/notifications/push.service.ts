@@ -48,6 +48,15 @@ export class PushService {
     relatedEventId?: string,
     clickUrl?: string,
   ): Promise<void> {
+    // Skip all notifications for FAKE users
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { accountType: true },
+    });
+    if (!user || user.accountType === 'FAKE') {
+      return;
+    }
+
     // Save in-app notification
     await this.notificationsService.create(userId, type, title, body, relatedEventId);
 
@@ -243,7 +252,7 @@ export class PushService {
   ): Promise<void> {
     await this.notifyUser(
       userId,
-      'NEW_PRIVATE_MESSAGE',
+      'NEW_CHAT_MESSAGE',
       `Nowa wiadomość – ${eventTitle}`,
       `${senderName} napisał do Ciebie prywatną wiadomość`,
       eventId,

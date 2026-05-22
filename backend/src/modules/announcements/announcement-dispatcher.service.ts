@@ -41,8 +41,11 @@ export class AnnouncementDispatcherService {
     });
 
     const participants = await this.prisma.eventEnrollment.findMany({
-      where: { eventId, wantsIn: true },
-      include: { user: { select: { id: true, email: true, displayName: true } } },
+      where: { eventId, wantsIn: true, user: { accountType: { not: 'FAKE' } } },
+      include: {
+        user: { select: { id: true, email: true, displayName: true, accountType: true } },
+        addedBy: { select: { id: true, email: true, displayName: true } },
+      },
     });
 
     const announcement = await this.prisma.eventAnnouncement.create({
@@ -84,7 +87,11 @@ export class AnnouncementDispatcherService {
     announcementId: string,
     message: string,
     priority: string,
-    participants: { userId: string; user: { id: string; email: string; displayName: string } }[],
+    participants: {
+      userId: string;
+      user: { id: string; email: string; displayName: string; accountType: string };
+      addedBy: { id: string; email: string; displayName: string } | null;
+    }[],
     receiptsByUserId: Map<string, { id: string; confirmToken: string }>,
     eventLink: string,
   ): void {
@@ -103,6 +110,7 @@ export class AnnouncementDispatcherService {
                   message,
                   priority,
                   p.user,
+                  p.addedBy,
                   receipt,
                   eventLink,
                 ),
@@ -125,18 +133,31 @@ export class AnnouncementDispatcherService {
     _announcementId: string,
     message: string,
     priority: string,
-    user: { id: string; email: string; displayName: string },
+    user: { id: string; email: string; displayName: string; accountType: string },
+    addedBy: { id: string; email: string; displayName: string } | null,
     receipt: { id: string; confirmToken: string },
     eventLink: string,
   ): Promise<void> {
     const title =
       priority === 'CRITICAL' ? `[PILNE] Komunikat: ${eventTitle}` : `Komunikat: ${eventTitle}`;
 
+    // For GUEST users, send email to their host (the real user who added them)
+    const emailRecipient = user.accountType === 'GUEST' && addedBy ? addedBy.email : user.email;
+    const emailDisplayName =
+      user.accountType === 'GUEST' && addedBy ? addedBy.displayName : user.displayName;
+
     const results = await Promise.allSettled([
-      this.pushService.notifyUser(user.id, 'ANNOUNCEMENT', title, message, undefined, eventLink),
+      this.pushService.notifyUser(
+        addedBy?.id ?? user.id,
+        'ANNOUNCEMENT',
+        title,
+        message,
+        undefined,
+        eventLink,
+      ),
       this.emailService.sendAnnouncementEmail(
-        user.email,
-        user.displayName,
+        emailRecipient,
+        emailDisplayName,
         eventTitle,
         message,
         priority,

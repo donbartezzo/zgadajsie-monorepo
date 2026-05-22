@@ -335,6 +335,11 @@ export class EmailService implements OnModuleInit {
       return;
     }
 
+    if (this.isNonDeliverableAddress(to)) {
+      this.logger.debug(`Skipping email to non-deliverable address: ${to}`);
+      return;
+    }
+
     try {
       await this.resend.emails.send({
         from: this.fromAddress,
@@ -347,5 +352,15 @@ export class EmailService implements OnModuleInit {
     } catch (error) {
       this.logger.error(`Failed to send email to ${to}: ${error.message}`);
     }
+  }
+
+  private isNonDeliverableAddress(email: string): boolean {
+    const lower = email.toLowerCase();
+    return (
+      lower.endsWith('@guest.zgadajsie.pl') ||
+      lower.endsWith('@example.com') ||
+      lower.endsWith('@example.org') ||
+      lower.endsWith('@example.net')
+    );
   }
 }

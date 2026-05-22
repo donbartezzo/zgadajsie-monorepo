@@ -112,7 +112,11 @@ export class ChatNotificationService {
     recipientId: string,
   ): Promise<void> {
     try {
-      const [sender, event] = await Promise.all([
+      const [recipient, sender, event] = await Promise.all([
+        this.prisma.user.findUnique({
+          where: { id: recipientId },
+          select: { accountType: true, displayName: true },
+        }),
         this.prisma.user.findUnique({
           where: { id: senderId },
           select: { displayName: true },
@@ -123,7 +127,9 @@ export class ChatNotificationService {
         }),
       ]);
 
-      if (!sender || !event) return;
+      if (!recipient || !sender || !event) return;
+      // Skip push for FAKE users (PushService also guards this, but skip early)
+      if (recipient.accountType === 'FAKE') return;
 
       const chatUrl = `/m/${event.city.slug}/${eventId}/chat/private/${senderId}`;
       await this.pushService.notifyNewPrivateMessage(
@@ -163,10 +169,10 @@ export class ChatNotificationService {
     unreadCount: number,
   ): Promise<void> {
     try {
-      const [recipient, sender, event] = await Promise.all([
+      const [recipient, sender, event, enrollment] = await Promise.all([
         this.prisma.user.findUnique({
           where: { id: recipientId },
-          select: { email: true, displayName: true },
+          select: { email: true, displayName: true, accountType: true },
         }),
         this.prisma.user.findUnique({
           where: { id: senderId },
@@ -176,14 +182,30 @@ export class ChatNotificationService {
           where: { id: eventId },
           select: { title: true, city: { select: { slug: true } } },
         }),
+        this.prisma.eventEnrollment.findFirst({
+          where: { eventId, userId: recipientId },
+          select: { addedBy: { select: { email: true, displayName: true } } },
+        }),
       ]);
 
       if (!recipient || !sender || !event) return;
+      // Skip email for FAKE users entirely
+      if (recipient.accountType === 'FAKE') return;
+
+      // For GUEST users, send email to their host
+      const emailTo =
+        recipient.accountType === 'GUEST' && enrollment?.addedBy
+          ? enrollment.addedBy.email
+          : recipient.email;
+      const emailName =
+        recipient.accountType === 'GUEST' && enrollment?.addedBy
+          ? enrollment.addedBy.displayName
+          : recipient.displayName;
 
       const chatUrl = `https://${process.env.FRONTEND_URL}/m/${event.city.slug}/${eventId}/chat/private/${senderId}`;
       await this.emailService.sendPrivateChatEmail(
-        recipient.email,
-        recipient.displayName,
+        emailTo,
+        emailName,
         sender.displayName,
         event.title,
         unreadCount,
