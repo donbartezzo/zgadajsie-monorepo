@@ -364,6 +364,18 @@ export const appRoutes: Route[] = [
     canActivate: [authGuard, activeGuard],
     data: { title: 'Galeria', breadcrumb: BREADCRUMB_TO_PROFILE },
   },
+  {
+    path: 'profile/cover-images',
+    loadComponent: () =>
+      import('./features/me/pages/my-cover-images/my-cover-images.component').then(
+        (m) => m.MyCoverImagesComponent,
+      ),
+    canActivate: [authGuard, activeGuard],
+    data: {
+      title: 'Moja galeria cover images',
+      breadcrumb: BREADCRUMB_TO_PROFILE,
+    },
+  },
 
   // ── Payments ──
   {

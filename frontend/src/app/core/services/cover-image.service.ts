@@ -1,35 +1,8 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CoverImage } from '../../shared/types';
-
-export interface CoverImagesSyncReport {
-  summary: {
-    totalFolders: number;
-    totalFiles: number;
-    added: number;
-    existing: number;
-    missingFilesInDb: number;
-  };
-  byDiscipline: Array<{
-    slug: string;
-    disciplineId?: string;
-    files: Array<{
-      filename: string;
-      existed: boolean;
-      added: boolean;
-      fileExists: boolean;
-      coverId?: string;
-    }>;
-  }>;
-  dbWithMissingFiles: Array<{
-    id: string;
-    filename: string;
-    disciplineId: string;
-    disciplineSlug?: string;
-  }>;
-}
 
 @Injectable({ providedIn: 'root' })
 export class CoverImageService {
@@ -78,7 +51,29 @@ export class CoverImageService {
     return this.http.get<CoverImage | null>(`${this.apiUrl}/suggest`, { params });
   }
 
-  syncFromFilesystem(): Observable<CoverImagesSyncReport> {
-    return this.http.post<CoverImagesSyncReport>(`${this.apiUrl}/sync`, {});
+  // Galeria własna użytkownika
+  getMy(): Observable<CoverImage[]> {
+    return this.http.get<CoverImage[]>(`${this.apiUrl}/my`);
+  }
+
+  createMy(file: File, name: string): Observable<CoverImage> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('name', name);
+    return this.http.post<CoverImage>(`${this.apiUrl}/my`, formData);
+  }
+
+  renameMy(id: string, name: string): Observable<CoverImage> {
+    return this.http.patch<CoverImage>(`${this.apiUrl}/my/${id}`, { name });
+  }
+
+  replaceMyImage(id: string, file: File): Observable<CoverImage> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.put<CoverImage>(`${this.apiUrl}/my/${id}/image`, formData);
+  }
+
+  removeMy(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/my/${id}`);
   }
 }

@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { R2StorageService } from './r2-storage.service';
 import { v4 as uuidv4 } from 'uuid';
+import fileType from 'file-type';
 import 'multer';
 
 @Injectable()
@@ -17,8 +18,12 @@ export class MediaService {
       throw new BadRequestException('Osiągnięto limit 10 plików');
     }
 
-    const ext = file.originalname.split('.').pop();
-    const key = `media/${userId}/${uuidv4()}.${ext}`;
+    const type = await fileType.fromBuffer(file.buffer);
+    if (!type || !type.ext) {
+      throw new BadRequestException('Nie udało się wykryć typu pliku');
+    }
+
+    const key = `media/${userId}/${uuidv4()}.${type.ext}`;
     const url = await this.r2.upload(key, file.buffer, file.mimetype);
 
     return this.prisma.mediaFile.create({

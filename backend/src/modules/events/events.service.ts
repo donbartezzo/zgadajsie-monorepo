@@ -856,8 +856,7 @@ export class EventsService {
       );
       return smart?.id;
     }
-    const random = await this.coverImagesService.findRandomByDiscipline(disciplineSlug);
-    return random?.id;
+    return undefined;
   }
 
   async setTargetOccupancy(eventId: string, targetOccupancy: number | null) {

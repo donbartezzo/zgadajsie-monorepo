@@ -35,7 +35,7 @@ import { BreadcrumbService } from '../../../../core/services/breadcrumb.service'
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { Event, CoverImage, EventRoleConfig } from '../../../../shared/types';
-import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
+import { buildCoverImageUrl } from '../../../../shared/utils/cover-image.utils';
 import {
   EventStatus,
   DisciplineParticipantRoles,
@@ -448,69 +448,145 @@ interface EventRule {
         </app-card>
 
         <!-- Cover image - pokazuj tylko po wybraniu dyscypliny i gdy są dostępne cover images -->
-        @if (form.get('disciplineSlug')?.value && coverImages().length > 0) {
+        @if (
+          form.get('disciplineSlug')?.value && (coverImages().length > 0 || myCovers().length > 0)
+        ) {
           <app-card>
             <div class="p-4 space-y-3">
               <h3 class="text-sm font-semibold text-neutral-900">Grafika wydarzenia</h3>
 
-              <!-- Przełącznik trybu auto -->
-              <label class="flex cursor-pointer items-center gap-2">
-                <input
-                  type="checkbox"
-                  [checked]="autoCoverImage()"
-                  (change)="toggleAutoCoverImage($any($event.target).checked)"
-                  class="h-4 w-4 shrink-0 cursor-pointer rounded accent-highlight"
-                />
-                <span class="text-sm text-neutral-700">Automatyczny dobór grafiki</span>
-              </label>
+              <!-- Zakładki -->
+              <div class="flex gap-2 border-b border-neutral-200">
+                <button
+                  type="button"
+                  [class]="
+                    'px-3 py-2 text-sm font-medium border-b-2 transition-colors ' +
+                    (coverTab() === 'public'
+                      ? 'border-primary-600 text-primary-700'
+                      : 'border-transparent text-neutral-600 hover:text-neutral-900')
+                  "
+                  (click)="coverTab.set('public')"
+                >
+                  Galeria publiczna
+                </button>
+                <button
+                  type="button"
+                  [class]="
+                    'px-3 py-2 text-sm font-medium border-b-2 transition-colors ' +
+                    (coverTab() === 'my'
+                      ? 'border-primary-600 text-primary-700'
+                      : 'border-transparent text-neutral-600 hover:text-neutral-900')
+                  "
+                  (click)="coverTab.set('my')"
+                >
+                  Galeria własna
+                </button>
+              </div>
 
-              @if (autoCoverImage()) {
-                <!-- Tryb automatyczny -->
-                @if (suggestLoading()) {
-                  <div class="flex items-center justify-center py-6">
-                    <div
-                      class="h-6 w-6 animate-spin rounded-full border-2 border-highlight border-t-transparent"
-                    ></div>
-                  </div>
-                } @else if (suggestedCover(); as cover) {
-                  <div class="space-y-2">
-                    <div
-                      class="relative overflow-hidden rounded-xl border-2 border-primary-300 ring-2 ring-primary-300/30"
-                    >
-                      <img
-                        [src]="coverUrl(cover)"
-                        [alt]="cover.filename"
-                        class="w-full aspect-[700/250] object-cover"
-                        decoding="async"
-                        width="700"
-                        height="250"
-                      />
+              @if (coverTab() === 'public') {
+                <!-- Galeria publiczna -->
+                <!-- Przełącznik trybu auto -->
+                <label class="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    [checked]="autoCoverImage()"
+                    (change)="toggleAutoCoverImage($any($event.target).checked)"
+                    class="h-4 w-4 shrink-0 cursor-pointer rounded accent-highlight"
+                  />
+                  <span class="text-sm text-neutral-700">Automatyczny dobór grafiki</span>
+                </label>
+
+                @if (autoCoverImage()) {
+                  <!-- Tryb automatyczny -->
+                  @if (suggestLoading()) {
+                    <div class="flex items-center justify-center py-6">
                       <div
-                        class="absolute inset-0 bg-primary-500/10 flex items-end justify-end p-2"
-                      >
-                        <span
-                          class="rounded-lg bg-primary-600 px-2 py-0.5 text-xs font-medium text-white"
-                        >
-                          auto
-                        </span>
-                      </div>
+                        class="h-6 w-6 animate-spin rounded-full border-2 border-highlight border-t-transparent"
+                      ></div>
                     </div>
-                    <button
-                      type="button"
-                      class="flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800"
-                      (click)="fetchSuggestedCover()"
-                    >
-                      <app-icon name="refresh-cw" size="xs" />
-                      Losuj inną
-                    </button>
-                  </div>
-                } @else if (!form.get('citySlug')?.value) {
-                  <p class="text-xs text-neutral-500">
-                    Wybierz miasto, aby zobaczyć sugestię grafiki.
-                  </p>
+                  } @else if (suggestedCover(); as cover) {
+                    <div class="space-y-2">
+                      <div
+                        class="relative overflow-hidden rounded-xl border-2 border-primary-300 ring-2 ring-primary-300/30"
+                      >
+                        <img
+                          [src]="coverUrl(cover)"
+                          [alt]="cover.filename"
+                          class="w-full aspect-[700/250] object-cover"
+                          decoding="async"
+                          width="700"
+                          height="250"
+                        />
+                        <div
+                          class="absolute inset-0 bg-primary-500/10 flex items-end justify-end p-2"
+                        >
+                          <span
+                            class="rounded-lg bg-primary-600 px-2 py-0.5 text-xs font-medium text-white"
+                          >
+                            auto
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        class="flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800"
+                        (click)="fetchSuggestedCover()"
+                      >
+                        <app-icon name="refresh-cw" size="xs" />
+                        Losuj inną
+                      </button>
+                    </div>
+                  } @else if (!form.get('citySlug')?.value) {
+                    <p class="text-xs text-neutral-500">
+                      Wybierz miasto, aby zobaczyć sugestię grafiki.
+                    </p>
+                  }
+                } @else {
+                  <!-- Tryb ręczny - galeria publiczna -->
+                  @if (coverImagesLoading()) {
+                    <div class="flex items-center justify-center py-6">
+                      <div
+                        class="h-6 w-6 animate-spin rounded-full border-2 border-highlight border-t-transparent"
+                      ></div>
+                    </div>
+                  } @else {
+                    <div class="grid grid-cols-2 gap-2">
+                      @for (cover of coverImages(); track cover.id) {
+                        <button
+                          type="button"
+                          [class]="
+                            'relative overflow-hidden rounded-xl border-2 transition-all ' +
+                            (selectedCoverImageId() === cover.id
+                              ? 'border-highlight ring-2 ring-primary-500/30'
+                              : 'border-neutral-200 hover:border-neutral-400')
+                          "
+                          (click)="selectCoverImage(cover)"
+                        >
+                          <img
+                            [src]="coverUrl(cover)"
+                            [alt]="cover.filename"
+                            class="w-full aspect-[700/250] object-cover"
+                            loading="lazy"
+                            decoding="async"
+                            width="700"
+                            height="250"
+                          />
+                          @if (selectedCoverImageId() === cover.id) {
+                            <div
+                              class="absolute inset-0 bg-primary-500/20 flex items-center justify-center"
+                            >
+                              <div class="rounded-full bg-primary-500 p-1">
+                                <app-icon name="check" size="sm" class="text-white" />
+                              </div>
+                            </div>
+                          }
+                        </button>
+                      }
+                    </div>
+                  }
                 }
               } @else {
-                <!-- Tryb ręczny - galeria -->
+                <!-- Galeria własna -->
                 @if (coverImagesLoading()) {
                   <div class="flex items-center justify-center py-6">
                     <div
@@ -519,7 +595,7 @@ interface EventRule {
                   </div>
                 } @else {
                   <div class="grid grid-cols-2 gap-2">
-                    @for (cover of coverImages(); track cover.id) {
+                    @for (cover of myCovers(); track cover.id) {
                       <button
                         type="button"
                         [class]="
@@ -532,7 +608,7 @@ interface EventRule {
                       >
                         <img
                           [src]="coverUrl(cover)"
-                          [alt]="cover.filename"
+                          [alt]="cover.name || cover.filename"
                           class="w-full aspect-[700/250] object-cover"
                           loading="lazy"
                           decoding="async"
@@ -551,6 +627,16 @@ interface EventRule {
                       </button>
                     }
                   </div>
+                  @if (myCovers().length < 5) {
+                    <button
+                      type="button"
+                      class="mt-2 flex items-center gap-2 text-sm text-primary-600 hover:text-primary-800"
+                      (click)="navigateToCoverImages()"
+                    >
+                      <app-icon name="plus" size="xs" />
+                      Dodaj nowe cover image
+                    </button>
+                  }
                 }
               }
             </div>
@@ -678,11 +764,13 @@ export class EventFormComponent implements OnInit {
   readonly cities = signal<City[]>([]);
   readonly eventRules = signal<EventRule[]>([]);
   readonly coverImages = signal<CoverImage[]>([]);
+  readonly myCovers = signal<CoverImage[]>([]);
   readonly coverImagesLoading = signal(false);
   readonly selectedCoverImageId = signal<string | null>(null);
   readonly autoCoverImage = signal(false);
   readonly suggestLoading = signal(false);
   readonly suggestedCover = signal<CoverImage | null>(null);
+  readonly coverTab = signal<'public' | 'my'>('public');
 
   readonly disciplineRoles = signal<DisciplineParticipantRoles | null>(null);
   readonly roleSlots = signal<DisciplineRole[]>([]);
@@ -841,11 +929,15 @@ export class EventFormComponent implements OnInit {
   }
 
   coverUrl(cover: CoverImage): string {
-    return coverImageUrl(cover.disciplineSlug, cover.filename);
+    return buildCoverImageUrl(cover);
   }
 
   selectCoverImage(cover: CoverImage): void {
     this.selectedCoverImageId.set(cover.id);
+  }
+
+  navigateToCoverImages(): void {
+    this.navigation.navigateToProfileCoverImages();
   }
 
   openSeriesSettings(): void {
@@ -935,6 +1027,12 @@ export class EventFormComponent implements OnInit {
   async onSubmit(): Promise<void> {
     const isAdmin = this.isAdmin();
     const val = this.form.getRawValue();
+
+    // Walidacja: cover image jest wymagany
+    if (!this.selectedCoverImageId()) {
+      this.snackbar.error('Wybierz grafikę wydarzenia');
+      return;
+    }
 
     // Jeśli formularz jest niezwalidowany
     if (this.form.invalid) {
@@ -1186,19 +1284,22 @@ export class EventFormComponent implements OnInit {
 
   private loadCoverImages(disciplineSlug: string): void {
     this.coverImagesLoading.set(true);
-    this.coverImageService.getAll(disciplineSlug).subscribe({
-      next: (images) => {
-        this.coverImages.set(images);
+    forkJoin({
+      public: this.coverImageService.getAll(disciplineSlug),
+      my: this.coverImageService.getMy(),
+    }).subscribe({
+      next: ({ public: publicImages, my: myImages }) => {
+        this.coverImages.set(publicImages);
+        this.myCovers.set(myImages);
         this.coverImagesLoading.set(false);
 
-        // Auto-select random if nothing selected, images available, and not in auto mode
-        if (!this.selectedCoverImageId() && images.length > 0 && !this.autoCoverImage()) {
-          const randomIdx = Math.floor(Math.random() * images.length);
-          this.selectedCoverImageId.set(images[randomIdx].id);
-        }
+        // Set default tab based on availability
+        const defaultTab = myImages.length > 0 || publicImages.length === 0 ? 'my' : 'public';
+        this.coverTab.set(defaultTab);
       },
       error: () => {
         this.coverImages.set([]);
+        this.myCovers.set([]);
         this.coverImagesLoading.set(false);
       },
     });

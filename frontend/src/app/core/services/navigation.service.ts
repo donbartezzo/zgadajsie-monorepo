@@ -106,6 +106,12 @@ export class NavigationService {
     });
   }
 
+  navigateToProfileCoverImages(): void {
+    this.auth.requireAuth('zarządzać cover images', () => {
+      this.router.navigate(['/profile/cover-images']);
+    });
+  }
+
   navigateToRoot(): void {
     this.router.navigate(['/']);
   }

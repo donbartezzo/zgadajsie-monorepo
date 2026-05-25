@@ -1,6 +1,6 @@
 # Konfiguracja Cloudflare R2
 
-R2 jest używane do przechowywania mediów uploadowanych przez użytkowników (avatary, zdjęcia).
+R2 jest używane do przechowywania mediów uploadowanych przez użytkowników (avatary, zdjęcia) oraz cover images dla wydarzeń.
 Upload przechodzi przez backend (nie bezpośrednio z przeglądarki), więc konfiguracja CORS dotyczy tylko odczytu.
 
 Env vars do uzupełnienia: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`

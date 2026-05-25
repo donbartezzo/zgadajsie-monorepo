@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Param,
   Query,
@@ -23,6 +24,8 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
+import { CreateUserCoverImageDto } from './dto/create-user-cover-image.dto';
+import { RenameUserCoverImageDto } from './dto/rename-user-cover-image.dto';
 
 @Controller('cover-images')
 export class CoverImagesController {
@@ -76,13 +79,6 @@ export class CoverImagesController {
     return this.coverImagesService.create(disciplineSlug, file);
   }
 
-  @Post('sync')
-  @UseGuards(JwtAuthGuard, IsActiveGuard, RolesGuard)
-  @Roles('ADMIN')
-  async syncFromFilesystem() {
-    return this.coverImagesService.syncFromFilesystem();
-  }
-
   @Put(':id/image')
   @UseGuards(JwtAuthGuard, IsActiveGuard, RolesGuard)
   @Roles('ADMIN')
@@ -114,5 +110,66 @@ export class CoverImagesController {
   @Roles('ADMIN')
   remove(@Param('id') id: string) {
     return this.coverImagesService.remove(id);
+  }
+
+  // Galeria własna użytkownika
+  @Get('my')
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  findMy(@CurrentUser() user: AuthUser) {
+    return this.coverImagesService.findMy(user.id);
+  }
+
+  @Post('my')
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  createUserCover(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CreateUserCoverImageDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 8 * 1024 * 1024 }),
+          new FileTypeValidator({ fileType: /image\/(jpeg|png|webp)$/ }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.coverImagesService.createUserCover(user.id, file, dto.name);
+  }
+
+  @Patch('my/:id')
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  renameUserCover(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: RenameUserCoverImageDto,
+  ) {
+    return this.coverImagesService.renameUserCover(user.id, id, dto.name);
+  }
+
+  @Put('my/:id/image')
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  replaceUserCover(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 8 * 1024 * 1024 }),
+          new FileTypeValidator({ fileType: /image\/(jpeg|png|webp)$/ }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.coverImagesService.replaceUserCover(user.id, id, file);
+  }
+
+  @Delete('my/:id')
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  removeUserCover(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.coverImagesService.removeUserCover(user.id, id);
   }
 }
