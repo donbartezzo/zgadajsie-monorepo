@@ -15,11 +15,13 @@
         "browser": "frontend/src/main.ts",
         "polyfills": ["zone.js"],
         "tsConfig": "frontend/tsconfig.app.json",
+        "serviceWorker": "frontend/ngsw-config.json",
         "assets": [
           {
             "glob": "**/*",
             "input": "frontend/public"
-          }
+          },
+          "frontend/src/manifest.webmanifest"
         ],
         "styles": ["frontend/src/styles.scss"]
       },
