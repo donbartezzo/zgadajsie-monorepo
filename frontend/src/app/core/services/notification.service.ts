@@ -1,8 +1,8 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom, Observable } from 'rxjs';
+import { firstValueFrom, forkJoin, map as rxMap, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { PaginatedNotifications } from '../../shared/types';
+import type { Notification, PaginatedNotifications } from '../../shared/types';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
@@ -13,6 +13,26 @@ export class NotificationService {
   unreadCount = signal(0);
   pushPermission = signal<NotificationPermission>(this.detectPushPermission());
   private vapidPublicKey = signal('');
+  private notificationCache = signal<Map<string, Notification>>(new Map());
+
+  isUnread = (notification: Notification): boolean => !notification.readAt;
+
+  findById(id: string): Notification | undefined {
+    return this.notificationCache().get(id);
+  }
+
+  addToCache(notification: Notification): void {
+    this.notificationCache.update((cache) => new Map(cache).set(notification.id, notification));
+  }
+
+  updateInCache(id: string, updates: Partial<Notification>): void {
+    this.notificationCache.update((cache) => {
+      const existing = cache.get(id);
+      if (!existing) return cache;
+      const updated = { ...existing, ...updates };
+      return new Map(cache).set(id, updated);
+    });
+  }
 
   private detectPushPermission(): NotificationPermission {
     if (typeof Notification === 'undefined') return 'denied';
@@ -54,6 +74,29 @@ export class NotificationService {
 
   markAllAsRead(): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/read-all`, {});
+  }
+
+  markByGroupKey(groupKey: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/mark-by-group`, { groupKey });
+  }
+
+  markEventChatRead(eventId: string): Observable<void> {
+    return this.markByGroupKey(`chat:${eventId}`);
+  }
+
+  markEventApplicationsRead(eventId: string): Observable<void> {
+    return this.markByGroupKey(`app:${eventId}`);
+  }
+
+  markEventViewed(eventId: string): Observable<void> {
+    return forkJoin([
+      this.markByGroupKey(`reminder:${eventId}`),
+      this.markByGroupKey(`announce:${eventId}`),
+    ]).pipe(rxMap(() => undefined));
+  }
+
+  markPrivateConversationRead(eventId: string, senderId: string): Observable<void> {
+    return this.markByGroupKey(`pm:${eventId}:${senderId}`);
   }
 
   fetchUnreadCount(): void {

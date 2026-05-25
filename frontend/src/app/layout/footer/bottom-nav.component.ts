@@ -6,6 +6,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { BottomOverlaysService } from '../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { NavigationService } from '../../core/services/navigation.service';
 import { CityContextService } from '../../core/services/city-context.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-bottom-nav',
@@ -19,6 +20,7 @@ export class BottomNavComponent {
   readonly auth = inject(AuthService);
   readonly cityContext = inject(CityContextService);
   protected readonly overlays = inject(BottomOverlaysService);
+  readonly notificationService = inject(NotificationService);
 
   readonly cityLabel = computed(() => {
     const name = this.cityContext.cityName();
@@ -32,6 +34,12 @@ export class BottomNavComponent {
     return this.cityContext.cityName() ? 'ghost' : 'soft';
   });
 
+  readonly unreadCount = computed(() => this.notificationService.unreadCount());
+  readonly showBadge = computed(() => this.unreadCount() > 0);
+  readonly badgeText = computed(() =>
+    this.unreadCount() > 99 ? '99+' : this.unreadCount().toString(),
+  );
+
   toggleShareMenu(): void {
     this.overlays.toggle('share');
   }
@@ -42,5 +50,9 @@ export class BottomNavComponent {
 
   toggleCityOptions(): void {
     this.overlays.toggle('cityOptions');
+  }
+
+  openNotifications(): void {
+    this.navigation.router.navigate(['/notifications']);
   }
 }

@@ -40,7 +40,7 @@ function buildPrismaMock() {
 function buildChatNotificationServiceMock() {
   return {
     onNewPrivateMessage: jest.fn(),
-    cancelPendingForConversation: jest.fn(),
+    onConversationRead: jest.fn(),
   } as unknown as ChatNotificationService;
 }
 

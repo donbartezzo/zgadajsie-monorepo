@@ -14,6 +14,7 @@ import { PaymentsService } from '../payments/payments.service';
 import { SlotService } from '../slots/slot.service';
 import { EnrollmentEligibilityService } from './enrollment-eligibility.service';
 import { ChatService } from '../chat/chat.service';
+import { ChatNotificationService } from '../chat/chat-notification.service';
 import { isEventEnded, isEventJoinable } from '../events/event-time-status.util';
 import { getEnrollmentPhase } from '../events/enrollment-phase.util';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
@@ -80,6 +81,7 @@ export class EnrollmentService {
     private slotService: SlotService,
     private eligibility: EnrollmentEligibilityService,
     private chatService: ChatService,
+    private chatNotificationService: ChatNotificationService,
     private eventRealtime: EventRealtimeService,
     @Optional() private fakeUsersMonitor?: FakeUsersMonitorService,
   ) {}
@@ -235,6 +237,7 @@ export class EnrollmentService {
         const welcomeBody = organizer.welcomeMessage ?? DEFAULT_WELCOME_MESSAGE;
         const messageText = `AUTOMATYCZNIE WYGENEROWANA WIADOMOŚĆ POWITALNA ORGANIZATORA:\n\n${welcomeBody}`;
         await this.chatService.createPrivateMessage(eventId, organizerId, userId, messageText);
+        await this.chatNotificationService.onNewPrivateMessage(eventId, organizerId, userId);
       } catch (error) {
         this.logger.error(`Failed to send welcome message: ${error}`);
       }

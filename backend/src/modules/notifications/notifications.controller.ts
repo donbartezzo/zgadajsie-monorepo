@@ -1,9 +1,20 @@
-import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { EmailService } from './email.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
+import { MarkByGroupDto } from './dto/mark-by-group.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('notifications')
@@ -39,6 +50,19 @@ export class NotificationsController {
   @Patch('read-all')
   markAllAsRead(@CurrentUser() user: AuthUser) {
     return this.notificationsService.markAllAsRead(user.id);
+  }
+
+  @Post('mark-by-group')
+  async markByGroup(@CurrentUser() user: AuthUser, @Body() dto: MarkByGroupDto) {
+    // Whitelist prefixów dla bezpieczeństwa
+    const allowedPrefixes = ['chat:', 'pm:', 'app:', 'reminder:', 'announce:', 'city:'];
+    const hasValidPrefix = allowedPrefixes.some((prefix) => dto.groupKey.startsWith(prefix));
+
+    if (!hasValidPrefix) {
+      throw new BadRequestException('Invalid groupKey prefix');
+    }
+
+    return this.notificationsService.markByGroupKey(user.id, dto.groupKey);
   }
 
   @Post('push/subscribe')

@@ -1,6 +1,6 @@
 import { inject, Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject, map } from 'rxjs';
+import { Observable, Subject, map, switchMap } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
 import {
@@ -12,12 +12,14 @@ import {
   PrivateChatMessage,
 } from '../../shared/types';
 import { AuthService } from '../auth/auth.service';
+import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly ngZone = inject(NgZone);
+  private readonly notificationService = inject(NotificationService);
 
   private socket: Socket | null = null;
   private messageSubject = new Subject<ChatMessage>();
@@ -168,10 +170,11 @@ export class ChatService {
   }
 
   markAsRead(eventId: string, otherUserId: string): Observable<void> {
-    return this.http.post<void>(
-      `${environment.apiUrl}/events/${eventId}/chat/private/${otherUserId}/read`,
-      {},
-    );
+    return this.http
+      .post<void>(`${environment.apiUrl}/events/${eventId}/chat/private/${otherUserId}/read`, {})
+      .pipe(
+        switchMap(() => this.notificationService.markPrivateConversationRead(eventId, otherUserId)),
+      );
   }
 
   getUnreadSummary(eventId: string): Observable<Map<string, number>> {

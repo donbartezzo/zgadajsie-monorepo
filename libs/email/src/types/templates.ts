@@ -130,6 +130,18 @@ export interface AdminDailyReportEmailProps {
   logsCleaned: number;
 }
 
+export interface NotificationDigestEmailProps {
+  displayName: string;
+  frontendUrl: string;
+  items: Array<{
+    id: string;
+    title: string;
+    body: string;
+    link: string | null;
+    createdAt: Date;
+  }>;
+}
+
 export interface EmailTemplates {
   activation: ActivationEmailProps;
   passwordReset: PasswordResetEmailProps;

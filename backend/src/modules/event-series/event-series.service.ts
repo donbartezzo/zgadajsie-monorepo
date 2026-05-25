@@ -102,13 +102,20 @@ export class EventSeriesService {
           where: { status: EventStatus.ACTIVE },
           orderBy: { startsAt: 'asc' },
           take: 10,
+          include: { city: true },
         },
       },
     });
 
     const firstEvent = seriesWithEvents.events[0];
     if (firstEvent) {
-      this.notifyCitySubscribers(firstEvent.id, firstEvent.title, firstEvent.citySlug, organizerId);
+      this.notifyCitySubscribers(
+        firstEvent.id,
+        firstEvent.title,
+        firstEvent.citySlug,
+        firstEvent.city.slug,
+        organizerId,
+      );
     }
 
     return seriesWithEvents;
@@ -409,6 +416,7 @@ export class EventSeriesService {
     eventId: string,
     eventTitle: string,
     citySlug: string,
+    cityId: string,
     organizerId: string,
   ): void {
     setImmediate(async () => {
@@ -416,7 +424,7 @@ export class EventSeriesService {
         const subscriberIds = await this.citySubscriptionsService.getSubscriberIds(citySlug);
         const filtered = subscriberIds.filter((id) => id !== organizerId);
         for (const userId of filtered) {
-          await this.pushService.notifyNewEventInCity(userId, eventTitle, eventId);
+          await this.pushService.notifyNewEventInCity(userId, eventTitle, eventId, cityId);
         }
       } catch (err) {
         this.logger.error(`Failed to notify city subscribers: ${(err as Error).message}`);

@@ -1,56 +1,30 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as webPush from 'web-push';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from './notifications.service';
-import { APP_BRAND } from '@zgadajsie/shared';
+import { UserNotificationGateway } from '../realtime/user-notification.gateway';
+import { NotificationKind } from '@prisma/client';
+import { NotificationContext } from './notification-policy';
 
 @Injectable()
 export class PushService {
   private readonly logger = new Logger(PushService.name);
 
   constructor(
-    private configService: ConfigService,
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
-  ) {
-    const vapidPublic = this.configService.get<string>('VAPID_PUBLIC_KEY', '');
-    const vapidPrivate = this.configService.get<string>('VAPID_PRIVATE_KEY', '');
-    const vapidSubject = this.configService.get<string>(
-      'VAPID_SUBJECT',
-      `mailto:${APP_BRAND.CONTACT_EMAIL}`,
-    );
-
-    if (
-      vapidPublic &&
-      vapidPrivate &&
-      !vapidPublic.startsWith('your-') &&
-      !vapidPrivate.startsWith('your-')
-    ) {
-      try {
-        webPush.setVapidDetails(vapidSubject, vapidPublic, vapidPrivate);
-        this.logger.log('VAPID keys configured');
-      } catch (e: unknown) {
-        this.logger.warn(
-          `Invalid VAPID keys – push notifications disabled: ${(e as Error).message}`,
-        );
-      }
-    } else {
-      this.logger.warn('VAPID keys not configured – push notifications disabled');
-    }
-  }
+    private userNotificationGateway: UserNotificationGateway,
+  ) {}
 
   async notifyUser(
-    userId: string,
-    type: string,
+    ctx: NotificationContext,
+    type: NotificationKind,
     title: string,
     body: string,
-    relatedEventId?: string,
-    clickUrl?: string,
+    link?: string,
   ): Promise<void> {
     // Skip all notifications for FAKE users
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: ctx.userId },
       select: { accountType: true },
     });
     if (!user || user.accountType === 'FAKE') {
@@ -58,48 +32,27 @@ export class PushService {
     }
 
     // Save in-app notification
-    await this.notificationsService.create(userId, type, title, body, relatedEventId);
+    const { notification, wasUpdate } = await this.notificationsService.create(
+      ctx,
+      type,
+      title,
+      body,
+      link,
+    );
 
-    // Send web push to all subscriptions
-    const subscriptions = await this.prisma.pushSubscription.findMany({
-      where: { userId },
+    // Emit WebSocket notification to user
+    this.userNotificationGateway.emitToUser(ctx.userId, {
+      id: notification.id,
+      type,
+      title,
+      body,
+      link,
+      aggregateCount: notification.aggregateCount,
+      wasUpdate,
+      createdAt: notification.createdAt.toISOString(),
     });
 
-    const payload = JSON.stringify({
-      notification: {
-        title,
-        body,
-        data: {
-          type,
-          relatedEventId,
-          onActionClick: {
-            default: {
-              operation: 'navigateLastFocusedOrOpen',
-              url: clickUrl || '/',
-            },
-          },
-        },
-      },
-    });
-
-    for (const sub of subscriptions) {
-      try {
-        await webPush.sendNotification(
-          {
-            endpoint: sub.endpoint,
-            keys: { p256dh: sub.p256dh, auth: sub.auth },
-          },
-          payload,
-        );
-      } catch (error: unknown) {
-        const err = error as { message?: string; statusCode?: number };
-        this.logger.error(`Push failed for ${sub.endpoint}: ${err.message}`);
-        if (err.statusCode === 404 || err.statusCode === 410) {
-          await this.prisma.pushSubscription.delete({ where: { id: sub.id } });
-          this.logger.log(`Removed stale subscription ${sub.id}`);
-        }
-      }
-    }
+    // Web push is now handled by escalation cron (PushDeliveryService)
   }
 
   private async getEventUrl(eventId: string): Promise<string> {
@@ -118,11 +71,10 @@ export class PushService {
   ): Promise<void> {
     const url = await this.getEventUrl(eventId);
     await this.notifyUser(
-      organizerId,
-      'NEW_APPLICATION',
+      { userId: organizerId, relatedEventId: eventId },
+      'NEW_APPLICATION' as NotificationKind,
       'Nowe zgłoszenie',
       `${applicantName} zgłosił się do "${eventTitle}"`,
-      eventId,
       url,
     );
   }
@@ -165,17 +117,22 @@ export class PushService {
     };
     const config = templates[status] ?? templates['REJECTED'];
     const url = await this.getEventUrl(eventId);
-    await this.notifyUser(userId, 'PARTICIPATION_STATUS', config.title, config.body, eventId, url);
+    await this.notifyUser(
+      { userId, relatedEventId: eventId },
+      'PARTICIPATION_STATUS' as NotificationKind,
+      config.title,
+      config.body,
+      url,
+    );
   }
 
   async notifyEventCancelled(userId: string, eventTitle: string, eventId: string): Promise<void> {
     const url = await this.getEventUrl(eventId);
     await this.notifyUser(
-      userId,
-      'EVENT_CANCELLED',
+      { userId, relatedEventId: eventId },
+      'EVENT_CANCELLED' as NotificationKind,
       'Wydarzenie anulowane',
       `Wydarzenie "${eventTitle}" zostało anulowane`,
-      eventId,
       url,
     );
   }
@@ -185,14 +142,14 @@ export class PushService {
     senderName: string,
     eventTitle: string,
     eventId: string,
+    senderId: string,
   ): Promise<void> {
     const url = await this.getEventUrl(eventId);
     await this.notifyUser(
-      userId,
-      'NEW_CHAT_MESSAGE',
+      { userId, relatedEventId: eventId, senderId },
+      'NEW_CHAT_MESSAGE' as NotificationKind,
       `Nowa wiadomość – ${eventTitle}`,
       `${senderName} napisał wiadomość w czacie`,
-      eventId,
       `${url}/chat`,
     );
   }
@@ -205,23 +162,26 @@ export class PushService {
   ): Promise<void> {
     const url = await this.getEventUrl(eventId);
     await this.notifyUser(
-      userId,
-      'EVENT_REMINDER',
+      { userId, relatedEventId: eventId, eventStartAt: new Date() },
+      'EVENT_REMINDER' as NotificationKind,
       'Przypomnienie o wydarzeniu',
       `"${eventTitle}" rozpoczyna się za ${hoursLeft}h`,
-      eventId,
       url,
     );
   }
 
-  async notifyNewEventInCity(userId: string, eventTitle: string, eventId: string): Promise<void> {
+  async notifyNewEventInCity(
+    userId: string,
+    eventTitle: string,
+    eventId: string,
+    cityId: string,
+  ): Promise<void> {
     const url = await this.getEventUrl(eventId);
     await this.notifyUser(
-      userId,
-      'NEW_EVENT_IN_CITY',
+      { userId, relatedEventId: eventId, cityId },
+      'NEW_EVENT_IN_CITY' as NotificationKind,
       'Nowe wydarzenie',
       `"${eventTitle}"`,
-      eventId,
       url,
     );
   }
@@ -234,11 +194,10 @@ export class PushService {
   ): Promise<void> {
     const url = await this.getEventUrl(eventId);
     await this.notifyUser(
-      userId,
-      'REPRIMAND',
+      { userId, relatedEventId: eventId },
+      'REPRIMAND' as NotificationKind,
       'Reprymenda',
       `Otrzymałeś reprymendę za "${eventTitle}": ${reason}`,
-      eventId,
       url,
     );
   }
@@ -248,14 +207,14 @@ export class PushService {
     senderName: string,
     eventTitle: string,
     eventId: string,
+    senderId: string,
     chatUrl: string,
   ): Promise<void> {
     await this.notifyUser(
-      userId,
-      'NEW_CHAT_MESSAGE',
+      { userId, relatedEventId: eventId, senderId },
+      'NEW_PRIVATE_MESSAGE' as NotificationKind,
       `Nowa wiadomość – ${eventTitle}`,
       `${senderName} napisał do Ciebie prywatną wiadomość`,
-      eventId,
       chatUrl,
     );
   }

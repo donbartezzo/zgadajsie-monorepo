@@ -20,6 +20,7 @@ export { default as ContactEmail } from './templates/ContactEmail';
 export { default as EventCancelledEmail } from './templates/EventCancelledEmail';
 export { default as EventReminderEmail } from './templates/EventReminderEmail';
 export { default as NewApplicationEmail } from './templates/NewApplicationEmail';
+export { default as NotificationDigestEmail } from './templates/NotificationDigestEmail';
 export { default as OrganizerWeeklyDigestEmail } from './templates/OrganizerWeeklyDigestEmail';
 export { default as ParticipationStatusEmail } from './templates/ParticipationStatusEmail';
 export { default as PasswordResetEmail } from './templates/PasswordResetEmail';

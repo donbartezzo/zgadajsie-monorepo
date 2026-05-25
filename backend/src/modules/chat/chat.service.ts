@@ -216,7 +216,7 @@ export class ChatService {
       },
     });
 
-    await this.chatNotificationService.cancelPendingForConversation(eventId, userId, otherUserId);
+    await this.chatNotificationService.onConversationRead(eventId, userId, otherUserId);
   }
 
   async getUnreadCount(eventId: string, userId: string, otherUserId: string): Promise<number> {

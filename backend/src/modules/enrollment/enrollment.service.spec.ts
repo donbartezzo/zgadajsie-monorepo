@@ -161,6 +161,9 @@ describe('EnrollmentService', () => {
     const _realtime = buildRealtimeMock();
     const eventRealtime = buildEventRealtimeMock();
     const chatService = buildChatServiceMock();
+    const chatNotificationService = {
+      onNewPrivateMessage: jest.fn().mockResolvedValue(undefined),
+    };
     service = new EnrollmentService(
       prisma as PrismaService,
       {
@@ -172,6 +175,8 @@ describe('EnrollmentService', () => {
       slots,
       eligibility,
       chatService,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      chatNotificationService as any,
       eventRealtime,
     );
     jest.clearAllMocks();
