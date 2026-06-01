@@ -41,7 +41,7 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/home/pages/home/home.component').then((m) => m.HomeComponent),
     canActivate: [paymentRedirectGuard],
-    data: { title: 'Strona główna', centerContent: true, showFooter: false },
+    data: { title: 'Strona główna', fullscreenContent: true, showFooter: false },
   },
 
   // ── Public: event list per city ──
@@ -239,6 +239,34 @@ export const appRoutes: Route[] = [
     },
   },
 
+  // ── Organizer: settings ──
+  {
+    path: 'profile/organizer/settings',
+    loadComponent: () =>
+      import('./features/organizer/pages/organizer-settings/organizer-settings.component').then(
+        (m) => m.OrganizerSettingsComponent,
+      ),
+    canActivate: [authGuard, activeGuard],
+    data: {
+      title: 'Ustawienia organizatora',
+      breadcrumb: BREADCRUMB_TO_PROFILE,
+    },
+  },
+
+  // ── Organizer: cover images ──
+  {
+    path: 'profile/organizer/cover-images',
+    loadComponent: () =>
+      import('./features/me/pages/my-cover-images/my-cover-images.component').then(
+        (m) => m.MyCoverImagesComponent,
+      ),
+    canActivate: [authGuard, activeGuard],
+    data: {
+      title: 'Moja galeria cover images',
+      breadcrumb: BREADCRUMB_TO_PROFILE,
+    },
+  },
+
   // ── Public: confirm series event by email token ──
   {
     path: 'o/confirm-event',
@@ -363,18 +391,6 @@ export const appRoutes: Route[] = [
       ),
     canActivate: [authGuard, activeGuard],
     data: { title: 'Galeria', breadcrumb: BREADCRUMB_TO_PROFILE },
-  },
-  {
-    path: 'profile/cover-images',
-    loadComponent: () =>
-      import('./features/me/pages/my-cover-images/my-cover-images.component').then(
-        (m) => m.MyCoverImagesComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Moja galeria cover images',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-    },
   },
 
   // ── Payments ──

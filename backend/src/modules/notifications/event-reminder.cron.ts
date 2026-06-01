@@ -61,9 +61,10 @@ export class EventReminderCron implements OnModuleInit {
       include: {
         city: { select: { slug: true } },
         enrollments: {
-          where: { wantsIn: true, slot: { isNot: null } },
+          where: { wantsIn: true, slot: { isNot: null }, user: { accountType: { not: 'FAKE' } } },
           include: {
-            user: { select: { id: true, email: true, displayName: true } },
+            user: { select: { id: true, email: true, displayName: true, accountType: true } },
+            addedBy: { select: { id: true, email: true, displayName: true } },
           },
         },
       },
@@ -72,12 +73,20 @@ export class EventReminderCron implements OnModuleInit {
     for (const event of events) {
       const eventLink = buildEventUrl(event.city.slug, event.id);
       for (const p of event.enrollments) {
+        // For GUEST users, notify and email the host instead
+        const recipient = p.user.accountType === 'GUEST' && p.addedBy ? p.addedBy : p.user;
+        const guestLabel = p.addedBy ? ` (gość: ${p.user.displayName})` : '';
         try {
-          await this.pushService.notifyEventReminder(p.user.id, event.title, event.id, hoursLeft);
-          await this.emailService.sendEventReminderEmail(
-            p.user.email,
-            p.user.displayName,
+          await this.pushService.notifyEventReminder(
+            recipient.id,
             event.title,
+            event.id,
+            hoursLeft,
+          );
+          await this.emailService.sendEventReminderEmail(
+            recipient.email,
+            recipient.displayName,
+            `${event.title}${guestLabel}`,
             event.startsAt,
             eventLink,
           );

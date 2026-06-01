@@ -109,9 +109,18 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
                 <div class="p-3 flex items-center gap-3">
                   <app-user-avatar [user]="p.user" size="sm" />
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-neutral-900 truncate">
-                      {{ p.user.displayName }}
-                    </p>
+                    <div class="flex items-center gap-2">
+                      <p class="text-sm font-medium text-neutral-900 truncate">
+                        {{ p.user.displayName }}
+                      </p>
+                      @if (p.isNewToOrganizer) {
+                        <span
+                          class="inline-flex items-center text-[10px] bg-info-100 text-info-700 px-1.5 py-0.5 rounded-full"
+                        >
+                          Nowy
+                        </span>
+                      }
+                    </div>
                   </div>
                   <div class="flex gap-1">
                     <app-button

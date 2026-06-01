@@ -102,6 +102,10 @@ export class AdminService {
   enrollFakeUserToEvent(eventId: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/admin/fake-users/events/${eventId}/enroll`, {});
   }
+
+  verifyUserByOrganizer(targetUserId: string): Observable<User> {
+    return this.http.patch<User>(`${this.apiUrl}/users/${targetUserId}/verify-by-organizer`, {});
+  }
 }
 
 export interface CronStatus {

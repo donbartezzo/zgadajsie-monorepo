@@ -67,22 +67,54 @@ if [ "$SEED_TYPE" != "dev" ] && [ "$SEED_TYPE" != "prod" ]; then
   exit 1
 fi
 
-if [ -n "$RESET_FLAG" ] && [ "$RESET_FLAG" != "--reset" ] && [ "$RESET_FLAG" != "--fix-migrations" ]; then
-  echo "Błąd: nieprawidłowy drugi parametr '$RESET_FLAG'"
-  echo "Dozwolone wartości: --reset, --fix-migrations"
-  exit 1
-fi
+case "$RESET_FLAG" in
+  ""|--reset|--fix-migrations|--rollback-failed=*) ;;
+  *)
+    echo "Błąd: nieprawidłowy drugi parametr '$RESET_FLAG'"
+    echo "Dozwolone wartości: --reset, --fix-migrations, --rollback-failed=<migration_name>"
+    exit 1
+    ;;
+esac
 
-if [ -n "$FIX_MIGRATIONS_FLAG" ] && [ "$FIX_MIGRATIONS_FLAG" != "--fix-migrations" ]; then
-  echo "Błąd: nieprawidłowy trzeci parametr '$FIX_MIGRATIONS_FLAG'"
-  echo "Dozwolone wartości: --fix-migrations"
-  exit 1
-fi
+case "$FIX_MIGRATIONS_FLAG" in
+  ""|--fix-migrations|--rollback-failed=*) ;;
+  *)
+    echo "Błąd: nieprawidłowy trzeci parametr '$FIX_MIGRATIONS_FLAG'"
+    echo "Dozwolone wartości: --fix-migrations, --rollback-failed=<migration_name>"
+    exit 1
+    ;;
+esac
 
 # Normalize: --fix-migrations can appear as 2nd or 3rd argument
 if [ "$RESET_FLAG" = "--fix-migrations" ]; then
   FIX_MIGRATIONS_FLAG="--fix-migrations"
   RESET_FLAG=""
+fi
+
+# Parse --rollback-failed=<migration_name> (any position).
+# Marks a single failed migration as rolled-back so the next migrate deploy
+# can re-apply it cleanly. Skips seed to avoid wiping data on dev.
+ROLLBACK_FAILED_MIGRATION=""
+for arg in "$@"; do
+  case "$arg" in
+    --rollback-failed=*)
+      ROLLBACK_FAILED_MIGRATION="${arg#--rollback-failed=}"
+      ;;
+  esac
+done
+
+if [ -n "$ROLLBACK_FAILED_MIGRATION" ]; then
+  case "$RESET_FLAG" in
+    --rollback-failed=*) RESET_FLAG="" ;;
+  esac
+  case "$FIX_MIGRATIONS_FLAG" in
+    --rollback-failed=*) FIX_MIGRATIONS_FLAG="" ;;
+  esac
+
+  if [ ! -d "backend/prisma/migrations/$ROLLBACK_FAILED_MIGRATION" ]; then
+    echo "Błąd: katalog migracji 'backend/prisma/migrations/$ROLLBACK_FAILED_MIGRATION' nie istnieje"
+    exit 1
+  fi
 fi
 
 if [ "$SEED_TYPE" = "prod" ]; then
@@ -181,7 +213,22 @@ if [ "$FIX_MIGRATIONS_FLAG" = "--fix-migrations" ]; then
   echo ""
 fi
 
+if [ -n "$ROLLBACK_FAILED_MIGRATION" ]; then
+  echo "🔧 Oznaczam migrację jako rolled-back: $ROLLBACK_FAILED_MIGRATION..."
+  DATABASE_URL="$REMOTE_DATABASE_URL" sh -c "cd backend && npx prisma migrate resolve --rolled-back $ROLLBACK_FAILED_MIGRATION"
+  echo "   Gotowe. Aplikuję migracje ponownie..."
+  echo ""
+fi
+
 DATABASE_URL="$REMOTE_DATABASE_URL" sh -c 'cd backend && npx prisma migrate deploy'
+
+# Skip seed when only repairing migrations (rollback) — seed.nonprod wipes all data.
+if [ -n "$ROLLBACK_FAILED_MIGRATION" ]; then
+  echo ""
+  echo "ℹ️  Pomijam seed (tryb --rollback-failed)."
+  echo "✅ Naprawa migracji zakończona pomyślnie!"
+  exit 0
+fi
 
 echo "🌱 Uruchamiam seed (${SEED_LABEL})..."
 DATABASE_URL="$REMOTE_DATABASE_URL" npx tsx ${SEED_FILE}

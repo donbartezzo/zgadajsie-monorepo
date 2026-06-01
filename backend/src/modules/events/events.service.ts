@@ -100,6 +100,7 @@ export class EventsService {
         lng: dto.lng,
         rules: dto.rules,
         facilityReserved: dto.facilityReserved ?? true,
+        welcomeMessageEnabled: dto.welcomeMessageEnabled ?? true,
       },
       include: { discipline: true, facility: true, level: true, city: true, coverImage: true },
     });
@@ -362,6 +363,8 @@ export class EventsService {
     const data: Record<string, unknown> = { ...dto };
     if (dto.startsAt) data.startsAt = new Date(dto.startsAt);
     if (dto.endsAt) data.endsAt = new Date(dto.endsAt);
+    if (dto.welcomeMessageEnabled !== undefined)
+      data.welcomeMessageEnabled = dto.welcomeMessageEnabled;
 
     // Validate and sync slots if maxParticipants or roleConfig is changing
     const newRoleConfig =
@@ -539,25 +542,30 @@ export class EventsService {
     // Notifications (fire-and-forget, outside transaction)
     const notificationErrors: string[] = [];
     const participants = await this.prisma.eventEnrollment.findMany({
-      where: { eventId: id },
-      include: { user: { select: { id: true, email: true, displayName: true } } },
+      where: { eventId: id, user: { accountType: { not: 'FAKE' } } },
+      include: {
+        user: { select: { id: true, email: true, displayName: true, accountType: true } },
+        addedBy: { select: { id: true, email: true, displayName: true } },
+      },
     });
 
     for (const p of participants) {
+      // For GUEST users, notify and email the host instead
+      const recipient = p.user.accountType === 'GUEST' && p.addedBy ? p.addedBy : p.user;
       try {
-        await this.pushService.notifyEventCancelled(p.user.id, event.title, id);
+        await this.pushService.notifyEventCancelled(recipient.id, event.title, id);
       } catch (err) {
-        notificationErrors.push(`push:${p.user.id}:${(err as Error).message}`);
+        notificationErrors.push(`push:${recipient.id}:${(err as Error).message}`);
       }
       try {
         await this.emailService.sendEventCancelledEmail(
-          p.user.email,
-          p.user.displayName,
+          recipient.email,
+          recipient.displayName,
           event.title,
           buildEventUrl(event.city.slug, id),
         );
       } catch (err) {
-        notificationErrors.push(`email:${p.user.email}:${(err as Error).message}`);
+        notificationErrors.push(`email:${recipient.email}:${(err as Error).message}`);
       }
     }
 
@@ -634,6 +642,15 @@ export class EventsService {
   }
 
   async getParticipants(eventId: string) {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { organizerId: true },
+    });
+
+    if (!event) {
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
+    }
+
     const participations = await this.prisma.eventEnrollment.findMany({
       where: { eventId },
       include: {
@@ -672,6 +689,18 @@ export class EventsService {
       orderBy: { createdAt: 'asc' },
     });
 
+    // Optimization: get all users with confirmed enrollments for this organizer in one query
+    const confirmedUsers = await this.prisma.eventEnrollment
+      .findMany({
+        where: {
+          event: { organizerId: event.organizerId },
+          slot: { confirmed: true },
+          userId: { in: participations.map((p) => p.userId) },
+        },
+        select: { userId: true },
+      })
+      .then((rows) => new Set(rows.map((r) => r.userId)));
+
     return participations.map((p) => {
       // Derive status from slot-based model
       let status: string;
@@ -690,6 +719,7 @@ export class EventsService {
         addedByUser: p.addedBy ?? null,
         isGuest: p.addedByUserId !== null,
         payment: p.payments[0] ?? null,
+        isNewToOrganizer: !confirmedUsers.has(p.userId),
       };
     });
   }

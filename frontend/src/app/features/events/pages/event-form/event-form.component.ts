@@ -192,6 +192,26 @@ interface EventRule {
                 </div>
               </label>
             </div>
+
+            <!-- Wiadomość powitalna -->
+            <div class="rounded-xl border border-info-200 bg-info-50 p-3">
+              <label class="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  formControlName="welcomeMessageEnabled"
+                  class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded accent-highlight"
+                />
+                <div>
+                  <span class="block text-sm font-semibold text-info-700">
+                    Wyślij auto-wiadomość powitalną do nowych uczestników
+                  </span>
+                  <span class="mt-0.5 block text-xs text-info-600">
+                    Nowi uczestnicy otrzymają automatyczną wiadomość od Ciebie po zgłoszeniu się na
+                    wydarzenie.
+                  </span>
+                </div>
+              </label>
+            </div>
           </div>
         </app-card>
 
@@ -813,6 +833,7 @@ export class EventFormComponent implements OnInit {
     gender: ['ANY'],
     visibility: ['PUBLIC'],
     facilityReserved: [true],
+    welcomeMessageEnabled: [true],
     address: ['', Validators.required],
     lat: [51.935],
     lng: [15.506],
@@ -1154,6 +1175,7 @@ export class EventFormComponent implements OnInit {
       gender: val.gender || undefined,
       visibility: val.visibility || undefined,
       facilityReserved: val.facilityReserved ?? true,
+      welcomeMessageEnabled: val.welcomeMessageEnabled ?? true,
       address: val.address || undefined,
       lat: val.lat || undefined,
       lng: val.lng || undefined,
@@ -1202,6 +1224,7 @@ export class EventFormComponent implements OnInit {
         gender: val.gender || undefined,
         visibility: val.visibility || undefined,
         facilityReserved: val.facilityReserved ?? true,
+        welcomeMessageEnabled: val.welcomeMessageEnabled ?? true,
         rules: this.formatRules(this.eventRules()) || undefined,
         coverImageId: this.selectedCoverImageId() || undefined,
         roleConfig: this.buildRoleConfig() ?? undefined,
@@ -1442,6 +1465,7 @@ export class EventFormComponent implements OnInit {
       gender: event.gender,
       visibility: event.visibility,
       facilityReserved: event.facilityReserved ?? true,
+      welcomeMessageEnabled: event.welcomeMessageEnabled ?? true,
       address: event.address,
       lat: event.lat,
       lng: event.lng,

@@ -9,6 +9,7 @@ import { Enrollment, EnrolleeManageItem } from '../../../../types';
 import { SemanticColor } from '../../../../types/colors';
 import { SlotDisplayStatus } from '../../../slot-status-config';
 import { EnrollmentGridItemShellComponent } from './enrollment-grid-item-shell.component';
+import { environment } from '../../../../../../environments/environment';
 
 export type EnrollmentItem = Enrollment | EnrolleeManageItem;
 
@@ -88,6 +89,7 @@ export class EnrollmentGridItemComponent {
   readonly showRole = input(false);
   readonly highlightOwn = input(true);
   readonly disabled = input(false);
+  readonly active = input(false);
   readonly clicked = output<void>();
 
   readonly displayName = computed(() => this.participant().user?.displayName ?? 'Uczestnik');
@@ -127,8 +129,16 @@ export class EnrollmentGridItemComponent {
     return p.user?.isActive === false || p.user?.isEmailVerified === false;
   });
 
+  readonly needsConfirmation = computed(() => {
+    const p = this.participant();
+    return p.status === 'APPROVED' && p.slot?.confirmed === false;
+  });
+
   readonly needsPayment = computed(
-    () => this.participant().payment === null && this.participant().status === 'APPROVED',
+    () =>
+      environment.enableOnlinePayments &&
+      this.participant().payment === null &&
+      this.participant().status === 'APPROVED',
   );
 
   readonly isPending = computed(() => this.participant().status === 'PENDING');
@@ -142,6 +152,10 @@ export class EnrollmentGridItemComponent {
 
   readonly statusIndicators = computed<StatusIndicatorType[]>(() => {
     const indicators: StatusIndicatorType[] = [];
+
+    if (this.needsConfirmation()) {
+      indicators.push('needs_confirmation');
+    }
 
     if (this.needsPayment()) {
       indicators.push('needs_payment');
@@ -181,6 +195,7 @@ export class EnrollmentGridItemComponent {
   readonly buttonClass = computed(() => {
     const isDisabled = this.disabled();
     const shouldHighlight = this.highlightOwn() && this.isCurrentUserOrGuest();
+    const isActive = this.active();
     const status = this.slotDisplayStatus();
 
     const base =
@@ -189,6 +204,7 @@ export class EnrollmentGridItemComponent {
         ? ' pointer-events-none cursor-default'
         : ' transition-colors hover:bg-neutral-50 focus:outline-hidden');
 
+    if (isActive) return `${base} bg-primary-50 ring-2 ring-primary-500`;
     if (shouldHighlight) return `${base} bg-primary-50/50 ring-2 ring-primary-400`;
     if (status === 'pending') return `${base} focus:ring-2 focus:ring-warning-200`;
     if (status === 'withdrawn') return `${base} focus:ring-2 focus:ring-neutral-200`;

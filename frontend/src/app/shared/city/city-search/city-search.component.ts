@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef,
   ElementRef,
   inject,
   input,
@@ -57,7 +56,6 @@ function normalize(s: string): string {
 })
 export class CitySearchComponent implements OnInit {
   private readonly dictionary = inject(DictionaryService);
-  private readonly destroyRef = inject(DestroyRef);
   private readonly cityContext = inject(CityContextService);
   private readonly snackbar = inject(SnackbarService);
 
@@ -70,10 +68,17 @@ export class CitySearchComponent implements OnInit {
 
   readonly DEFAULT_CITY_NAME = DEFAULT_CITY_NAME_CONST;
 
-  readonly showDefaultCityHint = computed(() => {
-    const currentCityName = this.cityContext.cityName();
-    return currentCityName !== DEFAULT_CITY_NAME_CONST;
-  });
+  // readonly showDefaultCityHint = computed(() => {
+  //   const currentCityName = this.cityContext.cityName();
+  //   const queryValue = this.query();
+
+  //   // Jeśli brak bieżącego miasta a w inpucie jest domyślne miasto, nie pokazuj hintu
+  //   if (!currentCityName && normalize(queryValue) === normalize(DEFAULT_CITY_NAME_CONST)) {
+  //     return false;
+  //   }
+
+  //   return currentCityName !== DEFAULT_CITY_NAME_CONST;
+  // });
 
   private readonly inputRef = viewChild<ElementRef<HTMLInputElement>>('inputEl');
   private readonly query$ = new Subject<string>();
@@ -100,7 +105,7 @@ export class CitySearchComponent implements OnInit {
 
   protected readonly inputClasses = computed(() => {
     const base =
-      'w-full rounded-2xl border py-5 pl-12 pr-5 text-lg backdrop-blur-xs transition-all focus:outline-none';
+      'w-full rounded-2xl border py-5 pl-4 2xs:pl-12 pr-5 text-lg backdrop-blur-xs transition-all focus:outline-none';
     if (this.variant() === 'light') {
       return `${base} border-neutral-200 bg-neutral-50 text-neutral-900 placeholder-neutral-400 focus:border-primary-500 focus:bg-white`;
     }

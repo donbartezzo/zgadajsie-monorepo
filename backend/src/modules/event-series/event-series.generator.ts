@@ -31,6 +31,7 @@ type TemplateSnapshot = {
   coverImageId?: string;
   rules?: string;
   facilityReserved?: boolean;
+  welcomeMessageEnabled?: boolean;
   roleConfig?: unknown;
 };
 
@@ -236,6 +237,7 @@ export class EventSeriesGenerator {
         visibility: (template.visibility ?? 'PUBLIC') as EventVisibility,
         rules: template.rules,
         facilityReserved: template.facilityReserved ?? true,
+        welcomeMessageEnabled: template.welcomeMessageEnabled ?? true,
         coverImageId: coverImageId ?? null,
         roleConfig: template.roleConfig
           ? JSON.parse(JSON.stringify(template.roleConfig))

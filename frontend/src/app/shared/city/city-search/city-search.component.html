@@ -7,12 +7,9 @@
 
 <div class="relative w-full">
   <div class="relative">
-    <app-icon
-      name="map-pin"
-      size="lg"
-      color="neutral"
-      [class]="'pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 z-1 ' + iconClasses()"
-    ></app-icon>
+    <div class="hidden 2xs:block pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 z-1">
+      <app-icon name="map-pin" size="lg" color="neutral" [class]="iconClasses()"></app-icon>
+    </div>
 
     <input
       #inputEl
@@ -41,23 +38,22 @@
         muted="light"
         (clicked)="handleSearchSubmit()"
         ariaLabel="Szukaj miasta"
-        >Pokaż</app-button
       >
+        <span class="hidden xs:inline">Pokaż</span>
+      </app-button>
     </div>
   </div>
 
-  @if (showDefaultCityHint()) {
-    <div class="mt-0 text-right mr-3">
-      <span class="text-sm text-neutral-300">Polecamy: </span>
-      <button
-        type="button"
-        (click)="selectDefaultCity()"
-        class="text-sm font-medium text-primary-600 hover:text-primary-700 underline"
-      >
-        {{ DEFAULT_CITY_NAME }}
-      </button>
-    </div>
-  }
+  <div class="mt-0 text-right mr-3">
+    <span class="text-sm text-neutral-300">Polecamy: </span>
+    <button
+      type="button"
+      (click)="selectDefaultCity()"
+      class="text-sm font-medium text-primary-600 hover:text-primary-700 underline"
+    >
+      {{ DEFAULT_CITY_NAME }}
+    </button>
+  </div>
 
   @if (_isOpen && _filtered.length > 0) {
     <ul

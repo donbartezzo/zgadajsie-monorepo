@@ -15,12 +15,14 @@ import {
   ParticipationStatusEmail,
   PasswordResetEmail,
   PaymentConfirmationEmail,
+  PrivateChatEmail,
   RefundConfirmationEmail,
   ReprimandEmail,
   renderEmail,
   type ParticipationStatus,
 } from '@zgadajsie/email';
 import type { OrganizerDigestData } from '../organizer/organizer.service';
+import { featureFlags } from '../../common/config/feature-flags';
 
 @Injectable()
 export class EmailService implements OnModuleInit {
@@ -306,7 +308,38 @@ export class EmailService implements OnModuleInit {
     await this.send(this.adminEmail, subject, html, text);
   }
 
+  async sendPrivateChatEmail(
+    email: string,
+    displayName: string,
+    senderName: string,
+    eventTitle: string,
+    unreadCount: number,
+    chatUrl: string,
+  ): Promise<void> {
+    const subject = `Nowa prywatna wiadomość – ${eventTitle}`;
+    const { html, text } = await renderEmail(
+      <PrivateChatEmail
+        displayName={displayName}
+        senderName={senderName}
+        eventTitle={eventTitle}
+        unreadCount={unreadCount}
+        chatUrl={chatUrl}
+      />,
+    );
+    await this.send(email, subject, html, text);
+  }
+
   private async send(to: string, subject: string, html: string, text?: string): Promise<void> {
+    if (!featureFlags.enableEmails) {
+      this.logger.log(`Email sending disabled, skipping email to ${to}: ${subject}`);
+      return;
+    }
+
+    if (this.isNonDeliverableAddress(to)) {
+      this.logger.debug(`Skipping email to non-deliverable address: ${to}`);
+      return;
+    }
+
     try {
       await this.resend.emails.send({
         from: this.fromAddress,
@@ -319,5 +352,15 @@ export class EmailService implements OnModuleInit {
     } catch (error) {
       this.logger.error(`Failed to send email to ${to}: ${error.message}`);
     }
+  }
+
+  private isNonDeliverableAddress(email: string): boolean {
+    const lower = email.toLowerCase();
+    return (
+      lower.endsWith('@guest.zgadajsie.pl') ||
+      lower.endsWith('@example.com') ||
+      lower.endsWith('@example.org') ||
+      lower.endsWith('@example.net')
+    );
   }
 }

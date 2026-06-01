@@ -3,12 +3,19 @@ import { CommonModule } from '@angular/common';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { CitySearchComponent } from '../../../shared/city/city-search/city-search.component';
+import { SectionSeparatorComponent } from '../../../shared/ui/section-separator/section-separator.component';
 import { CityContextService } from '../../../core/services/city-context.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 
 @Component({
   selector: 'app-city-options-overlay',
-  imports: [CommonModule, BottomOverlayComponent, LinkListComponent, CitySearchComponent],
+  imports: [
+    CommonModule,
+    BottomOverlayComponent,
+    LinkListComponent,
+    CitySearchComponent,
+    SectionSeparatorComponent,
+  ],
   template: `
     <app-bottom-overlay [open]="true" title="Twoje bieżące miasto" (closed)="closed.emit()">
       <div class="space-y-4 max-w-lg mx-auto">
@@ -20,13 +27,7 @@ import { NavigationService } from '../../../core/services/navigation.service';
         />
 
         @if (cityOptions().length > 0) {
-          <div class="flex items-center gap-3 pt-1">
-            <div class="h-px flex-1 bg-neutral-200"></div>
-            <span class="text-[10px] font-medium uppercase tracking-widest text-neutral-400">
-              dostępne opcje
-            </span>
-            <div class="h-px flex-1 bg-neutral-200"></div>
-          </div>
+          <app-section-separator label="Dostępne opcje" />
 
           <app-link-list [items]="cityOptions()" (itemClicked)="handleOptionClick($event)" />
         }

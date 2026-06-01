@@ -108,6 +108,7 @@ export abstract class BaseChatComponent implements OnDestroy {
 
         this.msgSub = this.chatService.onPrivateMessage().subscribe((msg) => {
           this.privateMessages.update((prev) => [...prev, msg]);
+          this.chatService.markAsRead(this.eventId, otherUserId).subscribe();
         });
 
         this.typingSub = this.chatService.onPrivateTyping().subscribe((data) => {
@@ -115,6 +116,7 @@ export abstract class BaseChatComponent implements OnDestroy {
         });
 
         onHistoryLoaded?.(res.data);
+        this.chatService.markAsRead(this.eventId, otherUserId).subscribe();
       },
       error: (err) => {
         this.loading.set(false);

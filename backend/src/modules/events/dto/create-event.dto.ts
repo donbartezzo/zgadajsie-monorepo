@@ -119,4 +119,8 @@ export class CreateEventDto {
   @ValidateNested()
   @Type(() => EventRoleConfigDto)
   roleConfig?: EventRoleConfigDto;
+
+  @IsOptional()
+  @IsBoolean()
+  welcomeMessageEnabled?: boolean;
 }

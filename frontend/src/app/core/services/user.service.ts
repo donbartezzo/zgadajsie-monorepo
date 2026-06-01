@@ -11,6 +11,8 @@ interface UpdateProfileData {
   donationUrl?: string | null;
   currentPassword?: string;
   newPassword?: string;
+  welcomeMessage?: string | null;
+  welcomeMessageEnabled?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })

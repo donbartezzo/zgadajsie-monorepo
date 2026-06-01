@@ -16,7 +16,6 @@ import { AvatarUser, UserAvatarComponent } from '../user-avatar/user-avatar.comp
 import { AvatarPickerComponent } from '../avatar-picker/avatar-picker.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
-import { BadgeComponent } from '../../../ui/badge/badge.component';
 import { StatusIndicatorComponent } from '../../../ui/status-indicator/status-indicator.component';
 import {
   ProfileBroadcastService,
@@ -28,6 +27,7 @@ import { ParticipationStatus, WaitingReason } from '../../../types/participation
 import { ParticipantPaymentInfo } from '../../../types/payment.interface';
 import { SemanticColor } from '../../../types/colors';
 import { type StatusIndicatorType, type StatusBadgeEntry } from '@zgadajsie/shared';
+import { environment } from '../../../../../environments/environment';
 
 const PARTICIPATION_STATUS_TO_BADGE: Record<ParticipationStatus, StatusIndicatorType> = {
   CONFIRMED: 'confirmed',
@@ -55,7 +55,6 @@ export type ProfileCardContext = 'profile' | 'participant' | 'organizer';
     AvatarPickerComponent,
     IconComponent,
     ButtonComponent,
-    BadgeComponent,
     FormsModule,
     StatusIndicatorComponent,
   ],
@@ -70,6 +69,7 @@ export class UserProfileCardComponent {
   readonly participationStatus = input<ParticipationStatus | null>(null);
   readonly waitingReason = input<WaitingReason | null>(null);
   readonly paymentInfo = input<ParticipantPaymentInfo | null>(null);
+  readonly slotConfirmed = input<boolean | null>(null);
   readonly isGuest = input(false);
   readonly variant = input<ProfileCardVariant>('default');
   readonly stats = input<UserProfileStats[]>([]);
@@ -78,6 +78,7 @@ export class UserProfileCardComponent {
   readonly isOrganizer = input(false);
   readonly isOwnGuest = input(false);
   readonly extraBadges = input<StatusBadgeEntry[]>([]);
+  readonly isNewToOrganizer = input(false);
 
   readonly canEditName = input(false);
   readonly canEditAvatar = input(false);
@@ -144,18 +145,6 @@ export class UserProfileCardComponent {
       avatarSeed: this.overrideAvatarSeed() ?? baseSeed,
     };
   });
-  readonly subtitle = computed(() => {
-    const user = this.user();
-    switch (this.context()) {
-      case 'profile':
-        return 'email' in user ? user.email : null;
-      case 'participant':
-      case 'organizer':
-        return this.isGuest() ? 'Gość' : null;
-      default:
-        return null;
-    }
-  });
   readonly allStatusBadges = computed<StatusBadgeEntry[]>(() => {
     const badges: StatusBadgeEntry[] = [];
     const status = this.participationStatus();
@@ -164,23 +153,34 @@ export class UserProfileCardComponent {
     if (status) {
       const inEnrollmentCtx = ctx === 'participant' || ctx === 'organizer';
       if (status === 'APPROVED' && inEnrollmentCtx) {
-        const payment = this.paymentInfo();
-        const amountDetail = payment?.amount ? `${payment.amount} zł` : null;
-        if (!payment) {
-          badges.push({ type: 'needs_payment' });
-        } else {
-          const s = payment.status;
-          if (s === 'COMPLETED') badges.push({ type: 'payment_completed', detail: amountDetail });
-          else if (s === 'VOUCHER_REFUNDED' || s === 'REFUNDED')
-            badges.push({ type: 'payment_refunded', detail: amountDetail });
-          else badges.push({ type: 'payment_pending', detail: amountDetail });
+        // Slot przydzielony, ale nie potwierdzony przez uczestnika → wymaga potwierdzenia.
+        // Pokazujemy ten wskaźnik niezależnie od stanu płatności, bo potwierdzenie
+        // uczestnictwa jest pierwszą wymaganą akcją uczestnika po rejoinie / dodaniu przez organizatora.
+        if (this.slotConfirmed() === false) {
+          badges.push({ type: 'needs_confirmation' });
+        }
+        // Płatności online są wyłączone → nie pokazujemy badge'ów płatności
+        if (environment.enableOnlinePayments) {
+          const payment = this.paymentInfo();
+          const amountDetail = payment?.amount ? `${payment.amount} zł` : null;
+          if (!payment) {
+            badges.push({ type: 'needs_payment' });
+          } else {
+            const s = payment.status;
+            if (s === 'COMPLETED') badges.push({ type: 'payment_completed', detail: amountDetail });
+            else if (s === 'VOUCHER_REFUNDED' || s === 'REFUNDED')
+              badges.push({ type: 'payment_refunded', detail: amountDetail });
+            else badges.push({ type: 'payment_pending', detail: amountDetail });
+          }
         }
       } else {
         badges.push({ type: PARTICIPATION_STATUS_TO_BADGE[status] });
       }
     }
 
-    if (!this.isGuest()) {
+    if (this.isGuest()) {
+      badges.push({ type: 'is_guest' });
+    } else {
       const user = this.user();
       const isActive = 'isActive' in user ? user.isActive : undefined;
       const isEmailVerified = 'isEmailVerified' in user ? user.isEmailVerified : undefined;
@@ -193,6 +193,10 @@ export class UserProfileCardComponent {
       if (this.waitingReason() === 'NOT_TRUSTED') {
         badges.push({ type: 'awaiting_approval' });
       }
+    }
+
+    if (this.isNewToOrganizer()) {
+      badges.push({ type: 'new_to_organizer' });
     }
 
     return [...badges, ...this.extraBadges()];
@@ -208,7 +212,7 @@ export class UserProfileCardComponent {
 
   readonly containerClass = computed(() => {
     const variants: Record<ProfileCardVariant, string> = {
-      overlay: 'py-4',
+      overlay: 'py-2',
       default: 'py-6',
     };
     return variants[this.variant()];

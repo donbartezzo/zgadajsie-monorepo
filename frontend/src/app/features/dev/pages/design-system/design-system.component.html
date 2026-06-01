@@ -760,6 +760,59 @@
               </div>
             </div>
           </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Border (obramowanie)</p>
+            <div class="space-y-2">
+              <p class="text-xs text-neutral-400 mb-2">Domyślny transparent border:</p>
+              <div class="flex flex-wrap gap-2">
+                <app-badge variant="soft" color="primary">Primary</app-badge>
+                <app-badge variant="soft" color="success">Success</app-badge>
+                <app-badge variant="soft" color="warning">Warning</app-badge>
+                <app-badge variant="soft" color="danger">Danger</app-badge>
+                <app-badge variant="solid" color="primary">Solid</app-badge>
+                <app-badge variant="ghost" color="info">Ghost</app-badge>
+              </div>
+              <p class="text-xs text-neutral-400 mb-2 mt-3">Kolorowy border (borderColor=color):</p>
+              <div class="flex flex-wrap gap-2">
+                <app-badge variant="soft" color="primary" borderColor="primary">Primary</app-badge>
+                <app-badge variant="soft" color="success" borderColor="success">Success</app-badge>
+                <app-badge variant="soft" color="warning" borderColor="warning">Warning</app-badge>
+                <app-badge variant="soft" color="danger" borderColor="danger">Danger</app-badge>
+                <app-badge variant="solid" color="primary" borderColor="primary">Solid</app-badge>
+                <app-badge variant="ghost" color="info" borderColor="info">Ghost</app-badge>
+              </div>
+              <p class="text-xs text-neutral-400 mb-2 mt-3">Outline ma zawsze kolorowy border (z definicji):</p>
+              <div class="flex flex-wrap gap-2">
+                <app-badge variant="outline" color="primary">Primary</app-badge>
+                <app-badge variant="outline" color="success">Success</app-badge>
+                <app-badge variant="outline" color="warning">Warning</app-badge>
+                <app-badge variant="outline" color="danger">Danger</app-badge>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs text-neutral-500 mb-2 font-medium uppercase tracking-wider">Shadow (cień)</p>
+            <div class="space-y-2">
+              <p class="text-xs text-neutral-400 mb-2">Bez cienia (domyślne):</p>
+              <div class="flex flex-wrap gap-2">
+                <app-badge variant="soft" color="primary">Primary</app-badge>
+                <app-badge variant="soft" color="success">Success</app-badge>
+                <app-badge variant="soft" color="warning">Warning</app-badge>
+                <app-badge variant="soft" color="danger">Danger</app-badge>
+              </div>
+              <p class="text-xs text-neutral-400 mb-2 mt-3">Z delikatnym cieniem (hasShadow=true):</p>
+              <div class="flex flex-wrap gap-2">
+                <app-badge variant="soft" color="primary" [hasShadow]="true">Primary</app-badge>
+                <app-badge variant="soft" color="success" [hasShadow]="true">Success</app-badge>
+                <app-badge variant="soft" color="warning" [hasShadow]="true">Warning</app-badge>
+                <app-badge variant="soft" color="danger" [hasShadow]="true">Danger</app-badge>
+                <app-badge variant="solid" color="primary" [hasShadow]="true">Solid</app-badge>
+                <app-badge variant="ghost" color="info" [hasShadow]="true">Ghost</app-badge>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

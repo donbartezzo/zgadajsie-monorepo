@@ -45,6 +45,7 @@ export class ApprovalReminderCron implements OnModuleInit {
             },
           },
           event: { status: 'ACTIVE' },
+          user: { accountType: { not: 'FAKE' } },
         },
         include: {
           user: { select: { id: true, email: true, displayName: true } },

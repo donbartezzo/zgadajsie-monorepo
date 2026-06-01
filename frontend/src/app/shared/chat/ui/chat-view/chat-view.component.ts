@@ -20,6 +20,7 @@ import {
 } from '../../../ui/user-avatar-list/user-avatar-list.component';
 import { UserBrief } from '../../../types';
 import { NavigationService } from '../../../../core/services/navigation.service';
+import { PluralPipe } from '../../../pipes/plural.pipe';
 
 export interface ChatViewMessage {
   id: string;
@@ -40,6 +41,7 @@ export interface ChatViewMessage {
     UserAvatarComponent,
     LoadingSpinnerComponent,
     UserAvatarListComponent,
+    PluralPipe,
   ],
   host: { class: 'flex flex-col flex-1 min-h-0 pb-[var(--footer-height)]' },
   template: `
@@ -110,7 +112,7 @@ export interface ChatViewMessage {
             <h2 class="text-sm font-semibold text-neutral-900">{{ chatTitle() }}</h2>
             @if (_mbrs.length > 0) {
               <span class="hidden sm:block text-xs text-neutral-400"
-                >{{ _mbrs.length }} {{ _mbrs.length === 1 ? 'uczestnik' : 'uczestników' }}</span
+                >{{ _mbrs.length }} {{ _mbrs.length | translatePlural: 'chat.participants' }}</span
               >
             }
           </div>

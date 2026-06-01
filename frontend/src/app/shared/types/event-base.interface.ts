@@ -17,6 +17,7 @@ export interface EventBase
   lng: number;
   rules?: string;
   facilityReserved?: boolean;
+  welcomeMessageEnabled?: boolean;
   status: EventStatus;
   createdAt: string;
   updatedAt: string;

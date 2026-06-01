@@ -12,4 +12,8 @@ export class AdminUpdateUserDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isEmailVerified?: boolean;
 }

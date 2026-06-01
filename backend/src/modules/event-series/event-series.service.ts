@@ -64,6 +64,7 @@ export class EventSeriesService {
       coverImageId: dto.coverImageId,
       rules: dto.rules,
       facilityReserved: dto.facilityReserved ?? true,
+      welcomeMessageEnabled: dto.welcomeMessageEnabled ?? true,
       roleConfig: dto.roleConfig ? JSON.parse(JSON.stringify(dto.roleConfig)) : null,
     };
 

@@ -47,4 +47,20 @@ export class EnrollmentEligibilityService {
       },
     });
   }
+
+  async isNewToOrganizer(userId: string, organizerId: string): Promise<boolean> {
+    const confirmedEnrollment = await this.prisma.eventEnrollment.findFirst({
+      where: {
+        userId,
+        event: {
+          organizerId,
+        },
+        slot: {
+          confirmed: true,
+        },
+      },
+      select: { id: true },
+    });
+    return !confirmedEnrollment;
+  }
 }

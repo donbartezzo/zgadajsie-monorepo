@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
 import { UpperCasePipe } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -16,6 +24,7 @@ import {
 } from '../../slot-status-config';
 import { LinkedParticipantChipComponent } from '../linked-participant-chip/linked-participant-chip.component';
 import { StatusIndicatorComponent } from '../../../ui/status-indicator/status-indicator.component';
+import { EnrollmentParticipantActionsComponent } from '../enrollment-participant-actions/enrollment-participant-actions.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { EventService } from '../../../../core/services/event.service';
 import { AdminService } from '../../../../core/services/admin.service';
@@ -32,6 +41,7 @@ import { Enrollment, EnrolleeManageItem, OrganizerUserRelation } from '../../../
 import { Event } from '../../../types/event.interface';
 import { EventSlotInfo } from '../../../types/payment.interface';
 import { formatDateTime, type StatusBadgeEntry } from '@zgadajsie/shared';
+import { SectionSeparatorComponent } from '../../../ui/section-separator/section-separator.component';
 
 export interface EnrollmentModalUserInfo {
   id: string;
@@ -83,6 +93,8 @@ function getErrorMessage(err: unknown, fallback: string): string {
     TranslocoPipe,
     LinkedParticipantChipComponent,
     StatusIndicatorComponent,
+    EnrollmentParticipantActionsComponent,
+    SectionSeparatorComponent,
   ],
   templateUrl: './enrollment-slot-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -108,6 +120,34 @@ export class EnrollmentSlotModalComponent {
   readonly isSavingProfile = signal(false);
   readonly selectedOrganizerAction = signal('');
   readonly organizerRelation = signal<OrganizerUserRelation | null | undefined>(undefined);
+
+  constructor() {
+    effect(() => {
+      if (!this.isOrganizer()) {
+        this.organizerRelation.set(undefined);
+        return;
+      }
+
+      const p = this.participant();
+      const userInfo = this.modalUserInfo();
+      const targetUserId = p?.userId ?? userInfo?.id ?? null;
+
+      if (!targetUserId) {
+        this.organizerRelation.set(undefined);
+        return;
+      }
+
+      this.organizerRelation.set(undefined);
+
+      firstValueFrom(this.moderationService.getRelation(targetUserId))
+        .then((relation) => {
+          this.organizerRelation.set(relation);
+        })
+        .catch(() => {
+          this.organizerRelation.set(null);
+        });
+    });
+  }
 
   readonly event = computed(() => this.data()?.event ?? null);
   readonly participant = computed(() => this.data()?.participant ?? null);
@@ -248,30 +288,9 @@ export class EnrollmentSlotModalComponent {
     return this.eventArea.canJoin();
   });
 
-  readonly canRejoin = computed(() => {
-    if (!this.isCurrentUserParticipant()) return false;
-    if (!this.isWithdrawnStatus()) return false;
-    if (this.isBanned()) return false;
-    return this.eventArea.canJoin();
-  });
-
   readonly eventHasRoles = computed(() => {
     const roles = this.event()?.roleConfig?.roles;
     return Array.isArray(roles) && roles.length > 0;
-  });
-
-  readonly canChangeRole = computed(() => {
-    const canAct = this.isCurrentUserParticipant() || this.isGuestHost();
-    if (!canAct) return false;
-    if (!this.eventHasRoles()) return false;
-    const s = this.participant()?.status;
-    return s === 'PENDING' || s === 'APPROVED' || s === 'CONFIRMED';
-  });
-
-  readonly canGuestRejoin = computed(() => {
-    if (!this.isGuestHost()) return false;
-    if (!this.isWithdrawnStatus()) return false;
-    return this.eventArea.canJoin();
   });
 
   readonly isViewOnlyParticipant = computed(() => {
@@ -349,10 +368,18 @@ export class EnrollmentSlotModalComponent {
     const trustStatus = this.trustStatus();
     const isTrusted = trustStatus?.isTrusted ?? false;
 
+    const user = p.user;
+    const isUserUnverified =
+      (user && 'isActive' in user && user.isActive === false) ||
+      ('isEmailVerified' in user && user.isEmailVerified === false);
+
     const transitions: Action[] = [];
     if (status === 'PENDING' && !isBanned) {
       transitions.push({ value: 'approve', label: 'Zatwierdź uczestnika' });
       transitions.push({ value: 'reject', label: 'Odrzuć uczestnika' });
+    }
+    if (status === 'APPROVED' && !isBanned) {
+      transitions.push({ value: 'confirmSlot', label: 'Potwierdź uczestnictwo' });
     }
     if (isActive) {
       transitions.push({ value: 'kick', label: 'Wypisz uczestnika' });
@@ -368,9 +395,7 @@ export class EnrollmentSlotModalComponent {
     }
 
     const communication: Action[] = [];
-    if (isActive) {
-      communication.push({ value: 'chat', label: 'Napisz wiadomość' });
-    }
+    communication.push({ value: 'chat', label: 'Napisz wiadomość' });
 
     const payments: Action[] = [];
     if (isPaid && !payment && status === 'APPROVED') {
@@ -389,6 +414,9 @@ export class EnrollmentSlotModalComponent {
     }
 
     const moderation: Action[] = [];
+    if (isUserUnverified) {
+      moderation.push({ value: 'verifyUser', label: 'Potwierdź konto użytkownika' });
+    }
     if (!isWithdrawn && !isBanned) {
       moderation.push({ value: 'ban', label: 'Zbanuj uczestnika' });
     }
@@ -424,6 +452,8 @@ export class EnrollmentSlotModalComponent {
         return this.onApprove();
       case 'reject':
         return this.onReject();
+      case 'confirmSlot':
+        return this.onOrganizerConfirmSlot();
       case 'kick':
         return this.onKick();
       case 'adminWithdraw':
@@ -450,6 +480,8 @@ export class EnrollmentSlotModalComponent {
         return this.updateTrustStatus(true);
       case 'untrust':
         return this.updateTrustStatus(false);
+      case 'verifyUser':
+        return this.onVerifyUser();
       case 'deleteEnrollment':
         return this.onDeleteEnrollment();
     }
@@ -479,6 +511,17 @@ export class EnrollmentSlotModalComponent {
       'Odrzucono uczestnika',
       'Nie udało się odrzucić',
       'info',
+    );
+  }
+
+  private async onOrganizerConfirmSlot(): Promise<void> {
+    const p = this.participant();
+    if (!p) return;
+    await this.executeAction(
+      this.eventService.confirmSlot(p.id),
+      'Slot potwierdzony',
+      'Nie udało się potwierdzić slotu',
+      'success',
     );
   }
 
@@ -657,6 +700,26 @@ export class EnrollmentSlotModalComponent {
     );
   }
 
+  private async onVerifyUser(): Promise<void> {
+    const p = this.participant();
+    if (!p || !p.user) return;
+    const name = p.user.displayName ?? 'uczestnika';
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Potwierdzić konto użytkownika?',
+      message: `Konto użytkownika ${name} zostanie aktywowane i zweryfikowane. Użytkownik będzie mógł w pełni korzystać z serwisu.`,
+      confirmLabel: 'Potwierdź',
+      cancelLabel: 'Anuluj',
+      color: 'success',
+    });
+    if (!confirmed) return;
+    await this.executeAction(
+      this.adminService.verifyUserByOrganizer(p.userId),
+      'Konto użytkownika zostało potwierdzone',
+      'Nie udało się potwierdzić konta',
+      'success',
+    );
+  }
+
   private async onDeleteEnrollment(): Promise<void> {
     const p = this.participant();
     if (!p) return;
@@ -689,70 +752,6 @@ export class EnrollmentSlotModalComponent {
     this.modalService.close();
     const roleKey = this.slot()?.roleKey ?? undefined;
     this.eventArea.openJoinWizardWithRole(roleKey);
-  }
-
-  onRejoin(): void {
-    const p = this.participant() as Enrollment;
-    if (!p) return;
-    this.modalService.close();
-    if (this.eventHasRoles()) {
-      this.eventArea.openChangeRoleWizardForParticipant(p);
-    } else {
-      this.eventArea.rejoinParticipantDirect(p);
-    }
-  }
-
-  onRejoinGuest(): void {
-    const p = this.participant() as Enrollment;
-    if (!p) return;
-    this.modalService.close();
-    if (this.eventHasRoles()) {
-      this.eventArea.openChangeRoleWizardForParticipant(p);
-    } else {
-      this.eventArea.rejoinParticipantDirect(p);
-    }
-  }
-
-  async onLeave(): Promise<void> {
-    this.modalService.close();
-    await this.eventArea.requestLeave();
-  }
-
-  async onRemoveGuest(): Promise<void> {
-    const p = this.participant();
-    if (!p) return;
-    const confirmed = await this.confirmModal.confirm({
-      title: 'Wypisać gościa?',
-      message: 'Czy na pewno chcesz wypisać tę osobę z wydarzenia?',
-      confirmLabel: 'Tak, wypisz',
-      cancelLabel: 'Anuluj',
-      color: 'danger',
-    });
-    if (!confirmed) return;
-    await this.executeAction(
-      this.eventService.leaveEnrollment(p.id),
-      'Gość wypisany z wydarzenia',
-      'Nie udało się wypisać gościa',
-      'info',
-    );
-  }
-
-  async onChangeRole(): Promise<void> {
-    const p = this.participant();
-    if (!p) return;
-    if (this.isActiveStatus()) {
-      const confirmed = await this.confirmModal.confirm({
-        title: 'Zmienić rolę?',
-        message:
-          'Zmiana roli zwolni Twoje obecne miejsce. Jeśli nie ma wolnych slotów dla nowej roli, trafisz na listę oczekujących.',
-        confirmLabel: 'Zmień rolę',
-        cancelLabel: 'Anuluj',
-        color: 'warning',
-      });
-      if (!confirmed) return;
-    }
-    this.modalService.close();
-    this.eventArea.openChangeRoleWizardForParticipant(p as Enrollment);
   }
 
   onContactOrganizer(): void {
@@ -820,6 +819,10 @@ export class EnrollmentSlotModalComponent {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  protected onActionCompleted(): void {
+    this.closeAndRefresh();
   }
 
   private closeAndRefresh(): void {

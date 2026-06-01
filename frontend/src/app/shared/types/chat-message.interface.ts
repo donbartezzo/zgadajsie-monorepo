@@ -57,4 +57,5 @@ export interface OrganizerConversation {
     isFromOrganizer: boolean;
   } | null;
   messageCount: number;
+  unreadCount: number;
 }

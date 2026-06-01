@@ -22,6 +22,8 @@ export class UsersService {
         isActive: true,
         isEmailVerified: true,
         createdAt: true,
+        welcomeMessage: true,
+        welcomeMessageEnabled: true,
       },
     });
   }
@@ -32,6 +34,9 @@ export class UsersService {
     if (dto.avatarSeed !== undefined) data.avatarSeed = dto.avatarSeed ?? null;
     if (dto.email) data.email = dto.email;
     if (dto.donationUrl !== undefined) data.donationUrl = dto.donationUrl || null;
+    if (dto.welcomeMessage !== undefined) data.welcomeMessage = dto.welcomeMessage ?? null;
+    if (dto.welcomeMessageEnabled !== undefined)
+      data.welcomeMessageEnabled = dto.welcomeMessageEnabled;
 
     if (dto.newPassword) {
       if (!dto.currentPassword) {
@@ -60,6 +65,8 @@ export class UsersService {
         role: true,
         isActive: true,
         isEmailVerified: true,
+        welcomeMessage: true,
+        welcomeMessageEnabled: true,
       },
     });
   }
@@ -142,9 +149,51 @@ export class UsersService {
     if (dto.displayName) data.displayName = dto.displayName;
     if (dto.role) data.role = dto.role;
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
+    if (dto.isEmailVerified !== undefined) {
+      data.isEmailVerified = dto.isEmailVerified;
+      // If verifying email, also activate account and clear token
+      if (dto.isEmailVerified) {
+        data.isActive = true;
+        data.activationToken = null;
+        data.activationTokenExpiresAt = null;
+      }
+    }
 
     const user = await this.prisma.user.update({ where: { id }, data });
 
     return user;
+  }
+
+  async verifyUserByOrganizer(targetUserId: string, _organizerUserId: string) {
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+    });
+
+    if (!targetUser) {
+      throw new BadRequestException('Użytkownik nie istnieje');
+    }
+
+    if (targetUser.isActive && targetUser.isEmailVerified) {
+      throw new BadRequestException('Konto jest już aktywne i zweryfikowane');
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: targetUserId },
+      data: {
+        isActive: true,
+        isEmailVerified: true,
+        activationToken: null,
+        activationTokenExpiresAt: null,
+      },
+      select: {
+        id: true,
+        email: true,
+        displayName: true,
+        isActive: true,
+        isEmailVerified: true,
+      },
+    });
+
+    return updatedUser;
   }
 }

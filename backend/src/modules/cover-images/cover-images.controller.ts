@@ -47,6 +47,13 @@ export class CoverImagesController {
     return this.coverImagesService.findSmartCoverForOrganizer(disciplineSlug, user.id, citySlug);
   }
 
+  // Galeria własna użytkownika - musi być przed :id
+  @Get('my')
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  findMy(@CurrentUser() user: AuthUser) {
+    return this.coverImagesService.findMy(user.id);
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   findOne(@Param('id') id: string) {
@@ -112,13 +119,6 @@ export class CoverImagesController {
     return this.coverImagesService.remove(id);
   }
 
-  // Galeria własna użytkownika
-  @Get('my')
-  @UseGuards(JwtAuthGuard, IsActiveGuard)
-  findMy(@CurrentUser() user: AuthUser) {
-    return this.coverImagesService.findMy(user.id);
-  }
-
   @Post('my')
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @UseInterceptors(FileInterceptor('file'))
@@ -129,7 +129,7 @@ export class CoverImagesController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 8 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: /image\/(jpeg|png|webp)$/ }),
+          new FileTypeValidator({ fileType: /image\/(jpeg|png|webp)/ }),
         ],
       }),
     )
@@ -158,7 +158,7 @@ export class CoverImagesController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 8 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: /image\/(jpeg|png|webp)$/ }),
+          new FileTypeValidator({ fileType: /image\/(jpeg|png|webp)/ }),
         ],
       }),
     )

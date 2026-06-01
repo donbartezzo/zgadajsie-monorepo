@@ -9,6 +9,7 @@ export interface FeatureFlags {
   enableOnlinePayments: boolean;
   enableEventSeries: boolean;
   enableFakeUsers: boolean;
+  enableEmails: boolean;
 }
 
 export const DEV_FEATURE_FLAGS: FeatureFlags = {
@@ -16,9 +17,10 @@ export const DEV_FEATURE_FLAGS: FeatureFlags = {
   enableGoogleLogin: true,
   enableFacebookLogin: true,
   enableEventCreation: true,
-  enableOnlinePayments: true,
+  enableOnlinePayments: false,
   enableEventSeries: true,
   enableFakeUsers: true,
+  enableEmails: false,
 };
 
 export const PRODUCTION_FEATURE_FLAGS: FeatureFlags = {
@@ -26,7 +28,8 @@ export const PRODUCTION_FEATURE_FLAGS: FeatureFlags = {
   enableGoogleLogin: false,
   enableFacebookLogin: false,
   enableEventCreation: false,
-  enableOnlinePayments: true,
+  enableOnlinePayments: false,
   enableEventSeries: true,
   enableFakeUsers: true,
+  enableEmails: true,
 };
