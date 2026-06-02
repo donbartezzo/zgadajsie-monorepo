@@ -33,9 +33,9 @@ export class NotificationsService {
           userId: ctx.userId,
           groupKey,
           readAt: null,
-          createdAt: { gte: windowStart },
+          updatedAt: { gte: windowStart },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { updatedAt: 'desc' },
       });
 
       if (existing) {
@@ -46,7 +46,6 @@ export class NotificationsService {
             body,
             link,
             aggregateCount: { increment: 1 },
-            updatedAt: new Date(),
             // RESET sygnałów dostarczenia — bo content się zmienił, escalation ma poczekać kolejne X min
             pushSentAt: null,
             emailSentAt: null,
@@ -167,5 +166,13 @@ export class NotificationsService {
 
   async unsubscribePush(userId: string, endpoint: string) {
     return this.prisma.pushSubscription.deleteMany({ where: { userId, endpoint } });
+  }
+
+  async delete(id: string, userId: string) {
+    return this.prisma.notification.deleteMany({ where: { id, userId } });
+  }
+
+  async deleteAll(userId: string) {
+    return this.prisma.notification.deleteMany({ where: { userId } });
   }
 }

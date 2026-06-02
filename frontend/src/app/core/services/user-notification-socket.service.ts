@@ -115,6 +115,9 @@ export class UserNotificationSocketService {
       relatedEventId: payload.relatedEventId,
     };
 
+    // Set live notification signal for UI to merge
+    this.notificationService.liveNotification.set(notification);
+
     // Upsert logic — inkrementuj licznik tylko dla nowych, nie dla debounce updateów
     const existing = this.notificationService.findById(notification.id);
     if (existing) {

@@ -561,6 +561,15 @@ export class EnrollmentService {
       },
     });
 
+    this.pushService
+      .notifyParticipationStatus(
+        participation.userId,
+        participation.event.title,
+        'CONFIRMED',
+        participation.eventId,
+      )
+      .catch((err) => this.logger.error(`Failed to send CONFIRMED notification: ${err}`));
+
     this.notifyEventChanged(participation.eventId, 'all');
 
     // Send confirmation email

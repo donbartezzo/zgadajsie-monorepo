@@ -8,9 +8,12 @@
     <div class="flex items-center justify-between max-w-app mx-auto">
       <h1 class="text-xl font-bold text-neutral-900">Powiadomienia</h1>
       @if (_totalCount > 0) {
-        <app-button appearance="ghost" size="sm" color="neutral" (clicked)="markAllAsRead()">
-          Oznacz wszystkie jako przeczytane
-        </app-button>
+        <div class="flex gap-2">
+          <app-button appearance="ghost" size="sm" color="neutral" (clicked)="markAllAsRead()">
+            Oznacz jako przeczytane
+          </app-button>
+          <app-button appearance="ghost" size="sm" color="danger" (clicked)="deleteAll()"> Usuń wszystkie </app-button>
+        </div>
       }
     </div>
   </header>
@@ -51,9 +54,44 @@
                 <p class="text-sm text-neutral-600 mt-1 line-clamp-2">{{ notification.body }}</p>
                 <p class="text-xs text-neutral-400 mt-2">{{ formatTime(notification.createdAt) }}</p>
               </div>
-              @if (!notification.readAt) {
-                <div class="flex-shrink-0 w-2 h-2 bg-primary-500 rounded-full mt-2"></div>
-              }
+              <div class="flex flex-col items-end gap-2">
+                <!-- @if (!notification.readAt) {
+                  <div class="w-2 h-2 bg-primary-500 rounded-full self-center"></div>
+                } -->
+                <div class="flex items-center gap-1">
+                  @if (!notification.readAt) {
+                    <app-button
+                      appearance="ghost"
+                      color="success"
+                      size="sm"
+                      [iconOnly]="true"
+                      iconLeft="check"
+                      (clicked)="$event.stopPropagation(); markAsRead(notification)"
+                      ariaLabel="Oznacz jako przeczytane"
+                    ></app-button>
+                  }
+                  @if (notification.link) {
+                    <app-button
+                      appearance="ghost"
+                      color="primary"
+                      size="sm"
+                      [iconOnly]="true"
+                      iconLeft="arrow-right"
+                      (clicked)="$event.stopPropagation(); handleClick(notification)"
+                      [ariaLabel]="getCtaLabel(notification.type)"
+                    ></app-button>
+                  }
+                  <app-button
+                    appearance="ghost"
+                    color="danger"
+                    size="sm"
+                    [iconOnly]="true"
+                    iconLeft="x"
+                    (clicked)="$event.stopPropagation(); delete(notification)"
+                    ariaLabel="Usuń powiadomienie"
+                  ></app-button>
+                </div>
+              </div>
             </div>
           </button>
         }

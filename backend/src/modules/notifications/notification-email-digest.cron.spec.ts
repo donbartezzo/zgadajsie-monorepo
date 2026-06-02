@@ -114,10 +114,10 @@ describe('NotificationEmailDigestCron', () => {
           readAt: null,
           emailSentAt: null,
           type: { in: expect.any(Array) },
-          createdAt: { lt: expect.any(Date) },
+          updatedAt: { lt: expect.any(Date) },
           OR: [{ relevanceUntil: null }, { relevanceUntil: { gt: expect.any(Date) } }],
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { updatedAt: 'desc' },
         take: 50,
       });
       expect(emailService.sendDigest).toHaveBeenCalledWith('user1', items);

@@ -14,6 +14,7 @@ export class NotificationService {
   pushPermission = signal<NotificationPermission>(this.detectPushPermission());
   private vapidPublicKey = signal('');
   private notificationCache = signal<Map<string, Notification>>(new Map());
+  liveNotification = signal<Notification | null>(null);
 
   isUnread = (notification: Notification): boolean => !notification.readAt;
 
@@ -112,6 +113,14 @@ export class NotificationService {
 
   unsubscribeFromPush(endpoint: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/push/unsubscribe`, { endpoint });
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  deleteAll(): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/all`);
   }
 
   async initPushSubscription(): Promise<void> {

@@ -29,7 +29,7 @@ export class NotificationEscalationCron {
       where: {
         readAt: null,
         pushSentAt: null,
-        createdAt: { lte: cutoff },
+        updatedAt: { lte: cutoff },
         OR: [{ relevanceUntil: null }, { relevanceUntil: { gt: new Date() } }],
       },
       take: 100,
@@ -56,7 +56,7 @@ export class NotificationEscalationCron {
       where: {
         readAt: null,
         emailSentAt: null,
-        createdAt: { lte: cutoff },
+        updatedAt: { lte: cutoff },
         OR: [{ relevanceUntil: null }, { relevanceUntil: { gt: new Date() } }],
       },
       include: { user: { select: { email: true, displayName: true } } },

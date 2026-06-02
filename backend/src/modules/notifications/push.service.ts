@@ -63,13 +63,17 @@ export class PushService {
     return event ? `/w/${event.city.slug}/${eventId}` : '/';
   }
 
+  private async getManageUrl(eventId: string): Promise<string> {
+    return `/o/w/${eventId}/manage`;
+  }
+
   async notifyNewApplication(
     organizerId: string,
     applicantName: string,
     eventTitle: string,
     eventId: string,
   ): Promise<void> {
-    const url = await this.getEventUrl(eventId);
+    const url = await this.getManageUrl(eventId);
     await this.notifyUser(
       { userId: organizerId, relatedEventId: eventId },
       'NEW_APPLICATION' as NotificationKind,
@@ -176,12 +180,20 @@ export class PushService {
     eventId: string,
     cityId: string,
   ): Promise<void> {
-    const url = await this.getEventUrl(eventId);
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { city: { select: { slug: true, name: true } } },
+    });
+    const url = event ? `/w/${event.city.slug}/${eventId}` : '/';
+    const cityName = event?.city.name ?? '';
+    const title = cityName
+      ? `Nowe wydarzenie (${cityName}): ${eventTitle}`
+      : `Nowe wydarzenie: ${eventTitle}`;
     await this.notifyUser(
       { userId, relatedEventId: eventId, cityId },
       'NEW_EVENT_IN_CITY' as NotificationKind,
-      'Nowe wydarzenie',
-      `"${eventTitle}"`,
+      title,
+      eventTitle,
       url,
     );
   }

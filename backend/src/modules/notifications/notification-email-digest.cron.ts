@@ -28,7 +28,7 @@ export class NotificationEmailDigestCron {
       WHERE "readAt" IS NULL
         AND "emailSentAt" IS NULL
         AND "type"::text = ANY(${digestTypes})
-        AND "createdAt" < ${cutoff}
+        AND "updatedAt" < ${cutoff}
         AND ("relevanceUntil" IS NULL OR "relevanceUntil" > NOW())
       LIMIT 500
     `;
@@ -40,10 +40,10 @@ export class NotificationEmailDigestCron {
           readAt: null,
           emailSentAt: null,
           type: { in: digestTypes },
-          createdAt: { lt: cutoff },
+          updatedAt: { lt: cutoff },
           OR: [{ relevanceUntil: null }, { relevanceUntil: { gt: new Date() } }],
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { updatedAt: 'desc' },
         take: 50,
       });
 

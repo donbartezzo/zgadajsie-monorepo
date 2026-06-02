@@ -113,7 +113,7 @@ describe('NotificationEscalationCron', () => {
         where: {
           readAt: null,
           pushSentAt: null,
-          createdAt: { lte: expect.any(Date) },
+          updatedAt: { lte: expect.any(Date) },
           OR: [{ relevanceUntil: null }, { relevanceUntil: { gt: expect.any(Date) } }],
         },
         take: 100,
@@ -167,7 +167,7 @@ describe('NotificationEscalationCron', () => {
         where: {
           readAt: null,
           emailSentAt: null,
-          createdAt: { lte: expect.any(Date) },
+          updatedAt: { lte: expect.any(Date) },
           OR: [{ relevanceUntil: null }, { relevanceUntil: { gt: expect.any(Date) } }],
         },
         include: { user: { select: { email: true, displayName: true } } },

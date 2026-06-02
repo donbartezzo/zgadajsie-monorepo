@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
@@ -83,5 +84,17 @@ export class NotificationsController {
     const to = body.to || user.email;
     await this.emailService.sendActivationEmail(to, user.displayName ?? user.email, 'test-token');
     return { success: true, message: `Test email sent to ${to}` };
+  }
+
+  // UWAGA: trasa statyczna musi być przed `:id`, inaczej `DELETE /notifications/all`
+  // trafi w `@Delete(':id')` z id='all' (kolejność deklaracji = kolejność matchowania).
+  @Delete('all')
+  deleteAll(@CurrentUser() user: AuthUser) {
+    return this.notificationsService.deleteAll(user.id);
+  }
+
+  @Delete(':id')
+  delete(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.notificationsService.delete(id, user.id);
   }
 }
