@@ -168,6 +168,10 @@ export class CreateEventSeriesDto {
   facilityReserved?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  welcomeMessageEnabled?: boolean;
+
+  @IsOptional()
   @IsObject()
   @ValidateNested()
   @Type(() => SeriesEventRoleConfigDto)

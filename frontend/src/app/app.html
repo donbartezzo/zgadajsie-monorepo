@@ -24,6 +24,9 @@
         <router-outlet></router-outlet>
       </app-page-layout>
 
+      <!-- Cookie consent banner: fixed above bottom nav -->
+      <app-cookie-consent-banner />
+
       <app-bottom-overlays />
       <app-confirm-modal />
     </div>
@@ -36,9 +39,6 @@
 
     <!-- Bottom nav: fixed outside container so overflow:hidden doesn't affect it -->
     <app-bottom-nav></app-bottom-nav>
-
-    <!-- Cookie consent banner: fixed above bottom nav -->
-    <app-cookie-consent-banner />
   </div>
 }
 
