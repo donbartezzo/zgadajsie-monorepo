@@ -4,6 +4,7 @@ import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overla
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { NavigationService } from '../../../core/services/navigation.service';
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-navigation-overlay',
@@ -25,8 +26,15 @@ import { NavigationService } from '../../../core/services/navigation.service';
 export class NavigationOverlayComponent {
   readonly auth = inject(AuthService);
   readonly navigation = inject(NavigationService);
+  readonly notificationService = inject(NotificationService);
 
   readonly closed = output<void>();
+
+  readonly unreadCount = computed(() => this.notificationService.unreadCount());
+  readonly showBadge = computed(() => this.unreadCount() > 0);
+  readonly badgeText = computed(() =>
+    this.unreadCount() > 99 ? '99+' : this.unreadCount().toString(),
+  );
 
   readonly navigationLinks = computed<LinkListItem[]>(() => {
     const baseLinks: LinkListItem[] = [
@@ -41,6 +49,13 @@ export class NavigationOverlayComponent {
     if (this.auth.isLoggedIn()) {
       return [
         ...baseLinks,
+        {
+          label: 'Powiadomienia',
+          icon: 'bell',
+          value: '/notifications',
+          iconColor: 'primary',
+          badge: this.showBadge() ? this.badgeText() : undefined,
+        },
         {
           label: 'Mój profil',
           icon: 'user',

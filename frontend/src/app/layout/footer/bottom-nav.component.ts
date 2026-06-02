@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../shared/user/ui/user-avatar/user-avatar.component';
 import { AuthService } from '../../core/auth/auth.service';
@@ -10,7 +9,7 @@ import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-bottom-nav',
-  imports: [IconComponent, ButtonComponent, UserAvatarComponent],
+  imports: [ButtonComponent, UserAvatarComponent],
   templateUrl: './bottom-nav.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'fixed bottom-0 left-1/2 z-[60] block w-full max-w-app -translate-x-1/2' },
@@ -50,9 +49,5 @@ export class BottomNavComponent {
 
   toggleCityOptions(): void {
     this.overlays.toggle('cityOptions');
-  }
-
-  openNotifications(): void {
-    this.navigation.router.navigate(['/notifications']);
   }
 }

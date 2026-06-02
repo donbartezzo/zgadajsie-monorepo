@@ -15,6 +15,7 @@ export interface LinkListItem {
   iconColor?: SemanticColor;
   iconBackground?: boolean;
   appearance?: ButtonAppearance;
+  badge?: string;
 }
 
 @Component({
@@ -57,6 +58,13 @@ export interface LinkListItem {
               >
             }
           </div>
+          @if (item.badge) {
+            <span
+              class="ml-2 min-w-[1.25rem] h-5 px-1 flex items-center justify-center bg-danger-500 text-white text-xs font-bold rounded-full"
+            >
+              {{ item.badge }}
+            </span>
+          }
         </app-button>
         @if (!isLast) {
           <div class="mx-3 my-1 border-b border-neutral-100"></div>
