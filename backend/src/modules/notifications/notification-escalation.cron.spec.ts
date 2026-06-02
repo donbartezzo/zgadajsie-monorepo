@@ -3,6 +3,7 @@ import { NotificationEscalationCron } from './notification-escalation.cron';
 import { PrismaService } from '../prisma/prisma.service';
 import { PushDeliveryService } from './push-delivery.service';
 import { EmailService } from './email.service';
+import { CronAdminService } from '../../common/cron-admin/cron-admin.service';
 import { NotificationKind } from '@prisma/client';
 import { subtractMinutes } from '@zgadajsie/shared';
 
@@ -55,6 +56,14 @@ describe('NotificationEscalationCron', () => {
         {
           provide: EmailService,
           useValue: { sendTransactionalForNotification: jest.fn() },
+        },
+        {
+          provide: CronAdminService,
+          useValue: {
+            registerTrigger: jest.fn(),
+            recordRun: jest.fn(),
+            recordRunToDb: jest.fn(),
+          },
         },
       ],
     }).compile();

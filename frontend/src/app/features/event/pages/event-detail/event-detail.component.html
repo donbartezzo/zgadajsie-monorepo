@@ -236,10 +236,20 @@
                   <app-icon name="settings" size="sm"></app-icon>
                   Zarządzaj
                 </app-button>
-                <app-button appearance="outline" color="primary" size="sm" (clicked)="eventArea.openOrganizerChats()">
-                  <app-icon name="message-circle" size="sm"></app-icon>
-                  Konwersacje
-                </app-button>
+                <button
+                  type="button"
+                  class="relative appearance-none border-0 bg-transparent p-0 cursor-pointer"
+                  (click)="eventArea.openOrganizerChats()"
+                >
+                  <app-icon name="message-circle" size="sm" class="text-neutral-600" />
+                  @if (totalUnreadCount() > 0) {
+                    <span
+                      class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger-500 text-[10px] font-bold text-white"
+                    >
+                      {{ totalUnreadCount() }}
+                    </span>
+                  }
+                </button>
               </div>
             } @else {
               <app-button appearance="outline" color="primary" size="sm" (clicked)="contactOrganizer()">

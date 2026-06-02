@@ -1,25 +1,46 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { PushDeliveryService } from './push-delivery.service';
 import { EmailService } from './email.service';
 import { NOTIFICATION_POLICIES, NOTIFICATION_TIMING } from './notification-policy';
 import { subtractMinutes } from '@zgadajsie/shared';
+import { CronAdminService } from '../../common/cron-admin/cron-admin.service';
+
+const CRON_NAME = 'notification-escalation';
 
 @Injectable()
-export class NotificationEscalationCron {
+export class NotificationEscalationCron implements OnModuleInit {
   private readonly logger = new Logger(NotificationEscalationCron.name);
 
   constructor(
     private prisma: PrismaService,
     private pushDelivery: PushDeliveryService,
     private emailService: EmailService,
+    private cronAdmin: CronAdminService,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE, { name: 'notification-escalation' })
+  onModuleInit() {
+    this.cronAdmin.registerTrigger(CRON_NAME, () => this.run());
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE, { name: CRON_NAME })
   async run(): Promise<void> {
-    await this.escalatePush();
-    await this.escalateTransactionalEmail();
+    const start = Date.now();
+    const startedAt = new Date();
+    try {
+      await this.escalatePush();
+      await this.escalateTransactionalEmail();
+      const durationMs = Date.now() - start;
+      this.cronAdmin.recordRun(CRON_NAME, durationMs);
+      await this.cronAdmin.recordRunToDb(CRON_NAME, startedAt, new Date(), durationMs);
+    } catch (err) {
+      const durationMs = Date.now() - start;
+      const error = (err as Error).message;
+      this.cronAdmin.recordRun(CRON_NAME, durationMs, error);
+      await this.cronAdmin.recordRunToDb(CRON_NAME, startedAt, new Date(), durationMs, error);
+      this.logger.error(`Notification escalation cron failed: ${error}`);
+    }
   }
 
   private async escalatePush(): Promise<void> {

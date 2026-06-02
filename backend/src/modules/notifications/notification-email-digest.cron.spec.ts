@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationEmailDigestCron } from './notification-email-digest.cron';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from './email.service';
+import { CronAdminService } from '../../common/cron-admin/cron-admin.service';
 import { NotificationKind } from '@prisma/client';
 import { subtractMinutes } from '@zgadajsie/shared';
 
@@ -30,6 +31,14 @@ describe('NotificationEmailDigestCron', () => {
           provide: EmailService,
           useValue: {
             sendDigest: jest.fn(),
+          },
+        },
+        {
+          provide: CronAdminService,
+          useValue: {
+            registerTrigger: jest.fn(),
+            recordRun: jest.fn(),
+            recordRunToDb: jest.fn(),
           },
         },
       ],

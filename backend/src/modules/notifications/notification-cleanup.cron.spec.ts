@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationCleanupCron } from './notification-cleanup.cron';
 import { PrismaService } from '../prisma/prisma.service';
+import { CronAdminService } from '../../common/cron-admin/cron-admin.service';
 
 describe('NotificationCleanupCron', () => {
   let cron: NotificationCleanupCron;
@@ -17,6 +18,14 @@ describe('NotificationCleanupCron', () => {
             $executeRaw: jest.fn(),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any,
+        },
+        {
+          provide: CronAdminService,
+          useValue: {
+            registerTrigger: jest.fn(),
+            recordRun: jest.fn(),
+            recordRunToDb: jest.fn(),
+          },
         },
       ],
     }).compile();

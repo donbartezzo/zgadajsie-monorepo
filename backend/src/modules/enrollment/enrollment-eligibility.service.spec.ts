@@ -8,6 +8,7 @@ function buildPrismaMock() {
     },
     eventEnrollment: {
       count: jest.fn(),
+      findFirst: jest.fn(),
     },
   } as unknown as PrismaService;
 }
@@ -110,6 +111,30 @@ describe('EnrollmentEligibilityService', () => {
     it('zwraca 0 dla użytkownika bez gości', async () => {
       (prisma.eventEnrollment.count as jest.Mock).mockResolvedValue(0);
       await expect(service.getGuestCount('event1', 'user1')).resolves.toBe(0);
+    });
+  });
+
+  describe('isNewToOrganizer()', () => {
+    it('zwraca true gdy brak CONFIRMED enrollment u organizatora', async () => {
+      (prisma.eventEnrollment.findFirst as jest.Mock).mockResolvedValue(null);
+      await expect(service.isNewToOrganizer('user1', 'org1')).resolves.toBe(true);
+      expect(prisma.eventEnrollment.findFirst as jest.Mock).toHaveBeenCalledWith({
+        where: {
+          userId: 'user1',
+          event: {
+            organizerId: 'org1',
+          },
+          slot: {
+            confirmed: true,
+          },
+        },
+        select: { id: true },
+      });
+    });
+
+    it('zwraca false gdy istnieje CONFIRMED enrollment u organizatora', async () => {
+      (prisma.eventEnrollment.findFirst as jest.Mock).mockResolvedValue({ id: 'p1' });
+      await expect(service.isNewToOrganizer('user1', 'org1')).resolves.toBe(false);
     });
   });
 });

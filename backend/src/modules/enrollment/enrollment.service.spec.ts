@@ -99,7 +99,7 @@ function buildEventRealtimeMock() {
 
 function buildChatServiceMock() {
   return {
-    createPrivateMessage: jest.fn(),
+    createPrivateMessage: jest.fn().mockResolvedValue({ id: 'msg1' }),
   } as unknown as ChatService;
 }
 
@@ -149,6 +149,7 @@ describe('EnrollmentService', () => {
   let payments: ReturnType<typeof buildPaymentsMock>;
   let slots: ReturnType<typeof buildSlotMock>;
   let eligibility: ReturnType<typeof buildEligibilityMock>;
+  let chatService: ReturnType<typeof buildChatServiceMock>;
 
   beforeEach(() => {
     prisma = buildPrismaMock();
@@ -158,9 +159,9 @@ describe('EnrollmentService', () => {
     payments = buildPaymentsMock();
     slots = buildSlotMock();
     eligibility = buildEligibilityMock();
+    chatService = buildChatServiceMock();
     const _realtime = buildRealtimeMock();
     const eventRealtime = buildEventRealtimeMock();
-    const chatService = buildChatServiceMock();
     const chatNotificationService = {
       onNewPrivateMessage: jest.fn().mockResolvedValue(undefined),
     };
@@ -196,47 +197,6 @@ describe('EnrollmentService', () => {
       const result = await service.join('event1', mockAuthUser('user1'));
 
       expect(result.status).toBe('PENDING');
-    });
-
-    it('wantsIn=true, slot.confirmed=false → APPROVED', () => {
-      const p = makeEnrollment({ wantsIn: true, slot: { confirmed: false } });
-      const withStatus = {
-        ...p,
-        status: p.wantsIn && p.slot ? (p.slot.confirmed ? 'CONFIRMED' : 'APPROVED') : 'PENDING',
-      };
-      expect(withStatus.status).toBe('APPROVED');
-    });
-
-    it('wantsIn=true, slot.confirmed=true → CONFIRMED', () => {
-      const p = makeEnrollment({ wantsIn: true, slot: { confirmed: true } });
-      const status = p.wantsIn
-        ? p.slot
-          ? p.slot.confirmed
-            ? 'CONFIRMED'
-            : 'APPROVED'
-          : 'PENDING'
-        : 'WITHDRAWN';
-      expect(status).toBe('CONFIRMED');
-    });
-
-    it('wantsIn=false, withdrawnBy=USER → WITHDRAWN', () => {
-      const p = makeEnrollment({ wantsIn: false, withdrawnBy: 'USER' });
-      const status = !p.wantsIn
-        ? p.withdrawnBy === 'ORGANIZER'
-          ? 'REJECTED'
-          : 'WITHDRAWN'
-        : 'PENDING';
-      expect(status).toBe('WITHDRAWN');
-    });
-
-    it('wantsIn=false, withdrawnBy=ORGANIZER → REJECTED', () => {
-      const p = makeEnrollment({ wantsIn: false, withdrawnBy: 'ORGANIZER' });
-      const status = !p.wantsIn
-        ? p.withdrawnBy === 'ORGANIZER'
-          ? 'REJECTED'
-          : 'WITHDRAWN'
-        : 'PENDING';
-      expect(status).toBe('REJECTED');
     });
   });
 
@@ -321,6 +281,86 @@ describe('EnrollmentService', () => {
       await expect(service.join('event1', mockAuthUser('user1'))).rejects.toThrow(
         BadRequestException,
       );
+    });
+
+    it('wysyła welcome message gdy welcomeMessageEnabled = true na organizatorze i evencie', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(preEnrollmentEvent);
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(null);
+      const participation = makeEnrollment({ waitingReason: 'PRE_ENROLLMENT' });
+      (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 'org1',
+        email: 'org@test.com',
+        displayName: 'Organizer',
+        welcomeMessage: 'Witaj na moim evencie!',
+        welcomeMessageEnabled: true,
+      });
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({
+        ...preEnrollmentEvent,
+        welcomeMessageEnabled: true,
+      });
+
+      await service.join('event1', mockAuthUser('user1'));
+
+      // Czekamy na fire-and-forget Promise
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(chatService.createPrivateMessage).toHaveBeenCalledWith(
+        'event1',
+        'org1',
+        'user1',
+        expect.stringContaining('AUTOMATYCZNIE WYGENEROWANA WIADOMOŚĆ POWITALNA ORGANIZATORA'),
+      );
+    });
+
+    it('nie wysyła welcome message gdy welcomeMessageEnabled = false na organizatorze', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(preEnrollmentEvent);
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(null);
+      const participation = makeEnrollment({ waitingReason: 'PRE_ENROLLMENT' });
+      (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 'org1',
+        email: 'org@test.com',
+        displayName: 'Organizer',
+        welcomeMessage: 'Witaj na moim evencie!',
+        welcomeMessageEnabled: false,
+      });
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({
+        ...preEnrollmentEvent,
+        welcomeMessageEnabled: true,
+      });
+
+      await service.join('event1', mockAuthUser('user1'));
+
+      // Czekamy na fire-and-forget Promise
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(chatService.createPrivateMessage).not.toHaveBeenCalled();
+    });
+
+    it('nie wysyła welcome message gdy welcomeMessageEnabled = false na evencie', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(preEnrollmentEvent);
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(null);
+      const participation = makeEnrollment({ waitingReason: 'PRE_ENROLLMENT' });
+      (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 'org1',
+        email: 'org@test.com',
+        displayName: 'Organizer',
+        welcomeMessage: 'Witaj na moim evencie!',
+        welcomeMessageEnabled: true,
+      });
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({
+        ...preEnrollmentEvent,
+        welcomeMessageEnabled: false,
+      });
+
+      await service.join('event1', mockAuthUser('user1'));
+
+      // Czekamy na fire-and-forget Promise
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(chatService.createPrivateMessage).not.toHaveBeenCalled();
     });
   });
 

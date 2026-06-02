@@ -213,8 +213,8 @@ export class EnrollmentService {
     organizerId: string,
     userId: string,
   ): Promise<void> {
-    setImmediate(async () => {
-      try {
+    Promise.resolve()
+      .then(async () => {
         const [organizer, event] = await Promise.all([
           this.prisma.user.findUnique({
             where: { id: organizerId },
@@ -238,10 +238,10 @@ export class EnrollmentService {
         const messageText = `AUTOMATYCZNIE WYGENEROWANA WIADOMOŚĆ POWITALNA ORGANIZATORA:\n\n${welcomeBody}`;
         await this.chatService.createPrivateMessage(eventId, organizerId, userId, messageText);
         await this.chatNotificationService.onNewPrivateMessage(eventId, organizerId, userId);
-      } catch (error) {
+      })
+      .catch((error) => {
         this.logger.error(`Failed to send welcome message: ${error}`);
-      }
-    });
+      });
   }
 
   async joinGuest(

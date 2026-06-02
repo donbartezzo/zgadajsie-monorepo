@@ -17,6 +17,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { EventService } from '../../../../core/services/event.service';
 import { EventAnnouncementService } from '../../../../core/services/event-announcement.service';
 import { AdminService } from '../../../../core/services/admin.service';
+import { ChatService } from '../../../../core/services/chat.service';
 import { FormsModule } from '@angular/forms';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { TrustPromptService } from '../../../../shared/services/trust-prompt.service';
@@ -31,6 +32,7 @@ import {
   Event,
   EventAnnouncement,
   EventSlotInfo,
+  OrganizerConversation,
 } from '../../../../shared/types';
 import { EnrollmentGridComponent } from '../../../../shared/enrollment/ui/enrollment-grid/enrollment-grid.component';
 import { EnrollmentItem } from '../../../../shared/enrollment/ui/enrollment-grid/enrollment-grid-item/enrollment-grid-item.component';
@@ -123,14 +125,20 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
                     </div>
                   </div>
                   <div class="flex gap-1">
-                    <app-button
-                      appearance="outline"
-                      color="neutral"
-                      size="sm"
-                      (clicked)="openChat(p.userId)"
+                    <button
+                      type="button"
+                      class="relative appearance-none border-0 bg-transparent p-0 cursor-pointer"
+                      (click)="openChat(p.userId)"
                     >
-                      <app-icon name="message-circle" size="sm" />
-                    </app-button>
+                      <app-icon name="message-circle" size="sm" class="text-neutral-600" />
+                      @if (getUnreadCount(p.userId) > 0) {
+                        <span
+                          class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger-500 text-[10px] font-bold text-white"
+                        >
+                          {{ getUnreadCount(p.userId) }}
+                        </span>
+                      }
+                    </button>
                     <app-button
                       appearance="soft"
                       color="primary"
@@ -329,6 +337,7 @@ export class EventManageComponent implements OnInit {
   private readonly eventService = inject(EventService);
   private readonly announcementService = inject(EventAnnouncementService);
   private readonly adminService = inject(AdminService);
+  private readonly chatService = inject(ChatService);
   private readonly snackbar = inject(SnackbarService);
   private readonly trustPrompt = inject(TrustPromptService);
   private readonly breadcrumb = inject(BreadcrumbService);
@@ -338,6 +347,7 @@ export class EventManageComponent implements OnInit {
   readonly manageParticipants = signal<EnrollmentItem[]>([]);
   readonly slots = signal<EventSlotInfo[]>([]);
   readonly announcements = signal<EventAnnouncement[]>([]);
+  readonly organizerConversations = signal<OrganizerConversation[]>([]);
   readonly loading = signal(true);
   readonly eventData = signal<Event | null>(null);
   readonly sendingAnnouncement = signal(false);
@@ -396,6 +406,18 @@ export class EventManageComponent implements OnInit {
     return total > 0 ? (this.paidCount() / total) * 100 : 0;
   });
 
+  readonly unreadCountsByUserId = computed(() => {
+    const map = new Map<string, number>();
+    for (const conv of this.organizerConversations()) {
+      map.set(conv.participant.id, conv.unreadCount);
+    }
+    return map;
+  });
+
+  getUnreadCount(userId: string): number {
+    return this.unreadCountsByUserId().get(userId) ?? 0;
+  }
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
@@ -407,6 +429,7 @@ export class EventManageComponent implements OnInit {
     this.loadManageParticipants();
     this.loadSlots();
     this.loadAnnouncements();
+    this.loadOrganizerConversations();
 
     // Subscribe to profile changes broadcast
     this.profileBroadcast.changes$.subscribe((change) => {
@@ -466,6 +489,12 @@ export class EventManageComponent implements OnInit {
   private loadAnnouncements(): void {
     this.announcementService.getAnnouncements(this.eventId).subscribe({
       next: (res) => this.announcements.set(res.announcements),
+    });
+  }
+
+  private loadOrganizerConversations(): void {
+    this.chatService.getOrganizerConversations(this.eventId).subscribe({
+      next: (conversations) => this.organizerConversations.set(conversations),
     });
   }
 

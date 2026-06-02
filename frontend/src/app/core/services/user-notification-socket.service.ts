@@ -139,6 +139,11 @@ export class UserNotificationSocketService {
           }
         }
       : undefined;
-    this.snackbar.show(payload.title, 'info', 4000, onClick);
+
+    // Aggregate snackbar title for multiple notifications
+    const snackbarTitle =
+      payload.aggregateCount > 1 ? `${payload.aggregateCount}× ${payload.title}` : payload.title;
+
+    this.snackbar.show(snackbarTitle, 'info', 4000, onClick);
   }
 }
