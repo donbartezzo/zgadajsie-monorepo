@@ -85,6 +85,12 @@ export class UserNotificationSocketService {
         });
       });
 
+      this.socket.on('unread-count', (payload: { count: number }) => {
+        this.ngZone.run(() => {
+          this.notificationService.unreadCount.set(payload.count);
+        });
+      });
+
       this.socket.on('connect_error', (error: Error) => {
         console.warn('[UserNotificationSocket] connect_error:', error.message);
       });
@@ -120,15 +126,13 @@ export class UserNotificationSocketService {
     // Set live notification signal for UI to merge
     this.notificationService.liveNotification.set(notification);
 
-    // Upsert logic — inkrementuj licznik tylko dla nowych, nie dla debounce updateów
+    // Upsert do cache. Licznik nieprzeczytanych pochodzi z autorytatywnego
+    // eventu 'unread-count' emitowanego przez backend, nie z lokalnej inkrementacji.
     const existing = this.notificationService.findById(notification.id);
     if (existing) {
       this.notificationService.updateInCache(notification.id, notification);
     } else {
       this.notificationService.addToCache(notification);
-      if (!notification.readAt) {
-        this.notificationService.unreadCount.update((count) => count + 1);
-      }
     }
 
     // Show snackbar with click action if link exists

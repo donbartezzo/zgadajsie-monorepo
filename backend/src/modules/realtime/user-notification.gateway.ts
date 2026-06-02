@@ -78,6 +78,16 @@ export class UserNotificationGateway implements OnGatewayConnection, OnGatewayDi
     this.logger.log(`Notification emitted to user ${userId} in room ${roomName}`);
   }
 
+  /** Autorytatywny licznik nieprzeczytanych — emitowany po każdej mutacji notyfikacji. */
+  emitUnreadCount(userId: string, count: number): void {
+    if (!this.server) {
+      this.logger.warn('Server not initialized, cannot emit unread count');
+      return;
+    }
+
+    this.server.to(this.getUserRoomName(userId)).emit('unread-count', { count });
+  }
+
   private getUserRoomName(userId: string): string {
     return `user:${userId}`;
   }

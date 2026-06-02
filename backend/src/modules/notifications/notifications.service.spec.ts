@@ -2,13 +2,17 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationKind } from '@prisma/client';
 import { NotificationsService } from './notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { UserNotificationGateway } from '../realtime/user-notification.gateway';
 import { NotificationContext } from './notification-policy';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
   let prisma: any;
+  let gateway: { emitUnreadCount: jest.Mock };
 
   beforeEach(async () => {
+    gateway = { emitUnreadCount: jest.fn() };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NotificationsService,
@@ -20,12 +24,16 @@ describe('NotificationsService', () => {
               create: jest.fn(),
               update: jest.fn(),
               updateMany: jest.fn(),
-              count: jest.fn(),
+              count: jest.fn().mockResolvedValue(0),
               findMany: jest.fn(),
             },
           },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
+        {
+          provide: UserNotificationGateway,
+          useValue: gateway,
+        },
       ],
     }).compile();
 
@@ -201,6 +209,15 @@ describe('NotificationsService', () => {
           deleteAfter: expect.any(Date),
         }),
       });
+    });
+
+    it('emituje autorytatywny licznik nieprzeczytanych po oznaczeniu grupy', async () => {
+      prisma.notification.updateMany.mockResolvedValue({ count: 2 });
+      prisma.notification.count.mockResolvedValue(0);
+
+      await service.markByGroupKey('user1', 'pm:event1:sender1');
+
+      expect(gateway.emitUnreadCount).toHaveBeenCalledWith('user1', 0);
     });
   });
 

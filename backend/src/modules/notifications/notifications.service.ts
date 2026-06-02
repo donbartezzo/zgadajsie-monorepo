@@ -7,10 +7,20 @@ import {
   NOTIFICATION_TIMING,
 } from './notification-policy';
 import { daysFromNow } from '@zgadajsie/shared';
+import { UserNotificationGateway } from '../realtime/user-notification.gateway';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private gateway: UserNotificationGateway,
+  ) {}
+
+  /** Liczy i emituje autorytatywny licznik nieprzeczytanych do klienta przez WS. */
+  private async emitUnreadCount(userId: string): Promise<void> {
+    const { count } = await this.getUnreadCount(userId);
+    this.gateway.emitUnreadCount(userId, count);
+  }
 
   async create(
     ctx: NotificationContext,
@@ -55,6 +65,7 @@ export class NotificationsService {
             deleteAfter: daysFromNow(NOTIFICATION_TIMING.UNREAD_RETENTION_DAYS, existing.createdAt),
           },
         });
+        await this.emitUnreadCount(ctx.userId);
         return { notification: updated, wasUpdate: true };
       }
     }
@@ -73,29 +84,34 @@ export class NotificationsService {
         deleteAfter: daysFromNow(NOTIFICATION_TIMING.UNREAD_RETENTION_DAYS, now),
       },
     });
+    await this.emitUnreadCount(ctx.userId);
     return { notification: created, wasUpdate: false };
   }
 
   async markAsRead(id: string, userId: string) {
     const now = new Date();
-    return this.prisma.notification.updateMany({
+    const result = await this.prisma.notification.updateMany({
       where: { id, userId, readAt: null },
       data: {
         readAt: now,
         deleteAfter: daysFromNow(NOTIFICATION_TIMING.READ_RETENTION_DAYS, now),
       },
     });
+    await this.emitUnreadCount(userId);
+    return result;
   }
 
   async markAllAsRead(userId: string) {
     const now = new Date();
-    return this.prisma.notification.updateMany({
+    const result = await this.prisma.notification.updateMany({
       where: { userId, readAt: null },
       data: {
         readAt: now,
         deleteAfter: daysFromNow(NOTIFICATION_TIMING.READ_RETENTION_DAYS, now),
       },
     });
+    await this.emitUnreadCount(userId);
+    return result;
   }
 
   async getUnreadCount(userId: string) {
@@ -134,13 +150,15 @@ export class NotificationsService {
   /** Context-aware read — wołać przy wejściu w konwersację / czat eventu. */
   async markByGroupKey(userId: string, groupKey: string) {
     const now = new Date();
-    return this.prisma.notification.updateMany({
+    const result = await this.prisma.notification.updateMany({
       where: { userId, groupKey, readAt: null },
       data: {
         readAt: now,
         deleteAfter: daysFromNow(NOTIFICATION_TIMING.READ_RETENTION_DAYS, now),
       },
     });
+    await this.emitUnreadCount(userId);
+    return result;
   }
 
   async subscribePush(
@@ -169,10 +187,14 @@ export class NotificationsService {
   }
 
   async delete(id: string, userId: string) {
-    return this.prisma.notification.deleteMany({ where: { id, userId } });
+    const result = await this.prisma.notification.deleteMany({ where: { id, userId } });
+    await this.emitUnreadCount(userId);
+    return result;
   }
 
   async deleteAll(userId: string) {
-    return this.prisma.notification.deleteMany({ where: { userId } });
+    const result = await this.prisma.notification.deleteMany({ where: { userId } });
+    await this.emitUnreadCount(userId);
+    return result;
   }
 }
