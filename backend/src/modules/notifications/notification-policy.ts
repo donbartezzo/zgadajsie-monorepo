@@ -43,6 +43,15 @@ export const NOTIFICATION_POLICIES: Record<NotificationKind, NotificationPolicy>
     groupKey: (ctx) => (ctx.relatedEventId ? `chat:${ctx.relatedEventId}` : null),
     relevanceUntil: () => daysFromNow(30),
   },
+  NEW_PRIVATE_MESSAGE: {
+    urgency: 'NORMAL',
+    emailMode: 'DIGEST',
+    allowPush: true,
+    allowEmail: true,
+    groupKey: (ctx) =>
+      ctx.relatedEventId && ctx.senderId ? `pm:${ctx.relatedEventId}:${ctx.senderId}` : null,
+    relevanceUntil: () => daysFromNow(30),
+  },
   NEW_APPLICATION: {
     urgency: 'NORMAL',
     emailMode: 'DIGEST',

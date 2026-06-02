@@ -219,6 +219,17 @@ async function main() {
     },
   });
 
+  const _donbartezzo = await prisma.user.create({
+    data: {
+      email: 'donbartezzo@gmail.com',
+      passwordHash: userHash,
+      displayName: 'Don Bartezzo',
+      role: 'USER',
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+
   // ─── Fake users ───────────────────────────────────────────────────────────────
   await createFakeUsers(prisma);
 
