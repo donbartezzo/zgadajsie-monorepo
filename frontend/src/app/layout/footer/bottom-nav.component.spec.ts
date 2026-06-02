@@ -104,23 +104,8 @@ describe('BottomNavComponent', () => {
     });
   });
 
-  describe('ikonka dzwonka powiadomień', () => {
-    it('powinien renderować ikonę dzwonka gdy użytkownik jest zalogowany', () => {
-      const el = fixture.nativeElement as HTMLElement;
-      const bellButton = el.querySelector('app-button[aria-label="Powiadomienia"]');
-      expect(bellButton).toBeTruthy();
-    });
-
-    it('nie powinien renderować ikony dzwonka gdy użytkownik nie jest zalogowany', () => {
-      mockAuthIsLoggedIn.set(false);
-      fixture.detectChanges();
-
-      const el = fixture.nativeElement as HTMLElement;
-      const bellButton = el.querySelector('app-button[aria-label="Powiadomienia"]');
-      expect(bellButton).toBeFalsy();
-    });
-
-    it('powinien pokazywać badge gdy unreadCount > 0', () => {
+  describe('badge nieprzeczytanych powiadomień', () => {
+    it('powinien pokazywać badge na przycisku nawigacji gdy unreadCount > 0', () => {
       mockNotificationService.unreadCount.set(5);
       fixture.detectChanges();
 
@@ -147,11 +132,6 @@ describe('BottomNavComponent', () => {
       const el = fixture.nativeElement as HTMLElement;
       const badge = el.querySelector('.bg-danger-500');
       expect(badge).toBeFalsy();
-    });
-
-    it('powinien nawigować do /notifications po kliknięciu dzwonka', () => {
-      component.openNotifications();
-      expect(mockNavigation.router.navigate).toHaveBeenCalledWith(['/notifications']);
     });
   });
 });
