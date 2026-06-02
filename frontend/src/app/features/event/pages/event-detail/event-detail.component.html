@@ -236,26 +236,38 @@
                   <app-icon name="settings" size="sm"></app-icon>
                   Zarządzaj
                 </app-button>
-                <button
-                  type="button"
-                  class="relative appearance-none border-0 bg-transparent p-0 cursor-pointer"
-                  (click)="eventArea.openOrganizerChats()"
-                >
-                  <app-icon name="message-circle" size="sm" class="text-neutral-600" />
+                <div class="relative">
+                  <app-button
+                    [iconOnly]="true"
+                    iconLeft="message-circle"
+                    appearance="outline"
+                    color="neutral"
+                    size="sm"
+                    (clicked)="eventArea.openOrganizerChats()"
+                  />
                   @if (totalUnreadCount() > 0) {
                     <span
-                      class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger-500 text-[10px] font-bold text-white"
+                      class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary-500 text-[10px] font-semibold text-white"
                     >
-                      {{ totalUnreadCount() }}
+                      {{ totalUnreadCount() > 99 ? '99+' : totalUnreadCount() }}
                     </span>
                   }
-                </button>
+                </div>
               </div>
             } @else {
-              <app-button appearance="outline" color="primary" size="sm" (clicked)="contactOrganizer()">
-                <app-icon name="message-circle" size="sm"></app-icon>
-                Napisz
-              </app-button>
+              <div class="relative">
+                <app-button appearance="outline" color="primary" size="sm" (clicked)="contactOrganizer()">
+                  <app-icon name="message-circle" size="sm"></app-icon>
+                  Napisz
+                </app-button>
+                @if (organizerUnreadCount() > 0) {
+                  <span
+                    class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary-500 text-[10px] font-semibold text-white"
+                  >
+                    {{ organizerUnreadCount() > 99 ? '99+' : organizerUnreadCount() }}
+                  </span>
+                }
+              </div>
 
               @if (_organizerDonationUrl) {
                 <a

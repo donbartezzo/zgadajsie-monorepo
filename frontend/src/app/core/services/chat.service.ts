@@ -27,6 +27,11 @@ export class ChatService {
   private privateMessageSubject = new Subject<PrivateChatMessage>();
   private privateTypingSubject = new Subject<{ userId: string; displayName: string }>();
   private errorMessageSubject = new Subject<{ type: string; message: string }>();
+  private unreadCountUpdatedSubject = new Subject<{
+    eventId: string;
+    userId: string;
+    unreadCount: number;
+  }>();
   private readonly socketBaseUrl = typeof window !== 'undefined' ? window.location.origin : '';
 
   // ─── Group Chat ─────────────────────────────────────────────────────────────
@@ -55,6 +60,15 @@ export class ChatService {
           this.errorMessageSubject.next(data);
         });
       });
+
+      this.socket.on(
+        'unreadCountUpdated',
+        (data: { eventId: string; userId: string; unreadCount: number }) => {
+          this.ngZone.run(() => {
+            this.unreadCountUpdatedSubject.next(data);
+          });
+        },
+      );
     });
   }
 
@@ -116,6 +130,15 @@ export class ChatService {
           });
         }
       });
+
+      this.socket.on(
+        'unreadCountUpdated',
+        (data: { eventId: string; userId: string; unreadCount: number }) => {
+          this.ngZone.run(() => {
+            this.unreadCountUpdatedSubject.next(data);
+          });
+        },
+      );
     });
   }
 
@@ -149,6 +172,10 @@ export class ChatService {
 
   onPrivateTyping(): Observable<{ userId: string; displayName: string }> {
     return this.privateTypingSubject.asObservable();
+  }
+
+  onUnreadCountUpdated(): Observable<{ eventId: string; userId: string; unreadCount: number }> {
+    return this.unreadCountUpdatedSubject.asObservable();
   }
 
   getPrivateHistory(

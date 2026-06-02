@@ -182,6 +182,43 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         .onNewPrivateMessage(data.eventId, data.senderId, data.recipientId, recipientActive)
         .catch((err) => this.logger.error(`Failed to send notification: ${err.message}`));
     });
+
+    // Emit unread count update to both organizer and recipient if they are actively viewing the event page
+    const organizerId = await this.chatService.getEventOrganizerId(data.eventId);
+
+    // Emit to organizer
+    if (organizerId && (data.senderId === organizerId || data.recipientId === organizerId)) {
+      const otherUserId = data.senderId === organizerId ? data.recipientId : data.senderId;
+      const unreadCount = await this.chatService.getUnreadCount(
+        data.eventId,
+        organizerId,
+        otherUserId,
+      );
+
+      const organizerRoom = `user-in-event:${data.eventId}:${organizerId}`;
+      this.server.to(organizerRoom).emit('unreadCountUpdated', {
+        eventId: data.eventId,
+        userId: otherUserId,
+        unreadCount,
+      });
+    }
+
+    // Emit to recipient (if not organizer)
+    if (organizerId && data.recipientId !== organizerId) {
+      const unreadCount = await this.chatService.getUnreadCount(
+        data.eventId,
+        data.recipientId,
+        data.senderId,
+      );
+
+      const recipientRoom = `user-in-event:${data.eventId}:${data.recipientId}`;
+      this.server.to(recipientRoom).emit('unreadCountUpdated', {
+        eventId: data.eventId,
+        userId: data.senderId,
+        unreadCount,
+      });
+    }
+
     return message;
   }
 
