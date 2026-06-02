@@ -297,7 +297,8 @@ export class EnrollmentParticipantActionsComponent {
     if (!p) return;
     this.closeRequested.emit();
     if (this.eventHasRoles()) {
-      this.eventArea.openChangeRoleWizardForParticipant(p);
+      const currentRoleKey = p.slot?.roleKey ?? p.roleKey ?? undefined;
+      this.eventArea.openJoinWizardWithRole(currentRoleKey, p.id);
     } else {
       this.eventArea.rejoinParticipantDirect(p);
     }
@@ -308,7 +309,8 @@ export class EnrollmentParticipantActionsComponent {
     if (!p) return;
     this.closeRequested.emit();
     if (this.eventHasRoles()) {
-      this.eventArea.openChangeRoleWizardForParticipant(p);
+      const currentRoleKey = p.slot?.roleKey ?? p.roleKey ?? undefined;
+      this.eventArea.openJoinWizardWithRole(currentRoleKey, p.id);
     } else {
       this.eventArea.rejoinParticipantDirect(p);
     }

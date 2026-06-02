@@ -6,6 +6,7 @@ export interface SnackbarMessage {
   id: number;
   message: string;
   type: SnackbarType;
+  onClick?: () => void;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -13,9 +14,9 @@ export class SnackbarService {
   private nextId = 0;
   readonly messages = signal<SnackbarMessage[]>([]);
 
-  show(message: string, type: SnackbarType = 'info', duration = 4000): void {
+  show(message: string, type: SnackbarType = 'info', duration = 4000, onClick?: () => void): void {
     const id = this.nextId++;
-    this.messages.update((msgs) => [...msgs, { id, message, type }]);
+    this.messages.update((msgs) => [...msgs, { id, message, type, onClick }]);
 
     if (duration > 0) {
       setTimeout(() => this.dismiss(id), duration);

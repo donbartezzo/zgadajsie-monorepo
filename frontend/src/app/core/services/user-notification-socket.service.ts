@@ -1,6 +1,7 @@
 import { inject, Injectable, NgZone, effect } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { NotificationService } from './notification.service';
+import { NavigationService } from './navigation.service';
 import { SnackbarService } from '../../shared/ui/snackbar/snackbar.service';
 import { io, Socket } from 'socket.io-client';
 import type { Notification } from '../../shared/types/notification.interface';
@@ -25,6 +26,7 @@ interface NotificationPayload {
 export class UserNotificationSocketService {
   private readonly auth = inject(AuthService);
   private readonly notificationService = inject(NotificationService);
+  private readonly navigation = inject(NavigationService);
   private readonly snackbar = inject(SnackbarService);
   private readonly ngZone = inject(NgZone);
 
@@ -129,7 +131,14 @@ export class UserNotificationSocketService {
       }
     }
 
-    // Show snackbar
-    this.snackbar.info(payload.title);
+    // Show snackbar with click action if link exists
+    const onClick = payload.link
+      ? () => {
+          if (payload.link) {
+            this.navigation.navigateToUrl(payload.link);
+          }
+        }
+      : undefined;
+    this.snackbar.show(payload.title, 'info', 4000, onClick);
   }
 }

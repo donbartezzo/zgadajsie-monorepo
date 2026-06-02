@@ -334,6 +334,19 @@ export class EnrollmentService {
         } catch (err) {
           this.logger.error(`Failed to notify slot assigned for guest: ${err}`);
         }
+        // Notify organizer about new guest (if not added by organizer)
+        if (!isOrganizer) {
+          try {
+            await this.pushService.notifyNewApplication(
+              event.organizerId,
+              guestUser.displayName,
+              event.title,
+              eventId,
+            );
+          } catch (err) {
+            this.logger.error(`Failed to notify organizer about new guest: ${err}`);
+          }
+        }
         return result;
       }
     }
@@ -359,6 +372,19 @@ export class EnrollmentService {
       include: { user: { select: USER_SELECT }, slot: true },
     });
     this.notifyEventChanged(eventId, 'participants');
+    // Notify organizer about new guest (if not added by organizer)
+    if (!isOrganizer) {
+      try {
+        await this.pushService.notifyNewApplication(
+          event.organizerId,
+          guestUser.displayName,
+          event.title,
+          eventId,
+        );
+      } catch (err) {
+        this.logger.error(`Failed to notify organizer about new guest: ${err}`);
+      }
+    }
     return withDerivedStatus(participation);
   }
 
@@ -1116,6 +1142,19 @@ export class EnrollmentService {
         include: { user: { select: USER_SELECT }, slot: true },
       });
       this.notifyEventChanged(event.id, 'participants');
+      // Notify organizer about rejoin attempt (even if banned)
+      if (withReason.user) {
+        try {
+          await this.pushService.notifyNewApplication(
+            event.organizerId,
+            withReason.user.displayName,
+            event.title,
+            event.id,
+          );
+        } catch (err) {
+          this.logger.error(`Failed to notify organizer about rejoin (banned): ${err}`);
+        }
+      }
       return {
         ...withDerivedStatus(withReason),
         isPaid,
@@ -1131,6 +1170,19 @@ export class EnrollmentService {
         include: { user: { select: USER_SELECT }, slot: true },
       });
       this.notifyEventChanged(event.id, 'participants');
+      // Notify organizer about rejoin attempt (even if not trusted)
+      if (withReason.user) {
+        try {
+          await this.pushService.notifyNewApplication(
+            event.organizerId,
+            withReason.user.displayName,
+            event.title,
+            event.id,
+          );
+        } catch (err) {
+          this.logger.error(`Failed to notify organizer about rejoin (not trusted): ${err}`);
+        }
+      }
       return {
         ...withDerivedStatus(withReason),
         isPaid,
@@ -1152,6 +1204,21 @@ export class EnrollmentService {
             include: { user: { select: USER_SELECT }, slot: true },
           });
           this.notifyEventChanged(event.id, 'participants');
+          // Notify organizer about rejoin attempt (no slots for role)
+          if (withReason.user) {
+            try {
+              await this.pushService.notifyNewApplication(
+                event.organizerId,
+                withReason.user.displayName,
+                event.title,
+                event.id,
+              );
+            } catch (err) {
+              this.logger.error(
+                `Failed to notify organizer about rejoin (no slots for role): ${err}`,
+              );
+            }
+          }
           return {
             ...withDerivedStatus(withReason),
             isPaid,
@@ -1167,6 +1234,19 @@ export class EnrollmentService {
         include: { user: { select: USER_SELECT }, slot: true },
       });
       this.notifyEventChanged(event.id, 'participants');
+      // Notify organizer about rejoin attempt (no slots)
+      if (withReason.user) {
+        try {
+          await this.pushService.notifyNewApplication(
+            event.organizerId,
+            withReason.user.displayName,
+            event.title,
+            event.id,
+          );
+        } catch (err) {
+          this.logger.error(`Failed to notify organizer about rejoin (no slots): ${err}`);
+        }
+      }
       return {
         ...withDerivedStatus(withReason),
         isPaid,
@@ -1192,6 +1272,20 @@ export class EnrollmentService {
     this.notifyEventChanged(event.id, 'all');
     // Notify user about slot assignment on rejoin
     await this.notifySlotAssigned(userId, event.title, event.id);
+
+    // Notify organizer about rejoin (treated as new application)
+    if (withSlot.user) {
+      try {
+        await this.pushService.notifyNewApplication(
+          event.organizerId,
+          withSlot.user.displayName,
+          event.title,
+          event.id,
+        );
+      } catch (err) {
+        this.logger.error(`Failed to notify organizer about rejoin: ${err}`);
+      }
+    }
 
     return {
       ...withDerivedStatus(withSlot),

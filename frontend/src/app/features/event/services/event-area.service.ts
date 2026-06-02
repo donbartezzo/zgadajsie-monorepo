@@ -618,9 +618,9 @@ export class EventAreaService {
     }
   }
 
-  openJoinWizardWithRole(roleKey?: string): void {
+  openJoinWizardWithRole(roleKey?: string, participationId?: string): void {
     if (this.auth.isLoggedIn()) {
-      this.overlays.openJoinWizard({ preselectedRoleKey: roleKey });
+      this.overlays.openJoinWizard({ preselectedRoleKey: roleKey, participationId });
     } else {
       this.overlays.open('auth');
     }
@@ -766,28 +766,34 @@ export class EventAreaService {
     this.joining.set(true);
     this.overlays.close();
 
-    this.eventService
-      .joinEvent(this._eventId, roleKey)
-      .pipe(finalize(() => this.joining.set(false)))
-      .subscribe({
-        next: (p) => {
-          const toastMsg = this.getJoinSuccessMessage(p.status, p.waitingReason);
-          this.snackbar.success(toastMsg);
-          // Refresh participants first, then navigate
-          this.eventService.getParticipants(this._eventId).subscribe({
-            next: (participants) => {
-              this.participants.set(participants);
-              this.refreshCompletedSubject.next();
-              this.navigation.navigateToEventParticipants(this._eventId, this._citySlug);
-            },
-          });
-        },
-        error: (err: { error?: { message?: string; suggestion?: string } }) => {
-          const msg = err.error?.message || 'Nie udało się dołączyć do wydarzenia';
-          const suggestion = err.error?.suggestion;
-          this.snackbar.error(suggestion ? `${msg}. ${suggestion}` : msg);
-        },
-      });
+    const config = this.overlays.wizardConfig();
+    const participationId = config?.participationId;
+
+    // If participationId exists, it's a rejoin - use rejoinParticipation
+    // Otherwise, it's a new join - use joinEvent
+    const source$ = participationId
+      ? this.eventService.rejoinParticipation(participationId)
+      : this.eventService.joinEvent(this._eventId, roleKey);
+
+    source$.pipe(finalize(() => this.joining.set(false))).subscribe({
+      next: (p) => {
+        const toastMsg = this.getJoinSuccessMessage(p.status, p.waitingReason);
+        this.snackbar.success(toastMsg);
+        // Refresh participants first, then navigate
+        this.eventService.getParticipants(this._eventId).subscribe({
+          next: (participants) => {
+            this.participants.set(participants);
+            this.refreshCompletedSubject.next();
+            this.navigation.navigateToEventParticipants(this._eventId, this._citySlug);
+          },
+        });
+      },
+      error: (err: { error?: { message?: string; suggestion?: string } }) => {
+        const msg = err.error?.message || 'Nie udało się dołączyć do wydarzenia';
+        const suggestion = err.error?.suggestion;
+        this.snackbar.error(suggestion ? `${msg}. ${suggestion}` : msg);
+      },
+    });
   }
 
   /**
