@@ -5,12 +5,13 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { Notification, NotificationKind } from '../../../../shared/types/notification.interface';
 import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
+import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
 import { formatDateTime } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-notifications-page',
   standalone: true,
-  imports: [CommonModule, IconComponent, ButtonComponent],
+  imports: [CommonModule, IconComponent, ButtonComponent, BadgeComponent],
   templateUrl: './notifications-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

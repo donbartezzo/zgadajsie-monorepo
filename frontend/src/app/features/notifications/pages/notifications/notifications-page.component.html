@@ -5,16 +5,18 @@
 
 <div class="min-h-screen bg-neutral-50 pb-20">
   <header class="sticky top-0 z-10 bg-white border-b border-neutral-200 px-4 py-4">
-    <div class="flex items-center justify-between max-w-app mx-auto">
-      <h1 class="text-xl font-bold text-neutral-900">Powiadomienia</h1>
-      @if (_totalCount > 0) {
-        <div class="flex gap-2">
-          <app-button appearance="ghost" size="sm" color="neutral" (clicked)="markAllAsRead()">
-            Oznacz jako przeczytane
-          </app-button>
-          <app-button appearance="ghost" size="sm" color="danger" (clicked)="deleteAll()"> Usuń wszystkie </app-button>
-        </div>
-      }
+    <div class="max-w-app mx-auto">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h1 class="text-xl font-bold text-neutral-900">Powiadomienia</h1>
+        @if (_totalCount > 0) {
+          <div class="flex gap-2">
+            <app-button appearance="soft" size="sm" color="neutral" (clicked)="markAllAsRead()">
+              Oznacz jako przeczytane
+            </app-button>
+            <app-button appearance="soft" size="sm" color="danger" (clicked)="deleteAll()"> Usuń wszystkie </app-button>
+          </div>
+        }
+      </div>
     </div>
   </header>
 
@@ -33,65 +35,77 @@
         @for (notification of _notifications; track notification.id) {
           <button
             type="button"
-            class="w-full text-left p-4 rounded-lg border transition-all hover:bg-neutral-50"
-            [class.bg-neutral-100]="notification.readAt"
-            [class.bg-white]="!notification.readAt"
+            class="w-full text-left p-3 rounded-lg border transition-all hover:bg-neutral-50 relative"
+            [class.bg-white]="notification.readAt"
+            [class.bg-primary-50]="!notification.readAt"
             [class.border-neutral-200]="notification.readAt"
             [class.border-primary-200]="!notification.readAt"
             (click)="handleClick(notification)"
           >
-            <div class="flex items-start gap-3">
-              <div class="flex-shrink-0 mt-0.5 {{ getNotificationColor(notification.type) }}">
-                <app-icon [name]="getNotificationIcon(notification.type)" class="w-5 h-5"></app-icon>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-neutral-900 truncate" [class.font-bold]="!notification.readAt">
+            <div class="absolute top-1 right-1 flex items-center gap-1">
+              @if (!notification.readAt) {
+                <app-button
+                  appearance="outline"
+                  color="success"
+                  size="xs"
+                  [iconOnly]="true"
+                  iconLeft="check"
+                  (clicked)="$event.stopPropagation(); markAsRead(notification)"
+                  ariaLabel="Oznacz jako przeczytane"
+                ></app-button>
+              }
+              @if (notification.link) {
+                <app-button
+                  appearance="outline"
+                  color="primary"
+                  size="xs"
+                  [iconOnly]="true"
+                  iconLeft="arrow-right"
+                  (clicked)="$event.stopPropagation(); handleClick(notification)"
+                  [ariaLabel]="getCtaLabel(notification.type)"
+                ></app-button>
+              }
+              <app-button
+                appearance="outline"
+                color="danger"
+                size="xs"
+                [iconOnly]="true"
+                iconLeft="trash"
+                (clicked)="$event.stopPropagation(); delete(notification)"
+                ariaLabel="Usuń powiadomienie"
+              ></app-button>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-neutral-400 mb-1">{{ formatTime(notification.createdAt) }}</p>
+              <div class="flex items-center gap-2 mb-1">
+                <app-icon
+                  size="sm"
+                  [name]="getNotificationIcon(notification.type)"
+                  class="w-4 h-4 flex-shrink-0 {{
+                    notification.readAt ? 'text-neutral-400' : getNotificationColor(notification.type)
+                  }}"
+                ></app-icon>
+                <p
+                  class="text-sm font-medium truncate"
+                  [class.text-neutral-900]="!notification.readAt"
+                  [class.text-neutral-500]="notification.readAt"
+                  [class.font-bold]="!notification.readAt"
+                >
                   {{ notification.title }}
                   @if (notification.aggregateCount > 1) {
-                    <span class="text-xs text-neutral-500 font-normal ml-1">({{ notification.aggregateCount }})</span>
+                    <app-badge variant="soft" color="neutral" size="xs" class="ml-1">
+                      {{ notification.aggregateCount }}
+                    </app-badge>
                   }
                 </p>
-                <p class="text-sm text-neutral-600 mt-1 line-clamp-2">{{ notification.body }}</p>
-                <p class="text-xs text-neutral-400 mt-2">{{ formatTime(notification.createdAt) }}</p>
               </div>
-              <div class="flex flex-col items-end gap-2">
-                <!-- @if (!notification.readAt) {
-                  <div class="w-2 h-2 bg-primary-500 rounded-full self-center"></div>
-                } -->
-                <div class="flex items-center gap-1">
-                  @if (!notification.readAt) {
-                    <app-button
-                      appearance="ghost"
-                      color="success"
-                      size="sm"
-                      [iconOnly]="true"
-                      iconLeft="check"
-                      (clicked)="$event.stopPropagation(); markAsRead(notification)"
-                      ariaLabel="Oznacz jako przeczytane"
-                    ></app-button>
-                  }
-                  @if (notification.link) {
-                    <app-button
-                      appearance="ghost"
-                      color="primary"
-                      size="sm"
-                      [iconOnly]="true"
-                      iconLeft="arrow-right"
-                      (clicked)="$event.stopPropagation(); handleClick(notification)"
-                      [ariaLabel]="getCtaLabel(notification.type)"
-                    ></app-button>
-                  }
-                  <app-button
-                    appearance="ghost"
-                    color="danger"
-                    size="sm"
-                    [iconOnly]="true"
-                    iconLeft="x"
-                    (clicked)="$event.stopPropagation(); delete(notification)"
-                    ariaLabel="Usuń powiadomienie"
-                  ></app-button>
-                </div>
-              </div>
+              <p
+                class="text-sm line-clamp-2"
+                [class.text-neutral-600]="!notification.readAt"
+                [class.text-neutral-400]="notification.readAt"
+              >
+                {{ notification.body }}
+              </p>
             </div>
           </button>
         }
