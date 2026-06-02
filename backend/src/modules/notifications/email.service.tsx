@@ -378,7 +378,7 @@ export class EmailService implements OnModuleInit {
     user: { email: string; displayName: string };
     relatedEventId: string | null;
   }): Promise<void> {
-    const { type, user, title, body, link, relatedEventId } = notification;
+    const { type, user, title, body, link } = notification;
 
     switch (type) {
       case 'EVENT_REMINDER':

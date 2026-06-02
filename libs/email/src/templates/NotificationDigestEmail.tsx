@@ -6,7 +6,7 @@ import { APP_BRAND } from '../constants/brand';
 import { EMAIL_THEME } from '../theme';
 import type { NotificationDigestEmailProps } from '../types/templates';
 import { DateTime } from 'luxon';
-import { APP_LOCALE } from '@zgadajsie/shared';
+import { APP_LOCALE } from '../../../src/lib/constants/timezone.constants';
 
 const c = EMAIL_THEME.colors;
 
