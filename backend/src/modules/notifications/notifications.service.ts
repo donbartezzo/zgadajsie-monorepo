@@ -1,48 +1,164 @@
 import { Injectable } from '@nestjs/common';
+import { NotificationKind } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  NotificationContext,
+  NOTIFICATION_POLICIES,
+  NOTIFICATION_TIMING,
+} from './notification-policy';
+import { daysFromNow } from '@zgadajsie/shared';
+import { UserNotificationGateway } from '../realtime/user-notification.gateway';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private gateway: UserNotificationGateway,
+  ) {}
 
-  async getNotifications(userId: string, page = 1, limit = 20) {
-    const [notifications, total] = await Promise.all([
-      this.prisma.notification.findMany({
-        where: { userId },
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.notification.count({ where: { userId } }),
-    ]);
-    return { data: notifications, total, page, limit };
+  /** Liczy i emituje autorytatywny licznik nieprzeczytanych do klienta przez WS. */
+  private async emitUnreadCount(userId: string): Promise<void> {
+    const { count } = await this.getUnreadCount(userId);
+    this.gateway.emitUnreadCount(userId, count);
+  }
+
+  async create(
+    ctx: NotificationContext,
+    type: NotificationKind,
+    title: string,
+    body: string,
+    link?: string,
+  ) {
+    const policy = NOTIFICATION_POLICIES[type];
+    const groupKey = policy.groupKey?.(ctx) ?? null;
+    const relevanceUntil = policy.relevanceUntil?.(ctx) ?? null;
+
+    // Debounce: szukaj unread w oknie
+    if (groupKey) {
+      const windowStart = new Date(
+        Date.now() - NOTIFICATION_TIMING.DEBOUNCE_WINDOW_MINUTES * 60_000,
+      );
+      const existing = await this.prisma.notification.findFirst({
+        where: {
+          userId: ctx.userId,
+          groupKey,
+          readAt: null,
+          updatedAt: { gte: windowStart },
+        },
+        orderBy: { updatedAt: 'desc' },
+      });
+
+      if (existing) {
+        const updated = await this.prisma.notification.update({
+          where: { id: existing.id },
+          data: {
+            title,
+            body,
+            link,
+            aggregateCount: { increment: 1 },
+            // RESET sygnałów dostarczenia — bo content się zmienił, escalation ma poczekać kolejne X min
+            pushSentAt: null,
+            emailSentAt: null,
+            // odśwież relevanceUntil (np. dla reminder)
+            relevanceUntil,
+            // deleteAfter = createdAt + 30d (unread)
+            deleteAfter: daysFromNow(NOTIFICATION_TIMING.UNREAD_RETENTION_DAYS, existing.createdAt),
+          },
+        });
+        await this.emitUnreadCount(ctx.userId);
+        return { notification: updated, wasUpdate: true };
+      }
+    }
+
+    const now = new Date();
+    const created = await this.prisma.notification.create({
+      data: {
+        userId: ctx.userId,
+        type,
+        title,
+        body,
+        link,
+        groupKey,
+        relevanceUntil,
+        relatedEventId: ctx.relatedEventId,
+        deleteAfter: daysFromNow(NOTIFICATION_TIMING.UNREAD_RETENTION_DAYS, now),
+      },
+    });
+    await this.emitUnreadCount(ctx.userId);
+    return { notification: created, wasUpdate: false };
   }
 
   async markAsRead(id: string, userId: string) {
-    return this.prisma.notification.updateMany({
-      where: { id, userId },
-      data: { isRead: true },
+    const now = new Date();
+    const result = await this.prisma.notification.updateMany({
+      where: { id, userId, readAt: null },
+      data: {
+        readAt: now,
+        deleteAfter: daysFromNow(NOTIFICATION_TIMING.READ_RETENTION_DAYS, now),
+      },
     });
+    await this.emitUnreadCount(userId);
+    return result;
   }
 
   async markAllAsRead(userId: string) {
-    return this.prisma.notification.updateMany({
-      where: { userId, isRead: false },
-      data: { isRead: true },
+    const now = new Date();
+    const result = await this.prisma.notification.updateMany({
+      where: { userId, readAt: null },
+      data: {
+        readAt: now,
+        deleteAfter: daysFromNow(NOTIFICATION_TIMING.READ_RETENTION_DAYS, now),
+      },
     });
+    await this.emitUnreadCount(userId);
+    return result;
   }
 
   async getUnreadCount(userId: string) {
     const count = await this.prisma.notification.count({
-      where: { userId, isRead: false },
+      where: {
+        userId,
+        readAt: null,
+        OR: [{ relevanceUntil: null }, { relevanceUntil: { gt: new Date() } }],
+      },
     });
     return { count };
   }
 
-  async create(userId: string, type: string, title: string, body: string, relatedEventId?: string) {
-    return this.prisma.notification.create({
-      data: { userId, type: type as any, title, body, relatedEventId },
+  async getNotifications(userId: string, page = 1, limit = 20) {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const [notifications, total] = await Promise.all([
+      this.prisma.notification.findMany({
+        where: {
+          userId,
+          createdAt: { gte: thirtyDaysAgo },
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.notification.count({
+        where: {
+          userId,
+          createdAt: { gte: thirtyDaysAgo },
+        },
+      }),
+    ]);
+    return { data: notifications, total, page, limit };
+  }
+
+  /** Context-aware read — wołać przy wejściu w konwersację / czat eventu. */
+  async markByGroupKey(userId: string, groupKey: string) {
+    const now = new Date();
+    const result = await this.prisma.notification.updateMany({
+      where: { userId, groupKey, readAt: null },
+      data: {
+        readAt: now,
+        deleteAfter: daysFromNow(NOTIFICATION_TIMING.READ_RETENTION_DAYS, now),
+      },
     });
+    await this.emitUnreadCount(userId);
+    return result;
   }
 
   async subscribePush(
@@ -68,5 +184,17 @@ export class NotificationsService {
 
   async unsubscribePush(userId: string, endpoint: string) {
     return this.prisma.pushSubscription.deleteMany({ where: { userId, endpoint } });
+  }
+
+  async delete(id: string, userId: string) {
+    const result = await this.prisma.notification.deleteMany({ where: { id, userId } });
+    await this.emitUnreadCount(userId);
+    return result;
+  }
+
+  async deleteAll(userId: string) {
+    const result = await this.prisma.notification.deleteMany({ where: { userId } });
+    await this.emitUnreadCount(userId);
+    return result;
   }
 }

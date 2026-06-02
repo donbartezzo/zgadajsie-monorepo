@@ -339,6 +339,15 @@ export const appRoutes: Route[] = [
 
   // ── User ──
   {
+    path: 'notifications',
+    loadComponent: () =>
+      import('./features/notifications/pages/notifications/notifications-page.component').then(
+        (m) => m.NotificationsPageComponent,
+      ),
+    canActivate: [authGuard],
+    data: { title: 'Powiadomienia', breadcrumb: BREADCRUMB_TO_HOME },
+  },
+  {
     path: 'profile',
     loadComponent: () =>
       import('./features/user/pages/profile/profile.component').then((m) => m.ProfileComponent),

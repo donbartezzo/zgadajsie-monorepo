@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { NotificationKind } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PushService } from '../notifications/push.service';
 import { EmailService } from '../notifications/email.service';
@@ -148,11 +149,10 @@ export class AnnouncementDispatcherService {
 
     const results = await Promise.allSettled([
       this.pushService.notifyUser(
-        addedBy?.id ?? user.id,
-        'ANNOUNCEMENT',
+        { userId: addedBy?.id ?? user.id },
+        'ANNOUNCEMENT' as NotificationKind,
         title,
         message,
-        undefined,
         eventLink,
       ),
       this.emailService.sendAnnouncementEmail(

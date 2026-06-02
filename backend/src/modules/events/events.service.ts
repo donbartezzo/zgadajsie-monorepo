@@ -108,7 +108,7 @@ export class EventsService {
     // Create slots for the event (with role assignment if roleConfig provided)
     await this.slotService.createSlotsForEvent(event.id, dto.maxParticipants, dto.roleConfig);
 
-    this.notifyCitySubscribers(event.id, event.title, event.citySlug, organizerId);
+    this.notifyCitySubscribers(event.id, event.title, event.citySlug, event.city.slug, organizerId);
 
     return event;
   }
@@ -137,6 +137,7 @@ export class EventsService {
     eventId: string,
     eventTitle: string,
     citySlug: string,
+    cityId: string,
     organizerId: string,
   ): void {
     setImmediate(async () => {
@@ -144,7 +145,7 @@ export class EventsService {
         const subscriberIds = await this.citySubscriptionsService.getSubscriberIds(citySlug);
         const filtered = subscriberIds.filter((id) => id !== organizerId);
         for (const userId of filtered) {
-          await this.pushService.notifyNewEventInCity(userId, eventTitle, eventId);
+          await this.pushService.notifyNewEventInCity(userId, eventTitle, eventId, cityId);
         }
         if (filtered.length > 0) {
           this.logger.log(
@@ -854,7 +855,7 @@ export class EventsService {
 
     if (notifyUser) {
       await this.notificationsService.create(
-        payment.userId,
+        { userId: payment.userId, relatedEventId: eventId },
         'PAYMENT_CANCELLED' as NotificationKind,
         'Płatność anulowana',
         `Twoja płatność za wydarzenie "${event.title}" została anulowana.${

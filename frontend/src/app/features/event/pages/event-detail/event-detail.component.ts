@@ -26,7 +26,7 @@ import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-over
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { EventHeroSlotsComponent } from '../../ui/event-hero-slots/event-hero-slots.component';
-import { EventAnnouncement, UserBrief } from '../../../../shared/types';
+import { EventAnnouncement, OrganizerConversation, UserBrief } from '../../../../shared/types';
 import { getEventCountdown, EventCountdown, EventStatus, nowInZone } from '@zgadajsie/shared';
 import { EventInfoGridComponent } from '../../../../shared/ui/event-info-grid/event-info-grid.component';
 import { MapComponent } from '../../../../shared/event-form/ui/map/map.component';
@@ -110,10 +110,16 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   readonly hasAnnouncements = signal(false);
   readonly countdown = signal<EventCountdown | null>(null);
   readonly chatMessageCount = signal<number | null>(null);
+  readonly organizerConversations = signal<OrganizerConversation[]>([]);
+  readonly organizerUnreadCount = signal<number>(0);
   readonly loginQueryParams = { returnUrl: inject(Router).url };
   readonly fullAddress = computed(() => {
     const event = this.event();
     return formatEventAddress(event?.address, event?.city?.name);
+  });
+
+  readonly totalUnreadCount = computed(() => {
+    return this.organizerConversations().reduce((sum, conv) => sum + conv.unreadCount, 0);
   });
 
   // @TODO: Replace hardcoded amenities with data from backend (event edit form)
@@ -168,6 +174,59 @@ export class EventDetailComponent implements OnInit, OnDestroy {
       }
     });
 
+    // Load organizer conversations when user is organizer
+    effect(() => {
+      const e = this.event();
+      if (e && this.isOrganizer()) {
+        this.loadOrganizerConversations(e.id);
+      } else {
+        this.organizerConversations.set([]);
+      }
+    });
+
+    // Load organizer unread count when user is participant
+    effect(() => {
+      const e = this.event();
+      if (e && !this.isOrganizer() && e.organizerId && this.isEnrolled()) {
+        this.loadOrganizerUnreadCount(e.id, e.organizerId);
+      } else {
+        this.organizerUnreadCount.set(0);
+      }
+    });
+
+    // Subscribe to unread count updates for all users
+    effect(() => {
+      const e = this.event();
+      if (e) {
+        // Connect to WebSocket to receive unread count updates
+        this.chatService.connect(e.id);
+
+        const subscription = this.chatService.onUnreadCountUpdated().subscribe((update) => {
+          if (update.eventId === e.id) {
+            if (this.isOrganizer()) {
+              // Organizer: update conversations list
+              this.organizerConversations.update((conversations) =>
+                conversations.map((conv) =>
+                  conv.participant.id === update.userId
+                    ? { ...conv, unreadCount: update.unreadCount }
+                    : conv,
+                ),
+              );
+            } else {
+              // Participant: update organizer unread count
+              if (update.userId === e.organizerId) {
+                this.organizerUnreadCount.set(update.unreadCount);
+              }
+            }
+          }
+        });
+
+        // Cleanup on effect destroy
+        return () => subscription.unsubscribe();
+      }
+      return undefined;
+    });
+
     // Setup countdown effect in injection context
     effect(() => {
       const e = this.event();
@@ -185,6 +244,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.countdownInterval) clearInterval(this.countdownInterval);
     this.notifStatus.clearConfig();
+    this.chatService.disconnect();
   }
 
   private loadAnnouncements(): void {
@@ -209,6 +269,30 @@ export class EventDetailComponent implements OnInit, OnDestroy {
       error: () => {
         // Silent fail - don't show error for message count
         this.chatMessageCount.set(null);
+      },
+    });
+  }
+
+  private loadOrganizerConversations(eventId: string): void {
+    this.chatService.getOrganizerConversations(eventId).subscribe({
+      next: (conversations) => {
+        this.organizerConversations.set(conversations);
+      },
+      error: () => {
+        // Silent fail - don't show error for conversations
+        this.organizerConversations.set([]);
+      },
+    });
+  }
+
+  private loadOrganizerUnreadCount(eventId: string, organizerId: string): void {
+    this.chatService.getUnreadSummary(eventId).subscribe({
+      next: (unreadMap: Map<string, number>) => {
+        this.organizerUnreadCount.set(unreadMap.get(organizerId) ?? 0);
+      },
+      error: () => {
+        // Silent fail - don't show error for unread count
+        this.organizerUnreadCount.set(0);
       },
     });
   }

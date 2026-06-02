@@ -25,6 +25,7 @@ import { AuthService } from './core/auth/auth.service';
 import { AppTitleStrategy } from './core/services/app-title.strategy';
 import { provideTransloco, TranslocoService } from '@jsverse/transloco';
 import { TranslocoInlineLoader } from './core/i18n/transloco-loader';
+import { UserNotificationSocketService } from './core/services/user-notification-socket.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -67,6 +68,12 @@ export const appConfig: ApplicationConfig = {
         prodMode: !isDevMode(),
       },
       loader: TranslocoInlineLoader,
+    }),
+    // Eagerly instantiate the socket service so its auth-state effect starts running.
+    // Just listing it in `providers` is not enough — Angular DI is lazy and the
+    // service would never be constructed until something injected it.
+    provideAppInitializer(() => {
+      inject(UserNotificationSocketService);
     }),
   ],
 };

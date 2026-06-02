@@ -333,3 +333,19 @@ export function hoursFromNow(hours: number, from?: Date): Date {
   const base = from ? toZonedDateTime(from) : nowInZone();
   return base.plus({ hours }).toJSDate();
 }
+
+/**
+ * Zwraca datę z dodaną/odjętą liczbą minut od teraz.
+ */
+export function minutesFromNow(minutes: number, from?: Date): Date {
+  const base = from ? toZonedDateTime(from) : nowInZone();
+  return base.plus({ minutes }).toJSDate();
+}
+
+/**
+ * Odejmuje określoną liczbę minut od daty.
+ */
+export function subtractMinutes(date: string | Date, minutes: number): Date {
+  const dt = toZonedDateTime(date);
+  return dt.minus({ minutes }).toJSDate();
+}

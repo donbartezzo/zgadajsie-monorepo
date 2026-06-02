@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../prisma/prisma.service';
 import React from 'react';
 import { Resend } from 'resend';
 import { APP_BRAND, formatDateTime } from '@zgadajsie/shared';
@@ -11,6 +12,7 @@ import {
   EventCancelledEmail,
   EventReminderEmail,
   NewApplicationEmail,
+  NotificationDigestEmail,
   OrganizerWeeklyDigestEmail,
   ParticipationStatusEmail,
   PasswordResetEmail,
@@ -29,7 +31,10 @@ export class EmailService implements OnModuleInit {
   private readonly logger = new Logger(EmailService.name);
   private resend: Resend;
 
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    private prisma: PrismaService,
+  ) {}
 
   onModuleInit() {
     const apiKey = this.configService.getOrThrow<string>('RESEND_API_KEY');
@@ -327,6 +332,102 @@ export class EmailService implements OnModuleInit {
       />,
     );
     await this.send(email, subject, html, text);
+  }
+
+  async sendDigest(
+    userId: string,
+    items: Array<{
+      id: string;
+      title: string;
+      body: string;
+      link: string | null;
+      createdAt: Date;
+    }>,
+  ): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, displayName: true },
+    });
+
+    if (!user) {
+      this.logger.warn(`User ${userId} not found for digest email`);
+      return;
+    }
+
+    const { html, text } = await renderEmail(
+      <NotificationDigestEmail
+        displayName={user.displayName}
+        frontendUrl={this.frontendUrl}
+        items={items}
+      />,
+    );
+    await this.send(
+      user.email,
+      `Masz ${items.length} nieprzeczytanych powiadomień – ${APP_BRAND.NAME}`,
+      html,
+      text,
+    );
+  }
+
+  async sendTransactionalForNotification(notification: {
+    id: string;
+    type: string;
+    title: string;
+    body: string;
+    link: string | null;
+    user: { email: string; displayName: string };
+    relatedEventId: string | null;
+  }): Promise<void> {
+    const { type, user, title, body, link } = notification;
+
+    switch (type) {
+      case 'EVENT_REMINDER':
+        // EVENT_REMINDER wymaga dodatkowych danych (eventTime, eventTitle)
+        // Tymczasowo pomijamy - wymagane rozszerzenie payloadu
+        this.logger.warn(
+          `EVENT_REMINDER email not implemented yet for notification ${notification.id}`,
+        );
+        break;
+
+      case 'EVENT_CANCELLED':
+        await this.sendEventCancelledEmail(user.email, user.displayName, title, link ?? undefined);
+        break;
+
+      case 'PARTICIPATION_STATUS':
+        // PARTICIPATION_STATUS wymaga status (SLOT_ASSIGNED, CONFIRMED, etc.)
+        // Tymczasowo używamy body jako status
+        await this.sendParticipationStatusEmail(
+          user.email,
+          user.displayName,
+          title,
+          body,
+          link ?? undefined,
+        );
+        break;
+
+      case 'PAYMENT_CANCELLED':
+        // PAYMENT_CANCELLED wymaga amount
+        // Tymczasowo pomijamy - wymagane rozszerzenie payloadu
+        this.logger.warn(
+          `PAYMENT_CANCELLED email not implemented yet for notification ${notification.id}`,
+        );
+        break;
+
+      case 'REPRIMAND':
+        await this.sendReprimandEmail(user.email, user.displayName, title, body, link ?? undefined);
+        break;
+
+      case 'ANNOUNCEMENT':
+        // ANNOUNCEMENT wymiera priority, message, confirmToken
+        // Tymczasowo pomijamy - wymagane rozszerzenie payloadu
+        this.logger.warn(
+          `ANNOUNCEMENT email not implemented yet for notification ${notification.id}`,
+        );
+        break;
+
+      default:
+        this.logger.warn(`Unknown notification type for transactional email: ${type}`);
+    }
   }
 
   private async send(to: string, subject: string, html: string, text?: string): Promise<void> {

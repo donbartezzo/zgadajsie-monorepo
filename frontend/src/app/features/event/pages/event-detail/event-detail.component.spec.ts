@@ -82,6 +82,11 @@ describe('EventDetailComponent', () => {
 
   const mockChat = {
     getMessageCount: jest.fn().mockReturnValue(of({ count: 5 })),
+    disconnect: jest.fn(),
+    connect: jest.fn(),
+    onUnreadCountUpdated: jest.fn().mockReturnValue(of()),
+    getOrganizerConversations: jest.fn().mockReturnValue(of([])),
+    getUnreadSummary: jest.fn().mockReturnValue(of(new Map())),
   };
 
   const mockAuth = {
@@ -323,9 +328,10 @@ describe('EventDetailComponent', () => {
   });
 
   describe('ngOnDestroy', () => {
-    it('czyści konfigurację notifStatus', () => {
+    it('czyści konfigurację notifStatus i rozłącza chat', () => {
       component.ngOnDestroy();
       expect(mockNotifStatus.clearConfig).toHaveBeenCalled();
+      expect(mockChat.disconnect).toHaveBeenCalled();
     });
   });
 });

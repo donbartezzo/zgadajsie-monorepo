@@ -4,6 +4,7 @@ import {
   computed,
   effect,
   inject,
+  NgZone,
   OnDestroy,
   OnInit,
   signal,
@@ -62,6 +63,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   private readonly snackbar = inject(SnackbarService);
   private readonly notifStatus = inject(NotificationStatusService);
   private readonly appTitle = inject(AppTitleService);
+  private readonly ngZone = inject(NgZone);
 
   // ── Reactive citySlug from route params (reacts to navigation on reused component) ──
   readonly citySlug = toSignal(
@@ -195,7 +197,11 @@ export class EventsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.tickInterval = setInterval(() => this.nowMs.set(nowInZone().toMillis()), 60_000);
+    this.ngZone.runOutsideAngular(() => {
+      this.tickInterval = setInterval(() => {
+        this.ngZone.run(() => this.nowMs.set(nowInZone().toMillis()));
+      }, 60_000);
+    });
   }
 
   ngOnDestroy(): void {

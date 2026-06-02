@@ -1,15 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
 import { UserAvatarComponent } from '../../shared/user/ui/user-avatar/user-avatar.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { BottomOverlaysService } from '../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { NavigationService } from '../../core/services/navigation.service';
 import { CityContextService } from '../../core/services/city-context.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-bottom-nav',
-  imports: [IconComponent, ButtonComponent, UserAvatarComponent],
+  imports: [ButtonComponent, UserAvatarComponent],
   templateUrl: './bottom-nav.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'fixed bottom-0 left-1/2 z-[60] block w-full max-w-app -translate-x-1/2' },
@@ -19,6 +19,7 @@ export class BottomNavComponent {
   readonly auth = inject(AuthService);
   readonly cityContext = inject(CityContextService);
   protected readonly overlays = inject(BottomOverlaysService);
+  readonly notificationService = inject(NotificationService);
 
   readonly cityLabel = computed(() => {
     const name = this.cityContext.cityName();
@@ -31,6 +32,12 @@ export class BottomNavComponent {
   readonly cityButtonAppearance = computed(() => {
     return this.cityContext.cityName() ? 'ghost' : 'soft';
   });
+
+  readonly unreadCount = computed(() => this.notificationService.unreadCount());
+  readonly showBadge = computed(() => this.unreadCount() > 0);
+  readonly badgeText = computed(() =>
+    this.unreadCount() > 99 ? '99+' : this.unreadCount().toString(),
+  );
 
   toggleShareMenu(): void {
     this.overlays.toggle('share');

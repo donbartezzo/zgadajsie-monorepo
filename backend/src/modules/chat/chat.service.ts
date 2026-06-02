@@ -216,7 +216,15 @@ export class ChatService {
       },
     });
 
-    await this.chatNotificationService.cancelPendingForConversation(eventId, userId, otherUserId);
+    await this.chatNotificationService.onConversationRead(eventId, userId, otherUserId);
+  }
+
+  async getEventOrganizerId(eventId: string): Promise<string | null> {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { organizerId: true },
+    });
+    return event?.organizerId ?? null;
   }
 
   async getUnreadCount(eventId: string, userId: string, otherUserId: string): Promise<number> {
