@@ -105,12 +105,7 @@ describe('PushService', () => {
         wasUpdate: true,
       });
 
-      await service.notifyUser(
-        { userId: 'user-1' },
-        NotificationKind.NEW_PRIVATE_MESSAGE,
-        'T',
-        'B',
-      );
+      await service.notifyUser({ userId: 'user-1' }, NotificationKind.NEW_CHAT_MESSAGE, 'T', 'B');
 
       expect(gateway.emitToUser).toHaveBeenCalledWith(
         'user-1',

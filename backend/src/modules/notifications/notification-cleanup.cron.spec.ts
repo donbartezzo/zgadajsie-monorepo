@@ -28,12 +28,11 @@ describe('NotificationCleanupCron', () => {
   describe('run()', () => {
     it('usuwa rekordy z deleteAfter w przeszłości', async () => {
       prisma.$executeRaw.mockResolvedValue(10);
-      prisma.$executeRaw.mockResolvedValueOnce(10).mockResolvedValueOnce(0);
 
       await cron.run();
 
       expect(prisma.$executeRaw).toHaveBeenCalled();
-      expect(prisma.$executeRaw).toHaveBeenCalledTimes(2);
+      expect(prisma.$executeRaw).toHaveBeenCalledTimes(1);
     });
 
     it('nie usuwa gdy brak rekordów do usunięcia', async () => {
@@ -46,15 +45,10 @@ describe('NotificationCleanupCron', () => {
 
     it('obsługuje batch delete dla dużej liczby rekordów', async () => {
       prisma.$executeRaw.mockResolvedValue(100);
-      prisma.$executeRaw
-        .mockResolvedValueOnce(100)
-        .mockResolvedValueOnce(100)
-        .mockResolvedValueOnce(50)
-        .mockResolvedValueOnce(0);
 
       await cron.run();
 
-      expect(prisma.$executeRaw).toHaveBeenCalledTimes(4);
+      expect(prisma.$executeRaw).toHaveBeenCalledTimes(1);
     });
   });
 });

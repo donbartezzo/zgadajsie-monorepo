@@ -6,7 +6,7 @@ import { NotificationContext } from './notification-policy';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
-  let prisma: jest.Mocked<PrismaService>;
+  let prisma: any;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -24,7 +24,8 @@ describe('NotificationsService', () => {
               findMany: jest.fn(),
             },
           },
-        },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
       ],
     }).compile();
 
@@ -75,7 +76,7 @@ describe('NotificationsService', () => {
       prisma.notification.create.mockResolvedValue({
         id: 'notif1',
         userId: 'user1',
-        type: NotificationKind.NEW_PRIVATE_MESSAGE,
+        type: NotificationKind.NEW_CHAT_MESSAGE,
         title,
         body,
         link,
@@ -91,7 +92,7 @@ describe('NotificationsService', () => {
 
       const result1 = await service.create(
         ctx,
-        NotificationKind.NEW_PRIVATE_MESSAGE,
+        NotificationKind.NEW_CHAT_MESSAGE,
         title,
         body,
         link,
@@ -103,7 +104,7 @@ describe('NotificationsService', () => {
       prisma.notification.findFirst.mockResolvedValue({
         id: 'notif1',
         userId: 'user1',
-        type: NotificationKind.NEW_PRIVATE_MESSAGE,
+        type: NotificationKind.NEW_CHAT_MESSAGE,
         title,
         body,
         link,
@@ -119,7 +120,7 @@ describe('NotificationsService', () => {
       prisma.notification.update.mockResolvedValue({
         id: 'notif1',
         userId: 'user1',
-        type: NotificationKind.NEW_PRIVATE_MESSAGE,
+        type: NotificationKind.NEW_CHAT_MESSAGE,
         title,
         body,
         link,
@@ -135,7 +136,7 @@ describe('NotificationsService', () => {
 
       const result2 = await service.create(
         ctx,
-        NotificationKind.NEW_PRIVATE_MESSAGE,
+        NotificationKind.NEW_CHAT_MESSAGE,
         title,
         body,
         link,
@@ -154,7 +155,7 @@ describe('NotificationsService', () => {
       prisma.notification.update.mockResolvedValue({
         id: 'notif1',
         userId: 'user1',
-        type: NotificationKind.NEW_PRIVATE_MESSAGE,
+        type: NotificationKind.NEW_CHAT_MESSAGE,
         title,
         body,
         link,
@@ -166,18 +167,20 @@ describe('NotificationsService', () => {
         relevanceUntil: null,
         deleteAfter: new Date(),
         relatedEventId: 'event1',
+        pushSentAt: null,
+        emailSentAt: null,
       });
 
       const result3 = await service.create(
         ctx,
-        NotificationKind.NEW_PRIVATE_MESSAGE,
+        NotificationKind.NEW_CHAT_MESSAGE,
         title,
         body,
         link,
       );
       expect(result3.wasUpdate).toBe(true);
       expect(prisma.notification.update).toHaveBeenCalledTimes(2);
-      expect(result3.notification.aggregateCount).toBe(3);
+      expect((result3.notification as any).aggregateCount).toBe(3);
     });
   });
 

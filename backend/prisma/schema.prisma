@@ -562,7 +562,6 @@ enum NotificationKind {
   REPRIMAND
   ANNOUNCEMENT
   PAYMENT_CANCELLED
-  NEW_PRIVATE_MESSAGE
 }
 
 enum AnnouncementPriority {

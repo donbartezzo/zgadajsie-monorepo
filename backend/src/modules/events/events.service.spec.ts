@@ -90,6 +90,7 @@ function makeEvent(overrides: Record<string, unknown> = {}) {
     lotteryExecutedAt: null,
     roleConfig: null,
     citySlug: 'warszawa',
+    city: { id: 'city1', slug: 'warszawa' },
     ...overrides,
   };
 }
