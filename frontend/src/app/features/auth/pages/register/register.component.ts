@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, signal, afterNextRender } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  afterNextRender,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -93,7 +100,11 @@ import { APP_BRAND } from '@zgadajsie/shared';
 
         @if (turnstile.isEnabled()) {
           <div class="mb-4">
-            <div id="turnstile-widget" class="flex justify-center"></div>
+            <div
+              id="turnstile-widget"
+              data-testid="turnstile-widget"
+              class="flex justify-center"
+            ></div>
           </div>
         }
 
@@ -143,12 +154,14 @@ import { APP_BRAND } from '@zgadajsie/shared';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnDestroy {
   protected readonly APP_BRAND = APP_BRAND;
   private readonly auth = inject(AuthService);
   private readonly navigation = inject(NavigationService);
   private readonly snackbar = inject(SnackbarService);
   protected readonly turnstile = inject(TurnstileService);
+
+  private readonly widgetId = '#turnstile-widget';
 
   displayName = '';
   email = '';
@@ -162,9 +175,15 @@ export class RegisterComponent {
   constructor() {
     afterNextRender(() => {
       if (this.turnstile.isEnabled()) {
-        void this.turnstile.initWidget('#turnstile-widget');
+        void this.turnstile.initWidget(this.widgetId);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.turnstile.isEnabled()) {
+      this.turnstile.removeWidget(this.widgetId);
+    }
   }
 
   async onSubmit(): Promise<void> {
@@ -181,13 +200,11 @@ export class RegisterComponent {
       this.navigation.navigateToAuthLogin();
       return;
     }
+    // Captcha best-effort: dołączamy token jeśli jest dostępny, ale jego brak
+    // nigdy nie blokuje wysyłki (np. gdy widget się nie załadował).
     const captchaToken = this.turnstile.isEnabled()
-      ? this.turnstile.getToken('#turnstile-widget')
+      ? this.turnstile.getToken(this.widgetId)
       : undefined;
-    if (this.turnstile.isEnabled() && !captchaToken) {
-      this.snackbar.error('Weryfikacja captcha nie powiodła się.');
-      return;
-    }
     this.loading.set(true);
     try {
       await this.auth.register({

@@ -141,14 +141,14 @@ describe('ContactService', () => {
       );
     });
 
-    it('wymusza captcha dla anonimowego użytkownika', async () => {
+    it('przepuszcza anonima bez captchaToken (degradacja gdy captcha niedostępna)', async () => {
       const dto = { ...baseDto, captchaToken: undefined };
+      (prisma.contactMessage.count as jest.Mock).mockResolvedValue(0);
+      (prisma.contactMessage.create as jest.Mock).mockResolvedValue({ id: '1' });
 
-      await expect(service.submitContact(dto, null, '127.0.0.1')).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(service.submitContact(dto, null, '127.0.0.1')).resolves.toBeDefined();
 
-      expect(prisma.contactMessage.create).not.toHaveBeenCalled();
+      expect(prisma.contactMessage.create).toHaveBeenCalled();
     });
 
     it('odrzuca rate-limit jeśli przekroczony limit (3/1h)', async () => {

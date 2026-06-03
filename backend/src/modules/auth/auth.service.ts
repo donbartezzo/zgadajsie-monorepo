@@ -50,16 +50,19 @@ export class AuthService {
       }
     }
 
-    if (featureFlags.enableTurnstileCaptcha) {
-      if (!dto.captchaToken) {
-        throw new ForbiddenException('Wymagana weryfikacja captcha');
-      }
-
+    // Captcha jest best-effort: weryfikujemy tylko gdy klient dostarczył token.
+    // Gdy token jest nieobecny (captcha nie załadowała się po stronie klienta),
+    // przepuszczamy formularz — ochronę zapewniają honeypot, time-trap i rate-limit.
+    if (featureFlags.enableTurnstileCaptcha && dto.captchaToken) {
       const isValid = await this.verifyTurnstile(dto.captchaToken, ipAddress);
       if (!isValid) {
         this.logger.warn(`Invalid Turnstile token for registration: ${dto.email}`);
         throw new ForbiddenException('Weryfikacja captcha nie powiodła się');
       }
+    } else if (featureFlags.enableTurnstileCaptcha) {
+      this.logger.warn(
+        `Registration without captcha token (captcha unavailable on client): ${dto.email} from ${ipAddress}`,
+      );
     }
 
     const existing = await this.prisma.user.findUnique({

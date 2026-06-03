@@ -196,17 +196,23 @@ describe('AuthService', () => {
       expect(hoursUntilExpiry).toBeLessThan(25);
     });
 
-    it('odrzuca rejestrację bez captchaToken', async () => {
-      await expect(
-        service.register(
-          {
-            email: 'user@example.com',
-            password: 'Test123!',
-            displayName: 'User',
-          },
-          '127.0.0.1',
-        ),
-      ).rejects.toThrow(ForbiddenException);
+    it('przepuszcza rejestrację bez captchaToken (degradacja gdy captcha niedostępna)', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
+      jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
+
+      const result = await service.register(
+        {
+          email: 'user@example.com',
+          password: 'Test123!',
+          displayName: 'User',
+        },
+        '127.0.0.1',
+      );
+
+      expect(prisma.user.create as jest.Mock).toHaveBeenCalled();
+      expect(email.sendActivationEmail as jest.Mock).toHaveBeenCalled();
+      expect(result.message).toBeDefined();
     });
 
     it('odrzuca rejestrację przy niepoprawnej captcha', async () => {

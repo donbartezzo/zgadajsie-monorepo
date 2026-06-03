@@ -62,17 +62,20 @@ export class ContactService {
       }
     }
 
-    // Turnstile verification for anonymous users only (if enabled)
-    if (featureFlags.enableTurnstileCaptcha && !userId) {
-      if (!dto.captchaToken) {
-        throw new ForbiddenException('Wymagana weryfikacja captcha');
-      }
-
+    // Turnstile verification for anonymous users only (if enabled).
+    // Captcha jest best-effort: weryfikujemy tylko gdy klient dostarczył token.
+    // Gdy token jest nieobecny (captcha nie załadowała się), przepuszczamy —
+    // ochronę zapewniają honeypot, time-trap oraz rate-limit.
+    if (featureFlags.enableTurnstileCaptcha && !userId && dto.captchaToken) {
       const isValid = await this.verifyTurnstile(dto.captchaToken, ipAddress);
       if (!isValid) {
         this.logger.warn(`Invalid Turnstile token: ${dto.email} from ${ipAddress}`);
         throw new ForbiddenException('Weryfikacja captcha nie powiodła się');
       }
+    } else if (featureFlags.enableTurnstileCaptcha && !userId) {
+      this.logger.warn(
+        `Contact without captcha token (captcha unavailable on client): ${dto.email} from ${ipAddress}`,
+      );
     }
 
     // Rate-limit check

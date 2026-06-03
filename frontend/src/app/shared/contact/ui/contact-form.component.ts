@@ -7,6 +7,7 @@ import {
   computed,
   effect,
   afterNextRender,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -121,7 +122,11 @@ import { ContactSource } from '@zgadajsie/shared';
             <!-- Turnstile Captcha (only for anonymous users) -->
             @if (showCaptcha()) {
               <div class="mb-6">
-                <div id="turnstile-widget" class="flex justify-center"></div>
+                <div
+                  id="turnstile-widget"
+                  data-testid="turnstile-widget"
+                  class="flex justify-center"
+                ></div>
               </div>
             }
 
@@ -164,7 +169,7 @@ import { ContactSource } from '@zgadajsie/shared';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ContactFormComponent {
+export class ContactFormComponent implements OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly http = inject(HttpClient);
   private readonly snackbar = inject(SnackbarService);
@@ -180,6 +185,8 @@ export class ContactFormComponent {
 
   readonly currentUser = this.authService.currentUser;
   readonly isLoggedIn = this.authService.isLoggedIn;
+
+  private readonly widgetId = '#turnstile-widget';
 
   readonly showCaptcha = computed(() => !this.isLoggedIn() && this.turnstile.isEnabled());
 
@@ -205,9 +212,15 @@ export class ContactFormComponent {
 
     afterNextRender(() => {
       if (this.showCaptcha()) {
-        void this.turnstile.initWidget('#turnstile-widget');
+        void this.turnstile.initWidget(this.widgetId);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.showCaptcha()) {
+      this.turnstile.removeWidget(this.widgetId);
+    }
   }
 
   onSubmit(): void {
@@ -260,6 +273,6 @@ export class ContactFormComponent {
     if (this.isLoggedIn()) {
       return undefined;
     }
-    return this.turnstile.getToken('#turnstile-widget');
+    return this.turnstile.getToken(this.widgetId);
   }
 }
