@@ -30,6 +30,7 @@ import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layo
 import { nowInZone, daysFromNow, toZonedDateTime, formatDateNoYear } from '@zgadajsie/shared';
 import { NotificationStatusService } from '../../../../core/services/notification-status.service';
 import { CitySearchComponent } from '../../../../shared/city/city-search/city-search.component';
+import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 
 interface EventGroup {
   key: string;
@@ -64,6 +65,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   private readonly notifStatus = inject(NotificationStatusService);
   private readonly appTitle = inject(AppTitleService);
   private readonly ngZone = inject(NgZone);
+  private readonly overlays = inject(BottomOverlaysService);
 
   // ── Reactive citySlug from route params (reacts to navigation on reused component) ──
   readonly citySlug = toSignal(
@@ -298,6 +300,10 @@ export class EventsComponent implements OnInit, OnDestroy {
     this.citySubscriptionService.isSubscribed(cityId).subscribe({
       next: (res) => this.citySubscribed.set(res.subscribed),
     });
+  }
+
+  openContact(): void {
+    this.overlays.openContact(this.citySlug());
   }
 
   private loadCityInfo(slug: string): void {

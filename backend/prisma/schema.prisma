@@ -51,6 +51,7 @@ model User {
   reprimandsGiven             Reprimand[]             @relation("ReprimandFrom")
   reprimandsReceived          Reprimand[]             @relation("ReprimandTo")
   socialAccounts              SocialAccount[]
+  contactMessages             ContactMessage[]
 
   @@index([accountType])
 }
@@ -492,6 +493,26 @@ model CronLog {
   @@index([createdAt])
 }
 
+model ContactMessage {
+  id              String        @id @default(uuid())
+  referenceNumber String?
+  name            String
+  email           String
+  message         String
+  userId          String?
+  source          ContactSource @default(CONTACT_PAGE)
+  citySlug        String?
+  ipHash          String?
+  emailSentAt     DateTime?
+  emailSentCount  Int           @default(0)
+  createdAt       DateTime      @default(now())
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([email, createdAt])
+  @@index([userId, createdAt])
+  @@index([referenceNumber])
+}
+
 enum Role {
   USER
   ADMIN
@@ -598,4 +619,9 @@ enum ScheduledJobStatus {
   DONE
   FAILED
   CANCELLED
+}
+
+enum ContactSource {
+  CONTACT_PAGE
+  CITY_EVENTS
 }

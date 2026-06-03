@@ -1,15 +1,9 @@
-import { Body, Controller, Get, Post, HttpCode, HttpStatus, Logger } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { EmailService } from '../modules/notifications/email.service';
 
 @Controller()
 export class AppController {
-  private readonly logger = new Logger(AppController.name);
-
-  constructor(
-    private readonly appService: AppService,
-    private readonly emailService: EmailService,
-  ) {}
+  constructor(private readonly appService: AppService) {}
 
   @Get()
   getData() {
@@ -24,27 +18,5 @@ export class AppController {
   @Get('config')
   getClientConfig() {
     return this.appService.getClientConfig();
-  }
-
-  @Post('contact')
-  @HttpCode(HttpStatus.OK)
-  async submitContact(@Body() contactData: { name: string; email: string; message: string }) {
-    const { name, email, message } = contactData;
-
-    if (!name?.trim() || !email?.trim() || !message?.trim()) {
-      throw new Error('Wszystkie pola formularza sa wymagane');
-    }
-
-    if (!email.includes('@')) {
-      throw new Error('Nieprawidłowy adres email');
-    }
-
-    try {
-      await this.emailService.sendContactEmail(name, email, message);
-      return { success: true, message: 'Wiadomość została wysłana pomyślnie' };
-    } catch (error) {
-      this.logger.error(`Contact form error: ${error.message}`);
-      throw new Error('Wystąpił błąd podczas wysyłania wiadomości. Spróbuj ponownie.');
-    }
   }
 }

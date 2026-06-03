@@ -26,6 +26,7 @@ import { SlotModule } from '../modules/slots/slot.module';
 import { EventSeriesModule } from '../modules/event-series/event-series.module';
 import { OrganizerModule } from '../modules/organizer/organizer.module';
 import { FakeUsersModule } from '../modules/fake-users/fake-users.module';
+import { ContactModule } from '../modules/contact/contact.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { FakeUsersModule } from '../modules/fake-users/fake-users.module';
     CitySubscriptionsModule,
     FakeUsersModule,
     SlotModule,
+    ContactModule,
   ],
   controllers: [AppController],
   providers: [AppService],

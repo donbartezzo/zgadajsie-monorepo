@@ -10,6 +10,7 @@ export interface FeatureFlags {
   enableEventSeries: boolean;
   enableFakeUsers: boolean;
   enableEmails: boolean;
+  enableTurnstileCaptcha: boolean;
 }
 
 export const DEV_FEATURE_FLAGS: FeatureFlags = {
@@ -20,7 +21,8 @@ export const DEV_FEATURE_FLAGS: FeatureFlags = {
   enableOnlinePayments: false,
   enableEventSeries: true,
   enableFakeUsers: true,
-  enableEmails: false,
+  enableEmails: true,
+  enableTurnstileCaptcha: true,
 };
 
 export const PRODUCTION_FEATURE_FLAGS: FeatureFlags = {
@@ -32,4 +34,5 @@ export const PRODUCTION_FEATURE_FLAGS: FeatureFlags = {
   enableEventSeries: true,
   enableFakeUsers: true,
   enableEmails: true,
+  enableTurnstileCaptcha: true,
 };

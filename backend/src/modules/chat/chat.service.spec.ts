@@ -502,12 +502,28 @@ describe('ChatService', () => {
           senderId: 'user2',
         });
       // Mock dla PrivateChatReadReceipt - brak receipt dla user1 (liczy wszystkie), jest dla user2
-      (prisma.privateChatReadReceipt.findUnique as jest.Mock)
-        .mockResolvedValueOnce(null) // user1 - brak receipt
-        .mockResolvedValueOnce({ lastReadAt: new Date() }); // user2 - ma receipt
-      (prisma.privateChatMessage.count as jest.Mock)
-        .mockResolvedValueOnce(2) // user1 - wszystkie wiadomości
-        .mockResolvedValueOnce(0); // user2 - 0 nowych po lastReadAt
+      (prisma.privateChatReadReceipt.findUnique as jest.Mock).mockImplementation(
+        ({ where }: { where: any }) => {
+          if (where.eventId_userId_otherUserId.otherUserId === 'user1') {
+            return Promise.resolve(null); // user1 - brak receipt
+          }
+          if (where.eventId_userId_otherUserId.otherUserId === 'user2') {
+            return Promise.resolve({ lastReadAt: new Date() }); // user2 - ma receipt
+          }
+          return Promise.resolve(null);
+        },
+      );
+      (prisma.privateChatMessage.count as jest.Mock).mockImplementation(
+        ({ where }: { where: any }) => {
+          if (where.senderId === 'user1' && !where.createdAt) {
+            return Promise.resolve(2); // user1 - wszystkie wiadomości
+          }
+          if (where.senderId === 'user2' && where.createdAt) {
+            return Promise.resolve(0); // user2 - 0 nowych po lastReadAt
+          }
+          return Promise.resolve(0);
+        },
+      );
 
       const result = await service.getOrganizerConversations('event1', 'org1');
 

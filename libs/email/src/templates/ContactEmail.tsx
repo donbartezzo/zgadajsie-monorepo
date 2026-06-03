@@ -6,6 +6,7 @@ import { Footer } from '../components/Footer';
 import { APP_BRAND } from '../constants/brand';
 import { EMAIL_THEME } from '../theme';
 import type { ContactEmailProps } from '../types/templates';
+import { ContactSource } from '../../../src/lib/enums/contact-source.enum';
 
 const c = EMAIL_THEME.colors;
 
@@ -13,11 +14,21 @@ export default function ContactEmail({
   senderName = 'Jan Kowalski',
   senderEmail = 'jan@example.com',
   message = 'Przykładowa wiadomość',
+  source = ContactSource.CONTACT_PAGE,
+  citySlug,
+  referenceNumber,
 }: ContactEmailProps) {
+  const sourceLabel =
+    source === ContactSource.CONTACT_PAGE ? 'Strona kontaktowa' : 'Lista wydarzeń miasta';
+
   return (
     <Html lang="pl">
       <Head />
-      <Preview>Wiadomość z formularza kontaktowego od {senderName}</Preview>
+      <Preview>
+        {referenceNumber
+          ? `[${referenceNumber}] Wiadomość z formularza kontaktowego od ${senderName}`
+          : `Wiadomość z formularza kontaktowego od ${senderName}`}
+      </Preview>
       <Body style={{ backgroundColor: c.neutral[50], fontFamily: 'sans-serif', margin: 0 }}>
         <Container
           style={{
@@ -49,6 +60,20 @@ export default function ContactEmail({
             <Callout variant="info" label="Wiadomość">
               {message}
             </Callout>
+            <Divider />
+            {sourceLabel && (
+              <Text
+                style={{
+                  margin: '12px 0 0 0',
+                  fontSize: '12px',
+                  color: c.neutral[500],
+                }}
+              >
+                {referenceNumber && ` Numer referencyjny: ${referenceNumber}`}
+                <br />
+                Źródło: {sourceLabel} {citySlug && ` ${citySlug}`}
+              </Text>
+            )}
           </Section>
           <Footer />
         </Container>

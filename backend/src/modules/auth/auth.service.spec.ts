@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
@@ -6,6 +11,7 @@ import { EmailService } from '../notifications/email.service';
 import { AuthService } from './auth.service';
 import { SocialProvider } from '@zgadajsie/shared';
 import * as passwordUtil from '../../common/utils/password.util';
+import { featureFlags } from '../../common/config/feature-flags';
 
 function buildPrismaMock() {
   return {
@@ -61,6 +67,7 @@ describe('AuthService', () => {
   let prisma: ReturnType<typeof buildPrismaMock>;
   let jwt: ReturnType<typeof buildJwtMock>;
   let email: ReturnType<typeof buildEmailMock>;
+  let originalEnableTurnstileCaptcha: boolean;
 
   beforeEach(() => {
     prisma = buildPrismaMock();
@@ -72,7 +79,18 @@ describe('AuthService', () => {
       buildConfigMock() as ConfigService,
       email as EmailService,
     );
+    jest.spyOn(global, 'fetch').mockResolvedValue({
+      json: async () => ({ success: true }),
+    } as Response);
     jest.clearAllMocks();
+
+    originalEnableTurnstileCaptcha = featureFlags.enableTurnstileCaptcha;
+    (featureFlags as unknown as Record<string, unknown>).enableTurnstileCaptcha = true;
+  });
+
+  afterEach(() => {
+    (featureFlags as unknown as Record<string, unknown>).enableTurnstileCaptcha =
+      originalEnableTurnstileCaptcha;
   });
 
   describe('register()', () => {
@@ -81,11 +99,15 @@ describe('AuthService', () => {
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
       jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
 
-      const result = await service.register({
-        email: 'user@example.com',
-        password: 'Test123!',
-        displayName: 'Test User',
-      });
+      const result = await service.register(
+        {
+          email: 'user@example.com',
+          password: 'Test123!',
+          displayName: 'Test User',
+          captchaToken: 'valid-token',
+        },
+        '127.0.0.1',
+      );
 
       expect(prisma.user.create as jest.Mock).toHaveBeenCalled();
       expect(email.sendActivationEmail as jest.Mock).toHaveBeenCalled();
@@ -96,7 +118,15 @@ describe('AuthService', () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(baseUser);
 
       await expect(
-        service.register({ email: 'user@example.com', password: 'Test123!', displayName: 'X' }),
+        service.register(
+          {
+            email: 'user@example.com',
+            password: 'Test123!',
+            displayName: 'X',
+            captchaToken: 'valid-token',
+          },
+          '127.0.0.1',
+        ),
       ).rejects.toThrow(ConflictException);
     });
 
@@ -105,11 +135,15 @@ describe('AuthService', () => {
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
       const hashSpy = jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed-value');
 
-      await service.register({
-        email: 'user@example.com',
-        password: 'PlainText123!',
-        displayName: 'User',
-      });
+      await service.register(
+        {
+          email: 'user@example.com',
+          password: 'PlainText123!',
+          displayName: 'User',
+          captchaToken: 'valid-token',
+        },
+        '127.0.0.1',
+      );
 
       expect(hashSpy).toHaveBeenCalledWith('PlainText123!');
       const createCall = (prisma.user.create as jest.Mock).mock.calls[0][0];
@@ -121,11 +155,15 @@ describe('AuthService', () => {
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
       jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
 
-      await service.register({
-        email: 'user@example.com',
-        password: 'Test123!',
-        displayName: 'User',
-      });
+      await service.register(
+        {
+          email: 'user@example.com',
+          password: 'Test123!',
+          displayName: 'User',
+          captchaToken: 'valid-token',
+        },
+        '127.0.0.1',
+      );
 
       expect(email.sendActivationEmail as jest.Mock).toHaveBeenCalledWith(
         baseUser.email,
@@ -139,11 +177,15 @@ describe('AuthService', () => {
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
       jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
 
-      await service.register({
-        email: 'user@example.com',
-        password: 'Test123!',
-        displayName: 'User',
-      });
+      await service.register(
+        {
+          email: 'user@example.com',
+          password: 'Test123!',
+          displayName: 'User',
+          captchaToken: 'valid-token',
+        },
+        '127.0.0.1',
+      );
 
       const createCall = (prisma.user.create as jest.Mock).mock.calls[0][0];
       expect(createCall.data.activationToken).toBeDefined();
@@ -152,6 +194,73 @@ describe('AuthService', () => {
       const hoursUntilExpiry = (expires.getTime() - Date.now()) / (1000 * 60 * 60);
       expect(hoursUntilExpiry).toBeGreaterThan(23);
       expect(hoursUntilExpiry).toBeLessThan(25);
+    });
+
+    it('odrzuca rejestrację bez captchaToken', async () => {
+      await expect(
+        service.register(
+          {
+            email: 'user@example.com',
+            password: 'Test123!',
+            displayName: 'User',
+          },
+          '127.0.0.1',
+        ),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('odrzuca rejestrację przy niepoprawnej captcha', async () => {
+      jest.spyOn(global, 'fetch').mockResolvedValue({
+        json: async () => ({ success: false }),
+      } as Response);
+
+      await expect(
+        service.register(
+          {
+            email: 'user@example.com',
+            password: 'Test123!',
+            displayName: 'User',
+            captchaToken: 'invalid-token',
+          },
+          '127.0.0.1',
+        ),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('po cichu odrzuca rejestrację po wypełnieniu honeypot', async () => {
+      const result = await service.register(
+        {
+          email: 'user@example.com',
+          password: 'Test123!',
+          displayName: 'User',
+          captchaToken: 'valid-token',
+          website: 'bot-site',
+        },
+        '127.0.0.1',
+      );
+
+      expect(prisma.user.create as jest.Mock).not.toHaveBeenCalled();
+      expect(result.message).toBeDefined();
+    });
+
+    it('rejestruje bez captcha gdy flaga enableTurnstileCaptcha jest wyłączona', async () => {
+      (featureFlags as unknown as Record<string, unknown>).enableTurnstileCaptcha = false;
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
+      jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
+
+      const result = await service.register(
+        {
+          email: 'user@example.com',
+          password: 'Test123!',
+          displayName: 'Test User',
+        },
+        '127.0.0.1',
+      );
+
+      expect(prisma.user.create as jest.Mock).toHaveBeenCalled();
+      expect(email.sendActivationEmail as jest.Mock).toHaveBeenCalled();
+      expect(result.message).toBeDefined();
     });
   });
 

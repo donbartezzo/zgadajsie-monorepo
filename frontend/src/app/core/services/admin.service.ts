@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { User, PaginatedPayments } from '../../shared/types';
+import { User, PaginatedPayments, ContactMessagesResponse } from '../../shared/types';
 import { DictionaryItem } from '@zgadajsie/shared';
 
 interface PaginatedUsers {
@@ -105,6 +105,23 @@ export class AdminService {
 
   verifyUserByOrganizer(targetUserId: string): Observable<User> {
     return this.http.patch<User>(`${this.apiUrl}/users/${targetUserId}/verify-by-organizer`, {});
+  }
+
+  getContactMessages(page = 1, limit = 20): Observable<ContactMessagesResponse> {
+    return this.http.get<ContactMessagesResponse>(`${this.apiUrl}/contact/admin/messages`, {
+      params: { page, limit },
+    });
+  }
+
+  resendContactEmail(id: string): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(
+      `${this.apiUrl}/contact/admin/messages/${id}/resend`,
+      {},
+    );
+  }
+
+  deleteContactMessage(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/contact/admin/messages/${id}`);
   }
 }
 

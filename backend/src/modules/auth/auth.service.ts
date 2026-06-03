@@ -3,6 +3,8 @@ import {
   ConflictException,
   UnauthorizedException,
   BadRequestException,
+  ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { MILLISECONDS_PER_HOUR, SocialProvider } from '@zgadajsie/shared';
 import { hoursFromNow } from '../../common/utils/date.util';
@@ -14,9 +16,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { featureFlags } from '../../common/config/feature-flags';
+
+const TIME_TRAP_MIN_SECONDS = 3;
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -24,7 +31,37 @@ export class AuthService {
     private emailService: EmailService,
   ) {}
 
-  async register(dto: RegisterDto) {
+  async register(dto: RegisterDto, ipAddress: string) {
+    if (dto.website || dto.company) {
+      this.logger.warn(`Registration honeypot triggered: ${dto.email} from ${ipAddress}`);
+      return { message: 'Konto utworzone. Sprawdź email, aby aktywować konto.' };
+    }
+
+    if (dto.formRenderedAt) {
+      const renderedAt = new Date(dto.formRenderedAt);
+      const now = new Date();
+      const diffSeconds = (now.getTime() - renderedAt.getTime()) / 1000;
+
+      if (diffSeconds < TIME_TRAP_MIN_SECONDS) {
+        this.logger.warn(
+          `Registration time-trap triggered: ${dto.email} from ${ipAddress} (${diffSeconds}s)`,
+        );
+        throw new BadRequestException('Formularz został wypełniony zbyt szybko');
+      }
+    }
+
+    if (featureFlags.enableTurnstileCaptcha) {
+      if (!dto.captchaToken) {
+        throw new ForbiddenException('Wymagana weryfikacja captcha');
+      }
+
+      const isValid = await this.verifyTurnstile(dto.captchaToken, ipAddress);
+      if (!isValid) {
+        this.logger.warn(`Invalid Turnstile token for registration: ${dto.email}`);
+        throw new ForbiddenException('Weryfikacja captcha nie powiodła się');
+      }
+    }
+
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -235,5 +272,29 @@ export class AuthService {
     ]);
 
     return { accessToken, refreshToken };
+  }
+
+  private async verifyTurnstile(token: string, remoteIp: string): Promise<boolean> {
+    const secret = this.configService.getOrThrow<string>('TURNSTILE_SECRET_KEY');
+
+    try {
+      const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          secret,
+          response: token,
+          remoteip: remoteIp,
+        }),
+      });
+
+      const result = await response.json();
+      return result.success === true;
+    } catch (error) {
+      this.logger.error(`Turnstile verification error: ${error.message}`);
+      return false;
+    }
   }
 }

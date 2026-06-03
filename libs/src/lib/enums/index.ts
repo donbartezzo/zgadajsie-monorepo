@@ -18,3 +18,4 @@ export * from './withdrawn-by.enum';
 export * from './account-type.enum';
 export * from './gender.enum';
 export * from './scheduled-job-status.enum';
+export * from './contact-source.enum';

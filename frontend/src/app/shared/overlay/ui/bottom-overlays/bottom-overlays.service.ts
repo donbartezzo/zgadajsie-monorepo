@@ -21,6 +21,7 @@ export type OverlayType =
   | 'enrollmentDetails'
   | 'navigation'
   | 'cityOptions'
+  | 'contact'
   | null;
 
 export interface JoinWizardConfig {
@@ -75,6 +76,9 @@ export class BottomOverlaysService {
     { label: string; color?: SemanticColor } | undefined
   >(undefined);
   readonly enrollmentActionButton = this.enrollmentActionButtonSignal.asReadonly();
+
+  private readonly contactCitySlugSignal = signal<string | null>(null);
+  readonly contactCitySlug = this.contactCitySlugSignal.asReadonly();
 
   readonly active = this.activeSignal.asReadonly();
   readonly event = this.eventSignal.asReadonly();
@@ -237,6 +241,11 @@ export class BottomOverlaysService {
 
   handleEnrollmentActionClicked(): void {
     this.enrollmentActionCallback?.();
+  }
+
+  openContact(citySlug?: string): void {
+    this.contactCitySlugSignal.set(citySlug || null);
+    this.open('contact');
   }
 
   clearCallbacks(): void {

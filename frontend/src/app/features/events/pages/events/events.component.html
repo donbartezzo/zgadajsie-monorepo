@@ -20,9 +20,11 @@
     <app-empty-state icon="x" [title]="'Błąd'" [message]="_error"></app-empty-state>
   } @else if (_events.length === 0) {
     <app-empty-state
-      icon="calendar"
-      title="Brak wydarzeń"
-      message="Nie znaleziono żadnych nadchodzących wydarzeń."
+      icon="x-circle"
+      title="Brak wydarzeń w tym tygodniu"
+      message="W najbliższych 7 dniach nie zaplanowano żadnych wydarzeń w mieście {{
+        cityName()
+      }}. Sprawdź ponownie później lub rozważ organizację własnego wydarzenia."
     ></app-empty-state>
   } @else {
     <div class="space-y-5">
@@ -55,6 +57,27 @@
           </div>
         </div>
       }
+    </div>
+  }
+
+  @if (!_isLoading) {
+    <!-- Organizer CTA -->
+    <div
+      class="mt-6 rounded-2xl shadow-xs hover:shadow-md transition-shadow duration-200 border border-success-200 bg-success-50 p-5 text-center"
+    >
+      <p class="text-sm font-semibold text-neutral-900">Współtwórz lokalną społeczność sportową</p>
+      <p class="mt-1.5 text-xs leading-normal text-neutral-600">
+        Dołącz do lokalnej społeczności i miej realny wpływ na to, jak wygląda aktywność sportowa w Twoim otoczeniu.
+        Organizuj wydarzenia, pomagaj rozwijać platformę i docierać do nowych osób, a także współpracuj z lokalnymi
+        obiektami, trenerami i partnerami. Wybierz sposób zaangażowania, który najbardziej Ci odpowiada - każda
+        inicjatywa ma znaczenie. Zapewniamy narzędzia, wsparcie i społeczność, która łączy ludzi poprzez sport.
+      </p>
+      <button
+        (click)="openContact()"
+        class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-success-500 hover:bg-success-600 text-white text-sm font-medium transition-colors"
+      >
+        <span>Skontaktuj się z nami</span>
+      </button>
     </div>
   }
 </section>

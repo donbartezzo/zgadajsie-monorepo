@@ -8,6 +8,8 @@ import { MyParticipationDetailsOverlayComponent } from '../../../../features/eve
 import { OrganizerActionsOverlayComponent } from '../../../../features/event/overlays/organizer-actions-overlay.component';
 import { CancelPaymentOverlayComponent } from '../../../../features/organizer/overlays/cancel-payment-overlay.component';
 import { EventStatusBarDetailsOverlayComponent } from '../../../../features/event/ui/event-status-bars/event-status-bar-details-overlay/event-status-bar-details-overlay.component';
+import { NotificationOverlayComponent } from '../../../layouts/page-layout/notification/notification-overlay/notification-overlay.component';
+import { ContactOverlayComponent } from '../../../contact/ui/contact-overlay.component';
 import { BottomOverlaysService } from './bottom-overlays.service';
 
 @Component({
@@ -22,6 +24,8 @@ import { BottomOverlaysService } from './bottom-overlays.service';
     OrganizerActionsOverlayComponent,
     CancelPaymentOverlayComponent,
     EventStatusBarDetailsOverlayComponent,
+    NotificationOverlayComponent,
+    ContactOverlayComponent,
   ],
   templateUrl: './bottom-overlays.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

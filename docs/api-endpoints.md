@@ -190,6 +190,31 @@ Kontroler announcement używa mieszanych ścieżek bez wspólnego prefixu kontro
 
 - `GET /activity-rank/me` - `auth`
 
+## Contact (`/api/contact`)
+
+- `POST /contact` - publiczny endpoint formularza kontaktowego
+  - **Ochrona przed botami:**
+    - Honeypot fields (`website`, `company`) - ciche odrzucenie jeśli niepuste
+    - Time-trap (`formRenderedAt`) - odrzucenie jeśli czas wypełnienia < 3 sekundy
+    - Turnstile captcha - wymagany dla niezalogowanych użytkowników (weryfikacja przez Cloudflare)
+    - Rate-limiting - 3 zgłoszenia na godzinę per user/email+ipHash
+  - **Request body:**
+    - `name: string` (required)
+    - `email: string` (required, valid email)
+    - `message: string` (required, 10-5000 znaków)
+    - `source: 'CONTACT_PAGE' | 'CITY_EVENTS'` (required)
+    - `citySlug?: string` (optional)
+    - `captchaToken?: string` (required dla anonimowych)
+    - `website?: string` (honeypot, musi być puste)
+    - `company?: string` (honeypot, musi być puste)
+    - `formRenderedAt: string` (ISO timestamp, do time-trap)
+  - **Response codes:**
+    - `200` - sukces (nawet dla honeypot - ciche odrzucenie)
+    - `400` - błąd walidacji DTO
+    - `403` - weryfikacja captcha nieudana
+    - `429` - przekroczony limit zgłoszeń
+  - **Throttling:** 3 żądania na minutę per IP (punktowy `@Throttle` dekorator)
+
 ## Event series (`/api/event-series`)
 
 - `POST /event-series` - `auth + active + feature:enableEventSeries` - tworzy serię i generuje bufor 30 dni

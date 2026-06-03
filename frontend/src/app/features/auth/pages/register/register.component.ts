@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, afterNextRender } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -6,6 +6,7 @@ import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
+import { TurnstileService } from '../../../../core/services/turnstile.service';
 import { APP_BRAND } from '@zgadajsie/shared';
 
 @Component({
@@ -90,6 +91,31 @@ import { APP_BRAND } from '@zgadajsie/shared';
           />
         </div>
 
+        @if (turnstile.isEnabled()) {
+          <div class="mb-4">
+            <div id="turnstile-widget" class="flex justify-center"></div>
+          </div>
+        }
+
+        <input
+          type="text"
+          [(ngModel)]="website"
+          name="website"
+          class="absolute left-[-9999px] aria-hidden tabindex-[-1] autocomplete-off"
+          tabindex="-1"
+          aria-hidden="true"
+          autocomplete="off"
+        />
+        <input
+          type="text"
+          [(ngModel)]="company"
+          name="company"
+          class="absolute left-[-9999px] aria-hidden tabindex-[-1] autocomplete-off"
+          tabindex="-1"
+          aria-hidden="true"
+          autocomplete="off"
+        />
+
         <div class="mt-4">
           <button
             data-testid="submit"
@@ -122,12 +148,24 @@ export class RegisterComponent {
   private readonly auth = inject(AuthService);
   private readonly navigation = inject(NavigationService);
   private readonly snackbar = inject(SnackbarService);
+  protected readonly turnstile = inject(TurnstileService);
 
   displayName = '';
   email = '';
   password = '';
   confirmPassword = '';
+  website = '';
+  company = '';
+  formRenderedAt = new Date().toISOString();
   readonly loading = signal(false);
+
+  constructor() {
+    afterNextRender(() => {
+      if (this.turnstile.isEnabled()) {
+        void this.turnstile.initWidget('#turnstile-widget');
+      }
+    });
+  }
 
   async onSubmit(): Promise<void> {
     if (this.password !== this.confirmPassword) {
@@ -138,9 +176,29 @@ export class RegisterComponent {
       this.snackbar.error('Nazwa wyświetlana musi mieć co najmniej 3 znaki');
       return;
     }
+    if (this.website || this.company) {
+      this.snackbar.success('Konto utworzone! Sprawdź email, aby aktywować konto.');
+      this.navigation.navigateToAuthLogin();
+      return;
+    }
+    const captchaToken = this.turnstile.isEnabled()
+      ? this.turnstile.getToken('#turnstile-widget')
+      : undefined;
+    if (this.turnstile.isEnabled() && !captchaToken) {
+      this.snackbar.error('Weryfikacja captcha nie powiodła się.');
+      return;
+    }
     this.loading.set(true);
     try {
-      await this.auth.register(this.email, this.password, this.displayName);
+      await this.auth.register({
+        email: this.email,
+        password: this.password,
+        displayName: this.displayName,
+        captchaToken: captchaToken ?? '',
+        website: this.website,
+        company: this.company,
+        formRenderedAt: this.formRenderedAt,
+      });
       this.snackbar.success('Konto utworzone! Sprawdź email, aby aktywować konto.');
       this.navigation.navigateToAuthLogin();
     } catch (err: unknown) {

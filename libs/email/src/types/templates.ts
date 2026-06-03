@@ -1,3 +1,5 @@
+import { ContactSource } from '../../../src/lib/enums/contact-source.enum';
+
 export interface ActivationEmailProps {
   displayName: string;
   activationLink: string;
@@ -92,6 +94,9 @@ export interface ContactEmailProps {
   senderName: string;
   senderEmail: string;
   message: string;
+  source?: ContactSource;
+  citySlug?: string;
+  referenceNumber?: string;
 }
 
 export interface OrganizerWeeklyDigestEmailProps {

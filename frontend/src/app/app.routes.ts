@@ -519,6 +519,18 @@ export const appRoutes: Route[] = [
       breadcrumb: { parent: '/admin', label: 'Panel admina' },
     },
   },
+  {
+    path: 'admin/contact-messages',
+    loadComponent: () =>
+      import('./features/admin/pages/admin-contact-messages/admin-contact-messages.component').then(
+        (m) => m.AdminContactMessagesComponent,
+      ),
+    canActivate: [adminGuard],
+    data: {
+      title: 'Wiadomości kontaktowe',
+      breadcrumb: { parent: '/admin', label: 'Panel admina' },
+    },
+  },
 
   // ── Static ──
   {

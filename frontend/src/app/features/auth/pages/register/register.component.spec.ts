@@ -4,10 +4,12 @@ import { RegisterComponent } from './register.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
+import { TurnstileService } from '../../../../core/services/turnstile.service';
 
 const mockAuth = { register: jest.fn() };
 const mockSnackbar = { success: jest.fn(), error: jest.fn() };
 const mockNavigation = { navigateToAuthLogin: jest.fn() };
+const mockTurnstile = { isEnabled: jest.fn(() => false), getToken: jest.fn() };
 
 describe('RegisterComponent', () => {
   let fixture: ComponentFixture<RegisterComponent>;
@@ -22,6 +24,7 @@ describe('RegisterComponent', () => {
         { provide: AuthService, useValue: mockAuth },
         { provide: SnackbarService, useValue: mockSnackbar },
         { provide: NavigationService, useValue: mockNavigation },
+        { provide: TurnstileService, useValue: mockTurnstile },
       ],
     }).compileComponents();
 
@@ -49,7 +52,15 @@ describe('RegisterComponent', () => {
     await component.onSubmit();
     tick();
 
-    expect(mockAuth.register).toHaveBeenCalledWith('jan@test.com', 'Pass123!', 'Jan Kowalski');
+    expect(mockAuth.register).toHaveBeenCalledWith({
+      email: 'jan@test.com',
+      password: 'Pass123!',
+      displayName: 'Jan Kowalski',
+      captchaToken: '',
+      website: '',
+      company: '',
+      formRenderedAt: component.formRenderedAt,
+    });
   }));
 
   it('odrzuca gdy hasła nie są identyczne (snackbar error)', async () => {
@@ -90,7 +101,7 @@ describe('RegisterComponent', () => {
   }));
 
   it('ustawia loading=true podczas rejestracji i false po zakończeniu', fakeAsync(async () => {
-    let resolveRegister: () => void;
+    let resolveRegister: (() => void) | undefined;
     mockAuth.register.mockReturnValue(
       new Promise<void>((resolve) => {
         resolveRegister = resolve;
@@ -102,10 +113,13 @@ describe('RegisterComponent', () => {
     component.password = 'Pass123!';
     component.confirmPassword = 'Pass123!';
     const submitPromise = component.onSubmit();
+    tick();
 
     expect(component.loading()).toBe(true);
 
-    resolveRegister!();
+    if (resolveRegister) {
+      resolveRegister();
+    }
     await submitPromise;
     tick();
 

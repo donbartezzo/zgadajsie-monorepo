@@ -15,6 +15,7 @@
     "src/**/*.spec.ts",
     "src/**/*.d.ts",
     "../libs/email/src/**/*.ts",
-    "../libs/email/src/**/*.tsx"
+    "../libs/email/src/**/*.tsx",
+    "../libs/src/**/*.ts"
   ]
 }

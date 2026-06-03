@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import React from 'react';
 import { Resend } from 'resend';
-import { APP_BRAND, formatDateTime } from '@zgadajsie/shared';
+import { APP_BRAND, formatDateTime, ContactSource } from '@zgadajsie/shared';
 import {
   ActivationEmail,
   AdminDailyReportEmail,
@@ -229,12 +229,26 @@ export class EmailService implements OnModuleInit {
     await this.send(email, `Przypomnienie – ${eventTitle}`, html, text);
   }
 
-  async sendContactEmail(name: string, email: string, message: string): Promise<void> {
-    const subject = `Formularz kontaktowy: ${name} (${email})`;
+  async sendContactEmail(
+    name: string,
+    email: string,
+    message: string,
+    source?: ContactSource,
+    citySlug?: string,
+    referenceNumber?: string,
+  ): Promise<void> {
+    const subject = `${referenceNumber ? `[${referenceNumber}] ` : ''}Wiadomość kontaktowa od ${name}`;
     const { html, text } = await renderEmail(
-      <ContactEmail senderName={name} senderEmail={email} message={message} />,
+      <ContactEmail
+        senderName={name}
+        senderEmail={email}
+        message={message}
+        source={source}
+        citySlug={citySlug}
+        referenceNumber={referenceNumber}
+      />,
     );
-    await this.send(this.fromAddress, subject, html, text);
+    await this.send(this.fromAddress, subject, html, text, email);
   }
 
   async sendOrganizerWeeklyDigest(
@@ -430,7 +444,13 @@ export class EmailService implements OnModuleInit {
     }
   }
 
-  private async send(to: string, subject: string, html: string, text?: string): Promise<void> {
+  private async send(
+    to: string,
+    subject: string,
+    html: string,
+    text?: string,
+    replyTo?: string,
+  ): Promise<void> {
     if (!featureFlags.enableEmails) {
       this.logger.log(`Email sending disabled, skipping email to ${to}: ${subject}`);
       return;
@@ -448,6 +468,7 @@ export class EmailService implements OnModuleInit {
         subject,
         html,
         text,
+        replyTo,
       });
       this.logger.log(`Email sent to ${to}: ${subject}`);
     } catch (error) {
