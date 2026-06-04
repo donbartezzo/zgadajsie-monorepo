@@ -12,6 +12,7 @@ import { SubmitContactDto } from './dto/submit-contact.dto';
 import { ContactSource } from '@prisma/client';
 import { ContactSource as SharedContactSource } from '@zgadajsie/shared';
 import { featureFlags } from '../../common/config/feature-flags';
+import { verifyTurnstile } from '../../common/utils/captcha.util';
 import { createHash } from 'crypto';
 
 const RATE_LIMIT_MAX = 3;
@@ -67,8 +68,9 @@ export class ContactService {
     // Gdy token jest nieobecny (captcha nie załadowała się), przepuszczamy —
     // ochronę zapewniają honeypot, time-trap oraz rate-limit.
     if (featureFlags.enableTurnstileCaptcha && !userId && dto.captchaToken) {
-      const isValid = await this.verifyTurnstile(dto.captchaToken, ipAddress);
-      if (!isValid) {
+      const secret = this.configService.getOrThrow<string>('TURNSTILE_SECRET_KEY');
+      const outcome = await verifyTurnstile(dto.captchaToken, ipAddress, secret, this.logger);
+      if (outcome === 'invalid') {
         this.logger.warn(`Invalid Turnstile token: ${dto.email} from ${ipAddress}`);
         throw new ForbiddenException('Weryfikacja captcha nie powiodła się');
       }
@@ -129,30 +131,6 @@ export class ContactService {
       message: 'Wiadomość została wysłana pomyślnie',
       referenceNumber,
     };
-  }
-
-  private async verifyTurnstile(token: string, remoteIp: string): Promise<boolean> {
-    const secret = this.configService.getOrThrow<string>('TURNSTILE_SECRET_KEY');
-
-    try {
-      const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          secret,
-          response: token,
-          remoteip: remoteIp,
-        }),
-      });
-
-      const result = await response.json();
-      return result.success === true;
-    } catch (error) {
-      this.logger.error(`Turnstile verification error: ${error.message}`);
-      return false;
-    }
   }
 
   private async checkRateLimit(

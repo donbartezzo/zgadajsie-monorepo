@@ -108,12 +108,13 @@ describe('ContactService', () => {
       expect(prisma.contactMessage.create).toHaveBeenCalled();
     });
 
-    it('odrzuca captcha jeśli nieudana weryfikacja dla anonima', async () => {
+    it('odrzuca captcha gdy Cloudflare jednoznacznie odrzuci token dla anonima (invalid)', async () => {
       const dto = { ...baseDto, captchaToken: 'invalid-token' };
 
       global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        json: async () => ({ success: false }),
+        ok: true,
+        status: 200,
+        json: async () => ({ success: false, 'error-codes': ['invalid-input-response'] }),
       });
 
       await expect(service.submitContact(dto, null, '127.0.0.1')).rejects.toThrow(
@@ -121,6 +122,18 @@ describe('ContactService', () => {
       );
 
       expect(prisma.contactMessage.create).not.toHaveBeenCalled();
+    });
+
+    it('NIE blokuje anonima gdy weryfikacji nie da się dokończyć (unverifiable — błąd sieci)', async () => {
+      const dto = { ...baseDto, captchaToken: 'some-token' };
+      (prisma.contactMessage.count as jest.Mock).mockResolvedValue(0);
+      (prisma.contactMessage.create as jest.Mock).mockResolvedValue({ id: '1' });
+
+      global.fetch = jest.fn().mockRejectedValue(new Error('getaddrinfo ENOTFOUND'));
+
+      await expect(service.submitContact(dto, null, '127.0.0.1')).resolves.toBeDefined();
+
+      expect(prisma.contactMessage.create).toHaveBeenCalled();
     });
 
     it('pomija captcha dla zalogowanego użytkownika', async () => {

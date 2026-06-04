@@ -80,6 +80,8 @@ describe('AuthService', () => {
       email as EmailService,
     );
     jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      status: 200,
       json: async () => ({ success: true }),
     } as Response);
     jest.clearAllMocks();
@@ -172,6 +174,28 @@ describe('AuthService', () => {
       );
     });
 
+    it('kończy rejestrację sukcesem mimo błędu wysyłki maila (brak 500, konto zostaje)', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
+      jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
+      (email.sendActivationEmail as jest.Mock).mockRejectedValueOnce(
+        new Error('render/template failure'),
+      );
+
+      const result = await service.register(
+        {
+          email: 'user@example.com',
+          password: 'Test123!',
+          displayName: 'User',
+          captchaToken: 'valid-token',
+        },
+        '127.0.0.1',
+      );
+
+      expect(prisma.user.create as jest.Mock).toHaveBeenCalled();
+      expect(result.message).toBeDefined();
+    });
+
     it('tworzy token aktywacyjny z datą wygaśnięcia (24h)', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
@@ -215,9 +239,11 @@ describe('AuthService', () => {
       expect(result.message).toBeDefined();
     });
 
-    it('odrzuca rejestrację przy niepoprawnej captcha', async () => {
+    it('odrzuca rejestrację gdy Cloudflare jednoznacznie odrzuci token (invalid)', async () => {
       jest.spyOn(global, 'fetch').mockResolvedValue({
-        json: async () => ({ success: false }),
+        ok: true,
+        status: 200,
+        json: async () => ({ success: false, 'error-codes': ['invalid-input-response'] }),
       } as Response);
 
       await expect(
@@ -231,6 +257,51 @@ describe('AuthService', () => {
           '127.0.0.1',
         ),
       ).rejects.toThrow(ForbiddenException);
+      expect(prisma.user.create as jest.Mock).not.toHaveBeenCalled();
+    });
+
+    it('NIE blokuje rejestracji gdy weryfikacji nie da się dokończyć — błąd sieci (unverifiable)', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
+      jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
+      jest.spyOn(global, 'fetch').mockRejectedValue(new Error('getaddrinfo ENOTFOUND'));
+
+      const result = await service.register(
+        {
+          email: 'user@example.com',
+          password: 'Test123!',
+          displayName: 'User',
+          captchaToken: 'some-token',
+        },
+        '127.0.0.1',
+      );
+
+      expect(prisma.user.create as jest.Mock).toHaveBeenCalled();
+      expect(result.message).toBeDefined();
+    });
+
+    it('NIE blokuje rejestracji gdy siteverify zwróci błąd HTTP (unverifiable)', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
+      jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
+      jest.spyOn(global, 'fetch').mockResolvedValue({
+        ok: false,
+        status: 502,
+        json: async () => ({}),
+      } as Response);
+
+      const result = await service.register(
+        {
+          email: 'user@example.com',
+          password: 'Test123!',
+          displayName: 'User',
+          captchaToken: 'some-token',
+        },
+        '127.0.0.1',
+      );
+
+      expect(prisma.user.create as jest.Mock).toHaveBeenCalled();
+      expect(result.message).toBeDefined();
     });
 
     it('po cichu odrzuca rejestrację po wypełnieniu honeypot', async () => {

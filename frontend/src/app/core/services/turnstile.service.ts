@@ -2,6 +2,7 @@ import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { TURNSTILE_SCRIPT_SRC } from '@zgadajsie/shared';
 
 export type TurnstileStatus = 'idle' | 'loading' | 'ready' | 'solved' | 'error' | 'expired';
 
@@ -35,7 +36,6 @@ declare global {
   }
 }
 
-const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 const API_WAIT_TIMEOUT_MS = 10000;
 const API_POLL_INTERVAL_MS = 50;
 const READY_FALLBACK_MS = 2000;
@@ -168,7 +168,9 @@ export class TurnstileService {
     }
 
     this.loadScriptPromise = new Promise<void>((resolve, reject) => {
-      const existing = document.querySelector<HTMLScriptElement>(`script[src^="${SCRIPT_SRC}"]`);
+      const existing = document.querySelector<HTMLScriptElement>(
+        `script[src^="${TURNSTILE_SCRIPT_SRC}"]`,
+      );
       if (existing) {
         existing.addEventListener('load', () => resolve());
         existing.addEventListener('error', () => reject(new Error('Failed to load Turnstile')));
@@ -181,7 +183,7 @@ export class TurnstileService {
       const script = document.createElement('script');
       // Tryb explicit (render=explicit): skrypty wstrzykiwane dynamicznie mają
       // async=true domyślnie — jawnie wyłączamy, by uniknąć TurnstileError.
-      script.src = SCRIPT_SRC;
+      script.src = TURNSTILE_SCRIPT_SRC;
       script.async = false;
       script.defer = false;
       script.onload = () => resolve();

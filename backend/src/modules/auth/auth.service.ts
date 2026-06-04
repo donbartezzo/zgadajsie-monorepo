@@ -17,6 +17,7 @@ import { EmailService } from '../notifications/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { featureFlags } from '../../common/config/feature-flags';
+import { verifyTurnstile } from '../../common/utils/captcha.util';
 
 const TIME_TRAP_MIN_SECONDS = 3;
 
@@ -54,8 +55,9 @@ export class AuthService {
     // Gdy token jest nieobecny (captcha nie załadowała się po stronie klienta),
     // przepuszczamy formularz — ochronę zapewniają honeypot, time-trap i rate-limit.
     if (featureFlags.enableTurnstileCaptcha && dto.captchaToken) {
-      const isValid = await this.verifyTurnstile(dto.captchaToken, ipAddress);
-      if (!isValid) {
+      const secret = this.configService.getOrThrow<string>('TURNSTILE_SECRET_KEY');
+      const outcome = await verifyTurnstile(dto.captchaToken, ipAddress, secret, this.logger);
+      if (outcome === 'invalid') {
         this.logger.warn(`Invalid Turnstile token for registration: ${dto.email}`);
         throw new ForbiddenException('Weryfikacja captcha nie powiodła się');
       }
@@ -86,9 +88,26 @@ export class AuthService {
       },
     });
 
-    await this.emailService.sendActivationEmail(user.email, user.displayName, activationToken);
+    await this.sendActivationEmailSafe(user.email, user.displayName, activationToken);
 
     return { message: 'Konto utworzone. Sprawdź email, aby aktywować konto.' };
+  }
+
+  /**
+   * Wysyłka maila aktywacyjnego jest best-effort: jej błąd (np. render szablonu
+   * albo niedostępny dostawca) NIE może przerywać rejestracji ani zostawiać konta
+   * w stanie 500-bez-maila. Konto już istnieje, a użytkownik ma „wyślij ponownie".
+   */
+  private async sendActivationEmailSafe(
+    email: string,
+    displayName: string,
+    token: string,
+  ): Promise<void> {
+    try {
+      await this.emailService.sendActivationEmail(email, displayName, token);
+    } catch (error) {
+      this.logger.error(`Failed to send activation email to ${email}: ${(error as Error).message}`);
+    }
   }
 
   async login(dto: LoginDto) {
@@ -168,7 +187,7 @@ export class AuthService {
       data: { activationToken, activationTokenExpiresAt },
     });
 
-    await this.emailService.sendActivationEmail(user.email, user.displayName, activationToken);
+    await this.sendActivationEmailSafe(user.email, user.displayName, activationToken);
 
     return { message: 'Jeśli konto istnieje, link aktywacyjny został wysłany' };
   }
@@ -275,29 +294,5 @@ export class AuthService {
     ]);
 
     return { accessToken, refreshToken };
-  }
-
-  private async verifyTurnstile(token: string, remoteIp: string): Promise<boolean> {
-    const secret = this.configService.getOrThrow<string>('TURNSTILE_SECRET_KEY');
-
-    try {
-      const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          secret,
-          response: token,
-          remoteip: remoteIp,
-        }),
-      });
-
-      const result = await response.json();
-      return result.success === true;
-    } catch (error) {
-      this.logger.error(`Turnstile verification error: ${error.message}`);
-      return false;
-    }
   }
 }
