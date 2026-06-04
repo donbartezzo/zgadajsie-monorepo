@@ -3,6 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { AdminService, PendingEmailNotification } from '../../../../core/services/admin.service';
+import { NotificationKind } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-admin-pending-emails',
@@ -10,10 +11,20 @@ import { AdminService, PendingEmailNotification } from '../../../../core/service
   template: `
     <div class="p-4">
       <h1 class="text-xl font-bold text-neutral-900 mb-6">Kolejka emaili do wysyłki</h1>
-      <div class="mb-4 flex items-center justify-between">
-        <p class="text-sm text-neutral-500">
-          Łącznie: {{ total() }} notyfikacji oczekujących na email
-        </p>
+      <div class="mb-4 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <select
+            [value]="selectedType()"
+            (change)="onTypeChange($event)"
+            class="px-3 py-1.5 text-sm border border-neutral-200 rounded-md bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="">Wszystkie typy</option>
+            @for (type of notificationTypes; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+          <p class="text-sm text-neutral-500">Łącznie: {{ total() }} notyfikacji</p>
+        </div>
         <app-button (clicked)="loadPendingEmails()" variant="outline" size="sm">
           Odśwież
         </app-button>
@@ -100,38 +111,51 @@ export class AdminPendingEmailsComponent implements OnInit {
   readonly limit = signal(50);
   readonly loading = signal(false);
   readonly cancelling = signal<string | null>(null);
+  readonly selectedType = signal<string>('');
+  readonly notificationTypes = Object.values(NotificationKind);
 
   ngOnInit(): void {
     this.loadPendingEmails();
   }
 
+  onTypeChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.selectedType.set(target.value);
+    this.page.set(1);
+    this.loadPendingEmails();
+  }
+
   loadPendingEmails(): void {
     this.loading.set(true);
-    this.adminService.getPendingEmails(this.page(), this.limit()).subscribe({
-      next: (response) => {
-        this.pendingEmails.set(response.data);
-        this.total.set(response.total);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      },
-    });
+    this.adminService
+      .getPendingEmails(this.page(), this.limit(), this.selectedType() || undefined)
+      .subscribe({
+        next: (response) => {
+          this.pendingEmails.set(response.data);
+          this.total.set(response.total);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+        },
+      });
   }
 
   loadMore(): void {
     this.page.update((p) => p + 1);
     this.loading.set(true);
-    this.adminService.getPendingEmails(this.page(), this.limit()).subscribe({
-      next: (response) => {
-        this.pendingEmails.update((current) => [...current, ...response.data]);
-        this.total.set(response.total);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      },
-    });
+    this.adminService
+      .getPendingEmails(this.page(), this.limit(), this.selectedType() || undefined)
+      .subscribe({
+        next: (response) => {
+          this.pendingEmails.update((current) => [...current, ...response.data]);
+          this.total.set(response.total);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+        },
+      });
   }
 
   cancelEmail(notificationId: string): void {

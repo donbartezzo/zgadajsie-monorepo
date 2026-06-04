@@ -198,13 +198,19 @@ export class NotificationsService {
     return result;
   }
 
-  async getPendingEmails(page = 1, limit = 50) {
+  async getPendingEmails(page = 1, limit = 50, type?: string) {
+    const where: Record<string, unknown> = {
+      emailSentAt: null,
+      OR: [{ relevanceUntil: null }, { relevanceUntil: { gt: new Date() } }],
+    };
+
+    if (type) {
+      where.type = type;
+    }
+
     const [notifications, total] = await Promise.all([
       this.prisma.notification.findMany({
-        where: {
-          emailSentAt: null,
-          OR: [{ relevanceUntil: null }, { relevanceUntil: { gt: new Date() } }],
-        },
+        where,
         include: {
           user: {
             select: {
@@ -218,12 +224,7 @@ export class NotificationsService {
         take: limit,
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.notification.count({
-        where: {
-          emailSentAt: null,
-          OR: [{ relevanceUntil: null }, { relevanceUntil: { gt: new Date() } }],
-        },
-      }),
+      this.prisma.notification.count({ where }),
     ]);
     return { data: notifications, total, page, limit };
   }

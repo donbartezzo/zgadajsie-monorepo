@@ -124,11 +124,13 @@ export class AdminService {
     return this.http.delete<void>(`${this.apiUrl}/contact/admin/messages/${id}`);
   }
 
-  getPendingEmails(page = 1, limit = 50): Observable<PendingEmailsResponse> {
+  getPendingEmails(page = 1, limit = 50, type?: string): Observable<PendingEmailsResponse> {
+    let params = new HttpParams().set('page', page).set('limit', limit);
+    if (type) params = params.set('type', type);
     return this.http.get<PendingEmailsResponse>(
       `${this.apiUrl}/admin/notifications/pending-emails`,
       {
-        params: { page, limit },
+        params,
       },
     );
   }

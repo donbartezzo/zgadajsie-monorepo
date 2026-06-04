@@ -108,8 +108,12 @@ export class AdminNotificationsController {
   constructor(private notificationsService: NotificationsService) {}
 
   @Get('pending-emails')
-  getPendingEmails(@Query('page') page?: string, @Query('limit') limit?: string) {
-    return this.notificationsService.getPendingEmails(page ? +page : 1, limit ? +limit : 50);
+  getPendingEmails(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('type') type?: string,
+  ) {
+    return this.notificationsService.getPendingEmails(page ? +page : 1, limit ? +limit : 50, type);
   }
 
   @Delete(':id/cancel-email')
