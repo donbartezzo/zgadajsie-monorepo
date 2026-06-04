@@ -461,8 +461,10 @@ export class EmailService implements OnModuleInit {
       return;
     }
 
+    // Resend SDK v6 never throws — it always returns { data, error }.
+    // The try/catch covers unexpected runtime errors (e.g. onModuleInit failure).
     try {
-      await this.resend.emails.send({
+      const { error } = await this.resend.emails.send({
         from: this.fromAddress,
         to,
         subject,
@@ -470,9 +472,15 @@ export class EmailService implements OnModuleInit {
         text,
         replyTo,
       });
+      if (error) {
+        this.logger.error(
+          `Failed to send email to ${to} [${subject}]: ${error.message} (HTTP ${error.statusCode ?? 'n/a'})`,
+        );
+        return;
+      }
       this.logger.log(`Email sent to ${to}: ${subject}`);
     } catch (error) {
-      this.logger.error(`Failed to send email to ${to}: ${error.message}`);
+      this.logger.error(`Unexpected error sending email to ${to}: ${(error as Error).message}`);
     }
   }
 
