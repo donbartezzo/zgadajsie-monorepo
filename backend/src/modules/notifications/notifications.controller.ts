@@ -13,6 +13,8 @@ import {
 import { NotificationsService } from './notifications.service';
 import { EmailService } from './email.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
 import { MarkByGroupDto } from './dto/mark-by-group.dto';
@@ -96,5 +98,22 @@ export class NotificationsController {
   @Delete(':id')
   delete(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.notificationsService.delete(id, user.id);
+  }
+}
+
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
+@Controller('admin/notifications')
+export class AdminNotificationsController {
+  constructor(private notificationsService: NotificationsService) {}
+
+  @Get('pending-emails')
+  getPendingEmails(@Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.notificationsService.getPendingEmails(page ? +page : 1, limit ? +limit : 50);
+  }
+
+  @Delete(':id/cancel-email')
+  cancelEmail(@Param('id') id: string) {
+    return this.notificationsService.cancelEmailForNotification(id);
   }
 }

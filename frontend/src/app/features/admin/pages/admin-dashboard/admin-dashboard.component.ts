@@ -88,6 +88,14 @@ import { AdminService } from '../../../../core/services/admin.service';
             </div></app-card
           ></a
         >
+        <a routerLink="/admin/pending-emails"
+          ><app-card
+            ><div class="flex items-center gap-3">
+              <app-icon name="mail" size="sm"></app-icon>
+              <span class="text-sm font-medium text-neutral-900">Kolejka emaili</span>
+            </div></app-card
+          ></a
+        >
       </div>
     </div>
   `,

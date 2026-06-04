@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { NotificationsController } from './notifications.controller';
+import { NotificationsController, AdminNotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
 import { EmailService } from './email.service';
 import { PushService } from './push.service';
@@ -16,7 +16,7 @@ import { UserRealtimeModule } from '../realtime/user-realtime.module';
 
 @Module({
   imports: [SlotModule, EventRealtimeModule, UserRealtimeModule],
-  controllers: [NotificationsController],
+  controllers: [NotificationsController, AdminNotificationsController],
   providers: [
     NotificationsService,
     EmailService,

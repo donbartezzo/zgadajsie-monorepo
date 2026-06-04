@@ -197,4 +197,55 @@ export class NotificationsService {
     await this.emitUnreadCount(userId);
     return result;
   }
+
+  async getPendingEmails(page = 1, limit = 50) {
+    const [notifications, total] = await Promise.all([
+      this.prisma.notification.findMany({
+        where: {
+          emailSentAt: null,
+          OR: [{ relevanceUntil: null }, { relevanceUntil: { gt: new Date() } }],
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              displayName: true,
+            },
+          },
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.notification.count({
+        where: {
+          emailSentAt: null,
+          OR: [{ relevanceUntil: null }, { relevanceUntil: { gt: new Date() } }],
+        },
+      }),
+    ]);
+    return { data: notifications, total, page, limit };
+  }
+
+  async cancelEmailForNotification(notificationId: string) {
+    const notification = await this.prisma.notification.findUnique({
+      where: { id: notificationId },
+    });
+
+    if (!notification) {
+      return null;
+    }
+
+    if (notification.emailSentAt !== null) {
+      return null;
+    }
+
+    const updated = await this.prisma.notification.update({
+      where: { id: notificationId },
+      data: { emailSentAt: new Date() },
+    });
+
+    return updated;
+  }
 }

@@ -531,6 +531,18 @@ export const appRoutes: Route[] = [
       breadcrumb: { parent: '/admin', label: 'Panel admina' },
     },
   },
+  {
+    path: 'admin/pending-emails',
+    loadComponent: () =>
+      import('./features/admin/pages/admin-pending-emails/admin-pending-emails.component').then(
+        (m) => m.AdminPendingEmailsComponent,
+      ),
+    canActivate: [adminGuard],
+    data: {
+      title: 'Kolejka emaili',
+      breadcrumb: { parent: '/admin', label: 'Panel admina' },
+    },
+  },
 
   // ── Static ──
   {

@@ -123,6 +123,21 @@ export class AdminService {
   deleteContactMessage(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/contact/admin/messages/${id}`);
   }
+
+  getPendingEmails(page = 1, limit = 50): Observable<PendingEmailsResponse> {
+    return this.http.get<PendingEmailsResponse>(
+      `${this.apiUrl}/admin/notifications/pending-emails`,
+      {
+        params: { page, limit },
+      },
+    );
+  }
+
+  cancelEmailForNotification(notificationId: string): Observable<PendingEmailNotification | null> {
+    return this.http.delete<PendingEmailNotification | null>(
+      `${this.apiUrl}/admin/notifications/${notificationId}/cancel-email`,
+    );
+  }
 }
 
 export interface CronStatus {
@@ -141,4 +156,26 @@ export interface CronLog {
   durationMs: number | null;
   error: string | null;
   createdAt: string;
+}
+
+export interface PendingEmailNotification {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  body: string;
+  link: string | null;
+  createdAt: string;
+  user: {
+    id: string;
+    email: string;
+    displayName: string;
+  };
+}
+
+export interface PendingEmailsResponse {
+  data: PendingEmailNotification[];
+  total: number;
+  page: number;
+  limit: number;
 }
