@@ -93,6 +93,16 @@ export class AuthService {
     return { message: 'Konto utworzone. Sprawdź email, aby aktywować konto.' };
   }
 
+  private async sendPasswordResetEmailSafe(email: string, token: string): Promise<void> {
+    try {
+      await this.emailService.sendPasswordResetEmail(email, token);
+    } catch (error) {
+      this.logger.error(
+        `Failed to send password reset email to ${email}: ${(error as Error).message}`,
+      );
+    }
+  }
+
   /**
    * Wysyłka maila aktywacyjnego jest best-effort: jej błąd (np. render szablonu
    * albo niedostępny dostawca) NIE może przerywać rejestracji ani zostawiać konta
@@ -203,7 +213,7 @@ export class AuthService {
         data: { passwordResetToken, passwordResetTokenExpiresAt },
       });
 
-      await this.emailService.sendPasswordResetEmail(user.email, passwordResetToken);
+      await this.sendPasswordResetEmailSafe(user.email, passwordResetToken);
     }
 
     return { message: 'Jeśli konto istnieje, link do resetu hasła został wysłany' };

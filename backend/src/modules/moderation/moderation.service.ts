@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { buildEventUrl } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { daysFromNow } from '../../common/utils/date.util';
@@ -9,6 +9,8 @@ import { CreateBanDto } from './dto/create-ban.dto';
 
 @Injectable()
 export class ModerationService {
+  private readonly logger = new Logger(ModerationService.name);
+
   constructor(
     private prisma: PrismaService,
     private emailService: EmailService,
@@ -49,13 +51,17 @@ export class ModerationService {
         dto.eventId ?? '',
       );
       if (dto.eventId) {
-        await this.emailService.sendReprimandEmail(
-          user.email,
-          user.displayName,
-          eventTitle,
-          dto.reason,
-          eventLink,
-        );
+        try {
+          await this.emailService.sendReprimandEmail(
+            user.email,
+            user.displayName,
+            eventTitle,
+            dto.reason,
+            eventLink,
+          );
+        } catch (err) {
+          this.logger.error(`Failed to send reprimand email to ${user.email}: ${err}`);
+        }
       }
     }
 

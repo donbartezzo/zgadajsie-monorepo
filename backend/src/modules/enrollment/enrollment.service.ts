@@ -924,13 +924,17 @@ export class EnrollmentService {
         event.title,
         eventId,
       );
-      await this.emailService.sendNewApplicationEmail(
-        organizer.email,
-        organizer.displayName,
-        participation.user.displayName,
-        event.title,
-        eventId,
-      );
+      try {
+        await this.emailService.sendNewApplicationEmail(
+          organizer.email,
+          organizer.displayName,
+          participation.user.displayName,
+          event.title,
+          eventId,
+        );
+      } catch (err) {
+        this.logger.error(`Failed to send new application email to ${organizer.email}: ${err}`);
+      }
     }
 
     const result = {
@@ -1665,13 +1669,17 @@ export class EnrollmentService {
     });
 
     // Powiadomienie użytkownika
-    await this.emailService.sendParticipationStatusEmail(
-      enrollment.user.email,
-      enrollment.user.displayName,
-      enrollment.event.title,
-      'REJECTED',
-      'Administrator serwisu wypisał Cię z tego wydarzenia.',
-    );
+    try {
+      await this.emailService.sendParticipationStatusEmail(
+        enrollment.user.email,
+        enrollment.user.displayName,
+        enrollment.event.title,
+        'REJECTED',
+        'Administrator serwisu wypisał Cię z tego wydarzenia.',
+      );
+    } catch (err) {
+      this.logger.error(`Failed to send rejection email to ${enrollment.user.email}: ${err}`);
+    }
 
     await this.pushService.notifyParticipationStatus(
       enrollment.userId,
