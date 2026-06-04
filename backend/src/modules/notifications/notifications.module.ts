@@ -9,6 +9,7 @@ import { EnrollmentLotteryCron } from './enrollment-lottery.cron';
 import { ApprovalReminderCron } from './approval-reminder.cron';
 import { NotificationEscalationCron } from './notification-escalation.cron';
 import { NotificationEmailDigestCron } from './notification-email-digest.cron';
+import { NotificationEmailStaleCron } from './notification-email-stale.cron';
 import { NotificationCleanupCron } from './notification-cleanup.cron';
 import { SlotModule } from '../slots/slot.module';
 import { EventRealtimeModule } from '../realtime/event-realtime.module';
@@ -27,6 +28,7 @@ import { UserRealtimeModule } from '../realtime/user-realtime.module';
     ApprovalReminderCron,
     NotificationEscalationCron,
     NotificationEmailDigestCron,
+    NotificationEmailStaleCron,
     NotificationCleanupCron,
   ],
   exports: [NotificationsService, EmailService, PushService],
