@@ -515,11 +515,11 @@ describe('ChatService', () => {
       );
       (prisma.privateChatMessage.count as jest.Mock).mockImplementation(
         ({ where }: { where: any }) => {
-          if (where.senderId === 'user1' && !where.createdAt) {
-            return Promise.resolve(2); // user1 - wszystkie wiadomości
+          if (where.senderId === 'user1' && where.recipientId === 'org1' && !where.createdAt) {
+            return Promise.resolve(2); // user1 → org1, wszystkie wiadomości (brak receipt)
           }
-          if (where.senderId === 'user2' && where.createdAt) {
-            return Promise.resolve(0); // user2 - 0 nowych po lastReadAt
+          if (where.senderId === 'user2' && where.recipientId === 'org1' && where.createdAt) {
+            return Promise.resolve(0); // user2 → org1, 0 nowych po lastReadAt
           }
           return Promise.resolve(0);
         },
