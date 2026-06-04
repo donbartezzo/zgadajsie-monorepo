@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { DateTime } from 'luxon';
 import { APP_DEFAULT_TIMEZONE } from '@zgadajsie/shared';
@@ -9,13 +9,17 @@ import { NOTIFICATION_TIMING } from './notification-policy';
 const CRON_NAME = 'notification-email-stale';
 
 @Injectable()
-export class NotificationEmailStaleCron {
+export class NotificationEmailStaleCron implements OnModuleInit {
   private readonly logger = new Logger(NotificationEmailStaleCron.name);
 
   constructor(
     private prisma: PrismaService,
     private cronAdmin: CronAdminService,
   ) {}
+
+  onModuleInit() {
+    this.cronAdmin.registerTrigger(CRON_NAME, () => this.handleStaleEmails());
+  }
 
   @Cron('0 3 * * *', { timeZone: APP_DEFAULT_TIMEZONE, name: CRON_NAME })
   async handleStaleEmails(): Promise<void> {
