@@ -1,24 +1,17 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  signal,
-  afterNextRender,
-  OnDestroy,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
+import { TurnstileComponent } from '../../../../shared/ui/turnstile/turnstile.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
-import { TurnstileService } from '../../../../core/services/turnstile.service';
 import { APP_BRAND } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, FormsModule, RouterLink, IconComponent],
+  imports: [CommonModule, FormsModule, RouterLink, IconComponent, TurnstileComponent],
   template: `
     <div class="p-6 max-w-md mx-auto">
       <div class="text-center mb-6">
@@ -98,15 +91,9 @@ import { APP_BRAND } from '@zgadajsie/shared';
           />
         </div>
 
-        @if (turnstile.isEnabled()) {
-          <div class="mb-4">
-            <div
-              id="turnstile-widget"
-              data-testid="turnstile-widget"
-              class="flex justify-center"
-            ></div>
-          </div>
-        }
+        <div class="mb-4">
+          <app-turnstile (resolved)="captchaToken.set($event)" />
+        </div>
 
         <input
           type="text"
@@ -154,14 +141,11 @@ import { APP_BRAND } from '@zgadajsie/shared';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RegisterComponent implements OnDestroy {
+export class RegisterComponent {
   protected readonly APP_BRAND = APP_BRAND;
   private readonly auth = inject(AuthService);
   private readonly navigation = inject(NavigationService);
   private readonly snackbar = inject(SnackbarService);
-  protected readonly turnstile = inject(TurnstileService);
-
-  private readonly widgetId = '#turnstile-widget';
 
   displayName = '';
   email = '';
@@ -171,20 +155,7 @@ export class RegisterComponent implements OnDestroy {
   company = '';
   formRenderedAt = new Date().toISOString();
   readonly loading = signal(false);
-
-  constructor() {
-    afterNextRender(() => {
-      if (this.turnstile.isEnabled()) {
-        void this.turnstile.initWidget(this.widgetId);
-      }
-    });
-  }
-
-  ngOnDestroy(): void {
-    if (this.turnstile.isEnabled()) {
-      this.turnstile.removeWidget(this.widgetId);
-    }
-  }
+  readonly captchaToken = signal<string | null>(null);
 
   async onSubmit(): Promise<void> {
     if (this.password !== this.confirmPassword) {
@@ -202,9 +173,7 @@ export class RegisterComponent implements OnDestroy {
     }
     // Captcha best-effort: dołączamy token jeśli jest dostępny, ale jego brak
     // nigdy nie blokuje wysyłki (np. gdy widget się nie załadował).
-    const captchaToken = this.turnstile.isEnabled()
-      ? this.turnstile.getToken(this.widgetId)
-      : undefined;
+    const captchaToken = this.captchaToken();
     this.loading.set(true);
     try {
       await this.auth.register({

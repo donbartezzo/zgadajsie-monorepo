@@ -6,8 +6,6 @@ import {
   signal,
   computed,
   effect,
-  afterNextRender,
-  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -16,12 +14,13 @@ import { IconComponent } from '../../ui/icon/icon.component';
 import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { TurnstileService } from '../../../core/services/turnstile.service';
+import { TurnstileComponent } from '../../ui/turnstile/turnstile.component';
 import { environment } from '../../../../environments/environment';
 import { ContactSource } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-contact-form',
-  imports: [CommonModule, ReactiveFormsModule, IconComponent],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent, TurnstileComponent],
   template: `
     <div class="p-4">
       <!-- Success Message -->
@@ -122,11 +121,7 @@ import { ContactSource } from '@zgadajsie/shared';
             <!-- Turnstile Captcha (only for anonymous users) -->
             @if (showCaptcha()) {
               <div class="mb-6">
-                <div
-                  id="turnstile-widget"
-                  data-testid="turnstile-widget"
-                  class="flex justify-center"
-                ></div>
+                <app-turnstile (resolved)="captchaToken.set($event)" />
               </div>
             }
 
@@ -169,7 +164,7 @@ import { ContactSource } from '@zgadajsie/shared';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ContactFormComponent implements OnDestroy {
+export class ContactFormComponent {
   private readonly fb = inject(FormBuilder);
   private readonly http = inject(HttpClient);
   private readonly snackbar = inject(SnackbarService);
@@ -186,7 +181,7 @@ export class ContactFormComponent implements OnDestroy {
   readonly currentUser = this.authService.currentUser;
   readonly isLoggedIn = this.authService.isLoggedIn;
 
-  private readonly widgetId = '#turnstile-widget';
+  readonly captchaToken = signal<string | null>(null);
 
   readonly showCaptcha = computed(() => !this.isLoggedIn() && this.turnstile.isEnabled());
 
@@ -209,18 +204,6 @@ export class ContactFormComponent implements OnDestroy {
         });
       }
     });
-
-    afterNextRender(() => {
-      if (this.showCaptcha()) {
-        void this.turnstile.initWidget(this.widgetId);
-      }
-    });
-  }
-
-  ngOnDestroy(): void {
-    if (this.showCaptcha()) {
-      this.turnstile.removeWidget(this.widgetId);
-    }
   }
 
   onSubmit(): void {
@@ -273,6 +256,6 @@ export class ContactFormComponent implements OnDestroy {
     if (this.isLoggedIn()) {
       return undefined;
     }
-    return this.turnstile.getToken(this.widgetId);
+    return this.captchaToken() ?? undefined;
   }
 }
