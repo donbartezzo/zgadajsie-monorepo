@@ -15,13 +15,13 @@ export interface FeatureFlags {
 
 export const DEV_FEATURE_FLAGS: FeatureFlags = {
   maintenance: false,
-  enableGoogleLogin: true,
-  enableFacebookLogin: true,
+  enableGoogleLogin: false,
+  enableFacebookLogin: false,
   enableEventCreation: true,
   enableOnlinePayments: false,
   enableEventSeries: true,
   enableFakeUsers: true,
-  enableEmails: true,
+  enableEmails: false,
   enableTurnstileCaptcha: true,
 };
 
