@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import React from 'react';
 import { Resend } from 'resend';
-import { APP_BRAND, formatDateTime, ContactSource } from '@zgadajsie/shared';
+import { APP_BRAND, formatDateTime, ContactSource, isOverrideAccount } from '@zgadajsie/shared';
 import {
   ActivationEmail,
   AdminDailyReportEmail,
@@ -451,7 +451,7 @@ export class EmailService implements OnModuleInit {
     text?: string,
     replyTo?: string,
   ): Promise<void> {
-    if (!featureFlags.enableEmails) {
+    if (!featureFlags.enableEmails && !isOverrideAccount(to)) {
       this.logger.log(`Email sending disabled, skipping email to ${to}: ${subject}`);
       return;
     }

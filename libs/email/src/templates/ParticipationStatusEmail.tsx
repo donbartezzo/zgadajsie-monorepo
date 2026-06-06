@@ -25,7 +25,7 @@ const STATUS_CONFIG: Record<ParticipationStatus, StatusConfig> = {
     body: (eventTitle) => (
       <>
         Masz przydzielone miejsce na wydarzeniu <strong>{eventTitle}</strong>, jednak organizator
-        wymaga potwierdzenia uczestnictwa - kliknij poniższy przycisk, aby potwierdzić swój udział.
+        wymaga potwierdzenia uczestnictwa - kliknij poniższy przycisk, aby potwierdzić swój udział.{' '}
         <u>Bez potwierdzenia Twoje uczestnictwo może zostać anulowane</u>.
       </>
     ),

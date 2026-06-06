@@ -35,6 +35,7 @@ import {
   ENROLLMENT_BLOCKED,
   FAKE_USERS_MIN_FREE_SLOTS_BUFFER,
   DEFAULT_WELCOME_MESSAGE,
+  isOverrideAccount,
 } from '@zgadajsie/shared';
 import { featureFlags } from '../../common/config/feature-flags';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
@@ -790,7 +791,7 @@ export class EnrollmentService {
     currentUser: AuthUser,
   ): Promise<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
     const { userId: currentUserId, isAdmin } = resolveUserContext(currentUser);
-    if (!featureFlags.enableOnlinePayments) {
+    if (!featureFlags.enableOnlinePayments && !isOverrideAccount(currentUser.email)) {
       throw new ForbiddenException(
         'Płatności online są tymczasowo wyłączone. Skontaktuj się z organizatorem w sprawie płatności gotówką.',
       );
