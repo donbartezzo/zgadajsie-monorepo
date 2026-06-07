@@ -9,12 +9,20 @@ export interface PasswordResetEmailProps {
   resetLink: string;
 }
 
-export type ParticipationStatus =
-  | 'SLOT_ASSIGNED'
-  | 'APPROVAL_REMINDER'
-  | 'CONFIRMED'
-  | 'REMOVED'
-  | 'REJECTED';
+/**
+ * Statusy uczestnictwa, dla których istnieje szablon e-mail transakcyjnego.
+ * Runtime-owe źródło prawdy (tablica) - z niego wyprowadzamy typ oraz strażnika
+ * renderowalności po stronie backendu, bez duplikowania listy wartości.
+ */
+export const PARTICIPATION_EMAIL_STATUSES = [
+  'SLOT_ASSIGNED',
+  'APPROVAL_REMINDER',
+  'CONFIRMED',
+  'REMOVED',
+  'REJECTED',
+] as const;
+
+export type ParticipationStatus = (typeof PARTICIPATION_EMAIL_STATUSES)[number];
 
 export interface ParticipationStatusEmailProps {
   displayName: string;

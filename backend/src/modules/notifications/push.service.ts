@@ -4,6 +4,7 @@ import { NotificationsService } from './notifications.service';
 import { UserNotificationGateway } from '../realtime/user-notification.gateway';
 import { NotificationKind } from '@prisma/client';
 import { NotificationContext } from './notification-policy';
+import { NotificationPayload, ParticipationNotificationStatus } from '@zgadajsie/shared';
 
 @Injectable()
 export class PushService {
@@ -21,6 +22,7 @@ export class PushService {
     title: string,
     body: string,
     link?: string,
+    payload?: NotificationPayload,
   ): Promise<void> {
     // Skip all notifications for FAKE users
     const user = await this.prisma.user.findUnique({
@@ -38,6 +40,7 @@ export class PushService {
       title,
       body,
       link,
+      payload,
     );
 
     // Emit WebSocket notification to user
@@ -86,10 +89,10 @@ export class PushService {
   async notifyParticipationStatus(
     userId: string,
     eventTitle: string,
-    status: string,
+    status: ParticipationNotificationStatus,
     eventId: string,
   ): Promise<void> {
-    const templates: Record<string, { title: string; body: string }> = {
+    const templates: Record<ParticipationNotificationStatus, { title: string; body: string }> = {
       SLOT_ASSIGNED: {
         title: 'Przydzielono miejsce',
         body: `Masz miejsce na "${eventTitle}" - potwierdź uczestnictwo`,
@@ -127,6 +130,7 @@ export class PushService {
       config.title,
       config.body,
       url,
+      { kind: 'PARTICIPATION_STATUS', status },
     );
   }
 

@@ -81,6 +81,7 @@ describe('PushService', () => {
         'Test Title',
         'Test Body',
         '/w/city/event-1',
+        undefined,
       );
 
       expect(gateway.emitToUser).toHaveBeenCalledWith('user-1', {

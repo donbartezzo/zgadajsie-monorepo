@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { NotificationKind } from '@prisma/client';
+import { NotificationKind, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   NotificationContext,
   NOTIFICATION_POLICIES,
   NOTIFICATION_TIMING,
 } from './notification-policy';
-import { daysFromNow } from '@zgadajsie/shared';
+import { daysFromNow, NotificationPayload } from '@zgadajsie/shared';
 import { UserNotificationGateway } from '../realtime/user-notification.gateway';
 
 @Injectable()
@@ -28,10 +28,12 @@ export class NotificationsService {
     title: string,
     body: string,
     link?: string,
+    payload?: NotificationPayload,
   ) {
     const policy = NOTIFICATION_POLICIES[type];
     const groupKey = policy.groupKey?.(ctx) ?? null;
     const relevanceUntil = policy.relevanceUntil?.(ctx) ?? null;
+    const data: Prisma.InputJsonValue | undefined = payload;
 
     // Debounce: szukaj unread w oknie
     if (groupKey) {
@@ -63,6 +65,7 @@ export class NotificationsService {
             relevanceUntil,
             // deleteAfter = createdAt + 30d (unread)
             deleteAfter: daysFromNow(NOTIFICATION_TIMING.UNREAD_RETENTION_DAYS, existing.createdAt),
+            ...(data !== undefined ? { data } : {}),
           },
         });
         await this.emitUnreadCount(ctx.userId);
@@ -82,6 +85,7 @@ export class NotificationsService {
         relevanceUntil,
         relatedEventId: ctx.relatedEventId,
         deleteAfter: daysFromNow(NOTIFICATION_TIMING.UNREAD_RETENTION_DAYS, now),
+        ...(data !== undefined ? { data } : {}),
       },
     });
     await this.emitUnreadCount(ctx.userId);

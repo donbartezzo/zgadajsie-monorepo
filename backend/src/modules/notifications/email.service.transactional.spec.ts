@@ -30,6 +30,7 @@ describe('EmailService - sendTransactionalForNotification', () => {
           provide: PrismaService,
           useValue: {
             user: { findUnique: jest.fn() },
+            event: { findUnique: jest.fn() },
           },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
@@ -49,6 +50,7 @@ describe('EmailService - sendTransactionalForNotification', () => {
         link: '/event',
         user: { email: 'test@example.com', displayName: 'Test User' },
         relatedEventId: 'event1',
+        data: null,
       };
 
       jest.spyOn(service, 'sendEventCancelledEmail').mockResolvedValue(undefined);
@@ -63,16 +65,20 @@ describe('EmailService - sendTransactionalForNotification', () => {
       );
     });
 
-    it('PARTICIPATION_STATUS triggeruje sendParticipationStatusEmail', async () => {
+    it('PARTICIPATION_STATUS - czyta status z payloadu i pobiera tytuł wydarzenia z DB', async () => {
       const notification = {
         id: 'notif1',
         type: 'PARTICIPATION_STATUS',
-        title: 'Status update',
-        body: 'SLOT_ASSIGNED',
+        title: 'Przydzielono miejsce',
+        body: 'Masz miejsce na "Jazda na rowerach" - potwierdź uczestnictwo',
         link: '/event',
         user: { email: 'test@example.com', displayName: 'Test User' },
         relatedEventId: 'event1',
+        data: { kind: 'PARTICIPATION_STATUS', status: 'SLOT_ASSIGNED' },
       };
+
+      const prisma = service['prisma'] as unknown as { event: { findUnique: jest.Mock } };
+      prisma.event.findUnique.mockResolvedValue({ title: 'Jazda na rowerach' });
 
       jest.spyOn(service, 'sendParticipationStatusEmail').mockResolvedValue(undefined);
 
@@ -81,10 +87,54 @@ describe('EmailService - sendTransactionalForNotification', () => {
       expect(service.sendParticipationStatusEmail).toHaveBeenCalledWith(
         'test@example.com',
         'Test User',
-        'Status update',
+        'Jazda na rowerach',
         'SLOT_ASSIGNED',
         '/event',
       );
+    });
+
+    it('PARTICIPATION_STATUS - pomija e-mail dla statusu bez szablonu (SPOT_AVAILABLE)', async () => {
+      const notification = {
+        id: 'notif1',
+        type: 'PARTICIPATION_STATUS',
+        title: 'Wolne miejsce',
+        body: 'Pojawiło się wolne miejsce',
+        link: '/event',
+        user: { email: 'test@example.com', displayName: 'Test User' },
+        relatedEventId: 'event1',
+        data: { kind: 'PARTICIPATION_STATUS', status: 'SPOT_AVAILABLE' },
+      };
+
+      const emailSpy = jest
+        .spyOn(service, 'sendParticipationStatusEmail')
+        .mockResolvedValue(undefined);
+
+      await service.sendTransactionalForNotification(notification);
+
+      expect(emailSpy).not.toHaveBeenCalled();
+    });
+
+    it('PARTICIPATION_STATUS - pomija e-mail i loguje warn gdy brak payloadu', async () => {
+      const notification = {
+        id: 'notif1',
+        type: 'PARTICIPATION_STATUS',
+        title: 'Przydzielono miejsce',
+        body: 'Jakiś opis',
+        link: '/event',
+        user: { email: 'test@example.com', displayName: 'Test User' },
+        relatedEventId: 'event1',
+        data: null,
+      };
+
+      const emailSpy = jest
+        .spyOn(service, 'sendParticipationStatusEmail')
+        .mockResolvedValue(undefined);
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.sendTransactionalForNotification(notification);
+
+      expect(emailSpy).not.toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('bez prawidłowego payloadu'));
     });
 
     it('REPRIMAND triggeruje sendReprimandEmail', async () => {
@@ -96,6 +146,7 @@ describe('EmailService - sendTransactionalForNotification', () => {
         link: '/event',
         user: { email: 'test@example.com', displayName: 'Test User' },
         relatedEventId: 'event1',
+        data: null,
       };
 
       jest.spyOn(service, 'sendReprimandEmail').mockResolvedValue(undefined);
@@ -120,6 +171,7 @@ describe('EmailService - sendTransactionalForNotification', () => {
         link: '/event',
         user: { email: 'test@example.com', displayName: 'Test User' },
         relatedEventId: 'event1',
+        data: null,
       };
 
       const loggerSpy = jest.spyOn(service['logger'], 'warn');

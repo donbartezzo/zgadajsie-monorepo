@@ -1641,7 +1641,7 @@ export class EnrollmentService {
 
     const enrollment = await this.prisma.eventEnrollment.findUnique({
       where: { id: enrollmentId },
-      include: { event: true, user: true, slot: true },
+      include: { event: { include: { city: true } }, user: true, slot: true },
     });
 
     if (!enrollment) {
@@ -1669,6 +1669,8 @@ export class EnrollmentService {
       },
     });
 
+    const eventLink = buildEventUrl(enrollment.event.city.slug, enrollment.eventId);
+
     // Powiadomienie użytkownika
     try {
       await this.emailService.sendParticipationStatusEmail(
@@ -1676,7 +1678,7 @@ export class EnrollmentService {
         enrollment.user.displayName,
         enrollment.event.title,
         'REJECTED',
-        'Administrator serwisu wypisał Cię z tego wydarzenia.',
+        eventLink,
       );
     } catch (err) {
       this.logger.error(`Failed to send rejection email to ${enrollment.user.email}: ${err}`);
@@ -1686,7 +1688,7 @@ export class EnrollmentService {
       enrollment.userId,
       enrollment.event.title,
       'REJECTED',
-      'Administrator serwisu wypisał Cię z tego wydarzenia.',
+      enrollment.eventId,
     );
 
     this.notifyEventChanged(enrollment.eventId, 'participants');

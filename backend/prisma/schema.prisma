@@ -396,6 +396,7 @@ model Notification {
   deleteAfter    DateTime
   pushSentAt     DateTime?
   emailSentAt    DateTime?
+  data           Json?
   relatedEvent   Event?           @relation("NotificationEvent", fields: [relatedEventId], references: [id])
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 

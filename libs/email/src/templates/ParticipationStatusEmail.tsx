@@ -19,7 +19,7 @@ type StatusConfig = {
 const STATUS_CONFIG: Record<ParticipationStatus, StatusConfig> = {
   SLOT_ASSIGNED: {
     subject: 'Przydzielono miejsce',
-    preview: 'Masz przydzielone miejsce — potwierdź uczestnictwo',
+    preview: 'Masz przydzielone miejsce - potwierdź uczestnictwo',
     calloutVariant: 'warning',
     calloutLabel: 'Wymagane potwierdzenie',
     body: (eventTitle) => (

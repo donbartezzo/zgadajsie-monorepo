@@ -3,7 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import React from 'react';
 import { Resend } from 'resend';
-import { APP_BRAND, formatDateTime, ContactSource, isOverrideAccount } from '@zgadajsie/shared';
+import {
+  APP_BRAND,
+  formatDateTime,
+  ContactSource,
+  isOverrideAccount,
+  parseNotificationPayload,
+  type ParticipationNotificationStatus,
+} from '@zgadajsie/shared';
 import {
   ActivationEmail,
   AdminDailyReportEmail,
@@ -21,6 +28,7 @@ import {
   RefundConfirmationEmail,
   ReprimandEmail,
   renderEmail,
+  PARTICIPATION_EMAIL_STATUSES,
   type ParticipationStatus,
 } from '@zgadajsie/email';
 import type { OrganizerDigestData } from '../organizer/organizer.service';
@@ -391,6 +399,7 @@ export class EmailService implements OnModuleInit {
     link: string | null;
     user: { email: string; displayName: string };
     relatedEventId: string | null;
+    data: unknown;
   }): Promise<void> {
     const { type, user, title, body, link } = notification;
 
@@ -407,17 +416,45 @@ export class EmailService implements OnModuleInit {
         await this.sendEventCancelledEmail(user.email, user.displayName, title, link ?? undefined);
         break;
 
-      case 'PARTICIPATION_STATUS':
-        // PARTICIPATION_STATUS wymaga status (SLOT_ASSIGNED, CONFIRMED, etc.)
-        // Tymczasowo używamy body jako status
+      case 'PARTICIPATION_STATUS': {
+        const payload = parseNotificationPayload(notification.data);
+        if (payload?.kind !== 'PARTICIPATION_STATUS') {
+          this.logger.warn(
+            `PARTICIPATION_STATUS notification ${notification.id} bez prawidłowego payloadu - pomijam e-mail`,
+          );
+          break;
+        }
+
+        const emailStatus = this.toEmailParticipationStatus(payload.status);
+        if (!emailStatus) {
+          // SPOT_AVAILABLE / LOTTERY_NOT_SELECTED: brak szablonu e-mail (kanał wyłącznie in-app/push)
+          this.logger.debug(
+            `Status '${payload.status}' nie ma szablonu e-mail - pomijam e-mail dla ${notification.id}`,
+          );
+          break;
+        }
+
+        // Tytuł powiadomienia to nagłówek UI (np. "Przydzielono miejsce"), nie nazwa
+        // wydarzenia - pobieramy aktualny tytuł wydarzenia z bazy.
+        let eventTitle = title;
+        if (notification.relatedEventId) {
+          const event = await this.prisma.event.findUnique({
+            where: { id: notification.relatedEventId },
+            select: { title: true },
+          });
+          if (event) {
+            eventTitle = event.title;
+          }
+        }
         await this.sendParticipationStatusEmail(
           user.email,
           user.displayName,
-          title,
-          body,
+          eventTitle,
+          emailStatus,
           link ?? undefined,
         );
         break;
+      }
 
       case 'PAYMENT_CANCELLED':
         // PAYMENT_CANCELLED wymaga amount
@@ -442,6 +479,18 @@ export class EmailService implements OnModuleInit {
       default:
         this.logger.warn(`Unknown notification type for transactional email: ${type}`);
     }
+  }
+
+  /**
+   * Zawęża status powiadomienia uczestnictwa do podzbioru renderowalnego w e-mailu.
+   * Zwraca null dla statusów wyłącznie in-app/push (np. SPOT_AVAILABLE, LOTTERY_NOT_SELECTED).
+   */
+  private toEmailParticipationStatus(
+    status: ParticipationNotificationStatus,
+  ): ParticipationStatus | null {
+    return (PARTICIPATION_EMAIL_STATUSES as readonly string[]).includes(status)
+      ? (status as ParticipationStatus)
+      : null;
   }
 
   private async send(
