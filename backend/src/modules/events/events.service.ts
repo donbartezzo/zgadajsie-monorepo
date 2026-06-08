@@ -37,6 +37,7 @@ import { CancelPaymentDto } from './dto/cancel-payment.dto';
 import { isEventEnded } from './event-time-status.util';
 import { shouldSkipPreEnrollment } from './enrollment-phase.util';
 import { buildEventListingWhere } from '../../common/utils/event-listing.util';
+import { AppConfigService } from '../../common/config/app-config.service';
 import { EventStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
@@ -48,6 +49,7 @@ export class EventsService {
 
   constructor(
     private prisma: PrismaService,
+    private appConfig: AppConfigService,
     private emailService: EmailService,
     private pushService: PushService,
     private notificationsService: NotificationsService,
@@ -582,7 +584,7 @@ export class EventsService {
           recipient.email,
           recipient.displayName,
           event.title,
-          buildEventUrl(event.city.slug, id),
+          buildEventUrl(event.city.slug, id, this.appConfig.frontendUrl),
         );
       } catch (err) {
         notificationErrors.push(`email:${recipient.email}:${(err as Error).message}`);

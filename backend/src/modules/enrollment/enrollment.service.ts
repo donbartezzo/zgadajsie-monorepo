@@ -6,7 +6,6 @@ import {
   Logger,
   Optional,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
@@ -40,6 +39,7 @@ import {
 import { featureFlags } from '../../common/config/feature-flags';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
+import { AppConfigService } from '../../common/config/app-config.service';
 import { USER_SELECT_WITH_EMAIL as USER_SELECT } from '../../common/prisma-selects';
 
 type EnrollmentWithSlot = {
@@ -75,7 +75,7 @@ export class EnrollmentService {
 
   constructor(
     private prisma: PrismaService,
-    private configService: ConfigService,
+    private appConfig: AppConfigService,
     private emailService: EmailService,
     private pushService: PushService,
     private paymentsService: PaymentsService,
@@ -611,7 +611,11 @@ export class EnrollmentService {
 
     // Send confirmation email
     if (updated?.user && updated.event) {
-      const eventLink = buildEventUrl(updated.event.city.slug, updated.event.id);
+      const eventLink = buildEventUrl(
+        updated.event.city.slug,
+        updated.event.id,
+        this.appConfig.frontendUrl,
+      );
       this.emailService
         .sendParticipationStatusEmail(
           updated.user.email,
@@ -842,9 +846,6 @@ export class EnrollmentService {
       throw new NotFoundException('Użytkownik nie znaleziony');
     }
 
-    const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
-    const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
-
     return this.paymentsService.initiatePayment(
       participation.id,
       event.id,
@@ -852,8 +853,6 @@ export class EnrollmentService {
       event.costPerPerson.toNumber(),
       user.email,
       user.displayName,
-      frontendUrl,
-      backendUrl,
     );
   }
 
@@ -1546,7 +1545,9 @@ export class EnrollmentService {
       if (!user) {
         return;
       }
-      const eventLink = event ? buildEventUrl(event.city.slug, eventId) : undefined;
+      const eventLink = event
+        ? buildEventUrl(event.city.slug, eventId, this.appConfig.frontendUrl)
+        : undefined;
       const displayTitle = guestDisplayName
         ? `${eventTitle} (gość: ${guestDisplayName})`
         : eventTitle;
@@ -1592,7 +1593,9 @@ export class EnrollmentService {
       if (user.accountType === 'FAKE') {
         return;
       }
-      const eventLink = event ? buildEventUrl(event.city.slug, eventId) : undefined;
+      const eventLink = event
+        ? buildEventUrl(event.city.slug, eventId, this.appConfig.frontendUrl)
+        : undefined;
       await this.pushService.notifyParticipationStatus(recipientId, eventTitle, 'REMOVED', eventId);
       await this.emailService.sendParticipationStatusEmail(
         user.email,
@@ -1793,7 +1796,11 @@ export class EnrollmentService {
       },
     });
 
-    const eventLink = buildEventUrl(enrollment.event.city.slug, enrollment.eventId);
+    const eventLink = buildEventUrl(
+      enrollment.event.city.slug,
+      enrollment.eventId,
+      this.appConfig.frontendUrl,
+    );
 
     // Powiadomienie użytkownika
     try {

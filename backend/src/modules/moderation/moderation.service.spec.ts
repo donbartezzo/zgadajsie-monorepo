@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
 import { ModerationService } from './moderation.service';
+import { AppConfigService } from '../../common/config/app-config.service';
 
 function buildPrismaMock() {
   return {
@@ -67,6 +68,10 @@ describe('ModerationService', () => {
     push = buildPushMock();
     service = new ModerationService(
       prisma as PrismaService,
+      {
+        frontendUrl: 'https://test.example.com',
+        backendUrl: 'http://localhost:3000',
+      } as AppConfigService,
       email as EmailService,
       push as PushService,
     );

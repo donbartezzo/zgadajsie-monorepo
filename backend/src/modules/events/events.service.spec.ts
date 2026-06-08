@@ -7,6 +7,7 @@ import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptio
 import { SlotService } from '../slots/slot.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { EventsService } from './events.service';
+import { AppConfigService } from '../../common/config/app-config.service';
 import { mockAuthUser } from '../../tests/test-helpers';
 
 function buildTxMock() {
@@ -138,6 +139,10 @@ describe('EventsService', () => {
     notifications = buildNotificationsMock();
     service = new EventsService(
       prisma as PrismaService,
+      {
+        frontendUrl: 'https://test.example.com',
+        backendUrl: 'http://localhost:3000',
+      } as AppConfigService,
       {
         sendNewApplicationEmail: jest.fn(),
         sendEventCancelledEmail: jest.fn().mockResolvedValue(undefined),
@@ -417,6 +422,10 @@ describe('EventsService', () => {
       service = new EventsService(
         prisma as PrismaService,
         {
+          frontendUrl: 'https://test.example.com',
+          backendUrl: 'http://localhost:3000',
+        } as AppConfigService,
+        {
           sendNewApplicationEmail: jest.fn(),
           sendEventCancelledEmail: jest.fn().mockResolvedValue(undefined),
         } as any,
@@ -558,6 +567,10 @@ describe('EventsService', () => {
       };
       service = new EventsService(
         prisma as PrismaService,
+        {
+          frontendUrl: 'https://test.example.com',
+          backendUrl: 'http://localhost:3000',
+        } as AppConfigService,
         emailMock as any,
         pushMock as any,
         notifications,

@@ -25,6 +25,13 @@ async function bootstrap() {
 
   const port = new URL(backendUrl).port || '3000';
 
+  // Validate that the primary FRONTEND_URL is a well-formed URL with a hostname.
+  // new URL() throws for values like "http://" — intentionally no try-catch so the error propagates.
+  const primaryFrontendUrl = frontendUrl.split(',')[0].trim();
+  if (!new URL(primaryFrontendUrl).hostname) {
+    throw new Error(`FRONTEND_URL does not contain a valid hostname: "${primaryFrontendUrl}"`);
+  }
+
   const app = await NestFactory.create(AppModule);
 
   app.use(helmet());

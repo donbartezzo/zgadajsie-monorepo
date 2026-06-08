@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { AppConfigService } from '../../common/config/app-config.service';
 import { Decimal } from '@prisma/client/runtime/library';
 import { featureFlags } from '../../common/config/feature-flags';
 import { PrismaService } from '../prisma/prisma.service';
@@ -169,8 +169,9 @@ describe('EnrollmentService', () => {
     service = new EnrollmentService(
       prisma as PrismaService,
       {
-        getOrThrow: jest.fn().mockReturnValue('http://localhost:4200'),
-      } as unknown as ConfigService,
+        frontendUrl: 'http://localhost:4200',
+        backendUrl: 'http://localhost:3000',
+      } as AppConfigService,
       email,
       push,
       payments,
@@ -1620,8 +1621,6 @@ describe('EnrollmentService', () => {
         50,
         'host@test.com',
         'Host',
-        expect.any(String),
-        expect.any(String),
       );
       expect(result.paymentUrl).toBe('https://pay.tpay.com/TX1');
     });

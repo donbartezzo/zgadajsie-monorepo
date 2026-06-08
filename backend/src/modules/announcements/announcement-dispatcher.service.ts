@@ -7,6 +7,7 @@ import { ChatService } from '../chat/chat.service';
 import { ChatGateway } from '../chat/chat.gateway';
 import { USER_SELECT } from '../../common/prisma-selects';
 import { AnnouncementPriority, AnnouncementTrigger, buildEventUrl } from '@zgadajsie/shared';
+import { AppConfigService } from '../../common/config/app-config.service';
 
 const CHUNK_SIZE = 50;
 
@@ -23,6 +24,7 @@ export class AnnouncementDispatcherService {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly appConfig: AppConfigService,
     private readonly pushService: PushService,
     private readonly emailService: EmailService,
     private readonly chatService: ChatService,
@@ -66,7 +68,7 @@ export class AnnouncementDispatcherService {
 
     const receiptsByUserId = new Map(receipts.map((r) => [r.userId, r]));
 
-    const eventLink = buildEventUrl(event.city.slug, eventId);
+    const eventLink = buildEventUrl(event.city.slug, eventId, this.appConfig.frontendUrl);
 
     this.dispatchAsync(
       event.title,

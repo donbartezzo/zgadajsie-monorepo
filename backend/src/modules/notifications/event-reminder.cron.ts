@@ -6,6 +6,7 @@ import { hoursFromNow } from '../../common/utils/date.util';
 import { EmailService } from './email.service';
 import { PushService } from './push.service';
 import { CronAdminService } from '../../common/cron-admin/cron-admin.service';
+import { AppConfigService } from '../../common/config/app-config.service';
 
 const CRON_NAME = 'event-reminder';
 
@@ -15,6 +16,7 @@ export class EventReminderCron implements OnModuleInit {
 
   constructor(
     private prisma: PrismaService,
+    private appConfig: AppConfigService,
     private emailService: EmailService,
     private pushService: PushService,
     private cronAdmin: CronAdminService,
@@ -71,7 +73,7 @@ export class EventReminderCron implements OnModuleInit {
     });
 
     for (const event of events) {
-      const eventLink = buildEventUrl(event.city.slug, event.id);
+      const eventLink = buildEventUrl(event.city.slug, event.id, this.appConfig.frontendUrl);
       for (const p of event.enrollments) {
         // For GUEST users, notify and email the host instead
         const recipient = p.user.accountType === 'GUEST' && p.addedBy ? p.addedBy : p.user;

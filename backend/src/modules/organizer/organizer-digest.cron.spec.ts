@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigService } from '@nestjs/config';
 import { OrganizerDigestCron } from './organizer-digest.cron';
+import { AppConfigService } from '../../common/config/app-config.service';
 import { OrganizerService } from './organizer.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
@@ -56,8 +56,8 @@ const mockEmailService = {
   sendOrganizerWeeklyDigest: jest.fn().mockResolvedValue(undefined),
 };
 
-const mockConfigService = {
-  getOrThrow: jest.fn().mockReturnValue(FRONTEND_URL),
+const mockAppConfig = {
+  frontendUrl: FRONTEND_URL,
 };
 
 const mockCronAdmin = {
@@ -78,7 +78,7 @@ describe('OrganizerDigestCron', () => {
         { provide: PrismaService, useValue: mockPrisma },
         { provide: OrganizerService, useValue: mockOrganizerService },
         { provide: EmailService, useValue: mockEmailService },
-        { provide: ConfigService, useValue: mockConfigService },
+        { provide: AppConfigService, useValue: mockAppConfig },
         { provide: CronAdminService, useValue: mockCronAdmin },
       ],
     }).compile();

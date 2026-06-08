@@ -5,6 +5,7 @@ import { TpayService, TpayWebhookPayload } from './tpay.service';
 import { VouchersService } from '../vouchers/vouchers.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { PaymentsService } from './payments.service';
+import { AppConfigService } from '../../common/config/app-config.service';
 
 function buildTxMock() {
   return {
@@ -74,6 +75,10 @@ describe('PaymentsService', () => {
       tpay as TpayService,
       vouchers as VouchersService,
       realtime as EventRealtimeService,
+      {
+        frontendUrl: 'https://app.example.com',
+        backendUrl: 'https://api.example.com',
+      } as AppConfigService,
     );
     jest.clearAllMocks();
   });
@@ -130,8 +135,6 @@ describe('PaymentsService', () => {
       amount: 50,
       payerEmail: 'user@example.com',
       payerName: 'User',
-      frontendBaseUrl: 'https://app.example.com',
-      backendBaseUrl: 'https://api.example.com',
     };
 
     beforeEach(() => {
@@ -155,8 +158,6 @@ describe('PaymentsService', () => {
         baseParams.amount,
         baseParams.payerEmail,
         baseParams.payerName,
-        baseParams.frontendBaseUrl,
-        baseParams.backendBaseUrl,
       );
 
       expect(result.paidByVoucher).toBe(true);
@@ -186,8 +187,6 @@ describe('PaymentsService', () => {
         baseParams.amount,
         baseParams.payerEmail,
         baseParams.payerName,
-        baseParams.frontendBaseUrl,
-        baseParams.backendBaseUrl,
       );
 
       expect(result.paymentUrl).toBe('https://pay.tpay.com/TX1');
@@ -214,8 +213,6 @@ describe('PaymentsService', () => {
         baseParams.amount,
         baseParams.payerEmail,
         baseParams.payerName,
-        baseParams.frontendBaseUrl,
-        baseParams.backendBaseUrl,
       );
 
       expect(prisma.paymentIntent.delete as jest.Mock).toHaveBeenCalledWith({
@@ -239,12 +236,10 @@ describe('PaymentsService', () => {
         baseParams.amount,
         baseParams.payerEmail,
         baseParams.payerName,
-        baseParams.frontendBaseUrl,
-        baseParams.backendBaseUrl,
       );
 
       const tpayCall = (tpay.createTransaction as jest.Mock).mock.calls[0][0];
-      expect(tpayCall.callbackUrl).toBe(`${baseParams.backendBaseUrl}/api/payments/tpay-webhook`);
+      expect(tpayCall.callbackUrl).toBe('https://api.example.com/api/payments/tpay-webhook');
     });
 
     it('częściowe pokrycie voucherem → deductVoucher + pomniejszona kwota Tpay', async () => {
@@ -266,8 +261,6 @@ describe('PaymentsService', () => {
         baseParams.amount,
         baseParams.payerEmail,
         baseParams.payerName,
-        baseParams.frontendBaseUrl,
-        baseParams.backendBaseUrl,
       );
 
       expect(vouchers.deductVoucher as jest.Mock).toHaveBeenCalledWith('user1', 'org1', 20);

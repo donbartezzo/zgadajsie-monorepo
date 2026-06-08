@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PushService } from './push.service';
 import { EmailService } from './email.service';
 import { CronAdminService } from '../../common/cron-admin/cron-admin.service';
+import { AppConfigService } from '../../common/config/app-config.service';
 
 const CRON_NAME = 'approval-reminder';
 
@@ -14,6 +15,7 @@ export class ApprovalReminderCron implements OnModuleInit {
 
   constructor(
     private prisma: PrismaService,
+    private appConfig: AppConfigService,
     private pushService: PushService,
     private emailService: EmailService,
     private cronAdmin: CronAdminService,
@@ -70,7 +72,7 @@ export class ApprovalReminderCron implements OnModuleInit {
             recipient.displayName,
             `${p.event.title}${guestLabel}`,
             'APPROVAL_REMINDER',
-            buildEventUrl(p.event.city.slug, p.event.id),
+            buildEventUrl(p.event.city.slug, p.event.id, this.appConfig.frontendUrl),
           );
         } catch (err) {
           this.logger.error(

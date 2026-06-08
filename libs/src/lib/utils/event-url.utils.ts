@@ -1,8 +1,7 @@
 /**
  * Buduje pełny URL wydarzenia na podstawie citySlug i eventId.
- * FRONTEND_URL jest pobierany z process.env.
+ * frontendUrl musi być przekazany jako parametr (np. z ConfigService w backendzie).
  */
-export function buildEventUrl(citySlug: string, eventId: string): string {
-  const frontendUrl = process.env['FRONTEND_URL'] ?? 'https://zgadajsie.pl';
-  return `${frontendUrl}/w/${citySlug}/${eventId}`;
+export function buildEventUrl(citySlug: string, eventId: string, frontendUrl: string): string {
+  return `${frontendUrl.replace(/\/+$/, '')}/w/${citySlug}/${eventId}`;
 }

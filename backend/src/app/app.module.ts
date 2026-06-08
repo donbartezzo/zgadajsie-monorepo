@@ -4,6 +4,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AppConfigModule } from '../common/config/app-config.module';
 import { CronAdminModule } from '../common/cron-admin/cron-admin.module';
 import { ScheduledJobsModule } from '../common/scheduled-jobs/scheduled-jobs.module';
 import { PrismaModule } from '../modules/prisma/prisma.module';
@@ -31,6 +32,7 @@ import { ContactModule } from '../modules/contact/contact.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    AppConfigModule,
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     CronAdminModule,
