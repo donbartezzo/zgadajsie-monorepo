@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { ContactService } from './contact.service';
 import { EmailService } from '../notifications/email.service';
-import { ContactSource } from '@prisma/client';
+import { ContactSource } from '@zgadajsie/shared';
 
 function buildPrismaMock() {
   return {
