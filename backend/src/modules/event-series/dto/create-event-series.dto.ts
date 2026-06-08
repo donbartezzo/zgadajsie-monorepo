@@ -172,6 +172,22 @@ export class CreateEventSeriesDto {
   welcomeMessageEnabled?: boolean;
 
   @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  targetOccupancy?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  cleanupHours?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  minFreeSlotsBuffer?: number;
+
+  @IsOptional()
   @IsObject()
   @ValidateNested()
   @Type(() => SeriesEventRoleConfigDto)

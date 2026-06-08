@@ -56,6 +56,7 @@ function buildPushMock() {
   return {
     notifyNewApplication: jest.fn().mockResolvedValue(undefined),
     notifyParticipationStatus: jest.fn().mockResolvedValue(undefined),
+    notifyAdminsRealUserJoinedFakeEvent: jest.fn().mockResolvedValue(undefined),
   } as unknown as PushService;
 }
 

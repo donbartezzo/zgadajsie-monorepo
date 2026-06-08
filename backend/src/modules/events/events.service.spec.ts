@@ -75,6 +75,14 @@ function buildCitySubsMock() {
   } as unknown as CitySubscriptionsService;
 }
 
+function buildFakeUsersMonitorMock() {
+  return {
+    monitorEvents: jest.fn().mockResolvedValue(undefined),
+    handleTargetOccupancyChange: jest.fn().mockResolvedValue(undefined),
+    monitorSingleEvent: jest.fn().mockResolvedValue(undefined),
+  } as unknown as any;
+}
+
 const FUTURE = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
 function makeEvent(overrides: Record<string, unknown> = {}) {
@@ -144,6 +152,7 @@ describe('EventsService', () => {
       slots,
       realtime,
       { isBannedByOrganizer: jest.fn(), isTrusted: jest.fn() } as any,
+      buildFakeUsersMonitorMock(),
     );
     jest.clearAllMocks();
   });
@@ -421,6 +430,7 @@ describe('EventsService', () => {
         slots,
         realtime,
         eligibilityMock as any,
+        buildFakeUsersMonitorMock(),
       );
 
       const result = await service.findOne('event1', 'user1');
@@ -556,6 +566,7 @@ describe('EventsService', () => {
         slots,
         realtime,
         { isBannedByOrganizer: jest.fn(), isTrusted: jest.fn() } as any,
+        buildFakeUsersMonitorMock(),
       );
       const event = makeEvent({ city: { slug: 'warszawa' } });
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);

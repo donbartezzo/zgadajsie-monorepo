@@ -36,7 +36,11 @@ import {
 } from '../../../../shared/types';
 import { EnrollmentGridComponent } from '../../../../shared/enrollment/ui/enrollment-grid/enrollment-grid.component';
 import { EnrollmentItem } from '../../../../shared/enrollment/ui/enrollment-grid/enrollment-grid-item/enrollment-grid-item.component';
-import { EventStatus } from '@zgadajsie/shared';
+import {
+  EventStatus,
+  FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT,
+  FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT,
+} from '@zgadajsie/shared';
 import {
   EventLifecycleBannerComponent,
   LifecycleBannerVariant,
@@ -277,26 +281,66 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
                     </p>
                   } @else {
                     <p class="text-xs text-neutral-500 mb-2">
-                      Cron co 15 min utrzymuje ~{{ targetOccupancy() }}% obłożenia automatycznie.
+                      Natychmiastowy trigger (po zmianach ustawień/dołączeniu realnego) + cron co 15
+                      min utrzymują ~{{ targetOccupancy() }}% obłożenia.
                     </p>
                   }
-                  <div class="flex items-center gap-2">
-                    <input
-                      id="target-occupancy-input"
-                      type="number"
-                      [value]="targetOccupancyInput()"
-                      (input)="targetOccupancyInput.set($any($event.target).value)"
-                      placeholder="np. 35"
-                      class="w-24 px-2 py-1 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
-                      [disabled]="updatingTargetOccupancy()"
-                    />
-                    <span class="text-xs text-neutral-500">lub puste aby wyłączyć</span>
+                  <div class="space-y-3">
+                    <div class="flex items-center gap-2">
+                      <input
+                        id="target-occupancy-input"
+                        type="number"
+                        [value]="targetOccupancy()?.toString() ?? ''"
+                        (input)="
+                          targetOccupancy.set(
+                            $any($event.target).value
+                              ? parseNumber($any($event.target).value)
+                              : null
+                          )
+                        "
+                        placeholder="np. 35"
+                        class="w-24 px-2 py-1 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        [disabled]="updatingTargetOccupancyConfig()"
+                      />
+                      <span class="text-xs text-neutral-500">Target occupancy (%)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <input
+                        type="number"
+                        [value]="cleanupHours().toString()"
+                        (input)="cleanupHours.set(parseNumber($any($event.target).value))"
+                        placeholder="12"
+                        class="w-24 px-2 py-1 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        [disabled]="updatingTargetOccupancyConfig()"
+                      />
+                      <span class="text-xs text-neutral-500"
+                        >Final cleanup (h przed startem, 0 = wyłączony)</span
+                      >
+                    </div>
+                    @if (cleanupHours() === 0) {
+                      <p class="text-xs text-warning-600">
+                        ⚠️ Cleanup wyłączony – fake users pozostaną do samego startu.
+                      </p>
+                    }
+                    <div class="flex items-center gap-2">
+                      <input
+                        type="number"
+                        [value]="minFreeSlotsBuffer().toString()"
+                        (input)="minFreeSlotsBuffer.set(parseNumber($any($event.target).value))"
+                        placeholder="3"
+                        class="w-24 px-2 py-1 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        [disabled]="updatingTargetOccupancyConfig()"
+                      />
+                      <span class="text-xs text-neutral-500"
+                        >Min buffer (wolne sloty, 0 = brak)</span
+                      >
+                    </div>
                     <app-button
                       appearance="soft"
                       color="primary"
                       size="sm"
-                      [loading]="updatingTargetOccupancy()"
-                      (clicked)="updateTargetOccupancy()"
+                      [loading]="updatingTargetOccupancyConfig()"
+                      (clicked)="updateTargetOccupancyConfig()"
                     >
                       Zapisz
                     </app-button>
@@ -353,11 +397,17 @@ export class EventManageComponent implements OnInit {
   readonly sendingAnnouncement = signal(false);
   readonly lastAnnouncementStats = signal<AnnouncementReceiptStats | null>(null);
   readonly targetOccupancy = signal<number | null>(null);
-  readonly targetOccupancyInput = signal('');
   readonly updatingTargetOccupancy = signal(false);
+  readonly cleanupHours = signal(FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT);
+  readonly minFreeSlotsBuffer = signal(FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT);
+  readonly updatingTargetOccupancyConfig = signal(false);
   announcementMessage = '';
   announcementPriority = 'INFORMATIONAL';
   private eventId = '';
+
+  parseNumber(value: string): number {
+    return parseInt(value, 10) || 0;
+  }
 
   readonly lifecycleBannerVariant = computed<LifecycleBannerVariant | null>(() => {
     const e = this.eventData();
@@ -459,8 +509,14 @@ export class EventManageComponent implements OnInit {
     this.eventService.getEvent(this.eventId).subscribe({
       next: (event) => {
         this.eventData.set(event);
-        this.targetOccupancy.set(event.targetOccupancy ?? null);
-        this.targetOccupancyInput.set(event.targetOccupancy?.toString() ?? '');
+        this.targetOccupancy.set(event.targetOccupancyConfig?.targetOccupancy ?? null);
+        this.cleanupHours.set(
+          event.targetOccupancyConfig?.cleanupHours ?? FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT,
+        );
+        this.minFreeSlotsBuffer.set(
+          event.targetOccupancyConfig?.minFreeSlotsBuffer ??
+            FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT,
+        );
         this.breadcrumb.setContext({ eventTitle: event.title });
       },
     });
@@ -586,11 +642,8 @@ export class EventManageComponent implements OnInit {
   }
 
   updateTargetOccupancy(): void {
-    const value = this.targetOccupancyInput();
-    const parsed = value ? parseInt(value, 10) : null;
-    this.targetOccupancy.set(parsed);
     this.updatingTargetOccupancy.set(true);
-    this.adminService.setEventTargetOccupancy(this.eventId, parsed).subscribe({
+    this.adminService.setEventTargetOccupancy(this.eventId, this.targetOccupancy()).subscribe({
       next: () => {
         this.updatingTargetOccupancy.set(false);
         this.snackbar.success('Zaktualizowano target occupancy');
@@ -600,6 +653,29 @@ export class EventManageComponent implements OnInit {
         this.snackbar.error(err?.error?.message || 'Nie udało się zaktualizować');
       },
     });
+  }
+
+  updateTargetOccupancyConfig(): void {
+    this.updatingTargetOccupancyConfig.set(true);
+    this.adminService
+      .setEventTargetOccupancyConfig(this.eventId, {
+        targetOccupancy: this.targetOccupancy(),
+        cleanupHours: this.cleanupHours(),
+        minFreeSlotsBuffer: this.minFreeSlotsBuffer(),
+      })
+      .subscribe({
+        next: () => {
+          this.updatingTargetOccupancyConfig.set(false);
+          this.snackbar.success('Zaktualizowano konfigurację fake users');
+        },
+        error: (err: unknown) => {
+          this.updatingTargetOccupancyConfig.set(false);
+          this.snackbar.error(
+            (err as { error?: { message?: string } })?.error?.message ||
+              'Nie udało się zaktualizować',
+          );
+        },
+      });
   }
 
   enrollFakeUser(): void {

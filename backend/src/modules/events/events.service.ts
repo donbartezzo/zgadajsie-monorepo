@@ -17,6 +17,8 @@ import {
   NOT_ORGANIZER_MESSAGE,
   EVENT_CANCELLED_MESSAGE,
   buildEventUrl,
+  FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT,
+  FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT,
 } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
@@ -27,6 +29,7 @@ import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptio
 import { SlotService } from '../slots/slot.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { EnrollmentEligibilityService } from '../enrollment/enrollment-eligibility.service';
+import { FakeUsersMonitorService } from '../fake-users/fake-users-monitor.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
@@ -53,6 +56,7 @@ export class EventsService {
     private slotService: SlotService,
     private eventRealtime: EventRealtimeService,
     private eligibility: EnrollmentEligibilityService,
+    private fakeUsersMonitor: FakeUsersMonitorService,
   ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
@@ -101,6 +105,16 @@ export class EventsService {
         rules: dto.rules,
         facilityReserved: dto.facilityReserved ?? true,
         welcomeMessageEnabled: dto.welcomeMessageEnabled ?? true,
+        targetOccupancyConfig: dto.targetOccupancy
+          ? {
+              create: {
+                targetOccupancy: dto.targetOccupancy,
+                cleanupHours: dto.cleanupHours ?? FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT,
+                minFreeSlotsBuffer:
+                  dto.minFreeSlotsBuffer ?? FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT,
+              },
+            }
+          : undefined,
       },
       include: { discipline: true, facility: true, level: true, city: true, coverImage: true },
     });
@@ -108,7 +122,12 @@ export class EventsService {
     // Create slots for the event (with role assignment if roleConfig provided)
     await this.slotService.createSlotsForEvent(event.id, dto.maxParticipants, dto.roleConfig);
 
-    this.notifyCitySubscribers(event.id, event.title, event.citySlug, event.city.slug, organizerId);
+    this.notifyCitySubscribers(event.id, event.title, event.citySlug, event.citySlug, organizerId);
+
+    // Trigger fake users monitor if targetOccupancy is set
+    if (dto.targetOccupancy) {
+      await this.fakeUsersMonitor.handleTargetOccupancyChange(event.id, dto.targetOccupancy);
+    }
 
     return event;
   }
@@ -261,6 +280,7 @@ export class EventsService {
         level: true,
         city: true,
         coverImage: true,
+        targetOccupancyConfig: true,
         series: { select: { id: true, name: true } },
         organizer: {
           select: {
@@ -366,7 +386,6 @@ export class EventsService {
     if (dto.endsAt) data.endsAt = new Date(dto.endsAt);
     if (dto.welcomeMessageEnabled !== undefined)
       data.welcomeMessageEnabled = dto.welcomeMessageEnabled;
-
     // Validate and sync slots if maxParticipants or roleConfig is changing
     const newRoleConfig =
       (dto.roleConfig as { roles: Array<{ key: string; slots: number }> } | undefined) ??
@@ -892,32 +911,95 @@ export class EventsService {
   }
 
   async setTargetOccupancy(eventId: string, targetOccupancy: number | null) {
-    const event = await this.prisma.event.findUnique({
-      where: { id: eventId },
-    });
-
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
       throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
     }
 
-    // Walidacja: 1-100, null/0 = wyłączone
-    if (targetOccupancy !== null && targetOccupancy !== undefined) {
-      if (targetOccupancy < 0 || targetOccupancy > 100) {
-        throw new BadRequestException('targetOccupancy musi być między 0 a 100 (null = wyłączone)');
-      }
-      if (targetOccupancy === 0) {
-        targetOccupancy = null;
-      }
+    const normalized = !targetOccupancy || targetOccupancy === 0 ? null : targetOccupancy;
+
+    if (normalized !== null && (normalized < 1 || normalized > 100)) {
+      throw new BadRequestException('targetOccupancy musi być między 0 a 100 (null = wyłączone)');
     }
 
-    const updated = await this.prisma.event.update({
-      where: { id: eventId },
-      data: { targetOccupancy },
-    });
+    if (normalized === null) {
+      await this.prisma.eventTargetOccupancyConfig.deleteMany({ where: { eventId } });
+    } else {
+      await this.prisma.eventTargetOccupancyConfig.upsert({
+        where: { eventId },
+        create: { eventId, targetOccupancy: normalized },
+        update: { targetOccupancy: normalized },
+      });
+    }
 
-    // Trigger natychmiastowego przeliczenia monitora po zmianie
-    // Jest realizowane przez cron fake-users-monitor przy kolejnym przebiegu
+    await this.fakeUsersMonitor.handleTargetOccupancyChange(eventId, normalized);
+  }
 
-    return updated;
+  async setTargetOccupancyConfig(
+    eventId: string,
+    dto: {
+      targetOccupancy?: number | null;
+      cleanupHours?: number;
+      minFreeSlotsBuffer?: number;
+    },
+  ) {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
+    }
+
+    if (dto.targetOccupancy !== undefined && dto.targetOccupancy !== null) {
+      if (dto.targetOccupancy < 0 || dto.targetOccupancy > 100) {
+        throw new BadRequestException('targetOccupancy musi być między 0 a 100');
+      }
+    }
+    if (dto.cleanupHours !== undefined && dto.cleanupHours < 0) {
+      throw new BadRequestException('cleanupHours musi być ≥ 0');
+    }
+    if (dto.minFreeSlotsBuffer !== undefined && dto.minFreeSlotsBuffer < 0) {
+      throw new BadRequestException('minFreeSlotsBuffer musi być ≥ 0');
+    }
+
+    const normalizedTarget =
+      dto.targetOccupancy !== undefined
+        ? dto.targetOccupancy === 0
+          ? null
+          : dto.targetOccupancy
+        : undefined;
+
+    if (normalizedTarget === null) {
+      await this.prisma.eventTargetOccupancyConfig.deleteMany({ where: { eventId } });
+    } else if (normalizedTarget !== undefined) {
+      await this.prisma.eventTargetOccupancyConfig.upsert({
+        where: { eventId },
+        create: {
+          eventId,
+          targetOccupancy: normalizedTarget,
+          cleanupHours: dto.cleanupHours ?? 12,
+          minFreeSlotsBuffer: dto.minFreeSlotsBuffer ?? 3,
+        },
+        update: {
+          targetOccupancy: normalizedTarget,
+          ...(dto.cleanupHours !== undefined && { cleanupHours: dto.cleanupHours }),
+          ...(dto.minFreeSlotsBuffer !== undefined && {
+            minFreeSlotsBuffer: dto.minFreeSlotsBuffer,
+          }),
+        },
+      });
+    } else if (dto.cleanupHours !== undefined || dto.minFreeSlotsBuffer !== undefined) {
+      await this.prisma.eventTargetOccupancyConfig.updateMany({
+        where: { eventId },
+        data: {
+          ...(dto.cleanupHours !== undefined && { cleanupHours: dto.cleanupHours }),
+          ...(dto.minFreeSlotsBuffer !== undefined && {
+            minFreeSlotsBuffer: dto.minFreeSlotsBuffer,
+          }),
+        },
+      });
+    }
+
+    if (dto.targetOccupancy !== undefined) {
+      await this.fakeUsersMonitor.handleTargetOccupancyChange(eventId, normalizedTarget ?? null);
+    }
   }
 }

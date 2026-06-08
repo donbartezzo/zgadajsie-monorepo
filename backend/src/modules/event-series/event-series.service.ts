@@ -11,11 +11,14 @@ import {
   EventSeriesRecurrenceType,
   previewSeriesDates,
   EVENT_SERIES_PREVIEW_COUNT,
+  FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT,
+  FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT,
 } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { SlotService } from '../slots/slot.service';
 import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptions.service';
 import { PushService } from '../notifications/push.service';
+import { FakeUsersMonitorService } from '../fake-users/fake-users-monitor.service';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
 import { isAdminUser } from '../auth/utils/auth-user.util';
 import { EventSeriesGenerator } from './event-series.generator';
@@ -36,6 +39,7 @@ export class EventSeriesService {
     private generator: EventSeriesGenerator,
     private citySubscriptionsService: CitySubscriptionsService,
     private pushService: PushService,
+    private fakeUsersMonitor: FakeUsersMonitorService,
   ) {}
 
   async createSeries(organizerId: string, dto: CreateEventSeriesDto) {
@@ -91,6 +95,16 @@ export class EventSeriesService {
         templateSnapshot,
         isActive: true,
         nextGenerationAt: new Date(),
+        targetOccupancyConfig: dto.targetOccupancy
+          ? {
+              create: {
+                targetOccupancy: dto.targetOccupancy,
+                cleanupHours: dto.cleanupHours ?? FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT,
+                minFreeSlotsBuffer:
+                  dto.minFreeSlotsBuffer ?? FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT,
+              },
+            }
+          : undefined,
       },
     });
 
@@ -126,6 +140,7 @@ export class EventSeriesService {
     const series = await this.prisma.eventSeries.findUnique({
       where: { id },
       include: {
+        targetOccupancyConfig: true,
         events: {
           where: {
             status: { in: [EventStatus.ACTIVE, EventStatus.PENDING] },
@@ -241,6 +256,82 @@ export class EventSeriesService {
         nextGenerationAt: now,
       },
     });
+
+    // Propagacja fake users config na przyszłe wydarzenia serii
+    const fakeConfigChanged =
+      dto.targetOccupancy !== undefined ||
+      dto.cleanupHours !== undefined ||
+      dto.minFreeSlotsBuffer !== undefined;
+
+    if (fakeConfigChanged) {
+      const normalizedTarget =
+        dto.targetOccupancy === 0 || dto.targetOccupancy === null ? null : dto.targetOccupancy;
+
+      if (normalizedTarget === null && dto.targetOccupancy !== undefined) {
+        // Wyłącz: usuń config serii i wszystkich przyszłych wydarzeń
+        await this.prisma.eventSeriesTargetOccupancyConfig.deleteMany({ where: { seriesId: id } });
+        await this.prisma.eventTargetOccupancyConfig.deleteMany({
+          where: { event: { seriesId: id, startsAt: { gt: now } } },
+        });
+      } else if (normalizedTarget !== undefined && normalizedTarget !== null) {
+        // Włącz/zaktualizuj config serii
+        const configData = {
+          targetOccupancy: normalizedTarget,
+          cleanupHours: dto.cleanupHours ?? FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT,
+          minFreeSlotsBuffer: dto.minFreeSlotsBuffer ?? FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT,
+        };
+        await this.prisma.eventSeriesTargetOccupancyConfig.upsert({
+          where: { seriesId: id },
+          create: { seriesId: id, ...configData },
+          update: configData,
+        });
+
+        // Propaguj na przyszłe wydarzenia (delete + re-insert)
+        const futureEventIds = await this.prisma.event.findMany({
+          where: { seriesId: id, startsAt: { gt: now } },
+          select: { id: true },
+        });
+        const ids = futureEventIds.map((e) => e.id);
+
+        if (ids.length > 0) {
+          await this.prisma.eventTargetOccupancyConfig.deleteMany({
+            where: { eventId: { in: ids } },
+          });
+          await this.prisma.eventTargetOccupancyConfig.createMany({
+            data: ids.map((eventId) => ({ eventId, ...configData })),
+          });
+        }
+      } else {
+        // Tylko cleanupHours/minFreeSlotsBuffer się zmienił — zaktualizuj istniejące
+        const partialUpdate = {
+          ...(dto.cleanupHours !== undefined && { cleanupHours: dto.cleanupHours }),
+          ...(dto.minFreeSlotsBuffer !== undefined && {
+            minFreeSlotsBuffer: dto.minFreeSlotsBuffer,
+          }),
+        };
+        await this.prisma.eventSeriesTargetOccupancyConfig.updateMany({
+          where: { seriesId: id },
+          data: partialUpdate,
+        });
+        await this.prisma.eventTargetOccupancyConfig.updateMany({
+          where: { event: { seriesId: id, startsAt: { gt: now } } },
+          data: partialUpdate,
+        });
+      }
+
+      // Trigger monitora dla aktywnych przyszłych wydarzeń
+      if (dto.targetOccupancy !== undefined) {
+        const normalizedForMonitor =
+          dto.targetOccupancy === 0 ? null : (dto.targetOccupancy ?? null);
+        const activeEvents = await this.prisma.event.findMany({
+          where: { seriesId: id, startsAt: { gt: now }, status: 'ACTIVE' },
+          select: { id: true },
+        });
+        for (const event of activeEvents) {
+          await this.fakeUsersMonitor.handleTargetOccupancyChange(event.id, normalizedForMonitor);
+        }
+      }
+    }
 
     await this.generator.generateForSeries(id);
 
@@ -434,35 +525,67 @@ export class EventSeriesService {
   }
 
   async setTargetOccupancy(seriesId: string, targetOccupancy: number | null) {
-    const series = await this.prisma.eventSeries.findUnique({
-      where: { id: seriesId },
-    });
-
+    const series = await this.prisma.eventSeries.findUnique({ where: { id: seriesId } });
     if (!series) {
       throw new NotFoundException('Serie wydarzeń nie została znaleziona');
     }
 
-    // Walidacja: 1-100, null/0 = wyłączone
-    if (targetOccupancy !== null && targetOccupancy !== undefined) {
-      if (targetOccupancy < 0 || targetOccupancy > 100) {
-        throw new BadRequestException('targetOccupancy musi być między 0 a 100 (null = wyłączone)');
-      }
-      if (targetOccupancy === 0) {
-        targetOccupancy = null;
+    const normalized = !targetOccupancy || targetOccupancy === 0 ? null : targetOccupancy;
+
+    if (normalized !== null && (normalized < 1 || normalized > 100)) {
+      throw new BadRequestException('targetOccupancy musi być między 0 a 100 (null = wyłączone)');
+    }
+
+    const now = new Date();
+
+    if (normalized === null) {
+      await this.prisma.eventSeriesTargetOccupancyConfig.deleteMany({ where: { seriesId } });
+      await this.prisma.eventTargetOccupancyConfig.deleteMany({
+        where: { event: { seriesId, startsAt: { gt: now } } },
+      });
+    } else {
+      await this.prisma.eventSeriesTargetOccupancyConfig.upsert({
+        where: { seriesId },
+        create: { seriesId, targetOccupancy: normalized },
+        update: { targetOccupancy: normalized },
+      });
+
+      const seriesConfig = await this.prisma.eventSeriesTargetOccupancyConfig.findUnique({
+        where: { seriesId },
+      });
+
+      const futureEventIds = await this.prisma.event.findMany({
+        where: { seriesId, startsAt: { gt: now } },
+        select: { id: true },
+      });
+      const ids = futureEventIds.map((e) => e.id);
+
+      if (ids.length > 0 && seriesConfig) {
+        await this.prisma.eventTargetOccupancyConfig.deleteMany({
+          where: { eventId: { in: ids } },
+        });
+        await this.prisma.eventTargetOccupancyConfig.createMany({
+          data: ids.map((eventId) => ({
+            eventId,
+            targetOccupancy: normalized,
+            cleanupHours: seriesConfig.cleanupHours,
+            minFreeSlotsBuffer: seriesConfig.minFreeSlotsBuffer,
+          })),
+        });
       }
     }
 
-    const updated = await this.prisma.eventSeries.update({
-      where: { id: seriesId },
-      data: { targetOccupancy },
+    const activeEvents = await this.prisma.event.findMany({
+      where: { seriesId, startsAt: { gt: now }, status: 'ACTIVE' },
+      select: { id: true },
     });
+    for (const event of activeEvents) {
+      await this.fakeUsersMonitor.handleTargetOccupancyChange(event.id, normalized);
+    }
 
-    // TODO: Propagacja w generatorze serii
-    // Będzie zaimplementowane w Faziie 4 (generator serii)
-
-    // TODO: Trigger natychmiastowego przeliczenia monitora po zmianie
-    // Będzie zaimplementowane w Faziie 6 (FakeUsersMonitorService)
-
-    return updated;
+    return this.prisma.eventSeries.findUnique({
+      where: { id: seriesId },
+      include: { targetOccupancyConfig: true },
+    });
   }
 }

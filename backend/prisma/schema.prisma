@@ -140,9 +140,8 @@ model Event {
   roleConfig            Json?
   facilityReserved      Boolean              @default(true)
   seriesId              String?
-  confirmToken          String?              @unique
-  targetOccupancy       Int?
-  welcomeMessageEnabled Boolean              @default(true)
+  confirmToken                  String?              @unique
+  welcomeMessageEnabled         Boolean              @default(true)
   city                  City                 @relation(fields: [citySlug], references: [slug])
   coverImage            CoverImage?          @relation(fields: [coverImageId], references: [id])
   discipline            EventDiscipline      @relation(fields: [disciplineSlug], references: [slug])
@@ -150,6 +149,7 @@ model Event {
   level                 EventLevel           @relation(fields: [levelSlug], references: [slug])
   organizer             User                 @relation("OrganizerEvents", fields: [organizerId], references: [id])
   series                EventSeries?         @relation("SeriesEvents", fields: [seriesId], references: [id])
+  targetOccupancyConfig       EventTargetOccupancyConfig?
   announcements         EventAnnouncement[]
   groupChatMessages     EventGroupMessage[]
   enrollments           EventEnrollment[]
@@ -185,14 +185,30 @@ model EventSeries {
   isActive         Boolean                   @default(true)
   createdAt        DateTime                  @default(now())
   updatedAt        DateTime                  @updatedAt
-  suspendedAt      DateTime?
-  suspendedReason  String?
-  targetOccupancy  Int?
-  events           Event[]                   @relation("SeriesEvents")
+  suspendedAt                  DateTime?
+  suspendedReason              String?
+  events                       Event[]                   @relation("SeriesEvents")
   organizer        User                      @relation(fields: [organizerId], references: [id])
+  targetOccupancyConfig  EventSeriesTargetOccupancyConfig?
 
   @@index([organizerId])
   @@index([isActive, nextGenerationAt])
+}
+
+model EventTargetOccupancyConfig {
+  eventId            String @id
+  targetOccupancy    Int    @default(35)
+  cleanupHours       Int    @default(12)
+  minFreeSlotsBuffer Int    @default(3)
+  event              Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model EventSeriesTargetOccupancyConfig {
+  seriesId           String      @id
+  targetOccupancy    Int         @default(35)
+  cleanupHours       Int         @default(12)
+  minFreeSlotsBuffer Int         @default(3)
+  series             EventSeries @relation(fields: [seriesId], references: [id], onDelete: Cascade)
 }
 
 model EventEnrollment {
@@ -585,6 +601,7 @@ enum NotificationKind {
   REPRIMAND
   ANNOUNCEMENT
   PAYMENT_CANCELLED
+  REAL_USER_JOINED_FAKE_EVENT
 }
 
 enum AnnouncementPriority {

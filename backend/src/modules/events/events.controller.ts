@@ -121,4 +121,19 @@ export class EventsController {
   setTargetOccupancy(@Param('id') id: string, @Body() dto: { targetOccupancy: number | null }) {
     return this.eventsService.setTargetOccupancy(id, dto.targetOccupancy);
   }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @Patch(':id/fake-users-config')
+  setTargetOccupancyConfig(
+    @Param('id') id: string,
+    @Body()
+    dto: {
+      targetOccupancy?: number | null;
+      cleanupHours?: number;
+      minFreeSlotsBuffer?: number;
+    },
+  ) {
+    return this.eventsService.setTargetOccupancyConfig(id, dto);
+  }
 }

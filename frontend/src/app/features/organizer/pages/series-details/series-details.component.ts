@@ -25,6 +25,8 @@ import {
   formatDateLong,
   formatTime,
   UpdateEventSeriesPayload,
+  FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT,
+  FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT,
 } from '@zgadajsie/shared';
 
 const WEEKDAY_LABELS: Record<number, string> = {
@@ -115,6 +117,13 @@ export class SeriesDetailsComponent implements OnInit {
         startDate: [s.startDate.slice(0, 10), Validators.required],
         endDate: [s.endDate ? s.endDate.slice(0, 10) : ''],
         isActive: [s.isActive],
+        targetOccupancy: [s.targetOccupancyConfig?.targetOccupancy ?? null],
+        cleanupHours: [
+          s.targetOccupancyConfig?.cleanupHours ?? FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT,
+        ],
+        minFreeSlotsBuffer: [
+          s.targetOccupancyConfig?.minFreeSlotsBuffer ?? FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT,
+        ],
       }),
     );
     this.isEditing.set(true);
@@ -166,6 +175,9 @@ export class SeriesDetailsComponent implements OnInit {
       startDate: string;
       endDate: string;
       isActive: boolean;
+      targetOccupancy: number | null;
+      cleanupHours: number;
+      minFreeSlotsBuffer: number;
     };
 
     const payload: UpdateEventSeriesPayload = {
@@ -178,6 +190,9 @@ export class SeriesDetailsComponent implements OnInit {
       startDate: value.startDate,
       endDate: value.endDate || undefined,
       isActive: value.isActive,
+      targetOccupancy: value.targetOccupancy,
+      cleanupHours: value.cleanupHours,
+      minFreeSlotsBuffer: value.minFreeSlotsBuffer,
     };
 
     this.eventSeriesService.updateSeries(s.id, payload).subscribe({

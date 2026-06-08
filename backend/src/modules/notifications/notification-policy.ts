@@ -114,4 +114,13 @@ export const NOTIFICATION_POLICIES: Record<NotificationKind, NotificationPolicy>
     groupKey: (ctx) => (ctx.relatedEventId ? `announce:${ctx.relatedEventId}` : null),
     relevanceUntil: () => daysFromNow(14),
   },
+  REAL_USER_JOINED_FAKE_EVENT: {
+    urgency: 'NORMAL',
+    emailMode: 'DIGEST',
+    allowPush: true,
+    allowEmail: true,
+    groupKey: (ctx) => (ctx.relatedEventId ? `fake-join:${ctx.relatedEventId}` : null),
+    relevanceUntil: (ctx) =>
+      ctx.eventStartAt ? hoursFromNow(1, ctx.eventStartAt) : daysFromNow(14),
+  },
 };

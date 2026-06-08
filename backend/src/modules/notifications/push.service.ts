@@ -234,4 +234,31 @@ export class PushService {
       chatUrl,
     );
   }
+
+  private async getAdminUsers(): Promise<Array<{ id: string }>> {
+    return this.prisma.user.findMany({
+      where: { role: 'ADMIN' },
+      select: { id: true },
+    });
+  }
+
+  async notifyAdminsRealUserJoinedFakeEvent(
+    eventId: string,
+    eventTitle: string,
+    joinerName: string,
+    eventStartAt?: Date,
+  ): Promise<void> {
+    const admins = await this.getAdminUsers();
+    const url = await this.getManageUrl(eventId);
+
+    for (const admin of admins) {
+      await this.notifyUser(
+        { userId: admin.id, relatedEventId: eventId, eventStartAt },
+        'REAL_USER_JOINED_FAKE_EVENT' as NotificationKind,
+        `Realny użytkownik dołączył – ${eventTitle}`,
+        `${joinerName} dołączył do wydarzenia z aktywnym target occupancy`,
+        url,
+      );
+    }
+  }
 }

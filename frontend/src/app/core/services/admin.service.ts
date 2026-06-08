@@ -95,6 +95,17 @@ export class AdminService {
     });
   }
 
+  setEventTargetOccupancyConfig(
+    eventId: string,
+    dto: {
+      targetOccupancy?: number | null;
+      cleanupHours?: number;
+      minFreeSlotsBuffer?: number;
+    },
+  ): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/events/${eventId}/fake-users-config`, dto);
+  }
+
   adminWithdrawUser(enrollmentId: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/enrollments/${enrollmentId}/admin-withdraw`, {});
   }

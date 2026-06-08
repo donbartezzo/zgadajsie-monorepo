@@ -154,7 +154,7 @@ export class EnrollmentService {
         'PRE_ENROLLMENT',
         validatedRoleKey,
       );
-      this.sendWelcomeMessageIfNeeded(eventId, event.organizerId, userId);
+      await this.handlePostJoinActions(eventId, event.organizerId, userId);
       return result;
     }
 
@@ -166,7 +166,7 @@ export class EnrollmentService {
       isPaid,
       validatedRoleKey,
     );
-    this.sendWelcomeMessageIfNeeded(eventId, event.organizerId, userId);
+    await this.handlePostJoinActions(eventId, event.organizerId, userId);
     return result;
   }
 
@@ -348,6 +348,12 @@ export class EnrollmentService {
             this.logger.error(`Failed to notify organizer about new guest: ${err}`);
           }
         }
+        this.triggerFakeUsersRebalanceIfNeeded(eventId);
+        this.notifyAdminsIfRealJoinedPumpedEvent(
+          eventId,
+          guestUser.displayName,
+          guestUser.accountType,
+        );
         return result;
       }
     }
@@ -386,6 +392,8 @@ export class EnrollmentService {
         this.logger.error(`Failed to notify organizer about new guest: ${err}`);
       }
     }
+    this.triggerFakeUsersRebalanceIfNeeded(eventId);
+    this.notifyAdminsIfRealJoinedPumpedEvent(eventId, guestUser.displayName, guestUser.accountType);
     return withDerivedStatus(participation);
   }
 
@@ -877,6 +885,32 @@ export class EnrollmentService {
     return this.assertJoinEligibility(event);
   }
 
+  /**
+   * Handle post-join actions: welcome message, fake users rebalance, admin notification.
+   * Fire-and-forget - doesn't block join flow.
+   */
+  private async handlePostJoinActions(
+    eventId: string,
+    organizerId: string,
+    userId: string,
+  ): Promise<void> {
+    this.sendWelcomeMessageIfNeeded(eventId, organizerId, userId);
+    this.triggerFakeUsersRebalanceIfNeeded(eventId);
+
+    const joinerData = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { displayName: true, accountType: true },
+    });
+
+    if (joinerData) {
+      this.notifyAdminsIfRealJoinedPumpedEvent(
+        eventId,
+        joinerData.displayName,
+        joinerData.accountType,
+      );
+    }
+  }
+
   private assertEventMutable(
     event: { startsAt: Date; endsAt: Date; status: string },
     isAdmin: boolean,
@@ -1292,6 +1326,17 @@ export class EnrollmentService {
       }
     }
 
+    this.triggerFakeUsersRebalanceIfNeeded(event.id);
+
+    // Notify admins if real user joined pumped event
+    if (withSlot.user) {
+      this.notifyAdminsIfRealJoinedPumpedEvent(
+        event.id,
+        withSlot.user.displayName,
+        withSlot.user.accountType,
+      );
+    }
+
     return {
       ...withDerivedStatus(withSlot),
       isPaid,
@@ -1630,6 +1675,83 @@ export class EnrollmentService {
         this.logger.error(`Failed to trigger fake user withdrawal for event ${eventId}: ${err}`);
       }
     }
+  }
+
+  private async triggerFakeUsersRebalanceIfNeeded(eventId: string): Promise<void> {
+    if (!this.fakeUsersMonitor || !featureFlags.enableFakeUsers) {
+      return;
+    }
+
+    // Rebalans po dołączeniu realnego/gościa - niezależnie od bufora
+    // Fake nie zajmują slotów, więc realny user nigdy nie jest blokowany
+    // Rebalans służy szybkiemu dostosowaniu fake count do targetCount
+    try {
+      await this.fakeUsersMonitor.monitorSingleEvent(eventId);
+    } catch (err) {
+      this.logger.error(`Failed to trigger fake users rebalance for event ${eventId}: ${err}`);
+    }
+  }
+
+  private async isEventPumped(eventId: string): Promise<boolean> {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { targetOccupancyConfig: { select: { targetOccupancy: true } } },
+    });
+
+    if (!event) {
+      return false;
+    }
+
+    // Gate: tylko wydarzenia z targetOccupancyConfig (pompowane)
+    if (!event.targetOccupancyConfig || event.targetOccupancyConfig.targetOccupancy === 0) {
+      return false;
+    }
+
+    // Dodatkowo sprawdź czy są już fake enrollments
+    const fakeCount = await this.prisma.eventEnrollment.count({
+      where: {
+        eventId,
+        wantsIn: true,
+        user: { accountType: 'FAKE' },
+      },
+    });
+
+    return fakeCount > 0;
+  }
+
+  private async notifyAdminsIfRealJoinedPumpedEvent(
+    eventId: string,
+    joinerName: string,
+    joinerAccountType: string,
+  ): Promise<void> {
+    // Gate: tylko REAL/GUEST, nie FAKE
+    if (joinerAccountType === 'FAKE') {
+      return;
+    }
+
+    // Gate: tylko wydarzenia pompowane
+    const isPumped = await this.isEventPumped(eventId);
+    if (!isPumped) {
+      return;
+    }
+
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { title: true, startsAt: true },
+    });
+
+    if (!event) {
+      return;
+    }
+
+    // Fire-and-forget notification
+    setImmediate(() => {
+      this.pushService
+        .notifyAdminsRealUserJoinedFakeEvent(eventId, event.title, joinerName, event.startsAt)
+        .catch((err) => {
+          this.logger.error(`Failed to notify admins about real user joined fake event: ${err}`);
+        });
+    });
   }
 
   async adminWithdrawUser(enrollmentId: string, adminUser: AuthUser): Promise<void> {

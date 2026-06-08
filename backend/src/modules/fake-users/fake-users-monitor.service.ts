@@ -2,14 +2,23 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ScheduledJobsService } from '../../common/scheduled-jobs/scheduled-jobs.service';
 import { featureFlags } from '../../common/config/feature-flags';
-import {
-  FAKE_USERS_MIN_FREE_SLOTS_BUFFER,
-  FAKE_USERS_FINAL_CLEANUP_HOURS,
-} from '@zgadajsie/shared';
 import { getEnrollmentPhase } from '../events/enrollment-phase.util';
 
 const FAKE_USER_ENROLL = 'FAKE_USER_ENROLL';
 const FAKE_USER_WITHDRAW = 'FAKE_USER_WITHDRAW';
+
+type EventWithConfig = {
+  id: string;
+  maxParticipants: number;
+  startsAt: Date;
+  lotteryExecutedAt: Date | null;
+  status: string;
+  targetOccupancyConfig: {
+    targetOccupancy: number;
+    cleanupHours: number;
+    minFreeSlotsBuffer: number;
+  };
+};
 
 @Injectable()
 export class FakeUsersMonitorService {
@@ -36,68 +45,59 @@ export class FakeUsersMonitorService {
     }
   }
 
-  private async getQualifiedEvents(now: Date) {
+  private async getQualifiedEvents(now: Date): Promise<EventWithConfig[]> {
     return this.prisma.event.findMany({
       where: {
         status: 'ACTIVE',
-        targetOccupancy: { gte: 1 },
         startsAt: { gt: now },
+        targetOccupancyConfig: {
+          targetOccupancy: { gte: 1 },
+        },
       },
       select: {
         id: true,
         maxParticipants: true,
-        targetOccupancy: true,
         startsAt: true,
         lotteryExecutedAt: true,
         status: true,
+        targetOccupancyConfig: true,
       },
-    });
+    }) as Promise<EventWithConfig[]>;
   }
 
-  private async processEvent(
-    event: {
-      id: string;
-      maxParticipants: number;
-      targetOccupancy: number | null;
-      startsAt: Date;
-      lotteryExecutedAt: Date | null;
-      status: string;
-    },
-    now: Date,
-  ): Promise<void> {
+  private async processEvent(event: EventWithConfig, now: Date): Promise<void> {
     const phase = getEnrollmentPhase(event, now);
 
-    // Tylko OPEN_ENROLLMENT (po loterii, przed startem)
-    if (phase !== 'OPEN_ENROLLMENT') {
+    // Pomiń tylko fazę po starcie (null = zakończone)
+    if (phase === null) {
       return;
     }
 
-    // Finalny cleanup: X godzin przed startem (tylko jeśli monitorowanie jest aktywne)
-    if (event.targetOccupancy) {
+    const { targetOccupancy, cleanupHours, minFreeSlotsBuffer } = event.targetOccupancyConfig;
+
+    // Finalny cleanup: X godzin przed startem (cleanupHours = 0 → wyłączone)
+    if (cleanupHours > 0) {
       const hoursUntilStart = (event.startsAt.getTime() - now.getTime()) / (1000 * 60 * 60);
-      if (hoursUntilStart <= FAKE_USERS_FINAL_CLEANUP_HOURS) {
+      if (hoursUntilStart <= cleanupHours) {
         await this.scheduleFinalCleanup(event.id);
+        return;
       }
-      return;
     }
 
-    // Policz obciążenie
     const metrics = await this.calculateOccupancyMetrics(
       event.id,
       event.maxParticipants,
-      event.targetOccupancy,
+      targetOccupancy,
+      minFreeSlotsBuffer,
     );
 
     if (!metrics) {
       return;
     }
 
-    // Deficyt: dodaj fake users
     if (metrics.activeEnrollments < metrics.targetCount) {
       await this.scheduleFakeUserEnroll(event.id, metrics);
-    }
-    // Nadmiar: usuń fake users
-    else if (metrics.activeEnrollments > metrics.targetCount) {
+    } else if (metrics.activeEnrollments > metrics.targetCount) {
       await this.scheduleFakeUserWithdraw(event.id, metrics);
     }
   }
@@ -105,40 +105,60 @@ export class FakeUsersMonitorService {
   private async calculateOccupancyMetrics(
     eventId: string,
     maxParticipants: number,
-    targetOccupancy: number | null,
+    targetOccupancy: number,
+    minFreeSlotsBuffer: number,
   ) {
     if (!targetOccupancy) {
       return null;
     }
 
-    // Aktywne zgłoszenia (uczestnicy + oczekujący, bez wypisanych)
     const activeEnrollments = await this.prisma.eventEnrollment.count({
-      where: {
-        eventId,
-        wantsIn: true,
-      },
+      where: { eventId, wantsIn: true },
     });
 
-    // Fake users aktywni
-    const fakeActiveCount = await this.prisma.eventEnrollment.count({
+    // Idempotencja: dolicz PENDING joby by uniknąć przestrzeleń
+    const pendingEnrollJobs = await this.prisma.scheduledJob.count({
       where: {
-        eventId,
-        wantsIn: true,
-        user: {
-          accountType: 'FAKE',
+        type: FAKE_USER_ENROLL,
+        status: 'PENDING',
+        payload: {
+          path: ['eventId'],
+          equals: eventId,
         },
       },
     });
 
+    const pendingWithdrawJobs = await this.prisma.scheduledJob.count({
+      where: {
+        type: FAKE_USER_WITHDRAW,
+        status: 'PENDING',
+        payload: {
+          path: ['eventId'],
+          equals: eventId,
+        },
+      },
+    });
+
+    const effectiveEnrollments = activeEnrollments + pendingEnrollJobs - pendingWithdrawJobs;
+
+    const fakeActiveCount = await this.prisma.eventEnrollment.count({
+      where: {
+        eventId,
+        wantsIn: true,
+        user: { accountType: 'FAKE' },
+      },
+    });
+
     const targetCount = Math.ceil((targetOccupancy / 100) * maxParticipants);
-    const freePlaces = maxParticipants - activeEnrollments;
+    const freePlaces = maxParticipants - effectiveEnrollments;
 
     return {
-      activeEnrollments,
+      activeEnrollments: effectiveEnrollments,
       fakeActiveCount,
       targetCount,
       freePlaces,
       maxParticipants,
+      buffer: minFreeSlotsBuffer,
     };
   }
 
@@ -150,12 +170,11 @@ export class FakeUsersMonitorService {
       targetCount: number;
       freePlaces: number;
       maxParticipants: number;
+      buffer: number;
     },
   ): Promise<void> {
     const deficit = metrics.targetCount - metrics.activeEnrollments;
-
-    // Ogranicz do bufora
-    const maxToAdd = Math.max(0, metrics.freePlaces - FAKE_USERS_MIN_FREE_SLOTS_BUFFER);
+    const maxToAdd = Math.max(0, metrics.freePlaces - metrics.buffer);
     const toAdd = Math.min(deficit, maxToAdd);
 
     if (toAdd <= 0) {
@@ -165,15 +184,12 @@ export class FakeUsersMonitorService {
 
     this.logger.log(`Event ${eventId}: scheduling ${toAdd} fake user enrollments`);
 
-    // Zaplanuj joby z losowym, narastającym scheduledAt
     const now = new Date();
     const scheduledJobs: Promise<string>[] = [];
 
     for (let i = 0; i < toAdd; i++) {
-      // Losowe opóźnienie 0-5 minut dla każdego joba
       const delayMinutes = Math.random() * 5;
       const scheduledAt = new Date(now.getTime() + delayMinutes * 60 * 1000);
-
       scheduledJobs.push(
         this.scheduledJobs.scheduleJob(FAKE_USER_ENROLL, { eventId }, scheduledAt),
       );
@@ -194,27 +210,19 @@ export class FakeUsersMonitorService {
   ): Promise<void> {
     const surplus = metrics.activeEnrollments - metrics.targetCount;
 
-    // Wypisuj tylko fake users
     if (metrics.fakeActiveCount === 0) {
       this.logger.log(`Event ${eventId}: surplus ${surplus} but no fake users to withdraw`);
       return;
     }
 
     const toWithdraw = Math.min(surplus, metrics.fakeActiveCount);
-
     this.logger.log(`Event ${eventId}: scheduling ${toWithdraw} fake user withdrawals`);
 
-    // Pobierz fake users do wypisania
-    // Priorytet: fake users zajmujący sloty gdy realni czekają
     const waitingRealUsers = await this.prisma.eventEnrollment.count({
       where: {
         eventId,
         wantsIn: true,
-        user: {
-          accountType: {
-            not: 'FAKE',
-          },
-        },
+        user: { accountType: { not: 'FAKE' } },
         slot: null,
       },
     });
@@ -222,72 +230,50 @@ export class FakeUsersMonitorService {
     let fakeUsersToWithdraw;
 
     if (waitingRealUsers > 0) {
-      // Priorytet: fake users na slotach
       fakeUsersToWithdraw = await this.prisma.eventEnrollment.findMany({
         where: {
           eventId,
           wantsIn: true,
-          user: {
-            accountType: 'FAKE',
-          },
-          slot: {
-            isNot: null,
-          },
+          user: { accountType: 'FAKE' },
+          slot: { isNot: null },
         },
-        select: {
-          userId: true,
-        },
+        select: { userId: true },
         take: toWithdraw,
       });
 
-      // Jeśli nie ma wystarczająco na slotach, dodaj bez slotów
       if (fakeUsersToWithdraw.length < toWithdraw) {
         const remaining = toWithdraw - fakeUsersToWithdraw.length;
         const withoutSlots = await this.prisma.eventEnrollment.findMany({
           where: {
             eventId,
             wantsIn: true,
-            user: {
-              accountType: 'FAKE',
-            },
+            user: { accountType: 'FAKE' },
             slot: null,
-            userId: {
-              notIn: fakeUsersToWithdraw.map((e) => e.userId),
-            },
+            userId: { notIn: fakeUsersToWithdraw.map((e) => e.userId) },
           },
-          select: {
-            userId: true,
-          },
+          select: { userId: true },
           take: remaining,
         });
-
         fakeUsersToWithdraw = [...fakeUsersToWithdraw, ...withoutSlots];
       }
     } else {
-      // Brak czekających realnych userów - wypisuj losowo
       fakeUsersToWithdraw = await this.prisma.eventEnrollment.findMany({
         where: {
           eventId,
           wantsIn: true,
-          user: {
-            accountType: 'FAKE',
-          },
+          user: { accountType: 'FAKE' },
         },
-        select: {
-          userId: true,
-        },
+        select: { userId: true },
         take: toWithdraw,
       });
     }
 
-    // Zaplanuj joby z losowym, narastającym scheduledAt
     const now = new Date();
     const scheduledJobs: Promise<string>[] = [];
 
     for (const enrollment of fakeUsersToWithdraw) {
       const delayMinutes = Math.random() * 5;
       const scheduledAt = new Date(now.getTime() + delayMinutes * 60 * 1000);
-
       scheduledJobs.push(
         this.scheduledJobs.scheduleJob(
           FAKE_USER_WITHDRAW,
@@ -303,32 +289,25 @@ export class FakeUsersMonitorService {
   private async scheduleFinalCleanup(eventId: string): Promise<void> {
     this.logger.log(`Event ${eventId}: scheduling final cleanup of all fake users`);
 
-    // Pobierz wszystkie fake users
     const fakeUsers = await this.prisma.eventEnrollment.findMany({
       where: {
         eventId,
         wantsIn: true,
-        user: {
-          accountType: 'FAKE',
-        },
+        user: { accountType: 'FAKE' },
       },
-      select: {
-        userId: true,
-      },
+      select: { userId: true },
     });
 
     if (fakeUsers.length === 0) {
       return;
     }
 
-    // Zaplanuj withdrawal dla wszystkich
     const now = new Date();
     const scheduledJobs: Promise<string>[] = [];
 
     for (const enrollment of fakeUsers) {
       const delayMinutes = Math.random() * 5;
       const scheduledAt = new Date(now.getTime() + delayMinutes * 60 * 1000);
-
       scheduledJobs.push(
         this.scheduledJobs.scheduleJob(
           FAKE_USER_WITHDRAW,
@@ -346,12 +325,9 @@ export class FakeUsersMonitorService {
     newTargetOccupancy: number | null,
   ): Promise<void> {
     if (newTargetOccupancy === null || newTargetOccupancy === 0) {
-      // Wyłączenie: anuluj PENDING joby ENROLL, zaplanuj WITHDRAW wszystkich
       await this.scheduledJobs.cancelJobsByType(FAKE_USER_ENROLL, eventId);
       await this.scheduleFinalCleanup(eventId);
     } else {
-      // Zmiana wartości: przelicz i zaplanuj dodanie/usunięcie
-      // Natychmiastowe przeliczenie monitora
       await this.monitorSingleEvent(eventId);
     }
   }
@@ -363,17 +339,17 @@ export class FakeUsersMonitorService {
       select: {
         id: true,
         maxParticipants: true,
-        targetOccupancy: true,
         startsAt: true,
         lotteryExecutedAt: true,
         status: true,
+        targetOccupancyConfig: true,
       },
     });
 
-    if (!event) {
+    if (!event || !event.targetOccupancyConfig) {
       return;
     }
 
-    await this.processEvent(event, now);
+    await this.processEvent(event as EventWithConfig, now);
   }
 }
