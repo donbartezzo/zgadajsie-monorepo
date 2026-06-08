@@ -3,6 +3,8 @@ import {
   ConflictException,
   UnauthorizedException,
   BadRequestException,
+  ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { MILLISECONDS_PER_HOUR, SocialProvider } from '@zgadajsie/shared';
 import { hoursFromNow } from '../../common/utils/date.util';
@@ -14,9 +16,15 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { featureFlags } from '../../common/config/feature-flags';
+import { verifyTurnstile } from '../../common/utils/captcha.util';
+
+const TIME_TRAP_MIN_SECONDS = 3;
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -24,7 +32,41 @@ export class AuthService {
     private emailService: EmailService,
   ) {}
 
-  async register(dto: RegisterDto) {
+  async register(dto: RegisterDto, ipAddress: string) {
+    if (dto.website || dto.company) {
+      this.logger.warn(`Registration honeypot triggered: ${dto.email} from ${ipAddress}`);
+      return { message: 'Konto utworzone. Sprawdź email, aby aktywować konto.' };
+    }
+
+    if (dto.formRenderedAt) {
+      const renderedAt = new Date(dto.formRenderedAt);
+      const now = new Date();
+      const diffSeconds = (now.getTime() - renderedAt.getTime()) / 1000;
+
+      if (diffSeconds < TIME_TRAP_MIN_SECONDS) {
+        this.logger.warn(
+          `Registration time-trap triggered: ${dto.email} from ${ipAddress} (${diffSeconds}s)`,
+        );
+        throw new BadRequestException('Formularz został wypełniony zbyt szybko');
+      }
+    }
+
+    // Captcha jest best-effort: weryfikujemy tylko gdy klient dostarczył token.
+    // Gdy token jest nieobecny (captcha nie załadowała się po stronie klienta),
+    // przepuszczamy formularz — ochronę zapewniają honeypot, time-trap i rate-limit.
+    if (featureFlags.enableTurnstileCaptcha && dto.captchaToken) {
+      const secret = this.configService.getOrThrow<string>('TURNSTILE_SECRET_KEY');
+      const outcome = await verifyTurnstile(dto.captchaToken, ipAddress, secret, this.logger);
+      if (outcome === 'invalid') {
+        this.logger.warn(`Invalid Turnstile token for registration: ${dto.email}`);
+        throw new ForbiddenException('Weryfikacja captcha nie powiodła się');
+      }
+    } else if (featureFlags.enableTurnstileCaptcha) {
+      this.logger.warn(
+        `Registration without captcha token (captcha unavailable on client): ${dto.email} from ${ipAddress}`,
+      );
+    }
+
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -46,9 +88,36 @@ export class AuthService {
       },
     });
 
-    await this.emailService.sendActivationEmail(user.email, user.displayName, activationToken);
+    await this.sendActivationEmailSafe(user.email, user.displayName, activationToken);
 
     return { message: 'Konto utworzone. Sprawdź email, aby aktywować konto.' };
+  }
+
+  private async sendPasswordResetEmailSafe(email: string, token: string): Promise<void> {
+    try {
+      await this.emailService.sendPasswordResetEmail(email, token);
+    } catch (error) {
+      this.logger.error(
+        `Failed to send password reset email to ${email}: ${(error as Error).message}`,
+      );
+    }
+  }
+
+  /**
+   * Wysyłka maila aktywacyjnego jest best-effort: jej błąd (np. render szablonu
+   * albo niedostępny dostawca) NIE może przerywać rejestracji ani zostawiać konta
+   * w stanie 500-bez-maila. Konto już istnieje, a użytkownik ma „wyślij ponownie".
+   */
+  private async sendActivationEmailSafe(
+    email: string,
+    displayName: string,
+    token: string,
+  ): Promise<void> {
+    try {
+      await this.emailService.sendActivationEmail(email, displayName, token);
+    } catch (error) {
+      this.logger.error(`Failed to send activation email to ${email}: ${(error as Error).message}`);
+    }
   }
 
   async login(dto: LoginDto) {
@@ -128,7 +197,7 @@ export class AuthService {
       data: { activationToken, activationTokenExpiresAt },
     });
 
-    await this.emailService.sendActivationEmail(user.email, user.displayName, activationToken);
+    await this.sendActivationEmailSafe(user.email, user.displayName, activationToken);
 
     return { message: 'Jeśli konto istnieje, link aktywacyjny został wysłany' };
   }
@@ -144,7 +213,7 @@ export class AuthService {
         data: { passwordResetToken, passwordResetTokenExpiresAt },
       });
 
-      await this.emailService.sendPasswordResetEmail(user.email, passwordResetToken);
+      await this.sendPasswordResetEmailSafe(user.email, passwordResetToken);
     }
 
     return { message: 'Jeśli konto istnieje, link do resetu hasła został wysłany' };

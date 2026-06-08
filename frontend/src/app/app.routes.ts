@@ -353,6 +353,15 @@ export const appRoutes: Route[] = [
 
   // ── User ──
   {
+    path: 'notifications',
+    loadComponent: () =>
+      import('./features/notifications/pages/notifications/notifications-page.component').then(
+        (m) => m.NotificationsPageComponent,
+      ),
+    canActivate: [authGuard],
+    data: { title: 'Powiadomienia', breadcrumb: BREADCRUMB_TO_HOME },
+  },
+  {
     path: 'profile',
     loadComponent: () =>
       import('./features/user/pages/profile/profile.component').then((m) => m.ProfileComponent),
@@ -521,6 +530,30 @@ export const appRoutes: Route[] = [
     canActivate: [adminGuard],
     data: {
       title: 'Fake users',
+      breadcrumb: { parent: '/admin', label: 'Panel admina' },
+    },
+  },
+  {
+    path: 'admin/contact-messages',
+    loadComponent: () =>
+      import('./features/admin/pages/admin-contact-messages/admin-contact-messages.component').then(
+        (m) => m.AdminContactMessagesComponent,
+      ),
+    canActivate: [adminGuard],
+    data: {
+      title: 'Wiadomości kontaktowe',
+      breadcrumb: { parent: '/admin', label: 'Panel admina' },
+    },
+  },
+  {
+    path: 'admin/pending-emails',
+    loadComponent: () =>
+      import('./features/admin/pages/admin-pending-emails/admin-pending-emails.component').then(
+        (m) => m.AdminPendingEmailsComponent,
+      ),
+    canActivate: [adminGuard],
+    data: {
+      title: 'Kolejka emaili',
       breadcrumb: { parent: '/admin', label: 'Panel admina' },
     },
   },

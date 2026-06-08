@@ -6,7 +6,7 @@ import {
   JoinGuestRequest,
   CancelPaymentRequest,
 } from '../../../types';
-import { EventCountdown } from '@zgadajsie/shared';
+import { EventCountdown, ContactSource } from '@zgadajsie/shared';
 import { EventLifecycleStatus } from '../../../../features/event/constants/event-status-messages';
 import { SemanticColor } from '../../../types/colors';
 
@@ -21,6 +21,7 @@ export type OverlayType =
   | 'enrollmentDetails'
   | 'navigation'
   | 'cityOptions'
+  | 'contact'
   | null;
 
 export interface JoinWizardConfig {
@@ -75,6 +76,12 @@ export class BottomOverlaysService {
     { label: string; color?: SemanticColor } | undefined
   >(undefined);
   readonly enrollmentActionButton = this.enrollmentActionButtonSignal.asReadonly();
+
+  private readonly contactCitySlugSignal = signal<string | null>(null);
+  readonly contactCitySlug = this.contactCitySlugSignal.asReadonly();
+
+  private readonly contactSourceSignal = signal<ContactSource>(ContactSource.CONTACT_PAGE);
+  readonly contactSource = this.contactSourceSignal.asReadonly();
 
   readonly active = this.activeSignal.asReadonly();
   readonly event = this.eventSignal.asReadonly();
@@ -237,6 +244,12 @@ export class BottomOverlaysService {
 
   handleEnrollmentActionClicked(): void {
     this.enrollmentActionCallback?.();
+  }
+
+  openContact(citySlug?: string, source?: ContactSource): void {
+    this.contactCitySlugSignal.set(citySlug || null);
+    this.contactSourceSignal.set(source || ContactSource.CONTACT_PAGE);
+    this.open('contact');
   }
 
   clearCallbacks(): void {

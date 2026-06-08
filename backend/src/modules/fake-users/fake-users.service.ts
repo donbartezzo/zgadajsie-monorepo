@@ -253,19 +253,8 @@ export class FakeUsersService {
       throw new NotFoundException('Event not found');
     }
 
-    // Dla ręcznego dodania przez admina: wymagane minimum 1 wolne miejsce (bez bufora)
-    const activeEnrollments = await this.prisma.eventEnrollment.count({
-      where: {
-        eventId,
-        wantsIn: true,
-      },
-    });
-
-    const freePlaces = event.maxParticipants - activeEnrollments;
-
-    if (freePlaces <= 0) {
-      throw new BadRequestException('Brak wolnych miejsc w wydarzeniu');
-    }
+    // Administrator może dodać fake usera niezależnie od limitu miejsc
+    // (nie sprawdzamy wolnych miejsc - to działanie admina)
 
     // Wybierz fake usera
     const fakeUserId = await this.fakeUserPicker.pickFakeUserForEvent(eventId);
@@ -275,7 +264,7 @@ export class FakeUsersService {
     }
 
     // Wyznacz roleKey: dla wydarzeń z rolami użyj roli domyślnej
-    const roleConfig = event.roleConfig as EventRoleConfig | null;
+    const roleConfig = event.roleConfig as unknown as EventRoleConfig | null;
     const roleKey = roleConfig?.roles.find((r) => r.isDefault)?.key ?? undefined;
 
     // Natychmiastowe utworzenie enrollment (bez planowania joba)

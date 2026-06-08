@@ -19,6 +19,16 @@ interface LoginResponse extends AuthTokens {
   user: User;
 }
 
+interface RegisterPayload {
+  email: string;
+  password: string;
+  displayName: string;
+  captchaToken: string;
+  website: string;
+  company: string;
+  formRenderedAt: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -65,10 +75,8 @@ export class AuthService {
     localStorage.removeItem('refreshToken');
   }
 
-  async register(email: string, password: string, displayName: string): Promise<void> {
-    await firstValueFrom(
-      this.http.post(`${this.apiUrl}/register`, { email, password, displayName }),
-    );
+  async register(payload: RegisterPayload): Promise<void> {
+    await firstValueFrom(this.http.post(`${this.apiUrl}/register`, payload));
   }
 
   async login(email: string, password: string): Promise<void> {

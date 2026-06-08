@@ -148,6 +148,11 @@ export class NavigationService {
     this.router.navigate(path);
   }
 
+  /** Nawigacja do dowolnego string URL (np. `link` z powiadomienia z backendu). */
+  navigateToUrl(url: string): void {
+    this.router.navigateByUrl(url);
+  }
+
   navigateToEventCreateWithDuplicate(duplicateId: string): void {
     this.auth.requireAuth('utworzyć wydarzenie', () => {
       this.router.navigate(['/o/w/new'], { queryParams: { duplicateId } });

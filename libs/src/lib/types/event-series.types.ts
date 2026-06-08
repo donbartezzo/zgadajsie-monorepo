@@ -8,6 +8,12 @@ export type RecurrenceConfig =
   | { type: EventSeriesRecurrenceType.INTERVAL; intervalDays: number }
   | { type: EventSeriesRecurrenceType.WEEKLY; daysOfWeek: number[] };
 
+export interface TargetOccupancyConfig {
+  targetOccupancy: number;
+  cleanupHours: number;
+  minFreeSlotsBuffer: number;
+}
+
 export interface EventSeriesBase {
   id: string;
   organizerId: string;
@@ -27,6 +33,7 @@ export interface EventSeriesBase {
   suspendedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  targetOccupancyConfig?: TargetOccupancyConfig | null;
 }
 
 export interface CreateEventSeriesPayload {
@@ -61,6 +68,9 @@ export interface CreateEventSeriesPayload {
   rules?: string;
   facilityReserved?: boolean;
   roleConfig?: unknown;
+  targetOccupancy?: number | null;
+  cleanupHours?: number;
+  minFreeSlotsBuffer?: number;
 }
 
 export type UpdateEventSeriesPayload = Partial<CreateEventSeriesPayload> & {

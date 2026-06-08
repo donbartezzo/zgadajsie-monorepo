@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, firstValueFrom, map, of } from 'rxjs';
+import { NOMINATIM_SEARCH_URL } from '@zgadajsie/shared';
 
 export interface GeocodeResult {
   lat: number;
@@ -13,7 +14,7 @@ export interface GeocodeResult {
 })
 export class GeocodeService {
   private readonly http = inject(HttpClient);
-  private readonly nominatimUrl = 'https://nominatim.openstreetmap.org/search';
+  private readonly nominatimUrl = NOMINATIM_SEARCH_URL;
 
   searchAddress(query: string): Observable<GeocodeResult[]> {
     if (!query || query.trim().length < 3) {
@@ -30,7 +31,7 @@ export class GeocodeService {
       'accept-language': 'pl',
     };
 
-    return this.http.get<any[]>(this.nominatimUrl, { params }).pipe(
+    return this.http.get<any[]>(NOMINATIM_SEARCH_URL, { params }).pipe(
       map((results) =>
         results.map((item) => ({
           lat: parseFloat(item.lat),

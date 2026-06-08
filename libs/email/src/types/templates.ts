@@ -1,3 +1,5 @@
+import { ContactSource } from '../../../src/lib/enums/contact-source.enum';
+
 export interface ActivationEmailProps {
   displayName: string;
   activationLink: string;
@@ -7,12 +9,20 @@ export interface PasswordResetEmailProps {
   resetLink: string;
 }
 
-export type ParticipationStatus =
-  | 'SLOT_ASSIGNED'
-  | 'APPROVAL_REMINDER'
-  | 'CONFIRMED'
-  | 'REMOVED'
-  | 'REJECTED';
+/**
+ * Statusy uczestnictwa, dla których istnieje szablon e-mail transakcyjnego.
+ * Runtime-owe źródło prawdy (tablica) - z niego wyprowadzamy typ oraz strażnika
+ * renderowalności po stronie backendu, bez duplikowania listy wartości.
+ */
+export const PARTICIPATION_EMAIL_STATUSES = [
+  'SLOT_ASSIGNED',
+  'APPROVAL_REMINDER',
+  'CONFIRMED',
+  'REMOVED',
+  'REJECTED',
+] as const;
+
+export type ParticipationStatus = (typeof PARTICIPATION_EMAIL_STATUSES)[number];
 
 export interface ParticipationStatusEmailProps {
   displayName: string;
@@ -92,6 +102,9 @@ export interface ContactEmailProps {
   senderName: string;
   senderEmail: string;
   message: string;
+  source?: ContactSource;
+  citySlug?: string;
+  referenceNumber?: string;
 }
 
 export interface OrganizerWeeklyDigestEmailProps {
@@ -128,6 +141,18 @@ export interface AdminDailyReportEmailProps {
   }>;
   stats: { activeEvents: number; totalUsers: number; newUsersToday: number };
   logsCleaned: number;
+}
+
+export interface NotificationDigestEmailProps {
+  displayName: string;
+  frontendUrl: string;
+  items: Array<{
+    id: string;
+    title: string;
+    body: string;
+    link: string | null;
+    createdAt: Date;
+  }>;
 }
 
 export interface EmailTemplates {

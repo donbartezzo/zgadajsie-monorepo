@@ -53,7 +53,10 @@ export class EventSeriesGenerator {
   ) {}
 
   async generateForSeries(seriesId: string): Promise<GenerateResult> {
-    const series = await this.prisma.eventSeries.findUniqueOrThrow({ where: { id: seriesId } });
+    const series = await this.prisma.eventSeries.findUniqueOrThrow({
+      where: { id: seriesId },
+      include: { targetOccupancyConfig: true },
+    });
 
     if (!series.isActive) {
       return { created: 0, skipped: 0 };
@@ -136,6 +139,20 @@ export class EventSeriesGenerator {
       } catch {
         // Sloty mogą już istnieć jeśli event był wygenerowany wcześniej - ignorujemy
       }
+    }
+
+    // Utwórz config fake users dla nowych wydarzeń jeśli seria ma konfigurację
+    if (series.targetOccupancyConfig && newEvents.length > 0) {
+      const { targetOccupancy, cleanupHours, minFreeSlotsBuffer } = series.targetOccupancyConfig;
+      await this.prisma.eventTargetOccupancyConfig.createMany({
+        data: newEvents.map((e) => ({
+          eventId: e.id,
+          targetOccupancy,
+          cleanupHours,
+          minFreeSlotsBuffer,
+        })),
+        skipDuplicates: true,
+      });
     }
 
     const nextGenerationAt = DateTime.fromJSDate(windowEnd).minus({ days: 1 }).toJSDate();

@@ -6,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SlotService } from '../slots/slot.service';
 import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptions.service';
 import { PushService } from '../notifications/push.service';
+import { FakeUsersMonitorService } from '../fake-users/fake-users-monitor.service';
 import { EventSeriesRecurrenceType } from '@zgadajsie/shared';
 import { EventStatus, Role } from '@prisma/client';
 
@@ -83,6 +84,11 @@ const mockGenerator = {
 const mockSlotService = { createSlotsForEvent: jest.fn() };
 const mockCitySubscriptions = { getSubscriberIds: jest.fn().mockResolvedValue([]) };
 const mockPushService = { notifyNewEventInCity: jest.fn() };
+const mockFakeUsersMonitor = {
+  monitorEvents: jest.fn().mockResolvedValue(undefined),
+  handleTargetOccupancyChange: jest.fn().mockResolvedValue(undefined),
+  monitorSingleEvent: jest.fn().mockResolvedValue(undefined),
+};
 
 describe('EventSeriesService', () => {
   let service: EventSeriesService;
@@ -98,6 +104,7 @@ describe('EventSeriesService', () => {
         { provide: SlotService, useValue: mockSlotService },
         { provide: CitySubscriptionsService, useValue: mockCitySubscriptions },
         { provide: PushService, useValue: mockPushService },
+        { provide: FakeUsersMonitorService, useValue: mockFakeUsersMonitor },
       ],
     }).compile();
 

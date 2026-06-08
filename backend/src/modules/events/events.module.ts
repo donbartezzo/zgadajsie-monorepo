@@ -8,6 +8,7 @@ import { CoverImagesModule } from '../cover-images/cover-images.module';
 import { CitySubscriptionsModule } from '../city-subscriptions/city-subscriptions.module';
 import { SlotModule } from '../slots/slot.module';
 import { EventRealtimeModule } from '../realtime/event-realtime.module';
+import { FakeUsersModule } from '../fake-users/fake-users.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { EventRealtimeModule } from '../realtime/event-realtime.module';
     CitySubscriptionsModule,
     SlotModule,
     EventRealtimeModule,
+    FakeUsersModule,
   ],
   controllers: [EventsController],
   providers: [EventsService, EnrollmentEligibilityService],

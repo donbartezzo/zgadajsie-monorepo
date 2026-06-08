@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "NotificationKind" ADD VALUE 'REAL_USER_JOINED_FAKE_EVENT';

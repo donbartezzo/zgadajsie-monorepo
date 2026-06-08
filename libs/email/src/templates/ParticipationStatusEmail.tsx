@@ -19,13 +19,13 @@ type StatusConfig = {
 const STATUS_CONFIG: Record<ParticipationStatus, StatusConfig> = {
   SLOT_ASSIGNED: {
     subject: 'Przydzielono miejsce',
-    preview: 'Masz przydzielone miejsce — potwierdź uczestnictwo',
+    preview: 'Masz przydzielone miejsce - potwierdź uczestnictwo',
     calloutVariant: 'warning',
     calloutLabel: 'Wymagane potwierdzenie',
     body: (eventTitle) => (
       <>
         Masz przydzielone miejsce na wydarzeniu <strong>{eventTitle}</strong>, jednak organizator
-        wymaga potwierdzenia uczestnictwa - kliknij poniższy przycisk, aby potwierdzić swój udział.
+        wymaga potwierdzenia uczestnictwa - kliknij poniższy przycisk, aby potwierdzić swój udział.{' '}
         <u>Bez potwierdzenia Twoje uczestnictwo może zostać anulowane</u>.
       </>
     ),

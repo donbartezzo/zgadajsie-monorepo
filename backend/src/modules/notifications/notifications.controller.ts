@@ -1,9 +1,23 @@
-import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { EmailService } from './email.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
+import { MarkByGroupDto } from './dto/mark-by-group.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('notifications')
@@ -41,6 +55,19 @@ export class NotificationsController {
     return this.notificationsService.markAllAsRead(user.id);
   }
 
+  @Post('mark-by-group')
+  async markByGroup(@CurrentUser() user: AuthUser, @Body() dto: MarkByGroupDto) {
+    // Whitelist prefixów dla bezpieczeństwa
+    const allowedPrefixes = ['chat:', 'pm:', 'app:', 'reminder:', 'announce:', 'city:'];
+    const hasValidPrefix = allowedPrefixes.some((prefix) => dto.groupKey.startsWith(prefix));
+
+    if (!hasValidPrefix) {
+      throw new BadRequestException('Invalid groupKey prefix');
+    }
+
+    return this.notificationsService.markByGroupKey(user.id, dto.groupKey);
+  }
+
   @Post('push/subscribe')
   subscribePush(
     @CurrentUser() user: AuthUser,
@@ -59,5 +86,38 @@ export class NotificationsController {
     const to = body.to || user.email;
     await this.emailService.sendActivationEmail(to, user.displayName ?? user.email, 'test-token');
     return { success: true, message: `Test email sent to ${to}` };
+  }
+
+  // UWAGA: trasa statyczna musi być przed `:id`, inaczej `DELETE /notifications/all`
+  // trafi w `@Delete(':id')` z id='all' (kolejność deklaracji = kolejność matchowania).
+  @Delete('all')
+  deleteAll(@CurrentUser() user: AuthUser) {
+    return this.notificationsService.deleteAll(user.id);
+  }
+
+  @Delete(':id')
+  delete(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.notificationsService.delete(id, user.id);
+  }
+}
+
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
+@Controller('admin/notifications')
+export class AdminNotificationsController {
+  constructor(private notificationsService: NotificationsService) {}
+
+  @Get('pending-emails')
+  getPendingEmails(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('type') type?: string,
+  ) {
+    return this.notificationsService.getPendingEmails(page ? +page : 1, limit ? +limit : 50, type);
+  }
+
+  @Delete(':id/cancel-email')
+  cancelEmail(@Param('id') id: string) {
+    return this.notificationsService.cancelEmailForNotification(id);
   }
 }

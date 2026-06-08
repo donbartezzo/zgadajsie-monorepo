@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { TpayService, TpayWebhookPayload } from './tpay.service';
 import { VouchersService } from '../vouchers/vouchers.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
+import { AppConfigService } from '../../common/config/app-config.service';
 import { Decimal } from '@prisma/client/runtime/library';
 import { PAYMENT_NOT_FOUND_MESSAGE, EVENT_NOT_FOUND_MESSAGE } from '@zgadajsie/shared';
 
@@ -18,6 +19,7 @@ export class PaymentsService {
     private tpayService: TpayService,
     private vouchersService: VouchersService,
     private eventRealtime: EventRealtimeService,
+    private appConfig: AppConfigService,
   ) {}
 
   async cleanupIntents(participationId: string, organizerId: string) {
@@ -41,9 +43,8 @@ export class PaymentsService {
     amount: number,
     payerEmail: string,
     payerName: string,
-    frontendBaseUrl: string,
-    backendBaseUrl: string,
   ): Promise<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
+    const { frontendUrl: frontendBaseUrl, backendUrl: backendBaseUrl } = this.appConfig;
     const event = await this.prisma.event.findUnique({
       where: { id: eventId },
       select: { id: true, title: true, organizerId: true },

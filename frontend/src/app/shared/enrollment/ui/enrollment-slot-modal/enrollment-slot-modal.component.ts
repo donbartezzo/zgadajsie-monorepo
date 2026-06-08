@@ -671,7 +671,25 @@ export class EnrollmentSlotModalComponent {
 
   private onOrganizerChangeRole(): void {
     const p = this.participant();
-    if (!p) return;
+    const e = this.event();
+    if (!p || !e) return;
+
+    // Na stronach gdzie EventAreaService nie jest zainicjalizowany (np. event-manage), overlay nie ma eventu → brak ról.
+    if (!this.eventArea.event()) {
+      this.overlays.setEventContext(e, false);
+      this.overlays.setIsOrganizer(true);
+      this.overlays.onRoleChangeConfirmed(({ participationId, roleKey }) => {
+        firstValueFrom(this.eventService.changeParticipationRole(participationId, roleKey))
+          .then(() => {
+            this.snackbar.success('Rola zmieniona');
+            this.modalService.requestRefresh();
+          })
+          .catch((err: unknown) => {
+            this.snackbar.error(getErrorMessage(err, 'Nie udało się zmienić roli'));
+          });
+      });
+    }
+
     this.modalService.close();
     this.eventArea.openChangeRoleWizardForParticipant(p as Enrollment);
   }

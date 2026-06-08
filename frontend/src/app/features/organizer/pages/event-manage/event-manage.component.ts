@@ -17,6 +17,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { EventService } from '../../../../core/services/event.service';
 import { EventAnnouncementService } from '../../../../core/services/event-announcement.service';
 import { AdminService } from '../../../../core/services/admin.service';
+import { ChatService } from '../../../../core/services/chat.service';
 import { FormsModule } from '@angular/forms';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { TrustPromptService } from '../../../../shared/services/trust-prompt.service';
@@ -31,10 +32,15 @@ import {
   Event,
   EventAnnouncement,
   EventSlotInfo,
+  OrganizerConversation,
 } from '../../../../shared/types';
 import { EnrollmentGridComponent } from '../../../../shared/enrollment/ui/enrollment-grid/enrollment-grid.component';
 import { EnrollmentItem } from '../../../../shared/enrollment/ui/enrollment-grid/enrollment-grid-item/enrollment-grid-item.component';
-import { EventStatus } from '@zgadajsie/shared';
+import {
+  EventStatus,
+  FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT,
+  FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT,
+} from '@zgadajsie/shared';
 import {
   EventLifecycleBannerComponent,
   LifecycleBannerVariant,
@@ -123,14 +129,20 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
                     </div>
                   </div>
                   <div class="flex gap-1">
-                    <app-button
-                      appearance="outline"
-                      color="neutral"
-                      size="sm"
-                      (clicked)="openChat(p.userId)"
+                    <button
+                      type="button"
+                      class="relative appearance-none border-0 bg-transparent p-0 cursor-pointer"
+                      (click)="openChat(p.userId)"
                     >
-                      <app-icon name="message-circle" size="sm" />
-                    </app-button>
+                      <app-icon name="message-circle" size="sm" class="text-neutral-600" />
+                      @if (getUnreadCount(p.userId) > 0) {
+                        <span
+                          class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger-500 text-[10px] font-bold text-white"
+                        >
+                          {{ getUnreadCount(p.userId) }}
+                        </span>
+                      }
+                    </button>
                     <app-button
                       appearance="soft"
                       color="primary"
@@ -269,26 +281,66 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
                     </p>
                   } @else {
                     <p class="text-xs text-neutral-500 mb-2">
-                      Cron co 15 min utrzymuje ~{{ targetOccupancy() }}% obłożenia automatycznie.
+                      Natychmiastowy trigger (po zmianach ustawień/dołączeniu realnego) + cron co 15
+                      min utrzymują ~{{ targetOccupancy() }}% obłożenia.
                     </p>
                   }
-                  <div class="flex items-center gap-2">
-                    <input
-                      id="target-occupancy-input"
-                      type="number"
-                      [value]="targetOccupancyInput()"
-                      (input)="targetOccupancyInput.set($any($event.target).value)"
-                      placeholder="np. 35"
-                      class="w-24 px-2 py-1 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
-                      [disabled]="updatingTargetOccupancy()"
-                    />
-                    <span class="text-xs text-neutral-500">lub puste aby wyłączyć</span>
+                  <div class="space-y-3">
+                    <div class="flex items-center gap-2">
+                      <input
+                        id="target-occupancy-input"
+                        type="number"
+                        [value]="targetOccupancy()?.toString() ?? ''"
+                        (input)="
+                          targetOccupancy.set(
+                            $any($event.target).value
+                              ? parseNumber($any($event.target).value)
+                              : null
+                          )
+                        "
+                        placeholder="np. 35"
+                        class="w-24 px-2 py-1 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        [disabled]="updatingTargetOccupancyConfig()"
+                      />
+                      <span class="text-xs text-neutral-500">Target occupancy (%)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <input
+                        type="number"
+                        [value]="cleanupHours().toString()"
+                        (input)="cleanupHours.set(parseNumber($any($event.target).value))"
+                        placeholder="12"
+                        class="w-24 px-2 py-1 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        [disabled]="updatingTargetOccupancyConfig()"
+                      />
+                      <span class="text-xs text-neutral-500"
+                        >Final cleanup (h przed startem, 0 = wyłączony)</span
+                      >
+                    </div>
+                    @if (cleanupHours() === 0) {
+                      <p class="text-xs text-warning-600">
+                        ⚠️ Cleanup wyłączony – fake users pozostaną do samego startu.
+                      </p>
+                    }
+                    <div class="flex items-center gap-2">
+                      <input
+                        type="number"
+                        [value]="minFreeSlotsBuffer().toString()"
+                        (input)="minFreeSlotsBuffer.set(parseNumber($any($event.target).value))"
+                        placeholder="3"
+                        class="w-24 px-2 py-1 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        [disabled]="updatingTargetOccupancyConfig()"
+                      />
+                      <span class="text-xs text-neutral-500"
+                        >Min buffer (wolne sloty, 0 = brak)</span
+                      >
+                    </div>
                     <app-button
                       appearance="soft"
                       color="primary"
                       size="sm"
-                      [loading]="updatingTargetOccupancy()"
-                      (clicked)="updateTargetOccupancy()"
+                      [loading]="updatingTargetOccupancyConfig()"
+                      (clicked)="updateTargetOccupancyConfig()"
                     >
                       Zapisz
                     </app-button>
@@ -329,6 +381,7 @@ export class EventManageComponent implements OnInit {
   private readonly eventService = inject(EventService);
   private readonly announcementService = inject(EventAnnouncementService);
   private readonly adminService = inject(AdminService);
+  private readonly chatService = inject(ChatService);
   private readonly snackbar = inject(SnackbarService);
   private readonly trustPrompt = inject(TrustPromptService);
   private readonly breadcrumb = inject(BreadcrumbService);
@@ -338,16 +391,23 @@ export class EventManageComponent implements OnInit {
   readonly manageParticipants = signal<EnrollmentItem[]>([]);
   readonly slots = signal<EventSlotInfo[]>([]);
   readonly announcements = signal<EventAnnouncement[]>([]);
+  readonly organizerConversations = signal<OrganizerConversation[]>([]);
   readonly loading = signal(true);
   readonly eventData = signal<Event | null>(null);
   readonly sendingAnnouncement = signal(false);
   readonly lastAnnouncementStats = signal<AnnouncementReceiptStats | null>(null);
   readonly targetOccupancy = signal<number | null>(null);
-  readonly targetOccupancyInput = signal('');
   readonly updatingTargetOccupancy = signal(false);
+  readonly cleanupHours = signal(FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT);
+  readonly minFreeSlotsBuffer = signal(FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT);
+  readonly updatingTargetOccupancyConfig = signal(false);
   announcementMessage = '';
   announcementPriority = 'INFORMATIONAL';
   private eventId = '';
+
+  parseNumber(value: string): number {
+    return parseInt(value, 10) || 0;
+  }
 
   readonly lifecycleBannerVariant = computed<LifecycleBannerVariant | null>(() => {
     const e = this.eventData();
@@ -396,6 +456,18 @@ export class EventManageComponent implements OnInit {
     return total > 0 ? (this.paidCount() / total) * 100 : 0;
   });
 
+  readonly unreadCountsByUserId = computed(() => {
+    const map = new Map<string, number>();
+    for (const conv of this.organizerConversations()) {
+      map.set(conv.participant.id, conv.unreadCount);
+    }
+    return map;
+  });
+
+  getUnreadCount(userId: string): number {
+    return this.unreadCountsByUserId().get(userId) ?? 0;
+  }
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
@@ -407,6 +479,7 @@ export class EventManageComponent implements OnInit {
     this.loadManageParticipants();
     this.loadSlots();
     this.loadAnnouncements();
+    this.loadOrganizerConversations();
 
     // Subscribe to profile changes broadcast
     this.profileBroadcast.changes$.subscribe((change) => {
@@ -436,8 +509,14 @@ export class EventManageComponent implements OnInit {
     this.eventService.getEvent(this.eventId).subscribe({
       next: (event) => {
         this.eventData.set(event);
-        this.targetOccupancy.set(event.targetOccupancy ?? null);
-        this.targetOccupancyInput.set(event.targetOccupancy?.toString() ?? '');
+        this.targetOccupancy.set(event.targetOccupancyConfig?.targetOccupancy ?? null);
+        this.cleanupHours.set(
+          event.targetOccupancyConfig?.cleanupHours ?? FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT,
+        );
+        this.minFreeSlotsBuffer.set(
+          event.targetOccupancyConfig?.minFreeSlotsBuffer ??
+            FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT,
+        );
         this.breadcrumb.setContext({ eventTitle: event.title });
       },
     });
@@ -466,6 +545,12 @@ export class EventManageComponent implements OnInit {
   private loadAnnouncements(): void {
     this.announcementService.getAnnouncements(this.eventId).subscribe({
       next: (res) => this.announcements.set(res.announcements),
+    });
+  }
+
+  private loadOrganizerConversations(): void {
+    this.chatService.getOrganizerConversations(this.eventId).subscribe({
+      next: (conversations) => this.organizerConversations.set(conversations),
     });
   }
 
@@ -557,11 +642,8 @@ export class EventManageComponent implements OnInit {
   }
 
   updateTargetOccupancy(): void {
-    const value = this.targetOccupancyInput();
-    const parsed = value ? parseInt(value, 10) : null;
-    this.targetOccupancy.set(parsed);
     this.updatingTargetOccupancy.set(true);
-    this.adminService.setEventTargetOccupancy(this.eventId, parsed).subscribe({
+    this.adminService.setEventTargetOccupancy(this.eventId, this.targetOccupancy()).subscribe({
       next: () => {
         this.updatingTargetOccupancy.set(false);
         this.snackbar.success('Zaktualizowano target occupancy');
@@ -571,6 +653,29 @@ export class EventManageComponent implements OnInit {
         this.snackbar.error(err?.error?.message || 'Nie udało się zaktualizować');
       },
     });
+  }
+
+  updateTargetOccupancyConfig(): void {
+    this.updatingTargetOccupancyConfig.set(true);
+    this.adminService
+      .setEventTargetOccupancyConfig(this.eventId, {
+        targetOccupancy: this.targetOccupancy(),
+        cleanupHours: this.cleanupHours(),
+        minFreeSlotsBuffer: this.minFreeSlotsBuffer(),
+      })
+      .subscribe({
+        next: () => {
+          this.updatingTargetOccupancyConfig.set(false);
+          this.snackbar.success('Zaktualizowano konfigurację fake users');
+        },
+        error: (err: unknown) => {
+          this.updatingTargetOccupancyConfig.set(false);
+          this.snackbar.error(
+            (err as { error?: { message?: string } })?.error?.message ||
+              'Nie udało się zaktualizować',
+          );
+        },
+      });
   }
 
   enrollFakeUser(): void {

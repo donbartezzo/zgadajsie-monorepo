@@ -275,6 +275,52 @@ Wymagane sekrety w repozytorium (`Settings → Secrets → Actions`):
 
 ---
 
+## Zmienne środowiskowe (env) i sekrety
+
+> **⚠️ KRYTYCZNE:** Zmienne środowiskowe aplikacji na dev/prod pochodzą **WYŁĄCZNIE** z konfiguracji **Environment Variables w Coolify** (osobno dla każdej aplikacji backend dev/prod). Pliki `config/env/*.env.*` **NIE są deployowane** i nie mają żadnego wpływu na działające kontenery.
+
+### Dlaczego pliki `config/env/*` nie trafiają na serwer
+
+- **`ConfigModule.forRoot({ isGlobal: true })`** (`backend/src/app/app.module.ts`) nie ma `envFilePath` — czyta tylko `process.env`. Lokalnie działa wyłącznie dzięki `dotenv -e config/env/.env.local` w skryptach npm (`package.json`).
+- **`.dockerignore`** wyklucza `.env` i `.env.*` — pliki nie wchodzą do obrazu Docker.
+- Pliki `.env.local`, `.env.dev`, `.env.prod` są **gitignorowane** (w repo jest tylko `.env.example`) — CI (GitHub Actions) nie ma ich w kontekście buildu.
+- Coolify deployuje **gotowy obraz z GHCR**, a `docker-entrypoint.sh` odpala `node main.js` bez ładowania jakiegokolwiek pliku env.
+
+To jest świadoma, zgodna z [12-factor](https://12factor.net/config) decyzja — sekrety żyją w szyfrowanej konfiguracji Coolify, nigdy w repo ani w warstwach obrazu.
+
+### Zakres plików `config/env/*`
+
+| Plik           | Przeznaczenie                                                                                        |
+| -------------- | ---------------------------------------------------------------------------------------------------- |
+| `.env.example` | Szablon (jedyny w repo) — lista wszystkich zmiennych                                                 |
+| `.env.local`   | Tylko lokalny dev (`pnpm backend:serve`, migracje, seedy)                                            |
+| `.env.dev`     | Tylko lokalne komendy z konfiguracją dev (np. `start:remote`, seedy `:development`) — **NIE** deploy |
+| `.env.prod`    | Lokalna referencja wartości prod — **NIE** deploy                                                    |
+
+### Procedura przy dodawaniu/zmianie zmiennej
+
+1. Zaktualizuj `config/env/.env.example` (dokumentacja + lokalne `.env.*`).
+2. **Dodaj/zmień tę samą zmienną w Coolify** → aplikacja backend **dev** → zakładka _Environment Variables_.
+3. **Powtórz dla aplikacji backend prod.**
+4. Zredeployuj aplikację w Coolify (zmiana env nie aplikuje się bez restartu kontenera).
+
+### Weryfikacja po deployu
+
+Backend wystawia bezpieczny endpoint `GET /api/config` zwracający publiczne klucze klienta (`vapidPublicKey`, `turnstileSiteKey`). Pusta wartość = brakująca zmienna w Coolify:
+
+```bash
+curl https://api.dev.zgadajsie.pl/api/config
+# oczekiwane: {"vapidPublicKey":"...","turnstileSiteKey":"0x4AAA..."}
+```
+
+> **Typowy objaw braku zmiennej:** frontend loguje w konsoli `Turnstile site key not available` i nie renderuje captchy — to oznacza pusty `TURNSTILE_SITE_KEY` w Coolify, nie błąd w kodzie.
+
+### Lista zmiennych do ustawienia w Coolify (backend dev i prod)
+
+Komplet zmiennych do ustawienia w Coolify: patrz `config/env/.env.example` (źródło prawdy). Pamiętaj, by URL-e (`BACKEND_URL`, `FRONTEND_URL`, `*_CALLBACK_URL`) oraz `TPAY_API_URL` wskazywały na właściwe środowisko (dev → sandbox/domeny dev, prod → produkcja).
+
+---
+
 ## Immutable Deploy i Concurrency
 
 ### Immutable Deploy

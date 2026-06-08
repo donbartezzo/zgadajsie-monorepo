@@ -1,8 +1,16 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../prisma/prisma.service';
 import React from 'react';
 import { Resend } from 'resend';
-import { APP_BRAND, formatDateTime } from '@zgadajsie/shared';
+import {
+  APP_BRAND,
+  formatDateTime,
+  ContactSource,
+  isOverrideAccount,
+  parseNotificationPayload,
+  type ParticipationNotificationStatus,
+} from '@zgadajsie/shared';
 import {
   ActivationEmail,
   AdminDailyReportEmail,
@@ -11,6 +19,7 @@ import {
   EventCancelledEmail,
   EventReminderEmail,
   NewApplicationEmail,
+  NotificationDigestEmail,
   OrganizerWeeklyDigestEmail,
   ParticipationStatusEmail,
   PasswordResetEmail,
@@ -19,6 +28,7 @@ import {
   RefundConfirmationEmail,
   ReprimandEmail,
   renderEmail,
+  PARTICIPATION_EMAIL_STATUSES,
   type ParticipationStatus,
 } from '@zgadajsie/email';
 import type { OrganizerDigestData } from '../organizer/organizer.service';
@@ -29,7 +39,10 @@ export class EmailService implements OnModuleInit {
   private readonly logger = new Logger(EmailService.name);
   private resend: Resend;
 
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    private prisma: PrismaService,
+  ) {}
 
   onModuleInit() {
     const apiKey = this.configService.getOrThrow<string>('RESEND_API_KEY');
@@ -224,12 +237,26 @@ export class EmailService implements OnModuleInit {
     await this.send(email, `Przypomnienie – ${eventTitle}`, html, text);
   }
 
-  async sendContactEmail(name: string, email: string, message: string): Promise<void> {
-    const subject = `Formularz kontaktowy: ${name} (${email})`;
+  async sendContactEmail(
+    name: string,
+    email: string,
+    message: string,
+    source?: ContactSource,
+    citySlug?: string,
+    referenceNumber?: string,
+  ): Promise<void> {
+    const subject = `${referenceNumber ? `[${referenceNumber}] ` : ''}Wiadomość kontaktowa od ${name}`;
     const { html, text } = await renderEmail(
-      <ContactEmail senderName={name} senderEmail={email} message={message} />,
+      <ContactEmail
+        senderName={name}
+        senderEmail={email}
+        message={message}
+        source={source}
+        citySlug={citySlug}
+        referenceNumber={referenceNumber}
+      />,
     );
-    await this.send(this.fromAddress, subject, html, text);
+    await this.send(this.fromAddress, subject, html, text, email);
   }
 
   async sendOrganizerWeeklyDigest(
@@ -329,8 +356,151 @@ export class EmailService implements OnModuleInit {
     await this.send(email, subject, html, text);
   }
 
-  private async send(to: string, subject: string, html: string, text?: string): Promise<void> {
-    if (!featureFlags.enableEmails) {
+  async sendDigest(
+    userId: string,
+    items: Array<{
+      id: string;
+      title: string;
+      body: string;
+      link: string | null;
+      createdAt: Date;
+    }>,
+  ): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, displayName: true },
+    });
+
+    if (!user) {
+      this.logger.warn(`User ${userId} not found for digest email`);
+      return;
+    }
+
+    const { html, text } = await renderEmail(
+      <NotificationDigestEmail
+        displayName={user.displayName}
+        frontendUrl={this.frontendUrl}
+        items={items}
+      />,
+    );
+    await this.send(
+      user.email,
+      `Masz ${items.length} nieprzeczytanych powiadomień – ${APP_BRAND.NAME}`,
+      html,
+      text,
+    );
+  }
+
+  async sendTransactionalForNotification(notification: {
+    id: string;
+    type: string;
+    title: string;
+    body: string;
+    link: string | null;
+    user: { email: string; displayName: string };
+    relatedEventId: string | null;
+    data: unknown;
+  }): Promise<void> {
+    const { type, user, title, body, link } = notification;
+
+    switch (type) {
+      case 'EVENT_REMINDER':
+        // EVENT_REMINDER wymaga dodatkowych danych (eventTime, eventTitle)
+        // Tymczasowo pomijamy - wymagane rozszerzenie payloadu
+        this.logger.warn(
+          `EVENT_REMINDER email not implemented yet for notification ${notification.id}`,
+        );
+        break;
+
+      case 'EVENT_CANCELLED':
+        await this.sendEventCancelledEmail(user.email, user.displayName, title, link ?? undefined);
+        break;
+
+      case 'PARTICIPATION_STATUS': {
+        const payload = parseNotificationPayload(notification.data);
+        if (payload?.kind !== 'PARTICIPATION_STATUS') {
+          this.logger.warn(
+            `PARTICIPATION_STATUS notification ${notification.id} bez prawidłowego payloadu - pomijam e-mail`,
+          );
+          break;
+        }
+
+        const emailStatus = this.toEmailParticipationStatus(payload.status);
+        if (!emailStatus) {
+          // SPOT_AVAILABLE / LOTTERY_NOT_SELECTED: brak szablonu e-mail (kanał wyłącznie in-app/push)
+          this.logger.debug(
+            `Status '${payload.status}' nie ma szablonu e-mail - pomijam e-mail dla ${notification.id}`,
+          );
+          break;
+        }
+
+        // Tytuł powiadomienia to nagłówek UI (np. "Przydzielono miejsce"), nie nazwa
+        // wydarzenia - pobieramy aktualny tytuł wydarzenia z bazy.
+        let eventTitle = title;
+        if (notification.relatedEventId) {
+          const event = await this.prisma.event.findUnique({
+            where: { id: notification.relatedEventId },
+            select: { title: true },
+          });
+          if (event) {
+            eventTitle = event.title;
+          }
+        }
+        await this.sendParticipationStatusEmail(
+          user.email,
+          user.displayName,
+          eventTitle,
+          emailStatus,
+          link ?? undefined,
+        );
+        break;
+      }
+
+      case 'PAYMENT_CANCELLED':
+        // PAYMENT_CANCELLED wymaga amount
+        // Tymczasowo pomijamy - wymagane rozszerzenie payloadu
+        this.logger.warn(
+          `PAYMENT_CANCELLED email not implemented yet for notification ${notification.id}`,
+        );
+        break;
+
+      case 'REPRIMAND':
+        await this.sendReprimandEmail(user.email, user.displayName, title, body, link ?? undefined);
+        break;
+
+      case 'ANNOUNCEMENT':
+        // ANNOUNCEMENT wymiera priority, message, confirmToken
+        // Tymczasowo pomijamy - wymagane rozszerzenie payloadu
+        this.logger.warn(
+          `ANNOUNCEMENT email not implemented yet for notification ${notification.id}`,
+        );
+        break;
+
+      default:
+        this.logger.warn(`Unknown notification type for transactional email: ${type}`);
+    }
+  }
+
+  /**
+   * Zawęża status powiadomienia uczestnictwa do podzbioru renderowalnego w e-mailu.
+   * Zwraca null dla statusów wyłącznie in-app/push (np. SPOT_AVAILABLE, LOTTERY_NOT_SELECTED).
+   */
+  private toEmailParticipationStatus(
+    status: ParticipationNotificationStatus,
+  ): ParticipationStatus | null {
+    return (PARTICIPATION_EMAIL_STATUSES as readonly string[]).includes(status)
+      ? (status as ParticipationStatus)
+      : null;
+  }
+
+  private async send(
+    to: string,
+    subject: string,
+    html: string,
+    text?: string,
+    replyTo?: string,
+  ): Promise<void> {
+    if (!featureFlags.enableEmails && !isOverrideAccount(to)) {
       this.logger.log(`Email sending disabled, skipping email to ${to}: ${subject}`);
       return;
     }
@@ -340,17 +510,26 @@ export class EmailService implements OnModuleInit {
       return;
     }
 
+    // Resend SDK v6 never throws — it always returns { data, error }.
+    // The try/catch covers unexpected runtime errors (e.g. onModuleInit failure).
     try {
-      await this.resend.emails.send({
+      const { error } = await this.resend.emails.send({
         from: this.fromAddress,
         to,
         subject,
         html,
         text,
+        replyTo,
       });
+      if (error) {
+        this.logger.error(
+          `Failed to send email to ${to} [${subject}]: ${error.message} (HTTP ${error.statusCode ?? 'n/a'})`,
+        );
+        return;
+      }
       this.logger.log(`Email sent to ${to}: ${subject}`);
     } catch (error) {
-      this.logger.error(`Failed to send email to ${to}: ${error.message}`);
+      this.logger.error(`Unexpected error sending email to ${to}: ${(error as Error).message}`);
     }
   }
 

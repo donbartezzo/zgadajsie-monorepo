@@ -1,0 +1,5 @@
+export enum ContactSource {
+  CONTACT_PAGE = 'CONTACT_PAGE',
+  CITY_EVENTS = 'CITY_EVENTS',
+  ADVERTISEMENT = 'ADVERTISEMENT',
+}

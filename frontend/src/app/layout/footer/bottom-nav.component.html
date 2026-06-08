@@ -3,6 +3,8 @@
 @let _cityButtonAppearance = cityButtonAppearance();
 @let _isLoggedIn = auth.isLoggedIn();
 @let _currentUser = auth.currentUser();
+@let _showBadge = showBadge();
+@let _badgeText = badgeText();
 
 <footer
   class="h-[var(--footer-height)] border-t border-neutral-200 bg-white/95 px-2 py-2 shadow-[0_-4px_12px_rgba(15,23,42,0.12)] backdrop-blur-md relative"
@@ -36,16 +38,25 @@
       />
 
       @if (_isLoggedIn) {
-        <app-button
-          appearance="ghost"
-          color="neutral"
-          size="lg"
-          aria-label="Nawigacja"
-          (clicked)="toggleNavigation()"
-          [iconOnly]="true"
-        >
-          <app-user-avatar [user]="_currentUser" size="lg" [transparent]="true"></app-user-avatar>
-        </app-button>
+        <div class="relative">
+          <app-button
+            appearance="soft"
+            color="neutral"
+            size="lg"
+            aria-label="Nawigacja"
+            (clicked)="toggleNavigation()"
+            [iconOnly]="true"
+          >
+            <app-user-avatar [user]="_currentUser" size="lg" [transparent]="true"></app-user-avatar>
+          </app-button>
+          @if (_showBadge) {
+            <span
+              class="absolute -top-1 -right-1 min-w-[1.25rem] h-5 px-1 flex items-center justify-center bg-danger-500 text-white text-xs font-bold rounded-full border-2 border-white"
+            >
+              {{ _badgeText }}
+            </span>
+          }
+        </div>
       } @else {
         <app-button
           appearance="soft"

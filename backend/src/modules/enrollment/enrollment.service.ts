@@ -6,7 +6,6 @@ import {
   Logger,
   Optional,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
@@ -14,6 +13,7 @@ import { PaymentsService } from '../payments/payments.service';
 import { SlotService } from '../slots/slot.service';
 import { EnrollmentEligibilityService } from './enrollment-eligibility.service';
 import { ChatService } from '../chat/chat.service';
+import { ChatNotificationService } from '../chat/chat-notification.service';
 import { isEventEnded, isEventJoinable } from '../events/event-time-status.util';
 import { getEnrollmentPhase } from '../events/enrollment-phase.util';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
@@ -34,10 +34,12 @@ import {
   ENROLLMENT_BLOCKED,
   FAKE_USERS_MIN_FREE_SLOTS_BUFFER,
   DEFAULT_WELCOME_MESSAGE,
+  isOverrideAccount,
 } from '@zgadajsie/shared';
 import { featureFlags } from '../../common/config/feature-flags';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
+import { AppConfigService } from '../../common/config/app-config.service';
 import { USER_SELECT_WITH_EMAIL as USER_SELECT } from '../../common/prisma-selects';
 
 type EnrollmentWithSlot = {
@@ -73,13 +75,14 @@ export class EnrollmentService {
 
   constructor(
     private prisma: PrismaService,
-    private configService: ConfigService,
+    private appConfig: AppConfigService,
     private emailService: EmailService,
     private pushService: PushService,
     private paymentsService: PaymentsService,
     private slotService: SlotService,
     private eligibility: EnrollmentEligibilityService,
     private chatService: ChatService,
+    private chatNotificationService: ChatNotificationService,
     private eventRealtime: EventRealtimeService,
     @Optional() private fakeUsersMonitor?: FakeUsersMonitorService,
   ) {}
@@ -151,7 +154,7 @@ export class EnrollmentService {
         'PRE_ENROLLMENT',
         validatedRoleKey,
       );
-      this.sendWelcomeMessageIfNeeded(eventId, event.organizerId, userId);
+      await this.handlePostJoinActions(eventId, event.organizerId, userId);
       return result;
     }
 
@@ -163,7 +166,7 @@ export class EnrollmentService {
       isPaid,
       validatedRoleKey,
     );
-    this.sendWelcomeMessageIfNeeded(eventId, event.organizerId, userId);
+    await this.handlePostJoinActions(eventId, event.organizerId, userId);
     return result;
   }
 
@@ -211,8 +214,8 @@ export class EnrollmentService {
     organizerId: string,
     userId: string,
   ): Promise<void> {
-    setImmediate(async () => {
-      try {
+    Promise.resolve()
+      .then(async () => {
         const [organizer, event] = await Promise.all([
           this.prisma.user.findUnique({
             where: { id: organizerId },
@@ -235,10 +238,11 @@ export class EnrollmentService {
         const welcomeBody = organizer.welcomeMessage ?? DEFAULT_WELCOME_MESSAGE;
         const messageText = `AUTOMATYCZNIE WYGENEROWANA WIADOMOŚĆ POWITALNA ORGANIZATORA:\n\n${welcomeBody}`;
         await this.chatService.createPrivateMessage(eventId, organizerId, userId, messageText);
-      } catch (error) {
+        await this.chatNotificationService.onNewPrivateMessage(eventId, organizerId, userId);
+      })
+      .catch((error) => {
         this.logger.error(`Failed to send welcome message: ${error}`);
-      }
-    });
+      });
   }
 
   async joinGuest(
@@ -331,6 +335,25 @@ export class EnrollmentService {
         } catch (err) {
           this.logger.error(`Failed to notify slot assigned for guest: ${err}`);
         }
+        // Notify organizer about new guest (if not added by organizer)
+        if (!isOrganizer) {
+          try {
+            await this.pushService.notifyNewApplication(
+              event.organizerId,
+              guestUser.displayName,
+              event.title,
+              eventId,
+            );
+          } catch (err) {
+            this.logger.error(`Failed to notify organizer about new guest: ${err}`);
+          }
+        }
+        this.triggerFakeUsersRebalanceIfNeeded(eventId);
+        this.notifyAdminsIfRealJoinedPumpedEvent(
+          eventId,
+          guestUser.displayName,
+          guestUser.accountType,
+        );
         return result;
       }
     }
@@ -356,6 +379,21 @@ export class EnrollmentService {
       include: { user: { select: USER_SELECT }, slot: true },
     });
     this.notifyEventChanged(eventId, 'participants');
+    // Notify organizer about new guest (if not added by organizer)
+    if (!isOrganizer) {
+      try {
+        await this.pushService.notifyNewApplication(
+          event.organizerId,
+          guestUser.displayName,
+          event.title,
+          eventId,
+        );
+      } catch (err) {
+        this.logger.error(`Failed to notify organizer about new guest: ${err}`);
+      }
+    }
+    this.triggerFakeUsersRebalanceIfNeeded(eventId);
+    this.notifyAdminsIfRealJoinedPumpedEvent(eventId, guestUser.displayName, guestUser.accountType);
     return withDerivedStatus(participation);
   }
 
@@ -448,7 +486,9 @@ export class EnrollmentService {
           roleConfig,
         );
         if (availableRoles.length > 0) {
-          const suggestion = availableRoles.map((r) => `${r.title} (${r.freeSlots})`).join(', ');
+          const suggestion = availableRoles
+            .map((r) => `${r.title ?? r.key} (${r.freeSlots})`)
+            .join(', ');
           throw new BadRequestException(
             `Brak wolnych miejsc dla tej roli. Dostępne miejsca w: ${suggestion}`,
           );
@@ -558,11 +598,24 @@ export class EnrollmentService {
       },
     });
 
+    this.pushService
+      .notifyParticipationStatus(
+        participation.userId,
+        participation.event.title,
+        'CONFIRMED',
+        participation.eventId,
+      )
+      .catch((err) => this.logger.error(`Failed to send CONFIRMED notification: ${err}`));
+
     this.notifyEventChanged(participation.eventId, 'all');
 
     // Send confirmation email
     if (updated?.user && updated.event) {
-      const eventLink = buildEventUrl(updated.event.city.slug, updated.event.id);
+      const eventLink = buildEventUrl(
+        updated.event.city.slug,
+        updated.event.id,
+        this.appConfig.frontendUrl,
+      );
       this.emailService
         .sendParticipationStatusEmail(
           updated.user.email,
@@ -752,7 +805,7 @@ export class EnrollmentService {
     currentUser: AuthUser,
   ): Promise<{ paymentUrl?: string; paymentId?: string; paidByVoucher?: boolean }> {
     const { userId: currentUserId, isAdmin } = resolveUserContext(currentUser);
-    if (!featureFlags.enableOnlinePayments) {
+    if (!featureFlags.enableOnlinePayments && !isOverrideAccount(currentUser.email)) {
       throw new ForbiddenException(
         'Płatności online są tymczasowo wyłączone. Skontaktuj się z organizatorem w sprawie płatności gotówką.',
       );
@@ -793,9 +846,6 @@ export class EnrollmentService {
       throw new NotFoundException('Użytkownik nie znaleziony');
     }
 
-    const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
-    const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
-
     return this.paymentsService.initiatePayment(
       participation.id,
       event.id,
@@ -803,8 +853,6 @@ export class EnrollmentService {
       event.costPerPerson.toNumber(),
       user.email,
       user.displayName,
-      frontendUrl,
-      backendUrl,
     );
   }
 
@@ -836,6 +884,32 @@ export class EnrollmentService {
     }
 
     return this.assertJoinEligibility(event);
+  }
+
+  /**
+   * Handle post-join actions: welcome message, fake users rebalance, admin notification.
+   * Fire-and-forget - doesn't block join flow.
+   */
+  private async handlePostJoinActions(
+    eventId: string,
+    organizerId: string,
+    userId: string,
+  ): Promise<void> {
+    this.sendWelcomeMessageIfNeeded(eventId, organizerId, userId);
+    this.triggerFakeUsersRebalanceIfNeeded(eventId);
+
+    const joinerData = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { displayName: true, accountType: true },
+    });
+
+    if (joinerData) {
+      this.notifyAdminsIfRealJoinedPumpedEvent(
+        eventId,
+        joinerData.displayName,
+        joinerData.accountType,
+      );
+    }
   }
 
   private assertEventMutable(
@@ -886,13 +960,17 @@ export class EnrollmentService {
         event.title,
         eventId,
       );
-      await this.emailService.sendNewApplicationEmail(
-        organizer.email,
-        organizer.displayName,
-        participation.user.displayName,
-        event.title,
-        eventId,
-      );
+      try {
+        await this.emailService.sendNewApplicationEmail(
+          organizer.email,
+          organizer.displayName,
+          participation.user.displayName,
+          event.title,
+          eventId,
+        );
+      } catch (err) {
+        this.logger.error(`Failed to send new application email to ${organizer.email}: ${err}`);
+      }
     }
 
     const result = {
@@ -1104,6 +1182,19 @@ export class EnrollmentService {
         include: { user: { select: USER_SELECT }, slot: true },
       });
       this.notifyEventChanged(event.id, 'participants');
+      // Notify organizer about rejoin attempt (even if banned)
+      if (withReason.user) {
+        try {
+          await this.pushService.notifyNewApplication(
+            event.organizerId,
+            withReason.user.displayName,
+            event.title,
+            event.id,
+          );
+        } catch (err) {
+          this.logger.error(`Failed to notify organizer about rejoin (banned): ${err}`);
+        }
+      }
       return {
         ...withDerivedStatus(withReason),
         isPaid,
@@ -1119,6 +1210,19 @@ export class EnrollmentService {
         include: { user: { select: USER_SELECT }, slot: true },
       });
       this.notifyEventChanged(event.id, 'participants');
+      // Notify organizer about rejoin attempt (even if not trusted)
+      if (withReason.user) {
+        try {
+          await this.pushService.notifyNewApplication(
+            event.organizerId,
+            withReason.user.displayName,
+            event.title,
+            event.id,
+          );
+        } catch (err) {
+          this.logger.error(`Failed to notify organizer about rejoin (not trusted): ${err}`);
+        }
+      }
       return {
         ...withDerivedStatus(withReason),
         isPaid,
@@ -1140,6 +1244,21 @@ export class EnrollmentService {
             include: { user: { select: USER_SELECT }, slot: true },
           });
           this.notifyEventChanged(event.id, 'participants');
+          // Notify organizer about rejoin attempt (no slots for role)
+          if (withReason.user) {
+            try {
+              await this.pushService.notifyNewApplication(
+                event.organizerId,
+                withReason.user.displayName,
+                event.title,
+                event.id,
+              );
+            } catch (err) {
+              this.logger.error(
+                `Failed to notify organizer about rejoin (no slots for role): ${err}`,
+              );
+            }
+          }
           return {
             ...withDerivedStatus(withReason),
             isPaid,
@@ -1155,6 +1274,19 @@ export class EnrollmentService {
         include: { user: { select: USER_SELECT }, slot: true },
       });
       this.notifyEventChanged(event.id, 'participants');
+      // Notify organizer about rejoin attempt (no slots)
+      if (withReason.user) {
+        try {
+          await this.pushService.notifyNewApplication(
+            event.organizerId,
+            withReason.user.displayName,
+            event.title,
+            event.id,
+          );
+        } catch (err) {
+          this.logger.error(`Failed to notify organizer about rejoin (no slots): ${err}`);
+        }
+      }
       return {
         ...withDerivedStatus(withReason),
         isPaid,
@@ -1180,6 +1312,31 @@ export class EnrollmentService {
     this.notifyEventChanged(event.id, 'all');
     // Notify user about slot assignment on rejoin
     await this.notifySlotAssigned(userId, event.title, event.id);
+
+    // Notify organizer about rejoin (treated as new application)
+    if (withSlot.user) {
+      try {
+        await this.pushService.notifyNewApplication(
+          event.organizerId,
+          withSlot.user.displayName,
+          event.title,
+          event.id,
+        );
+      } catch (err) {
+        this.logger.error(`Failed to notify organizer about rejoin: ${err}`);
+      }
+    }
+
+    this.triggerFakeUsersRebalanceIfNeeded(event.id);
+
+    // Notify admins if real user joined pumped event
+    if (withSlot.user) {
+      this.notifyAdminsIfRealJoinedPumpedEvent(
+        event.id,
+        withSlot.user.displayName,
+        withSlot.user.accountType,
+      );
+    }
 
     return {
       ...withDerivedStatus(withSlot),
@@ -1388,7 +1545,9 @@ export class EnrollmentService {
       if (!user) {
         return;
       }
-      const eventLink = event ? buildEventUrl(event.city.slug, eventId) : undefined;
+      const eventLink = event
+        ? buildEventUrl(event.city.slug, eventId, this.appConfig.frontendUrl)
+        : undefined;
       const displayTitle = guestDisplayName
         ? `${eventTitle} (gość: ${guestDisplayName})`
         : eventTitle;
@@ -1434,7 +1593,9 @@ export class EnrollmentService {
       if (user.accountType === 'FAKE') {
         return;
       }
-      const eventLink = event ? buildEventUrl(event.city.slug, eventId) : undefined;
+      const eventLink = event
+        ? buildEventUrl(event.city.slug, eventId, this.appConfig.frontendUrl)
+        : undefined;
       await this.pushService.notifyParticipationStatus(recipientId, eventTitle, 'REMOVED', eventId);
       await this.emailService.sendParticipationStatusEmail(
         user.email,
@@ -1521,6 +1682,83 @@ export class EnrollmentService {
     }
   }
 
+  private async triggerFakeUsersRebalanceIfNeeded(eventId: string): Promise<void> {
+    if (!this.fakeUsersMonitor || !featureFlags.enableFakeUsers) {
+      return;
+    }
+
+    // Rebalans po dołączeniu realnego/gościa - niezależnie od bufora
+    // Fake nie zajmują slotów, więc realny user nigdy nie jest blokowany
+    // Rebalans służy szybkiemu dostosowaniu fake count do targetCount
+    try {
+      await this.fakeUsersMonitor.monitorSingleEvent(eventId);
+    } catch (err) {
+      this.logger.error(`Failed to trigger fake users rebalance for event ${eventId}: ${err}`);
+    }
+  }
+
+  private async isEventPumped(eventId: string): Promise<boolean> {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { targetOccupancyConfig: { select: { targetOccupancy: true } } },
+    });
+
+    if (!event) {
+      return false;
+    }
+
+    // Gate: tylko wydarzenia z targetOccupancyConfig (pompowane)
+    if (!event.targetOccupancyConfig || event.targetOccupancyConfig.targetOccupancy === 0) {
+      return false;
+    }
+
+    // Dodatkowo sprawdź czy są już fake enrollments
+    const fakeCount = await this.prisma.eventEnrollment.count({
+      where: {
+        eventId,
+        wantsIn: true,
+        user: { accountType: 'FAKE' },
+      },
+    });
+
+    return fakeCount > 0;
+  }
+
+  private async notifyAdminsIfRealJoinedPumpedEvent(
+    eventId: string,
+    joinerName: string,
+    joinerAccountType: string,
+  ): Promise<void> {
+    // Gate: tylko REAL/GUEST, nie FAKE
+    if (joinerAccountType === 'FAKE') {
+      return;
+    }
+
+    // Gate: tylko wydarzenia pompowane
+    const isPumped = await this.isEventPumped(eventId);
+    if (!isPumped) {
+      return;
+    }
+
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { title: true, startsAt: true },
+    });
+
+    if (!event) {
+      return;
+    }
+
+    // Fire-and-forget notification
+    setImmediate(() => {
+      this.pushService
+        .notifyAdminsRealUserJoinedFakeEvent(eventId, event.title, joinerName, event.startsAt)
+        .catch((err) => {
+          this.logger.error(`Failed to notify admins about real user joined fake event: ${err}`);
+        });
+    });
+  }
+
   async adminWithdrawUser(enrollmentId: string, adminUser: AuthUser): Promise<void> {
     const { isAdmin } = resolveUserContext(adminUser);
 
@@ -1530,7 +1768,7 @@ export class EnrollmentService {
 
     const enrollment = await this.prisma.eventEnrollment.findUnique({
       where: { id: enrollmentId },
-      include: { event: true, user: true, slot: true },
+      include: { event: { include: { city: true } }, user: true, slot: true },
     });
 
     if (!enrollment) {
@@ -1558,20 +1796,30 @@ export class EnrollmentService {
       },
     });
 
-    // Powiadomienie użytkownika
-    await this.emailService.sendParticipationStatusEmail(
-      enrollment.user.email,
-      enrollment.user.displayName,
-      enrollment.event.title,
-      'REJECTED',
-      'Administrator serwisu wypisał Cię z tego wydarzenia.',
+    const eventLink = buildEventUrl(
+      enrollment.event.city.slug,
+      enrollment.eventId,
+      this.appConfig.frontendUrl,
     );
+
+    // Powiadomienie użytkownika
+    try {
+      await this.emailService.sendParticipationStatusEmail(
+        enrollment.user.email,
+        enrollment.user.displayName,
+        enrollment.event.title,
+        'REJECTED',
+        eventLink,
+      );
+    } catch (err) {
+      this.logger.error(`Failed to send rejection email to ${enrollment.user.email}: ${err}`);
+    }
 
     await this.pushService.notifyParticipationStatus(
       enrollment.userId,
       enrollment.event.title,
       'REJECTED',
-      'Administrator serwisu wypisał Cię z tego wydarzenia.',
+      enrollment.eventId,
     );
 
     this.notifyEventChanged(enrollment.eventId, 'participants');

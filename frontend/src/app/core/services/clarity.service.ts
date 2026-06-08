@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth/auth.service';
 import { CookieConsentService } from './cookie-consent.service';
+import { CLARITY_SCRIPT_SRC } from '@zgadajsie/shared';
 
 @Injectable({ providedIn: 'root' })
 export class ClarityService {
@@ -48,7 +49,7 @@ export class ClarityService {
 
     const script = document.createElement('script');
     script.async = true;
-    script.src = `https://www.clarity.ms/tag/${projectId}`;
+    script.src = CLARITY_SCRIPT_SRC(projectId);
     document.head.appendChild(script);
   }
 }

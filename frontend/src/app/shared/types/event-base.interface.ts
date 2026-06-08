@@ -1,11 +1,17 @@
-import { EventDefaultableFields, EventStatus, DictionaryItem, City } from '@zgadajsie/shared';
+import {
+  EventDefaultableFields,
+  EventStatus,
+  DictionaryItem,
+  City,
+  TargetOccupancyConfig,
+} from '@zgadajsie/shared';
 import { UserBrief } from './common.interface';
 import { CoverImage } from './cover-image.interface';
 
 export interface EventBase
   extends
     Required<Pick<EventDefaultableFields, 'maxParticipants' | 'gender'>>,
-    Pick<EventDefaultableFields, 'minParticipants' | 'ageMin' | 'ageMax' | 'targetOccupancy'> {
+    Pick<EventDefaultableFields, 'minParticipants' | 'ageMin' | 'ageMax'> {
   id: string;
   title: string;
   coverImageId?: string;
@@ -22,6 +28,7 @@ export interface EventBase
   createdAt: string;
   updatedAt: string;
   lotteryExecutedAt?: string | null;
+  targetOccupancyConfig?: TargetOccupancyConfig | null;
 
   discipline?: DictionaryItem;
   facility?: DictionaryItem;

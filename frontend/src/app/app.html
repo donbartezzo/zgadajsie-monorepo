@@ -28,7 +28,6 @@
       <app-cookie-consent-banner />
 
       <app-bottom-overlays />
-      <app-confirm-modal />
     </div>
 
     <!-- Explainer: outside container so it appears above modals (z-index 90 > modal z-index 70) -->
@@ -36,6 +35,9 @@
 
     <!-- Modal host: fixed outside container so z-index works correctly -->
     <app-modal-host />
+
+    <!-- Confirm modal: outside container to be in same stacking context as modal-host (z-index 100 > 70) -->
+    <app-confirm-modal />
 
     <!-- Bottom nav: fixed outside container so overflow:hidden doesn't affect it -->
     <app-bottom-nav></app-bottom-nav>

@@ -14,6 +14,7 @@ export type IconName =
   | 'moon'
   | 'home'
   | 'calendar'
+  | 'calendar-plus'
   | 'user'
   | 'user-check'
   | 'search'
@@ -22,10 +23,12 @@ export type IconName =
   | 'minus'
   | 'check'
   | 'x'
+  | 'x-circle'
   | 'heart'
   | 'share'
   | 'send'
   | 'message-circle'
+  | 'message-square'
   | 'bell'
   | 'bell-off'
   | 'map-pin'
@@ -55,6 +58,8 @@ export type IconName =
   | 'log-in'
   | 'log-out'
   | 'eye'
+  | 'alert-triangle'
+  | 'megaphone'
   | 'eye-off'
   | 'lock'
   | 'unlock'
@@ -69,6 +74,7 @@ export type IconName =
   | 'x-twitter'
   | 'whatsapp'
   | 'alert-triangle'
+  | 'megaphone'
   | 'help'
   | 'help-circle'
   | 'check-circle'
@@ -154,6 +160,14 @@ export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
             <line x1="8" y1="2" x2="8" y2="6" />
             <line x1="3" y1="10" x2="21" y2="10" />
           }
+          @case ('calendar-plus') {
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+            <line x1="12" y1="15" x2="12" y2="19" />
+            <line x1="8" y1="17" x2="16" y2="17" />
+          }
           @case ('user') {
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
@@ -187,6 +201,11 @@ export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           }
+          @case ('x-circle') {
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          }
           @case ('heart') {
             <path
               d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"
@@ -207,6 +226,9 @@ export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
             <path
               d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"
             />
+          }
+          @case ('message-square') {
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />
           }
           @case ('bell') {
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -288,6 +310,13 @@ export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
           @case ('shield-check') {
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
             <path d="M9 12l2 2 4-4" />
+          }
+          @case ('megaphone') {
+            <path d="M3 11v6a1 1 0 0 0 1 1h2v-8H4a1 1 0 0 0-1 1Z" />
+            <path d="M6 18h8a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H6v9Z" />
+            <path d="M16 16v-3" />
+            <path d="M19 16a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2" />
+            <line x1="2" y1="12" x2="2" y2="12" />
           }
           @case ('ban') {
             <circle cx="12" cy="12" r="10" />

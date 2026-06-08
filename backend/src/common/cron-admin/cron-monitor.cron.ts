@@ -28,6 +28,9 @@ export class CronMonitorCron implements OnModuleInit {
     { name: 'enrollment-lottery', expectedIntervalHours: 1 / 60 },
     { name: 'organizer-digest', expectedIntervalHours: 24 },
     { name: 'event-series-generation', expectedIntervalHours: 0.5 },
+    { name: 'notification-escalation', expectedIntervalHours: 1 / 60 },
+    { name: 'notification-email-digest', expectedIntervalHours: 0.25 },
+    { name: 'notification-cleanup', expectedIntervalHours: 24 },
   ];
 
   constructor(

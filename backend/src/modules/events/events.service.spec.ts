@@ -7,6 +7,7 @@ import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptio
 import { SlotService } from '../slots/slot.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
 import { EventsService } from './events.service';
+import { AppConfigService } from '../../common/config/app-config.service';
 import { mockAuthUser } from '../../tests/test-helpers';
 
 function buildTxMock() {
@@ -75,6 +76,14 @@ function buildCitySubsMock() {
   } as unknown as CitySubscriptionsService;
 }
 
+function buildFakeUsersMonitorMock() {
+  return {
+    monitorEvents: jest.fn().mockResolvedValue(undefined),
+    handleTargetOccupancyChange: jest.fn().mockResolvedValue(undefined),
+    monitorSingleEvent: jest.fn().mockResolvedValue(undefined),
+  } as unknown as any;
+}
+
 const FUTURE = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
 function makeEvent(overrides: Record<string, unknown> = {}) {
@@ -90,6 +99,7 @@ function makeEvent(overrides: Record<string, unknown> = {}) {
     lotteryExecutedAt: null,
     roleConfig: null,
     citySlug: 'warszawa',
+    city: { id: 'city1', slug: 'warszawa' },
     ...overrides,
   };
 }
@@ -130,6 +140,10 @@ describe('EventsService', () => {
     service = new EventsService(
       prisma as PrismaService,
       {
+        frontendUrl: 'https://test.example.com',
+        backendUrl: 'http://localhost:3000',
+      } as AppConfigService,
+      {
         sendNewApplicationEmail: jest.fn(),
         sendEventCancelledEmail: jest.fn().mockResolvedValue(undefined),
       } as any,
@@ -143,6 +157,7 @@ describe('EventsService', () => {
       slots,
       realtime,
       { isBannedByOrganizer: jest.fn(), isTrusted: jest.fn() } as any,
+      buildFakeUsersMonitorMock(),
     );
     jest.clearAllMocks();
   });
@@ -407,6 +422,10 @@ describe('EventsService', () => {
       service = new EventsService(
         prisma as PrismaService,
         {
+          frontendUrl: 'https://test.example.com',
+          backendUrl: 'http://localhost:3000',
+        } as AppConfigService,
+        {
           sendNewApplicationEmail: jest.fn(),
           sendEventCancelledEmail: jest.fn().mockResolvedValue(undefined),
         } as any,
@@ -420,6 +439,7 @@ describe('EventsService', () => {
         slots,
         realtime,
         eligibilityMock as any,
+        buildFakeUsersMonitorMock(),
       );
 
       const result = await service.findOne('event1', 'user1');
@@ -547,6 +567,10 @@ describe('EventsService', () => {
       };
       service = new EventsService(
         prisma as PrismaService,
+        {
+          frontendUrl: 'https://test.example.com',
+          backendUrl: 'http://localhost:3000',
+        } as AppConfigService,
         emailMock as any,
         pushMock as any,
         notifications,
@@ -555,6 +579,7 @@ describe('EventsService', () => {
         slots,
         realtime,
         { isBannedByOrganizer: jest.fn(), isTrusted: jest.fn() } as any,
+        buildFakeUsersMonitorMock(),
       );
       const event = makeEvent({ city: { slug: 'warszawa' } });
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);

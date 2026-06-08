@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
+import { TurnstileComponent } from '../../../../shared/ui/turnstile/turnstile.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
@@ -10,7 +11,7 @@ import { APP_BRAND } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, FormsModule, RouterLink, IconComponent],
+  imports: [CommonModule, FormsModule, RouterLink, IconComponent, TurnstileComponent],
   template: `
     <div class="p-6 max-w-md mx-auto">
       <div class="text-center mb-6">
@@ -90,6 +91,29 @@ import { APP_BRAND } from '@zgadajsie/shared';
           />
         </div>
 
+        <div class="mb-4">
+          <app-turnstile (resolved)="captchaToken.set($event)" />
+        </div>
+
+        <input
+          type="text"
+          [(ngModel)]="website"
+          name="website"
+          class="absolute left-[-9999px] aria-hidden tabindex-[-1] autocomplete-off"
+          tabindex="-1"
+          aria-hidden="true"
+          autocomplete="off"
+        />
+        <input
+          type="text"
+          [(ngModel)]="company"
+          name="company"
+          class="absolute left-[-9999px] aria-hidden tabindex-[-1] autocomplete-off"
+          tabindex="-1"
+          aria-hidden="true"
+          autocomplete="off"
+        />
+
         <div class="mt-4">
           <button
             data-testid="submit"
@@ -127,7 +151,11 @@ export class RegisterComponent {
   email = '';
   password = '';
   confirmPassword = '';
+  website = '';
+  company = '';
+  formRenderedAt = new Date().toISOString();
   readonly loading = signal(false);
+  readonly captchaToken = signal<string | null>(null);
 
   async onSubmit(): Promise<void> {
     if (this.password !== this.confirmPassword) {
@@ -138,9 +166,25 @@ export class RegisterComponent {
       this.snackbar.error('Nazwa wyświetlana musi mieć co najmniej 3 znaki');
       return;
     }
+    if (this.website || this.company) {
+      this.snackbar.success('Konto utworzone! Sprawdź email, aby aktywować konto.');
+      this.navigation.navigateToAuthLogin();
+      return;
+    }
+    // Captcha best-effort: dołączamy token jeśli jest dostępny, ale jego brak
+    // nigdy nie blokuje wysyłki (np. gdy widget się nie załadował).
+    const captchaToken = this.captchaToken();
     this.loading.set(true);
     try {
-      await this.auth.register(this.email, this.password, this.displayName);
+      await this.auth.register({
+        email: this.email,
+        password: this.password,
+        displayName: this.displayName,
+        captchaToken: captchaToken ?? '',
+        website: this.website,
+        company: this.company,
+        formRenderedAt: this.formRenderedAt,
+      });
       this.snackbar.success('Konto utworzone! Sprawdź email, aby aktywować konto.');
       this.navigation.navigateToAuthLogin();
     } catch (err: unknown) {

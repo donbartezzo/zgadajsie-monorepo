@@ -40,7 +40,7 @@ function buildPrismaMock() {
 function buildChatNotificationServiceMock() {
   return {
     onNewPrivateMessage: jest.fn(),
-    cancelPendingForConversation: jest.fn(),
+    onConversationRead: jest.fn(),
   } as unknown as ChatNotificationService;
 }
 
@@ -381,6 +381,155 @@ describe('ChatService', () => {
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(null);
 
       await expect(service.getChatMembers('nonexistent')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('markConversationRead()', () => {
+    it('upsertuje PrivateChatReadReceipt z lastReadAt = now', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({
+        id: 'event1',
+        organizerId: 'org1',
+      });
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue({
+        wantsIn: true,
+        withdrawnBy: null,
+      });
+      (prisma.privateChatReadReceipt.upsert as jest.Mock).mockResolvedValue(undefined);
+
+      await service.markConversationRead('event1', 'user1', 'org1');
+
+      expect(prisma.privateChatReadReceipt.upsert as jest.Mock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            eventId_userId_otherUserId: {
+              eventId: 'event1',
+              userId: 'user1',
+              otherUserId: 'org1',
+            },
+          },
+          update: expect.objectContaining({
+            lastReadAt: expect.any(Date),
+          }),
+          create: expect.objectContaining({
+            eventId: 'event1',
+            userId: 'user1',
+            otherUserId: 'org1',
+            lastReadAt: expect.any(Date),
+          }),
+        }),
+      );
+    });
+
+    it('wywołuje onConversationRead po upsert', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({
+        id: 'event1',
+        organizerId: 'org1',
+      });
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue({
+        wantsIn: true,
+        withdrawnBy: null,
+      });
+      (prisma.privateChatReadReceipt.upsert as jest.Mock).mockResolvedValue(undefined);
+
+      await service.markConversationRead('event1', 'user1', 'org1');
+
+      expect(chatNotificationService.onConversationRead as jest.Mock).toHaveBeenCalledWith(
+        'event1',
+        'user1',
+        'org1',
+      );
+    });
+  });
+
+  describe('getUnreadCount()', () => {
+    it('null receipt = liczy wszystkie wiadomości', async () => {
+      (prisma.privateChatReadReceipt.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.privateChatMessage.count as jest.Mock).mockResolvedValue(5);
+
+      const result = await service.getUnreadCount('event1', 'user1', 'org1');
+
+      expect(result).toBe(5);
+      expect(prisma.privateChatMessage.count as jest.Mock).toHaveBeenCalledWith({
+        where: {
+          eventId: 'event1',
+          senderId: 'org1',
+          recipientId: 'user1',
+        },
+      });
+    });
+
+    it('z receiptem = liczy tylko createdAt > lastReadAt', async () => {
+      const lastReadAt = new Date('2024-01-01T10:00:00Z');
+      (prisma.privateChatReadReceipt.findUnique as jest.Mock).mockResolvedValue({
+        lastReadAt,
+      });
+      (prisma.privateChatMessage.count as jest.Mock).mockResolvedValue(3);
+
+      const result = await service.getUnreadCount('event1', 'user1', 'org1');
+
+      expect(result).toBe(3);
+      expect(prisma.privateChatMessage.count as jest.Mock).toHaveBeenCalledWith({
+        where: {
+          eventId: 'event1',
+          senderId: 'org1',
+          recipientId: 'user1',
+          createdAt: { gt: lastReadAt },
+        },
+      });
+    });
+  });
+
+  describe('getOrganizerConversations() - unreadCount', () => {
+    it('poprawny unreadCount per konwersacja', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue({ organizerId: 'org1' });
+      (prisma.privateChatMessage.findMany as jest.Mock).mockResolvedValue([
+        { senderId: 'user1', recipientId: 'org1' },
+        { senderId: 'user2', recipientId: 'org1' },
+      ]);
+      (prisma.user.findMany as jest.Mock).mockResolvedValue([
+        { id: 'user1', displayName: 'User 1' },
+        { id: 'user2', displayName: 'User 2' },
+      ]);
+      (prisma.privateChatMessage.findFirst as jest.Mock)
+        .mockResolvedValueOnce({
+          content: 'Hello from user1',
+          createdAt: new Date(),
+          senderId: 'user1',
+        })
+        .mockResolvedValueOnce({
+          content: 'Hello from user2',
+          createdAt: new Date(),
+          senderId: 'user2',
+        });
+      // Mock dla PrivateChatReadReceipt - brak receipt dla user1 (liczy wszystkie), jest dla user2
+      (prisma.privateChatReadReceipt.findUnique as jest.Mock).mockImplementation(
+        ({ where }: { where: any }) => {
+          if (where.eventId_userId_otherUserId.otherUserId === 'user1') {
+            return Promise.resolve(null); // user1 - brak receipt
+          }
+          if (where.eventId_userId_otherUserId.otherUserId === 'user2') {
+            return Promise.resolve({ lastReadAt: new Date() }); // user2 - ma receipt
+          }
+          return Promise.resolve(null);
+        },
+      );
+      (prisma.privateChatMessage.count as jest.Mock).mockImplementation(
+        ({ where }: { where: any }) => {
+          if (where.senderId === 'user1' && where.recipientId === 'org1' && !where.createdAt) {
+            return Promise.resolve(2); // user1 → org1, wszystkie wiadomości (brak receipt)
+          }
+          if (where.senderId === 'user2' && where.recipientId === 'org1' && where.createdAt) {
+            return Promise.resolve(0); // user2 → org1, 0 nowych po lastReadAt
+          }
+          return Promise.resolve(0);
+        },
+      );
+
+      const result = await service.getOrganizerConversations('event1', 'org1');
+
+      expect(result).toHaveLength(2);
+      expect(result[0].unreadCount).toBe(2);
+      expect(result[1].unreadCount).toBe(0);
     });
   });
 });

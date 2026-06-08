@@ -43,7 +43,6 @@ export class FakeUsersHandlersService implements OnModuleInit {
       select: {
         id: true,
         maxParticipants: true,
-        targetOccupancy: true,
         status: true,
         startsAt: true,
         roleConfig: true,

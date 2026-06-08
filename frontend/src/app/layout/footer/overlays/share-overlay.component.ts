@@ -3,7 +3,12 @@ import { CommonModule, DOCUMENT } from '@angular/common';
 import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlay.component';
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
-import { APP_BRAND } from '@zgadajsie/shared';
+import {
+  APP_BRAND,
+  FACEBOOK_SHARE_URL,
+  TWITTER_SHARE_URL,
+  WHATSAPP_SHARE_URL,
+} from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-share-overlay',
@@ -61,20 +66,20 @@ export class ShareOverlayComponent {
 
   private shareToFacebook(): void {
     const url = encodeURIComponent(this.getCurrentUrl());
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+    window.open(`${FACEBOOK_SHARE_URL}?u=${url}`, '_blank');
     this.closed.emit();
   }
 
   private shareToTwitter(): void {
     const url = encodeURIComponent(this.getCurrentUrl());
     const text = encodeURIComponent(`Sprawdź to na ${APP_BRAND.NAME}!`);
-    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+    window.open(`${TWITTER_SHARE_URL}?url=${url}&text=${text}`, '_blank');
     this.closed.emit();
   }
 
   private shareToWhatsApp(): void {
     const text = encodeURIComponent(`Sprawdź to na ${APP_BRAND.NAME}! ${this.getCurrentUrl()}`);
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+    window.open(`${WHATSAPP_SHARE_URL}?text=${text}`, '_blank');
     this.closed.emit();
   }
 

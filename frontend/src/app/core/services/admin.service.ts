@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { User, PaginatedPayments } from '../../shared/types';
+import { User, PaginatedPayments, ContactMessagesResponse } from '../../shared/types';
 import { DictionaryItem } from '@zgadajsie/shared';
 
 interface PaginatedUsers {
@@ -95,6 +95,17 @@ export class AdminService {
     });
   }
 
+  setEventTargetOccupancyConfig(
+    eventId: string,
+    dto: {
+      targetOccupancy?: number | null;
+      cleanupHours?: number;
+      minFreeSlotsBuffer?: number;
+    },
+  ): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/events/${eventId}/fake-users-config`, dto);
+  }
+
   adminWithdrawUser(enrollmentId: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/enrollments/${enrollmentId}/admin-withdraw`, {});
   }
@@ -105,6 +116,40 @@ export class AdminService {
 
   verifyUserByOrganizer(targetUserId: string): Observable<User> {
     return this.http.patch<User>(`${this.apiUrl}/users/${targetUserId}/verify-by-organizer`, {});
+  }
+
+  getContactMessages(page = 1, limit = 20): Observable<ContactMessagesResponse> {
+    return this.http.get<ContactMessagesResponse>(`${this.apiUrl}/contact/admin/messages`, {
+      params: { page, limit },
+    });
+  }
+
+  resendContactEmail(id: string): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(
+      `${this.apiUrl}/contact/admin/messages/${id}/resend`,
+      {},
+    );
+  }
+
+  deleteContactMessage(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/contact/admin/messages/${id}`);
+  }
+
+  getPendingEmails(page = 1, limit = 50, type?: string): Observable<PendingEmailsResponse> {
+    let params = new HttpParams().set('page', page).set('limit', limit);
+    if (type) params = params.set('type', type);
+    return this.http.get<PendingEmailsResponse>(
+      `${this.apiUrl}/admin/notifications/pending-emails`,
+      {
+        params,
+      },
+    );
+  }
+
+  cancelEmailForNotification(notificationId: string): Observable<PendingEmailNotification | null> {
+    return this.http.delete<PendingEmailNotification | null>(
+      `${this.apiUrl}/admin/notifications/${notificationId}/cancel-email`,
+    );
   }
 }
 
@@ -124,4 +169,26 @@ export interface CronLog {
   durationMs: number | null;
   error: string | null;
   createdAt: string;
+}
+
+export interface PendingEmailNotification {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  body: string;
+  link: string | null;
+  createdAt: string;
+  user: {
+    id: string;
+    email: string;
+    displayName: string;
+  };
+}
+
+export interface PendingEmailsResponse {
+  data: PendingEmailNotification[];
+  total: number;
+  page: number;
+  limit: number;
 }

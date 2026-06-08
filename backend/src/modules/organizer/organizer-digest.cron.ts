@@ -1,12 +1,12 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { ConfigService } from '@nestjs/config';
 import { DateTime } from 'luxon';
 import { APP_DEFAULT_TIMEZONE } from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { OrganizerService } from './organizer.service';
 import { EmailService } from '../notifications/email.service';
 import { CronAdminService } from '../../common/cron-admin/cron-admin.service';
+import { AppConfigService } from '../../common/config/app-config.service';
 
 const BATCH_SIZE = 50;
 const CRON_NAME = 'organizer-digest';
@@ -19,7 +19,7 @@ export class OrganizerDigestCron implements OnModuleInit {
     private prisma: PrismaService,
     private organizerService: OrganizerService,
     private emailService: EmailService,
-    private configService: ConfigService,
+    private appConfig: AppConfigService,
     private cronAdmin: CronAdminService,
   ) {}
 
@@ -97,13 +97,11 @@ export class OrganizerDigestCron implements OnModuleInit {
       return;
     }
 
-    const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
-
     await this.emailService.sendOrganizerWeeklyDigest(
       user.email,
       user.displayName,
       data,
-      frontendUrl,
+      this.appConfig.frontendUrl,
     );
 
     await this.prisma.user.update({
