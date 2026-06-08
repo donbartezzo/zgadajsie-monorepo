@@ -16,13 +16,36 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { TurnstileService } from '../../../core/services/turnstile.service';
 import { TurnstileComponent } from '../../ui/turnstile/turnstile.component';
 import { environment } from '../../../../environments/environment';
-import { ContactSource } from '@zgadajsie/shared';
+import { ContactSource, APP_BRAND } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-contact-form',
   imports: [CommonModule, ReactiveFormsModule, IconComponent, TurnstileComponent],
   template: `
     <div class="p-4">
+      <!-- Error Message -->
+      @if (formError()) {
+        <div class="mb-4">
+          <div class="bg-white rounded-2xl shadow-xs overflow-hidden">
+            <div class="bg-magenta-400 p-4 text-center">
+              <h2 class="text-2xl font-bold text-white mb-2">Wystąpił błąd</h2>
+              <p class="text-white/90 mb-4">
+                Nie udało się wysłać wiadomości. Spróbuj ponownie lub skontaktuj się z nami
+                bezpośrednio na adres:
+              </p>
+              <div class="bg-white/10 rounded-lg p-3">
+                <a
+                  href="mailto:{{ contactEmail() }}"
+                  class="text-white font-mono font-bold text-lg hover:underline"
+                >
+                  {{ contactEmail() }}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
       <!-- Success Message -->
       @if (formSent()) {
         <div class="mb-4">
@@ -176,7 +199,9 @@ export class ContactFormComponent {
 
   readonly isSubmitting = signal(false);
   readonly formSent = signal(false);
+  readonly formError = signal(false);
   readonly referenceNumber = signal<string | null>(null);
+  readonly contactEmail = computed(() => APP_BRAND.CONTACT_EMAIL);
 
   readonly currentUser = this.authService.currentUser;
   readonly isLoggedIn = this.authService.isLoggedIn;
@@ -237,6 +262,7 @@ export class ContactFormComponent {
       },
       error: (error) => {
         this.isSubmitting.set(false);
+        this.formError.set(true);
         console.error('Contact form error:', error);
         if (error.status === 429) {
           this.snackbar.show('Osiągnięto limit zgłoszeń. Spróbuj ponownie za godzinę.', 'error');
