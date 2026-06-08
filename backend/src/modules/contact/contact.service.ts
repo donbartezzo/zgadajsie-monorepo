@@ -9,8 +9,8 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { SubmitContactDto } from './dto/submit-contact.dto';
-import { ContactSource } from '@prisma/client';
-import { ContactSource as SharedContactSource } from '@zgadajsie/shared';
+import { ContactSource as PrismaContactSource } from '@prisma/client';
+import { ContactSource } from '@zgadajsie/shared';
 import { featureFlags } from '../../common/config/feature-flags';
 import { verifyTurnstile } from '../../common/utils/captcha.util';
 import { createHash } from 'crypto';
@@ -97,7 +97,7 @@ export class ContactService {
         email: dto.email,
         message: dto.message,
         userId,
-        source: dto.source || ContactSource.CONTACT_PAGE,
+        source: (dto.source || ContactSource.CONTACT_PAGE) as PrismaContactSource,
         citySlug: dto.citySlug,
         ipHash,
       },
@@ -109,7 +109,7 @@ export class ContactService {
         dto.name,
         dto.email,
         dto.message,
-        (dto.source || ContactSource.CONTACT_PAGE) as unknown as SharedContactSource,
+        dto.source || ContactSource.CONTACT_PAGE,
         dto.citySlug,
         referenceNumber,
       );
@@ -213,7 +213,7 @@ export class ContactService {
         message.name,
         message.email,
         message.message,
-        message.source as unknown as SharedContactSource,
+        message.source as ContactSource,
         message.citySlug,
       );
       // Update email tracking

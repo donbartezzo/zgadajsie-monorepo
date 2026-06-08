@@ -8,7 +8,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { ContactSource } from '@prisma/client';
+import { ContactSource } from '@zgadajsie/shared';
 
 export class SubmitContactDto {
   @IsString()
