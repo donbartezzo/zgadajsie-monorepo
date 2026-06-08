@@ -3,7 +3,6 @@
   @let _participant = participant();
   @let _slot = slot();
   @let _isOrganizer = isOrganizer();
-  @let _isBanned = isBanned();
   @let _waitingReason = waitingReason();
   @let _payment = paymentInfo();
   @let _slotLocked = slotLocked();
@@ -16,7 +15,6 @@
   @let _event = event();
   @let _modalUserInfo = modalUserInfo();
   @let _isNonParticipant = isNonParticipantView();
-  @let _isViewOnly = isViewOnlyParticipant();
 
   <!-- ═══════════════════════════════════
        HEADER (zawsze widoczny)
@@ -175,7 +173,7 @@
       } -->
 
       <!-- ── Organizer actions ── -->
-      @if (_isOrganizer && _actions.length > 0) {
+      @if ((_isOrganizer || isAdmin()) && _actions.length > 0) {
         <select
           class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 mt-2 text-sm text-neutral-700 focus:border-primary-500 focus:outline-hidden focus:ring-1 focus:ring-primary-500"
           [value]="selectedOrganizerAction()"
