@@ -486,7 +486,9 @@ export class EnrollmentService {
           roleConfig,
         );
         if (availableRoles.length > 0) {
-          const suggestion = availableRoles.map((r) => `${r.title} (${r.freeSlots})`).join(', ');
+          const suggestion = availableRoles
+            .map((r) => `${r.title ?? r.key} (${r.freeSlots})`)
+            .join(', ');
           throw new BadRequestException(
             `Brak wolnych miejsc dla tej roli. Dostępne miejsca w: ${suggestion}`,
           );
