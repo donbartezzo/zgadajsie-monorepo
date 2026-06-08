@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
 import { R2StorageService } from '../media/r2-storage.service';
 import { validateImageBuffer } from '../../common/utils/image-upload.util';
+import 'multer';
 
 const COVER_IMAGE_WIDTH = 700;
 const COVER_IMAGE_HEIGHT = 250;
@@ -34,7 +35,7 @@ export class CoverImagesService {
   async findOne(id: string) {
     const cover = await this.prisma.coverImage.findUnique({
       where: { id },
-      include: { discipline: true },
+      include: { discipline: true, owner: true },
     });
     if (!cover) {
       throw new NotFoundException('Cover image nie znaleziony');

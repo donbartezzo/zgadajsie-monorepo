@@ -103,8 +103,9 @@ export class CreateEventDto {
   @IsNumber()
   lng: number;
 
+  @IsOptional()
   @IsString()
-  coverImageId: string;
+  coverImageId?: string;
 
   @IsOptional()
   @IsBoolean()

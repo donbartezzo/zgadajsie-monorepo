@@ -1,7 +1,6 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { hashPasswordForSeed } from '../src/common/utils/password.util';
 import { createCommonSeedData, createFakeUsers, COMMON_SEED_DATA } from './seed-common';
-import { syncCoverImagesFromFilesystem } from '../src/modules/cover-images/cover-images-sync.util';
 import { E2E_SEED } from './e2e-constants';
 
 // Brand constants (synchronized with libs/src/lib/constants/brand.constants.ts)
@@ -46,16 +45,6 @@ async function main() {
 
   // Uzywamy wspólnych danych dla obu environmentów
   const { cities, disciplines, facilities, levels } = await createCommonSeedData(prisma);
-
-  console.log('Synchronizujemy cover images z katalogiem...');
-  try {
-    await syncCoverImagesFromFilesystem(prisma);
-  } catch (error) {
-    console.warn(
-      'Nie udalo sie zsynchronizowac cover images (kontener Docker nie ma dostepu do katalogu frontend):',
-      error instanceof Error ? error.message : error,
-    );
-  }
 
   // ─── Admin ───────────────────────────────────────────────────────────────
   console.log('Tworzę konto admina...');

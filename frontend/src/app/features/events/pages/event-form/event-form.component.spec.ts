@@ -36,7 +36,10 @@ const mockEventService = {
 const mockEventSeriesService = {
   createSeries: jest.fn(),
 };
-const mockCoverImageService = { getAll: jest.fn().mockReturnValue(of([])) };
+const mockCoverImageService = {
+  getAll: jest.fn().mockReturnValue(of([])),
+  getMy: jest.fn().mockReturnValue(of([])),
+};
 const mockDictService = {
   getDisciplines: jest.fn().mockReturnValue(of([])),
   getFacilities: jest.fn().mockReturnValue(of([])),
@@ -150,6 +153,7 @@ describe('EventFormComponent', () => {
     });
 
     it('gdy maxParticipants < minParticipants wywołuje snackbar.error', () => {
+      component['selectedCoverImageId'].set('cover123');
       component.form.patchValue({
         title: 'Test',
         disciplineSlug: 'football',
@@ -180,6 +184,7 @@ describe('EventFormComponent', () => {
       mockEventService.createEvent.mockReturnValue(of(createdEvent));
       const navSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
 
+      component['selectedCoverImageId'].set('cover123');
       component.form.patchValue({
         title: 'Mecz testowy',
         disciplineSlug: 'football',
@@ -211,6 +216,7 @@ describe('EventFormComponent', () => {
         throwError(() => ({ error: { message: 'Nieznany błąd' } })),
       );
 
+      component['selectedCoverImageId'].set('cover123');
       component.form.patchValue({
         title: 'Mecz',
         disciplineSlug: 'football',
@@ -301,6 +307,7 @@ describe('EventFormComponent', () => {
 
   describe('tryb serii wydarzeń', () => {
     const fillValidEventForm = () => {
+      component['selectedCoverImageId'].set('cover123');
       component.form.patchValue({
         title: 'Trening piłkarski',
         disciplineSlug: 'football',
@@ -335,6 +342,7 @@ describe('EventFormComponent', () => {
     }));
 
     it('gdy seriesEnabled = true i pusta nazwa serii, wywołuje snackbar.error i nie wywołuje createSeries', () => {
+      component['selectedCoverImageId'].set('cover123');
       component.toggleSeriesEnabled(true);
       component.seriesForm.patchValue({ name: '' });
 
@@ -346,6 +354,7 @@ describe('EventFormComponent', () => {
     });
 
     it('gdy seriesEnabled = true i brak startDate serii, wywołuje snackbar.error i nie wywołuje createSeries', () => {
+      component['selectedCoverImageId'].set('cover123');
       component.toggleSeriesEnabled(true);
       component.seriesForm.patchValue({ name: 'Trening środowy', startDate: '' });
 
@@ -459,6 +468,7 @@ describe('EventFormComponent', () => {
 
       expect(component.isEdit()).toBe(true);
 
+      component['selectedCoverImageId'].set('cover123');
       component.seriesEnabled.set(true);
       component.onSubmit();
       tick();

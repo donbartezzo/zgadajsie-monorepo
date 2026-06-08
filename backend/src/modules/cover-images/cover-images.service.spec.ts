@@ -4,6 +4,20 @@ import { CoverImagesService } from './cover-images.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { R2StorageService } from '../media/r2-storage.service';
 import { EventDiscipline } from '@prisma/client';
+import { validateImageBuffer as _validateImageBuffer } from '../../common/utils/image-upload.util';
+
+jest.mock('../../common/utils/image-upload.util', () => ({
+  validateImageBuffer: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.mock('sharp', () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    resize: jest.fn().mockReturnThis(),
+    webp: jest.fn().mockReturnThis(),
+    toBuffer: jest.fn().mockResolvedValue(Buffer.from('processed')),
+  })),
+}));
 
 describe('CoverImagesService', () => {
   let service: CoverImagesService;
@@ -34,9 +48,8 @@ describe('CoverImagesService', () => {
   };
 
   const mockDiscipline: EventDiscipline = {
-    id: 'discipline-1',
     slug: 'pilka-nozna',
-    name: 'Piłka nożna',
+    schema: {},
   };
 
   const mockFile = {
@@ -169,7 +182,7 @@ describe('CoverImagesService', () => {
   describe('replaceUserCover', () => {
     it('should upload new image and delete old one', async () => {
       mockPrisma.coverImage.findUnique.mockResolvedValue(mockUserCover);
-      mockR2Storage.delete.mockResolvedValue();
+      mockR2Storage.delete.mockResolvedValue(undefined);
       mockR2Storage.upload.mockResolvedValue('https://r2.dev/key.webp');
       mockPrisma.coverImage.update.mockResolvedValue(mockUserCover);
 
@@ -232,7 +245,7 @@ describe('CoverImagesService', () => {
     it('should delete user cover and R2 file', async () => {
       mockPrisma.coverImage.findUnique.mockResolvedValue(mockUserCover);
       mockPrisma.event.count.mockResolvedValue(0); // not used
-      mockR2Storage.delete.mockResolvedValue();
+      mockR2Storage.delete.mockResolvedValue(undefined);
       mockPrisma.coverImage.delete.mockResolvedValue(mockUserCover);
 
       const result = await service.removeUserCover('user-1', 'cover-2');
@@ -270,7 +283,7 @@ describe('CoverImagesService', () => {
     it('should delete public cover and R2 file', async () => {
       mockPrisma.coverImage.findUnique.mockResolvedValue(mockPublicCover);
       mockPrisma.event.count.mockResolvedValue(0);
-      mockR2Storage.delete.mockResolvedValue();
+      mockR2Storage.delete.mockResolvedValue(undefined);
       mockPrisma.coverImage.delete.mockResolvedValue(mockPublicCover);
 
       const result = await service.remove('cover-1');

@@ -92,9 +92,14 @@ CREATE TABLE "EventDiscipline" (
 -- CreateTable
 CREATE TABLE "CoverImage" (
     "id" TEXT NOT NULL,
-    "disciplineSlug" TEXT NOT NULL,
+    "disciplineSlug" TEXT,
     "filename" TEXT NOT NULL,
+    "storageKey" TEXT,
+    "ownerUserId" TEXT,
+    "name" TEXT,
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "CoverImage_pkey" PRIMARY KEY ("id")
 );
@@ -370,6 +375,9 @@ CREATE UNIQUE INDEX "SocialAccount_provider_providerUserId_key" ON "SocialAccoun
 CREATE INDEX "CoverImage_disciplineSlug_idx" ON "CoverImage"("disciplineSlug");
 
 -- CreateIndex
+CREATE INDEX "CoverImage_ownerUserId_idx" ON "CoverImage"("ownerUserId");
+
+-- CreateIndex
 CREATE INDEX "Event_citySlug_status_startsAt_idx" ON "Event"("citySlug", "status", "startsAt");
 
 -- CreateIndex
@@ -449,6 +457,9 @@ ALTER TABLE "SocialAccount" ADD CONSTRAINT "SocialAccount_userId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "CoverImage" ADD CONSTRAINT "CoverImage_disciplineSlug_fkey" FOREIGN KEY ("disciplineSlug") REFERENCES "EventDiscipline"("slug") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CoverImage" ADD CONSTRAINT "CoverImage_ownerUserId_fkey" FOREIGN KEY ("ownerUserId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_citySlug_fkey" FOREIGN KEY ("citySlug") REFERENCES "City"("slug") ON DELETE RESTRICT ON UPDATE CASCADE;
