@@ -3,13 +3,12 @@
 # Uruchom: ./scripts/deploy-r2-migration.sh [dev|prod]
 #
 # Kolejność:
-#   1. Rollback failed migrations z poprzednich deploy prób
-#   2. prisma migrate deploy (kolumny + CHECK constraint - bezpieczne przed backfillem)
-#      20260609210000 (NOT NULL) może tu się nie powieść - obsługujemy to poniżej
-#   3. seed-default-cover.ts        — wgrywa default cover do R2, rekord isDefault=true
-#   4. migrate-cover-images-to-r2.ts — backfill storageKey dla publicznych cover images
-#   5. backfill-event-cover-images.ts — default cover dla eventów bez coverImageId
-#   6. prisma migrate deploy (NOT NULL na Event.coverImageId - bezpieczne po backfillu)
+#   1. Czyszczenie rekordów failed migrations z _prisma_migrations
+#   2. prisma migrate deploy (kolumny + CHECK constraint)
+#   3. seed-default-cover.ts
+#   4. migrate-cover-images-to-r2.ts
+#   5. backfill-event-cover-images.ts
+#   6. prisma migrate deploy (NOT NULL na Event.coverImageId)
 
 set -e
 
@@ -22,8 +21,7 @@ if [ -z "$SEED_TYPE" ]; then
 fi
 
 if [ "$SEED_TYPE" != "dev" ] && [ "$SEED_TYPE" != "prod" ]; then
-  echo "Błąd: nieprawidłowy parametr '$SEED_TYPE'"
-  echo "Dozwolone wartości: dev, prod"
+  echo "Błąd: nieprawidłowy parametr '$SEED_TYPE'. Dozwolone: dev, prod"
   exit 1
 fi
 
@@ -36,41 +34,36 @@ else
 fi
 
 if [ ! -f "$OPS_CONFIG" ]; then
-  echo "Błąd: Brak pliku konfiguracyjnego $OPS_CONFIG"
+  echo "Błąd: Brak pliku $OPS_CONFIG"
   exit 1
 fi
 
-set -a
-source "$OPS_CONFIG"
-set +a
+set -a; source "$OPS_CONFIG"; set +a
 
 if [ ! -f "$ENV_FILE" ]; then
-  echo "Błąd: Brak pliku środowiskowego $ENV_FILE"
+  echo "Błąd: Brak pliku $ENV_FILE"
   exit 1
 fi
 
 if [ -z "$SSH_HOST" ] || [ -z "$DB_CONTAINER" ] || [ -z "$TUNNEL_PORT" ] || [ -z "$ENV_FILE" ]; then
-  echo "Błąd: Brak wymaganych zmiennych w $OPS_CONFIG (SSH_HOST, DB_CONTAINER, TUNNEL_PORT, ENV_FILE)"
+  echo "Błąd: Brak zmiennych w $OPS_CONFIG (SSH_HOST, DB_CONTAINER, TUNNEL_PORT, ENV_FILE)"
   exit 1
 fi
 
 echo "========================================="
-echo " Migracja R2 / Prisma deploy: ${ENV_LABEL}"
+echo " Migracja R2 / Prisma: ${ENV_LABEL}"
 echo "========================================="
 echo ""
 
 if [ "$SEED_TYPE" = "prod" ]; then
-  echo "⚠️  PRODUKCJA. Kroki 3-5 są idempotentne."
+  echo "⚠️  PRODUKCJA. Kroki 3-5 są idempotentne. Krok 6 wymaga sukcesu kroków 3-5."
   echo ""
   read -p "Czy na pewno chcesz kontynuować? [tak/N] " confirm
-  if [ "$confirm" != "tak" ]; then
-    echo "Anulowano."
-    exit 0
-  fi
+  [ "$confirm" = "tak" ] || { echo "Anulowano."; exit 0; }
   echo ""
 fi
 
-# Helper: budowanie tunelowanego DATABASE_URL
+# Budowanie tunelowanego DATABASE_URL
 build_tunnel_database_url() {
   DATABASE_URL="$1" TUNNEL_PORT="$2" node -e '
     const url = new URL(process.env.DATABASE_URL);
@@ -80,78 +73,69 @@ build_tunnel_database_url() {
   '
 }
 
-# Helper: rollback wszystkich FAILED migrations
-rollback_failed() {
-  local db_url="$1"
-  local failed
-  failed=$(DATABASE_URL="$db_url" sh -c "cd backend && npx prisma migrate status 2>&1" \
-    | grep -E "failed" | grep -oP '\d{14}_\w+' || true)
-  if [ -n "$failed" ]; then
-    echo "   Znaleziono failed migrations — rollback:"
-    for m in $failed; do
-      echo "   → $m"
-      DATABASE_URL="$db_url" sh -c "cd backend && npx prisma migrate resolve --rolled-back $m" 2>&1 || true
-    done
-  else
-    echo "   Brak failed migrations."
-  fi
-}
-
 # Otwieranie tunelu SSH
 if nc -z localhost "$TUNNEL_PORT" 2>/dev/null; then
   echo "🔗 Tunel SSH już aktywny na porcie $TUNNEL_PORT."
 else
-  echo "🔗 Pobieram IP kontenera bazy danych..."
+  echo "🔗 Pobieram IP kontenera DB..."
   DB_IP=$(ssh "${SSH_HOST}" "docker inspect ${DB_CONTAINER} --format '{{.NetworkSettings.Networks.coolify.IPAddress}}'")
   echo "   IP: ${DB_IP}"
-  echo "🔗 Otwieram tunel SSH (5 minut)..."
-  ssh -f -o ExitOnForwardFailure=yes \
-    -L "${TUNNEL_PORT}:${DB_IP}:5432" \
-    "${SSH_HOST}" sleep 300
+  echo "🔗 Otwieram tunel SSH (5 min)..."
+  ssh -f -o ExitOnForwardFailure=yes -L "${TUNNEL_PORT}:${DB_IP}:5432" "${SSH_HOST}" sleep 300
   echo "⏳ Czekam na gotowość tunelu..."
   for i in $(seq 1 15); do
-    nc -z localhost "$TUNNEL_PORT" 2>/dev/null && break
-    sleep 1
+    nc -z localhost "$TUNNEL_PORT" 2>/dev/null && break || sleep 1
   done
 fi
 
-# Wczytaj zmienne środowiskowe (R2_* + DATABASE_URL)
-set -a
-source "$ENV_FILE"
-set +a
+# Wczytaj env (R2_* + DATABASE_URL)
+set -a; source "$ENV_FILE"; set +a
 
-if [ -z "$DATABASE_URL" ]; then
-  echo "Błąd: DATABASE_URL nie ustawiony w $ENV_FILE"
-  exit 1
-fi
-
-if [ -z "$R2_BUCKET_NAME" ] || [ -z "$R2_ACCESS_KEY_ID" ]; then
-  echo "Błąd: Brak zmiennych R2_* w $ENV_FILE"
-  exit 1
-fi
+[ -n "$DATABASE_URL" ]   || { echo "Błąd: DATABASE_URL nie ustawiony w $ENV_FILE"; exit 1; }
+[ -n "$R2_BUCKET_NAME" ] || { echo "Błąd: Brak R2_BUCKET_NAME w $ENV_FILE"; exit 1; }
+[ -n "$R2_ACCESS_KEY_ID" ] || { echo "Błąd: Brak R2_ACCESS_KEY_ID w $ENV_FILE"; exit 1; }
 
 REMOTE_DATABASE_URL="$(build_tunnel_database_url "$DATABASE_URL" "$TUNNEL_PORT")"
 export DATABASE_URL="$REMOTE_DATABASE_URL"
 
-# ─── Krok 1: Rollback failed migrations z poprzednich prób ────────────────────
+# ─── Krok 1: Usuń rekordy FAILED migrations ───────────────────────────────────
+# Usuwa z _prisma_migrations wiersze które zaczęły się ale nigdy się nie zakończyły.
+# To pozwala migrate deploy re-zastosować je ze świeżą treścią (bez problemu checksum).
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Krok 1: Rollback failed migrations"
+echo "Krok 1: Czyszczenie failed migrations"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-rollback_failed "$REMOTE_DATABASE_URL"
 
-# ─── Krok 2: Pierwsze migrate deploy (bez NOT NULL) ───────────────────────────
+CLEANUP_SQL='DELETE FROM "_prisma_migrations" WHERE finished_at IS NULL AND rolled_back_at IS NULL AND started_at IS NOT NULL;'
+
+DATABASE_URL="$REMOTE_DATABASE_URL" sh -c 'cd backend && npx prisma db execute --stdin' \
+  <<< "$CLEANUP_SQL" 2>&1 | grep -v "npm warn" | grep -v "Unknown" | grep -v "^$" || true
+echo "   Gotowe (jeśli były failed — usunięto)."
+
+# ─── Krok 2: Migrate deploy (kolumny + CHECK) ─────────────────────────────────
+# 20260608200000: dodaje kolumny CoverImage (storageKey, ownerUserId, name, isDefault, updatedAt)
+# 20260609000000: CHECK constraint
+# 20260609080737: zmiany FK
+# 20260609210000: NOT NULL (może się nie zastosować jeśli są NULL eventy - obsłużone w kroku 6)
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Krok 2: prisma migrate deploy (kolumny CoverImage + CHECK)"
+echo "Krok 2: prisma migrate deploy"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-# Jeśli db jest świeża (brak NULL eventów), 20260609210000 też się tu zastosuje.
-# Jeśli są NULL eventy, 20260609210000 nie przejdzie - obsługujemy to w kroku 3.
-DATABASE_URL="$REMOTE_DATABASE_URL" sh -c "cd backend && npx prisma migrate deploy" || true
 
-# Jeśli 20260609210000 nie przeszło (NULL eventy), rollback go teraz
-echo "   → Rollback 20260609210000 jeśli failed (nie przeszkadza dalszym krokom):"
-rollback_failed "$REMOTE_DATABASE_URL"
+MIGRATE2_OUT=$(DATABASE_URL="$REMOTE_DATABASE_URL" sh -c "cd backend && npx prisma migrate deploy" 2>&1) \
+  && MIGRATE2_EXIT=0 || MIGRATE2_EXIT=$?
+echo "$MIGRATE2_OUT" | grep -v "npm warn" | grep -v "Unknown env\|Unknown project" || true
+
+if [ "$MIGRATE2_EXIT" -ne 0 ]; then
+  # Oczekiwane jeśli baza ma NULL eventy (20260609210000 nie mogło się zastosować).
+  # Czyścimy nowe failed migrations i kontynuujemy — krok 6 dogra NOT NULL po backfillu.
+  echo ""
+  echo "   ⚠ Migrate deploy zakończył się błędem (może być OK jeśli baza ma NULL eventy)."
+  echo "   → Czyszczę ewentualne nowe failed migrations..."
+  DATABASE_URL="$REMOTE_DATABASE_URL" sh -c 'cd backend && npx prisma db execute --stdin' \
+    <<< "$CLEANUP_SQL" 2>&1 | grep -v "npm warn" | grep -v "Unknown" | grep -v "^$" || true
+  echo "   → Kontynuuję z krokami danych..."
+fi
 
 # ─── Krok 3: seed-default-cover.ts ────────────────────────────────────────────
 echo ""
@@ -174,16 +158,19 @@ echo "Krok 5: backfill-event-cover-images.ts"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 (cd backend && npx tsx scripts/backfill-event-cover-images.ts)
 
-# ─── Krok 6: Drugie migrate deploy (NOT NULL - bezpieczne po backfillu) ────────
+# ─── Krok 6: Migrate deploy (NOT NULL — bezpieczne po backfillu) ────────────
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Krok 6: prisma migrate deploy (NOT NULL na Event.coverImageId)"
+echo "Krok 6: prisma migrate deploy (NOT NULL po backfillu)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-DATABASE_URL="$REMOTE_DATABASE_URL" sh -c "cd backend && npx prisma migrate deploy"
+MIGRATE6_OUT=$(DATABASE_URL="$REMOTE_DATABASE_URL" sh -c "cd backend && npx prisma migrate deploy" 2>&1) \
+  && MIGRATE6_EXIT=0 || MIGRATE6_EXIT=$?
+echo "$MIGRATE6_OUT" | grep -v "npm warn" | grep -v "Unknown env\|Unknown project" || true
+[ "$MIGRATE6_EXIT" -eq 0 ] || { echo "❌ Krok 6 zakończył się błędem. Sprawdź czy backfill (krok 5) przebiegł prawidłowo."; exit 1; }
 
 echo ""
-echo "✅ Migracja R2 zakończona pomyślnie na środowisku: ${ENV_LABEL}"
+echo "✅ Migracja R2 zakończona pomyślnie: ${ENV_LABEL}"
 echo ""
 echo "Zweryfikuj:"
-echo "  - Cover images ładują się z R2 (nie z /assets/...)"
-echo "  - SELECT COUNT(*) FROM \"Event\" WHERE \"coverImageId\" IS NULL; → wynik: 0"
+echo "  - Cover images ładują się z R2"
+echo "  - SELECT COUNT(*) FROM \"Event\" WHERE \"coverImageId\" IS NULL; → 0"
