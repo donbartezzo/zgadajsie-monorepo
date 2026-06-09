@@ -17,7 +17,7 @@ import { EventStatusBadgeComponent } from '../event-status-badge/event-status-ba
 import { EventBadgesComponent } from '../event-badges/event-badges.component';
 import { EventCapacityProgressComponent } from '../event-capacity-progress/event-capacity-progress.component';
 import { EventBase } from '../../../types';
-import { getEventCoverUrl } from '../../../types/cover-image.interface';
+import { buildCoverImageUrl } from '../../../utils/cover-image.utils';
 import {
   getEventCountdown,
   formatMonthShort,
@@ -199,7 +199,10 @@ export class EventCardComponent implements OnDestroy {
   });
   private intervalId?: number;
 
-  readonly coverUrl = computed(() => getEventCoverUrl(this.event()));
+  readonly coverUrl = computed(() => {
+    const cover = this.event().coverImage;
+    return cover ? buildCoverImageUrl(cover) : null;
+  });
 
   readonly countdown = computed(() =>
     getEventCountdown(this.event().startsAt, this.event().endsAt),

@@ -76,4 +76,8 @@ export class CoverImageService {
   removeMy(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/my/${id}`);
   }
+
+  getMyUsage(id: string): Observable<{ count: number }> {
+    return this.http.get<{ count: number }>(`${this.apiUrl}/my/${id}/usage`);
+  }
 }

@@ -152,6 +152,31 @@ describe('EventFormComponent', () => {
       expect(mockEventService.createEvent).not.toHaveBeenCalled();
     });
 
+    it('gdy brak wybranego cover image wywołuje snackbar.error i nie wywołuje createEvent', () => {
+      component['selectedCoverImageId'].set(null);
+      component.form.patchValue({
+        title: 'Mecz',
+        disciplineSlug: 'football',
+        facilitySlug: 'pitch',
+        levelSlug: 'mixed-open',
+        citySlug: 'warsaw',
+        address: 'ul. Testowa 1',
+        startsAt: futureDate(2),
+        endsAt: futureDate(2).replace('19:00', '21:00'),
+        minParticipants: 2,
+        maxParticipants: 10,
+        costPerPerson: 0,
+        gender: 'ANY',
+        visibility: 'PUBLIC',
+        lat: 52.2,
+        lng: 21.0,
+      });
+      component.onSubmit();
+
+      expect(mockSnackbar.error).toHaveBeenCalledWith(expect.stringContaining('grafikę'));
+      expect(mockEventService.createEvent).not.toHaveBeenCalled();
+    });
+
     it('gdy maxParticipants < minParticipants wywołuje snackbar.error', () => {
       component['selectedCoverImageId'].set('cover123');
       component.form.patchValue({

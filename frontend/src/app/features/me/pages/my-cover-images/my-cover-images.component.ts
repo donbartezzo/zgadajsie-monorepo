@@ -7,14 +7,14 @@ import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CoverImageService } from '../../../../core/services/cover-image.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { CoverImage } from '../../../../shared/types';
 import { buildCoverImageUrl } from '../../../../shared/utils/cover-image.utils';
 import {
   ImageCropperModalComponent,
   ImageCropperResult,
 } from '../../../../shared/ui/image-cropper-modal';
-import { MatDialog } from '@angular/material/dialog';
-import { ConfirmModalComponent } from '../../../../shared/ui/confirm-modal/confirm-modal.component';
+import { USER_COVER_IMAGE_LIMIT } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-my-cover-images',
@@ -39,10 +39,10 @@ import { ConfirmModalComponent } from '../../../../shared/ui/confirm-modal/confi
       <app-card class="mb-4">
         <div class="space-y-3">
           <p class="text-sm text-neutral-600">
-            Maksymalnie możesz mieć 5 własnych cover images. Używaj ich w wydarzeniach, które
-            organizujesz.
+            Maksymalnie możesz mieć {{ coverLimit }} własne cover images. Używaj ich w wydarzeniach,
+            które organizujesz.
           </p>
-          @if (covers().length < 5) {
+          @if (covers().length < coverLimit) {
             <app-button appearance="soft" color="primary" (clicked)="onUploadNew()">
               <app-icon name="plus" size="sm" />
               Dodaj nowe cover image
@@ -160,9 +160,11 @@ import { ConfirmModalComponent } from '../../../../shared/ui/confirm-modal/confi
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MyCoverImagesComponent implements OnInit {
+  readonly coverLimit = USER_COVER_IMAGE_LIMIT;
+
   private readonly coverImageService = inject(CoverImageService);
   private readonly snackbar = inject(SnackbarService);
-  private readonly dialog = inject(MatDialog);
+  private readonly confirmModal = inject(ConfirmModalService);
 
   covers = signal<CoverImage[]>([]);
   loading = signal(false);
@@ -170,6 +172,7 @@ export class MyCoverImagesComponent implements OnInit {
   uploadFile = signal<File | null>(null);
   uploadCroppedFile = signal<File | null>(null);
   uploadName = signal('');
+  replaceTargetId = signal<string | null>(null);
   renameLoading = signal<string | null>(null);
   replaceLoading = signal<string | null>(null);
   deleteLoading = signal<string | null>(null);
@@ -202,7 +205,7 @@ export class MyCoverImagesComponent implements OnInit {
   }
 
   emptySlots() {
-    return Array.from({ length: 5 - this.covers().length }, (_, i) => i);
+    return Array.from({ length: USER_COVER_IMAGE_LIMIT - this.covers().length }, (_, i) => i);
   }
 
   onUploadNew() {
@@ -224,10 +227,37 @@ export class MyCoverImagesComponent implements OnInit {
     this.uploadFile.set(null);
     this.uploadCroppedFile.set(null);
     this.uploadName.set('');
+    this.replaceTargetId.set(null);
   }
 
   onUploadConfirmed(result: ImageCropperResult) {
-    this.uploadCroppedFile.set(result.file);
+    const targetId = this.replaceTargetId();
+    if (targetId) {
+      this.executeReplace(targetId, result.file);
+    } else {
+      this.uploadCroppedFile.set(result.file);
+    }
+  }
+
+  private executeReplace(id: string, file: File) {
+    this.uploadModalVisible.set(false);
+    this.replaceLoading.set(id);
+
+    this.coverImageService.replaceMyImage(id, file).subscribe({
+      next: () => {
+        this.snackbar.success('Grafika podmieniona');
+        this.replaceLoading.set(null);
+        this.replaceTargetId.set(null);
+        this.uploadFile.set(null);
+        this.loadCovers();
+      },
+      error: () => {
+        this.snackbar.error('Nie udało się podmienić grafiki');
+        this.replaceLoading.set(null);
+        this.replaceTargetId.set(null);
+        this.uploadFile.set(null);
+      },
+    });
   }
 
   onUploadConfirmedWithName() {
@@ -277,27 +307,57 @@ export class MyCoverImagesComponent implements OnInit {
     });
   }
 
-  onReplace(_cover: CoverImage) {
-    // TODO: Open image cropper modal for replacement
-    this.snackbar.info('Funkcja podmiany grafiki - w implementacji');
+  onReplace(cover: CoverImage) {
+    this.replaceTargetId.set(cover.id);
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg,image/png,image/webp';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        this.uploadFile.set(file);
+        this.uploadModalVisible.set(true);
+      } else {
+        this.replaceTargetId.set(null);
+      }
+    };
+    input.click();
   }
 
-  onDelete(cover: CoverImage) {
+  async onDelete(cover: CoverImage): Promise<void> {
     this.deleteLoading.set(cover.id);
-    this.coverImageService.getUsage(cover.id).subscribe({
-      next: (usage) => {
+    this.coverImageService.getMyUsage(cover.id).subscribe({
+      next: async (usage) => {
         if (usage.count > 0) {
-          this.dialog.open(ConfirmModalComponent, {
-            data: {
-              title: 'Nie można usunąć',
-              message: `${usage.count} wydarzeń używa tej grafiki. Możesz natomiast podmienić ją na inną grafikę.`,
-              confirmText: 'Podmień grafikę',
-              cancelText: 'Anuluj',
-              onConfirm: () => this.onReplace(cover),
-            },
+          const confirmed = await this.confirmModal.confirm({
+            title: 'Grafika jest używana',
+            message: `Ta grafika jest obecnie używana w wydarzeniach (x${usage.count}), więc bezpośrednie usunięcie nie jest możliwe, ale możesz podmienić ją na inną.`,
+            confirmLabel: 'Podmień grafikę',
+            cancelLabel: 'Anuluj',
+            color: 'warning',
+            showIcon: true,
           });
+
           this.deleteLoading.set(null);
+
+          if (confirmed) {
+            this.onReplace(cover);
+          }
         } else {
+          const confirmed = await this.confirmModal.confirm({
+            title: 'Usuń cover image',
+            message: 'Czy na pewno chcesz usunąć ten cover image?',
+            confirmLabel: 'Usuń',
+            cancelLabel: 'Anuluj',
+            color: 'danger',
+            showIcon: true,
+          });
+
+          if (!confirmed) {
+            this.deleteLoading.set(null);
+            return;
+          }
+
           this.coverImageService.removeMy(cover.id).subscribe({
             next: () => {
               this.snackbar.success('Cover image usunięty');

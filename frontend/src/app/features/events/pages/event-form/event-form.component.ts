@@ -37,6 +37,10 @@ import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm
 import { Event, CoverImage, EventRoleConfig } from '../../../../shared/types';
 import { buildCoverImageUrl } from '../../../../shared/utils/cover-image.utils';
 import {
+  ImageCropperModalComponent,
+  ImageCropperResult,
+} from '../../../../shared/ui/image-cropper-modal';
+import {
   EventStatus,
   DisciplineParticipantRoles,
   DisciplineRole,
@@ -80,6 +84,7 @@ interface EventRule {
     FormControlErrorDirective,
     TranslocoPipe,
     RecurrencePickerComponent,
+    ImageCropperModalComponent,
   ],
   template: `
     <div class="p-4">
@@ -495,8 +500,10 @@ interface EventRule {
                     'px-3 py-2 text-sm font-medium border-b-2 transition-colors ' +
                     (coverTab() === 'my'
                       ? 'border-primary-600 text-primary-700'
-                      : 'border-transparent text-neutral-600 hover:text-neutral-900')
+                      : 'border-transparent text-neutral-600 hover:text-neutral-900') +
+                    (autoCoverImage() ? ' opacity-40 cursor-not-allowed' : '')
                   "
+                  [disabled]="autoCoverImage()"
                   (click)="coverTab.set('my')"
                 >
                   Galeria własna
@@ -651,7 +658,8 @@ interface EventRule {
                     <button
                       type="button"
                       class="mt-2 flex items-center gap-2 text-sm text-primary-600 hover:text-primary-800"
-                      (click)="navigateToCoverImages()"
+                      [disabled]="myUploadLoading()"
+                      (click)="openMyUploadModal()"
                     >
                       <app-icon name="plus" size="xs" />
                       Dodaj nowe cover image
@@ -746,6 +754,44 @@ interface EventRule {
           </app-button>
         </div>
       </form>
+
+      <!-- Inline modal: upload własnego cover image w zakładce "Galeria własna" -->
+      @if (myUploadModalVisible() && !myUploadCroppedFile()) {
+        <app-image-cropper-modal
+          [imageFile]="myUploadFile()"
+          imageType="cover-image"
+          (confirmed)="onMyUploadConfirmed($event)"
+          (cancelled)="onMyUploadClosed()"
+        />
+      }
+
+      @if (myUploadModalVisible() && myUploadCroppedFile()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4">
+            <h3 class="text-lg font-semibold text-neutral-900">Nazwa cover image</h3>
+            <input
+              type="text"
+              [value]="myUploadName()"
+              (input)="myUploadName.set($any($event.target).value)"
+              class="w-full px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="Wpisz nazwę (min 3 znaki)"
+            />
+            <div class="flex gap-3 justify-end">
+              <app-button appearance="soft" color="neutral" (clicked)="onMyUploadClosed()">
+                Anuluj
+              </app-button>
+              <app-button
+                appearance="solid"
+                color="primary"
+                [disabled]="myUploadName().length < 3"
+                (clicked)="onMyUploadSave()"
+              >
+                Zapisz
+              </app-button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -791,6 +837,12 @@ export class EventFormComponent implements OnInit {
   readonly suggestLoading = signal(false);
   readonly suggestedCover = signal<CoverImage | null>(null);
   readonly coverTab = signal<'public' | 'my'>('public');
+
+  readonly myUploadModalVisible = signal(false);
+  readonly myUploadFile = signal<File | null>(null);
+  readonly myUploadCroppedFile = signal<File | null>(null);
+  readonly myUploadName = signal('');
+  readonly myUploadLoading = signal(false);
 
   readonly disciplineRoles = signal<DisciplineParticipantRoles | null>(null);
   readonly roleSlots = signal<DisciplineRole[]>([]);
@@ -957,8 +1009,56 @@ export class EventFormComponent implements OnInit {
     this.selectedCoverImageId.set(cover.id);
   }
 
-  navigateToCoverImages(): void {
-    this.navigation.navigateToProfileCoverImages();
+  openMyUploadModal(): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg,image/png,image/webp';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        this.myUploadFile.set(file);
+        this.myUploadModalVisible.set(true);
+      }
+    };
+    input.click();
+  }
+
+  onMyUploadClosed(): void {
+    this.myUploadModalVisible.set(false);
+    this.myUploadFile.set(null);
+    this.myUploadCroppedFile.set(null);
+    this.myUploadName.set('');
+  }
+
+  onMyUploadConfirmed(result: ImageCropperResult): void {
+    this.myUploadCroppedFile.set(result.file);
+  }
+
+  onMyUploadSave(): void {
+    const croppedFile = this.myUploadCroppedFile();
+    const name = this.myUploadName();
+    if (!croppedFile || name.length < 3) {
+      return;
+    }
+
+    this.myUploadLoading.set(true);
+    this.myUploadModalVisible.set(false);
+
+    this.coverImageService.createMy(croppedFile, name).subscribe({
+      next: (newCover) => {
+        this.myCovers.update((covers) => [newCover, ...covers]);
+        this.myUploadLoading.set(false);
+        this.myUploadFile.set(null);
+        this.myUploadCroppedFile.set(null);
+        this.myUploadName.set('');
+        this.snackbar.success('Cover image dodany');
+      },
+      error: () => {
+        this.myUploadLoading.set(false);
+        this.myUploadModalVisible.set(true);
+        this.snackbar.error('Nie udało się dodać cover image');
+      },
+    });
   }
 
   openSeriesSettings(): void {
@@ -1274,6 +1374,7 @@ export class EventFormComponent implements OnInit {
   toggleAutoCoverImage(checked: boolean): void {
     this.autoCoverImage.set(checked);
     if (checked) {
+      this.coverTab.set('public');
       this.fetchSuggestedCover();
     } else {
       this.suggestedCover.set(null);

@@ -348,70 +348,83 @@ Każdy PR niezależnie deploybowalny i odwracalny.
 
 ## Checklisty per etap
 
+> Stan zweryfikowany na branchu `migrate-cover-images-to-r2` (2026-06-09).
+> `[x]` = zrobione, `[ ]` = do zrobienia, `[!]` = zrobione częściowo / wymaga uwagi.
+
 ### Etap 0 - przygotowanie
 
-- [ ] Sprawdzić że R2 prod i dev są skonfigurowane (env vars + bucket public access).
-- [ ] Zaprojektować default cover (700×250 webp, neutralny obraz). Commit do `backend/assets/seed/default-cover.webp`.
-- [ ] Zainstalować `pnpm add file-type@^16.5.4` (backend).
-- [ ] Przeczytać `styleguide-backend.md`, `styleguide-frontend.md`, `design-tokens.md`, `frontend-page-layout.md` przed kodem.
+- [!] Sprawdzić że R2 prod i dev są skonfigurowane (env vars + bucket public access). — Kod gotowy; buckety, tokeny i env vars w Coolify wymagają manualnej konfiguracji wg `docs/tasks/cloudflare-r2-setup.md`. Lokalnie `config/env/.env.local` ma placeholdery — do wypełnienia.
+- [x] Default cover (700×250 webp). `backend/assets/seed/default-cover.webp` istnieje.
+- [x] Zainstalowany `file-type@16.5.4` w workspace.
+- [ ] Przeczytać style guides przed kolejną sesją kodowania.
 
-### Etap 1 - model danych i migracja storage (PR #1)
+### Etap 1 - model danych i migracja storage (PR #1) — **ZREALIZOWANY W KODZIE**
 
-- [ ] Migracja Prisma `add_user_cover_images` (kolumny: `ownerUserId`, `name`, `storageKey`, `isDefault`, `updatedAt`; `disciplineSlug` nullowalne).
-- [ ] Aktualizacja `model User` o relację `coverImages`.
-- [ ] Skrypt `backend/scripts/migrate-cover-images-to-r2.ts` (upload FS → R2, backfill `storageKey`).
-- [ ] Skrypt `backend/scripts/seed-default-cover.ts` (upload default + insert rekordu z `isDefault = true`).
-- [ ] `backend/src/common/utils/image-upload.util.ts` (walidacja magic bytes).
-- [ ] Aktualizacja `CoverImagesService.create/replace` - storage przez `R2StorageService`, nie FS.
-- [ ] Aktualizacja `CoverImagesService.remove` - delete z R2.
-- [ ] Aktualizacja `CoverImagesModule` - import `MediaModule`.
-- [ ] FE: helper `buildCoverImageUrl(storageKey)` + `environment.mediaUrl`.
-- [ ] FE: `cover-image.interface.ts` - typ rozszerzony o `storageKey`, `name`, `ownerUserId`, `isDefault`.
-- [ ] FE: aktualizacja `admin-cover-images.component.ts` - URLe z `storageKey`.
-- [ ] Run migracji na devie, weryfikacja: wszystkie publiczne mają `storageKey`, URLe się ładują.
-- [ ] Testy backend: `cover-images.service.spec.ts` (upload/delete na R2).
+- [x] Kolumny `ownerUserId`, `name`, `storageKey`, `isDefault`, `updatedAt` w `CoverImage` (skonsolidowane w init migration).
+- [x] `disciplineSlug` nullowalne w schemacie.
+- [x] Relacja `User.coverImages` (`"UserCoverImages"`).
+- [x] Skrypt `backend/scripts/migrate-cover-images-to-r2.ts` istnieje.
+- [x] Skrypt `backend/scripts/seed-default-cover.ts` istnieje.
+- [x] `backend/src/common/utils/image-upload.util.ts` (magic bytes via `file-type`).
+- [x] `CoverImagesService.create/replace` — upload przez `R2StorageService`.
+- [x] `CoverImagesService.remove` — delete z R2.
+- [x] `CoverImagesModule` importuje `MediaModule`.
+- [x] FE: `buildCoverImageUrl(cover)` w `cover-image.utils.ts` — używa `storageKey` + `environment.mediaUrl`.
+- [x] FE: `CoverImage` interface rozszerzony o `storageKey`, `name`, `ownerUserId`, `isDefault`.
+- [x] FE: `environment.production.ts` ma `mediaUrl: 'https://media.zgadajsie.pl'`.
+- [x] FE: `admin-cover-images.component.ts` używa `buildCoverImageUrl`.
+- [!] **BLOKUJĄCE (manual)**: `environment.local.ts` ma `mediaUrl: ''` — uzupełnić r2.dev URL po skonfigurowaniu bucketu dev w Cloudflare.
+- [ ] **BLOKUJĄCE (manual)**: Uruchomić `seed-default-cover.ts` na devie i prodzie.
+- [ ] **BLOKUJĄCE (manual)**: Uruchomić `migrate-cover-images-to-r2.ts` na devie → weryfikacja URLi → na prodzie.
+- [x] Testy backend: `cover-images.service.spec.ts` (upload R2, limit 5, autoryzacja, replace, rename, delete).
 
-### Etap 2 - galeria własna (PR #2)
+### Etap 2 - galeria własna (PR #2) — **PRAWIE GOTOWY, 2 braki**
 
-- [ ] DTO: `CreateUserCoverImageDto`, `RenameUserCoverImageDto`.
-- [ ] `CoverImagesService`: `findMy`, `createUserCover`, `renameUserCover`, `replaceUserCover`, `removeUserCover` + autoryzacja (musi być właściciel).
-- [ ] `CoverImagesController`: endpointy `/cover-images/my*` (GET, POST, PATCH, PUT image, DELETE).
-- [ ] Limit 5 - egzekwowany w service (`prisma.coverImage.count({ where: { ownerUserId } })`).
-- [ ] Walidacja: `ParseFilePipe` (size + MIME) + `validateImageBuffer` (magic bytes) + `processImage` (sharp).
-- [ ] FE: `CoverImageService` - nowe metody.
-- [ ] FE: route `/me/cover-images` + komponent `MyCoverImagesComponent`.
-- [ ] FE: modal upload (drag&drop + cropper preset `cover-image` + pole nazwa z walidacją min 3).
-- [ ] FE: inline edit nazwy w karcie cover image.
-- [ ] FE: modal "Nie można usunąć" z CTA "Podmień grafikę".
-- [ ] FE: link/przycisk do `/me/cover-images` z UI organizatora (np. menu konta).
-- [ ] FE: `/dev/design-system` - dodać miniaturę nowego komponentu, jeśli ma reużywalne fragmenty.
-- [ ] Ujednolicenie walidacji w `MediaController` (pkt 7) + bezpieczne rozszerzenie pliku z `file-type`, nie z `originalName`.
-- [ ] Testy: BE (limit 5, autoryzacja, replace, rename), FE (komponent, service).
+- [x] DTO: `CreateUserCoverImageDto`, `RenameUserCoverImageDto`.
+- [x] `CoverImagesService`: `findMy`, `createUserCover`, `renameUserCover`, `replaceUserCover`, `removeUserCover` + autoryzacja.
+- [x] `CoverImagesController`: endpointy `GET/POST /cover-images/my`, `PATCH /my/:id`, `PUT /my/:id/image`, `DELETE /my/:id`.
+- [x] Limit 5 egzekwowany w service.
+- [x] Walidacja: `ParseFilePipe` (size 8MB + MIME) + `validateImageBuffer` (magic bytes) + `processImage` (sharp) — w kontrolerze i serwisie.
+- [x] FE: `CoverImageService` — `getMy`, `createMy`, `renameMy`, `replaceMyImage`, `removeMy`.
+- [x] FE: route `profile/organizer/cover-images` + `MyCoverImagesComponent`.
+- [x] FE: modal upload (file picker → cropper preset `cover-image` → pole nazwa min 3 znaki → upload).
+- [x] FE: inline edit nazwy w karcie cover image (FormsModule + `renameMy`).
+- [x] FE: modal "Nie można usunąć" z CTA "Podmień grafikę" (ConfirmModalComponent, sprawdzenie `getUsage`).
+- [x] FE: link do galerii własnej w profilu organizatora (`profile.component.html`).
+- [x] **BUG FIXED**: `onReplace()` w `my-cover-images.component.ts` — zaimplementowane. Reużywa modala croppera (signal `replaceTargetId`), po przycięciu od razu woła `replaceMyImage()` (bez kroku z nazwą).
+- [x] **BUG FIXED**: `navigation.service.ts` — naprawiona ścieżka `/profile/cover-images` → `/profile/organizer/cover-images`.
+- [ ] FE: `/dev/design-system` — nie zaktualizowany o nowy komponent.
+- [x] `MediaController` — `FileTypeValidator` dodany; `MediaService` używa `file-type` do rozszerzenia pliku (nie `originalName`).
+- [x] Testy BE (limit 5, autoryzacja, replace, rename, delete — wszystkie scenariusze pokryte w spec).
+- [ ] Testy FE: `cover-image.service.spec.ts` — brakuje testów nowych metod `getMy/createMy/renameMy/replaceMyImage/removeMy`.
+- [ ] Testy FE: `my-cover-images.component.spec.ts` — brak pliku.
 
-### Etap 3 - integracja z event-form i wymóg covera (PR #3)
+### Etap 3 - integracja z event-form i wymóg covera (PR #3) — **NIE ROZPOCZĘTY**
 
-- [ ] DTO `CreateEventDto.coverImageId` - bez `@IsOptional()`. `UpdateEventDto` zostawić opcjonalne (PATCH).
-- [ ] `events.service.resolveCoverImageId` - usunięcie fallbacku losowego.
-- [ ] Data migration: backfill `Event.coverImageId` na default cover dla wszystkich `NULL`.
-- [ ] Migracja `ALTER TABLE Event ALTER COLUMN coverImageId SET NOT NULL` + CHECK constraint w `CoverImage`.
-- [ ] `event-series-generator` - filtr `ownerUserId: null` przy auto-doborze.
-- [ ] FE: event-form - zakładki "Galeria publiczna" / "Galeria własna", logika domyślnego tabu wg pkt 5.
-- [ ] FE: usunięcie auto-zaznaczania losowego covera (`event-form.component.ts:1195-1197`).
-- [ ] FE: `+ Dodaj nowe cover image` w zakładce "Galeria własna" - modal upload + po sukcesie odświeżenie listy bez auto-select.
-- [ ] FE: walidacja submita - cover image wymagany.
-- [ ] FE: auto cover image - widoczne tylko w tabie "Galeria publiczna"; blokada przy serii z covera własnego.
-- [ ] FE: aktualizacja `event-hero` i innych miejsc wyświetlania - URL z `storageKey`.
-- [ ] Testy: BE (DTO, generator, migracja danych), FE (event-form tabs, walidacja).
+- [x] `CreateEventDto.coverImageId` — `@IsOptional()` usunięte, pole wymagane. Test DTO zaktualizowany.
+- [x] `events.service` — usunięty fallback `resolveCoverImageId` i zależność od `CoverImagesService`. `create()` bezpośrednio łączy coverImage przez `dto.coverImageId`.
+- [ ] **BLOKUJĄCE (manual)**: `backend/scripts/backfill-event-cover-images.ts` gotowy; uruchomić na devie po `seed-default-cover.ts`.
+- [x] Migracja Prisma `20260609000000_require_event_cover_image` przygotowana (NOT NULL + CHECK constraint). **NIE stosować przed backfillem** — patrz komentarz w pliku SQL.
+- [x] `event-series-generator` — `findSmartCoverForOrganizer` ma już `ownerUserId: null` (filtruje tylko publiczne).
+- [x] FE: event-form — zakładki "Galeria publiczna" / "Galeria własna" z logiką domyślnego tabu (pkt 5).
+- [x] FE: brak auto-zaznaczania losowego covera przy zmianie dyscypliny.
+- [x] **BUG FIXED**: przycisk `+ Dodaj nowe cover image` w event-form (zakładka "Galeria własna") — zastąpiony inline modal upload (cropper + pole nazwy). Po sukcesie odświeża `myCovers`, bez auto-select.
+- [x] FE: walidacja submita — cover image wymagany (snackbar "Wybierz grafikę wydarzenia").
+- [x] FE: auto cover image (toggle) widoczny tylko w tabie "Galeria publiczna".
+- [x] FE: blokada serii z własnym coverem — `toggleAutoCoverImage(true)` wymusza `coverTab = 'public'`; zakładka "Galeria własna" ma `[disabled]="autoCoverImage()"` z `opacity-40`.
+- [x] **BUG FIXED**: `event-card.component.ts` — zmieniony na `buildCoverImageUrl` z `cover-image.utils.ts` (R2 + fallback do FS dla starych rekordów bez `storageKey`).
+- [ ] Testy BE: `events.service.spec.ts` — tworzenie bez `coverImageId` → `BadRequest`.
+- [ ] Testy FE: `event-form.component.spec.ts` — domyślne tabu, walidacja submita.
 
-### Etap 4 - cleanup (PR #4)
+### Etap 4 - cleanup (PR #4) — **CZEKA NA ETAP 3**
 
-- [ ] Usunięcie endpointu `POST /cover-images/sync` i `cover-images-sync.util.ts`.
-- [ ] Usunięcie sekcji "Synchronizator z katalogu" w `admin-cover-images.component`.
-- [ ] Usunięcie `frontend/public/assets/covers/events/` z repo (po potwierdzeniu R2 prod).
-- [ ] Aktualizacja `docs/tech-stack.md` jeśli wzmianka o `Cloudflare R2 / S3 SDK` wymaga doprecyzowania.
-- [ ] Aktualizacja `docs/tasks/cloudflare-r2-setup.md` (wzmianka, że cover images używają tego samego bucketu).
-- [ ] Aktualizacja `docs/styleguide-backend.md` / `docs/styleguide-frontend.md` jeśli pojawiły się nowe wzorce (np. `image-upload.util`).
-- [ ] Test e2e Playwright pełnej ścieżki organizatora.
+- [ ] Weryfikacja R2 na prodzie — wszystkie cover images dostępne pod `media.zgadajsie.pl`.
+- [ ] Usunięcie `frontend/public/assets/covers/events/` z repo.
+- [ ] Sprawdzić czy endpoint `POST /cover-images/sync` i `cover-images-sync.util.ts` jeszcze istnieją — jeśli tak, usunąć.
+- [ ] Sprawdzić czy sekcja "Synchronizator z katalogu" w `admin-cover-images.component` istnieje — jeśli tak, usunąć.
+- [ ] Aktualizacja `docs/tech-stack.md` (Cloudflare R2 / S3 SDK).
+- [ ] Aktualizacja `docs/styleguide-backend.md` / `docs/styleguide-frontend.md` o wzorzec `image-upload.util`.
+- [ ] Test E2E (Playwright): happy path organizatora + negatywne (za mały plik, gif, pdf).
 
 ---
 

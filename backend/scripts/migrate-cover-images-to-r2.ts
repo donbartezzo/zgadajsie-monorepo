@@ -4,7 +4,6 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import { existsSync } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { syncCoverImagesFromFilesystem } from '../src/modules/cover-images/cover-images-sync.util';
 
 function resolveWorkspaceRoot(): string {
   let current = process.cwd();
@@ -67,12 +66,6 @@ async function main() {
 
   console.log('🚀 Rozpoczynam migrację cover images z FS do R2...\n');
 
-  // Najpierw synchronizuj DB z plikami (fallback dla brakujących rekordów)
-  console.log('📋 Krok 1: Synchronizacja DB z plikami FS...');
-  const syncReport = await syncCoverImagesFromFilesystem(prisma);
-  console.log(`   - Dodano ${syncReport.summary.added} nowych rekordów w DB`);
-  console.log(`   - Istniało już ${syncReport.summary.existing} rekordów\n`);
-
   // Pobierz wszystkie cover images z DB
   const coverImages = await prisma.coverImage.findMany({
     where: {
@@ -84,7 +77,7 @@ async function main() {
     },
   });
 
-  console.log(`📦 Krok 2: Znaleziono ${coverImages.length} cover images do migracji\n`);
+  console.log(`📦 Znaleziono ${coverImages.length} cover images do migracji\n`);
 
   const report: MigrationReport = {
     summary: {

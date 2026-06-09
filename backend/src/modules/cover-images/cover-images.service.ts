@@ -5,10 +5,8 @@ import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
 import { R2StorageService } from '../media/r2-storage.service';
 import { validateImageBuffer } from '../../common/utils/image-upload.util';
+import { COVER_IMAGE_WIDTH, COVER_IMAGE_HEIGHT, USER_COVER_IMAGE_LIMIT } from '@zgadajsie/shared';
 import 'multer';
-
-const COVER_IMAGE_WIDTH = 700;
-const COVER_IMAGE_HEIGHT = 250;
 
 @Injectable()
 export class CoverImagesService {
@@ -188,13 +186,24 @@ export class CoverImagesService {
     });
   }
 
+  async getUserCoverUsageCount(userId: string, id: string): Promise<number> {
+    const existing = await this.findOne(id);
+    if (existing.ownerUserId !== userId) {
+      throw new BadRequestException('Nie masz uprawnień do sprawdzenia użycia tego cover image');
+    }
+    return this.prisma.event.count({
+      where: { coverImageId: id },
+    });
+  }
+
   async createUserCover(userId: string, file: Express.Multer.File, name: string) {
-    // Walidacja limitu 5
     const count = await this.prisma.coverImage.count({
       where: { ownerUserId: userId },
     });
-    if (count >= 5) {
-      throw new BadRequestException('Możesz mieć maksymalnie 5 własnych cover images');
+    if (count >= USER_COVER_IMAGE_LIMIT) {
+      throw new BadRequestException(
+        `Możesz mieć maksymalnie ${USER_COVER_IMAGE_LIMIT} własne cover images`,
+      );
     }
 
     if (name.length < 3) {

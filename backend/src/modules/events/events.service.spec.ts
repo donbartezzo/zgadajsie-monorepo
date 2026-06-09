@@ -2,7 +2,6 @@ import { BadRequestException, ForbiddenException, NotFoundException } from '@nes
 import { Decimal } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { CoverImagesService } from '../cover-images/cover-images.service';
 import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptions.service';
 import { SlotService } from '../slots/slot.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
@@ -63,13 +62,6 @@ function buildNotificationsMock() {
   return { create: jest.fn().mockResolvedValue(undefined) } as unknown as NotificationsService;
 }
 
-function buildCoverImagesMock() {
-  return {
-    findRandomByDiscipline: jest.fn().mockResolvedValue(null),
-    findSmartCoverForOrganizer: jest.fn().mockResolvedValue(null),
-  } as unknown as CoverImagesService;
-}
-
 function buildCitySubsMock() {
   return {
     getSubscriberIds: jest.fn().mockResolvedValue([]),
@@ -119,6 +111,7 @@ function makeCreateEventDto(overrides: Record<string, unknown> = {}) {
     costPerPerson: 0,
     gender: 'ANY',
     visibility: 'PUBLIC',
+    coverImageId: 'cover-uuid-1',
     ...overrides,
   } as any;
 }
@@ -152,7 +145,6 @@ describe('EventsService', () => {
         notifyEventCancelled: jest.fn().mockResolvedValue(undefined),
       } as any,
       notifications,
-      buildCoverImagesMock(),
       buildCitySubsMock(),
       slots,
       realtime,
@@ -173,6 +165,16 @@ describe('EventsService', () => {
 
       expect(prisma.event.create as jest.Mock).toHaveBeenCalled();
       expect(slots.createSlotsForEvent as jest.Mock).toHaveBeenCalledWith('event1', 10, undefined);
+    });
+
+    it('przekazuje coverImageId do Prisma jako connect (wymagany, bez fallbacku)', async () => {
+      const event = makeEvent();
+      (prisma.event.create as jest.Mock).mockResolvedValue(event);
+
+      await service.create('org1', makeCreateEventDto({ coverImageId: 'cover-uuid-99' }));
+
+      const createCall = (prisma.event.create as jest.Mock).mock.calls[0][0];
+      expect(createCall.data.coverImage).toEqual({ connect: { id: 'cover-uuid-99' } });
     });
 
     it('rzuca BadRequestException gdy suma slotów ról !== maxParticipants', async () => {
@@ -434,7 +436,6 @@ describe('EventsService', () => {
           notifyEventCancelled: jest.fn().mockResolvedValue(undefined),
         } as any,
         notifications,
-        buildCoverImagesMock(),
         buildCitySubsMock(),
         slots,
         realtime,
@@ -574,7 +575,6 @@ describe('EventsService', () => {
         emailMock as any,
         pushMock as any,
         notifications,
-        buildCoverImagesMock(),
         buildCitySubsMock(),
         slots,
         realtime,

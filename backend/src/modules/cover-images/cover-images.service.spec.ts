@@ -162,11 +162,11 @@ describe('CoverImagesService', () => {
       expect(result).toEqual(mockUserCover);
     });
 
-    it('should throw when limit 5 exceeded', async () => {
-      mockPrisma.coverImage.count.mockResolvedValue(5); // at limit
+    it('should throw when limit exceeded', async () => {
+      mockPrisma.coverImage.count.mockResolvedValue(4); // at limit (USER_COVER_IMAGE_LIMIT = 4)
 
       await expect(service.createUserCover('user-1', mockFile, 'Mój cover')).rejects.toThrow(
-        'Możesz mieć maksymalnie 5 własnych cover images',
+        BadRequestException,
       );
     });
 
@@ -301,6 +301,27 @@ describe('CoverImagesService', () => {
 
       await expect(service.remove('cover-1')).rejects.toThrow(
         'Nie można usunąć - 2 wydarzeń używa tego cover image',
+      );
+    });
+  });
+
+  describe('getUserCoverUsageCount', () => {
+    it('should return usage count for own cover', async () => {
+      mockPrisma.coverImage.findUnique.mockResolvedValue(mockUserCover);
+      mockPrisma.event.count.mockResolvedValue(2);
+
+      const count = await service.getUserCoverUsageCount('user-1', 'cover-2');
+
+      expect(mockPrisma.event.count).toHaveBeenCalledWith({ where: { coverImageId: 'cover-2' } });
+      expect(count).toBe(2);
+    });
+
+    it('should throw when user is not owner', async () => {
+      const otherUserCover = { ...mockUserCover, ownerUserId: 'user-2' };
+      mockPrisma.coverImage.findUnique.mockResolvedValue(otherUserCover);
+
+      await expect(service.getUserCoverUsageCount('user-1', 'cover-2')).rejects.toThrow(
+        BadRequestException,
       );
     });
   });

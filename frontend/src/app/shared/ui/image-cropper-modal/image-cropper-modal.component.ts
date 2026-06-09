@@ -70,7 +70,9 @@ const IMAGE_CROPPER_CONFIGS: Record<ImageCropperType, ImageCropperConfig> = {
   standalone: true,
   imports: [CommonModule, ButtonComponent, IconComponent, ImageCropperComponent],
   template: `
-    <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/80 p-4">
+    <div
+      class="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-black/80 p-2"
+    >
       <div
         class="bg-white rounded-xl max-w-4xl w-full max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col"
       >

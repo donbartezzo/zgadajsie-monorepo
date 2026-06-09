@@ -16,6 +16,7 @@ import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CoverImageService } from '../../../../core/services/cover-image.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { CoverImage } from '../../../../shared/types';
 import { buildCoverImageUrl } from '../../../../shared/utils/cover-image.utils';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -196,6 +197,7 @@ export class AdminCoverImagesComponent implements OnInit {
   private readonly coverImageService = inject(CoverImageService);
   private readonly dictService = inject(DictionaryService);
   private readonly snackbar = inject(SnackbarService);
+  private readonly confirmModal = inject(ConfirmModalService);
 
   readonly disciplines = signal<DictionaryItem[]>([]);
   readonly covers = signal<CoverImage[]>([]);
@@ -299,10 +301,20 @@ export class AdminCoverImagesComponent implements OnInit {
     });
   }
 
-  onDelete(id: string): void {
-    if (!confirm('Czy na pewno chcesz usunąć ten cover image?')) {
+  async onDelete(id: string): Promise<void> {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Usuń cover image',
+      message: 'Czy na pewno chcesz usunąć ten cover image?',
+      confirmLabel: 'Usuń',
+      cancelLabel: 'Anuluj',
+      color: 'danger',
+      showIcon: true,
+    });
+
+    if (!confirmed) {
       return;
     }
+
     this.coverImageService.remove(id).subscribe({
       next: () => {
         this.snackbar.success('Cover image usunięty');
