@@ -50,7 +50,12 @@ export const appConfig: ApplicationConfig = {
       const authService = inject(AuthService);
       return authService.initOnAppStart();
     }),
-    provideAppInitializer(() => inject(AppConfigService).load()),
+    // Nieblokujące: nie zwracamy promisy, więc bootstrap nie czeka na /api/config.
+    // Pierwszy render używa build-time environment.mediaUrl (poprawny per-build),
+    // a po odpowiedzi sygnał odświeży cover images.
+    provideAppInitializer(() => {
+      void inject(AppConfigService).load();
+    }),
     {
       provide: DATE_PIPE_DEFAULT_OPTIONS,
       useValue: { timezone: APP_DEFAULT_TIMEZONE },
