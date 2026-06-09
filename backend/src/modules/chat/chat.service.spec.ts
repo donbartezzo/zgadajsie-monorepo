@@ -528,8 +528,10 @@ describe('ChatService', () => {
       const result = await service.getOrganizerConversations('event1', 'org1');
 
       expect(result).toHaveLength(2);
-      expect(result[0].unreadCount).toBe(2);
-      expect(result[1].unreadCount).toBe(0);
+      // Sortujemy po participant.id dla deterministycznej asercji
+      const sorted = [...result].sort((a, b) => a.participant.id.localeCompare(b.participant.id));
+      expect(sorted[0].unreadCount).toBe(2);
+      expect(sorted[1].unreadCount).toBe(0);
     });
   });
 });

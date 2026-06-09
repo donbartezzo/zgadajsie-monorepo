@@ -2,10 +2,10 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MyCoverImagesComponent } from './my-cover-images.component';
 import { CoverImageService } from '../../../../core/services/cover-image.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { CoverImage } from '../../../../shared/types';
 import { USER_COVER_IMAGE_LIMIT } from '@zgadajsie/shared';
 
@@ -34,8 +34,9 @@ const mockSnackbar = {
   error: jest.fn(),
 };
 
-const mockDialogRef = { afterClosed: jest.fn() } as unknown as MatDialogRef<unknown>;
-const mockDialog = { open: jest.fn().mockReturnValue(mockDialogRef) };
+const mockConfirmModal = {
+  confirm: jest.fn(),
+};
 
 describe('MyCoverImagesComponent', () => {
   let fixture: ComponentFixture<MyCoverImagesComponent>;
@@ -51,7 +52,7 @@ describe('MyCoverImagesComponent', () => {
         provideRouter([]),
         { provide: CoverImageService, useValue: mockCoverImageService },
         { provide: SnackbarService, useValue: mockSnackbar },
-        { provide: MatDialog, useValue: mockDialog },
+        { provide: ConfirmModalService, useValue: mockConfirmModal },
       ],
     })
       .overrideComponent(MyCoverImagesComponent, {
@@ -107,35 +108,63 @@ describe('MyCoverImagesComponent', () => {
   });
 
   describe('onDelete()', () => {
-    it('usuwa cover image gdy nie jest używany w żadnym wydarzeniu', fakeAsync(() => {
+    it('usuwa cover image gdy nie jest używany w żadnym wydarzeniu', fakeAsync(async () => {
       const cover = makeCover();
       mockCoverImageService.getMyUsage.mockReturnValue(of({ count: 0 }));
       mockCoverImageService.removeMy.mockReturnValue(of(undefined));
       mockCoverImageService.getMy.mockReturnValue(of([]));
+      mockConfirmModal.confirm.mockResolvedValue(true);
 
-      component.onDelete(cover);
+      await component.onDelete(cover);
       tick();
 
+      expect(mockConfirmModal.confirm).toHaveBeenCalledWith({
+        title: 'Usuń cover image',
+        message: 'Czy na pewno chcesz usunąć ten cover image?',
+        confirmLabel: 'Usuń',
+        cancelLabel: 'Anuluj',
+        color: 'danger',
+        showIcon: true,
+      });
       expect(mockCoverImageService.removeMy).toHaveBeenCalledWith('cover-1');
       expect(mockSnackbar.success).toHaveBeenCalledWith('Cover image usunięty');
     }));
 
-    it('otwiera dialog gdy cover jest używany w wydarzeniach', fakeAsync(() => {
+    it('nie usuwa gdy użytkownik anuluje dialog', fakeAsync(async () => {
       const cover = makeCover();
-      mockCoverImageService.getMyUsage.mockReturnValue(of({ count: 3 }));
+      mockCoverImageService.getMyUsage.mockReturnValue(of({ count: 0 }));
+      mockConfirmModal.confirm.mockResolvedValue(false);
 
-      component.onDelete(cover);
+      await component.onDelete(cover);
       tick();
 
       expect(mockCoverImageService.removeMy).not.toHaveBeenCalled();
-      expect(mockDialog.open).toHaveBeenCalled();
     }));
 
-    it('pokazuje snackbar.error gdy getMyUsage zwraca błąd', fakeAsync(() => {
+    it('otwiera dialog z ostrzeżeniem gdy cover jest używany w wydarzeniach', fakeAsync(async () => {
+      const cover = makeCover();
+      mockCoverImageService.getMyUsage.mockReturnValue(of({ count: 3 }));
+      mockConfirmModal.confirm.mockResolvedValue(false);
+
+      await component.onDelete(cover);
+      tick();
+
+      expect(mockConfirmModal.confirm).toHaveBeenCalledWith({
+        title: 'Grafika jest używana',
+        message: `Ta grafika jest obecnie używana w wydarzeniach (x3), więc bezpośrednie usunięcie nie jest możliwe, ale możesz podmienić ją na inną.`,
+        confirmLabel: 'Podmień grafikę',
+        cancelLabel: 'Anuluj',
+        color: 'warning',
+        showIcon: true,
+      });
+      expect(mockCoverImageService.removeMy).not.toHaveBeenCalled();
+    }));
+
+    it('pokazuje snackbar.error gdy getMyUsage zwraca błąd', fakeAsync(async () => {
       const cover = makeCover();
       mockCoverImageService.getMyUsage.mockReturnValue(throwError(() => new Error()));
 
-      component.onDelete(cover);
+      await component.onDelete(cover);
       tick();
 
       expect(mockSnackbar.error).toHaveBeenCalledWith('Nie udało się sprawdzić użycia');
