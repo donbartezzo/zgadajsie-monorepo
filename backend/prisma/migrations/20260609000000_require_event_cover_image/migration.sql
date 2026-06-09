@@ -1,15 +1,10 @@
--- UWAGA: Ta migracja musi być zastosowana DOPIERO po uruchomieniu skryptów:
---   1. backend/scripts/seed-default-cover.ts     (tworzy rekord isDefault=true i wgrywa do R2)
---   2. backend/scripts/backfill-event-cover-images.ts  (przypisuje default cover eventom z NULL)
---   3. backend/scripts/migrate-cover-images-to-r2.ts   (backfill storageKey dla publicznych coverów)
+-- CHECK constraint zapewniający spójność CoverImage.
+-- NOT NULL na Event.coverImageId przeniesiony do migracji 20260609210000
+-- (wymaga wcześniejszego backfillu eventów bez cover image).
 --
--- Przed uruchomieniem sprawdź: SELECT COUNT(*) FROM "Event" WHERE "coverImageId" IS NULL;
--- Wynik musi być 0. Jeśli nie — uruchom backfill i powtórz sprawdzenie.
+-- Warunek: publiczne cover images mają disciplineSlug lub isDefault=true,
+-- własne cover images mają ownerUserId i name (min 3 znaki).
 
--- AlterTable: Event.coverImageId NOT NULL
-ALTER TABLE "Event" ALTER COLUMN "coverImageId" SET NOT NULL;
-
--- AddCheckConstraint: CoverImage spójność ownerUserId / disciplineSlug / isDefault
 ALTER TABLE "CoverImage"
 ADD CONSTRAINT "cover_image_owner_xor_discipline" CHECK (
   (

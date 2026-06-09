@@ -17,13 +17,15 @@ async function main() {
 
   console.log(`✅ Found default cover: ${defaultCover.id}`);
 
-  // Backfill events without coverImageId
-  const result = await prisma.event.updateMany({
-    where: { coverImageId: null },
-    data: { coverImageId: defaultCover.id },
-  });
+  // prisma.event.updateMany rejects `coverImageId: null` because schema.prisma declares it NOT NULL.
+  // At this point in the deploy script the DB constraint hasn't been applied yet (krok 6).
+  const count = await prisma.$executeRaw`
+    UPDATE "Event"
+    SET "coverImageId" = ${defaultCover.id}
+    WHERE "coverImageId" IS NULL
+  `;
 
-  console.log(`✅ Backfilled ${result.count} events with default cover (${defaultCover.id})`);
+  console.log(`✅ Backfilled ${count} events with default cover (${defaultCover.id})`);
 }
 
 main()
