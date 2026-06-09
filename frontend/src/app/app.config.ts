@@ -27,7 +27,6 @@ import { provideTransloco, TranslocoService } from '@jsverse/transloco';
 import { TranslocoInlineLoader } from './core/i18n/transloco-loader';
 import { UserNotificationSocketService } from './core/services/user-notification-socket.service';
 import { SwUpdateService } from './core/services/sw-update.service';
-import { AppConfigService } from './core/services/app-config.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -49,12 +48,6 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => {
       const authService = inject(AuthService);
       return authService.initOnAppStart();
-    }),
-    // Nieblokujące: nie zwracamy promisy, więc bootstrap nie czeka na /api/config.
-    // Pierwszy render używa build-time environment.mediaUrl (poprawny per-build),
-    // a po odpowiedzi sygnał odświeży cover images.
-    provideAppInitializer(() => {
-      void inject(AppConfigService).load();
     }),
     {
       provide: DATE_PIPE_DEFAULT_OPTIONS,

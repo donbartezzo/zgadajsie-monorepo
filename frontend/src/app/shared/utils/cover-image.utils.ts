@@ -1,4 +1,4 @@
-import { getMediaUrl } from './runtime-config.util';
+import { environment } from '../../../environments/environment';
 
 export interface CoverImage {
   id: string;
@@ -14,7 +14,7 @@ export interface CoverImage {
 
 export function buildCoverImageUrl(cover: CoverImage): string {
   if (cover.storageKey) {
-    const baseUrl = getMediaUrl();
+    const baseUrl = environment.mediaUrl || '';
     const cacheBuster = cover.updatedAt ? `?v=${new Date(cover.updatedAt).getTime()}` : '';
     return `${baseUrl}/${cover.storageKey}${cacheBuster}`;
   }
