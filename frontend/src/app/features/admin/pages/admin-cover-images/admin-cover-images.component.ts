@@ -13,14 +13,12 @@ import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
-import {
-  CoverImageService,
-  CoverImagesSyncReport,
-} from '../../../../core/services/cover-image.service';
+import { CoverImageService } from '../../../../core/services/cover-image.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { CoverImage } from '../../../../shared/types';
-import { coverImageUrl } from '../../../../shared/types/cover-image.interface';
+import { buildCoverImageUrl } from '../../../../shared/utils/cover-image.utils';
 import { TranslocoPipe } from '@jsverse/transloco';
 import {
   ImageCropperModalComponent,
@@ -48,121 +46,6 @@ import { DictionaryItem } from '@zgadajsie/shared';
         </a>
         <h1 class="text-xl font-bold text-neutral-900">Galeria cover images</h1>
       </div>
-
-      <!-- Importer / Synchronizator -->
-      <app-card class="mb-4">
-        <div class="space-y-3">
-          <h3 class="text-sm font-semibold text-neutral-900">Synchronizator z katalogu</h3>
-          <p class="text-xs text-neutral-600">
-            Skanuje katalog <code>frontend/public/assets/covers/events/</code>, dodaje brakujące
-            wpisy w bazie (bez usuwania ani modyfikacji istniejących) i wyświetla raport.
-          </p>
-          <app-button
-            appearance="soft"
-            color="neutral"
-            (clicked)="onSync()"
-            [loading]="syncLoading()"
-          >
-            <app-icon name="loader" size="sm" />
-            Synchronizuj z katalogu
-          </app-button>
-
-          @if (syncReport()) {
-            <div class="mt-3 space-y-4">
-              <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
-                <div class="p-2 rounded-lg bg-neutral-100">
-                  Foldery: <b>{{ syncReport()!.summary.totalFolders }}</b>
-                </div>
-                <div class="p-2 rounded-lg bg-neutral-100">
-                  Pliki: <b>{{ syncReport()!.summary.totalFiles }}</b>
-                </div>
-                <div
-                  class="p-2 rounded-lg bg-success-50 text-success-600 border border-success-200"
-                >
-                  Dodane: <b>{{ syncReport()!.summary.added }}</b>
-                </div>
-                <div class="p-2 rounded-lg bg-neutral-100">
-                  Istniejące: <b>{{ syncReport()!.summary.existing }}</b>
-                </div>
-                <div class="p-2 rounded-lg bg-danger-50 text-danger-600 border border-danger-200">
-                  Brak pliku dla wpisu w DB: <b>{{ syncReport()!.summary.missingFilesInDb }}</b>
-                </div>
-              </div>
-
-              <div>
-                <h4 class="text-sm font-semibold text-neutral-900 mb-2">Zawartość wg dyscypliny</h4>
-                <div class="space-y-3">
-                  @for (b of syncReport()!.byDiscipline; track b.slug) {
-                    <div class="rounded-xl border border-neutral-200">
-                      <div
-                        class="px-3 py-2 flex items-center justify-between text-xs bg-neutral-50 rounded-t-xl"
-                      >
-                        <div>
-                          <span class="font-medium text-neutral-900">/{{ b.slug }}</span>
-                          <span class="ml-2 text-neutral-500"
-                            >(ID dyscypliny: {{ b.disciplineId || 'brak' }})</span
-                          >
-                        </div>
-                        <div class="text-neutral-500">Plików: {{ b.files.length }}</div>
-                      </div>
-                      <div class="divide-y divide-neutral-100">
-                        @for (f of b.files; track f.filename) {
-                          <div class="px-3 py-2 text-xs flex items-center justify-between">
-                            <span class="truncate mr-2">{{ f.filename }}</span>
-                            <div class="flex items-center gap-2">
-                              @if (f.added) {
-                                <span
-                                  class="px-1.5 py-0.5 rounded bg-success-50 text-success-600 border border-success-200"
-                                  >dodany</span
-                                >
-                              } @else if (f.existed) {
-                                <span class="px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-700"
-                                  >istniał</span
-                                >
-                              } @else {
-                                <span
-                                  class="px-1.5 py-0.5 rounded bg-warning-50 text-warning-600 border border-warning-200"
-                                  >pominięty (brak dyscypliny)</span
-                                >
-                              }
-                              @if (!f.fileExists) {
-                                <span
-                                  class="px-1.5 py-0.5 rounded bg-danger-50 text-danger-600 border border-danger-200"
-                                  >BRAK PLIKU</span
-                                >
-                              }
-                            </div>
-                          </div>
-                        }
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
-
-              @if (syncReport()!.dbWithMissingFiles.length > 0) {
-                <div>
-                  <h4 class="text-sm font-semibold text-danger-600 mb-1">
-                    Wpisy w DB bez fizycznego pliku
-                  </h4>
-                  <div class="rounded-xl border border-danger-200 overflow-hidden">
-                    @for (m of syncReport()!.dbWithMissingFiles; track m.id) {
-                      <div
-                        class="px-3 py-2 text-xs bg-danger-50 text-danger-700 border-b border-danger-100"
-                      >
-                        <span class="font-mono">{{ m.filename }}</span>
-                        <span class="ml-2"
-                          >(discipline: {{ m.disciplineSlug || m.disciplineId }})</span
-                        >
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      </app-card>
 
       <!-- Upload new -->
       <app-card>
@@ -314,13 +197,12 @@ export class AdminCoverImagesComponent implements OnInit {
   private readonly coverImageService = inject(CoverImageService);
   private readonly dictService = inject(DictionaryService);
   private readonly snackbar = inject(SnackbarService);
+  private readonly confirmModal = inject(ConfirmModalService);
 
   readonly disciplines = signal<DictionaryItem[]>([]);
   readonly covers = signal<CoverImage[]>([]);
   readonly loading = signal(false);
   readonly uploading = signal(false);
-  readonly syncLoading = signal(false);
-  readonly syncReport = signal<CoverImagesSyncReport | null>(null);
 
   uploadDisciplineSlug = '';
   uploadFile: File | null = null;
@@ -337,7 +219,7 @@ export class AdminCoverImagesComponent implements OnInit {
   }
 
   getCoverUrl(cover: CoverImage): string {
-    return coverImageUrl(cover.disciplineSlug, cover.filename);
+    return buildCoverImageUrl(cover);
   }
 
   ngOnInit(): void {
@@ -356,22 +238,6 @@ export class AdminCoverImagesComponent implements OnInit {
       error: () => {
         this.covers.set([]);
         this.loading.set(false);
-      },
-    });
-  }
-
-  onSync(): void {
-    this.syncLoading.set(true);
-    this.coverImageService.syncFromFilesystem().subscribe({
-      next: (report) => {
-        this.syncReport.set(report);
-        this.syncLoading.set(false);
-        this.snackbar.success('Synchronizacja zakończona');
-        this.loadCovers();
-      },
-      error: (err) => {
-        this.syncLoading.set(false);
-        this.snackbar.error(err?.error?.message || 'Synchronizacja nie powiodła się');
       },
     });
   }
@@ -435,10 +301,20 @@ export class AdminCoverImagesComponent implements OnInit {
     });
   }
 
-  onDelete(id: string): void {
-    if (!confirm('Czy na pewno chcesz usunąć ten cover image?')) {
+  async onDelete(id: string): Promise<void> {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Usuń cover image',
+      message: 'Czy na pewno chcesz usunąć ten cover image?',
+      confirmLabel: 'Usuń',
+      cancelLabel: 'Anuluj',
+      color: 'danger',
+      showIcon: true,
+    });
+
+    if (!confirmed) {
       return;
     }
+
     this.coverImageService.remove(id).subscribe({
       next: () => {
         this.snackbar.success('Cover image usunięty');

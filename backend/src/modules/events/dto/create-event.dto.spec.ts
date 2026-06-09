@@ -18,6 +18,7 @@ function makeValid(overrides: Record<string, unknown> = {}): object {
     address: 'ul. Testowa 1, Warszawa',
     lat: 52.2297,
     lng: 21.0122,
+    coverImageId: 'some-cover-uuid',
     ...overrides,
   };
 }
@@ -63,7 +64,12 @@ describe('CreateEventDto', () => {
     expect(errors.some((e) => e.property === 'costPerPerson')).toBe(true);
   });
 
-  it('akceptuje brak opcjonalnych pól (description, coverImageId, etc.)', async () => {
+  it('odrzuca brak coverImageId', async () => {
+    const errors = await validateDto(makeValid({ coverImageId: undefined }));
+    expect(errors.some((e) => e.property === 'coverImageId')).toBe(true);
+  });
+
+  it('akceptuje brak opcjonalnych pól (description, etc.)', async () => {
     const errors = await validateDto(makeValid());
     expect(errors).toHaveLength(0);
   });

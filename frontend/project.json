@@ -65,7 +65,8 @@
       "continuous": true,
       "executor": "@angular/build:dev-server",
       "options": {
-        "port": 4300
+        "port": 4300,
+        "proxyConfig": "frontend/proxy.conf.js"
       },
       "configurations": {
         "production": {

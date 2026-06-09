@@ -1,6 +1,6 @@
 # Konfiguracja Cloudflare R2
 
-R2 jest używane do przechowywania mediów uploadowanych przez użytkowników (avatary, zdjęcia).
+R2 jest używane do przechowywania mediów uploadowanych przez użytkowników (avatary, zdjęcia) oraz cover images dla wydarzeń.
 Upload przechodzi przez backend (nie bezpośrednio z przeglądarki), więc konfiguracja CORS dotyczy tylko odczytu.
 
 Env vars do uzupełnienia: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`
@@ -135,3 +135,42 @@ Następnie: **Coolify → zgadajsie-prod → zgadajsie-prod-db → Backups → N
 - S3: wybierz skonfigurowany storage
 
 > Rozważ osobny bucket `zgadajsie-backups` dla backupów DB - oddzielenie od mediów użytkowników ułatwia zarządzanie retencją i uprawnieniami.
+
+---
+
+## Checklist stanu wdrożenia
+
+> Stan zweryfikowany na branchu `migrate-cover-images-to-r2` (2026-06-09).
+> `[x]` = zrobione, `[ ]` = do zrobienia.
+
+### Warstwa kodu (backendowa i frontendowa)
+
+- [x] `R2StorageService` zaimplementowany (`backend/src/modules/media/r2-storage.service.ts`)
+- [x] `CoverImagesModule` importuje `MediaModule` (dostęp do `R2StorageService`)
+- [x] `CoverImagesService` - upload/replace/delete przez R2, nie FS
+- [x] `image-upload.util.ts` - walidacja magic bytes (`file-type@16.5.4`)
+- [x] `package.json` zawiera `file-type: 16.5.4`
+- [x] `environment.mediaUrl` dodany do `base.ts`, `environment.production.ts` i `environment.local.ts`
+- [x] `buildCoverImageUrl(cover)` w `cover-image.utils.ts` - używa `storageKey` i `mediaUrl`
+- [x] `.env.example` ma sekcję `R2_*` z placeholderami
+- [x] Skrypt `backend/scripts/migrate-cover-images-to-r2.ts` gotowy do uruchomienia
+- [x] Skrypt `backend/scripts/seed-default-cover.ts` gotowy do uruchomienia
+- [x] `backend/assets/seed/default-cover.webp` - plik seed istnieje
+
+### Konfiguracja zewnętrzna (Cloudflare + Coolify) — do wykonania manualnie
+
+- [x] **Krok 1**: Konto Cloudflare z aktywnym R2
+- [x] **Krok 2**: Buckety `zgadajsie-media` (prod) i `zgadajsie-media-dev` (dev) utworzone
+- [x] **Krok 3**: Publiczny dostęp — r2.dev URL dla obu bucketów (prod: `pub-036e485738964fee826ad172a9733c55.r2.dev`, dev: `pub-a40201d08597423697d74c5e0db6e56f.r2.dev`)
+- [x] **Krok 4**: API Tokeny (prod + dev) z `Object Read & Write` na odpowiednich bucketach
+- [x] **Krok 5**: CORS skonfigurowany na obu bucketach (GET/HEAD z dopuszczonych originów)
+- [x] **Krok 6**: Env vars w Coolify (prod i dev backend) — `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` — po ustawieniu: redeploy
+- [x] **Krok 7**: `config/env/.env.local` uzupełniony o prawdziwe wartości (dev bucket); `frontend/src/environments/environment.local.ts` uzupełniony o `mediaUrl`
+- [ ] **Krok 8**: S3 Storage w Coolify skonfigurowany dla backup bazy danych (`zgadajsie-backups` bucket)
+
+### Uruchomienie skryptów (po konfiguracji Krok 6 + 7)
+
+- [ ] `seed-default-cover.ts` uruchomiony na devie (wgrywa default cover i tworzy rekord `isDefault=true`)
+- [ ] `migrate-cover-images-to-r2.ts` uruchomiony na devie (backfill `storageKey` dla publicznych cover images)
+- [ ] Weryfikacja: wszystkie publiczne cover images mają `storageKey`, URLe ładują się z R2
+- [ ] Te same skrypty uruchomione na prodzie (po weryfikacji na devie)

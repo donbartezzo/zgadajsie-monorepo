@@ -6,5 +6,6 @@ export const baseEnvironment = {
   production: false,
   apiUrl: '/api',
   clarityProjectId: null as string | null,
+  mediaUrl: '' as string,
   ...DEV_FEATURE_FLAGS,
 };

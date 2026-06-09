@@ -12,7 +12,7 @@ import { NotificationService } from '../../core/services/notification.service';
   imports: [ButtonComponent, UserAvatarComponent],
   templateUrl: './bottom-nav.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'fixed bottom-0 left-1/2 z-[60] block w-full max-w-app -translate-x-1/2' },
+  host: { class: 'fixed bottom-0 left-0 right-0 z-[60] block w-full max-w-app mx-auto' },
 })
 export class BottomNavComponent {
   private readonly navigation = inject(NavigationService);

@@ -36,7 +36,10 @@ const mockEventService = {
 const mockEventSeriesService = {
   createSeries: jest.fn(),
 };
-const mockCoverImageService = { getAll: jest.fn().mockReturnValue(of([])) };
+const mockCoverImageService = {
+  getAll: jest.fn().mockReturnValue(of([])),
+  getMy: jest.fn().mockReturnValue(of([])),
+};
 const mockDictService = {
   getDisciplines: jest.fn().mockReturnValue(of([])),
   getFacilities: jest.fn().mockReturnValue(of([])),
@@ -149,7 +152,33 @@ describe('EventFormComponent', () => {
       expect(mockEventService.createEvent).not.toHaveBeenCalled();
     });
 
+    it('gdy brak wybranego cover image wywołuje snackbar.error i nie wywołuje createEvent', () => {
+      component['selectedCoverImageId'].set(null);
+      component.form.patchValue({
+        title: 'Mecz',
+        disciplineSlug: 'football',
+        facilitySlug: 'pitch',
+        levelSlug: 'mixed-open',
+        citySlug: 'warsaw',
+        address: 'ul. Testowa 1',
+        startsAt: futureDate(2),
+        endsAt: futureDate(2).replace('19:00', '21:00'),
+        minParticipants: 2,
+        maxParticipants: 10,
+        costPerPerson: 0,
+        gender: 'ANY',
+        visibility: 'PUBLIC',
+        lat: 52.2,
+        lng: 21.0,
+      });
+      component.onSubmit();
+
+      expect(mockSnackbar.error).toHaveBeenCalledWith(expect.stringContaining('grafikę'));
+      expect(mockEventService.createEvent).not.toHaveBeenCalled();
+    });
+
     it('gdy maxParticipants < minParticipants wywołuje snackbar.error', () => {
+      component['selectedCoverImageId'].set('cover123');
       component.form.patchValue({
         title: 'Test',
         disciplineSlug: 'football',
@@ -180,6 +209,7 @@ describe('EventFormComponent', () => {
       mockEventService.createEvent.mockReturnValue(of(createdEvent));
       const navSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
 
+      component['selectedCoverImageId'].set('cover123');
       component.form.patchValue({
         title: 'Mecz testowy',
         disciplineSlug: 'football',
@@ -211,6 +241,7 @@ describe('EventFormComponent', () => {
         throwError(() => ({ error: { message: 'Nieznany błąd' } })),
       );
 
+      component['selectedCoverImageId'].set('cover123');
       component.form.patchValue({
         title: 'Mecz',
         disciplineSlug: 'football',
@@ -301,6 +332,7 @@ describe('EventFormComponent', () => {
 
   describe('tryb serii wydarzeń', () => {
     const fillValidEventForm = () => {
+      component['selectedCoverImageId'].set('cover123');
       component.form.patchValue({
         title: 'Trening piłkarski',
         disciplineSlug: 'football',
@@ -335,6 +367,7 @@ describe('EventFormComponent', () => {
     }));
 
     it('gdy seriesEnabled = true i pusta nazwa serii, wywołuje snackbar.error i nie wywołuje createSeries', () => {
+      component['selectedCoverImageId'].set('cover123');
       component.toggleSeriesEnabled(true);
       component.seriesForm.patchValue({ name: '' });
 
@@ -346,6 +379,7 @@ describe('EventFormComponent', () => {
     });
 
     it('gdy seriesEnabled = true i brak startDate serii, wywołuje snackbar.error i nie wywołuje createSeries', () => {
+      component['selectedCoverImageId'].set('cover123');
       component.toggleSeriesEnabled(true);
       component.seriesForm.patchValue({ name: 'Trening środowy', startDate: '' });
 
@@ -459,6 +493,7 @@ describe('EventFormComponent', () => {
 
       expect(component.isEdit()).toBe(true);
 
+      component['selectedCoverImageId'].set('cover123');
       component.seriesEnabled.set(true);
       component.onSubmit();
       tick();

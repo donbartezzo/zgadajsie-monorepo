@@ -253,6 +253,20 @@ export const appRoutes: Route[] = [
     },
   },
 
+  // ── Organizer: cover images ──
+  {
+    path: 'profile/organizer/cover-images',
+    loadComponent: () =>
+      import('./features/me/pages/my-cover-images/my-cover-images.component').then(
+        (m) => m.MyCoverImagesComponent,
+      ),
+    canActivate: [authGuard, activeGuard],
+    data: {
+      title: 'Moja galeria cover images',
+      breadcrumb: BREADCRUMB_TO_PROFILE,
+    },
+  },
+
   // ── Public: confirm series event by email token ──
   {
     path: 'o/confirm-event',

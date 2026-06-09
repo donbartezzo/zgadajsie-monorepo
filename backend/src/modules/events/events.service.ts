@@ -24,7 +24,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PushService } from '../notifications/push.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { CoverImagesService } from '../cover-images/cover-images.service';
 import { CitySubscriptionsService } from '../city-subscriptions/city-subscriptions.service';
 import { SlotService } from '../slots/slot.service';
 import { EventRealtimeService } from '../realtime/event-realtime.service';
@@ -53,7 +52,6 @@ export class EventsService {
     private emailService: EmailService,
     private pushService: PushService,
     private notificationsService: NotificationsService,
-    private coverImagesService: CoverImagesService,
     private citySubscriptionsService: CitySubscriptionsService,
     private slotService: SlotService,
     private eventRealtime: EventRealtimeService,
@@ -62,13 +60,6 @@ export class EventsService {
   ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
-    const coverImageId = await this.resolveCoverImageId(
-      dto.coverImageId,
-      dto.disciplineSlug,
-      organizerId,
-      dto.citySlug,
-    );
-
     const startsAt = new Date(dto.startsAt);
     const lotteryExecutedAt = shouldSkipPreEnrollment(startsAt) ? new Date() : null;
 
@@ -87,7 +78,7 @@ export class EventsService {
         startsAt,
         endsAt: new Date(dto.endsAt),
         organizer: { connect: { id: organizerId } },
-        coverImage: coverImageId ? { connect: { id: coverImageId } } : undefined,
+        coverImage: { connect: { id: dto.coverImageId } },
         lotteryExecutedAt,
         roleConfig: dto.roleConfig ? JSON.parse(JSON.stringify(dto.roleConfig)) : undefined,
         discipline: { connect: { slug: dto.disciplineSlug } },
@@ -889,27 +880,6 @@ export class EventsService {
     this.eventRealtime.invalidateEvent(eventId, 'participants');
 
     return this.getParticipants(eventId);
-  }
-
-  private async resolveCoverImageId(
-    coverImageId: string | undefined,
-    disciplineSlug: string,
-    organizerId?: string,
-    citySlug?: string,
-  ): Promise<string | undefined> {
-    if (coverImageId) {
-      return coverImageId;
-    }
-    if (organizerId && citySlug) {
-      const smart = await this.coverImagesService.findSmartCoverForOrganizer(
-        disciplineSlug,
-        organizerId,
-        citySlug,
-      );
-      return smart?.id;
-    }
-    const random = await this.coverImagesService.findRandomByDiscipline(disciplineSlug);
-    return random?.id;
   }
 
   async setTargetOccupancy(eventId: string, targetOccupancy: number | null) {

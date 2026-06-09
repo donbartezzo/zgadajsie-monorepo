@@ -51,6 +51,7 @@ model User {
   reprimandsGiven             Reprimand[]             @relation("ReprimandFrom")
   reprimandsReceived          Reprimand[]             @relation("ReprimandTo")
   socialAccounts              SocialAccount[]
+  coverImages                 CoverImage[]            @relation("UserCoverImages")
   contactMessages             ContactMessage[]
 
   @@index([accountType])
@@ -89,14 +90,21 @@ model EventDiscipline {
 }
 
 model CoverImage {
-  id             String          @id @default(uuid())
-  disciplineSlug String
+  id             String           @id @default(uuid())
+  disciplineSlug String?
   filename       String
-  createdAt      DateTime        @default(now())
-  discipline     EventDiscipline @relation(fields: [disciplineSlug], references: [slug])
+  storageKey     String?
+  ownerUserId    String?
+  name           String?
+  isDefault      Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  discipline     EventDiscipline? @relation(fields: [disciplineSlug], references: [slug])
+  owner          User?            @relation("UserCoverImages", fields: [ownerUserId], references: [id], onDelete: Cascade)
   events         Event[]
 
   @@index([disciplineSlug])
+  @@index([ownerUserId])
 }
 
 model EventFacility {
@@ -135,7 +143,7 @@ model Event {
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
   rules                 String?
-  coverImageId          String?
+  coverImageId          String
   lotteryExecutedAt     DateTime?
   roleConfig            Json?
   facilityReserved      Boolean              @default(true)
@@ -143,7 +151,7 @@ model Event {
   confirmToken                  String?              @unique
   welcomeMessageEnabled         Boolean              @default(true)
   city                  City                 @relation(fields: [citySlug], references: [slug])
-  coverImage            CoverImage?          @relation(fields: [coverImageId], references: [id])
+  coverImage            CoverImage           @relation(fields: [coverImageId], references: [id])
   discipline            EventDiscipline      @relation(fields: [disciplineSlug], references: [slug])
   facility              EventFacility        @relation(fields: [facilitySlug], references: [slug])
   level                 EventLevel           @relation(fields: [levelSlug], references: [slug])
