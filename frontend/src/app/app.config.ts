@@ -26,6 +26,7 @@ import { AppTitleStrategy } from './core/services/app-title.strategy';
 import { provideTransloco, TranslocoService } from '@jsverse/transloco';
 import { TranslocoInlineLoader } from './core/i18n/transloco-loader';
 import { UserNotificationSocketService } from './core/services/user-notification-socket.service';
+import { SwUpdateService } from './core/services/sw-update.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -74,6 +75,9 @@ export const appConfig: ApplicationConfig = {
     // service would never be constructed until something injected it.
     provideAppInitializer(() => {
       inject(UserNotificationSocketService);
+    }),
+    provideAppInitializer(() => {
+      inject(SwUpdateService).init();
     }),
   ],
 };
