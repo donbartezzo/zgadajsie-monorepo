@@ -98,7 +98,7 @@ jobs:
           push: true
           provenance: false
           build-args: |
-            BUILD_CONFIGURATION=production
+            BUILD_CONFIGURATION=dev-server
             FRONTEND_VERSION=${{ steps.get_short_sha_dev.outputs.sha }}
           tags: |
             ${{ env.FRONTEND_IMAGE }}:dev

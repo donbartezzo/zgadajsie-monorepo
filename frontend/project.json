@@ -75,7 +75,7 @@
           "fileReplacements": [
             {
               "replace": "frontend/src/environments/environment.ts",
-              "with": "frontend/src/environments/environment.dev-server.ts"
+              "with": "frontend/src/environments/environment.local.ts"
             }
           ]
         }
