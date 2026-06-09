@@ -21,6 +21,7 @@
     "tokens:generate": "node scripts/generate-color-tokens.mjs",
     "frontend:serve": "nx serve frontend",
     "frontend:build": "cd frontend && npx -y @angular/cli@21.2.5 build",
+    "frontend:build:dev-server": "cd frontend && npx -y @angular/cli@21.2.5 build --configuration=dev-server",
     "frontend:test": "cd frontend && npx -y @angular/cli@21.2.5 test",
     "backend:serve": "dotenv -e config/env/.env.local -- nx serve backend",
     "backend:build": "nx build backend",
