@@ -22,10 +22,11 @@ export class AppService {
     }
   }
 
-  getClientConfig(): { vapidPublicKey: string; turnstileSiteKey: string } {
+  getClientConfig(): { vapidPublicKey: string; turnstileSiteKey: string; mediaUrl: string } {
     return {
       vapidPublicKey: this.configService.get<string>('VAPID_PUBLIC_KEY', ''),
       turnstileSiteKey: this.configService.get<string>('TURNSTILE_SITE_KEY', ''),
+      mediaUrl: this.configService.get<string>('R2_PUBLIC_URL', ''),
     };
   }
 }

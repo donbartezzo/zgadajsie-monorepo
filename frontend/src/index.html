@@ -13,11 +13,6 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="icons/icon-152x152.png" />
-    <!-- Runtime config wstrzykiwany per-kontener (docker-entrypoint.sh podstawia MEDIA_URL).
-         Osobny plik, wykluczony z ngsw, by nie naruszać integralności hashy Service Workera.
-         Gdy MEDIA_URL nie jest ustawiony, plik zachowuje placeholder i aplikacja używa
-         build-time environment.mediaUrl (bezpieczny fallback). -->
-    <script src="runtime-config.js"></script>
   </head>
   <body>
     <app-root></app-root>

@@ -1,30 +1,28 @@
-import { getMediaUrl } from './runtime-config.util';
+import { getMediaUrl, setRuntimeMediaUrl } from './runtime-config.util';
 import { environment } from '../../../environments/environment';
 
-describe('getMediaUrl', () => {
-  const globalRef = globalThis as { __APP_CONFIG__?: { mediaUrl?: string } };
-
+describe('runtime media url', () => {
   afterEach(() => {
-    delete globalRef.__APP_CONFIG__;
+    setRuntimeMediaUrl(null);
   });
 
-  it('zwraca wartość runtime gdy ustawiona', () => {
-    globalRef.__APP_CONFIG__ = { mediaUrl: 'https://pub-runtime.r2.dev' };
+  it('zwraca wartość ustawioną z /api/config', () => {
+    setRuntimeMediaUrl('https://pub-runtime.r2.dev');
     expect(getMediaUrl()).toBe('https://pub-runtime.r2.dev');
   });
 
-  it('ignoruje niepodstawiony placeholder i używa build-time fallbacku', () => {
-    globalRef.__APP_CONFIG__ = { mediaUrl: '${MEDIA_URL}' };
+  it('używa build-time fallbacku gdy wartość nie została ustawiona', () => {
+    setRuntimeMediaUrl(null);
     expect(getMediaUrl()).toBe(environment.mediaUrl ?? '');
   });
 
-  it('używa build-time fallbacku gdy brak __APP_CONFIG__', () => {
-    delete globalRef.__APP_CONFIG__;
+  it('używa build-time fallbacku gdy wartość jest pusta', () => {
+    setRuntimeMediaUrl('');
     expect(getMediaUrl()).toBe(environment.mediaUrl ?? '');
   });
 
-  it('używa build-time fallbacku gdy runtime mediaUrl jest pusty', () => {
-    globalRef.__APP_CONFIG__ = { mediaUrl: '' };
+  it('używa build-time fallbacku gdy wartość jest undefined', () => {
+    setRuntimeMediaUrl(undefined);
     expect(getMediaUrl()).toBe(environment.mediaUrl ?? '');
   });
 });

@@ -27,6 +27,7 @@ import { provideTransloco, TranslocoService } from '@jsverse/transloco';
 import { TranslocoInlineLoader } from './core/i18n/transloco-loader';
 import { UserNotificationSocketService } from './core/services/user-notification-socket.service';
 import { SwUpdateService } from './core/services/sw-update.service';
+import { AppConfigService } from './core/services/app-config.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -49,6 +50,7 @@ export const appConfig: ApplicationConfig = {
       const authService = inject(AuthService);
       return authService.initOnAppStart();
     }),
+    provideAppInitializer(() => inject(AppConfigService).load()),
     {
       provide: DATE_PIPE_DEFAULT_OPTIONS,
       useValue: { timezone: APP_DEFAULT_TIMEZONE },
