@@ -19,10 +19,17 @@ async function main() {
 
   // prisma.event.updateMany rejects `coverImageId: null` because schema.prisma declares it NOT NULL.
   // At this point in the deploy script the DB constraint hasn't been applied yet (krok 6).
+  //
+  // Updates events that:
+  // - have no coverImageId (null), OR
+  // - point to a CoverImage that was never migrated to R2 (storageKey IS NULL)
   const count = await prisma.$executeRaw`
-    UPDATE "Event"
+    UPDATE "Event" e
     SET "coverImageId" = ${defaultCover.id}
-    WHERE "coverImageId" IS NULL
+    WHERE e."coverImageId" IS NULL
+       OR e."coverImageId" IN (
+         SELECT id FROM "CoverImage" WHERE "storageKey" IS NULL
+       )
   `;
 
   console.log(`✅ Backfilled ${count} events with default cover (${defaultCover.id})`);
