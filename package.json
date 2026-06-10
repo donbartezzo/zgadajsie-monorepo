@@ -46,6 +46,8 @@
     "tmp-deploy:cover-nullable:prod": "bash scripts/migrate-cover-nullable.sh prod",
     "tmp-deploy:reset-event-covers:dev": "bash scripts/reset-event-covers.sh dev",
     "tmp-deploy:reset-event-covers:prod": "bash scripts/reset-event-covers.sh prod",
+    "tmp-deploy:assign-event-covers:dev": "bash scripts/assign-event-covers.sh dev",
+    "tmp-deploy:assign-event-covers:prod": "bash scripts/assign-event-covers.sh prod",
     "prepare": "husky"
   },
   "engines": {
