@@ -6,7 +6,16 @@ import {
   TargetOccupancyConfig,
 } from '@zgadajsie/shared';
 import { UserBrief } from './common.interface';
-import { CoverImage } from './cover-image.interface';
+
+/**
+ * Cała informacja o okładce wydarzenia w jednym obiekcie: `id` (tożsamość/edycja),
+ * `storageKey` (URL) i `updatedAt` (cache-busting). Brak okładki = `coverImage` undefined.
+ */
+export interface EventCoverImage {
+  id: string;
+  storageKey?: string | null;
+  updatedAt?: string | null;
+}
 
 export interface EventBase
   extends
@@ -14,7 +23,6 @@ export interface EventBase
     Pick<EventDefaultableFields, 'minParticipants' | 'ageMin' | 'ageMax'> {
   id: string;
   title: string;
-  coverImageId?: string;
   startsAt: string;
   endsAt: string;
   costPerPerson: number;
@@ -35,7 +43,7 @@ export interface EventBase
   level?: DictionaryItem;
   city?: City;
   organizer?: UserBrief;
-  coverImage?: CoverImage;
+  coverImage?: EventCoverImage;
   _count?: { enrollments: number; participants: number; totalEnrollments?: number };
   seriesId?: string | null;
 }

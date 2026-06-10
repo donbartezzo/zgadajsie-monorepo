@@ -988,8 +988,8 @@ export class EventFormComponent implements OnInit {
         this.mapLat.set(e.lat);
         this.mapLng.set(e.lng);
 
-        if (e.coverImageId) {
-          this.selectedCoverImageId.set(e.coverImageId);
+        if (e.coverImage?.id) {
+          this.selectedCoverImageId.set(e.coverImage.id);
         }
 
         if (e.seriesId) {
@@ -1258,7 +1258,8 @@ export class EventFormComponent implements OnInit {
 
     this.submitting.set(true);
 
-    const payload: Partial<Event> & { roleConfig?: EventRoleConfig } = {
+    // coverImageId to pole zapisu (ustawiamy FK); model odczytu Event niesie cover w obiekcie coverImage.
+    const payload: Partial<Event> & { coverImageId?: string; roleConfig?: EventRoleConfig } = {
       title: val.title || undefined,
       description: val.description || undefined,
       disciplineSlug: val.disciplineSlug || undefined,
@@ -1586,8 +1587,8 @@ export class EventFormComponent implements OnInit {
     }
 
     // Ustaw cover image jeśli jest
-    if (event.coverImageId) {
-      this.selectedCoverImageId.set(event.coverImageId);
+    if (event.coverImage?.id) {
+      this.selectedCoverImageId.set(event.coverImage.id);
     }
   }
 

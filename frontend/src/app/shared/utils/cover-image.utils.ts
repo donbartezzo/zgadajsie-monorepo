@@ -26,7 +26,12 @@ export interface CoverImage {
   isDefault?: boolean;
 }
 
-export function buildCoverImageUrl(cover: CoverImage): string {
+// Przyjmuje dowolny obiekt z storageKey/updatedAt - pełny CoverImage (galeria) lub
+// minimalną projekcję EventCoverImage z obiektu Event.
+export function buildCoverImageUrl(cover: {
+  storageKey?: string | null;
+  updatedAt?: string | null;
+}): string {
   if (cover.storageKey) {
     const isPublic = !cover.storageKey.startsWith(USER_STORAGE_PREFIX);
     const baseUrl = (isPublic ? environment.publicMediaUrl : environment.mediaUrl) || '';

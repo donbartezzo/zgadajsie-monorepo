@@ -1,5 +1,8 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  // omitApi: pozwala pomijać skalary w wynikach zapytań (np. event.coverImageId).
+  // GA w Prisma 6.x - przy upgradzie usunąć z previewFeatures.
+  previewFeatures = ["omitApi"]
 }
 
 datasource db {

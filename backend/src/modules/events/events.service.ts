@@ -42,6 +42,12 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
+// Minimalna projekcja covera w odpowiedziach z eventami: id (edycja), storageKey (URL),
+// updatedAt (cache-busting). Skalar coverImageId pomijamy przez `omit` w zapytaniach.
+const EVENT_COVER_IMAGE_SELECT = {
+  select: { id: true, storageKey: true, updatedAt: true },
+};
+
 @Injectable()
 export class EventsService {
   private readonly logger = new Logger(EventsService.name);
@@ -109,7 +115,14 @@ export class EventsService {
             }
           : undefined,
       },
-      include: { discipline: true, facility: true, level: true, city: true, coverImage: true },
+      omit: { coverImageId: true },
+      include: {
+        discipline: true,
+        facility: true,
+        level: true,
+        city: true,
+        coverImage: EVENT_COVER_IMAGE_SELECT,
+      },
     });
 
     // Create slots for the event (with role assignment if roleConfig provided)
@@ -200,12 +213,13 @@ export class EventsService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy,
+        omit: { coverImageId: true },
         include: {
           discipline: true,
           facility: true,
           level: true,
           city: true,
-          coverImage: true,
+          coverImage: EVENT_COVER_IMAGE_SELECT,
           organizer: {
             select: { id: true, displayName: true, avatarSeed: true, donationUrl: true },
           },
@@ -267,12 +281,13 @@ export class EventsService {
   async findOne(id: string, userId?: string) {
     const event = await this.prisma.event.findUnique({
       where: { id },
+      omit: { coverImageId: true },
       include: {
         discipline: true,
         facility: true,
         level: true,
         city: true,
-        coverImage: true,
+        coverImage: EVENT_COVER_IMAGE_SELECT,
         targetOccupancyConfig: true,
         series: { select: { id: true, name: true } },
         organizer: {
@@ -334,12 +349,13 @@ export class EventsService {
     const { userId, isAdmin } = resolveUserContext(user);
     const event = await this.prisma.event.findUnique({
       where: { id },
+      omit: { coverImageId: true },
       include: {
         discipline: true,
         facility: true,
         level: true,
         city: true,
-        coverImage: true,
+        coverImage: EVENT_COVER_IMAGE_SELECT,
         organizer: {
           select: {
             id: true,
