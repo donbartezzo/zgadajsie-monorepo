@@ -78,7 +78,7 @@ export class EventsService {
         startsAt,
         endsAt: new Date(dto.endsAt),
         organizer: { connect: { id: organizerId } },
-        coverImage: { connect: { id: dto.coverImageId } },
+        ...(dto.coverImageId ? { coverImage: { connect: { id: dto.coverImageId } } } : {}),
         lotteryExecutedAt,
         roleConfig: dto.roleConfig ? JSON.parse(JSON.stringify(dto.roleConfig)) : undefined,
         discipline: { connect: { slug: dto.disciplineSlug } },

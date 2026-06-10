@@ -245,20 +245,8 @@ export async function createCoverImages(prisma: any): Promise<CoverImage[]> {
   console.log('Tworzę cover images...');
   const created: CoverImage[] = [];
 
-  const existingDefault = await prisma.coverImage.findFirst({ where: { isDefault: true } });
-  if (!existingDefault) {
-    const record = await prisma.coverImage.create({
-      data: {
-        filename: 'default-cover.webp',
-        isDefault: true,
-        name: 'Default cover image',
-        // Brak storageKey - domyślny cover serwowany jest z lokalnego assetu
-        // frontendu (assets/default-cover.webp), nie z R2.
-        storageKey: null,
-      },
-    });
-    created.push(record);
-  }
+  // Brak rekordu "default cover" - wydarzenia bez okładki mają coverImageId = NULL,
+  // a front renderuje lokalny assets/default-cover.webp.
 
   for (const [disciplineSlug, covers] of Object.entries(COMMON_SEED_DATA.coverImages)) {
     const existing = await prisma.coverImage.findMany({

@@ -348,26 +348,23 @@ async function main() {
   const now = new Date();
   const hoursFromNow = (h: number): Date => new Date(now.getTime() + h * 60 * 60 * 1000);
 
-  const [footballCoverImagesFromDb, defaultCoverFromDb] = await Promise.all([
-    prisma.coverImage.findMany({
-      where: { discipline: { slug: 'football' } },
-      select: { id: true, filename: true },
-    }),
-    prisma.coverImage.findFirst({ where: { isDefault: true }, select: { id: true } }),
-  ]);
+  const footballCoverImagesFromDb = await prisma.coverImage.findMany({
+    where: { discipline: { slug: 'football' } },
+    select: { id: true, filename: true },
+  });
 
-  const defaultCoverId: string = defaultCoverFromDb!.id;
   let footballCoverIndex = 0;
 
-  function getNextFootballCoverImageId(): string {
+  // Zwraca id covera footballowego albo undefined (brak okładki = coverImageId NULL).
+  function getNextFootballCoverImageId(): string | undefined {
     const covers = COMMON_SEED_DATA.coverImages.football;
-    if (covers.length === 0) return defaultCoverId;
+    if (covers.length === 0) return undefined;
     const cover = covers[footballCoverIndex % covers.length];
     footballCoverIndex++;
     const fromDb = footballCoverImagesFromDb.find(
       (img: { filename: string }) => img.filename === cover.filename,
     );
-    return fromDb?.id ?? defaultCoverId;
+    return fromDb?.id;
   }
 
   // Create event with slots respecting discipline schema (roleKey)
@@ -417,10 +414,9 @@ async function main() {
       roleConfig,
     } as Prisma.EventUncheckedCreateInput;
 
+    // football dostaje cover z galerii; pozostałe dyscypliny bez okładki (coverImageId NULL → front pokaże default)
     if (disciplineSlug === 'football') {
       eventData.coverImageId = getNextFootballCoverImageId();
-    } else if (!eventData.coverImageId) {
-      eventData.coverImageId = defaultCoverId;
     }
 
     const event = await prisma.event.create({

@@ -203,7 +203,7 @@ export class EventCardComponent implements OnDestroy {
 
   readonly coverUrl = computed(() => {
     const cover = this.event().coverImage;
-    return cover ? buildCoverImageUrl(cover) : null;
+    return cover ? buildCoverImageUrl(cover) : DEFAULT_COVER_IMAGE_URL;
   });
 
   // Faktyczny src obrazka: resetuje się przy zmianie eventu, a przy błędzie

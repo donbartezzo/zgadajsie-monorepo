@@ -4,7 +4,10 @@ import { LayoutConfigService } from '../../../../shared/layouts/page-layout/layo
 import { DateBadgeComponent } from '../../../../shared/event/ui/date-badge/date-badge.component';
 import { EventBadgesComponent } from '../../../../shared/event/ui/event-badges/event-badges.component';
 import { Event as EventModel } from '../../../../shared/types';
-import { buildCoverImageUrl } from '../../../../shared/utils/cover-image.utils';
+import {
+  buildCoverImageUrl,
+  DEFAULT_COVER_IMAGE_URL,
+} from '../../../../shared/utils/cover-image.utils';
 import { formatMonthShort, getDayOfMonth, formatTime } from '@zgadajsie/shared';
 
 @Component({
@@ -49,8 +52,8 @@ export class EventHeroSlotsComponent {
   constructor() {
     effect(() => {
       const e = this.event();
-      const coverUrl = e?.coverImage ? buildCoverImageUrl(e.coverImage) : null;
-      this.layoutConfig.coverImageUrl.set(coverUrl || '');
+      const coverUrl = e?.coverImage ? buildCoverImageUrl(e.coverImage) : DEFAULT_COVER_IMAGE_URL;
+      this.layoutConfig.coverImageUrl.set(coverUrl);
       this.layoutConfig.title.set(e?.title || '');
     });
   }

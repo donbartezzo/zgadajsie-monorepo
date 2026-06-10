@@ -143,7 +143,7 @@ model Event {
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
   rules                 String?
-  coverImageId          String
+  coverImageId          String?
   lotteryExecutedAt     DateTime?
   roleConfig            Json?
   facilityReserved      Boolean              @default(true)
@@ -151,7 +151,7 @@ model Event {
   confirmToken                  String?              @unique
   welcomeMessageEnabled         Boolean              @default(true)
   city                  City                 @relation(fields: [citySlug], references: [slug])
-  coverImage            CoverImage           @relation(fields: [coverImageId], references: [id])
+  coverImage            CoverImage?          @relation(fields: [coverImageId], references: [id])
   discipline            EventDiscipline      @relation(fields: [disciplineSlug], references: [slug])
   facility              EventFacility        @relation(fields: [facilitySlug], references: [slug])
   level                 EventLevel           @relation(fields: [levelSlug], references: [slug])

@@ -64,9 +64,9 @@ describe('CreateEventDto', () => {
     expect(errors.some((e) => e.property === 'costPerPerson')).toBe(true);
   });
 
-  it('odrzuca brak coverImageId', async () => {
+  it('akceptuje brak coverImageId (opcjonalny - brak okładki = domyślny cover)', async () => {
     const errors = await validateDto(makeValid({ coverImageId: undefined }));
-    expect(errors.some((e) => e.property === 'coverImageId')).toBe(true);
+    expect(errors.some((e) => e.property === 'coverImageId')).toBe(false);
   });
 
   it('akceptuje brak opcjonalnych pól (description, etc.)', async () => {

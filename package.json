@@ -40,8 +40,12 @@
     "prisma:seed:prod": "cd backend && tsx prisma/seed.prod.ts",
     "db:reset:local": "pnpm prisma:migrate:reset && pnpm backend:db:seed",
     "db:reset:remote": "bash scripts/db-setup-remote.sh",
-    "tmp-deploy:r2-migration:dev": "bash scripts/deploy-r2-migration.sh dev",
-    "tmp-deploy:r2-migration:prod": "bash scripts/deploy-r2-migration.sh prod",
+    "tmp-deploy:cover-keys:dev": "bash scripts/migrate-cover-keys.sh dev",
+    "tmp-deploy:cover-keys:prod": "bash scripts/migrate-cover-keys.sh prod",
+    "tmp-deploy:cover-nullable:dev": "bash scripts/migrate-cover-nullable.sh dev",
+    "tmp-deploy:cover-nullable:prod": "bash scripts/migrate-cover-nullable.sh prod",
+    "tmp-deploy:reset-event-covers:dev": "bash scripts/reset-event-covers.sh dev",
+    "tmp-deploy:reset-event-covers:prod": "bash scripts/reset-event-covers.sh prod",
     "prepare": "husky"
   },
   "engines": {

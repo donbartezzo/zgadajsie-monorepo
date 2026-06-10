@@ -236,9 +236,11 @@ aws s3 sync s3://zgadajsie-media/ s3://zgadajsie-media-prod/ --endpoint-url $EP
 
 ### Migracje DB (prod + dev) — PRZED deployem
 
-- [ ] Default cover → lokalny: `UPDATE "CoverImage" SET "storageKey"=NULL WHERE "isDefault"=true;`
-- [ ] Istniejące rekordy publiczne (strip `public/`):
-      `UPDATE "CoverImage" SET "storageKey"=replace("storageKey",'cover-images/public/','cover-images/') WHERE "storageKey" LIKE 'cover-images/public/%';`
+Gotowy skrypt (tunel SSH + idempotentne UPDATE-y, wzorzec `deploy-r2-migration.sh`):
+`backend/scripts/normalize-cover-storage-keys.ts` + wrapper `scripts/migrate-cover-keys.sh`.
+
+- [ ] `pnpm tmp-deploy:cover-keys:dev` — default → NULL, strip `public/`
+- [ ] `pnpm tmp-deploy:cover-keys:prod` — j.w. (z potwierdzeniem „tak")
 
 ### Env / deploy
 
@@ -255,3 +257,23 @@ aws s3 sync s3://zgadajsie-media/ s3://zgadajsie-media-prod/ --endpoint-url $EP
 ### Domknięcie
 
 - [ ] (Opc.) rename/usuń stary bucket `zgadajsie-media` po potwierdzeniu, że `-prod` ma komplet
+
+---
+
+## Refactor: cover nullable (zaimplementowany)
+
+`Event.coverImageId` jest teraz **nullable** — „brak okładki" = `NULL`, front renderuje lokalny
+`assets/default-cover.webp`. Zniknął sentinel-row `CoverImage{isDefault}` oraz maszyneria
+(`seed-default-cover.ts`, `backfill-event-cover-images.ts`, `deploy-r2-migration.sh` — usunięte).
+
+Zmiany: migracja `20260610120000_event_cover_image_nullable` (DROP NOT NULL), DTO `coverImageId?`,
+warunkowy connect w `events.service`, seedy bez default-row, front (`event-card`, `event-hero-slots`)
+renderuje default przy `null`. `isDefault` zostaje jako pole vestigial (do usunięcia osobno).
+
+### Deploy (prod + dev) — kolejność
+
+- [ ] `pnpm tmp-deploy:cover-nullable:dev` (migrate deploy + odpięcie/usunięcie default-row)
+- [ ] deploy backend + frontend (dev)
+- [ ] weryfikacja: wydarzenia bez okładki pokazują domyślny cover; tworzenie eventu bez covera działa
+- [ ] `pnpm tmp-deploy:cover-nullable:prod` (z potwierdzeniem) + deploy prod
+- [ ] (opc.) czysty start: `pnpm tmp-deploy:reset-event-covers:{dev,prod}` (wszystkie eventy → NULL)

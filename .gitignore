@@ -65,3 +65,6 @@ libs/email/emails
 libs/email/components
 libs/email/layouts
 libs/email/types
+
+# Backupy mapowania event->cover (reset-event-covers)
+event-cover-backup-*.json
