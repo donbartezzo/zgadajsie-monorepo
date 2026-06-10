@@ -26,7 +26,7 @@ export const DEV_FEATURE_FLAGS: FeatureFlags = {
 };
 
 export const PRODUCTION_FEATURE_FLAGS: FeatureFlags = {
-  maintenance: false,
+  maintenance: true,
   enableGoogleLogin: false,
   enableFacebookLogin: false,
   enableEventCreation: false,
