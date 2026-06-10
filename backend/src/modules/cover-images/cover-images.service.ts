@@ -12,6 +12,7 @@ import sharp from 'sharp';
 import { R2StorageService } from '../media/r2-storage.service';
 import { validateImageBuffer } from '../../common/utils/image-upload.util';
 import { COVER_IMAGE_WIDTH, COVER_IMAGE_HEIGHT, USER_COVER_IMAGE_LIMIT } from '@zgadajsie/shared';
+import { featureFlags } from '../../common/config/feature-flags';
 import 'multer';
 
 @Injectable()
@@ -260,10 +261,10 @@ export class CoverImagesService {
     const storageKey = `cover-images/user/${userId}/${uuidv4()}.webp`;
     await this.r2Storage.upload(storageKey, buffer, 'image/webp');
 
+    // Zachowujemy oryginalną nazwę pliku - tylko storageKey się zmienia dla cache-busting
     return this.prisma.coverImage.update({
       where: { id },
       data: {
-        filename: file.originalname,
         storageKey,
       },
     });
@@ -314,13 +315,12 @@ export class CoverImagesService {
   }
 
   // Publiczna galeria jest współdzielona przez wszystkie środowiska, więc zapisy
-  // (upload/replace/delete) są dozwolone wyłącznie z produkcji. Egzekwowane też
-  // przez scope tokenów R2 (dev nie ma write do bucketa public) - tu dla czytelnego 403.
+  // (upload/replace/delete) są dozwolone wyłącznie gdy feature flag jest włączona.
+  // Egzekwowane też przez scope tokenów R2 (dev nie ma write do bucketa public) - tu dla czytelnego 403.
   private assertPublicCoversWritable() {
-    const writable = this.config.get<string>('PUBLIC_COVERS_WRITABLE') === 'true';
-    if (!writable) {
+    if (!featureFlags.enablePublicCoverManagement) {
       throw new ForbiddenException(
-        'Publiczna galeria coverów jest edytowalna wyłącznie z produkcji.',
+        'Publiczna galeria coverów jest edytowalna wyłącznie gdy feature flag jest włączona.',
       );
     }
   }

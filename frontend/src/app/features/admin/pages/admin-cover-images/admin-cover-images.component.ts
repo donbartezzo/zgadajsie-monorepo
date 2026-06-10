@@ -16,7 +16,6 @@ import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CoverImageService } from '../../../../core/services/cover-image.service';
 import { DictionaryService } from '../../../../core/services/dictionary.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { CoverImage } from '../../../../shared/types';
 import { buildCoverImageUrl } from '../../../../shared/utils/cover-image.utils';
 import { environment } from '../../../../../environments/environment';
@@ -165,24 +164,15 @@ import { DictionaryItem } from '@zgadajsie/shared';
                   </div>
                   @if (canManage) {
                     <div class="flex items-center gap-2">
-                      <label
-                        class="flex-1 relative cursor-pointer rounded-lg border border-dashed border-neutral-300 px-3 py-1.5 text-center text-xs text-neutral-500 hover:border-highlight hover:text-primary-500 transition-colors"
+                      <app-button
+                        appearance="soft"
+                        color="neutral"
+                        size="sm"
+                        (clicked)="onReplace(cover.id)"
                       >
-                        <input
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp,image/gif"
-                          class="hidden"
-                          (change)="onReplace(cover.id, $event)"
-                        />
-                        Zamień grafikę
-                      </label>
-                      <button
-                        type="button"
-                        class="rounded-lg border border-danger-200 px-3 py-1.5 text-xs text-danger-400 hover:bg-danger-500 transition-colors"
-                        (click)="onDelete(cover.id)"
-                      >
-                        Usuń
-                      </button>
+                        <app-icon name="refresh-cw" size="xs" />
+                        Podmień grafikę
+                      </app-button>
                     </div>
                   }
                 </div>
@@ -211,10 +201,9 @@ export class AdminCoverImagesComponent implements OnInit {
   private readonly coverImageService = inject(CoverImageService);
   private readonly dictService = inject(DictionaryService);
   private readonly snackbar = inject(SnackbarService);
-  private readonly confirmModal = inject(ConfirmModalService);
 
-  // Galeria publiczna jest wspólna dla wszystkich środowisk - zapis tylko z proda.
-  readonly canManage = environment.production;
+  // Galeria publiczna jest wspólna dla wszystkich środowisk - zapis tylko gdy feature flag włączona.
+  readonly canManage = environment.enablePublicCoverManagement;
 
   readonly disciplines = signal<DictionaryItem[]>([]);
   readonly covers = signal<CoverImage[]>([]);
@@ -228,6 +217,7 @@ export class AdminCoverImagesComponent implements OnInit {
   // Cropping related signals
   readonly showCropper = signal(false);
   readonly imageOriginalFile = signal<File | null>(null);
+  readonly replaceTargetId = signal<string | null>(null);
 
   private resetUploadFileInput(): void {
     if (this.uploadFileInput) {
@@ -269,15 +259,21 @@ export class AdminCoverImagesComponent implements OnInit {
   }
 
   onCropConfirmed(result: ImageCropperResult): void {
-    this.uploadFile = result.file;
-    this.showCropper.set(false);
-    this.imageOriginalFile.set(null);
+    const targetId = this.replaceTargetId();
+    if (targetId) {
+      this.executeReplace(targetId, result.file);
+    } else {
+      this.uploadFile = result.file;
+      this.showCropper.set(false);
+      this.imageOriginalFile.set(null);
+    }
   }
 
   onCropCancelled(): void {
     this.showCropper.set(false);
     this.imageOriginalFile.set(null);
     this.uploadFile = null;
+    this.replaceTargetId.set(null);
     this.resetUploadFileInput();
   }
 
@@ -301,46 +297,35 @@ export class AdminCoverImagesComponent implements OnInit {
     });
   }
 
-  onReplace(id: string, event: globalThis.Event): void {
-    const input = event.target as HTMLInputElement;
-    if (!input.files?.length) {
-      return;
-    }
-    const file = input.files[0];
-    this.coverImageService.replaceImage(id, file).subscribe({
-      next: () => {
-        this.snackbar.success('Grafika zastąpiona');
-        this.loadCovers();
-      },
-      error: (err) => {
-        this.snackbar.error(err?.error?.message || 'Nie udało się zastąpić grafiki');
-      },
-    });
+  onReplace(id: string): void {
+    this.replaceTargetId.set(id);
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg,image/png,image/webp,image/gif';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        this.imageOriginalFile.set(file);
+        this.showCropper.set(true);
+      } else {
+        this.replaceTargetId.set(null);
+      }
+    };
+    input.click();
   }
 
-  async onDelete(id: string): Promise<void> {
-    const confirmed = await this.confirmModal.confirm({
-      title: 'Usuń cover image',
-      message: 'Czy na pewno chcesz usunąć ten cover image?',
-      confirmLabel: 'Usuń',
-      cancelLabel: 'Anuluj',
-      color: 'danger',
-      showIcon: true,
-    });
+  private executeReplace(id: string, file: File): void {
+    this.showCropper.set(false);
+    this.replaceTargetId.set(null);
+    this.imageOriginalFile.set(null);
 
-    if (!confirmed) {
-      return;
-    }
-
-    this.coverImageService.remove(id).subscribe({
+    this.coverImageService.replaceImage(id, file).subscribe({
       next: () => {
-        this.snackbar.success('Cover image usunięty');
+        this.snackbar.success('Grafika podmieniona');
         this.loadCovers();
       },
       error: (err) => {
-        this.snackbar.error(
-          err?.error?.message || 'Nie udało się usunąć - sprawdź czy nie jest używany',
-        );
+        this.snackbar.error(err?.error?.message || 'Nie udało się podmienić grafiki');
       },
     });
   }

@@ -6,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { R2StorageService } from '../media/r2-storage.service';
 import { EventDiscipline } from '@prisma/client';
 import { validateImageBuffer as _validateImageBuffer } from '../../common/utils/image-upload.util';
+import { featureFlags } from '../../common/config/feature-flags';
 
 jest.mock('../../common/utils/image-upload.util', () => ({
   validateImageBuffer: jest.fn().mockResolvedValue(undefined),
@@ -50,7 +51,7 @@ describe('CoverImagesService', () => {
 
   // Domyślnie galeria publiczna zapisywalna (jak na prodzie); nadpisywane w testach 403.
   const mockConfig = {
-    get: jest.fn((key: string) => (key === 'PUBLIC_COVERS_WRITABLE' ? 'true' : undefined)),
+    get: jest.fn(() => undefined),
   };
 
   const mockDiscipline: EventDiscipline = {
@@ -140,24 +141,33 @@ describe('CoverImagesService', () => {
     });
   });
 
-  describe('bramka PUBLIC_COVERS_WRITABLE (zapis publicznych tylko z proda)', () => {
-    it('create rzuca 403 gdy flaga nie jest "true"', async () => {
-      mockConfig.get.mockReturnValueOnce(undefined);
+  describe('bramka enablePublicCoverManagement (zapis publicznych tylko gdy flaga włączona)', () => {
+    let originalEnablePublicCoverManagement: boolean;
 
+    beforeEach(() => {
+      originalEnablePublicCoverManagement = featureFlags.enablePublicCoverManagement;
+      (featureFlags as unknown as Record<string, unknown>).enablePublicCoverManagement = true;
+    });
+
+    afterEach(() => {
+      (featureFlags as unknown as Record<string, unknown>).enablePublicCoverManagement =
+        originalEnablePublicCoverManagement;
+    });
+
+    it('create rzuca 403 gdy flaga jest false', async () => {
+      (featureFlags as unknown as Record<string, unknown>).enablePublicCoverManagement = false;
       await expect(service.create('pilka-nozna', mockFile)).rejects.toThrow(ForbiddenException);
       expect(mockR2Storage.upload).not.toHaveBeenCalled();
     });
 
-    it('replace rzuca 403 gdy flaga nie jest "true"', async () => {
-      mockConfig.get.mockReturnValueOnce('false');
-
+    it('replace rzuca 403 gdy flaga jest false', async () => {
+      (featureFlags as unknown as Record<string, unknown>).enablePublicCoverManagement = false;
       await expect(service.replace('cover-1', mockFile)).rejects.toThrow(ForbiddenException);
       expect(mockR2Storage.upload).not.toHaveBeenCalled();
     });
 
-    it('remove rzuca 403 gdy flaga nie jest "true"', async () => {
-      mockConfig.get.mockReturnValueOnce(undefined);
-
+    it('remove rzuca 403 gdy flaga jest false', async () => {
+      (featureFlags as unknown as Record<string, unknown>).enablePublicCoverManagement = false;
       await expect(service.remove('cover-1')).rejects.toThrow(ForbiddenException);
       expect(mockR2Storage.delete).not.toHaveBeenCalled();
     });

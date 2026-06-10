@@ -15,6 +15,7 @@ export interface FeatureFlags {
   enableFakeUsers: boolean;
   enableEmails: boolean;
   enableTurnstileCaptcha: boolean;
+  enablePublicCoverManagement: boolean;
 }
 
 export const DEV_FEATURE_FLAGS: FeatureFlags = {
@@ -27,10 +28,11 @@ export const DEV_FEATURE_FLAGS: FeatureFlags = {
   enableFakeUsers: true,
   enableEmails: false,
   enableTurnstileCaptcha: true,
+  enablePublicCoverManagement: false,
 };
 
 export const PRODUCTION_FEATURE_FLAGS: FeatureFlags = {
-  maintenance: 'mnt-CCd2saPiyJ379Yuk',
+  maintenance: '', // '' -> maintenanace nieaktywny
   enableGoogleLogin: false,
   enableFacebookLogin: false,
   enableEventCreation: false,
@@ -39,4 +41,5 @@ export const PRODUCTION_FEATURE_FLAGS: FeatureFlags = {
   enableFakeUsers: true,
   enableEmails: true,
   enableTurnstileCaptcha: true,
+  enablePublicCoverManagement: true,
 };
