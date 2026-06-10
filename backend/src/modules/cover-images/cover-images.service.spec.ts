@@ -174,6 +174,18 @@ describe('CoverImagesService', () => {
   });
 
   describe('create (public upload)', () => {
+    let originalEnablePublicCoverManagement: boolean;
+
+    beforeEach(() => {
+      originalEnablePublicCoverManagement = featureFlags.enablePublicCoverManagement;
+      (featureFlags as unknown as Record<string, unknown>).enablePublicCoverManagement = true;
+    });
+
+    afterEach(() => {
+      (featureFlags as unknown as Record<string, unknown>).enablePublicCoverManagement =
+        originalEnablePublicCoverManagement;
+    });
+
     it('should upload public cover to R2 with correct prefix', async () => {
       mockPrisma.eventDiscipline.findUnique.mockResolvedValue(mockDiscipline);
       mockR2Storage.upload.mockResolvedValue('https://r2.dev/key.webp');
@@ -351,6 +363,18 @@ describe('CoverImagesService', () => {
   });
 
   describe('remove (public cover)', () => {
+    let originalEnablePublicCoverManagement: boolean;
+
+    beforeEach(() => {
+      originalEnablePublicCoverManagement = featureFlags.enablePublicCoverManagement;
+      (featureFlags as unknown as Record<string, unknown>).enablePublicCoverManagement = true;
+    });
+
+    afterEach(() => {
+      (featureFlags as unknown as Record<string, unknown>).enablePublicCoverManagement =
+        originalEnablePublicCoverManagement;
+    });
+
     it('should delete public cover and R2 file', async () => {
       mockPrisma.coverImage.findUnique.mockResolvedValue(mockPublicCover);
       mockPrisma.event.count.mockResolvedValue(0);
