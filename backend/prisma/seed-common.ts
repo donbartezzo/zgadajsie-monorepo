@@ -251,7 +251,9 @@ export async function createCoverImages(prisma: any): Promise<CoverImage[]> {
         filename: 'default-cover.webp',
         isDefault: true,
         name: 'Default cover image',
-        storageKey: 'cover-images/default/ca5b1024-9797-47ad-8871-6f9a46bdc551.webp',
+        // Brak storageKey - domyślny cover serwowany jest z lokalnego assetu
+        // frontendu (assets/default-cover.webp), nie z R2.
+        storageKey: null,
       },
     });
     created.push(record);

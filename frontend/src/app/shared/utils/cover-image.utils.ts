@@ -1,5 +1,12 @@
 import { environment } from '../../../environments/environment';
 
+/**
+ * Lokalny, bundlowany cover wyświetlany jako fallback, gdy właściwy obraz
+ * nie da się załadować (np. stary cover bez storageKey, którego pliku już nie ma).
+ * Plik jest częścią builda (`frontend/public/assets`), więc nigdy nie zwróci 404.
+ */
+export const DEFAULT_COVER_IMAGE_URL = 'assets/default-cover.webp';
+
 export interface CoverImage {
   id: string;
   storageKey?: string | null;
@@ -19,10 +26,8 @@ export function buildCoverImageUrl(cover: CoverImage): string {
     return `${baseUrl}/${cover.storageKey}${cacheBuster}`;
   }
 
-  // Fallback dla starych cover images bez storageKey (przed migracją do R2)
-  if (cover.disciplineSlug) {
-    return `/assets/covers/events/${cover.disciplineSlug}/${cover.filename}`;
-  }
-
-  return `/assets/covers/events/${cover.filename}`;
+  // Brak storageKey = cover domyślny lub niezmigrowany legacy.
+  // Zwracamy lokalny, bundlowany default - jedyne źródło prawdy dla domyślnej okładki
+  // (zamiast martwych ścieżek /assets/covers/events/... generujących 404).
+  return DEFAULT_COVER_IMAGE_URL;
 }

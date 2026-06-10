@@ -6,6 +6,7 @@ import {
   ElementRef,
   effect,
   inject,
+  linkedSignal,
   signal,
   ViewChild,
 } from '@angular/core';
@@ -26,6 +27,7 @@ import { NavigationService } from '../../../core/services/navigation.service';
 import { NotificationAlertComponent } from './notification/notification-alert/notification-alert.component';
 import { NotificationOverlayComponent } from './notification/notification-overlay/notification-overlay.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
+import { DEFAULT_COVER_IMAGE_URL } from '../../utils/cover-image.utils';
 
 export interface RouteLayoutData {
   showHeader?: boolean;
@@ -135,12 +137,6 @@ export class PageLayoutComponent {
         }, 50);
       }
     });
-
-    // ── Reset cover error state when URL changes ──
-    effect(() => {
-      this.coverUrl(); // track dependency
-      this.coverImageError.set(false);
-    });
   }
 
   readonly showFooter = computed(() => this.routeData().showFooter === true);
@@ -175,6 +171,10 @@ export class PageLayoutComponent {
 
   // ── Derived from LayoutConfigService ──
   readonly coverUrl = computed(() => this.layoutConfig.coverImageUrl());
+
+  // Faktyczny src hero-coveru: resetuje się przy zmianie URL, a przy błędzie
+  // ładowania podmienia się na bundlowany default zamiast pokazywać gradient.
+  readonly coverSrc = linkedSignal(() => this.coverUrl());
   readonly heroHeight = computed(() => `var(--hero-${this.layoutConfig.heroVariant()}-h)`);
   readonly hasTitle = computed(() => !!this.layoutConfig.title());
   readonly hasSubtitle = computed(
@@ -265,7 +265,6 @@ export class PageLayoutComponent {
 
   // ── Internal state ──
   readonly heroHidden = signal(false);
-  readonly coverImageError = signal(false);
   readonly stickyContainer = signal<HTMLElement | null>(null);
 
   private observer: IntersectionObserver | null = null;
@@ -312,7 +311,8 @@ export class PageLayoutComponent {
   }
 
   onCoverImageError(): void {
-    this.coverImageError.set(true);
+    if (this.coverSrc() === DEFAULT_COVER_IMAGE_URL) return;
+    this.coverSrc.set(DEFAULT_COVER_IMAGE_URL);
   }
 
   onNotifBellClick(): void {

@@ -115,9 +115,9 @@
    HERO VARIANT: extended (cover image + gradient + notif bell)
    ═══════════════════════════════════════════════════ -->
 <ng-template #extendedHero>
-  @if (coverUrl() && !coverImageError()) {
+  @if (coverSrc(); as _coverSrc) {
     <img
-      [src]="coverUrl()"
+      [src]="_coverSrc"
       alt=""
       class="absolute inset-0 h-full w-full object-cover"
       fetchpriority="high"

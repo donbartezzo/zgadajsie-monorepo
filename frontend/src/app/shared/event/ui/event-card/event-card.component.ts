@@ -4,6 +4,7 @@ import {
   computed,
   effect,
   inject,
+  linkedSignal,
   NgZone,
   input,
   OnDestroy,
@@ -17,7 +18,7 @@ import { EventStatusBadgeComponent } from '../event-status-badge/event-status-ba
 import { EventBadgesComponent } from '../event-badges/event-badges.component';
 import { EventCapacityProgressComponent } from '../event-capacity-progress/event-capacity-progress.component';
 import { EventBase } from '../../../types';
-import { buildCoverImageUrl } from '../../../utils/cover-image.utils';
+import { buildCoverImageUrl, DEFAULT_COVER_IMAGE_URL } from '../../../utils/cover-image.utils';
 import {
   getEventCountdown,
   formatMonthShort,
@@ -47,7 +48,7 @@ import { IconComponent } from '../../../ui/icon/icon.component';
   ],
   template: `
     @let _event = event();
-    @let _coverUrl = coverUrl();
+    @let _coverSrc = coverSrc();
 
     <button
       type="button"
@@ -57,15 +58,16 @@ import { IconComponent } from '../../../ui/icon/icon.component';
       <div class="relative">
         <div [class]="isDimmed() ? 'opacity-85 grayscale' : ''">
           <div class="relative h-44 overflow-hidden">
-            @if (_coverUrl) {
+            @if (_coverSrc) {
               <img
-                [src]="_coverUrl"
+                [src]="_coverSrc"
                 [alt]="_event.title"
                 class="absolute inset-0 h-full w-full object-cover"
                 loading="lazy"
                 decoding="async"
                 width="700"
                 height="250"
+                (error)="onCoverImageError()"
               />
             } @else {
               <div class="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-500"></div>
@@ -204,6 +206,10 @@ export class EventCardComponent implements OnDestroy {
     return cover ? buildCoverImageUrl(cover) : null;
   });
 
+  // Faktyczny src obrazka: resetuje się przy zmianie eventu, a przy błędzie
+  // ładowania (np. 404 starego covera) podmienia się na bundlowany default.
+  readonly coverSrc = linkedSignal(() => this.coverUrl());
+
   readonly countdown = computed(() =>
     getEventCountdown(this.event().startsAt, this.event().endsAt),
   );
@@ -273,6 +279,11 @@ export class EventCardComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.stopCountdown();
+  }
+
+  onCoverImageError(): void {
+    if (this.coverSrc() === DEFAULT_COVER_IMAGE_URL) return;
+    this.coverSrc.set(DEFAULT_COVER_IMAGE_URL);
   }
 
   private startCountdown(): void {
