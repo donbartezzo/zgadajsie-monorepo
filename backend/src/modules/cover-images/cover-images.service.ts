@@ -1,4 +1,10 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { buildEventListingWhere } from '../../common/utils/event-listing.util';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,11 +19,18 @@ export class CoverImagesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly r2Storage: R2StorageService,
+    private readonly config: ConfigService,
   ) {}
 
   async findAll(disciplineSlug?: string) {
     return this.prisma.coverImage.findMany({
-      where: disciplineSlug ? { discipline: { slug: disciplineSlug } } : undefined,
+      where: {
+        // Tylko publiczna galeria zarządzana przez admina - nigdy prywatne
+        // covery userów (ownerUserId != null) ani domyślny cover (isDefault).
+        ownerUserId: null,
+        isDefault: false,
+        ...(disciplineSlug ? { discipline: { slug: disciplineSlug } } : {}),
+      },
       orderBy: { createdAt: 'desc' },
       include: { discipline: true },
     });
@@ -108,11 +121,12 @@ export class CoverImagesService {
   }
 
   async create(disciplineSlug: string, file: Express.Multer.File) {
+    this.assertPublicCoversWritable();
     await this.validateDisciplineExistsBySlug(disciplineSlug);
 
     const buffer = await this.processImage(file.buffer);
-    const storageKey = `cover-images/public/${disciplineSlug}/${uuidv4()}.webp`;
-    await this.r2Storage.upload(storageKey, buffer, 'image/webp');
+    const storageKey = `cover-images/${disciplineSlug}/${uuidv4()}.webp`;
+    await this.r2Storage.upload(storageKey, buffer, 'image/webp', 'public');
 
     return this.prisma.coverImage.create({
       data: {
@@ -125,18 +139,19 @@ export class CoverImagesService {
   }
 
   async replace(id: string, file: Express.Multer.File) {
+    this.assertPublicCoversWritable();
     const existing = await this.findOne(id);
 
     const buffer = await this.processImage(file.buffer);
 
     // delete old file from R2
     if (existing.storageKey) {
-      await this.r2Storage.delete(existing.storageKey);
+      await this.r2Storage.delete(existing.storageKey, 'public');
     }
 
     const disciplineSlug = this.getDisciplineSlug(existing);
-    const storageKey = `cover-images/public/${disciplineSlug}/${uuidv4()}.webp`;
-    await this.r2Storage.upload(storageKey, buffer, 'image/webp');
+    const storageKey = `cover-images/${disciplineSlug}/${uuidv4()}.webp`;
+    await this.r2Storage.upload(storageKey, buffer, 'image/webp', 'public');
 
     return this.prisma.coverImage.update({
       where: { id },
@@ -160,6 +175,7 @@ export class CoverImagesService {
   }
 
   async remove(id: string) {
+    this.assertPublicCoversWritable();
     const existing = await this.findOne(id);
 
     const eventsCount = await this.prisma.event.count({
@@ -174,7 +190,7 @@ export class CoverImagesService {
 
     // delete from R2
     if (existing.storageKey) {
-      await this.r2Storage.delete(existing.storageKey);
+      await this.r2Storage.delete(existing.storageKey, 'public');
     }
 
     return this.prisma.coverImage.delete({ where: { id } });
@@ -295,6 +311,18 @@ export class CoverImagesService {
     }
 
     return this.prisma.coverImage.delete({ where: { id } });
+  }
+
+  // Publiczna galeria jest współdzielona przez wszystkie środowiska, więc zapisy
+  // (upload/replace/delete) są dozwolone wyłącznie z produkcji. Egzekwowane też
+  // przez scope tokenów R2 (dev nie ma write do bucketa public) - tu dla czytelnego 403.
+  private assertPublicCoversWritable() {
+    const writable = this.config.get<string>('PUBLIC_COVERS_WRITABLE') === 'true';
+    if (!writable) {
+      throw new ForbiddenException(
+        'Publiczna galeria coverów jest edytowalna wyłącznie z produkcji.',
+      );
+    }
   }
 
   private async processImage(inputBuffer: Buffer): Promise<Buffer> {

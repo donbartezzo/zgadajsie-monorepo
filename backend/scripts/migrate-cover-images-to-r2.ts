@@ -115,7 +115,7 @@ async function main() {
       // Wczytaj plik
       const fileBuffer = await fs.readFile(filePath);
       const newUuid = uuidv4();
-      const storageKey = `cover-images/public/${disciplineSlug}/${newUuid}.webp`;
+      const storageKey = `cover-images/${disciplineSlug}/${newUuid}.webp`;
 
       // Upload do R2
       await s3.send(

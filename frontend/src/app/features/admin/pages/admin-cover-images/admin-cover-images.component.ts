@@ -19,6 +19,7 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { CoverImage } from '../../../../shared/types';
 import { buildCoverImageUrl } from '../../../../shared/utils/cover-image.utils';
+import { environment } from '../../../../../environments/environment';
 import { TranslocoPipe } from '@jsverse/transloco';
 import {
   ImageCropperModalComponent,
@@ -47,52 +48,63 @@ import { DictionaryItem } from '@zgadajsie/shared';
         <h1 class="text-xl font-bold text-neutral-900">Galeria cover images</h1>
       </div>
 
-      <!-- Upload new -->
-      <app-card>
-        <div class="space-y-3">
-          <h3 class="text-sm font-semibold text-neutral-900">Dodaj nowy cover</h3>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label for="uploadDiscipline" class="block text-xs font-medium text-neutral-600 mb-1"
-                >Dyscyplina</label
-              >
-              <select
-                id="uploadDiscipline"
-                [(ngModel)]="uploadDisciplineSlug"
-                class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
-              >
-                <option value="">Wybierz...</option>
-                @for (d of disciplines(); track d.slug) {
-                  <option [value]="d.slug">{{ 'dict.discipline.' + d.slug | transloco }}</option>
-                }
-              </select>
-            </div>
-            <div>
-              <label for="uploadFile" class="block text-xs font-medium text-neutral-600 mb-1"
-                >Plik graficzny</label
-              >
-              <input
-                #uploadFileInput
-                id="uploadFile"
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                (change)="onFileChange($event)"
-                class="w-full text-sm text-neutral-600 file:mr-2 file:rounded-lg file:border-0 file:bg-primary-500 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-primary-600"
-              />
-            </div>
-          </div>
-          <app-button
-            appearance="soft"
-            color="primary"
-            [disabled]="!uploadDisciplineSlug || !uploadFile || uploading()"
-            [loading]="uploading()"
-            (clicked)="onUpload()"
-          >
-            <app-icon name="upload" size="sm" />
-            Dodaj cover
-          </app-button>
+      @if (!canManage) {
+        <div class="mb-4 rounded-xl bg-info-50 px-3 py-2 text-xs text-info-600">
+          Galeria publiczna jest wspólna dla wszystkich środowisk i edytowalna wyłącznie z
+          produkcji. Tutaj widok jest tylko do odczytu.
         </div>
-      </app-card>
+      }
+
+      <!-- Upload new -->
+      @if (canManage) {
+        <app-card>
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold text-neutral-900">Dodaj nowy cover</h3>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label
+                  for="uploadDiscipline"
+                  class="block text-xs font-medium text-neutral-600 mb-1"
+                  >Dyscyplina</label
+                >
+                <select
+                  id="uploadDiscipline"
+                  [(ngModel)]="uploadDisciplineSlug"
+                  class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
+                >
+                  <option value="">Wybierz...</option>
+                  @for (d of disciplines(); track d.slug) {
+                    <option [value]="d.slug">{{ 'dict.discipline.' + d.slug | transloco }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label for="uploadFile" class="block text-xs font-medium text-neutral-600 mb-1"
+                  >Plik graficzny</label
+                >
+                <input
+                  #uploadFileInput
+                  id="uploadFile"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  (change)="onFileChange($event)"
+                  class="w-full text-sm text-neutral-600 file:mr-2 file:rounded-lg file:border-0 file:bg-primary-500 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-primary-600"
+                />
+              </div>
+            </div>
+            <app-button
+              appearance="soft"
+              color="primary"
+              [disabled]="!uploadDisciplineSlug || !uploadFile || uploading()"
+              [loading]="uploading()"
+              (clicked)="onUpload()"
+            >
+              <app-icon name="upload" size="sm" />
+              Dodaj cover
+            </app-button>
+          </div>
+        </app-card>
+      }
 
       <!-- Filter -->
       <div class="mt-4 mb-3">
@@ -151,26 +163,28 @@ import { DictionaryItem } from '@zgadajsie/shared';
                       cover.createdAt | date: 'd MMM yyyy'
                     }}</span>
                   </div>
-                  <div class="flex items-center gap-2">
-                    <label
-                      class="flex-1 relative cursor-pointer rounded-lg border border-dashed border-neutral-300 px-3 py-1.5 text-center text-xs text-neutral-500 hover:border-highlight hover:text-primary-500 transition-colors"
-                    >
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp,image/gif"
-                        class="hidden"
-                        (change)="onReplace(cover.id, $event)"
-                      />
-                      Zamień grafikę
-                    </label>
-                    <button
-                      type="button"
-                      class="rounded-lg border border-danger-200 px-3 py-1.5 text-xs text-danger-400 hover:bg-danger-500 transition-colors"
-                      (click)="onDelete(cover.id)"
-                    >
-                      Usuń
-                    </button>
-                  </div>
+                  @if (canManage) {
+                    <div class="flex items-center gap-2">
+                      <label
+                        class="flex-1 relative cursor-pointer rounded-lg border border-dashed border-neutral-300 px-3 py-1.5 text-center text-xs text-neutral-500 hover:border-highlight hover:text-primary-500 transition-colors"
+                      >
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          class="hidden"
+                          (change)="onReplace(cover.id, $event)"
+                        />
+                        Zamień grafikę
+                      </label>
+                      <button
+                        type="button"
+                        class="rounded-lg border border-danger-200 px-3 py-1.5 text-xs text-danger-400 hover:bg-danger-500 transition-colors"
+                        (click)="onDelete(cover.id)"
+                      >
+                        Usuń
+                      </button>
+                    </div>
+                  }
                 </div>
               </div>
             </app-card>
@@ -198,6 +212,9 @@ export class AdminCoverImagesComponent implements OnInit {
   private readonly dictService = inject(DictionaryService);
   private readonly snackbar = inject(SnackbarService);
   private readonly confirmModal = inject(ConfirmModalService);
+
+  // Galeria publiczna jest wspólna dla wszystkich środowisk - zapis tylko z proda.
+  readonly canManage = environment.production;
 
   readonly disciplines = signal<DictionaryItem[]>([]);
   readonly covers = signal<CoverImage[]>([]);

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { CoverImagesService } from './cover-images.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { R2StorageService } from '../media/r2-storage.service';
@@ -47,6 +48,11 @@ describe('CoverImagesService', () => {
     delete: jest.fn(),
   };
 
+  // Domyślnie galeria publiczna zapisywalna (jak na prodzie); nadpisywane w testach 403.
+  const mockConfig = {
+    get: jest.fn((key: string) => (key === 'PUBLIC_COVERS_WRITABLE' ? 'true' : undefined)),
+  };
+
   const mockDiscipline: EventDiscipline = {
     slug: 'pilka-nozna',
     schema: {},
@@ -63,7 +69,7 @@ describe('CoverImagesService', () => {
     id: 'cover-1',
     disciplineSlug: 'pilka-nozna',
     filename: 'test.webp',
-    storageKey: 'cover-images/public/pilka-nozna/uuid.webp',
+    storageKey: 'cover-images/pilka-nozna/uuid.webp',
     ownerUserId: null,
     name: null,
     isDefault: false,
@@ -89,6 +95,7 @@ describe('CoverImagesService', () => {
         CoverImagesService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: R2StorageService, useValue: mockR2Storage },
+        { provide: ConfigService, useValue: mockConfig },
       ],
     }).compile();
 
@@ -103,6 +110,59 @@ describe('CoverImagesService', () => {
     expect(service).toBeDefined();
   });
 
+  describe('findAll (public gallery)', () => {
+    it('zwraca tylko publiczne covery - bez prywatnych userów i bez domyślnego', async () => {
+      mockPrisma.coverImage.findMany.mockResolvedValue([mockPublicCover]);
+
+      await service.findAll();
+
+      expect(mockPrisma.coverImage.findMany).toHaveBeenCalledWith({
+        where: { ownerUserId: null, isDefault: false },
+        orderBy: { createdAt: 'desc' },
+        include: { discipline: true },
+      });
+    });
+
+    it('dokłada filtr dyscypliny zachowując ograniczenie do publicznych', async () => {
+      mockPrisma.coverImage.findMany.mockResolvedValue([mockPublicCover]);
+
+      await service.findAll('pilka-nozna');
+
+      expect(mockPrisma.coverImage.findMany).toHaveBeenCalledWith({
+        where: {
+          ownerUserId: null,
+          isDefault: false,
+          discipline: { slug: 'pilka-nozna' },
+        },
+        orderBy: { createdAt: 'desc' },
+        include: { discipline: true },
+      });
+    });
+  });
+
+  describe('bramka PUBLIC_COVERS_WRITABLE (zapis publicznych tylko z proda)', () => {
+    it('create rzuca 403 gdy flaga nie jest "true"', async () => {
+      mockConfig.get.mockReturnValueOnce(undefined);
+
+      await expect(service.create('pilka-nozna', mockFile)).rejects.toThrow(ForbiddenException);
+      expect(mockR2Storage.upload).not.toHaveBeenCalled();
+    });
+
+    it('replace rzuca 403 gdy flaga nie jest "true"', async () => {
+      mockConfig.get.mockReturnValueOnce('false');
+
+      await expect(service.replace('cover-1', mockFile)).rejects.toThrow(ForbiddenException);
+      expect(mockR2Storage.upload).not.toHaveBeenCalled();
+    });
+
+    it('remove rzuca 403 gdy flaga nie jest "true"', async () => {
+      mockConfig.get.mockReturnValueOnce(undefined);
+
+      await expect(service.remove('cover-1')).rejects.toThrow(ForbiddenException);
+      expect(mockR2Storage.delete).not.toHaveBeenCalled();
+    });
+  });
+
   describe('create (public upload)', () => {
     it('should upload public cover to R2 with correct prefix', async () => {
       mockPrisma.eventDiscipline.findUnique.mockResolvedValue(mockDiscipline);
@@ -115,13 +175,14 @@ describe('CoverImagesService', () => {
         where: { slug: 'pilka-nozna' },
       });
       expect(mockR2Storage.upload).toHaveBeenCalledWith(
-        expect.stringMatching(/^cover-images\/public\/pilka-nozna\/.*\.webp$/),
+        expect.stringMatching(/^cover-images\/pilka-nozna\/.*\.webp$/),
         expect.any(Buffer),
         'image/webp',
+        'public',
       );
       expect(mockPrisma.coverImage.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          storageKey: expect.stringMatching(/^cover-images\/public\/pilka-nozna\/.*\.webp$/),
+          storageKey: expect.stringMatching(/^cover-images\/pilka-nozna\/.*\.webp$/),
           discipline: { connect: { slug: 'pilka-nozna' } },
         }),
         include: { discipline: true },
@@ -288,7 +349,7 @@ describe('CoverImagesService', () => {
 
       const result = await service.remove('cover-1');
 
-      expect(mockR2Storage.delete).toHaveBeenCalledWith(mockPublicCover.storageKey);
+      expect(mockR2Storage.delete).toHaveBeenCalledWith(mockPublicCover.storageKey, 'public');
       expect(mockPrisma.coverImage.delete).toHaveBeenCalledWith({
         where: { id: 'cover-1' },
       });

@@ -7,6 +7,13 @@ import { environment } from '../../../environments/environment';
  */
 export const DEFAULT_COVER_IMAGE_URL = 'assets/default-cover.webp';
 
+/**
+ * Prefiks storageKey prywatnych coverów userów - żyją w buckecie per-env (mediaUrl).
+ * Pozostałe covery (publiczna galeria dyscyplin zarządzana przez admina) żyją we
+ * wspólnym buckecie publicznym (publicMediaUrl), wspólnym dla wszystkich środowisk.
+ */
+export const USER_STORAGE_PREFIX = 'cover-images/user/';
+
 export interface CoverImage {
   id: string;
   storageKey?: string | null;
@@ -21,7 +28,8 @@ export interface CoverImage {
 
 export function buildCoverImageUrl(cover: CoverImage): string {
   if (cover.storageKey) {
-    const baseUrl = environment.mediaUrl || '';
+    const isPublic = !cover.storageKey.startsWith(USER_STORAGE_PREFIX);
+    const baseUrl = (isPublic ? environment.publicMediaUrl : environment.mediaUrl) || '';
     const cacheBuster = cover.updatedAt ? `?v=${new Date(cover.updatedAt).getTime()}` : '';
     return `${baseUrl}/${cover.storageKey}${cacheBuster}`;
   }
