@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { App } from './app';
+import { environment } from '../environments/environment';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -53,5 +54,40 @@ describe('App', () => {
     expect(compiled.querySelector('app-bottom-overlays')).toBeTruthy();
     expect(compiled.querySelector('app-confirm-modal')).toBeTruthy();
     expect(compiled.querySelector('app-bottom-nav')).toBeTruthy();
+  });
+
+  describe('maintenance getter', () => {
+    const ORIGINAL_MAINTENANCE = environment.maintenance;
+
+    afterEach(() => {
+      environment.maintenance = ORIGINAL_MAINTENANCE;
+      localStorage.removeItem('maintenanceBypass');
+    });
+
+    it('is disabled when password is empty', () => {
+      environment.maintenance = '';
+      const fixture = TestBed.createComponent(App);
+      expect(fixture.componentInstance.maintenance).toBe(false);
+    });
+
+    it('is enabled when password is set and no bypass stored', () => {
+      environment.maintenance = 'secret-password';
+      const fixture = TestBed.createComponent(App);
+      expect(fixture.componentInstance.maintenance).toBe(true);
+    });
+
+    it('is bypassed when localStorage value matches the password', () => {
+      environment.maintenance = 'secret-password';
+      localStorage.setItem('maintenanceBypass', 'secret-password');
+      const fixture = TestBed.createComponent(App);
+      expect(fixture.componentInstance.maintenance).toBe(false);
+    });
+
+    it('stays enabled when localStorage value does not match the password', () => {
+      environment.maintenance = 'secret-password';
+      localStorage.setItem('maintenanceBypass', 'wrong-password');
+      const fixture = TestBed.createComponent(App);
+      expect(fixture.componentInstance.maintenance).toBe(true);
+    });
   });
 });

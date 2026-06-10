@@ -38,7 +38,23 @@ export class App {
   // ClarityService uses effect() in constructor to automatically load Microsoft Clarity script when consent is given
   private readonly _clarity = inject(ClarityService);
 
+  private readonly MAINTENANCE_BYPASS_KEY = 'maintenanceBypass';
+
+  // environment.maintenance: pusty string => wyłączony; niepusty => włączony + "hasło" furtki.
+  // Admin odsłania UI ustawiając w konsoli: localStorage.setItem('maintenanceBypass', '<hasło>').
   get maintenance(): boolean {
-    return environment.maintenance;
+    const password = environment.maintenance;
+    if (!password) {
+      return false;
+    }
+    return this.readBypass() !== password;
+  }
+
+  private readBypass(): string | null {
+    try {
+      return localStorage.getItem(this.MAINTENANCE_BYPASS_KEY);
+    } catch {
+      return null;
+    }
   }
 }

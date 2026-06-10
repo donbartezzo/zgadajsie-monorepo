@@ -2,7 +2,11 @@
 // Zmiana wymaga nowego deployu.
 
 export interface FeatureFlags {
-  maintenance: boolean;
+  // Pusty string => maintenance WYŁĄCZONY.
+  // Niepusty => maintenance WŁĄCZONY, a wartość to "hasło" furtki dla admina:
+  // localStorage.setItem('maintenanceBypass', '<ta wartość>') odsłania UI mimo maintenance.
+  // UWAGA: wartość trafia do bundla fronta, więc jest jawna - to miękka bramka, nie sekret.
+  maintenance: string;
   enableGoogleLogin: boolean;
   enableFacebookLogin: boolean;
   enableEventCreation: boolean;
@@ -14,7 +18,7 @@ export interface FeatureFlags {
 }
 
 export const DEV_FEATURE_FLAGS: FeatureFlags = {
-  maintenance: false,
+  maintenance: '',
   enableGoogleLogin: false,
   enableFacebookLogin: false,
   enableEventCreation: true,
@@ -26,7 +30,7 @@ export const DEV_FEATURE_FLAGS: FeatureFlags = {
 };
 
 export const PRODUCTION_FEATURE_FLAGS: FeatureFlags = {
-  maintenance: true,
+  maintenance: 'mnt-CCd2saPiyJ379Yuk',
   enableGoogleLogin: false,
   enableFacebookLogin: false,
   enableEventCreation: false,

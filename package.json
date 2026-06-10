@@ -22,7 +22,7 @@
     "frontend:serve": "nx serve frontend",
     "frontend:build": "cd frontend && npx -y @angular/cli@21.2.5 build",
     "frontend:build:dev-server": "nx build frontend --configuration=dev-server",
-    "frontend:test": "cd frontend && npx -y @angular/cli@21.2.5 test",
+    "frontend:test": "nx test frontend",
     "backend:serve": "dotenv -e config/env/.env.local -- nx serve backend",
     "backend:build": "nx build backend",
     "backend:test": "nx test backend",
