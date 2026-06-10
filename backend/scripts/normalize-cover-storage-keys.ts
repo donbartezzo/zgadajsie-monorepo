@@ -30,6 +30,17 @@ async function main() {
   `;
   console.log(`✅ Publiczne covery: znormalizowano klucz w ${publicNormalized} rekord(ach).`);
 
+  // storageKey publicznych coverów dyscyplin = cover-images/<discipline>/<filename>
+  // (pliki w buckecie public są nazwane jak filename; wcześniej storageKey miał inny UUID).
+  const aligned = await prisma.$executeRaw`
+    UPDATE "CoverImage"
+    SET "storageKey" = 'cover-images/' || "disciplineSlug" || '/' || "filename"
+    WHERE "ownerUserId" IS NULL
+      AND "disciplineSlug" IS NOT NULL
+      AND "storageKey" IS DISTINCT FROM ('cover-images/' || "disciplineSlug" || '/' || "filename")
+  `;
+  console.log(`✅ Publiczne covery: dociągnięto storageKey do filename w ${aligned} rekord(ach).`);
+
   console.log('\n✨ Gotowe (operacja idempotentna - ponowne uruchomienie zmieni 0 rekordów).');
 
   await prisma.$disconnect();

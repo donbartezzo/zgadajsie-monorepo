@@ -70,56 +70,23 @@ export const COMMON_SEED_DATA = {
     { slug: 'professional', weight: 6 },
   ] as const,
 
-  // Cover images per dyscyplina — publiczna galeria, storageKey we wspólnym buckecie
-  // publicznym (zgadajsie-media-public), wspólnym dla wszystkich środowisk.
+  // Cover images per dyscyplina — publiczna galeria we wspólnym buckecie publicznym
+  // (zgadajsie-media-public). storageKey wyprowadzany z filename: cover-images/<discipline>/<filename>.
   coverImages: {
     football: [
-      {
-        filename: '2035b9af-9e1d-479b-92b1-94bad6c9a0bb.webp',
-        storageKey: 'cover-images/football/96633c9e-4ead-4c86-940b-45913d9339b2.webp',
-      },
-      {
-        filename: '2e661925-1a14-4608-9484-5ed1bc7e50ae.webp',
-        storageKey: 'cover-images/football/09acdb21-58f7-4a81-a02f-903beefc219b.webp',
-      },
-      {
-        filename: '5b953bd3-313f-4a72-ba5d-3fd3862b57e2.webp',
-        storageKey: 'cover-images/football/b649aded-ab7d-4181-87f1-0afda160bdee.webp',
-      },
-      {
-        filename: '6c61dd0d-89ab-4b9a-b628-585fe1ede620.webp',
-        storageKey: 'cover-images/football/5b07f816-ead7-4868-8a46-5baee417f442.webp',
-      },
-      {
-        filename: 'ac570d55-76d2-442d-9aa0-156c40932822.webp',
-        storageKey: 'cover-images/football/3a274ec3-cc78-40a9-8ec7-5fa70815524f.webp',
-      },
-      {
-        filename: 'c928d017-d6e2-42d6-be7c-d93fc11a5ca6.webp',
-        storageKey: 'cover-images/football/2058295d-7130-4ace-96e3-e56fd0a04c18.webp',
-      },
-      {
-        filename: 'f6b092ca-bac9-497e-a217-d1cb3ccd5444.webp',
-        storageKey: 'cover-images/football/1bc20aba-b517-4826-bc0a-069488e26f2e.webp',
-      },
-      {
-        filename: '34fb9244-e63d-438e-9079-6aae8889b4b6.webp',
-        storageKey: 'cover-images/football/d0fbdb86-94da-4c87-925c-059495e99768.webp',
-      },
-      {
-        filename: '6fa08f5b-e1c9-49c0-b497-a21cd300e75d.webp',
-        storageKey: 'cover-images/football/f5fe7cbb-f8a3-4672-bcc2-8993fe47c68a.webp',
-      },
-      {
-        filename: '826ec623-be94-4bd6-b73e-59fafa197dfc.webp',
-        storageKey: 'cover-images/football/4e9991fe-38e0-490d-acd1-6aff5848683b.webp',
-      },
-      {
-        filename: '94072c0d-5c62-4488-9ab1-5a10187f7f62.webp',
-        storageKey: 'cover-images/football/86f9cf28-e852-4802-8c29-a87d8990a6a2.webp',
-      },
+      { filename: '2035b9af-9e1d-479b-92b1-94bad6c9a0bb.webp' },
+      { filename: '2e661925-1a14-4608-9484-5ed1bc7e50ae.webp' },
+      { filename: '5b953bd3-313f-4a72-ba5d-3fd3862b57e2.webp' },
+      { filename: '6c61dd0d-89ab-4b9a-b628-585fe1ede620.webp' },
+      { filename: 'ac570d55-76d2-442d-9aa0-156c40932822.webp' },
+      { filename: 'c928d017-d6e2-42d6-be7c-d93fc11a5ca6.webp' },
+      { filename: 'f6b092ca-bac9-497e-a217-d1cb3ccd5444.webp' },
+      { filename: '34fb9244-e63d-438e-9079-6aae8889b4b6.webp' },
+      { filename: '6fa08f5b-e1c9-49c0-b497-a21cd300e75d.webp' },
+      { filename: '826ec623-be94-4bd6-b73e-59fafa197dfc.webp' },
+      { filename: '94072c0d-5c62-4488-9ab1-5a10187f7f62.webp' },
     ],
-  } as Record<string, Array<{ filename: string; storageKey: string }>>,
+  } as Record<string, Array<{ filename: string }>>,
 
   // Fake users - imiona polskie
   fakeUsers: {
@@ -258,7 +225,11 @@ export async function createCoverImages(prisma: any): Promise<CoverImage[]> {
     for (const cover of covers) {
       if (!existingFilenames.has(cover.filename)) {
         const record = await prisma.coverImage.create({
-          data: { filename: cover.filename, disciplineSlug, storageKey: cover.storageKey },
+          data: {
+            filename: cover.filename,
+            disciplineSlug,
+            storageKey: `cover-images/${disciplineSlug}/${cover.filename}`,
+          },
         });
         created.push(record);
       }
