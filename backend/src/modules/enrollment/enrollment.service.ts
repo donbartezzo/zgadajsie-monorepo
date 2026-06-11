@@ -219,7 +219,9 @@ export class EnrollmentService {
         const [organizer, event] = await Promise.all([
           this.prisma.user.findUnique({
             where: { id: organizerId },
-            select: { welcomeMessage: true, welcomeMessageEnabled: true },
+            select: {
+              realDetails: { select: { welcomeMessage: true, welcomeMessageEnabled: true } },
+            },
           }),
           this.prisma.event.findUnique({
             where: { id: eventId },
@@ -231,11 +233,11 @@ export class EnrollmentService {
           return;
         }
 
-        if (!organizer.welcomeMessageEnabled || !event.welcomeMessageEnabled) {
+        if (!organizer.realDetails?.welcomeMessageEnabled || !event.welcomeMessageEnabled) {
           return;
         }
 
-        const welcomeBody = organizer.welcomeMessage ?? DEFAULT_WELCOME_MESSAGE;
+        const welcomeBody = organizer.realDetails?.welcomeMessage ?? DEFAULT_WELCOME_MESSAGE;
         const messageText = `AUTOMATYCZNIE WYGENEROWANA WIADOMOŚĆ POWITALNA ORGANIZATORA:\n\n${welcomeBody}`;
         await this.chatService.createPrivateMessage(eventId, organizerId, userId, messageText);
         await this.chatNotificationService.onNewPrivateMessage(eventId, organizerId, userId);
@@ -293,7 +295,6 @@ export class EnrollmentService {
     const guestUser = await this.prisma.user.create({
       data: {
         ...(userId ? { id: userId } : {}),
-        email: `guest-${Date.now()}-${Math.random().toString(36).slice(2)}@guest.zgadajsie.pl`,
         displayName,
         accountType: 'GUEST',
         avatarSeed: avatarSeed ?? null,
@@ -610,7 +611,8 @@ export class EnrollmentService {
     this.notifyEventChanged(participation.eventId, 'all');
 
     // Send confirmation email
-    if (updated?.user && updated.event) {
+    const confirmationEmail = updated?.user?.realDetails?.email;
+    if (updated?.user && updated.event && confirmationEmail) {
       const eventLink = buildEventUrl(
         updated.event.city.slug,
         updated.event.id,
@@ -618,7 +620,7 @@ export class EnrollmentService {
       );
       this.emailService
         .sendParticipationStatusEmail(
-          updated.user.email,
+          confirmationEmail,
           updated.user.displayName,
           updated.event.title,
           'CONFIRMED',
@@ -840,9 +842,9 @@ export class EnrollmentService {
     const payingUserId = participation.addedByUserId ?? participation.userId;
     const user = await this.prisma.user.findUnique({
       where: { id: payingUserId },
-      select: { id: true, email: true, displayName: true },
+      select: { id: true, displayName: true, realDetails: { select: { email: true } } },
     });
-    if (!user) {
+    if (!user || !user.realDetails?.email) {
       throw new NotFoundException('Użytkownik nie znaleziony');
     }
 
@@ -851,7 +853,7 @@ export class EnrollmentService {
       event.id,
       user.id,
       event.costPerPerson.toNumber(),
-      user.email,
+      user.realDetails.email,
       user.displayName,
     );
   }
@@ -951,7 +953,7 @@ export class EnrollmentService {
 
     const organizer = await this.prisma.user.findUnique({
       where: { id: event.organizerId },
-      select: { id: true, email: true, displayName: true },
+      select: { id: true, displayName: true, realDetails: { select: { email: true } } },
     });
     if (organizer) {
       await this.pushService.notifyNewApplication(
@@ -960,16 +962,19 @@ export class EnrollmentService {
         event.title,
         eventId,
       );
-      try {
-        await this.emailService.sendNewApplicationEmail(
-          organizer.email,
-          organizer.displayName,
-          participation.user.displayName,
-          event.title,
-          eventId,
-        );
-      } catch (err) {
-        this.logger.error(`Failed to send new application email to ${organizer.email}: ${err}`);
+      const organizerEmail = organizer.realDetails?.email;
+      if (organizerEmail) {
+        try {
+          await this.emailService.sendNewApplicationEmail(
+            organizerEmail,
+            organizer.displayName,
+            participation.user.displayName,
+            event.title,
+            eventId,
+          );
+        } catch (err) {
+          this.logger.error(`Failed to send new application email to ${organizerEmail}: ${err}`);
+        }
       }
     }
 
@@ -1540,7 +1545,7 @@ export class EnrollmentService {
       });
       const user = await this.prisma.user.findUnique({
         where: { id: recipientId },
-        select: { email: true, displayName: true },
+        select: { realDetails: { select: { email: true } }, displayName: true },
       });
       if (!user) {
         return;
@@ -1557,13 +1562,16 @@ export class EnrollmentService {
         'SLOT_ASSIGNED',
         eventId,
       );
-      await this.emailService.sendParticipationStatusEmail(
-        user.email,
-        user.displayName,
-        displayTitle,
-        'SLOT_ASSIGNED',
-        eventLink,
-      );
+      const email = user.realDetails?.email;
+      if (email) {
+        await this.emailService.sendParticipationStatusEmail(
+          email,
+          user.displayName,
+          displayTitle,
+          'SLOT_ASSIGNED',
+          eventLink,
+        );
+      }
     } catch (err) {
       this.logger.error(`Failed to notify slot assigned: ${err}`);
     }
@@ -1584,7 +1592,7 @@ export class EnrollmentService {
       });
       const user = await this.prisma.user.findUnique({
         where: { id: recipientId },
-        select: { email: true, displayName: true, accountType: true },
+        select: { realDetails: { select: { email: true } }, displayName: true, accountType: true },
       });
       if (!user) {
         return;
@@ -1597,13 +1605,16 @@ export class EnrollmentService {
         ? buildEventUrl(event.city.slug, eventId, this.appConfig.frontendUrl)
         : undefined;
       await this.pushService.notifyParticipationStatus(recipientId, eventTitle, 'REMOVED', eventId);
-      await this.emailService.sendParticipationStatusEmail(
-        user.email,
-        user.displayName,
-        eventTitle,
-        'REMOVED',
-        eventLink,
-      );
+      const email = user.realDetails?.email;
+      if (email) {
+        await this.emailService.sendParticipationStatusEmail(
+          email,
+          user.displayName,
+          eventTitle,
+          'REMOVED',
+          eventLink,
+        );
+      }
     } catch (err) {
       this.logger.error(`Failed to notify removed: ${err}`);
     }
@@ -1768,7 +1779,11 @@ export class EnrollmentService {
 
     const enrollment = await this.prisma.eventEnrollment.findUnique({
       where: { id: enrollmentId },
-      include: { event: { include: { city: true } }, user: true, slot: true },
+      include: {
+        event: { include: { city: true } },
+        user: { include: { realDetails: { select: { email: true } } } },
+        slot: true,
+      },
     });
 
     if (!enrollment) {
@@ -1803,16 +1818,19 @@ export class EnrollmentService {
     );
 
     // Powiadomienie użytkownika
-    try {
-      await this.emailService.sendParticipationStatusEmail(
-        enrollment.user.email,
-        enrollment.user.displayName,
-        enrollment.event.title,
-        'REJECTED',
-        eventLink,
-      );
-    } catch (err) {
-      this.logger.error(`Failed to send rejection email to ${enrollment.user.email}: ${err}`);
+    const recipientEmail = enrollment.user.realDetails?.email;
+    if (recipientEmail) {
+      try {
+        await this.emailService.sendParticipationStatusEmail(
+          recipientEmail,
+          enrollment.user.displayName,
+          enrollment.event.title,
+          'REJECTED',
+          eventLink,
+        );
+      } catch (err) {
+        this.logger.error(`Failed to send rejection email to ${recipientEmail}: ${err}`);
+      }
     }
 
     await this.pushService.notifyParticipationStatus(

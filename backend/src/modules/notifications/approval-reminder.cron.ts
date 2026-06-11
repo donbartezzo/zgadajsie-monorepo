@@ -50,14 +50,19 @@ export class ApprovalReminderCron implements OnModuleInit {
           user: { accountType: { not: 'FAKE' } },
         },
         include: {
-          user: { select: { id: true, email: true, displayName: true } },
-          addedBy: { select: { id: true, email: true, displayName: true } },
+          user: {
+            select: { id: true, displayName: true, realDetails: { select: { email: true } } },
+          },
+          addedBy: {
+            select: { id: true, displayName: true, realDetails: { select: { email: true } } },
+          },
           event: { select: { id: true, title: true, city: { select: { slug: true } } } },
         },
       });
 
       for (const p of participations) {
         const recipient = p.addedByUserId !== null && p.addedBy ? p.addedBy : p.user;
+        const recipientEmail = recipient.realDetails?.email;
         const guestLabel = p.addedByUserId !== null ? ` (gość: ${p.user.displayName})` : '';
 
         try {
@@ -67,13 +72,15 @@ export class ApprovalReminderCron implements OnModuleInit {
             'APPROVAL_REMINDER',
             p.event.id,
           );
-          await this.emailService.sendParticipationStatusEmail(
-            recipient.email,
-            recipient.displayName,
-            `${p.event.title}${guestLabel}`,
-            'APPROVAL_REMINDER',
-            buildEventUrl(p.event.city.slug, p.event.id, this.appConfig.frontendUrl),
-          );
+          if (recipientEmail) {
+            await this.emailService.sendParticipationStatusEmail(
+              recipientEmail,
+              recipient.displayName,
+              `${p.event.title}${guestLabel}`,
+              'APPROVAL_REMINDER',
+              buildEventUrl(p.event.city.slug, p.event.id, this.appConfig.frontendUrl),
+            );
+          }
         } catch (err) {
           this.logger.error(
             `Approval reminder failed for user ${recipient.id}, event ${p.event.id}: ${err}`,

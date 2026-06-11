@@ -11,6 +11,10 @@ function buildPrismaMock() {
       findMany: jest.fn(),
       count: jest.fn(),
     },
+    userRealDetails: {
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
     event: {
       findMany: jest.fn(),
     },
@@ -23,16 +27,34 @@ function buildPrismaMock() {
   } as unknown as PrismaService;
 }
 
+// Kształt zwracany przez prisma.user.findUnique/update z nowym selectem (pola REAL w realDetails).
 const baseUser = {
   id: 'user1',
-  email: 'user@example.com',
   displayName: 'Test User',
-  donationUrl: null,
   role: 'USER',
   isActive: true,
-  isEmailVerified: true,
-  passwordHash: 'hashed',
   createdAt: new Date(),
+  realDetails: {
+    email: 'user@example.com',
+    donationUrl: null,
+    isEmailVerified: true,
+    welcomeMessage: null,
+    welcomeMessageEnabled: true,
+  },
+};
+
+// Spłaszczony kształt zwracany przez getMe/updateProfile (zachowany kontrakt API).
+const flattenedUser = {
+  id: 'user1',
+  displayName: 'Test User',
+  role: 'USER',
+  isActive: true,
+  createdAt: baseUser.createdAt,
+  email: 'user@example.com',
+  donationUrl: null,
+  isEmailVerified: true,
+  welcomeMessage: null,
+  welcomeMessageEnabled: true,
 };
 
 describe('UsersService', () => {
@@ -53,9 +75,12 @@ describe('UsersService', () => {
 
       expect(prisma.user.findUnique as jest.Mock).toHaveBeenCalledWith({
         where: { id: 'user1' },
-        select: expect.objectContaining({ email: true, displayName: true }),
+        select: expect.objectContaining({
+          displayName: true,
+          realDetails: { select: expect.objectContaining({ email: true }) },
+        }),
       });
-      expect(result).toEqual(baseUser);
+      expect(result).toEqual(flattenedUser);
     });
 
     it('nie zwraca pola password w zapytaniu (select bez passwordHash)', async () => {
@@ -88,7 +113,9 @@ describe('UsersService', () => {
     });
 
     it('rzuca BadRequestException gdy currentPassword nieprawidłowe', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(baseUser);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue({
+        passwordHash: 'hashed',
+      });
       jest.spyOn(passwordUtil, 'comparePassword').mockResolvedValue(false);
 
       await expect(
@@ -100,7 +127,9 @@ describe('UsersService', () => {
     });
 
     it('zmienia hasło przy poprawnym currentPassword', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(baseUser);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue({
+        passwordHash: 'hashed',
+      });
       jest.spyOn(passwordUtil, 'comparePassword').mockResolvedValue(true);
       jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('new-hashed');
       (prisma.user.update as jest.Mock).mockResolvedValue(baseUser);
@@ -111,7 +140,7 @@ describe('UsersService', () => {
       });
 
       const call = (prisma.user.update as jest.Mock).mock.calls[0][0];
-      expect(call.data.passwordHash).toBe('new-hashed');
+      expect(call.data.realDetails.update.passwordHash).toBe('new-hashed');
     });
   });
 

@@ -228,8 +228,8 @@ describe('EnrollmentService', () => {
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         id: 'org1',
-        email: 'org@test.com',
         displayName: 'Organizer',
+        realDetails: { email: 'org@test.com' },
       });
 
       await service.join('event1', mockAuthUser('user1'));
@@ -292,10 +292,12 @@ describe('EnrollmentService', () => {
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         id: 'org1',
-        email: 'org@test.com',
         displayName: 'Organizer',
-        welcomeMessage: 'Witaj na moim evencie!',
-        welcomeMessageEnabled: true,
+        realDetails: {
+          email: 'org@test.com',
+          welcomeMessage: 'Witaj na moim evencie!',
+          welcomeMessageEnabled: true,
+        },
       });
       (prisma.event.findUnique as jest.Mock).mockResolvedValue({
         ...preEnrollmentEvent,
@@ -322,10 +324,12 @@ describe('EnrollmentService', () => {
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         id: 'org1',
-        email: 'org@test.com',
         displayName: 'Organizer',
-        welcomeMessage: 'Witaj na moim evencie!',
-        welcomeMessageEnabled: false,
+        realDetails: {
+          email: 'org@test.com',
+          welcomeMessage: 'Witaj na moim evencie!',
+          welcomeMessageEnabled: false,
+        },
       });
       (prisma.event.findUnique as jest.Mock).mockResolvedValue({
         ...preEnrollmentEvent,
@@ -347,10 +351,12 @@ describe('EnrollmentService', () => {
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(participation);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         id: 'org1',
-        email: 'org@test.com',
         displayName: 'Organizer',
-        welcomeMessage: 'Witaj na moim evencie!',
-        welcomeMessageEnabled: true,
+        realDetails: {
+          email: 'org@test.com',
+          welcomeMessage: 'Witaj na moim evencie!',
+          welcomeMessageEnabled: true,
+        },
       });
       (prisma.event.findUnique as jest.Mock).mockResolvedValue({
         ...preEnrollmentEvent,
@@ -850,8 +856,8 @@ describe('EnrollmentService', () => {
         city: { slug: 'warszawa' },
       });
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-        email: 'host@test.com',
         displayName: 'Host',
+        realDetails: { email: 'host@test.com' },
       });
 
       await service.assignSlotToParticipant('p1', mockAuthUser('org1'));
@@ -1385,8 +1391,8 @@ describe('EnrollmentService', () => {
         city: { slug: 'warszawa' },
       });
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-        email: 'host@test.com',
         displayName: 'Host',
+        realDetails: { email: 'host@test.com' },
       });
       (prisma.user.create as jest.Mock).mockResolvedValue({
         id: 'guest1',
@@ -1605,8 +1611,8 @@ describe('EnrollmentService', () => {
       );
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         id: 'host1',
-        email: 'host@test.com',
         displayName: 'Host',
+        realDetails: { email: 'host@test.com' },
       });
       (payments.initiatePayment as jest.Mock).mockResolvedValue({
         paymentUrl: 'https://pay.tpay.com/TX1',

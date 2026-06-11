@@ -15,6 +15,10 @@ import { EmailService } from '../modules/notifications/email.service';
 import { PushService } from '../modules/notifications/push.service';
 import { EventRealtimeService } from '../modules/realtime/event-realtime.service';
 import { PaymentsService } from '../modules/payments/payments.service';
+import { AppConfigService } from '../common/config/app-config.service';
+import { ChatService } from '../modules/chat/chat.service';
+import { ChatNotificationService } from '../modules/chat/chat-notification.service';
+import { mockAuthUser } from './test-helpers';
 
 const TEST_PREFIX = 'intpay_';
 const MS_PER_HOUR = 3600_000;
@@ -41,6 +45,8 @@ describe('[Integration] Enrollment join flow', () => {
   };
   const mockRealtime = { invalidateEvent: jest.fn() };
   const mockPayments = { cleanupIntents: jest.fn().mockResolvedValue(undefined) };
+  const mockChat = { createPrivateMessage: jest.fn().mockResolvedValue(undefined) };
+  const mockChatNotification = { onNewPrivateMessage: jest.fn().mockResolvedValue(undefined) };
   const mockSlotService = {
     assignSlot: jest.fn().mockResolvedValue(null),
     releaseSlot: jest.fn().mockResolvedValue(undefined),
@@ -55,11 +61,17 @@ describe('[Integration] Enrollment join flow', () => {
         EnrollmentService,
         EnrollmentEligibilityService,
         ConfigService,
+        {
+          provide: AppConfigService,
+          useValue: { frontendUrl: 'http://localhost:4300', backendUrl: 'http://localhost:3000' },
+        },
         { provide: EmailService, useValue: mockEmail },
         { provide: PushService, useValue: mockPush },
         { provide: EventRealtimeService, useValue: mockRealtime },
         { provide: PaymentsService, useValue: mockPayments },
         { provide: SlotService, useValue: mockSlotService },
+        { provide: ChatService, useValue: mockChat },
+        { provide: ChatNotificationService, useValue: mockChatNotification },
       ],
     }).compile();
 
@@ -92,7 +104,9 @@ describe('[Integration] Enrollment join flow', () => {
   });
 
   afterAll(async () => {
-    const users = await prisma.user.findMany({ where: { email: { startsWith: TEST_PREFIX } } });
+    const users = await prisma.user.findMany({
+      where: { realDetails: { email: { startsWith: TEST_PREFIX } } },
+    });
     const userIds = users.map((u) => u.id);
     await prisma.organizerUserRelation.deleteMany({
       where: { OR: [{ organizerUserId: { in: userIds } }, { targetUserId: { in: userIds } }] },
@@ -101,19 +115,25 @@ describe('[Integration] Enrollment join flow', () => {
       where: { event: { title: { startsWith: TEST_PREFIX } } },
     });
     await prisma.event.deleteMany({ where: { title: { startsWith: TEST_PREFIX } } });
-    await prisma.user.deleteMany({ where: { email: { startsWith: TEST_PREFIX } } });
+    await prisma.user.deleteMany({
+      where: { realDetails: { email: { startsWith: TEST_PREFIX } } },
+    });
     await module.close();
   });
 
   async function createOrganizer(suffix: string) {
     return prisma.user.create({
       data: {
-        email: `${TEST_PREFIX}org_${suffix}@test.pl`,
         displayName: 'Organizer',
-        passwordHash: 'hash',
         isActive: true,
-        isEmailVerified: true,
         role: 'USER',
+        realDetails: {
+          create: {
+            email: `${TEST_PREFIX}org_${suffix}@test.pl`,
+            passwordHash: 'hash',
+            isEmailVerified: true,
+          },
+        },
       },
     });
   }
@@ -121,12 +141,16 @@ describe('[Integration] Enrollment join flow', () => {
   async function createUser(suffix: string) {
     return prisma.user.create({
       data: {
-        email: `${TEST_PREFIX}user_${suffix}@test.pl`,
         displayName: 'Uczestnik',
-        passwordHash: 'hash',
         isActive: true,
-        isEmailVerified: true,
         role: 'USER',
+        realDetails: {
+          create: {
+            email: `${TEST_PREFIX}user_${suffix}@test.pl`,
+            passwordHash: 'hash',
+            isEmailVerified: true,
+          },
+        },
       },
     });
   }
@@ -171,7 +195,7 @@ describe('[Integration] Enrollment join flow', () => {
         },
       });
 
-      const enrollment = await enrollmentService.join(event.id, user.id);
+      const enrollment = await enrollmentService.join(event.id, mockAuthUser(user.id));
 
       expect(enrollment).toBeDefined();
       expect(enrollment.userId).toBe(user.id);
@@ -207,7 +231,7 @@ describe('[Integration] Enrollment join flow', () => {
         },
       });
 
-      const enrollment = await enrollmentService.join(event.id, user.id);
+      const enrollment = await enrollmentService.join(event.id, mockAuthUser(user.id));
       expect(enrollment.waitingReason).toBe('BANNED');
 
       // Cleanup
@@ -233,7 +257,7 @@ describe('[Integration] Enrollment join flow', () => {
         },
       });
 
-      const first = await enrollmentService.join(event.id, user.id);
+      const first = await enrollmentService.join(event.id, mockAuthUser(user.id));
 
       // Withdraw
       await prisma.eventEnrollment.update({
@@ -242,7 +266,7 @@ describe('[Integration] Enrollment join flow', () => {
       });
 
       // Rejoin
-      const second = await enrollmentService.join(event.id, user.id);
+      const second = await enrollmentService.join(event.id, mockAuthUser(user.id));
       expect(second.id).toBe(first.id);
 
       const dbEnrollment = await prisma.eventEnrollment.findUnique({ where: { id: first.id } });

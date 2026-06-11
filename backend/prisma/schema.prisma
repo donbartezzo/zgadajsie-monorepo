@@ -12,26 +12,14 @@ datasource db {
 
 model User {
   id                          String                  @id @default(uuid())
-  email                       String                  @unique
-  passwordHash                String?
   displayName                 String
   role                        Role                    @default(USER)
   isActive                    Boolean                 @default(false)
-  isEmailVerified             Boolean                 @default(false)
-  activationToken             String?
-  activationTokenExpiresAt    DateTime?
-  passwordResetToken          String?
-  passwordResetTokenExpiresAt DateTime?
   createdAt                   DateTime                @default(now())
   updatedAt                   DateTime                @updatedAt
-  tpayMerchantId              String?
-  donationUrl                 String?
   avatarSeed                  String?
-  weeklyDigestSentAt          DateTime?
   accountType                 AccountType             @default(REAL)
   gender                      Gender?
-  welcomeMessage              String?
-  welcomeMessageEnabled       Boolean                 @default(true)
   announcementReceipts        AnnouncementReceipt[]
   citySubscriptions           CitySubscription[]
   organizedEvents             Event[]                 @relation("OrganizerEvents")
@@ -56,8 +44,29 @@ model User {
   socialAccounts              SocialAccount[]
   coverImages                 CoverImage[]            @relation("UserCoverImages")
   contactMessages             ContactMessage[]
+  realDetails                 UserRealDetails?
 
   @@index([accountType])
+}
+
+// Class Table Inheritance: pola wyłącznie dla kont REAL (email, auth, organizator).
+// Wzorzec i strategia migracji: docs/tasks/wydzielenie_typow_uzytkownikow.md
+// FAZA EXPAND: kolumny istnieją równolegle na User (dual-source) do czasu fazy CONTRACT.
+model UserRealDetails {
+  userId                      String    @id
+  email                       String    @unique
+  passwordHash                String?
+  isEmailVerified             Boolean   @default(false)
+  activationToken             String?
+  activationTokenExpiresAt    DateTime?
+  passwordResetToken          String?
+  passwordResetTokenExpiresAt DateTime?
+  tpayMerchantId              String?
+  donationUrl                 String?
+  weeklyDigestSentAt          DateTime?
+  welcomeMessage              String?
+  welcomeMessageEnabled       Boolean   @default(true)
+  user                        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SocialAccount {
@@ -122,7 +131,7 @@ model EventLevel {
 }
 
 model Event {
-  id                    String               @id @default(uuid())
+  id                    String                      @id @default(uuid())
   title                 String
   description           String?
   disciplineSlug        String
@@ -132,43 +141,43 @@ model Event {
   organizerId           String
   startsAt              DateTime
   endsAt                DateTime
-  costPerPerson         Decimal              @default(0) @db.Decimal(10, 2)
+  costPerPerson         Decimal                     @default(0) @db.Decimal(10, 2)
   minParticipants       Int?
   maxParticipants       Int
   ageMin                Int?
   ageMax                Int?
-  gender                EventGender          @default(ANY)
-  visibility            EventVisibility      @default(PUBLIC)
-  status                EventStatus          @default(ACTIVE)
+  gender                EventGender                 @default(ANY)
+  visibility            EventVisibility             @default(PUBLIC)
+  status                EventStatus                 @default(ACTIVE)
   address               String
   lat                   Float
   lng                   Float
-  createdAt             DateTime             @default(now())
-  updatedAt             DateTime             @updatedAt
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
   rules                 String?
   coverImageId          String?
   lotteryExecutedAt     DateTime?
   roleConfig            Json?
-  facilityReserved      Boolean              @default(true)
+  facilityReserved      Boolean                     @default(true)
   seriesId              String?
-  confirmToken                  String?              @unique
-  welcomeMessageEnabled         Boolean              @default(true)
-  city                  City                 @relation(fields: [citySlug], references: [slug])
-  coverImage            CoverImage?          @relation(fields: [coverImageId], references: [id])
-  discipline            EventDiscipline      @relation(fields: [disciplineSlug], references: [slug])
-  facility              EventFacility        @relation(fields: [facilitySlug], references: [slug])
-  level                 EventLevel           @relation(fields: [levelSlug], references: [slug])
-  organizer             User                 @relation("OrganizerEvents", fields: [organizerId], references: [id])
-  series                EventSeries?         @relation("SeriesEvents", fields: [seriesId], references: [id])
-  targetOccupancyConfig       EventTargetOccupancyConfig?
+  confirmToken          String?                     @unique
+  welcomeMessageEnabled Boolean                     @default(true)
+  city                  City                        @relation(fields: [citySlug], references: [slug])
+  coverImage            CoverImage?                 @relation(fields: [coverImageId], references: [id])
+  discipline            EventDiscipline             @relation(fields: [disciplineSlug], references: [slug])
+  facility              EventFacility               @relation(fields: [facilitySlug], references: [slug])
+  level                 EventLevel                  @relation(fields: [levelSlug], references: [slug])
+  organizer             User                        @relation("OrganizerEvents", fields: [organizerId], references: [id])
+  series                EventSeries?                @relation("SeriesEvents", fields: [seriesId], references: [id])
+  targetOccupancyConfig EventTargetOccupancyConfig?
   announcements         EventAnnouncement[]
   groupChatMessages     EventGroupMessage[]
   enrollments           EventEnrollment[]
   slots                 EventSlot[]
-  notifications         Notification[]       @relation("NotificationEvent")
+  notifications         Notification[]              @relation("NotificationEvent")
   issuedVouchers        OrganizerVoucher[]
-  payments              Payment[]            @relation("EventPayments")
-  paymentIntents        PaymentIntent[]      @relation("EventPaymentIntents")
+  payments              Payment[]                   @relation("EventPayments")
+  paymentIntents        PaymentIntent[]             @relation("EventPaymentIntents")
   privateChatMessages   PrivateChatMessage[]
   reprimands            Reprimand[]
 
@@ -177,30 +186,30 @@ model Event {
 }
 
 model EventSeries {
-  id               String                    @id @default(uuid())
-  organizerId      String
-  name             String
-  recurrenceType   EventSeriesRecurrenceType
-  intervalDays     Int?
-  daysOfWeek       Int[]
-  time             String
-  timezone         String
-  durationMinutes  Int
-  startDate        DateTime
-  endDate          DateTime?
-  nextGenerationAt DateTime
-  lastGeneratedAt  DateTime?
-  bufferDays       Int                       @default(30)
-  autoCoverImage   Boolean                   @default(false)
-  templateSnapshot Json
-  isActive         Boolean                   @default(true)
-  createdAt        DateTime                  @default(now())
-  updatedAt        DateTime                  @updatedAt
-  suspendedAt                  DateTime?
-  suspendedReason              String?
-  events                       Event[]                   @relation("SeriesEvents")
-  organizer        User                      @relation(fields: [organizerId], references: [id])
-  targetOccupancyConfig  EventSeriesTargetOccupancyConfig?
+  id                    String                            @id @default(uuid())
+  organizerId           String
+  name                  String
+  recurrenceType        EventSeriesRecurrenceType
+  intervalDays          Int?
+  daysOfWeek            Int[]
+  time                  String
+  timezone              String
+  durationMinutes       Int
+  startDate             DateTime
+  endDate               DateTime?
+  nextGenerationAt      DateTime
+  lastGeneratedAt       DateTime?
+  bufferDays            Int                               @default(30)
+  autoCoverImage        Boolean                           @default(false)
+  templateSnapshot      Json
+  isActive              Boolean                           @default(true)
+  createdAt             DateTime                          @default(now())
+  updatedAt             DateTime                          @updatedAt
+  suspendedAt           DateTime?
+  suspendedReason       String?
+  events                Event[]                           @relation("SeriesEvents")
+  organizer             User                              @relation(fields: [organizerId], references: [id])
+  targetOccupancyConfig EventSeriesTargetOccupancyConfig?
 
   @@index([organizerId])
   @@index([isActive, nextGenerationAt])

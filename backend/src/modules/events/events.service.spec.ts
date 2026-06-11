@@ -92,6 +92,12 @@ function makeEvent(overrides: Record<string, unknown> = {}) {
     roleConfig: null,
     citySlug: 'warszawa',
     city: { id: 'city1', slug: 'warszawa' },
+    organizer: {
+      id: 'org1',
+      displayName: 'Org',
+      avatarSeed: null,
+      realDetails: { donationUrl: null },
+    },
     ...overrides,
   };
 }
@@ -586,7 +592,15 @@ describe('EventsService', () => {
       tx.event.update.mockResolvedValue({ ...event, status: 'CANCELLED' });
       tx.eventEnrollment.findMany.mockResolvedValue([]);
       (prisma.eventEnrollment.findMany as jest.Mock).mockResolvedValue([
-        { user: { id: 'user1', email: 'user@test.com', displayName: 'User 1' } },
+        {
+          user: {
+            id: 'user1',
+            accountType: 'REAL',
+            displayName: 'User 1',
+            realDetails: { email: 'user@test.com' },
+          },
+          addedBy: null,
+        },
       ]);
 
       await service.cancel('event1', mockAuthUser('org1'));

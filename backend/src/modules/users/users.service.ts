@@ -1,74 +1,104 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { hashPassword, comparePassword } from '../../common/utils/password.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { AdminUpdateUserDto } from './dto/admin-update-user.dto';
 import { AccountType } from '@zgadajsie/shared';
 
+// Pola REAL-only (email, hasło, organizator) żyją w UserRealDetails (1:1).
+// Helper spłaszcza je z powrotem na obiekt usera, by zachować kształt API.
+const REAL_DETAILS_SELECT = {
+  email: true,
+  donationUrl: true,
+  isEmailVerified: true,
+  welcomeMessage: true,
+  welcomeMessageEnabled: true,
+} as const;
+
+type RealDetailsShape = {
+  email?: string | null;
+  donationUrl?: string | null;
+  isEmailVerified?: boolean | null;
+  welcomeMessage?: string | null;
+  welcomeMessageEnabled?: boolean | null;
+};
+
+function flattenRealDetails<T extends { realDetails: RealDetailsShape | null }>(user: T) {
+  const { realDetails, ...rest } = user;
+  return {
+    ...rest,
+    email: realDetails?.email ?? null,
+    donationUrl: realDetails?.donationUrl ?? null,
+    isEmailVerified: realDetails?.isEmailVerified ?? false,
+    welcomeMessage: realDetails?.welcomeMessage ?? null,
+    welcomeMessageEnabled: realDetails?.welcomeMessageEnabled ?? true,
+  };
+}
+
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async getMe(userId: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
-        email: true,
         displayName: true,
         avatarSeed: true,
-        donationUrl: true,
         role: true,
         isActive: true,
-        isEmailVerified: true,
         createdAt: true,
-        welcomeMessage: true,
-        welcomeMessageEnabled: true,
+        realDetails: { select: REAL_DETAILS_SELECT },
       },
     });
+    return user ? flattenRealDetails(user) : null;
   }
 
   async updateProfile(userId: string, dto: UpdateProfileDto) {
-    const data: Record<string, unknown> = {};
-    if (dto.displayName) data.displayName = dto.displayName;
-    if (dto.avatarSeed !== undefined) data.avatarSeed = dto.avatarSeed ?? null;
-    if (dto.email) data.email = dto.email;
-    if (dto.donationUrl !== undefined) data.donationUrl = dto.donationUrl || null;
-    if (dto.welcomeMessage !== undefined) data.welcomeMessage = dto.welcomeMessage ?? null;
+    const userData: Prisma.UserUpdateInput = {};
+    const realData: Prisma.UserRealDetailsUpdateInput = {};
+    if (dto.displayName) userData.displayName = dto.displayName;
+    if (dto.avatarSeed !== undefined) userData.avatarSeed = dto.avatarSeed ?? null;
+    if (dto.email) realData.email = dto.email;
+    if (dto.donationUrl !== undefined) realData.donationUrl = dto.donationUrl || null;
+    if (dto.welcomeMessage !== undefined) realData.welcomeMessage = dto.welcomeMessage ?? null;
     if (dto.welcomeMessageEnabled !== undefined)
-      data.welcomeMessageEnabled = dto.welcomeMessageEnabled;
+      realData.welcomeMessageEnabled = dto.welcomeMessageEnabled;
 
     if (dto.newPassword) {
       if (!dto.currentPassword) {
         throw new BadRequestException('Podaj aktualne hasło');
       }
-      const user = await this.prisma.user.findUnique({ where: { id: userId } });
-      if (!user?.passwordHash) {
+      const details = await this.prisma.userRealDetails.findUnique({ where: { userId } });
+      if (!details?.passwordHash) {
         throw new BadRequestException('Konto nie ma ustawionego hasła');
       }
-      const valid = await comparePassword(dto.currentPassword, user.passwordHash);
+      const valid = await comparePassword(dto.currentPassword, details.passwordHash);
       if (!valid) {
         throw new BadRequestException('Nieprawidłowe aktualne hasło');
       }
-      data.passwordHash = await hashPassword(dto.newPassword);
+      realData.passwordHash = await hashPassword(dto.newPassword);
     }
 
-    return this.prisma.user.update({
+    const hasRealData = Object.keys(realData).length > 0;
+    const user = await this.prisma.user.update({
       where: { id: userId },
-      data,
+      data: {
+        ...userData,
+        ...(hasRealData ? { realDetails: { update: realData } } : {}),
+      },
       select: {
         id: true,
-        email: true,
         displayName: true,
         avatarSeed: true,
-        donationUrl: true,
         role: true,
         isActive: true,
-        isEmailVerified: true,
-        welcomeMessage: true,
-        welcomeMessageEnabled: true,
+        realDetails: { select: REAL_DETAILS_SELECT },
       },
     });
+    return flattenRealDetails(user);
   }
 
   async getMyEvents(userId: string) {
@@ -112,14 +142,14 @@ export class UsersService {
     accountType?: AccountType;
   }) {
     const { page = 1, limit = 20, search, role, isActive, accountType } = params;
-    const where: Record<string, unknown> = {};
+    const where: Prisma.UserWhereInput = {};
     if (search) {
       where.OR = [
-        { email: { contains: search, mode: 'insensitive' } },
+        { realDetails: { email: { contains: search, mode: 'insensitive' } } },
         { displayName: { contains: search, mode: 'insensitive' } },
       ];
     }
-    if (role) where.role = role;
+    if (role) where.role = role as Prisma.UserWhereInput['role'];
     if (isActive !== undefined) where.isActive = isActive;
     if (accountType) where.accountType = accountType;
 
@@ -131,49 +161,61 @@ export class UsersService {
         orderBy: { createdAt: 'desc' },
         select: {
           id: true,
-          email: true,
           displayName: true,
           role: true,
           isActive: true,
           createdAt: true,
+          realDetails: { select: { email: true } },
         },
       }),
       this.prisma.user.count({ where }),
     ]);
 
-    return { data: users, total, page, limit };
+    const data = users.map(({ realDetails, ...rest }) => ({
+      ...rest,
+      email: realDetails?.email ?? null,
+    }));
+
+    return { data, total, page, limit };
   }
 
   async adminUpdate(id: string, dto: AdminUpdateUserDto) {
-    const data: Record<string, unknown> = {};
-    if (dto.displayName) data.displayName = dto.displayName;
-    if (dto.role) data.role = dto.role;
-    if (dto.isActive !== undefined) data.isActive = dto.isActive;
+    const userData: Prisma.UserUpdateInput = {};
+    const realData: Prisma.UserRealDetailsUpdateInput = {};
+    if (dto.displayName) userData.displayName = dto.displayName;
+    if (dto.role) userData.role = dto.role as Prisma.UserUpdateInput['role'];
+    if (dto.isActive !== undefined) userData.isActive = dto.isActive;
     if (dto.isEmailVerified !== undefined) {
-      data.isEmailVerified = dto.isEmailVerified;
+      realData.isEmailVerified = dto.isEmailVerified;
       // If verifying email, also activate account and clear token
       if (dto.isEmailVerified) {
-        data.isActive = true;
-        data.activationToken = null;
-        data.activationTokenExpiresAt = null;
+        userData.isActive = true;
+        realData.activationToken = null;
+        realData.activationTokenExpiresAt = null;
       }
     }
 
-    const user = await this.prisma.user.update({ where: { id }, data });
-
-    return user;
+    const hasRealData = Object.keys(realData).length > 0;
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        ...userData,
+        ...(hasRealData ? { realDetails: { update: realData } } : {}),
+      },
+    });
   }
 
   async verifyUserByOrganizer(targetUserId: string, _organizerUserId: string) {
     const targetUser = await this.prisma.user.findUnique({
       where: { id: targetUserId },
+      select: { isActive: true, realDetails: { select: { isEmailVerified: true } } },
     });
 
     if (!targetUser) {
       throw new BadRequestException('Użytkownik nie istnieje');
     }
 
-    if (targetUser.isActive && targetUser.isEmailVerified) {
+    if (targetUser.isActive && targetUser.realDetails?.isEmailVerified) {
       throw new BadRequestException('Konto jest już aktywne i zweryfikowane');
     }
 
@@ -181,19 +223,27 @@ export class UsersService {
       where: { id: targetUserId },
       data: {
         isActive: true,
-        isEmailVerified: true,
-        activationToken: null,
-        activationTokenExpiresAt: null,
+        realDetails: {
+          update: {
+            isEmailVerified: true,
+            activationToken: null,
+            activationTokenExpiresAt: null,
+          },
+        },
       },
       select: {
         id: true,
-        email: true,
         displayName: true,
         isActive: true,
-        isEmailVerified: true,
+        realDetails: { select: { email: true, isEmailVerified: true } },
       },
     });
 
-    return updatedUser;
+    const { realDetails, ...rest } = updatedUser;
+    return {
+      ...rest,
+      email: realDetails?.email ?? null,
+      isEmailVerified: realDetails?.isEmailVerified ?? false,
+    };
   }
 }

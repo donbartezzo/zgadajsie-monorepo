@@ -21,10 +21,17 @@ function buildPrismaMock() {
       create: jest.fn(),
       update: jest.fn(),
     },
+    userRealDetails: {
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+      update: jest.fn(),
+    },
     socialAccount: {
       findUnique: jest.fn(),
       create: jest.fn(),
     },
+    // $transaction wykonuje przekazane operacje (Promise.all) — wystarczające dla testów jednostkowych
+    $transaction: jest.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
   } as unknown as PrismaService;
 }
 
@@ -48,19 +55,28 @@ function buildEmailMock() {
   } as unknown as EmailService;
 }
 
+// Pola wspólne konta REAL (User) — bez email/hasła, które żyją w UserRealDetails.
 const baseUser = {
   id: 'user-1',
-  email: 'user@example.com',
   displayName: 'Test User',
-  passwordHash: 'hashed-password',
   role: 'USER',
   isActive: true,
+};
+
+// Wiersz UserRealDetails (1:1 z User).
+const baseDetails = {
+  userId: 'user-1',
+  email: 'user@example.com',
+  passwordHash: 'hashed-password',
   isEmailVerified: true,
   activationToken: null,
   activationTokenExpiresAt: null,
   passwordResetToken: null,
   passwordResetTokenExpiresAt: null,
 };
+
+// UserRealDetails z dociągniętą relacją user (login/resendActivation).
+const detailsWithUser = { ...baseDetails, user: baseUser };
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -97,7 +113,7 @@ describe('AuthService', () => {
 
   describe('register()', () => {
     it('rejestruje użytkownika z poprawnymi danymi', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
       jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
 
@@ -117,7 +133,7 @@ describe('AuthService', () => {
     });
 
     it('odrzuca zduplikowany email (ConflictException)', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(baseUser);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(baseDetails);
 
       await expect(
         service.register(
@@ -133,7 +149,7 @@ describe('AuthService', () => {
     });
 
     it('hashuje hasło przed zapisem (plain text nie trafia do DB)', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
       const hashSpy = jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed-value');
 
@@ -149,11 +165,11 @@ describe('AuthService', () => {
 
       expect(hashSpy).toHaveBeenCalledWith('PlainText123!');
       const createCall = (prisma.user.create as jest.Mock).mock.calls[0][0];
-      expect(createCall.data.passwordHash).toBe('hashed-value');
+      expect(createCall.data.realDetails.create.passwordHash).toBe('hashed-value');
     });
 
     it('wysyła email aktywacyjny po rejestracji', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
       jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
 
@@ -168,14 +184,14 @@ describe('AuthService', () => {
       );
 
       expect(email.sendActivationEmail as jest.Mock).toHaveBeenCalledWith(
-        baseUser.email,
-        baseUser.displayName,
+        'user@example.com',
+        'User',
         expect.any(String),
       );
     });
 
     it('kończy rejestrację sukcesem mimo błędu wysyłki maila (brak 500, konto zostaje)', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
       jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
       (email.sendActivationEmail as jest.Mock).mockRejectedValueOnce(
@@ -197,7 +213,7 @@ describe('AuthService', () => {
     });
 
     it('tworzy token aktywacyjny z datą wygaśnięcia (24h)', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
       jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
 
@@ -212,16 +228,17 @@ describe('AuthService', () => {
       );
 
       const createCall = (prisma.user.create as jest.Mock).mock.calls[0][0];
-      expect(createCall.data.activationToken).toBeDefined();
-      expect(createCall.data.activationTokenExpiresAt).toBeDefined();
-      const expires = new Date(createCall.data.activationTokenExpiresAt);
+      const realCreate = createCall.data.realDetails.create;
+      expect(realCreate.activationToken).toBeDefined();
+      expect(realCreate.activationTokenExpiresAt).toBeDefined();
+      const expires = new Date(realCreate.activationTokenExpiresAt);
       const hoursUntilExpiry = (expires.getTime() - Date.now()) / (1000 * 60 * 60);
       expect(hoursUntilExpiry).toBeGreaterThan(23);
       expect(hoursUntilExpiry).toBeLessThan(25);
     });
 
     it('przepuszcza rejestrację bez captchaToken (degradacja gdy captcha niedostępna)', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
       jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
 
@@ -261,7 +278,7 @@ describe('AuthService', () => {
     });
 
     it('NIE blokuje rejestracji gdy weryfikacji nie da się dokończyć — błąd sieci (unverifiable)', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
       jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
       jest.spyOn(global, 'fetch').mockRejectedValue(new Error('getaddrinfo ENOTFOUND'));
@@ -281,7 +298,7 @@ describe('AuthService', () => {
     });
 
     it('NIE blokuje rejestracji gdy siteverify zwróci błąd HTTP (unverifiable)', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
       jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
       jest.spyOn(global, 'fetch').mockResolvedValue({
@@ -322,7 +339,7 @@ describe('AuthService', () => {
 
     it('rejestruje bez captcha gdy flaga enableTurnstileCaptcha jest wyłączona', async () => {
       (featureFlags as unknown as Record<string, unknown>).enableTurnstileCaptcha = false;
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.user.create as jest.Mock).mockResolvedValue(baseUser);
       jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('hashed');
 
@@ -343,7 +360,7 @@ describe('AuthService', () => {
 
   describe('login()', () => {
     it('zwraca access + refresh token + user object przy poprawnych danych', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(baseUser);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(detailsWithUser);
       jest.spyOn(passwordUtil, 'comparePassword').mockResolvedValue(true);
       (jwt.signAsync as jest.Mock).mockResolvedValue('test-token');
 
@@ -354,12 +371,12 @@ describe('AuthService', () => {
 
       expect(result.accessToken).toBeDefined();
       expect(result.refreshToken).toBeDefined();
-      expect(result.user.email).toBe(baseUser.email);
+      expect(result.user.email).toBe(baseDetails.email);
       expect(result.user.isActive).toBe(true);
     });
 
     it('rzuca UnauthorizedException dla złego hasła', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(baseUser);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(detailsWithUser);
       jest.spyOn(passwordUtil, 'comparePassword').mockResolvedValue(false);
 
       await expect(service.login({ email: 'user@example.com', password: 'wrong' })).rejects.toThrow(
@@ -368,7 +385,7 @@ describe('AuthService', () => {
     });
 
     it('rzuca UnauthorizedException dla nieistniejącego użytkownika', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
 
       await expect(
         service.login({ email: 'nobody@example.com', password: 'Test123!' }),
@@ -376,8 +393,8 @@ describe('AuthService', () => {
     });
 
     it('rzuca UnauthorizedException dla konta bez hasła (social login only)', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-        ...baseUser,
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue({
+        ...detailsWithUser,
         passwordHash: null,
       });
 
@@ -387,7 +404,7 @@ describe('AuthService', () => {
     });
 
     it('nie ujawnia czy konto istnieje (ten sam komunikat dla obu błędów)', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
       let errorForMissing: Error | null = null;
       try {
         await service.login({ email: 'nobody@example.com', password: 'Test' });
@@ -395,7 +412,7 @@ describe('AuthService', () => {
         errorForMissing = e as Error;
       }
 
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(baseUser);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(detailsWithUser);
       jest.spyOn(passwordUtil, 'comparePassword').mockResolvedValue(false);
       let errorForWrongPass: Error | null = null;
       try {
@@ -408,9 +425,9 @@ describe('AuthService', () => {
     });
 
     it('zwraca isActive w obiekcie user (frontend używa do redirect)', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-        ...baseUser,
-        isActive: false,
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue({
+        ...detailsWithUser,
+        user: { ...baseUser, isActive: false },
       });
       jest.spyOn(passwordUtil, 'comparePassword').mockResolvedValue(true);
       (jwt.signAsync as jest.Mock).mockResolvedValue('token');
@@ -426,7 +443,10 @@ describe('AuthService', () => {
 
   describe('refreshToken()', () => {
     it('zwraca nowe access + refresh tokeny przy ważnym userId', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(baseUser);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        ...baseUser,
+        realDetails: baseDetails,
+      });
       (jwt.signAsync as jest.Mock).mockResolvedValue('new-token');
 
       const result = await service.refreshToken('user-1', 'user@example.com');
@@ -446,19 +466,22 @@ describe('AuthService', () => {
 
   describe('activateAccount()', () => {
     it('aktywuje konto z poprawnym tokenem (isActive=true, isEmailVerified=true)', async () => {
-      (prisma.user.findFirst as jest.Mock).mockResolvedValue(baseUser);
-      (prisma.user.update as jest.Mock).mockResolvedValue({
-        ...baseUser,
-        isActive: true,
+      (prisma.userRealDetails.findFirst as jest.Mock).mockResolvedValue(baseDetails);
+      (prisma.user.update as jest.Mock).mockResolvedValue({ ...baseUser, isActive: true });
+      (prisma.userRealDetails.update as jest.Mock).mockResolvedValue({
+        ...baseDetails,
         isEmailVerified: true,
       });
 
       const result = await service.activateAccount('valid-token');
 
       expect(prisma.user.update as jest.Mock).toHaveBeenCalledWith({
-        where: { id: baseUser.id },
+        where: { id: baseDetails.userId },
+        data: { isActive: true },
+      });
+      expect(prisma.userRealDetails.update as jest.Mock).toHaveBeenCalledWith({
+        where: { userId: baseDetails.userId },
         data: {
-          isActive: true,
           isEmailVerified: true,
           activationToken: null,
           activationTokenExpiresAt: null,
@@ -468,7 +491,7 @@ describe('AuthService', () => {
     });
 
     it('rzuca BadRequestException dla nieistniejącego tokenu', async () => {
-      (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findFirst as jest.Mock).mockResolvedValue(null);
 
       await expect(service.activateAccount('bad-token')).rejects.toThrow(BadRequestException);
     });
@@ -476,20 +499,20 @@ describe('AuthService', () => {
 
   describe('resendActivation()', () => {
     it('tworzy nowy token i wysyła email dla nieaktywnego konta', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-        ...baseUser,
-        isActive: false,
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue({
+        ...detailsWithUser,
+        user: { ...baseUser, isActive: false },
       });
-      (prisma.user.update as jest.Mock).mockResolvedValue({});
+      (prisma.userRealDetails.update as jest.Mock).mockResolvedValue({});
 
       await service.resendActivation('user@example.com');
 
       expect(email.sendActivationEmail as jest.Mock).toHaveBeenCalled();
-      expect(prisma.user.update as jest.Mock).toHaveBeenCalled();
+      expect(prisma.userRealDetails.update as jest.Mock).toHaveBeenCalled();
     });
 
     it('zwraca bezpieczny komunikat dla nieistniejącego emaila', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
 
       const result = await service.resendActivation('nobody@example.com');
 
@@ -498,7 +521,10 @@ describe('AuthService', () => {
     });
 
     it('zwraca informację "konto już aktywne" dla aktywnego konta', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ ...baseUser, isActive: true });
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue({
+        ...detailsWithUser,
+        user: { ...baseUser, isActive: true },
+      });
 
       const result = await service.resendActivation('user@example.com');
 
@@ -509,17 +535,17 @@ describe('AuthService', () => {
 
   describe('forgotPassword()', () => {
     it('tworzy token resetowania i wysyła email', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(baseUser);
-      (prisma.user.update as jest.Mock).mockResolvedValue({});
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(baseDetails);
+      (prisma.userRealDetails.update as jest.Mock).mockResolvedValue({});
 
       await service.forgotPassword('user@example.com');
 
       expect(email.sendPasswordResetEmail as jest.Mock).toHaveBeenCalled();
-      expect(prisma.user.update as jest.Mock).toHaveBeenCalled();
+      expect(prisma.userRealDetails.update as jest.Mock).toHaveBeenCalled();
     });
 
     it('nie ujawnia czy email istnieje w bazie (bezpieczeństwo)', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
 
       const result = await service.forgotPassword('nobody@example.com');
 
@@ -530,14 +556,14 @@ describe('AuthService', () => {
 
   describe('resetPassword()', () => {
     it('resetuje hasło przy ważnym tokenie', async () => {
-      (prisma.user.findFirst as jest.Mock).mockResolvedValue(baseUser);
-      (prisma.user.update as jest.Mock).mockResolvedValue({});
+      (prisma.userRealDetails.findFirst as jest.Mock).mockResolvedValue(baseDetails);
+      (prisma.userRealDetails.update as jest.Mock).mockResolvedValue({});
       jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('new-hash');
 
       const result = await service.resetPassword('valid-token', 'NewPassword123!');
 
-      expect(prisma.user.update as jest.Mock).toHaveBeenCalledWith({
-        where: { id: baseUser.id },
+      expect(prisma.userRealDetails.update as jest.Mock).toHaveBeenCalledWith({
+        where: { userId: baseDetails.userId },
         data: {
           passwordHash: 'new-hash',
           passwordResetToken: null,
@@ -548,7 +574,7 @@ describe('AuthService', () => {
     });
 
     it('rzuca BadRequestException dla wygasłego tokenu resetowania', async () => {
-      (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findFirst as jest.Mock).mockResolvedValue(null);
 
       await expect(service.resetPassword('expired-token', 'NewPassword123!')).rejects.toThrow(
         BadRequestException,
@@ -556,13 +582,13 @@ describe('AuthService', () => {
     });
 
     it('unieważnia token po użyciu (passwordResetToken=null)', async () => {
-      (prisma.user.findFirst as jest.Mock).mockResolvedValue(baseUser);
-      (prisma.user.update as jest.Mock).mockResolvedValue({});
+      (prisma.userRealDetails.findFirst as jest.Mock).mockResolvedValue(baseDetails);
+      (prisma.userRealDetails.update as jest.Mock).mockResolvedValue({});
       jest.spyOn(passwordUtil, 'hashPassword').mockResolvedValue('new-hash');
 
       await service.resetPassword('valid-token', 'NewPassword123!');
 
-      const updateCall = (prisma.user.update as jest.Mock).mock.calls[0][0];
+      const updateCall = (prisma.userRealDetails.update as jest.Mock).mock.calls[0][0];
       expect(updateCall.data.passwordResetToken).toBeNull();
     });
   });
@@ -570,7 +596,7 @@ describe('AuthService', () => {
   describe('validateSocialUser()', () => {
     it('zwraca tokeny dla istniejącego konta social', async () => {
       (prisma.socialAccount.findUnique as jest.Mock).mockResolvedValue({
-        user: baseUser,
+        user: { ...baseUser, realDetails: { email: baseDetails.email } },
       });
       (jwt.signAsync as jest.Mock).mockResolvedValue('social-token');
 
@@ -586,11 +612,8 @@ describe('AuthService', () => {
 
     it('tworzy nowe konto + social account dla nowego użytkownika', async () => {
       (prisma.socialAccount.findUnique as jest.Mock).mockResolvedValue(null);
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
-      (prisma.user.create as jest.Mock).mockResolvedValue({
-        ...baseUser,
-        isActive: true,
-      });
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.user.create as jest.Mock).mockResolvedValue({ ...baseUser, isActive: true });
       (prisma.socialAccount.create as jest.Mock).mockResolvedValue({});
       (jwt.signAsync as jest.Mock).mockResolvedValue('token');
 
@@ -607,7 +630,7 @@ describe('AuthService', () => {
 
     it('nowy użytkownik social jest automatycznie aktywny (isActive=true)', async () => {
       (prisma.socialAccount.findUnique as jest.Mock).mockResolvedValue(null);
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.user.create as jest.Mock).mockResolvedValue({ ...baseUser, isActive: true });
       (prisma.socialAccount.create as jest.Mock).mockResolvedValue({});
       (jwt.signAsync as jest.Mock).mockResolvedValue('token');
@@ -625,13 +648,13 @@ describe('AuthService', () => {
 
     it('linkuje social account do istniejącego konta (ten sam email)', async () => {
       (prisma.socialAccount.findUnique as jest.Mock).mockResolvedValue(null);
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(baseUser);
+      (prisma.userRealDetails.findUnique as jest.Mock).mockResolvedValue(baseDetails);
       (prisma.socialAccount.create as jest.Mock).mockResolvedValue({});
       (jwt.signAsync as jest.Mock).mockResolvedValue('token');
 
       await service.validateSocialUser({
         providerUserId: 'google-existing',
-        email: baseUser.email,
+        email: baseDetails.email,
         displayName: 'Test User',
         provider: SocialProvider.GOOGLE,
       });

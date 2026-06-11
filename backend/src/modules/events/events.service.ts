@@ -48,6 +48,29 @@ const EVENT_COVER_IMAGE_SELECT = {
   select: { id: true, storageKey: true, updatedAt: true },
 };
 
+// Organizator to konto REAL — donationUrl żyje w UserRealDetails (1:1).
+// Spłaszczamy je z powrotem na organizer, by zachować kształt API (organizer.donationUrl).
+const ORGANIZER_SELECT = {
+  select: {
+    id: true,
+    displayName: true,
+    avatarSeed: true,
+    realDetails: { select: { donationUrl: true } },
+  },
+} as const;
+
+function flattenOrganizer<
+  T extends {
+    id: string;
+    displayName: string;
+    avatarSeed: string | null;
+    realDetails: { donationUrl: string | null } | null;
+  },
+>(organizer: T) {
+  const { realDetails, ...rest } = organizer;
+  return { ...rest, donationUrl: realDetails?.donationUrl ?? null };
+}
+
 @Injectable()
 export class EventsService {
   private readonly logger = new Logger(EventsService.name);
@@ -220,9 +243,7 @@ export class EventsService {
           level: true,
           city: true,
           coverImage: EVENT_COVER_IMAGE_SELECT,
-          organizer: {
-            select: { id: true, displayName: true, avatarSeed: true, donationUrl: true },
-          },
+          organizer: ORGANIZER_SELECT,
           _count: {
             select: {
               enrollments: {
@@ -264,6 +285,7 @@ export class EventsService {
 
     const eventsWithParticipantCount = events.map((event) => ({
       ...event,
+      organizer: flattenOrganizer(event.organizer),
       _count: {
         ...event._count,
         participants: participantCountMap.get(event.id) ?? 0,
@@ -290,14 +312,7 @@ export class EventsService {
         coverImage: EVENT_COVER_IMAGE_SELECT,
         targetOccupancyConfig: true,
         series: { select: { id: true, name: true } },
-        organizer: {
-          select: {
-            id: true,
-            displayName: true,
-            avatarSeed: true,
-            donationUrl: true,
-          },
-        },
+        organizer: ORGANIZER_SELECT,
         _count: {
           select: {
             enrollments: {
@@ -336,6 +351,7 @@ export class EventsService {
 
     return {
       ...event,
+      organizer: flattenOrganizer(event.organizer),
       currentUserAccess,
       _count: {
         ...event._count,
@@ -356,14 +372,7 @@ export class EventsService {
         level: true,
         city: true,
         coverImage: EVENT_COVER_IMAGE_SELECT,
-        organizer: {
-          select: {
-            id: true,
-            displayName: true,
-            avatarSeed: true,
-            donationUrl: true,
-          },
-        },
+        organizer: ORGANIZER_SELECT,
       },
     });
 
@@ -375,7 +384,7 @@ export class EventsService {
       throw new ForbiddenException('Nie możesz duplikować tego wydarzenia');
     }
 
-    return event;
+    return { ...event, organizer: flattenOrganizer(event.organizer) };
   }
 
   async update(id: string, user: AuthUser, dto: UpdateEventDto) {
@@ -573,28 +582,40 @@ export class EventsService {
     const participants = await this.prisma.eventEnrollment.findMany({
       where: { eventId: id, user: { accountType: { not: 'FAKE' } } },
       include: {
-        user: { select: { id: true, email: true, displayName: true, accountType: true } },
-        addedBy: { select: { id: true, email: true, displayName: true } },
+        user: {
+          select: {
+            id: true,
+            displayName: true,
+            accountType: true,
+            realDetails: { select: { email: true } },
+          },
+        },
+        addedBy: {
+          select: { id: true, displayName: true, realDetails: { select: { email: true } } },
+        },
       },
     });
 
     for (const p of participants) {
       // For GUEST users, notify and email the host instead
       const recipient = p.user.accountType === 'GUEST' && p.addedBy ? p.addedBy : p.user;
+      const recipientEmail = recipient.realDetails?.email;
       try {
         await this.pushService.notifyEventCancelled(recipient.id, event.title, id);
       } catch (err) {
         notificationErrors.push(`push:${recipient.id}:${(err as Error).message}`);
       }
-      try {
-        await this.emailService.sendEventCancelledEmail(
-          recipient.email,
-          recipient.displayName,
-          event.title,
-          buildEventUrl(event.city.slug, id, this.appConfig.frontendUrl),
-        );
-      } catch (err) {
-        notificationErrors.push(`email:${recipient.email}:${(err as Error).message}`);
+      if (recipientEmail) {
+        try {
+          await this.emailService.sendEventCancelledEmail(
+            recipientEmail,
+            recipient.displayName,
+            event.title,
+            buildEventUrl(event.city.slug, id, this.appConfig.frontendUrl),
+          );
+        } catch (err) {
+          notificationErrors.push(`email:${recipientEmail}:${(err as Error).message}`);
+        }
       }
     }
 
@@ -688,9 +709,8 @@ export class EventsService {
             id: true,
             displayName: true,
             avatarSeed: true,
-            email: true,
             isActive: true,
-            isEmailVerified: true,
+            realDetails: { select: { email: true, isEmailVerified: true } },
           },
         },
         addedBy: {
@@ -740,8 +760,14 @@ export class EventsService {
       } else {
         status = 'PENDING';
       }
+      const { realDetails, ...userRest } = p.user;
       return {
         ...p,
+        user: {
+          ...userRest,
+          email: realDetails?.email ?? null,
+          isEmailVerified: realDetails?.isEmailVerified ?? false,
+        },
         status,
         waitingReason: status === 'PENDING' ? p.waitingReason : null,
         addedByUserId: p.addedByUserId,
