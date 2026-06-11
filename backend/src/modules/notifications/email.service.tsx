@@ -368,11 +368,17 @@ export class EmailService implements OnModuleInit {
   ): Promise<void> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { email: true, displayName: true },
+      select: { realDetails: { select: { email: true } }, displayName: true },
     });
 
     if (!user) {
       this.logger.warn(`User ${userId} not found for digest email`);
+      return;
+    }
+
+    const email = user.realDetails?.email;
+    if (!email) {
+      this.logger.warn(`User ${userId} has no email for digest`);
       return;
     }
 
@@ -384,7 +390,7 @@ export class EmailService implements OnModuleInit {
       />,
     );
     await this.send(
-      user.email,
+      email,
       `Masz ${items.length} nieprzeczytanych powiadomień – ${APP_BRAND.NAME}`,
       html,
       text,

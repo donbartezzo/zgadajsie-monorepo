@@ -1,0 +1,59 @@
+@let _profile = profile();
+@if (_profile) {
+  <div class="space-y-3">
+    <!-- Oznaczenia -->
+    <div class="flex flex-wrap gap-2">
+      @if (_profile.isTrusted) {
+        <span class="rounded-full bg-success-50 px-2 py-0.5 text-xs font-medium text-success-600">
+          Zaufany uczestnik
+        </span>
+      }
+      @if (!_profile.isGuest && _profile.isNewToOrganizer) {
+        <span class="rounded-full bg-info-50 px-2 py-0.5 text-xs font-medium text-info-600"> Nowy dla Ciebie </span>
+      }
+      @if (_profile.isGuest) {
+        <span class="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600"> Gość </span>
+      }
+    </div>
+
+    <!-- Profil dyscypliny wydarzenia (REAL: globalny; GOŚĆ: snapshot — w tym samym miejscu) -->
+    <div>
+      <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-neutral-400">Profil dyscypliny</p>
+      @if (_profile.disciplineProfile; as dp) {
+        <p class="text-sm font-medium text-neutral-900">
+          {{ 'dict.level.' + dp.levelSlug | transloco }}
+        </p>
+        @if (dp.bio) {
+          <p class="mt-0.5 whitespace-pre-line text-sm text-neutral-600">{{ dp.bio }}</p>
+        }
+      } @else {
+        <p class="text-sm text-neutral-400">Brak profilu dyscypliny</p>
+      }
+    </div>
+
+    <!-- Statystyki + linki tylko dla kont REAL (gość nie ma globalnego profilu) -->
+    @if (!_profile.isGuest) {
+      <app-participant-stats [stats]="_profile.stats" />
+
+      @if (_profile.socialLinks && _profile.socialLinks.length > 0) {
+        <div>
+          <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-neutral-400">Linki społecznościowe</p>
+          <ul class="space-y-1">
+            @for (link of _profile.socialLinks; track link) {
+              <li>
+                <a
+                  [href]="link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="break-all text-sm text-primary-500 underline hover:text-primary-600"
+                >
+                  {{ link }}
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    }
+  </div>
+}

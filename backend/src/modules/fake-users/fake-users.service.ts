@@ -21,7 +21,6 @@ export interface UpdateFakeUserDto {
 export interface FakeUserDto {
   id: string;
   displayName: string;
-  email: string;
   avatarSeed: string | null;
   gender: PrismaGender | null;
   isActive: boolean;
@@ -32,7 +31,6 @@ export interface FakeUserDto {
 @Injectable()
 export class FakeUsersService {
   private readonly logger = new Logger(FakeUsersService.name);
-  private readonly FAKE_EMAIL_DOMAIN = 'fake.zgadajsie.pl';
 
   constructor(
     private prisma: PrismaService,
@@ -48,7 +46,6 @@ export class FakeUsersService {
       select: {
         id: true,
         displayName: true,
-        email: true,
         avatarSeed: true,
         gender: true,
         isActive: true,
@@ -82,7 +79,6 @@ export class FakeUsersService {
       select: {
         id: true,
         displayName: true,
-        email: true,
         avatarSeed: true,
         gender: true,
         isActive: true,
@@ -100,26 +96,20 @@ export class FakeUsersService {
   }
 
   async create(dto: CreateFakeUserDto): Promise<FakeUserDto> {
-    const uuid = crypto.randomUUID();
-    const email = `fake-${uuid}@${this.FAKE_EMAIL_DOMAIN}`;
     const avatarSeed = this.generateRandomAvatarSeed();
 
     const user = await this.prisma.user.create({
       data: {
-        email,
         displayName: dto.displayName,
-        passwordHash: null,
         accountType: AccountType.FAKE,
         gender: dto.gender || null,
         isActive: false,
         avatarSeed,
         role: 'USER',
-        isEmailVerified: true,
       },
       select: {
         id: true,
         displayName: true,
-        email: true,
         avatarSeed: true,
         gender: true,
         isActive: true,
@@ -151,7 +141,6 @@ export class FakeUsersService {
       select: {
         id: true,
         displayName: true,
-        email: true,
         avatarSeed: true,
         gender: true,
         isActive: true,
@@ -213,7 +202,6 @@ export class FakeUsersService {
       select: {
         id: true,
         displayName: true,
-        email: true,
         avatarSeed: true,
         gender: true,
         isActive: true,

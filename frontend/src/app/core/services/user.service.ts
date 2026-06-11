@@ -13,6 +13,7 @@ interface UpdateProfileData {
   newPassword?: string;
   welcomeMessage?: string | null;
   welcomeMessageEnabled?: boolean;
+  socialLinks?: string[];
 }
 
 @Injectable({ providedIn: 'root' })

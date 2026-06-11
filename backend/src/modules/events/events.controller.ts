@@ -89,6 +89,16 @@ export class EventsController {
     return this.eventsService.getParticipants(id);
   }
 
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  @Get(':id/participants/:userId/profile')
+  getParticipantProfile(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.eventsService.getParticipantProfileForOrganizer(id, userId, user);
+  }
+
   @Get(':id/slots')
   getSlots(@Param('id') id: string) {
     return this.eventsService.getSlots(id);

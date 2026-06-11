@@ -74,8 +74,20 @@ export interface EventSlotInfo {
 }
 
 // Request interfaces for API calls
+// Dane tożsamości gościa zbierane w kreatorze dołączania (bez profilu dyscypliny —
+// poziom/wizytówkę zbiera wspólny modal profilu dyscypliny w kolejnym kroku).
+export interface GuestIdentityData {
+  displayName: string;
+  roleKey?: string;
+  avatarSeed?: string;
+  userId?: string;
+}
+
 export interface JoinGuestRequest {
   displayName: string;
+  // Profil dyscypliny gościa (snapshot) — poziom obowiązkowy, wizytówka opcjonalna.
+  levelSlug: string;
+  bio?: string | null;
   roleKey?: string;
   avatarSeed?: string;
   // Optional client-generated UUID for the new guest user. Sent so that the avatar

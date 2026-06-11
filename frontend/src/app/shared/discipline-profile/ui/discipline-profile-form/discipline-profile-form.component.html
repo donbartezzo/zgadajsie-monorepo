@@ -1,0 +1,51 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+  <div>
+    <label for="dp-level" class="mb-1 block text-sm font-medium text-neutral-700"> Poziom zaawansowania </label>
+    <select
+      id="dp-level"
+      formControlName="levelSlug"
+      class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-300"
+    >
+      <option value="" disabled>Wybierz poziom</option>
+      @for (level of levels(); track level.slug) {
+        <option [value]="level.slug">{{ 'dict.level.' + level.slug | transloco }}</option>
+      }
+    </select>
+    @if (form.controls.levelSlug.touched && form.controls.levelSlug.invalid) {
+      <p class="mt-1 text-xs text-danger-500">Wybierz poziom zaawansowania.</p>
+    }
+  </div>
+
+  <div>
+    <div class="mb-1 flex items-center justify-between">
+      <label for="dp-bio" class="text-sm font-medium text-neutral-700">
+        Wizytówka <span class="font-normal text-neutral-400">(opcjonalna)</span>
+      </label>
+      <span class="text-xs text-neutral-400">{{ bioLength() }}/{{ bioMaxLength }}</span>
+    </div>
+    <textarea
+      id="dp-bio"
+      formControlName="bio"
+      rows="4"
+      [attr.maxlength]="bioMaxLength"
+      placeholder="Np. Gram regularnie od kilku lat, szukam grania 1-2 razy w tygodniu."
+      class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-300"
+    ></textarea>
+    <p class="mt-1 text-xs text-neutral-500">
+      Krótki opis doświadczenia pomaga organizatorowi ocenić dopasowanie i zwiększa szansę na przyjęcie zgłoszenia.
+    </p>
+  </div>
+
+  <p class="rounded-lg bg-info-50 px-3 py-2 text-xs text-info-600">
+    Te dane są udostępniane organizatorom wydarzeń, do których się zgłaszasz.
+  </p>
+
+  <div class="flex justify-end gap-2">
+    @if (showCancel()) {
+      <app-button appearance="outline" color="neutral" type="button" (clicked)="onCancel()"> Anuluj </app-button>
+    }
+    <app-button appearance="solid" color="primary" type="submit" [loading]="pending()" [disabled]="pending()">
+      {{ submitLabel() }}
+    </app-button>
+  </div>
+</form>

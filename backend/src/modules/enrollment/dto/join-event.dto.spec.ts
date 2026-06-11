@@ -17,10 +17,29 @@ describe('JoinEventDto', () => {
 });
 
 describe('JoinGuestDto', () => {
-  it('przechodzi walidację z poprawnym displayName', async () => {
-    const dto = plainToInstance(JoinGuestDto, { displayName: 'Jan Kowalski' });
+  it('przechodzi walidację z poprawnym displayName i levelSlug', async () => {
+    const dto = plainToInstance(JoinGuestDto, {
+      displayName: 'Jan Kowalski',
+      levelSlug: 'regular',
+    });
     const errors = await validate(dto);
     expect(errors).toHaveLength(0);
+  });
+
+  it('odrzuca brak levelSlug (wymagany)', async () => {
+    const dto = plainToInstance(JoinGuestDto, { displayName: 'Jan Kowalski' });
+    const errors = await validate(dto);
+    expect(errors.some((e) => e.property === 'levelSlug')).toBe(true);
+  });
+
+  it('odrzuca bio dłuższe niż 500 znaków', async () => {
+    const dto = plainToInstance(JoinGuestDto, {
+      displayName: 'Jan',
+      levelSlug: 'regular',
+      bio: 'x'.repeat(501),
+    });
+    const errors = await validate(dto);
+    expect(errors.some((e) => e.property === 'bio')).toBe(true);
   });
 
   it('odrzuca brak displayName', async () => {
@@ -36,19 +55,27 @@ describe('JoinGuestDto', () => {
   });
 
   it('akceptuje opcjonalne roleKey w JoinGuestDto', async () => {
-    const dto = plainToInstance(JoinGuestDto, { displayName: 'Jan', roleKey: 'bramkarz' });
+    const dto = plainToInstance(JoinGuestDto, {
+      displayName: 'Jan',
+      levelSlug: 'regular',
+      roleKey: 'bramkarz',
+    });
     const errors = await validate(dto);
     expect(errors).toHaveLength(0);
   });
 
   it('akceptuje opcjonalne avatarSeed w JoinGuestDto', async () => {
-    const dto = plainToInstance(JoinGuestDto, { displayName: 'Jan', avatarSeed: 'abc123' });
+    const dto = plainToInstance(JoinGuestDto, {
+      displayName: 'Jan',
+      levelSlug: 'regular',
+      avatarSeed: 'abc123',
+    });
     const errors = await validate(dto);
     expect(errors).toHaveLength(0);
   });
 
   it('przechodzi walidację bez avatarSeed (pole opcjonalne)', async () => {
-    const dto = plainToInstance(JoinGuestDto, { displayName: 'Jan' });
+    const dto = plainToInstance(JoinGuestDto, { displayName: 'Jan', levelSlug: 'regular' });
     const errors = await validate(dto);
     expect(errors).toHaveLength(0);
   });
@@ -56,6 +83,7 @@ describe('JoinGuestDto', () => {
   it('akceptuje opcjonalne userId w formacie UUID', async () => {
     const dto = plainToInstance(JoinGuestDto, {
       displayName: 'Jan',
+      levelSlug: 'regular',
       userId: '550e8400-e29b-41d4-a716-446655440000',
     });
     const errors = await validate(dto);

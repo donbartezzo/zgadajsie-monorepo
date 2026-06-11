@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "composite": false,
+    "declaration": false,
+    "incremental": false,
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts", "../libs/src/**/*.ts", "../libs/email/src/**/*.ts"],
+  "exclude": [
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "src/test-setup.ts",
+    "../libs/**/*.spec.ts",
+    "../libs/**/*.test.ts"
+  ]
+}

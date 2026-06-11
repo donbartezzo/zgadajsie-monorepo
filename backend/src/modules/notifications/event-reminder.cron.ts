@@ -65,8 +65,17 @@ export class EventReminderCron implements OnModuleInit {
         enrollments: {
           where: { wantsIn: true, slot: { isNot: null }, user: { accountType: { not: 'FAKE' } } },
           include: {
-            user: { select: { id: true, email: true, displayName: true, accountType: true } },
-            addedBy: { select: { id: true, email: true, displayName: true } },
+            user: {
+              select: {
+                id: true,
+                displayName: true,
+                accountType: true,
+                realDetails: { select: { email: true } },
+              },
+            },
+            addedBy: {
+              select: { id: true, displayName: true, realDetails: { select: { email: true } } },
+            },
           },
         },
       },
@@ -77,6 +86,7 @@ export class EventReminderCron implements OnModuleInit {
       for (const p of event.enrollments) {
         // For GUEST users, notify and email the host instead
         const recipient = p.user.accountType === 'GUEST' && p.addedBy ? p.addedBy : p.user;
+        const recipientEmail = recipient.realDetails?.email;
         const guestLabel = p.addedBy ? ` (gość: ${p.user.displayName})` : '';
         try {
           await this.pushService.notifyEventReminder(
@@ -85,13 +95,15 @@ export class EventReminderCron implements OnModuleInit {
             event.id,
             hoursLeft,
           );
-          await this.emailService.sendEventReminderEmail(
-            recipient.email,
-            recipient.displayName,
-            `${event.title}${guestLabel}`,
-            event.startsAt,
-            eventLink,
-          );
+          if (recipientEmail) {
+            await this.emailService.sendEventReminderEmail(
+              recipientEmail,
+              recipient.displayName,
+              `${event.title}${guestLabel}`,
+              event.startsAt,
+              eventLink,
+            );
+          }
         } catch (err) {
           this.logger.error(`Reminder failed for user ${p.user.id}, event ${event.id}: ${err}`);
         }

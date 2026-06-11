@@ -261,46 +261,34 @@ export async function createFakeUsers(prisma: any) {
     return Math.random().toString(36).substring(2, 10);
   }
 
+  // Fake users to konta FAKE — bez UserRealDetails (brak email/hasła). Brak naturalnego
+  // klucza unikalnego, więc create zamiast upsert (seed czyści userów na starcie).
   for (const name of COMMON_SEED_DATA.fakeUsers.maleNames) {
-    const uuid = crypto.randomUUID();
-    const email = `fake-${uuid}@fake.zgadajsie.pl`;
     const avatarSeed = generateAvatarSeed();
 
-    await prisma.user.upsert({
-      where: { email },
-      update: {},
-      create: {
-        email,
+    await prisma.user.create({
+      data: {
         displayName: name,
-        passwordHash: null,
         accountType: 'FAKE',
         gender: 'MALE',
         isActive: true,
         avatarSeed,
         role: 'USER',
-        isEmailVerified: true,
       },
     });
   }
 
   for (const name of COMMON_SEED_DATA.fakeUsers.femaleNames) {
-    const uuid = crypto.randomUUID();
-    const email = `fake-${uuid}@fake.zgadajsie.pl`;
     const avatarSeed = generateAvatarSeed();
 
-    await prisma.user.upsert({
-      where: { email },
-      update: {},
-      create: {
-        email,
+    await prisma.user.create({
+      data: {
         displayName: name,
-        passwordHash: null,
         accountType: 'FAKE',
         gender: 'FEMALE',
         isActive: true,
         avatarSeed,
         role: 'USER',
-        isEmailVerified: true,
       },
     });
   }

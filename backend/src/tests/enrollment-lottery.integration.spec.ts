@@ -10,6 +10,7 @@ import { PrismaService } from '../modules/prisma/prisma.service';
 import { EnrollmentLotteryCron } from '../modules/notifications/enrollment-lottery.cron';
 import { PushService } from '../modules/notifications/push.service';
 import { EventRealtimeService } from '../modules/realtime/event-realtime.service';
+import { CronAdminService } from '../common/cron-admin/cron-admin.service';
 
 const TEST_PREFIX = 'intlot_';
 const PRE_ENROLLMENT_HOURS = 48;
@@ -26,6 +27,11 @@ describe('[Integration] EnrollmentLotteryCron - lottery flow', () => {
 
   const mockPush = { notifyParticipationStatus: jest.fn().mockResolvedValue(undefined) };
   const mockRealtime = { invalidateEvent: jest.fn() };
+  const mockCronAdmin = {
+    registerTrigger: jest.fn(),
+    recordRun: jest.fn(),
+    recordRunToDb: jest.fn().mockResolvedValue(undefined),
+  };
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -34,6 +40,7 @@ describe('[Integration] EnrollmentLotteryCron - lottery flow', () => {
         EnrollmentLotteryCron,
         { provide: PushService, useValue: mockPush },
         { provide: EventRealtimeService, useValue: mockRealtime },
+        { provide: CronAdminService, useValue: mockCronAdmin },
       ],
     }).compile();
 
@@ -76,19 +83,25 @@ describe('[Integration] EnrollmentLotteryCron - lottery flow', () => {
       where: { organizerUserId: { startsWith: TEST_PREFIX } },
     });
     await prisma.event.deleteMany({ where: { title: { startsWith: TEST_PREFIX } } });
-    await prisma.user.deleteMany({ where: { email: { startsWith: TEST_PREFIX } } });
+    await prisma.user.deleteMany({
+      where: { realDetails: { email: { startsWith: TEST_PREFIX } } },
+    });
     await module.close();
   });
 
   async function createOrganizer(suffix: string) {
     return prisma.user.create({
       data: {
-        email: `${TEST_PREFIX}org_${suffix}@test.pl`,
         displayName: 'Organizer',
-        passwordHash: 'hash',
         isActive: true,
-        isEmailVerified: true,
         role: 'USER',
+        realDetails: {
+          create: {
+            email: `${TEST_PREFIX}org_${suffix}@test.pl`,
+            passwordHash: 'hash',
+            isEmailVerified: true,
+          },
+        },
       },
     });
   }
@@ -96,12 +109,16 @@ describe('[Integration] EnrollmentLotteryCron - lottery flow', () => {
   async function createUser(suffix: string) {
     return prisma.user.create({
       data: {
-        email: `${TEST_PREFIX}user_${suffix}@test.pl`,
         displayName: 'Uczestnik',
-        passwordHash: 'hash',
         isActive: true,
-        isEmailVerified: true,
         role: 'USER',
+        realDetails: {
+          create: {
+            email: `${TEST_PREFIX}user_${suffix}@test.pl`,
+            passwordHash: 'hash',
+            isEmailVerified: true,
+          },
+        },
       },
     });
   }

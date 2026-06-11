@@ -564,9 +564,8 @@ export class EventManageComponent implements OnInit {
 
     this.eventService.assignSlot(id).subscribe({
       next: (result) => {
-        this.manageParticipants.update((prev) =>
-          prev.map((p) => (p.id === id ? { ...p, status: 'APPROVED' } : p)),
-        );
+        this.manageParticipants.update((prev) => prev.map((p) => (p.id === id ? result : p)));
+        this.loadSlots();
         this.snackbar.success('Przydzielono miejsce');
         void this.trustPrompt.promptTrustIfNeeded(result);
       },
@@ -583,10 +582,8 @@ export class EventManageComponent implements OnInit {
     }
 
     this.eventService.releaseSlot(id).subscribe({
-      next: () => {
-        this.manageParticipants.update((prev) =>
-          prev.map((p) => (p.id === id ? { ...p, status: 'REJECTED' } : p)),
-        );
+      next: (result) => {
+        this.manageParticipants.update((prev) => prev.map((p) => (p.id === id ? result : p)));
         this.snackbar.info('Odrzucono');
       },
       error: (err) => this.snackbar.error(err?.error?.message || 'Nie udało się odrzucić'),

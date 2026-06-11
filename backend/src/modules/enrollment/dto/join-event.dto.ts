@@ -1,4 +1,4 @@
-import { IsString, IsOptional, MinLength, IsUUID } from 'class-validator';
+import { IsString, IsOptional, MinLength, MaxLength, IsUUID, IsNotEmpty } from 'class-validator';
 
 export class BaseJoinEventDto {
   @IsOptional()
@@ -14,6 +14,17 @@ export class JoinGuestDto extends BaseJoinEventDto {
   @IsString()
   @MinLength(3)
   displayName: string;
+
+  // Profil dyscypliny gościa (snapshot) — poziom obowiązkowy (walidacja „!= open" w serwisie),
+  // wizytówka opcjonalna (max 500). Trafia do UserGuestDetails.
+  @IsString()
+  @IsNotEmpty()
+  levelSlug: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  bio?: string | null;
 
   @IsOptional()
   @IsString()

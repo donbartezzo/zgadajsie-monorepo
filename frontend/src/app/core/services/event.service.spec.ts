@@ -97,6 +97,26 @@ describe('EventService', () => {
     });
   });
 
+  describe('getParticipantProfile()', () => {
+    it('wysyła GET /events/:id/participants/:userId/profile', () => {
+      service.getParticipantProfile('event1', 'user1').subscribe();
+      const req = httpMock.expectOne(`${API}/event1/participants/user1/profile`);
+      expect(req.request.method).toBe('GET');
+      req.flush({ user: { id: 'user1' }, isGuest: false, disciplineProfile: null });
+    });
+  });
+
+  describe('joinGuest()', () => {
+    it('wysyła POST /events/:id/join-guest z pełnym body (levelSlug + bio)', () => {
+      const body = { displayName: 'Gość', levelSlug: 'regular', bio: 'opis' };
+      service.joinGuest('event1', body).subscribe();
+      const req = httpMock.expectOne(`${API}/event1/join-guest`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(body);
+      req.flush({ id: 'p1' });
+    });
+  });
+
   describe('updateEvent()', () => {
     it('wysyła PATCH /events/:id', () => {
       service.updateEvent('event1', { title: 'Updated' }).subscribe();

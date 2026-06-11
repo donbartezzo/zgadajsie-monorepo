@@ -11,6 +11,7 @@ import { ModerationService } from '../modules/moderation/moderation.service';
 import { EnrollmentEligibilityService } from '../modules/enrollment/enrollment-eligibility.service';
 import { EmailService } from '../modules/notifications/email.service';
 import { PushService } from '../modules/notifications/push.service';
+import { AppConfigService } from '../common/config/app-config.service';
 
 const TEST_PREFIX = 'intmod_';
 
@@ -38,6 +39,7 @@ describe('[Integration] Moderation → Eligibility', () => {
       providers: [
         ModerationService,
         EnrollmentEligibilityService,
+        { provide: AppConfigService, useValue: { frontendUrl: 'http://localhost:4300' } },
         { provide: EmailService, useValue: mockEmail },
         { provide: PushService, useValue: mockPush },
       ],
@@ -54,7 +56,9 @@ describe('[Integration] Moderation → Eligibility', () => {
       where: { organizerUserId: { startsWith: TEST_PREFIX } },
     });
     await prisma.reprimand.deleteMany({ where: { fromUserId: { startsWith: TEST_PREFIX } } });
-    await prisma.user.deleteMany({ where: { email: { startsWith: TEST_PREFIX } } });
+    await prisma.user.deleteMany({
+      where: { realDetails: { email: { startsWith: TEST_PREFIX } } },
+    });
     await module.close();
   });
 
@@ -62,12 +66,16 @@ describe('[Integration] Moderation → Eligibility', () => {
     const organizer = await prisma.user.create({
       data: {
         id: `${TEST_PREFIX}org_${Date.now()}`,
-        email: `${TEST_PREFIX}org_${Date.now()}@test.pl`,
         displayName: 'Organizer',
-        passwordHash: 'hash',
         isActive: true,
-        isEmailVerified: true,
         role: 'USER',
+        realDetails: {
+          create: {
+            email: `${TEST_PREFIX}org_${Date.now()}@test.pl`,
+            passwordHash: 'hash',
+            isEmailVerified: true,
+          },
+        },
       },
     });
     organizerId = organizer.id;
@@ -75,12 +83,16 @@ describe('[Integration] Moderation → Eligibility', () => {
     const user = await prisma.user.create({
       data: {
         id: `${TEST_PREFIX}user_${Date.now()}`,
-        email: `${TEST_PREFIX}user_${Date.now()}@test.pl`,
         displayName: 'Uczestnik',
-        passwordHash: 'hash',
         isActive: true,
-        isEmailVerified: true,
         role: 'USER',
+        realDetails: {
+          create: {
+            email: `${TEST_PREFIX}user_${Date.now()}@test.pl`,
+            passwordHash: 'hash',
+            isEmailVerified: true,
+          },
+        },
       },
     });
     userId = user.id;

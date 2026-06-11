@@ -46,6 +46,9 @@ const mockPrisma = {
     findUniqueOrThrow: jest.fn(),
     update: jest.fn(),
   },
+  userRealDetails: {
+    update: jest.fn(),
+  },
 };
 
 const mockOrganizerService = {
@@ -97,7 +100,11 @@ describe('OrganizerDigestCron', () => {
     });
 
     it('wysyła digest i aktualizuje weeklyDigestSentAt dla znalezionych organizatorów', async () => {
-      const organizer = { id: 'user-1', email: 'org@test.com', displayName: 'Jan Kowalski' };
+      const organizer = {
+        id: 'user-1',
+        displayName: 'Jan Kowalski',
+        realDetails: { email: 'org@test.com' },
+      };
       mockPrisma.user.findMany.mockResolvedValue([organizer]);
       mockPrisma.user.findUniqueOrThrow.mockResolvedValue(organizer);
       mockOrganizerService.getDigestData.mockResolvedValue(makeDigestWithContent());
@@ -105,21 +112,25 @@ describe('OrganizerDigestCron', () => {
       await cron.handleWeeklyDigestBatch();
 
       expect(mockEmailService.sendOrganizerWeeklyDigest).toHaveBeenCalledWith(
-        organizer.email,
+        organizer.realDetails.email,
         organizer.displayName,
         expect.objectContaining({ upcoming: expect.any(Array) }),
         FRONTEND_URL,
       );
-      expect(mockPrisma.user.update).toHaveBeenCalledWith(
+      expect(mockPrisma.userRealDetails.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { id: organizer.id },
+          where: { userId: organizer.id },
           data: { weeklyDigestSentAt: expect.any(Date) },
         }),
       );
     });
 
     it('nie wysyła e-maila gdy digest jest pusty, ale aktualizuje weeklyDigestSentAt', async () => {
-      const organizer = { id: 'user-2', email: 'empty@test.com', displayName: 'Pusta' };
+      const organizer = {
+        id: 'user-2',
+        displayName: 'Pusta',
+        realDetails: { email: 'empty@test.com' },
+      };
       mockPrisma.user.findMany.mockResolvedValue([organizer]);
       mockPrisma.user.findUniqueOrThrow.mockResolvedValue(organizer);
       mockOrganizerService.getDigestData.mockResolvedValue(makeEmptyDigest());
@@ -127,14 +138,14 @@ describe('OrganizerDigestCron', () => {
       await cron.handleWeeklyDigestBatch();
 
       expect(mockEmailService.sendOrganizerWeeklyDigest).not.toHaveBeenCalled();
-      expect(mockPrisma.user.update).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { id: organizer.id } }),
+      expect(mockPrisma.userRealDetails.update).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { userId: organizer.id } }),
       );
     });
 
     it('błąd u jednego organizatora nie blokuje pozostałych', async () => {
-      const org1 = { id: 'user-1', email: 'org1@test.com', displayName: 'Org 1' };
-      const org2 = { id: 'user-2', email: 'org2@test.com', displayName: 'Org 2' };
+      const org1 = { id: 'user-1', displayName: 'Org 1', realDetails: { email: 'org1@test.com' } };
+      const org2 = { id: 'user-2', displayName: 'Org 2', realDetails: { email: 'org2@test.com' } };
       mockPrisma.user.findMany.mockResolvedValue([org1, org2]);
       mockPrisma.user.findUniqueOrThrow.mockResolvedValueOnce(org1).mockResolvedValueOnce(org2);
       mockOrganizerService.getDigestData
@@ -145,7 +156,7 @@ describe('OrganizerDigestCron', () => {
 
       expect(mockEmailService.sendOrganizerWeeklyDigest).toHaveBeenCalledTimes(1);
       expect(mockEmailService.sendOrganizerWeeklyDigest).toHaveBeenCalledWith(
-        org2.email,
+        org2.realDetails.email,
         expect.any(String),
         expect.any(Object),
         FRONTEND_URL,
@@ -155,7 +166,7 @@ describe('OrganizerDigestCron', () => {
 
   describe('sendDigestForUser', () => {
     it('wysyła e-mail gdy digest ma zawartość', async () => {
-      const user = { id: 'user-1', email: 'org@test.com', displayName: 'Org' };
+      const user = { id: 'user-1', displayName: 'Org', realDetails: { email: 'org@test.com' } };
       mockPrisma.user.findUniqueOrThrow.mockResolvedValue(user);
       mockOrganizerService.getDigestData.mockResolvedValue(makeDigestWithContent());
 

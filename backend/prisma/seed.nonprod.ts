@@ -51,15 +51,15 @@ async function main() {
   const passwordHash = await hashPasswordForSeed('Admin123!');
   const admin = await prisma.user.create({
     data: {
-      email: APP_BRAND.CONTACT_EMAIL,
-      passwordHash,
       displayName: 'Administrator',
       role: 'ADMIN',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: { email: APP_BRAND.CONTACT_EMAIL, passwordHash, isEmailVerified: true },
+      },
     },
   });
-  console.log(`Admin: ${admin.email} (${admin.id})`);
+  console.log(`Admin: ${APP_BRAND.CONTACT_EMAIL} (${admin.id})`);
 
   // ─── Użytkownicy testowi ───────────────────────────────────────────────
   console.log('Tworzę użytkowników testowych...');
@@ -67,155 +67,195 @@ async function main() {
 
   const jan = await prisma.user.create({
     data: {
-      email: E2E_SEED.user.email,
-      passwordHash: userHash,
       displayName: 'Jan Kowalski',
       role: 'USER',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: { email: E2E_SEED.user.email, passwordHash: userHash, isEmailVerified: true },
+      },
     },
   });
 
   const anna = await prisma.user.create({
     data: {
-      email: 'anna.nowak@example.com',
-      passwordHash: userHash,
       displayName: 'Anna Nowak',
       role: 'USER',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: { email: 'anna.nowak@example.com', passwordHash: userHash, isEmailVerified: true },
+      },
     },
   });
 
   const marek = await prisma.user.create({
     data: {
-      email: 'marek.wisniewski@example.com',
-      passwordHash: userHash,
       displayName: 'Marek Wiśniewski',
       role: 'USER',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: {
+          email: 'marek.wisniewski@example.com',
+          passwordHash: userHash,
+          isEmailVerified: true,
+        },
+      },
     },
   });
 
   const kasia = await prisma.user.create({
     data: {
-      email: 'kasia.zielinska@example.com',
-      passwordHash: userHash,
       displayName: 'Kasia Zielińska',
       role: 'USER',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: {
+          email: 'kasia.zielinska@example.com',
+          passwordHash: userHash,
+          isEmailVerified: true,
+        },
+      },
     },
   });
 
   const tomek = await prisma.user.create({
     data: {
-      email: 'tomek.lewandowski@example.com',
-      passwordHash: userHash,
       displayName: 'Tomek Lewandowski',
       role: 'USER',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: {
+          email: 'tomek.lewandowski@example.com',
+          passwordHash: userHash,
+          isEmailVerified: true,
+        },
+      },
     },
   });
 
   const ola = await prisma.user.create({
     data: {
-      email: 'ola.krupa@example.com',
-      passwordHash: userHash,
       displayName: 'Ola Krupa',
       role: 'USER',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: { email: 'ola.krupa@example.com', passwordHash: userHash, isEmailVerified: true },
+      },
     },
   });
 
   const piotr = await prisma.user.create({
     data: {
-      email: 'piotr.jaworski@example.com',
-      passwordHash: userHash,
       displayName: 'Piotr Jaworski',
       role: 'USER',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: {
+          email: 'piotr.jaworski@example.com',
+          passwordHash: userHash,
+          isEmailVerified: true,
+        },
+      },
     },
   });
 
   const magda = await prisma.user.create({
     data: {
-      email: 'magda.kaczmarek@example.com',
-      passwordHash: userHash,
       displayName: 'Magda Kaczmarek',
       role: 'USER',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: {
+          email: 'magda.kaczmarek@example.com',
+          passwordHash: userHash,
+          isEmailVerified: true,
+        },
+      },
     },
   });
 
   const kuba = await prisma.user.create({
     data: {
-      email: 'kuba.nowicki@example.com',
-      passwordHash: userHash,
       displayName: 'Kuba Nowicki',
       role: 'USER',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: {
+          email: 'kuba.nowicki@example.com',
+          passwordHash: userHash,
+          isEmailVerified: true,
+        },
+      },
     },
   });
 
   const natalia = await prisma.user.create({
     data: {
-      email: 'natalia.piatek@example.com',
-      passwordHash: userHash,
       displayName: 'Natalia Piątek',
       role: 'USER',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: {
+          email: 'natalia.piatek@example.com',
+          passwordHash: userHash,
+          isEmailVerified: true,
+        },
+      },
     },
   });
 
   const wojtek = await prisma.user.create({
     data: {
-      email: 'wojtek.sikora@example.com',
-      passwordHash: userHash,
       displayName: 'Wojtek Sikora',
       role: 'USER',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: {
+          email: 'wojtek.sikora@example.com',
+          passwordHash: userHash,
+          isEmailVerified: true,
+        },
+      },
     },
   });
 
   const karolina = await prisma.user.create({
     data: {
-      email: 'karolina.gorska@example.com',
-      passwordHash: userHash,
       displayName: 'Karolina Górska',
       role: 'USER',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: {
+          email: 'karolina.gorska@example.com',
+          passwordHash: userHash,
+          isEmailVerified: true,
+        },
+      },
     },
   });
 
   const sebastian = await prisma.user.create({
     data: {
-      email: 'sebastian.olesiak@example.com',
-      passwordHash: userHash,
       displayName: 'Sebastian Olesiak',
       role: 'USER',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: {
+          email: 'sebastian.olesiak@example.com',
+          passwordHash: userHash,
+          isEmailVerified: true,
+        },
+      },
     },
   });
 
   const _donbartezzo = await prisma.user.create({
     data: {
-      email: 'donbartezzo@gmail.com',
-      passwordHash: userHash,
       displayName: 'Don Bartezzo',
       role: 'USER',
       isActive: true,
-      isEmailVerified: true,
+      realDetails: {
+        create: { email: 'donbartezzo@gmail.com', passwordHash: userHash, isEmailVerified: true },
+      },
     },
   });
 
@@ -311,12 +351,16 @@ async function main() {
     const lastName = lastNames[i % lastNames.length];
     const user = await prisma.user.create({
       data: {
-        email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
-        passwordHash: userHash,
         displayName: `${firstName} ${lastName}`,
         role: 'USER',
         isActive: true,
-        isEmailVerified: true,
+        realDetails: {
+          create: {
+            email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
+            passwordHash: userHash,
+            isEmailVerified: true,
+          },
+        },
       },
     });
     extraUsers.push(user);

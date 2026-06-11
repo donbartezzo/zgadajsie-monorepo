@@ -8,6 +8,7 @@ import { CitySubscriptionsModule } from '../city-subscriptions/city-subscription
 import { SlotModule } from '../slots/slot.module';
 import { EventRealtimeModule } from '../realtime/event-realtime.module';
 import { FakeUsersModule } from '../fake-users/fake-users.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { FakeUsersModule } from '../fake-users/fake-users.module';
     SlotModule,
     EventRealtimeModule,
     FakeUsersModule,
+    UsersModule,
   ],
   controllers: [EventsController],
   providers: [EventsService, EnrollmentEligibilityService],

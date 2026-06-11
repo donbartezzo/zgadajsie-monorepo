@@ -37,10 +37,12 @@ export class OrganizerDigestCron implements OnModuleInit {
       const organizers = await this.prisma.user.findMany({
         where: {
           isActive: true,
-          OR: [{ weeklyDigestSentAt: null }, { weeklyDigestSentAt: { lt: startOfWeek } }],
           organizedEvents: { some: {} },
+          realDetails: {
+            OR: [{ weeklyDigestSentAt: null }, { weeklyDigestSentAt: { lt: startOfWeek } }],
+          },
         },
-        select: { id: true, email: true, displayName: true },
+        select: { id: true },
         take: BATCH_SIZE,
       });
 
@@ -78,8 +80,9 @@ export class OrganizerDigestCron implements OnModuleInit {
   async sendDigestForUser(userId: string): Promise<void> {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
-      select: { id: true, email: true, displayName: true },
+      select: { id: true, displayName: true, realDetails: { select: { email: true } } },
     });
+    const email = user.realDetails?.email;
 
     const data = await this.organizerService.getDigestData(userId);
     const hasContent =
@@ -89,26 +92,26 @@ export class OrganizerDigestCron implements OnModuleInit {
       data.upcoming.length > 0 ||
       data.activeSeries.length > 0;
 
-    if (!hasContent) {
-      await this.prisma.user.update({
-        where: { id: userId },
+    if (!hasContent || !email) {
+      await this.prisma.userRealDetails.update({
+        where: { userId },
         data: { weeklyDigestSentAt: new Date() },
       });
       return;
     }
 
     await this.emailService.sendOrganizerWeeklyDigest(
-      user.email,
+      email,
       user.displayName,
       data,
       this.appConfig.frontendUrl,
     );
 
-    await this.prisma.user.update({
-      where: { id: userId },
+    await this.prisma.userRealDetails.update({
+      where: { userId },
       data: { weeklyDigestSentAt: new Date() },
     });
 
-    this.logger.log(`Digest sent to ${user.email}`);
+    this.logger.log(`Digest sent to ${email}`);
   }
 }

@@ -1,6 +1,16 @@
-import { IsEmail, IsOptional, IsString, MaxLength, MinLength, IsBoolean } from 'class-validator';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+  IsBoolean,
+  IsArray,
+  ArrayMaxSize,
+} from 'class-validator';
 import { IsStrongPassword } from '../../../common/validators/password.decorator';
 import { IsSupportedSupportUrl } from '../../../common/validators/support-url.validator';
+import { IsSafeSocialUrl } from '../../../common/validators/social-url.validator';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -38,4 +48,11 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsBoolean()
   welcomeMessageEnabled?: boolean;
+
+  // Max 3 linki społecznościowe (tylko URL, bez etykiet). Bezpieczne schematy http(s).
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(3)
+  @IsSafeSocialUrl({ each: true })
+  socialLinks?: string[];
 }

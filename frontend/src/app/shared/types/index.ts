@@ -14,3 +14,4 @@ export * from './cover-image.interface';
 export * from './event-announcement.interface';
 export * from './event-series.interface';
 export * from './contact-message.interface';
+export * from './discipline-profile.interface';

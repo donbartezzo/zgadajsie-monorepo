@@ -24,7 +24,7 @@ const buildNotification = (overrides: Partial<Record<string, unknown>> = {}) => 
   relatedEventId: 'event1',
   pushSentAt: null,
   emailSentAt: null,
-  user: { email: 'user@example.com', displayName: 'Test User' },
+  user: { displayName: 'Test User', realDetails: { email: 'user@example.com' } },
   ...overrides,
 });
 
@@ -146,7 +146,10 @@ describe('NotificationEscalationCron', () => {
 
       await cron.run();
 
-      expect(emailService.sendTransactionalForNotification).toHaveBeenCalledWith(notification);
+      expect(emailService.sendTransactionalForNotification).toHaveBeenCalledWith({
+        ...notification,
+        user: { email: 'user@example.com', displayName: 'Test User' },
+      });
       expect(prisma.notification.update).toHaveBeenCalledWith({
         where: { id: 'notif1' },
         data: { emailSentAt: expect.any(Date) },
@@ -179,7 +182,9 @@ describe('NotificationEscalationCron', () => {
           updatedAt: { lte: expect.any(Date) },
           OR: [{ relevanceUntil: null }, { relevanceUntil: { gt: expect.any(Date) } }],
         },
-        include: { user: { select: { email: true, displayName: true } } },
+        include: {
+          user: { select: { displayName: true, realDetails: { select: { email: true } } } },
+        },
         take: 100,
       });
     });
