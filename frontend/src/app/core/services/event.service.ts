@@ -13,6 +13,7 @@ import {
   UpdateGuestResponse,
   CancelPaymentRequest,
   LockSlotResponse,
+  OrganizerParticipantProfile,
 } from '../../shared/types';
 
 interface PaginatedEvents {
@@ -106,24 +107,15 @@ export class EventService {
     return this.payEnrollment(enrollmentId);
   }
 
-  joinGuest(
-    eventId: string,
-    displayName: string,
-    roleKey?: string,
-    avatarSeed?: string,
-    userId?: string,
-  ): Observable<Enrollment> {
-    const body: JoinGuestRequest = { displayName };
-    if (roleKey) {
-      body.roleKey = roleKey;
-    }
-    if (avatarSeed) {
-      body.avatarSeed = avatarSeed;
-    }
-    if (userId) {
-      body.userId = userId;
-    }
+  joinGuest(eventId: string, body: JoinGuestRequest): Observable<Enrollment> {
     return this.http.post<Enrollment>(`${this.apiUrl}/${eventId}/join-guest`, body);
+  }
+
+  // Profil uczestnika dla organizatora (ogólny + profil dyscypliny wydarzenia / snapshot gościa).
+  getParticipantProfile(eventId: string, userId: string): Observable<OrganizerParticipantProfile> {
+    return this.http.get<OrganizerParticipantProfile>(
+      `${this.apiUrl}/${eventId}/participants/${userId}/profile`,
+    );
   }
 
   updateGuest(enrollmentId: string, payload: UpdateGuestRequest): Observable<UpdateGuestResponse> {

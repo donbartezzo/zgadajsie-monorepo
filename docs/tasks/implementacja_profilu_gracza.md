@@ -381,32 +381,34 @@ Każdy etap można odhaczać po ukończeniu i zweryfikowaniu (testy + przegląd)
 
 ## Etap 6 — Frontend: wspólny modal profilu dyscypliny
 
-- [ ] Komponent overlay/modal „Profil dyscypliny" (create + edit): pole poziomu (wymagane) + wizytówka (opcjonalna, z komunikatem zachęcającym), licznik do 500 znaków
-- [ ] Reużycie w ścieżce dołączania (obsługa `409 DISCIPLINE_PROFILE_REQUIRED` → modal → ponowienie zapisu)
-- [ ] Reużycie przy dodawaniu gościa (zapis do `guest*`)
-- [ ] Walidacja kliencka spójna z backendem
+- [x] Komponent `DisciplineProfileFormComponent` (`shared/discipline-profile/ui/`): select poziomu (wymagany, słownik bez `open`), wizytówka opcjonalna z licznikiem do 500 i komunikatem zachęcającym + notą o udostępnianiu organizatorom; prezentacyjny (emituje `save`/`cancelled`)
+- [x] Typy (`DisciplineProfile`, `ParticipantStats`, `OrganizerParticipantProfile`, `DisciplineProfileRequiredError`; `JoinGuestRequest` + `levelSlug`/`bio`) + `DisciplineProfileService` (`getMine`/`getMineForDiscipline`/`upsert`/`getMyStats`)
+- [x] Walidacja kliencka spójna z backendem (poziom wymagany, bio max 500, `open` wykluczony); testy: komponent (5) + serwis (4)
+- [x] **Reużycie w ścieżce dołączania**: nowy overlay `disciplineProfile` (`BottomOverlaysService.openDisciplineProfile` + `DisciplineProfileOverlayComponent`); `EventAreaService.confirmJoin` łapie `409 DISCIPLINE_PROFILE_REQUIRED` → modal → `upsert` → ponowienie `join`
+- [x] **Reużycie przy dodawaniu gościa**: `confirmJoinGuest(identity)` zbiera tożsamość z kreatora → otwiera ten sam modal → `submitGuest` woła `joinGuest` z `levelSlug`/`bio`; `event.service.joinGuest` przepięty na obiekt `JoinGuestRequest`, nowy typ `GuestIdentityData` (kreator bez zmian)
+- [x] Weryfikacja: pełny build frontu (AOT) OK, pełny suite jednostkowy frontu **35 suite / 320 testów** zielony, lint czysty
 
 ## Etap 7 — Frontend: rozbudowa `/profile` (Panel uczestnika)
 
-- [ ] Sekcja podstawowych danych (nazwa, avatar — istniejący system)
-- [ ] Sekcja statystyk uczestnika
-- [ ] Sekcja linków społecznościowych (max 3, dodaj/usuń/edytuj)
-- [ ] Lista profili dyscyplin z wejściem w modal edycji
-- [ ] Komunikat informujący, że dane są udostępniane organizatorom wydarzeń, do których użytkownik się zgłasza
-- [ ] Zgodność z `styleguide-frontend.md` i tokenami (tylko semantyczne klasy)
+- [x] Sekcja podstawowych danych (nazwa, avatar — istniejący `UserProfileCardComponent`, zachowany)
+- [x] Sekcja statystyk uczestnika — `ParticipantStatsComponent` (prezentacyjny, reużywalny w Etapie 8) zasilany `DisciplineProfileService.getMyStats()`
+- [x] Sekcja linków społecznościowych — `SocialLinksEditorComponent` (max 3, dodaj/usuń/edytuj, walidacja http(s)); zapis przez `updateProfile({ socialLinks })`; typ `User.socialLinks` dodany
+- [x] Lista profili dyscyplin (`getMine`) z edycją przez **reużyty overlay `disciplineProfile`** (3. kontekst) → `upsert` → odświeżenie
+- [x] Komunikat o udostępnianiu danych organizatorom (nota `info`)
+- [x] Zgodność ze styleguide/tokenami (standalone, OnPush, sygnały, `input/output/inject`, tylko semantyczne klasy); testy: `social-links-editor` (8); build AOT OK, suite frontu **36 suite / 328 testów**
 
 ## Etap 8 — Frontend: widok organizatora
 
-- [ ] W przeglądzie zgłoszeń: rozwinięcie „Profil Uczestnika" (ogólne) + „Profil dyscypliny" (per wydarzenie)
-- [ ] Linki społecznościowe jako klikalne, `target="_blank"` + `rel="noopener noreferrer"`
-- [ ] Dla gościa: snapshot dyscyplinowy w tym samym miejscu co profil standardowego uczestnika
-- [ ] Neutralny stan „Brak profilu dyscypliny"
-- [ ] Oznaczenia „nowy dla organizatora" i „Zaufany uczestnik"
+- [x] `OrganizerParticipantProfileComponent` wpięty w `EnrollmentSlotModalComponent` (sekcja „Profil uczestnika") — pobiera `getParticipantProfile`; statystyki (reużyty `ParticipantStatsComponent`) + profil dyscypliny wydarzenia
+- [x] Linki społecznościowe klikalne: `target="_blank"` + `rel="noopener noreferrer"`
+- [x] Gość: snapshot dyscyplinowy (`UserGuestDetails`) w tym samym miejscu, bez statystyk/linków
+- [x] Neutralny stan „Brak profilu dyscypliny" gdy `disciplineProfile: null`
+- [x] Oznaczenia „Nowy dla Ciebie" (`isNewToOrganizer`) i „Zaufany uczestnik" (`isTrusted`); serwis `getParticipantProfile` + test HTTP; build AOT OK, suite frontu **36 suite / 330 testów**
 
 ## Etap 9 — Design system i dokumentacja
 
-- [ ] Jeśli dochodzą nowe elementy UI: aktualizacja `docs/design-tokens.md` i `/dev/design-system`
-- [ ] Aktualizacja dokumentacji funkcjonalnej, jeśli potrzeba
+- [x] **Brak nowych elementów design systemu** — wszystkie nowe komponenty używają istniejących tokenów semantycznych (`primary`/`neutral`/`info`/`success`/`danger`), istniejących prymitywów (`app-button`, `app-icon`, `app-card`, `app-bottom-overlay`) i istniejącej ikony `trash`. Nie dodano nowych kolorów/ikon/tokenów → `docs/design-tokens.md` i `/dev/design-system` bez zmian
+- [x] Dokumentacja zadania (ten plik) na bieżąco aktualizowana per etap
 
 ## Etap 10 — Testy E2E / integracyjne i przegląd
 

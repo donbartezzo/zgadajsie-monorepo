@@ -1,10 +1,14 @@
 import { computed, effect, inject, Injectable, NgZone, signal } from '@angular/core';
 import { bufferTime, filter, finalize, forkJoin, map, Subject, Subscription } from 'rxjs';
 import { EventService } from '../../../core/services/event.service';
+import { DisciplineProfileService } from '../../../core/services/discipline-profile.service';
 import { EventRealtimeService } from '../../../core/services/event-realtime.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { SnackbarService } from '../../../shared/ui/snackbar/snackbar.service';
-import { BottomOverlaysService } from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
+import {
+  BottomOverlaysService,
+  DisciplineProfileValue,
+} from '../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { ModalService } from '../../../shared/ui/modal/modal.service';
 import { ConfirmModalService } from '../../../shared/ui/confirm-modal/confirm-modal.service';
 import {
@@ -14,6 +18,7 @@ import {
 import { NavigationService } from '../../../core/services/navigation.service';
 import {
   Event as EventModel,
+  GuestIdentityData,
   Participation,
   ParticipationStatus,
   WaitingReason,
@@ -41,6 +46,7 @@ const AUTO_REFRESH_INTERVAL = 120000; // 120 seconds - safety-net fallback; prim
 export class EventAreaService {
   private readonly navigation = inject(NavigationService);
   private readonly eventService = inject(EventService);
+  private readonly disciplineProfileService = inject(DisciplineProfileService);
   private readonly auth = inject(AuthService);
   private readonly ngZone = inject(NgZone);
   private readonly snackbar = inject(SnackbarService);
@@ -588,10 +594,7 @@ export class EventAreaService {
 
   private registerOverlayCallbacks(): void {
     this.overlays.onJoinConfirmed((roleKey?: string) => this.confirmJoin(roleKey));
-    this.overlays.onJoinGuestConfirmed(
-      (data: { displayName: string; roleKey?: string; avatarSeed?: string; userId?: string }) =>
-        this.confirmJoinGuest(data.displayName, data.roleKey, data.avatarSeed, data.userId),
-    );
+    this.overlays.onJoinGuestConfirmed((data) => this.confirmJoinGuest(data));
     this.overlays.onPay(() => this.payEvent());
     this.overlays.onRejoinParticipantRequested((p) => this.confirmRejoinParticipant(p));
     this.overlays.onAddGuestRequested(() => this.openAddGuest());
@@ -788,12 +791,43 @@ export class EventAreaService {
           },
         });
       },
-      error: (err: { error?: { message?: string; suggestion?: string } }) => {
+      error: (err: {
+        error?: { message?: string; suggestion?: string; code?: string; disciplineSlug?: string };
+      }) => {
+        // Brak profilu dyscypliny → otwórz modal, zapisz profil i ponów zapis.
+        if (err.error?.code === 'DISCIPLINE_PROFILE_REQUIRED' && err.error.disciplineSlug) {
+          this.openDisciplineProfileGate(err.error.disciplineSlug, () => this.confirmJoin(roleKey));
+          return;
+        }
         const msg = err.error?.message || 'Nie udało się dołączyć do wydarzenia';
         const suggestion = err.error?.suggestion;
         this.snackbar.error(suggestion ? `${msg}. ${suggestion}` : msg);
       },
     });
+  }
+
+  /**
+   * Bramka profilu dyscypliny: otwiera wspólny modal, po zapisie upsertuje profil
+   * i ponawia przerwaną akcję (zapis / rejoin).
+   */
+  private openDisciplineProfileGate(disciplineSlug: string, retry: () => void): void {
+    this.overlays.openDisciplineProfile(
+      { disciplineSlug, initial: null, submitLabel: 'Zapisz i dołącz' },
+      (value) => {
+        this.joining.set(true);
+        this.disciplineProfileService
+          .upsert(disciplineSlug, value)
+          .pipe(finalize(() => this.joining.set(false)))
+          .subscribe({
+            next: () => {
+              this.overlays.close();
+              retry();
+            },
+            error: (e: { error?: { message?: string } }) =>
+              this.snackbar.error(e.error?.message ?? 'Nie udało się zapisać profilu dyscypliny'),
+          });
+      },
+    );
   }
 
   /**
@@ -876,22 +910,38 @@ export class EventAreaService {
     });
   }
 
-  confirmJoinGuest(
-    displayName: string,
-    roleKey?: string,
-    avatarSeed?: string,
-    userId?: string,
-  ): void {
+  // Po zebraniu tożsamości gościa w kreatorze otwieramy wspólny modal profilu dyscypliny
+  // (poziom + wizytówka gościa), a po zapisie wykonujemy faktyczne dodanie gościa.
+  confirmJoinGuest(identity: GuestIdentityData): void {
+    const disciplineSlug = this.event()?.disciplineSlug;
+    if (!disciplineSlug) {
+      this.snackbar.error('Nie udało się dodać gościa: brak dyscypliny wydarzenia');
+      return;
+    }
+    this.overlays.openDisciplineProfile(
+      { disciplineSlug, initial: null, submitLabel: 'Dodaj gościa' },
+      (profile) => this.submitGuest(identity, profile),
+    );
+  }
+
+  private submitGuest(identity: GuestIdentityData, profile: DisciplineProfileValue): void {
     this.joining.set(true);
     this.overlays.close();
 
     this.eventService
-      .joinGuest(this._eventId, displayName, roleKey, avatarSeed, userId)
+      .joinGuest(this._eventId, {
+        displayName: identity.displayName,
+        levelSlug: profile.levelSlug,
+        bio: profile.bio,
+        roleKey: identity.roleKey,
+        avatarSeed: identity.avatarSeed,
+        userId: identity.userId,
+      })
       .pipe(finalize(() => this.joining.set(false)))
       .subscribe({
         next: (p) => {
           const toastMsg = this.getJoinSuccessMessage(p.status, p.waitingReason);
-          this.snackbar.success(`Dodano gościa: ${displayName}. ${toastMsg}`);
+          this.snackbar.success(`Dodano gościa: ${identity.displayName}. ${toastMsg}`);
 
           this.eventService.getParticipants(this._eventId).subscribe({
             next: (participants) => {

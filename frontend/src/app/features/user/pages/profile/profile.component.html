@@ -17,6 +17,65 @@
       }
     </app-user-profile-card>
 
+    <!-- Statystyki uczestnika + informacja o udostępnianiu danych -->
+    <app-card>
+      <div class="space-y-3">
+        <h3 class="text-sm font-semibold text-neutral-900">Twój profil uczestnika</h3>
+        <app-participant-stats [stats]="stats()" />
+        <p class="rounded-lg bg-info-50 px-3 py-2 text-xs text-info-600">
+          Profil uczestnika, linki społecznościowe i profile dyscyplin są udostępniane organizatorom wydarzeń, do
+          których się zgłaszasz.
+        </p>
+      </div>
+    </app-card>
+
+    <!-- Linki społecznościowe -->
+    <app-card>
+      <div class="space-y-3">
+        <div>
+          <h3 class="text-sm font-semibold text-neutral-900">Linki społecznościowe</h3>
+          <p class="text-xs text-neutral-500">
+            Maksymalnie 3 linki (np. Facebook, Instagram, LinkedIn). Zwiększają Twoją wiarygodność u organizatorów.
+          </p>
+        </div>
+        <app-social-links-editor [initialLinks]="user.socialLinks ?? null" (save)="onSocialLinksSave($event)" />
+      </div>
+    </app-card>
+
+    <!-- Profile dyscyplin -->
+    <app-card>
+      <div class="space-y-3">
+        <h3 class="text-sm font-semibold text-neutral-900">Profile dyscyplin</h3>
+        @if (disciplineProfiles().length === 0) {
+          <p class="text-xs text-neutral-500">
+            Nie masz jeszcze profili dyscyplin. Powstaną automatycznie przy pierwszym zapisie na wydarzenie danej
+            dyscypliny.
+          </p>
+        } @else {
+          <ul class="space-y-2">
+            @for (profile of disciplineProfiles(); track profile.id) {
+              <li class="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 px-3 py-2">
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-medium text-neutral-900">
+                    {{ 'dict.discipline.' + profile.disciplineSlug | transloco }}
+                  </p>
+                  <p class="truncate text-xs text-neutral-500">
+                    {{ 'dict.level.' + profile.levelSlug | transloco }}
+                    @if (profile.bio) {
+                      · {{ profile.bio }}
+                    }
+                  </p>
+                </div>
+                <app-button appearance="ghost" color="neutral" size="sm" (clicked)="editDisciplineProfile(profile)">
+                  Edytuj
+                </app-button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </app-card>
+
     @if (auth.currentUser()?.isActive) {
       <div class="space-y-3">
         <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Panel organizatora</p>

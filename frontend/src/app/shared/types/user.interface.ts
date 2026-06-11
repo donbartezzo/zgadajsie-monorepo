@@ -11,4 +11,6 @@ export interface User {
   updatedAt: string;
   welcomeMessage?: string | null;
   welcomeMessageEnabled?: boolean;
+  // Linki społecznościowe (max 3 URL-e), widoczne dla organizatorów wydarzeń.
+  socialLinks?: string[] | null;
 }
