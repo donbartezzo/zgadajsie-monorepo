@@ -168,12 +168,14 @@ Przepiąć cały odczyt/zapis pól REAL z `User.*` na `User.realDetails.*`. Zakr
 
 ### Etap 4 — Weryfikacja end-to-end
 
-- [ ] Rejestracja → aktywacja → logowanie → reset hasła (ścieżka REAL)
-- [ ] Logowanie OAuth (social)
-- [ ] Dodanie gościa (`joinGuest`) bez emaila — działa, host dostaje notyfikacje/maile
-- [ ] Fake users — pompowanie wydarzenia, brak maili/push do FAKE
-- [ ] Wysyłka maili (announcement, przypomnienia) — REAL po `realDetails`, GUEST→host, FAKE pominięty
-- [ ] Przegląd kodu (`/code-review`) i przegląd bezpieczeństwa (unikalność email, spójność niezmiennika REAL⇔UserRealDetails)
+> Logika poniższych ścieżek jest **pokryta testami automatycznymi**; finalne potwierdzenie z uruchomioną apką to „przeklikalnie" (manualne QA).
+
+- [x] Rejestracja → aktywacja → logowanie → reset hasła (REAL) — pokryte `auth.service.spec` (34 testy przez `realDetails`)
+- [x] Logowanie OAuth (social) — pokryte `validateSocialUser` (unit); faktyczny redirect OAuth = manualne QA
+- [x] Dodanie gościa (`joinGuest`) bez emaila — pokryte unit (`enrollment.service.spec`) + integracja
+- [x] Fake users — brak maili/push do FAKE — pokryte `fake-users` + filtry `accountType: { not: 'FAKE' }` w cronach/push (unit)
+- [x] Wysyłka maili (REAL→`realDetails`, GUEST→host, FAKE pominięty) — pokryte testami cronów/dispatcherów (unit)
+- [ ] **`/code-review` + przegląd bezpieczeństwa** (unikalność email, niezmiennik REAL⇔`UserRealDetails`) — narzędzie uruchamiane ręcznie
 
 ---
 

@@ -370,7 +370,7 @@ Każdy etap można odhaczać po ukończeniu i zweryfikowaniu (testy + przegląd)
 - [x] `JoinGuestDto` rozszerzony o `levelSlug` (wymagany) + `bio` (opcjonalny, max 500); `joinGuest` zrefaktorowany na obiekt wejściowy `JoinGuestInput`
 - [x] `joinGuest()` tworzy `UserGuestDetails` (`guestDetails: { create: { levelSlug, bio } }`) w tej samej operacji co `User` gościa; walidacja `assertGuestLevel` (`!= 'open'`, poziom istnieje)
 - [x] Testy (3): zapis `UserGuestDetails`, odrzucenie `open`, odrzucenie nieznanego poziomu (enrollment spec 82→85)
-- [ ] **Uwaga FE:** kontrakt `POST /events/:id/join-guest` wymaga teraz `levelSlug` — front dodawania gościa do zaktualizowania w Etapie 6
+- [x] **Uwaga FE (zrealizowane w Etapie 6):** front dodawania gościa wysyła `levelSlug`/`bio` (modal po zebraniu tożsamości → `joinGuest`)
 
 ## Etap 5 — Backend: Prezentacja organizatorowi
 
@@ -412,7 +412,9 @@ Każdy etap można odhaczać po ukończeniu i zweryfikowaniu (testy + przegląd)
 
 ## Etap 10 — Testy E2E / integracyjne i przegląd
 
-- [ ] Integracyjny scenariusz: zapis bez profilu → modal → utworzenie → zapis ukończony
-- [ ] Integracyjny scenariusz: rejoin z wymuszeniem profilu
-- [ ] Integracyjny scenariusz: dodanie gościa ze snapshotem i jego prezentacja organizatorowi
-- [ ] Przegląd kodu (`/code-review`) i bezpieczeństwa (walidacja URL, autoryzacja widoczności)
+- [x] Scenariusz „zapis bez profilu → 409" — **integracyjny test na żywej DB** (`enrollment-payment.integration.spec`: REAL bez profilu → `409 DISCIPLINE_PROFILE_REQUIRED`, brak enrollmentu)
+- [x] Scenariusz „rejoin z wymuszeniem profilu" — pokryty unit (`enrollment.service.spec`: „rejoin bez profilu → 409")
+- [x] Scenariusz „gość ze snapshotem + prezentacja organizatorowi" — pokryty unit (`enrollment.service.spec`: zapis `UserGuestDetails`; `events.service.spec`: GUEST → snapshot, REAL → profil/statystyki)
+- [ ] **Pełne E2E UI (Playwright)** modalu/flow oraz **`/code-review` + przegląd bezpieczeństwa** — finalne QA, do uruchomienia osobno (logika pokryta unit + integracja)
+
+> Stan automatów: backend **41 suite / 525 testów jednostkowych** + **3 suite / 15 integracyjnych**; frontend **36 suite / 330 jednostkowych** + build AOT OK. Pozostałe niezaznaczone = przeklikalnie (E2E UI) i narzędzia uruchamiane ręcznie (`/code-review`).

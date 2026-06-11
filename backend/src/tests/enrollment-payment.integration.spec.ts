@@ -4,6 +4,7 @@
  */
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5434/zgadajsie_test?schema=public';
 
+import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaModule } from '../modules/prisma/prisma.module';
 import { PrismaService } from '../modules/prisma/prisma.service';
@@ -181,6 +182,58 @@ describe('[Integration] Enrollment join flow', () => {
     });
     return event;
   }
+
+  describe('join() - wymuszanie profilu dyscypliny', () => {
+    it('REAL bez profilu dyscypliny → 409 DISCIPLINE_PROFILE_REQUIRED (brak enrollmentu)', async () => {
+      const suffix = `noprofile_${Date.now()}`;
+      const organizer = await createOrganizer(suffix);
+      // Użytkownik BEZ profilu dyscypliny 'football' (createUser go tworzy, więc tworzymy ręcznie).
+      const user = await prisma.user.create({
+        data: {
+          displayName: 'Bez profilu',
+          isActive: true,
+          role: 'USER',
+          realDetails: {
+            create: {
+              email: `${TEST_PREFIX}np_${suffix}@test.pl`,
+              passwordHash: 'hash',
+              isEmailVerified: true,
+            },
+          },
+        },
+      });
+      const event = await createOpenEvent(organizer.id, suffix, 0);
+      await prisma.organizerUserRelation.create({
+        data: {
+          organizerUserId: organizer.id,
+          targetUserId: user.id,
+          isTrusted: true,
+          trustedAt: new Date(),
+          isBanned: false,
+        },
+      });
+
+      let error: unknown;
+      try {
+        await enrollmentService.join(event.id, mockAuthUser(user.id));
+      } catch (e) {
+        error = e;
+      }
+      expect(error).toBeInstanceOf(ConflictException);
+      expect((error as ConflictException).getResponse()).toMatchObject({
+        code: 'DISCIPLINE_PROFILE_REQUIRED',
+        disciplineSlug: 'football',
+      });
+
+      const count = await prisma.eventEnrollment.count({ where: { eventId: event.id } });
+      expect(count).toBe(0);
+
+      // Cleanup
+      await prisma.organizerUserRelation.deleteMany({ where: { organizerUserId: organizer.id } });
+      await prisma.event.delete({ where: { id: event.id } });
+      await prisma.user.deleteMany({ where: { id: { in: [user.id, organizer.id] } } });
+    });
+  });
 
   describe('join() - OPEN_ENROLLMENT', () => {
     it('trusted user może dołączyć do bezpłatnego eventu (PENDING → enrollment)', async () => {
