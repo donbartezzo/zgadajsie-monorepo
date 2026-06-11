@@ -558,7 +558,7 @@ export class EnrollmentService {
       );
     }
 
-    return { ...updated, needsTrustDecision };
+    return { ...withDerivedStatus(updated), needsTrustDecision };
   }
 
   /**
@@ -686,7 +686,7 @@ export class EnrollmentService {
 
     this.notifyEventChanged(participation.eventId, 'all');
 
-    return updated;
+    return updated ? withDerivedStatus(updated) : null;
   }
 
   /**
