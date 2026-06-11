@@ -335,48 +335,49 @@ Każdy etap można odhaczać po ukończeniu i zweryfikowaniu (testy + przegląd)
 
 ## Etap 0 — Model danych i migracje
 
-- [ ] Dodać model `ParticipantDisciplineProfile` (`id`, `userId`, `disciplineSlug`, `levelSlug`, `bio String?`, `createdAt`, `updatedAt`) z relacjami do `User`, `EventDiscipline`, `EventLevel`
-- [ ] Unikalność `@@unique([userId, disciplineSlug])`
-- [ ] Dodać relację odwrotną na `User`, `EventDiscipline`, `EventLevel`
-- [ ] Rozszerzyć `User` o `socialLinks Json?` (max 3 URL-e, bez etykiet)
-- [ ] Dodać model `UserGuestDetails` (`userId @id`, `levelSlug` FK→`EventLevel`, `bio String?`) wg `docs/tasks/wydzielenie_typow_uzytkownikow.md`
-- [ ] Wygenerować migrację Prisma (nie `db push`) i zweryfikować ją na czystej bazie
+- [x] Dodać model `ParticipantDisciplineProfile` (`id`, `userId`, `disciplineSlug`, `levelSlug`, `bio String?`, `createdAt`, `updatedAt`) z relacjami do `User`, `EventDiscipline`, `EventLevel`
+- [x] Unikalność `@@unique([userId, disciplineSlug])` (+ `@@index([disciplineSlug])`)
+- [x] Dodać relację odwrotną na `User` (`disciplineProfiles`, `guestDetails`), `EventDiscipline`, `EventLevel`
+- [x] Rozszerzyć `User` o `socialLinks Json?` (max 3 URL-e, bez etykiet)
+- [x] Dodać model `UserGuestDetails` (`userId @id`, `levelSlug` FK→`EventLevel`, `bio String?`) wg `docs/tasks/wydzielenie_typow_uzytkownikow.md`
+- [x] Migracja `20260611103658_add_participant_discipline_profile` — utworzona przez `migrate dev`, zastosowana na dev (5433) i testowej (5434) DB; klient zregenerowany (delegaty `participantDisciplineProfile`, `userGuestDetails`)
 
 ## Etap 1 — Backend: Profil Uczestnika + linki społecznościowe
 
-- [ ] DTO + walidacja `socialLinks`: max 3, tylko bezpieczne schematy (preferowane `https:`), blokada `javascript:`/`data:` itp., walidacja po stronie backendu
-- [ ] Endpoint odczytu/zapisu linków społecznościowych w obrębie profilu użytkownika
-- [ ] Serwis statystyk uczestnika: data rejestracji, liczba zgłoszeń ogółem (też wypisane), liczba zgłoszeń zakończonych miejscem w odbytym wydarzeniu (`status != CANCELLED AND endsAt < now()` + slot przyznany, konto główne nie-gość), liczba organizatorów z `isTrusted`
-- [ ] Wykluczyć `GUEST`/`FAKE` ze statystyk konta głównego
-- [ ] Testy jednostkowe statystyk i walidacji linków
+- [x] DTO + walidacja `socialLinks`: `@IsArray @ArrayMaxSize(3) @IsSafeSocialUrl({each})`; walidator `social-url.validator.ts` dopuszcza tylko `http(s):`, blokuje `javascript:`/`data:`/`file:` itp. (backend)
+- [x] Odczyt/zapis linków społecznościowych w `GET/PATCH /users/me` (`socialLinks` na `User`, JSON)
+- [x] `getParticipantStats(userId)`: `registeredAt`, `totalEnrollments` (też wypisane), `completedWithSlot` (`slot != null` + `event.status != CANCELLED` + `endsAt < now()`), `trustedByCount` (`OrganizerUserRelation.isTrusted`); endpoint `GET /users/me/stats`
+- [x] Wykluczenie `GUEST`/`FAKE` — naturalne: liczenie po `userId` konta REAL (goście/fake to osobne wiersze `User`)
+- [x] Testy jednostkowe: `social-url.validator.spec` (8) + `getParticipantStats` (3)
 
 ## Etap 2 — Backend: Profile Dyscyplin
 
-- [ ] CRUD `ParticipantDisciplineProfile` (create/update; brak twardego delete w MVP)
-- [ ] Walidacja: `levelSlug !== 'open'`, `bio` opcjonalne, max 500 znaków
-- [ ] Walidacja, że `disciplineSlug` istnieje
-- [ ] Endpoint pobrania profilu dyscypliny zalogowanego użytkownika (po slug dyscypliny)
-- [ ] Testy jednostkowe walidacji i unikalności pary `userId + disciplineSlug`
+- [x] Moduł `discipline-profiles` (service/controller/dto/module) zarejestrowany w `app.module`; upsert (create/update przez `@@unique`), brak twardego delete
+- [x] Walidacja: `levelSlug !== 'open'` (stała `FORBIDDEN_PARTICIPANT_LEVEL_SLUG`), `bio` opcjonalne, max 500 (DTO); poziom musi istnieć w `EventLevel`
+- [x] Walidacja, że `disciplineSlug` istnieje (`NotFoundException`)
+- [x] Endpointy: `GET /discipline-profiles/me`, `GET /discipline-profiles/me/:disciplineSlug`, `PUT /discipline-profiles/me/:disciplineSlug`
+- [x] Testy jednostkowe (7): walidacja open/dyscyplina/poziom, upsert po `userId_disciplineSlug`, bio null
 
 ## Etap 3 — Backend: Wymuszanie profilu przy zapisie
 
-- [ ] W `join()` i `rejoin()`: jeśli `REAL` i brak `ParticipantDisciplineProfile` dla dyscypliny wydarzenia → `409 DISCIPLINE_PROFILE_REQUIRED`
-- [ ] Pominąć wymuszenie dla: istniejących zgłoszeń sprzed wdrożenia, gości, fake users, organizatora zapisującego samego siebie
-- [ ] Po utworzeniu profilu zapis kontynuowany (ponowny `join`/`rejoin` z frontu)
-- [ ] Testy: nowy zapis, rejoin, wykluczenia (gość/fake/organizator/istniejące zgłoszenie)
+- [x] `assertDisciplineProfileIfRequired()` w `join()` — wołane na ścieżce nowego zapisu i rejoin (przed `handleRejoin`); brak profilu → `409 ConflictException { code: 'DISCIPLINE_PROFILE_REQUIRED', disciplineSlug }`
+- [x] Pominięcie: organizator (`organizerId === userId`), konta nie-REAL (goście/fake), już aktywne zgłoszenie (guard po sprawdzeniu „już uczestniczysz", więc istniejące aktywne zapisy nietknięte)
+- [x] Zapis kontynuowany przez ponowny `POST /events/:id/join` z frontu (kontrakt 409 → modal → retry)
+- [x] Testy (4): REAL bez profilu→409, REAL z profilem→przechodzi, organizator→skip, rejoin bez profilu→409 (enrollment spec 78→82)
 
 ## Etap 4 — Backend: Profil dyscypliny gościa (`UserGuestDetails`)
 
-- [ ] `joinGuest()` przyjmuje `levelSlug` (wymagany, `!== 'open'`) i `bio` (opcjonalny, max 500) i tworzy `UserGuestDetails` w tej samej transakcji co `User` gościa
-- [ ] Walidacja po stronie backendu
-- [ ] Testy dodawania gościa z profilem dyscypliny
+- [x] `JoinGuestDto` rozszerzony o `levelSlug` (wymagany) + `bio` (opcjonalny, max 500); `joinGuest` zrefaktorowany na obiekt wejściowy `JoinGuestInput`
+- [x] `joinGuest()` tworzy `UserGuestDetails` (`guestDetails: { create: { levelSlug, bio } }`) w tej samej operacji co `User` gościa; walidacja `assertGuestLevel` (`!= 'open'`, poziom istnieje)
+- [x] Testy (3): zapis `UserGuestDetails`, odrzucenie `open`, odrzucenie nieznanego poziomu (enrollment spec 82→85)
+- [ ] **Uwaga FE:** kontrakt `POST /events/:id/join-guest` wymaga teraz `levelSlug` — front dodawania gościa do zaktualizowania w Etapie 6
 
 ## Etap 5 — Backend: Prezentacja organizatorowi
 
-- [ ] Endpoint/selekcja zwracająca organizatorowi: profil uczestnika (nazwa, avatar, statystyki, linki, „nowy dla organizatora", `isTrusted`) + profil dyscypliny wydarzenia
-- [ ] Dla gościa zwracać snapshot z `guest*`, dla zgłoszeń bez profilu → sygnał „Brak profilu dyscypliny"
-- [ ] Autoryzacja: dane widzi wyłącznie organizator wydarzenia, do którego użytkownik się zgłosił
-- [ ] Testy autoryzacji i kształtu odpowiedzi
+- [x] `getParticipantProfileForOrganizer()` + endpoint `GET /events/:id/participants/:userId/profile`: REAL → statystyki (`getParticipantStats`), `socialLinks`, `isTrusted`, `isNewToOrganizer`, profil dyscypliny wydarzenia; GUEST → snapshot z `UserGuestDetails` (bez statystyk)
+- [x] Brak profilu → `disciplineProfile: null` (front: „Brak profilu dyscypliny")
+- [x] Autoryzacja: tylko organizator wydarzenia lub admin (`ForbiddenException`); uczestnik musi być zgłoszony (`NotFoundException`)
+- [x] Testy (5): forbidden, not-found, REAL z profilem, GUEST snapshot, REAL bez profilu (events spec 44→49)
 
 ## Etap 6 — Frontend: wspólny modal profilu dyscypliny
 

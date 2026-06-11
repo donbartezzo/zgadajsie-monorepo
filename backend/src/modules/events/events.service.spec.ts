@@ -33,10 +33,12 @@ function buildPrismaMock() {
     },
     eventEnrollment: {
       findFirst: jest.fn(),
+      findUnique: jest.fn(),
       findMany: jest.fn(),
       count: jest.fn(),
       groupBy: jest.fn().mockResolvedValue([]),
     },
+    participantDisciplineProfile: { findUnique: jest.fn() },
     eventSlot: { findMany: jest.fn() },
     payment: { create: jest.fn(), findFirst: jest.fn() },
     city: { findUnique: jest.fn() },
@@ -156,6 +158,7 @@ describe('EventsService', () => {
       realtime,
       { isBannedByOrganizer: jest.fn(), isTrusted: jest.fn() } as any,
       buildFakeUsersMonitorMock(),
+      { getParticipantStats: jest.fn().mockResolvedValue({}) } as any,
     );
     jest.clearAllMocks();
   });
@@ -447,6 +450,7 @@ describe('EventsService', () => {
         realtime,
         eligibilityMock as any,
         buildFakeUsersMonitorMock(),
+        { getParticipantStats: jest.fn().mockResolvedValue({}) } as any,
       );
 
       const result = await service.findOne('event1', 'user1');
@@ -586,6 +590,7 @@ describe('EventsService', () => {
         realtime,
         { isBannedByOrganizer: jest.fn(), isTrusted: jest.fn() } as any,
         buildFakeUsersMonitorMock(),
+        { getParticipantStats: jest.fn().mockResolvedValue({}) } as any,
       );
       const event = makeEvent({ city: { slug: 'warszawa' } });
       (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);
@@ -795,6 +800,108 @@ describe('EventsService', () => {
 
       expect(tx.organizerVoucher.create).toHaveBeenCalled();
       expect(notifications.create as jest.Mock).toHaveBeenCalled();
+    });
+  });
+
+  describe('getParticipantProfileForOrganizer()', () => {
+    const eventSel = { id: 'event1', organizerId: 'org1', disciplineSlug: 'football' };
+
+    it('rzuca ForbiddenException gdy żądający nie jest organizatorem', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(eventSel);
+
+      await expect(
+        service.getParticipantProfileForOrganizer('event1', 'user1', mockAuthUser('user2')),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('rzuca NotFoundException gdy uczestnik nie jest zgłoszony', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(eventSel);
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(
+        service.getParticipantProfileForOrganizer('event1', 'user1', mockAuthUser('org1')),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('REAL: zwraca statystyki, linki, profil dyscypliny i isNewToOrganizer', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(eventSel);
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue({
+        user: {
+          id: 'user1',
+          displayName: 'Jan',
+          avatarSeed: null,
+          accountType: 'REAL',
+          socialLinks: ['https://fb.com/jan'],
+          guestDetails: null,
+        },
+      });
+      (prisma.participantDisciplineProfile.findUnique as jest.Mock).mockResolvedValue({
+        levelSlug: 'regular',
+        bio: 'Gram od lat.',
+      });
+      (prisma.eventEnrollment.count as jest.Mock).mockResolvedValue(0);
+
+      const result = await service.getParticipantProfileForOrganizer(
+        'event1',
+        'user1',
+        mockAuthUser('org1'),
+      );
+
+      expect(result.isGuest).toBe(false);
+      expect(result.socialLinks).toEqual(['https://fb.com/jan']);
+      expect(result.disciplineProfile).toEqual({ levelSlug: 'regular', bio: 'Gram od lat.' });
+      expect(result.isNewToOrganizer).toBe(true);
+      expect(result.stats).toBeDefined();
+    });
+
+    it('GUEST: profil dyscypliny ze snapshotu, bez globalnych statystyk', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(eventSel);
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue({
+        user: {
+          id: 'guest1',
+          displayName: 'Gość',
+          avatarSeed: null,
+          accountType: 'GUEST',
+          socialLinks: null,
+          guestDetails: { levelSlug: 'recreational', bio: 'Rekreacyjnie.' },
+        },
+      });
+
+      const result = await service.getParticipantProfileForOrganizer(
+        'event1',
+        'guest1',
+        mockAuthUser('org1'),
+      );
+
+      expect(result.isGuest).toBe(true);
+      expect(result.disciplineProfile).toEqual({ levelSlug: 'recreational', bio: 'Rekreacyjnie.' });
+      expect(result.stats).toBeNull();
+      expect(prisma.participantDisciplineProfile.findUnique as jest.Mock).not.toHaveBeenCalled();
+    });
+
+    it('REAL bez profilu dyscypliny → disciplineProfile: null', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(eventSel);
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue({
+        user: {
+          id: 'user1',
+          displayName: 'Jan',
+          avatarSeed: null,
+          accountType: 'REAL',
+          socialLinks: null,
+          guestDetails: null,
+        },
+      });
+      (prisma.participantDisciplineProfile.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.eventEnrollment.count as jest.Mock).mockResolvedValue(2);
+
+      const result = await service.getParticipantProfileForOrganizer(
+        'event1',
+        'user1',
+        mockAuthUser('org1'),
+      );
+
+      expect(result.disciplineProfile).toBeNull();
+      expect(result.isNewToOrganizer).toBe(false);
     });
   });
 });

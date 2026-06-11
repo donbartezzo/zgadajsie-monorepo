@@ -41,6 +41,7 @@ import { EventStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
+import { UsersService } from '../users/users.service';
 
 // Minimalna projekcja covera w odpowiedziach z eventami: id (edycja), storageKey (URL),
 // updatedAt (cache-busting). Skalar coverImageId pomijamy przez `omit` w zapytaniach.
@@ -86,6 +87,7 @@ export class EventsService {
     private eventRealtime: EventRealtimeService,
     private eligibility: EnrollmentEligibilityService,
     private fakeUsersMonitor: FakeUsersMonitorService,
+    private usersService: UsersService,
   ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
@@ -777,6 +779,105 @@ export class EventsService {
         isNewToOrganizer: !confirmedUsers.has(p.userId),
       };
     });
+  }
+
+  /**
+   * Profil uczestnika dla organizatora: dane ogólne (REAL: statystyki, linki, zaufanie,
+   * „nowy dla organizatora") + profil dyscypliny wydarzenia. Dla gościa zwracamy snapshot
+   * z UserGuestDetails (bez globalnego profilu/statystyk). Brak profilu → `disciplineProfile: null`
+   * (front pokazuje „Brak profilu dyscypliny"). Widoczne tylko dla organizatora wydarzenia/admina.
+   */
+  async getParticipantProfileForOrganizer(
+    eventId: string,
+    targetUserId: string,
+    requester: AuthUser,
+  ) {
+    const { userId: requesterId, isAdmin } = resolveUserContext(requester);
+
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, organizerId: true, disciplineSlug: true },
+    });
+    if (!event) {
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
+    }
+    if (!isAdmin && event.organizerId !== requesterId) {
+      throw new ForbiddenException(NOT_ORGANIZER_MESSAGE);
+    }
+
+    const enrollment = await this.prisma.eventEnrollment.findUnique({
+      where: { eventId_userId: { eventId, userId: targetUserId } },
+      include: {
+        user: {
+          select: {
+            id: true,
+            displayName: true,
+            avatarSeed: true,
+            accountType: true,
+            socialLinks: true,
+            guestDetails: { select: { levelSlug: true, bio: true } },
+          },
+        },
+      },
+    });
+    if (!enrollment) {
+      throw new NotFoundException('Uczestnik nie jest zgłoszony na to wydarzenie');
+    }
+
+    const { user } = enrollment;
+    const isGuest = user.accountType === 'GUEST';
+
+    // Profil dyscypliny odpowiadający dyscyplinie wydarzenia.
+    let disciplineProfile: { levelSlug: string; bio: string | null } | null = null;
+    if (isGuest) {
+      disciplineProfile = user.guestDetails ?? null;
+    } else {
+      disciplineProfile = await this.prisma.participantDisciplineProfile.findUnique({
+        where: {
+          userId_disciplineSlug: { userId: targetUserId, disciplineSlug: event.disciplineSlug },
+        },
+        select: { levelSlug: true, bio: true },
+      });
+    }
+
+    // Profil uczestnika (statystyki/linki/zaufanie) tylko dla kont REAL.
+    let stats: Awaited<ReturnType<UsersService['getParticipantStats']>> | null = null;
+    let socialLinks: unknown = null;
+    let isTrusted = false;
+    let isNewToOrganizer = false;
+
+    if (!isGuest) {
+      const [participantStats, trusted, priorConfirmed] = await Promise.all([
+        this.usersService.getParticipantStats(targetUserId),
+        this.eligibility.isTrusted(targetUserId, event.organizerId),
+        this.prisma.eventEnrollment.count({
+          where: {
+            userId: targetUserId,
+            slot: { confirmed: true },
+            event: { organizerId: event.organizerId },
+          },
+        }),
+      ]);
+      stats = participantStats;
+      isTrusted = trusted;
+      isNewToOrganizer = priorConfirmed === 0;
+      socialLinks = user.socialLinks ?? null;
+    }
+
+    return {
+      user: {
+        id: user.id,
+        displayName: user.displayName,
+        avatarSeed: user.avatarSeed,
+        accountType: user.accountType,
+      },
+      isGuest,
+      socialLinks,
+      stats,
+      isTrusted,
+      isNewToOrganizer,
+      disciplineProfile,
+    };
   }
 
   async getSlots(eventId: string) {

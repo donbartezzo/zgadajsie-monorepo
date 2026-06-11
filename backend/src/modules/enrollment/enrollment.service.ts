@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Logger,
   Optional,
@@ -41,6 +42,7 @@ import { resolveUserContext } from '../auth/utils/auth-user.util';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
 import { AppConfigService } from '../../common/config/app-config.service';
 import { USER_SELECT_WITH_EMAIL as USER_SELECT } from '../../common/prisma-selects';
+import { FORBIDDEN_PARTICIPANT_LEVEL_SLUG } from '../../common/constants/participant-level.constants';
 
 type EnrollmentWithSlot = {
   wantsIn: boolean;
@@ -54,6 +56,16 @@ type JoinEventLike = {
   lotteryExecutedAt: Date | null;
   status: string;
 };
+
+// Wejście joinGuest — zawiera profil dyscypliny gościa (snapshot → UserGuestDetails).
+interface JoinGuestInput {
+  displayName: string;
+  levelSlug: string;
+  bio?: string | null;
+  roleKey?: string;
+  avatarSeed?: string;
+  userId?: string;
+}
 
 function deriveStatus(p: EnrollmentWithSlot): string {
   if (!p.wantsIn) {
@@ -111,11 +123,15 @@ export class EnrollmentService {
 
     // Rejoin after withdrawal
     if (existing && !existing.wantsIn) {
+      await this.assertDisciplineProfileIfRequired(event, userId);
       return this.handleRejoin(existing.id, event, userId, isPaid, phase, validatedRoleKey);
     }
     if (existing) {
       throw new BadRequestException('Już uczestniczysz w tym wydarzeniu');
     }
+
+    // Nowy zapis — wymuszenie profilu dyscypliny (poza organizatorem/fake/gościem)
+    await this.assertDisciplineProfileIfRequired(event, userId);
 
     // Organizer auto-confirmed with slot
     if (event.organizerId === userId) {
@@ -247,14 +263,9 @@ export class EnrollmentService {
       });
   }
 
-  async joinGuest(
-    eventId: string,
-    addedByUser: AuthUser,
-    displayName: string,
-    roleKey?: string,
-    avatarSeed?: string,
-    userId?: string,
-  ) {
+  async joinGuest(eventId: string, addedByUser: AuthUser, input: JoinGuestInput) {
+    const { displayName, levelSlug, bio, avatarSeed, userId } = input;
+    let roleKey = input.roleKey;
     const { userId: addedByUserId, isAdmin } = resolveUserContext(addedByUser);
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
@@ -262,6 +273,7 @@ export class EnrollmentService {
     }
 
     this.assertEventMutable(event, isAdmin);
+    await this.assertGuestLevel(levelSlug);
 
     const phase = this.getJoinPhase(event, isAdmin);
 
@@ -299,6 +311,7 @@ export class EnrollmentService {
         accountType: 'GUEST',
         avatarSeed: avatarSeed ?? null,
         isActive: false,
+        guestDetails: { create: { levelSlug, bio: bio ?? null } },
       },
     });
 
@@ -859,6 +872,52 @@ export class EnrollmentService {
   }
 
   // ─── Private helpers ──────────────────────────────────────────────────────
+
+  /**
+   * Wymusza istnienie profilu dyscypliny przed (re)zapisem konta REAL.
+   * Pomija: organizatora zapisującego się na własne wydarzenie oraz konta nie-REAL
+   * (goście idą przez joinGuest, fake'i nie przechodzą przez API). Brak profilu →
+   * 409 z kodem DISCIPLINE_PROFILE_REQUIRED (front pokazuje modal i ponawia zapis).
+   */
+  private async assertDisciplineProfileIfRequired(
+    event: { organizerId: string; disciplineSlug: string },
+    userId: string,
+  ): Promise<void> {
+    if (event.organizerId === userId) {
+      return;
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { accountType: true },
+    });
+    if (!user || user.accountType !== 'REAL') {
+      return;
+    }
+
+    const profile = await this.prisma.participantDisciplineProfile.findUnique({
+      where: { userId_disciplineSlug: { userId, disciplineSlug: event.disciplineSlug } },
+      select: { id: true },
+    });
+    if (!profile) {
+      throw new ConflictException({
+        code: 'DISCIPLINE_PROFILE_REQUIRED',
+        disciplineSlug: event.disciplineSlug,
+        message: 'Aby dołączyć, uzupełnij profil tej dyscypliny',
+      });
+    }
+  }
+
+  // Walidacja poziomu profilu gościa: != 'open' i istnieje w słowniku EventLevel.
+  private async assertGuestLevel(levelSlug: string): Promise<void> {
+    if (levelSlug === FORBIDDEN_PARTICIPANT_LEVEL_SLUG) {
+      throw new BadRequestException('Poziom „open" nie jest dozwolony jako poziom uczestnika');
+    }
+    const level = await this.prisma.eventLevel.findUnique({ where: { slug: levelSlug } });
+    if (!level) {
+      throw new BadRequestException('Nieznany poziom zaawansowania');
+    }
+  }
 
   private assertJoinEligibility(event: JoinEventLike): ReturnType<typeof getEnrollmentPhase> {
     if (event.status !== 'ACTIVE') {

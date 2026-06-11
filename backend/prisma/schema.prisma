@@ -11,40 +11,44 @@ datasource db {
 }
 
 model User {
-  id                          String                  @id @default(uuid())
+  id                          String                         @id @default(uuid())
   displayName                 String
-  role                        Role                    @default(USER)
-  isActive                    Boolean                 @default(false)
-  createdAt                   DateTime                @default(now())
-  updatedAt                   DateTime                @updatedAt
+  role                        Role                           @default(USER)
+  isActive                    Boolean                        @default(false)
+  createdAt                   DateTime                       @default(now())
+  updatedAt                   DateTime                       @updatedAt
   avatarSeed                  String?
-  accountType                 AccountType             @default(REAL)
+  accountType                 AccountType                    @default(REAL)
   gender                      Gender?
+  // Linki społecznościowe (max 3 URL-e) — prosty JSON, bez osobnego modelu w MVP.
+  socialLinks                 Json?
   announcementReceipts        AnnouncementReceipt[]
   citySubscriptions           CitySubscription[]
-  organizedEvents             Event[]                 @relation("OrganizerEvents")
-  announcements               EventAnnouncement[]     @relation("OrganizerAnnouncements")
+  organizedEvents             Event[]                        @relation("OrganizerEvents")
+  announcements               EventAnnouncement[]            @relation("OrganizerAnnouncements")
   groupChatMessages           EventGroupMessage[]
-  addedEnrollments            EventEnrollment[]       @relation("AddedByUser")
-  enrollments                 EventEnrollment[]       @relation("UserEnrollments")
+  addedEnrollments            EventEnrollment[]              @relation("AddedByUser")
+  enrollments                 EventEnrollment[]              @relation("UserEnrollments")
   eventSeries                 EventSeries[]
   mediaFiles                  MediaFile[]
   notifications               Notification[]
-  organizerRelations          OrganizerUserRelation[] @relation("OrgRelOrganizer")
-  targetOfRelations           OrganizerUserRelation[] @relation("OrgRelTarget")
-  vouchersIssued              OrganizerVoucher[]      @relation("VoucherOrganizer")
-  vouchersReceived            OrganizerVoucher[]      @relation("VoucherRecipient")
-  payments                    Payment[]               @relation("UserPayments")
-  paymentIntents              PaymentIntent[]         @relation("UserPaymentIntents")
-  privateChatMessagesReceived PrivateChatMessage[]    @relation("PrivateChatRecipient")
-  privateChatMessagesSent     PrivateChatMessage[]    @relation("PrivateChatSender")
+  organizerRelations          OrganizerUserRelation[]        @relation("OrgRelOrganizer")
+  targetOfRelations           OrganizerUserRelation[]        @relation("OrgRelTarget")
+  vouchersIssued              OrganizerVoucher[]             @relation("VoucherOrganizer")
+  vouchersReceived            OrganizerVoucher[]             @relation("VoucherRecipient")
+  payments                    Payment[]                      @relation("UserPayments")
+  paymentIntents              PaymentIntent[]                @relation("UserPaymentIntents")
+  privateChatMessagesReceived PrivateChatMessage[]           @relation("PrivateChatRecipient")
+  privateChatMessagesSent     PrivateChatMessage[]           @relation("PrivateChatSender")
   pushSubscriptions           PushSubscription[]
-  reprimandsGiven             Reprimand[]             @relation("ReprimandFrom")
-  reprimandsReceived          Reprimand[]             @relation("ReprimandTo")
+  reprimandsGiven             Reprimand[]                    @relation("ReprimandFrom")
+  reprimandsReceived          Reprimand[]                    @relation("ReprimandTo")
   socialAccounts              SocialAccount[]
-  coverImages                 CoverImage[]            @relation("UserCoverImages")
+  coverImages                 CoverImage[]                   @relation("UserCoverImages")
   contactMessages             ContactMessage[]
   realDetails                 UserRealDetails?
+  guestDetails                UserGuestDetails?
+  disciplineProfiles          ParticipantDisciplineProfile[]
 
   @@index([accountType])
 }
@@ -67,6 +71,35 @@ model UserRealDetails {
   welcomeMessage              String?
   welcomeMessageEnabled       Boolean   @default(true)
   user                        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Profil dyscypliny gościa (snapshot 1:1 z jednorazowym kontem GUEST).
+// Symetryczny do ParticipantDisciplineProfile dla kont REAL.
+// Patrz: docs/tasks/implementacja_profilu_gracza.md
+model UserGuestDetails {
+  userId    String     @id
+  levelSlug String // walidacja backend: != 'open'
+  bio       String? // opcjonalne, max 500 znaków
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level     EventLevel @relation(fields: [levelSlug], references: [slug])
+}
+
+// Profil dyscypliny realnego uczestnika (globalny na koncie, per dyscyplina).
+// Patrz: docs/tasks/implementacja_profilu_gracza.md
+model ParticipantDisciplineProfile {
+  id             String          @id @default(uuid())
+  userId         String
+  disciplineSlug String
+  levelSlug      String // walidacja backend: != 'open'
+  bio            String? // opcjonalne, max 500 znaków
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discipline     EventDiscipline @relation(fields: [disciplineSlug], references: [slug])
+  level          EventLevel      @relation(fields: [levelSlug], references: [slug])
+
+  @@unique([userId, disciplineSlug])
+  @@index([disciplineSlug])
 }
 
 model SocialAccount {
@@ -95,10 +128,11 @@ model City {
 }
 
 model EventDiscipline {
-  slug        String       @id
-  schema      Json?
-  coverImages CoverImage[]
-  events      Event[]
+  slug               String                         @id
+  schema             Json?
+  coverImages        CoverImage[]
+  events             Event[]
+  disciplineProfiles ParticipantDisciplineProfile[]
 }
 
 model CoverImage {
@@ -125,9 +159,11 @@ model EventFacility {
 }
 
 model EventLevel {
-  slug   String  @id
-  weight Int?
-  events Event[]
+  slug               String                         @id
+  weight             Int?
+  events             Event[]
+  disciplineProfiles ParticipantDisciplineProfile[]
+  guestDetails       UserGuestDetails[]
 }
 
 model Event {

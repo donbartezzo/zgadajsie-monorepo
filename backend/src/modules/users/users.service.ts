@@ -50,10 +50,40 @@ export class UsersService {
         role: true,
         isActive: true,
         createdAt: true,
+        socialLinks: true,
         realDetails: { select: REAL_DETAILS_SELECT },
       },
     });
     return user ? flattenRealDetails(user) : null;
+  }
+
+  /**
+   * Statystyki uczestnika (konto główne REAL). Goście/fake to osobne wiersze User,
+   * więc liczenie po userId naturalnie ich wyklucza.
+   * „Wydarzenie się odbyło" = status != CANCELLED AND endsAt < now().
+   */
+  async getParticipantStats(userId: string) {
+    const [user, totalEnrollments, completedWithSlot, trustedByCount] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: userId }, select: { createdAt: true } }),
+      this.prisma.eventEnrollment.count({ where: { userId } }),
+      this.prisma.eventEnrollment.count({
+        where: {
+          userId,
+          slot: { isNot: null },
+          event: { status: { not: 'CANCELLED' }, endsAt: { lt: new Date() } },
+        },
+      }),
+      this.prisma.organizerUserRelation.count({
+        where: { targetUserId: userId, isTrusted: true },
+      }),
+    ]);
+
+    return {
+      registeredAt: user?.createdAt ?? null,
+      totalEnrollments,
+      completedWithSlot,
+      trustedByCount,
+    };
   }
 
   async updateProfile(userId: string, dto: UpdateProfileDto) {
@@ -61,6 +91,7 @@ export class UsersService {
     const realData: Prisma.UserRealDetailsUpdateInput = {};
     if (dto.displayName) userData.displayName = dto.displayName;
     if (dto.avatarSeed !== undefined) userData.avatarSeed = dto.avatarSeed ?? null;
+    if (dto.socialLinks !== undefined) userData.socialLinks = dto.socialLinks;
     if (dto.email) realData.email = dto.email;
     if (dto.donationUrl !== undefined) realData.donationUrl = dto.donationUrl || null;
     if (dto.welcomeMessage !== undefined) realData.welcomeMessage = dto.welcomeMessage ?? null;
@@ -95,6 +126,7 @@ export class UsersService {
         avatarSeed: true,
         role: true,
         isActive: true,
+        socialLinks: true,
         realDetails: { select: REAL_DETAILS_SELECT },
       },
     });

@@ -43,6 +43,12 @@ export class UsersController {
     return this.usersService.getMyReprimands(user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('me/stats')
+  getMyStats(@CurrentUser() user: AuthUser) {
+    return this.usersService.getParticipantStats(user.id);
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Get()

@@ -151,6 +151,10 @@ describe('[Integration] Enrollment join flow', () => {
             isEmailVerified: true,
           },
         },
+        // Profil dyscypliny wymagany przy zapisie (Etap 3) — eventy testowe są dla 'football'.
+        disciplineProfiles: {
+          create: { disciplineSlug: 'football', levelSlug: 'mixed-open' },
+        },
       },
     });
   }

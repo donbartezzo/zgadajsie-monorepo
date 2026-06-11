@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { AppConfigService } from '../../common/config/app-config.service';
 import { Decimal } from '@prisma/client/runtime/library';
 import { featureFlags } from '../../common/config/feature-flags';
@@ -39,6 +44,8 @@ function buildPrismaMock() {
     eventSlot: { update: jest.fn() },
     user: { findUnique: jest.fn(), create: jest.fn(), update: jest.fn() },
     organizerUserRelation: { upsert: jest.fn(), findUnique: jest.fn() },
+    participantDisciplineProfile: { findUnique: jest.fn() },
+    eventLevel: { findUnique: jest.fn() },
     payment: { findMany: jest.fn() },
     $transaction: jest.fn((fn: (tx: ReturnType<typeof buildTxMock>) => unknown) => fn(tx)),
     _tx: tx,
@@ -119,6 +126,7 @@ function makeEvent(overrides: Record<string, unknown> = {}) {
     endsAt: new Date(FUTURE_FAR.getTime() + 3600000),
     lotteryExecutedAt: null,
     roleConfig: null,
+    disciplineSlug: 'football',
     ...overrides,
   };
 }
@@ -199,6 +207,77 @@ describe('EnrollmentService', () => {
       const result = await service.join('event1', mockAuthUser('user1'));
 
       expect(result.status).toBe('PENDING');
+    });
+  });
+
+  // ─── Wymuszanie profilu dyscypliny (Etap 3) ───────────────────────────────
+
+  describe('join() - wymuszanie profilu dyscypliny', () => {
+    const event = makeEvent({ startsAt: FUTURE_FAR, disciplineSlug: 'football' });
+
+    it('REAL bez profilu dyscypliny → 409 DISCIPLINE_PROFILE_REQUIRED', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ accountType: 'REAL' });
+      (prisma.participantDisciplineProfile.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.join('event1', mockAuthUser('user1'))).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+
+      try {
+        await service.join('event1', mockAuthUser('user1'));
+      } catch (e) {
+        expect((e as ConflictException).getResponse()).toMatchObject({
+          code: 'DISCIPLINE_PROFILE_REQUIRED',
+          disciplineSlug: 'football',
+        });
+      }
+    });
+
+    it('REAL z profilem dyscypliny → zapis przechodzi (brak 409)', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.user.findUnique as jest.Mock).mockImplementation(
+        ({ where }: { where: { id: string } }) =>
+          where.id === 'user1'
+            ? { accountType: 'REAL' }
+            : { id: 'org1', displayName: 'Org', realDetails: { email: 'o@t.com' } },
+      );
+      (prisma.participantDisciplineProfile.findUnique as jest.Mock).mockResolvedValue({ id: 'p1' });
+      (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(
+        makeEnrollment({ waitingReason: 'PRE_ENROLLMENT', slot: null }),
+      );
+
+      const result = await service.join('event1', mockAuthUser('user1'));
+
+      expect(result.status).toBe('PENDING');
+      expect(prisma.participantDisciplineProfile.findUnique as jest.Mock).toHaveBeenCalled();
+    });
+
+    it('organizator zapisujący się na własne wydarzenie → bez wymuszenia profilu', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(null);
+      const created = makeEnrollment({ userId: 'org1', slot: { id: 'slot1', confirmed: true } });
+      tx.eventEnrollment.create.mockResolvedValue(created);
+      tx.eventEnrollment.findUnique.mockResolvedValue(created);
+
+      await service.join('event1', mockAuthUser('org1'));
+
+      expect(prisma.participantDisciplineProfile.findUnique as jest.Mock).not.toHaveBeenCalled();
+    });
+
+    it('rejoin REAL bez profilu → 409', async () => {
+      (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);
+      (prisma.eventEnrollment.findUnique as jest.Mock).mockResolvedValue(
+        makeEnrollment({ wantsIn: false }),
+      );
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ accountType: 'REAL' });
+      (prisma.participantDisciplineProfile.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.join('event1', mockAuthUser('user1'))).rejects.toBeInstanceOf(
+        ConflictException,
+      );
     });
   });
 
@@ -1224,6 +1303,7 @@ describe('EnrollmentService', () => {
       (eligibility.getGuestCount as jest.Mock).mockResolvedValue(0);
       (slots.getFreeSlotCount as jest.Mock).mockResolvedValue(1);
       (prisma.user.create as jest.Mock).mockResolvedValue({ id: 'guest1', displayName: 'Gość' });
+      (prisma.eventLevel.findUnique as jest.Mock).mockResolvedValue({ slug: 'regular' });
     });
 
     it('tworzy gościa i zwraca enrollment ze statusem APPROVED gdy jest wolny slot', async () => {
@@ -1237,18 +1317,70 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
       tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
 
-      const result = await service.joinGuest('event1', mockAuthUser('host1'), 'Gość');
+      const result = await service.joinGuest('event1', mockAuthUser('host1'), {
+        displayName: 'Gość',
+        levelSlug: 'regular',
+      });
 
       expect(prisma.user.create as jest.Mock).toHaveBeenCalled();
       expect(result.status).toBe('APPROVED');
     });
 
+    it('zapisuje profil dyscypliny gościa (UserGuestDetails) w transakcji z User', async () => {
+      const guestEnrollment = makeEnrollment({
+        id: 'pg1',
+        userId: 'guest1',
+        addedByUserId: 'host1',
+        wantsIn: true,
+        slot: { id: 'slot1', confirmed: false },
+      });
+      tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
+      tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
+
+      await service.joinGuest('event1', mockAuthUser('host1'), {
+        displayName: 'Gość',
+        levelSlug: 'regular',
+        bio: 'Gram rekreacyjnie.',
+      });
+
+      expect(prisma.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            guestDetails: { create: { levelSlug: 'regular', bio: 'Gram rekreacyjnie.' } },
+          }),
+        }),
+      );
+    });
+
+    it('odrzuca poziom „open" dla gościa (BadRequestException)', async () => {
+      await expect(
+        service.joinGuest('event1', mockAuthUser('host1'), {
+          displayName: 'Gość',
+          levelSlug: 'open',
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.user.create as jest.Mock).not.toHaveBeenCalled();
+    });
+
+    it('odrzuca nieznany poziom gościa (BadRequestException)', async () => {
+      (prisma.eventLevel.findUnique as jest.Mock).mockResolvedValue(null);
+      await expect(
+        service.joinGuest('event1', mockAuthUser('host1'), {
+          displayName: 'Gość',
+          levelSlug: 'xyz',
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
     it('rzuca BadRequestException gdy host przekroczył limit gości', async () => {
       (eligibility.getGuestCount as jest.Mock).mockResolvedValue(2); // MAX_GUESTS_PER_USER = 2
 
-      await expect(service.joinGuest('event1', mockAuthUser('host1'), 'Gość')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.joinGuest('event1', mockAuthUser('host1'), {
+          displayName: 'Gość',
+          levelSlug: 'regular',
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('organizator może dodać gościa bez limitu (limit gości nie dotyczy organizatora)', async () => {
@@ -1264,7 +1396,10 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
 
       await expect(
-        service.joinGuest('event1', mockAuthUser('org1'), 'Gość'),
+        service.joinGuest('event1', mockAuthUser('org1'), {
+          displayName: 'Gość',
+          levelSlug: 'regular',
+        }),
       ).resolves.toBeDefined();
     });
 
@@ -1279,7 +1414,10 @@ describe('EnrollmentService', () => {
       });
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(guestEnrollment);
 
-      const result = await service.joinGuest('event1', mockAuthUser('host1'), 'Gość');
+      const result = await service.joinGuest('event1', mockAuthUser('host1'), {
+        displayName: 'Gość',
+        levelSlug: 'regular',
+      });
 
       expect(result.waitingReason).toBe('BANNED');
     });
@@ -1295,7 +1433,10 @@ describe('EnrollmentService', () => {
       });
       (prisma.eventEnrollment.create as jest.Mock).mockResolvedValue(guestEnrollment);
 
-      const result = await service.joinGuest('event1', mockAuthUser('host1'), 'Gość');
+      const result = await service.joinGuest('event1', mockAuthUser('host1'), {
+        displayName: 'Gość',
+        levelSlug: 'regular',
+      });
 
       expect(result.waitingReason).toBe('NOT_TRUSTED');
     });
@@ -1311,7 +1452,11 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
       tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
 
-      await service.joinGuest('event1', mockAuthUser('host1'), 'Gość', undefined, 'abc123');
+      await service.joinGuest('event1', mockAuthUser('host1'), {
+        displayName: 'Gość',
+        levelSlug: 'regular',
+        avatarSeed: 'abc123',
+      });
 
       expect(prisma.user.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1331,7 +1476,10 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
       tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
 
-      await service.joinGuest('event1', mockAuthUser('host1'), 'Gość');
+      await service.joinGuest('event1', mockAuthUser('host1'), {
+        displayName: 'Gość',
+        levelSlug: 'regular',
+      });
 
       expect(prisma.user.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1352,14 +1500,11 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
       tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
 
-      await service.joinGuest(
-        'event1',
-        mockAuthUser('host1'),
-        'Gość',
-        undefined,
-        undefined,
-        clientId,
-      );
+      await service.joinGuest('event1', mockAuthUser('host1'), {
+        displayName: 'Gość',
+        levelSlug: 'regular',
+        userId: clientId,
+      });
 
       expect(prisma.user.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1379,7 +1524,10 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
       tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
 
-      await service.joinGuest('event1', mockAuthUser('host1'), 'Gość');
+      await service.joinGuest('event1', mockAuthUser('host1'), {
+        displayName: 'Gość',
+        levelSlug: 'regular',
+      });
 
       const callArg = (prisma.user.create as jest.Mock).mock.calls[0][0];
       expect(callArg.data).not.toHaveProperty('id');
@@ -1408,7 +1556,10 @@ describe('EnrollmentService', () => {
       tx.eventEnrollment.create.mockResolvedValue(guestEnrollment);
       tx.eventEnrollment.findUnique.mockResolvedValue(guestEnrollment);
 
-      await service.joinGuest('event1', mockAuthUser('host1'), 'Jan Kowalski');
+      await service.joinGuest('event1', mockAuthUser('host1'), {
+        displayName: 'Jan Kowalski',
+        levelSlug: 'regular',
+      });
 
       expect(push.notifyParticipationStatus as jest.Mock).toHaveBeenCalledWith(
         'host1',

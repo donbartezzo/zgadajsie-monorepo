@@ -20,6 +20,10 @@ function buildPrismaMock() {
     },
     eventEnrollment: {
       findMany: jest.fn(),
+      count: jest.fn(),
+    },
+    organizerUserRelation: {
+      count: jest.fn(),
     },
     reprimand: {
       findMany: jest.fn(),
@@ -153,6 +157,51 @@ describe('UsersService', () => {
       const call = (prisma.user.update as jest.Mock).mock.calls[0][0];
       expect(call.data.role).toBe('ADMIN');
       expect(call.data.isActive).toBe(true);
+    });
+  });
+
+  describe('getParticipantStats()', () => {
+    it('zwraca statystyki uczestnika (rejestracja, zgłoszenia, miejsca, zaufanie)', async () => {
+      const registeredAt = new Date('2025-01-01');
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ createdAt: registeredAt });
+      (prisma.eventEnrollment.count as jest.Mock)
+        .mockResolvedValueOnce(12) // totalEnrollments
+        .mockResolvedValueOnce(5); // completedWithSlot
+      (prisma.organizerUserRelation.count as jest.Mock).mockResolvedValue(3);
+
+      const stats = await service.getParticipantStats('user1');
+
+      expect(stats).toEqual({
+        registeredAt,
+        totalEnrollments: 12,
+        completedWithSlot: 5,
+        trustedByCount: 3,
+      });
+    });
+
+    it('„odbyte wydarzenie z miejscem" filtruje po slot, status != CANCELLED i endsAt < now', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ createdAt: new Date() });
+      (prisma.eventEnrollment.count as jest.Mock).mockResolvedValue(0);
+      (prisma.organizerUserRelation.count as jest.Mock).mockResolvedValue(0);
+
+      await service.getParticipantStats('user1');
+
+      const completedCall = (prisma.eventEnrollment.count as jest.Mock).mock.calls[1][0];
+      expect(completedCall.where.userId).toBe('user1');
+      expect(completedCall.where.slot).toEqual({ isNot: null });
+      expect(completedCall.where.event.status).toEqual({ not: 'CANCELLED' });
+      expect(completedCall.where.event.endsAt.lt).toBeInstanceOf(Date);
+    });
+
+    it('liczy zaufanie tylko po isTrusted=true wobec użytkownika', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ createdAt: new Date() });
+      (prisma.eventEnrollment.count as jest.Mock).mockResolvedValue(0);
+      (prisma.organizerUserRelation.count as jest.Mock).mockResolvedValue(0);
+
+      await service.getParticipantStats('user1');
+
+      const call = (prisma.organizerUserRelation.count as jest.Mock).mock.calls[0][0];
+      expect(call.where).toEqual({ targetUserId: 'user1', isTrusted: true });
     });
   });
 });
