@@ -23,6 +23,7 @@ export class EventCapacityProgressComponent {
   readonly max = computed(() => this.event().maxParticipants);
 
   readonly fillVisible = computed(() => !this.isCancelled() && !this.isPreEnrollment());
+  readonly trackVisible = computed(() => !this.isPreEnrollment());
 
   readonly customStatusText = computed(() => {
     if (this.isCancelled()) return 'WYDARZENIE ODWOŁANE';

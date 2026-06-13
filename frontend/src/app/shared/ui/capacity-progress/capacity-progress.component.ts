@@ -14,6 +14,7 @@ export class CapacityProgressComponent {
   readonly participantsCount = input.required<number>();
   readonly max = input.required<number>();
   readonly fillVisible = input<boolean>(true);
+  readonly trackVisible = input<boolean>(true);
   readonly summaryText = input<string | undefined>(undefined);
   readonly customStatusText = input<string | undefined>(undefined);
   readonly animated = input<boolean>(false);
@@ -56,7 +57,9 @@ export class CapacityProgressComponent {
   }));
 
   readonly rootClass = 'w-full';
-  readonly backgroundClass = 'bg-neutral-100/40 border border-neutral-200';
+  readonly backgroundClass = computed(() =>
+    this.trackVisible() ? 'bg-neutral-100/40 border border-neutral-200' : '',
+  );
   readonly barClass = computed(() => {
     const stripes = this.animated() ? 'bg-striped-strong-animated' : 'bg-striped-strong';
     return `h-full rounded-full transition-all duration-300 ease-out relative ${stripes}`;

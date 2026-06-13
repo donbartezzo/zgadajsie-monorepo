@@ -11,7 +11,7 @@
   [attr.aria-valuenow]="occupiedCount()"
   [attr.aria-valuetext]="_statusText"
 >
-  <div class="h-6 rounded-full w-full relative {{ backgroundClass }}">
+  <div class="h-6 rounded-full w-full relative {{ backgroundClass() }}">
     <!-- Kolorowy pasek wypełnienia (ukryty w fazie pre-zapisów) -->
     <div class="absolute inset-0 overflow-hidden rounded-full">
       @if (_showBarFill) {
