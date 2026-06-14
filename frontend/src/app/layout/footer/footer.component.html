@@ -8,14 +8,16 @@
           <!-- <span class="text-[10px] text-neutral-400 block mb-2"
           >Zachęcamy do zagłosowania w Zielonogórskim BO na projekt 63:</span
         > -->
-          <a
-            [href]="adBannerUrl"
-            target="_blank"
-            rel="noopener noreferrer"
+          <div
             class="block rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+            [class.cursor-pointer]="!!adBannerUrl"
+            [tabindex]="adBannerUrl ? 0 : -1"
+            [attr.role]="adBannerUrl ? 'button' : null"
+            (click)="handleAdBannerClick()"
+            (keyup.enter)="handleAdBannerClick()"
           >
             <img [src]="adBannerImage" alt="Reklama" class="w-full h-auto" width="500" height="auto" />
-          </a>
+          </div>
           <p class="mt-2 text-xs text-neutral-500 text-right font-medium">
             Jeśli jesteś zainteresowany reklamą
             <button (click)="openAdContact()" class="text-primary-500 hover:underline">skontaktuj się z nami</button>

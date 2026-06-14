@@ -1294,6 +1294,69 @@ async function main() {
     await addConfirmedParticipant(bigEvent.id, user.id);
   }
 
+  // ─── Seria wydarzeń ─────────────────────────────────────────────────────────────
+  console.log('Tworzę serię wydarzeń...');
+  const weeklySeries = await prisma.eventSeries.create({
+    data: {
+      organizerId: jan.id,
+      name: 'Cotygodniowy football',
+      recurrenceType: 'WEEKLY',
+      daysOfWeek: [3], // środa
+      time: '18:00',
+      timezone: 'Europe/Warsaw',
+      durationMinutes: 90,
+      startDate: hoursFromNow(24),
+      endDate: hoursFromNow(240), // 10 dni
+      nextGenerationAt: hoursFromNow(24),
+      lastGeneratedAt: null,
+      bufferDays: 30,
+      autoCoverImage: false,
+      templateSnapshot: {
+        title: 'Cotygodniowy football',
+        description: 'Regularne granie w piłkę nożną co środę.',
+        disciplineSlug: disciplines[0].slug,
+        facilitySlug: facilities[0].slug,
+        levelSlug: levels[2].slug,
+        citySlug: cities[0].slug,
+        costPerPerson: 10,
+        maxParticipants: 12,
+        gender: 'ANY',
+        visibility: 'PUBLIC',
+        address: 'ul. Sulechowska 30',
+        lat: 51.9356,
+        lng: 15.5062,
+      },
+      isActive: true,
+    },
+  });
+
+  // Wydarzenie z serii
+  const seriesEvent = await createEventWithSlots({
+    title: 'Cotygodniowy football - środa',
+    description: 'Regularne granie w piłkę nożną co środę.',
+    disciplineSlug: disciplines[0].slug,
+    facilitySlug: facilities[0].slug,
+    levelSlug: levels[2].slug,
+    citySlug: cities[0].slug,
+    organizerId: jan.id,
+    startsAt: hoursFromNow(24),
+    endsAt: hoursFromNow(25.5),
+    costPerPerson: 10,
+    maxParticipants: 12,
+    lotteryExecutedAt: hoursFromNow(-2),
+    gender: 'ANY',
+    visibility: 'PUBLIC',
+    status: 'ACTIVE',
+    address: 'ul. Sulechowska 30',
+    lat: 51.9356,
+    lng: 15.5062,
+    seriesId: weeklySeries.id,
+  });
+  await addConfirmedParticipant(seriesEvent.id, anna.id);
+  await addConfirmedParticipant(seriesEvent.id, marek.id);
+  await addConfirmedParticipant(seriesEvent.id, kasia.id);
+  await addWaitingParticipant(seriesEvent.id, tomek.id);
+
   console.log('Seed zakończony sukcesem!');
   console.log('');
   console.log('=== Podsumowanie ===');
@@ -1321,6 +1384,7 @@ async function main() {
   console.log('                       #20 Wielki turniej footballowy (50 uczestników!)');
   console.log('  PRE_ENROLLMENT (3):  #10 football 4d, #11 koszykówka 5d, #12 pływanie 7d');
   console.log('  LOTTERY_PENDING (2): #13 football ~47h, #14 kolarstwo ~40h');
+  console.log('  SERIE (1):           #21 Cotygodniowy football (środy, Jan Kowalski)');
 }
 
 main()
