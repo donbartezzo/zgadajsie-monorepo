@@ -12,8 +12,8 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EventInfoItemComponent } from '../../../ui/event-info-item/event-info-item.component';
 import { DateBadgeComponent } from '../date-badge/date-badge.component';
+import { EventMetaRowComponent } from '../event-meta-row/event-meta-row.component';
 import { EventStatusBadgeComponent } from '../event-status-badge/event-status-badge.component';
 import { EventBadgesComponent } from '../event-badges/event-badges.component';
 import { EventCapacityProgressComponent } from '../event-capacity-progress/event-capacity-progress.component';
@@ -24,25 +24,22 @@ import {
   formatMonthShort,
   getDayOfMonth,
   formatTime,
-  formatDateRangeLabel,
   MILLISECONDS_PER_HOUR,
   nowInZone,
   EventStatus,
 } from '@zgadajsie/shared';
 import { isPreEnrollment, isEventJoinable } from '../../../utils/event-time-status.util';
 import { DateLabelsService } from '../../../services/date-labels.service';
-import { EventDurationPipe } from '../../../pipes/event-duration.pipe';
 
 @Component({
   selector: 'app-event-card',
   imports: [
     CommonModule,
-    EventInfoItemComponent,
     DateBadgeComponent,
     EventStatusBadgeComponent,
     EventBadgesComponent,
     EventCapacityProgressComponent,
-    EventDurationPipe,
+    EventMetaRowComponent,
   ],
   template: `
     @let _event = event();
@@ -86,41 +83,12 @@ import { EventDurationPipe } from '../../../pipes/event-duration.pipe';
           </div>
 
           <div class="p-3 space-y-2">
-            <div class="flex items-center justify-between gap-x-2 gap-y-1">
-              <div class="min-w-0 overflow-hidden">
-                <app-event-info-item
-                  icon="map-pin"
-                  label="Adres"
-                  size="xs"
-                  [value]="_event.address"
-                />
-              </div>
-              <div class="hidden sm:contents">
-                <app-event-info-item
-                  icon="calendar"
-                  label="Termin"
-                  size="xs"
-                  [value]="eventDateRangeLabel()"
-                />
-              </div>
-              <app-event-info-item
-                icon="clock"
-                label="Czas"
-                size="xs"
-                [value]="_event.startsAt | eventDuration: _event.endsAt"
-              />
-              <app-event-info-item
-                [icon]="_event.costPerPerson > 0 ? 'credit-card' : 'check-circle'"
-                label="Koszt"
-                size="xs"
-                color="success"
-                [value]="
-                  _event.costPerPerson > 0
-                    ? (_event.costPerPerson | number: '1.0-2') + ' zł'
-                    : 'Bezpłatne'
-                "
-              />
-            </div>
+            <app-event-meta-row
+              [address]="_event.address"
+              [startsAt]="_event.startsAt"
+              [endsAt]="_event.endsAt"
+              [costPerPerson]="_event.costPerPerson"
+            />
 
             <div class="flex items-center justify-between">
               <app-event-capacity-progress
@@ -217,10 +185,6 @@ export class EventCardComponent implements OnDestroy {
   readonly eventDay = computed(() => getDayOfMonth(this.event().startsAt).toString());
 
   readonly eventStartTime = computed(() => formatTime(this.event().startsAt));
-
-  readonly eventDateRangeLabel = computed(() =>
-    formatDateRangeLabel(this.event().startsAt, this.event().endsAt),
-  );
 
   readonly countdownLabel = computed(() => {
     const cd = this.countdown();

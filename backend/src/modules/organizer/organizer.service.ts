@@ -1,42 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { EventStatus } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { DateTime } from 'luxon';
-import { APP_DEFAULT_TIMEZONE } from '@zgadajsie/shared';
+import {
+  APP_DEFAULT_TIMEZONE,
+  EventDigestItem,
+  EventStatus as SharedEventStatus,
+  OrganizerDigestData,
+  SeriesDigestItem,
+} from '@zgadajsie/shared';
 import { PrismaService } from '../prisma/prisma.service';
-
-export interface EventDigestItem {
-  id: string;
-  title: string;
-  startsAt: string;
-  endsAt: string;
-  status: EventStatus;
-  enrollmentCount: number;
-  seriesId: string | null;
-  seriesName: string | null;
-  confirmToken: string | null;
-}
-
-export interface SeriesDigestItem {
-  id: string;
-  name: string;
-  recurrenceType: string;
-  isActive: boolean;
-  suspendedReason: string | null;
-  suspendedAt: string | null;
-  pendingCount: number;
-  nextEventAt: string | null;
-}
-
-export interface OrganizerDigestData {
-  period: { from: string; to: string };
-  pendingConfirmations: EventDigestItem[];
-  recentlyCreated: EventDigestItem[];
-  recentlyEnded: EventDigestItem[];
-  upcoming: EventDigestItem[];
-  recentlyCancelled: EventDigestItem[];
-  activeSeries: SeriesDigestItem[];
-  recentlyDeactivatedSeries: SeriesDigestItem[];
-}
 
 const DIGEST_PERIOD_DAYS = 30;
 const UPCOMING_DAYS = 30;
@@ -237,6 +210,10 @@ export class OrganizerService {
       status: true,
       seriesId: true,
       confirmToken: true,
+      address: true,
+      costPerPerson: true,
+      maxParticipants: true,
+      coverImage: { select: { storageKey: true } },
       series: { select: { name: true } },
       _count: { select: { enrollments: true } },
     } as const;
@@ -252,17 +229,25 @@ export class OrganizerService {
     confirmToken: string | null;
     series: { name: string } | null;
     _count: { enrollments: number };
+    address: string;
+    costPerPerson: Decimal;
+    maxParticipants: number;
+    coverImage: { storageKey: string | null } | null;
   }): EventDigestItem {
     return {
       id: e.id,
       title: e.title,
       startsAt: e.startsAt.toISOString(),
       endsAt: e.endsAt.toISOString(),
-      status: e.status,
+      status: e.status as SharedEventStatus,
       enrollmentCount: e._count.enrollments,
       seriesId: e.seriesId,
       seriesName: e.series?.name ?? null,
       confirmToken: e.confirmToken,
+      address: e.address,
+      costPerPerson: e.costPerPerson.toNumber(),
+      maxParticipants: e.maxParticipants,
+      coverImage: e.coverImage ? { storageKey: e.coverImage.storageKey } : null,
     };
   }
 
