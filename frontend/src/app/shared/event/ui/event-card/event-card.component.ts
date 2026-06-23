@@ -90,7 +90,7 @@ import { DateLabelsService } from '../../../services/date-labels.service';
               [costPerPerson]="_event.costPerPerson"
             />
 
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between mt-2">
               <app-event-capacity-progress
                 class="flex-1"
                 [event]="_event"
