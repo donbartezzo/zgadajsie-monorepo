@@ -211,6 +211,20 @@ export const appRoutes: Route[] = [
     },
   },
 
+  // ── Organizer: create series from event ──
+  {
+    path: 'o/w/:id/create-series',
+    loadComponent: () =>
+      import('./features/organizer/pages/create-series-from-event/create-series-from-event.component').then(
+        (m) => m.CreateSeriesFromEventComponent,
+      ),
+    canActivate: [verifiedUserGuard, organizerGuard],
+    data: {
+      title: 'Utwórz serię z wydarzenia',
+      breadcrumb: { parent: '/profile/events', label: 'Moje wydarzenia' },
+    },
+  },
+
   // ── Organizer: series details ──
   {
     path: 'series/:id',

@@ -160,6 +160,7 @@ model Event {
   level                 EventLevel           @relation(fields: [levelSlug], references: [slug])
   organizer             User                 @relation("OrganizerEvents", fields: [organizerId], references: [id])
   series                EventSeries?         @relation("SeriesEvents", fields: [seriesId], references: [id])
+  sourceForSeries       EventSeries?         @relation("SeriesSourceEvent")
   targetOccupancyConfig       EventTargetOccupancyConfig?
   announcements         EventAnnouncement[]
   groupChatMessages     EventGroupMessage[]
@@ -194,11 +195,13 @@ model EventSeries {
   autoCoverImage   Boolean                   @default(false)
   templateSnapshot Json
   isActive         Boolean                   @default(true)
+  sourceEventId    String?                   @unique
   createdAt        DateTime                  @default(now())
   updatedAt        DateTime                  @updatedAt
   suspendedAt                  DateTime?
   suspendedReason              String?
   events                       Event[]                   @relation("SeriesEvents")
+  sourceEvent      Event?                    @relation("SeriesSourceEvent", fields: [sourceEventId], references: [id])
   organizer        User                      @relation(fields: [organizerId], references: [id])
   targetOccupancyConfig  EventSeriesTargetOccupancyConfig?
 

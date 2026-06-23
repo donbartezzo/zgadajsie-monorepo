@@ -6,6 +6,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { EventStatus } from '@prisma/client';
+import { DateTime } from 'luxon';
 import {
   APP_DEFAULT_TIMEZONE,
   EventSeriesRecurrenceType,
@@ -22,7 +23,7 @@ import { FakeUsersMonitorService } from '../fake-users/fake-users-monitor.servic
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
 import { isAdminUser } from '../auth/utils/auth-user.util';
 import { EventSeriesGenerator } from './event-series.generator';
-import { CreateEventSeriesDto } from './dto/create-event-series.dto';
+import { CreateSeriesFromEventDto } from './dto/create-series-from-event.dto';
 import { UpdateEventSeriesDto } from './dto/update-event-series.dto';
 import { PreviewEventSeriesDto } from './dto/preview-event-series.dto';
 
@@ -42,70 +43,112 @@ export class EventSeriesService {
     private fakeUsersMonitor: FakeUsersMonitorService,
   ) {}
 
-  async createSeries(organizerId: string, dto: CreateEventSeriesDto) {
-    this.validateRecurrenceConfig(dto);
+  async createSeriesFromEvent(organizerId: string, eventId: string, dto: CreateSeriesFromEventDto) {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      include: {
+        city: true,
+        coverImage: true,
+      },
+    });
+
+    if (!event) {
+      throw new NotFoundException('Wydarzenie nie zostało znalezione');
+    }
+
+    if (event.organizerId !== organizerId) {
+      throw new ForbiddenException('Nie jesteś organizatorem tego wydarzenia');
+    }
+
+    if (event.seriesId !== null) {
+      throw new BadRequestException('To wydarzenie już należy do serii');
+    }
 
     const timezone = dto.timezone || APP_DEFAULT_TIMEZONE;
     const bufferDays = dto.bufferDays ?? 30;
 
+    // Wyprowadź time/durationMinutes/startDate z wydarzenia jeśli nie podane
+    const eventStart = DateTime.fromJSDate(event.startsAt, { zone: timezone });
+    const eventEnd = DateTime.fromJSDate(event.endsAt, { zone: timezone });
+
+    const time = dto.time ?? eventStart.toFormat('HH:mm');
+    const durationMinutes =
+      dto.durationMinutes ?? Math.round(eventEnd.diff(eventStart, 'minutes').minutes);
+    const startDate = dto.startDate
+      ? new Date(dto.startDate)
+      : eventStart.startOf('day').toJSDate();
+
     const templateSnapshot = {
-      title: dto.title,
-      description: dto.description,
-      disciplineSlug: dto.disciplineSlug,
-      facilitySlug: dto.facilitySlug,
-      levelSlug: dto.levelSlug,
-      citySlug: dto.citySlug,
-      address: dto.address,
-      lat: dto.lat,
-      lng: dto.lng,
-      costPerPerson: dto.costPerPerson,
-      minParticipants: dto.minParticipants,
-      maxParticipants: dto.maxParticipants,
-      ageMin: dto.ageMin,
-      ageMax: dto.ageMax,
-      gender: dto.gender,
-      visibility: dto.visibility,
-      coverImageId: dto.coverImageId,
-      rules: dto.rules,
-      facilityReserved: dto.facilityReserved ?? true,
-      welcomeMessageEnabled: dto.welcomeMessageEnabled ?? true,
-      roleConfig: dto.roleConfig ? JSON.parse(JSON.stringify(dto.roleConfig)) : null,
+      title: event.title,
+      description: event.description,
+      disciplineSlug: event.disciplineSlug,
+      facilitySlug: event.facilitySlug,
+      levelSlug: event.levelSlug,
+      citySlug: event.citySlug,
+      address: event.address,
+      lat: event.lat,
+      lng: event.lng,
+      costPerPerson: event.costPerPerson ? Number(event.costPerPerson) : undefined,
+      minParticipants: event.minParticipants ?? undefined,
+      maxParticipants: event.maxParticipants,
+      ageMin: event.ageMin ?? undefined,
+      ageMax: event.ageMax ?? undefined,
+      gender: event.gender,
+      visibility: event.visibility,
+      coverImageId: event.coverImageId ?? undefined,
+      rules: event.rules ?? undefined,
+      facilityReserved: event.facilityReserved,
+      welcomeMessageEnabled: event.welcomeMessageEnabled,
+      roleConfig: event.roleConfig ? JSON.parse(JSON.stringify(event.roleConfig)) : null,
     };
 
-    if (dto.roleConfig) {
-      this.validateRoleConfig(dto.roleConfig, dto.maxParticipants);
+    if (event.roleConfig) {
+      this.validateRoleConfig(
+        event.roleConfig as { roles: { slots: number; isDefault: boolean }[] },
+        event.maxParticipants,
+      );
     }
 
-    const series = await this.prisma.eventSeries.create({
-      data: {
-        organizerId,
-        name: dto.name,
-        recurrenceType: dto.recurrenceType,
-        intervalDays:
-          dto.recurrenceType === EventSeriesRecurrenceType.INTERVAL ? dto.intervalDays : null,
-        daysOfWeek:
-          dto.recurrenceType === EventSeriesRecurrenceType.WEEKLY ? (dto.daysOfWeek ?? []) : [],
-        time: dto.time,
-        timezone,
-        durationMinutes: dto.durationMinutes,
-        startDate: new Date(dto.startDate),
-        endDate: dto.endDate ? new Date(dto.endDate) : null,
-        bufferDays,
-        autoCoverImage: dto.autoCoverImage ?? false,
-        templateSnapshot,
-        isActive: true,
-        nextGenerationAt: new Date(),
-        targetOccupancyConfig: dto.targetOccupancy
-          ? {
-              create: {
-                targetOccupancy: dto.targetOccupancy,
-                cleanupHours: dto.cleanupHours ?? FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT,
-                minFreeSlotsBuffer:
-                  dto.minFreeSlotsBuffer ?? FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT,
-              },
-            }
-          : undefined,
-      },
+    const series = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.eventSeries.create({
+        data: {
+          organizerId,
+          name: dto.name,
+          recurrenceType: dto.recurrenceType,
+          intervalDays:
+            dto.recurrenceType === EventSeriesRecurrenceType.INTERVAL ? dto.intervalDays : null,
+          daysOfWeek:
+            dto.recurrenceType === EventSeriesRecurrenceType.WEEKLY ? (dto.daysOfWeek ?? []) : [],
+          time,
+          timezone,
+          durationMinutes,
+          startDate,
+          endDate: dto.endDate ? new Date(dto.endDate) : null,
+          bufferDays,
+          autoCoverImage: dto.autoCoverImage ?? false,
+          templateSnapshot,
+          isActive: true,
+          sourceEventId: eventId,
+          nextGenerationAt: new Date(),
+          targetOccupancyConfig: dto.targetOccupancy
+            ? {
+                create: {
+                  targetOccupancy: dto.targetOccupancy,
+                  cleanupHours: dto.cleanupHours ?? FAKE_USERS_FINAL_CLEANUP_HOURS_DEFAULT,
+                  minFreeSlotsBuffer:
+                    dto.minFreeSlotsBuffer ?? FAKE_USERS_MIN_FREE_SLOTS_BUFFER_DEFAULT,
+                },
+              }
+            : undefined,
+        },
+      });
+
+      await tx.event.update({
+        where: { id: eventId },
+        data: { seriesId: created.id },
+      });
+
+      return created;
     });
 
     await this.generator.generateForSeries(series.id);
@@ -499,7 +542,11 @@ export class EventSeriesService {
     );
   }
 
-  private validateRecurrenceConfig(dto: CreateEventSeriesDto) {
+  private validateRecurrenceConfig(dto: {
+    recurrenceType: EventSeriesRecurrenceType;
+    intervalDays?: number;
+    daysOfWeek?: number[];
+  }) {
     if (
       dto.recurrenceType === EventSeriesRecurrenceType.INTERVAL &&
       (dto.intervalDays === undefined || dto.intervalDays < 1)

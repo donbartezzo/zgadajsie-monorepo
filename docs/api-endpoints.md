@@ -217,7 +217,7 @@ Kontroler announcement używa mieszanych ścieżek bez wspólnego prefixu kontro
 
 ## Event series (`/api/event-series`)
 
-- `POST /event-series` - `auth + active + feature:enableEventSeries` - tworzy serię i generuje bufor 30 dni
+- `POST /event-series/from-event/:eventId` - `auth + active + feature:enableEventSeries` - tworzy serię z istniejącego wydarzenia; konfiguracja powtarzania (bez szablonu, czytany z eventu)
 - `GET /event-series/mine` - `auth` - lista serii zalogowanego organizatora
 - `GET /event-series/:id` - `auth` - szczegóły serii + lista nadchodzących wydarzeń (tylko organizator lub admin)
 - `PATCH /event-series/:id` - `auth` - edycja konfiguracji serii; regeneruje przyszłe puste wydarzenia
