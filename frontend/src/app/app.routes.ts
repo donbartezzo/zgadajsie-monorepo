@@ -225,6 +225,20 @@ export const appRoutes: Route[] = [
     },
   },
 
+  // ── Organizer: edit series template ──
+  {
+    path: 'o/s/:seriesId/edit-template',
+    loadComponent: () =>
+      import('./features/events/pages/event-form/event-form.component').then(
+        (m) => m.EventFormComponent,
+      ),
+    canActivate: [verifiedUserGuard],
+    data: {
+      title: 'Edycja danych wydarzeń serii',
+      breadcrumb: BREADCRUMB_TO_EVENTS,
+    },
+  },
+
   // ── Organizer: digest ──
   {
     path: 'profile/organizer/digest',

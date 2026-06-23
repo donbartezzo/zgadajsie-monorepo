@@ -50,6 +50,7 @@ import {
   toLocalInputValue,
   fromLocalInputValue,
   EventSeriesRecurrenceType,
+  UpdateEventSeriesPayload,
   DictionaryItem,
   City,
 } from '@zgadajsie/shared';
@@ -89,8 +90,38 @@ interface EventRule {
   template: `
     <div class="p-4">
       <h1 class="text-xl font-bold text-neutral-900 mb-4">
-        {{ isEdit() ? 'Edytuj wydarzenie' : 'Nowe wydarzenie' }}
+        @if (seriesTemplateMode()) {
+          Edytuj dane wydarzeń serii
+        } @else if (isEdit()) {
+          Edytuj wydarzenie
+        } @else {
+          Nowe wydarzenie
+        }
       </h1>
+
+      @if (seriesTemplateMode()) {
+        @let affected = seriesTemplateAffected();
+        <div class="mb-4 rounded-xl border border-info-200 bg-info-50 px-4 py-3 space-y-1">
+          <p class="text-sm font-semibold text-info-700">Edycja szablonu serii</p>
+          <p class="text-sm text-info-700">
+            Zmiany zostaną zastosowane wyłącznie do przyszłych wydarzeń, w których nikt jeszcze się
+            nie zapisał.
+          </p>
+          @if (affected.withoutEnrollments > 0) {
+            <p class="text-sm text-info-600">
+              Dotyczy: {{ affected.withoutEnrollments }}
+              {{ affected.withoutEnrollments === 1 ? 'wydarzenia' : 'wydarzeń' }} bez zapisów.
+            </p>
+          }
+          @if (affected.withEnrollments > 0) {
+            <p class="text-sm text-info-500">
+              {{ affected.withEnrollments }}
+              {{ affected.withEnrollments === 1 ? 'wydarzenie' : 'wydarzeń' }} z zapisami pozostanie
+              bez zmian.
+            </p>
+          }
+        </div>
+      }
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
         <app-card>
@@ -224,17 +255,19 @@ interface EventRule {
           <div class="p-4 space-y-4">
             <h3 class="text-sm font-semibold text-neutral-900">Termin i uczestnicy</h3>
 
-            <!-- Daty -->
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-medium text-neutral-600 mb-1">Początek</label>
-                <app-date-time-input formControlName="startsAt" />
+            <!-- Daty (ukryte w trybie edycji szablonu serii) -->
+            @if (!seriesTemplateMode()) {
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-neutral-600 mb-1">Początek</label>
+                  <app-date-time-input formControlName="startsAt" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-neutral-600 mb-1">Koniec</label>
+                  <app-date-time-input formControlName="endsAt" />
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-medium text-neutral-600 mb-1">Koniec</label>
-                <app-date-time-input formControlName="endsAt" />
-              </div>
-            </div>
+            }
 
             <!-- Liczba uczestników -->
             <div class="grid grid-cols-2 gap-3">
@@ -698,7 +731,7 @@ interface EventRule {
           </app-card>
         }
 
-        @if (seriesAvailable && !isEdit()) {
+        @if (seriesAvailable && !isEdit() && !seriesTemplateMode()) {
           <app-card>
             <div class="p-4 space-y-4">
               <h3 class="text-sm font-semibold text-neutral-900">Seria wydarzeń</h3>
@@ -748,9 +781,15 @@ interface EventRule {
             [disabled]="form.invalid && !isAdmin()"
           >
             <app-icon name="check" size="sm"></app-icon>
-            {{
-              isEdit() ? 'Zapisz zmiany' : seriesEnabled() ? 'Utwórz serię' : 'Utwórz wydarzenie'
-            }}
+            @if (seriesTemplateMode()) {
+              Zaktualizuj dane wydarzeń
+            } @else if (isEdit()) {
+              Zapisz zmiany
+            } @else if (seriesEnabled()) {
+              Utwórz serię
+            } @else {
+              Utwórz wydarzenie
+            }
           </app-button>
         </div>
       </form>
@@ -814,6 +853,11 @@ export class EventFormComponent implements OnInit {
   readonly isEdit = signal(false);
   readonly seriesEnabled = signal(false);
   readonly editEventSeriesId = signal<string | null>(null);
+  readonly seriesTemplateMode = signal(false);
+  readonly seriesTemplateId = signal<string | null>(null);
+  readonly seriesTemplateAffected = signal<{ withoutEnrollments: number; withEnrollments: number }>(
+    { withoutEnrollments: 0, withEnrollments: 0 },
+  );
   readonly submitting = signal(false);
   readonly geocoding = signal(false);
   readonly mapLat = signal(51.935);
@@ -998,7 +1042,65 @@ export class EventFormComponent implements OnInit {
       });
     } else if (this.route.snapshot.queryParamMap.get('seriesMode') === 'true') {
       this.toggleSeriesEnabled(true);
+    } else {
+      const seriesId = this.route.snapshot.paramMap.get('seriesId');
+      if (seriesId) {
+        this.seriesTemplateMode.set(true);
+        this.seriesTemplateId.set(seriesId);
+        this.loadSeriesTemplate(seriesId);
+      }
     }
+  }
+
+  private loadSeriesTemplate(seriesId: string): void {
+    this.eventSeriesService.getSeries(seriesId).subscribe((series) => {
+      const snap = series.templateSnapshot;
+      if (snap) {
+        this.form.patchValue({
+          title: (snap['title'] as string) ?? '',
+          description: (snap['description'] as string) ?? '',
+          disciplineSlug: (snap['disciplineSlug'] as string) ?? '',
+          facilitySlug: (snap['facilitySlug'] as string) ?? '',
+          levelSlug: (snap['levelSlug'] as string) ?? '',
+          citySlug: (snap['citySlug'] as string) ?? '',
+          costPerPerson: (snap['costPerPerson'] as number) ?? 0,
+          minParticipants: (snap['minParticipants'] as number) ?? 2,
+          maxParticipants: (snap['maxParticipants'] as number) ?? 10,
+          gender: (snap['gender'] as string) ?? 'ANY',
+          visibility: (snap['visibility'] as string) ?? 'PUBLIC',
+          facilityReserved: (snap['facilityReserved'] as boolean) ?? true,
+          address: (snap['address'] as string) ?? '',
+          lat: (snap['lat'] as number) ?? 51.935,
+          lng: (snap['lng'] as number) ?? 15.506,
+        });
+        this.form.get('ageMin')?.setValue(snap['ageMin'] as number | undefined);
+        this.form.get('ageMax')?.setValue(snap['ageMax'] as number | undefined);
+
+        if (snap['lat']) {
+          this.mapLat.set(snap['lat'] as number);
+        }
+        if (snap['lng']) {
+          this.mapLng.set(snap['lng'] as number);
+        }
+        if (snap['rules']) {
+          this.eventRules.set(this.parseRules(snap['rules'] as string));
+        }
+        if (snap['coverImageId']) {
+          this.selectedCoverImageId.set(snap['coverImageId'] as string);
+        }
+      }
+
+      this.form.get('startsAt')?.clearValidators();
+      this.form.get('startsAt')?.updateValueAndValidity();
+      this.form.get('endsAt')?.clearValidators();
+      this.form.get('endsAt')?.updateValueAndValidity();
+
+      const now = new Date();
+      const future = series.events.filter((e) => new Date(e.startsAt) > now);
+      const withoutEnrollments = future.filter((e) => (e._count?.enrollments ?? 0) === 0).length;
+      const withEnrollments = future.filter((e) => (e._count?.enrollments ?? 0) > 0).length;
+      this.seriesTemplateAffected.set({ withoutEnrollments, withEnrollments });
+    });
   }
 
   coverUrl(cover: CoverImage): string {
@@ -1148,6 +1250,11 @@ export class EventFormComponent implements OnInit {
   async onSubmit(): Promise<void> {
     const isAdmin = this.isAdmin();
     const val = this.form.getRawValue();
+
+    if (this.seriesTemplateMode()) {
+      await this.submitSeriesTemplate(val);
+      return;
+    }
 
     // Walidacja: cover image jest wymagany
     if (!this.selectedCoverImageId()) {
@@ -1357,6 +1464,74 @@ export class EventFormComponent implements OnInit {
       },
       error: (err) => {
         this.snackbar.error(err?.error?.message || 'Nie udało się zapisać');
+        this.submitting.set(false);
+      },
+    });
+  }
+
+  private async submitSeriesTemplate(val: ReturnType<typeof this.form.getRawValue>): Promise<void> {
+    const seriesId = this.seriesTemplateId()!;
+
+    if (!val.title?.trim()) {
+      this.snackbar.error('Tytuł jest wymagany.');
+      return;
+    }
+
+    const affected = this.seriesTemplateAffected();
+    const withoutMsg =
+      affected.withoutEnrollments > 0
+        ? `${affected.withoutEnrollments} wydarzeń bez zapisów zostanie zaktualizowanych.`
+        : 'Brak przyszłych wydarzeń bez zapisów.';
+    const withMsg =
+      affected.withEnrollments > 0
+        ? ` ${affected.withEnrollments} wydarzeń z zapisami pozostanie bez zmian.`
+        : '';
+
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Zaktualizuj dane wydarzeń serii',
+      message: withoutMsg + withMsg,
+      confirmLabel: 'Zaktualizuj',
+      cancelLabel: 'Anuluj',
+      color: 'warning',
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.submitting.set(true);
+
+    const payload: UpdateEventSeriesPayload = {
+      title: val.title || undefined,
+      description: val.description || undefined,
+      disciplineSlug: val.disciplineSlug || undefined,
+      facilitySlug: val.facilitySlug || undefined,
+      levelSlug: val.levelSlug || undefined,
+      citySlug: val.citySlug || undefined,
+      costPerPerson: val.costPerPerson || undefined,
+      minParticipants: val.minParticipants || undefined,
+      maxParticipants: val.maxParticipants || undefined,
+      ageMin: val.ageMin || undefined,
+      ageMax: val.ageMax || undefined,
+      gender: val.gender || undefined,
+      visibility: val.visibility || undefined,
+      facilityReserved: val.facilityReserved ?? true,
+      address: val.address || undefined,
+      lat: val.lat || undefined,
+      lng: val.lng || undefined,
+      rules: this.formatRules(this.eventRules()) || undefined,
+      coverImageId: this.selectedCoverImageId() || undefined,
+      roleConfig: this.buildRoleConfig() ?? undefined,
+    };
+
+    this.eventSeriesService.updateSeries(seriesId, payload).subscribe({
+      next: () => {
+        this.snackbar.success('Dane wydarzeń serii zaktualizowane.');
+        this.navigation.navigateToSeries(seriesId);
+        this.submitting.set(false);
+      },
+      error: (err) => {
+        this.snackbar.error(err?.error?.message || 'Nie udało się zaktualizować danych serii.');
         this.submitting.set(false);
       },
     });

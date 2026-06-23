@@ -211,29 +211,58 @@ export class EventSeriesService {
       },
     });
 
-    const updatedTemplateSnapshot = dto.title
+    const templateKeys = [
+      'title',
+      'description',
+      'disciplineSlug',
+      'facilitySlug',
+      'levelSlug',
+      'citySlug',
+      'address',
+      'lat',
+      'lng',
+      'costPerPerson',
+      'minParticipants',
+      'maxParticipants',
+      'ageMin',
+      'ageMax',
+      'gender',
+      'visibility',
+      'coverImageId',
+      'rules',
+      'facilityReserved',
+      'roleConfig',
+    ] as const;
+
+    const hasTemplateField = templateKeys.some(
+      (key) => (dto as Record<string, unknown>)[key] !== undefined,
+    );
+
+    const updatedTemplateSnapshot = hasTemplateField
       ? {
           ...(series.templateSnapshot as object),
-          title: dto.title ?? undefined,
-          description: dto.description,
-          disciplineSlug: dto.disciplineSlug,
-          facilitySlug: dto.facilitySlug,
-          levelSlug: dto.levelSlug,
-          citySlug: dto.citySlug,
-          address: dto.address,
-          lat: dto.lat,
-          lng: dto.lng,
-          costPerPerson: dto.costPerPerson,
-          minParticipants: dto.minParticipants,
-          maxParticipants: dto.maxParticipants,
-          ageMin: dto.ageMin,
-          ageMax: dto.ageMax,
-          gender: dto.gender,
-          visibility: dto.visibility,
-          coverImageId: dto.coverImageId,
-          rules: dto.rules,
-          facilityReserved: dto.facilityReserved,
-          roleConfig: dto.roleConfig ? JSON.parse(JSON.stringify(dto.roleConfig)) : undefined,
+          ...(dto.title !== undefined && { title: dto.title }),
+          ...(dto.description !== undefined && { description: dto.description }),
+          ...(dto.disciplineSlug !== undefined && { disciplineSlug: dto.disciplineSlug }),
+          ...(dto.facilitySlug !== undefined && { facilitySlug: dto.facilitySlug }),
+          ...(dto.levelSlug !== undefined && { levelSlug: dto.levelSlug }),
+          ...(dto.citySlug !== undefined && { citySlug: dto.citySlug }),
+          ...(dto.address !== undefined && { address: dto.address }),
+          ...(dto.lat !== undefined && { lat: dto.lat }),
+          ...(dto.lng !== undefined && { lng: dto.lng }),
+          ...(dto.costPerPerson !== undefined && { costPerPerson: dto.costPerPerson }),
+          ...(dto.minParticipants !== undefined && { minParticipants: dto.minParticipants }),
+          ...(dto.maxParticipants !== undefined && { maxParticipants: dto.maxParticipants }),
+          ...(dto.ageMin !== undefined && { ageMin: dto.ageMin }),
+          ...(dto.ageMax !== undefined && { ageMax: dto.ageMax }),
+          ...(dto.gender !== undefined && { gender: dto.gender }),
+          ...(dto.visibility !== undefined && { visibility: dto.visibility }),
+          ...(dto.coverImageId !== undefined && { coverImageId: dto.coverImageId }),
+          ...(dto.rules !== undefined && { rules: dto.rules }),
+          ...(dto.facilityReserved !== undefined && { facilityReserved: dto.facilityReserved }),
+          ...(dto.roleConfig !== undefined && {
+            roleConfig: JSON.parse(JSON.stringify(dto.roleConfig)),
+          }),
         }
       : undefined;
 

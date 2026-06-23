@@ -277,6 +277,14 @@ export class SeriesDetailsComponent implements OnInit {
     void this.navigation.navigateToEventManage(eventId);
   }
 
+  openTemplateEdit(): void {
+    const s = this.series();
+    if (!s) {
+      return;
+    }
+    this.navigation.navigateToSeriesTemplateEdit(s.id);
+  }
+
   backToMyEvents(): void {
     void this.navigation.navigateToProfileEvents();
   }

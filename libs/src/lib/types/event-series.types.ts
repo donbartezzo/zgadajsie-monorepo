@@ -34,6 +34,7 @@ export interface EventSeriesBase {
   createdAt: string;
   updatedAt: string;
   targetOccupancyConfig?: TargetOccupancyConfig | null;
+  templateSnapshot?: Record<string, unknown>;
 }
 
 export interface CreateEventSeriesPayload {
