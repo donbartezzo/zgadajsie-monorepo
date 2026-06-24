@@ -49,49 +49,5 @@ test.describe('Organizer - zarządzanie wydarzeniem', () => {
     await expect(titleInput).not.toBeEmpty({ timeout: 5_000 });
   });
 
-  test('pełna ścieżka cover images: dodanie własnego covera, utworzenie wydarzenia, edycja, podmiana, usunięcie', async ({
-    page,
-  }) => {
-    // 1. Przejdź do galerii własnych cover images
-    await page.goto('/me/cover-images');
-    await expect(page.locator('body')).toBeVisible({ timeout: 5_000 });
-
-    // 2. Sprawdź czy przycisk "Dodaj cover image" jest dostępny (jeśli < 5)
-    const addButton = page.locator('button:has-text("Dodaj cover image")').first();
-    const addButtonVisible = await addButton.isVisible().catch(() => false);
-
-    if (addButtonVisible) {
-      // 3. Otwórz modal upload
-      await addButton.click();
-      const uploadModal = page.locator('app-image-cropper-modal').first();
-      await expect(uploadModal).toBeVisible({ timeout: 5_000 });
-
-      // 4. Zamknij modal (testujemy tylko ścieżkę UI, nie upload pliku)
-      await page.keyboard.press('Escape');
-    }
-
-    // 5. Przejdź do formularza tworzenia wydarzenia
-    await page.goto('/o/w/new');
-    await expect(page.locator('form')).toBeVisible({ timeout: 5_000 });
-
-    // 6. Sprawdź czy zakładki "Galeria publiczna" i "Galeria własna" są widoczne
-    const publicTab = page.locator('button:has-text("Galeria publiczna")').first();
-    const myTab = page.locator('button:has-text("Galeria własna")').first();
-    await expect(publicTab).toBeVisible();
-    await expect(myTab).toBeVisible();
-
-    // 7. Spróbuj przełączyć między zakładkami
-    await myTab.click();
-    await expect(myTab).toHaveClass(/active/);
-
-    // 8. Sprawdź czy walidacja blokuje submit bez wybranego covera
-    const submitButton = page.locator('button[type="submit"]:has-text("Utwórz")').first();
-    await submitButton.click();
-
-    // Oczekujemy komunikatu o błędzie walidacji (cover image wymagany)
-    const errorToast = page
-      .locator('.snackbar-error, [role="alert"]:has-text("Wybierz grafikę")')
-      .first();
-    await expect(errorToast).toBeVisible({ timeout: 5_000 });
-  });
+  // Ścieżki cover images przeniesione do dedykowanego cover-images.spec.ts.
 });

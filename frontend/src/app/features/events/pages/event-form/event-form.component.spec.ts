@@ -145,8 +145,13 @@ describe('EventFormComponent', () => {
       expect(mockEventService.createEvent).not.toHaveBeenCalled();
     });
 
-    it('gdy brak wybranego cover image wywołuje snackbar.error i nie wywołuje createEvent', () => {
+    it('gdy brak wybranego cover image przepuszcza i wywołuje createEvent (opcjonalne)', () => {
+      const createdEvent = { id: 'ev1', city: { slug: 'warsaw' } } as unknown as Record<
+        string,
+        unknown
+      >;
       component['selectedCoverImageId'].set(null);
+      mockEventService.createEvent.mockReturnValue(of(createdEvent));
       component.form.patchValue({
         title: 'Mecz',
         disciplineSlug: 'football',
@@ -166,8 +171,8 @@ describe('EventFormComponent', () => {
       });
       component.onSubmit();
 
-      expect(mockSnackbar.error).toHaveBeenCalledWith(expect.stringContaining('grafikę'));
-      expect(mockEventService.createEvent).not.toHaveBeenCalled();
+      expect(mockSnackbar.error).not.toHaveBeenCalledWith(expect.stringContaining('grafikę'));
+      expect(mockEventService.createEvent).toHaveBeenCalled();
     });
 
     it('gdy maxParticipants < minParticipants wywołuje snackbar.error', () => {
@@ -417,6 +422,38 @@ describe('EventFormComponent', () => {
 
       expect(mockEventService.updateEvent).toHaveBeenCalled();
       expect(navSpy).toHaveBeenCalledWith(['/w', 'warsaw', 'event-edit-123']);
+    }));
+  });
+
+  describe('domyślny tab wyboru cover image', () => {
+    it('ustawia tab "my" gdy użytkownik ma własne covery', fakeAsync(() => {
+      mockCoverImageService.getAll.mockReturnValue(of([]));
+      mockCoverImageService.getMy.mockReturnValue(of([{ id: 'my-cover-1' }]));
+
+      component['loadCoverImages']('football');
+      tick();
+
+      expect(component.coverTab()).toBe('my');
+    }));
+
+    it('ustawia tab "public" gdy użytkownik nie ma własnych i są publiczne', fakeAsync(() => {
+      mockCoverImageService.getAll.mockReturnValue(of([{ id: 'public-cover-1' }]));
+      mockCoverImageService.getMy.mockReturnValue(of([]));
+
+      component['loadCoverImages']('football');
+      tick();
+
+      expect(component.coverTab()).toBe('public');
+    }));
+
+    it('ustawia tab "my" gdy nie ma ani własnych ani publicznych', fakeAsync(() => {
+      mockCoverImageService.getAll.mockReturnValue(of([]));
+      mockCoverImageService.getMy.mockReturnValue(of([]));
+
+      component['loadCoverImages']('football');
+      tick();
+
+      expect(component.coverTab()).toBe('my');
     }));
   });
 });

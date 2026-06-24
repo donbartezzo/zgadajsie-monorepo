@@ -63,6 +63,15 @@ W przypadku implementacji backendowej priorytetowo uwzględniaj:
 - Wymagane wartości konfiguracyjne pobieraj w sposób fail-fast tam, gdzie brak konfiguracji ma uniemożliwiać poprawne działanie aplikacji.
 - Nie umieszczaj wrażliwych danych bezpośrednio w kodzie źródłowym.
 
+## Upload plików i obrazów
+
+- Każdy upload obrazu waliduj wielowarstwowo: rozmiar (`ParseFilePipe` + `MaxFileSizeValidator`), MIME (`FileTypeValidator`), **magic bytes** i finalnie `sharp`.
+- Do walidacji magic bytes używaj wspólnego utila `backend/src/common/utils/image-upload.util.ts` (`validateImageBuffer`, oparty na `file-type`). Wywołuj go w serwisie przed jakąkolwiek transformacją bufora.
+- **Nigdy** nie buduj klucza storage ani rozszerzenia pliku z `file.originalname` (podatność typu `plik.exe.jpg`). Rozszerzenie wyprowadzaj z wykrytego typu (`file-type`).
+- Akceptowane formaty cover image: `image/jpeg`, `image/png`, `image/webp`. Wszystko inne odrzucaj `BadRequestException`.
+- Pliki przechowuj w R2 przez `R2StorageService` (`MediaModule`), nie na lokalnym FS. Usuwając rekord, usuwaj też obiekt z R2.
+- Stałe domenowe (wymiary, limity, akceptowane MIME) trzymaj w `@zgadajsie/shared`, nie duplikuj ich w modułach.
+
 ## Testy backendowe
 
 - Pisz testy jednostkowe dla serwisów i kontrolerów, które wprowadzają logikę.

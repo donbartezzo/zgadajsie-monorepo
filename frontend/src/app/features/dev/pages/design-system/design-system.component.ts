@@ -180,6 +180,7 @@ export class DesignSystemComponent {
     { id: 'avatars', label: 'Avatary' },
     { id: 'profile-card', label: 'Profile Card' },
     { id: 'event-status-bars', label: 'Status bars' },
+    { id: 'cover-images', label: 'Cover Images' },
   ];
 
   readonly profileCardDemoUser = signal({
@@ -190,6 +191,21 @@ export class DesignSystemComponent {
   });
   readonly profileCardDraftName = signal('Nowa nazwa');
   readonly profileCardDraftSeed = signal<string | null>('draft-seed');
+
+  readonly coverImageExamples = [
+    {
+      id: 'demo-cover-1',
+      name: 'Meczyk piłkarski',
+      storageKey: 'cover-images/public/football/demo1.webp',
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'demo-cover-2',
+      name: 'Koszykówka sparing',
+      storageKey: 'cover-images/public/basketball/demo2.webp',
+      createdAt: new Date().toISOString(),
+    },
+  ];
 
   // ════════════════════════════════════════════════════════
   // SEMANTIC PALETTES - główne palety do użycia w komponentach

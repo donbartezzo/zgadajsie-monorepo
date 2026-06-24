@@ -136,6 +136,13 @@ Przed implementacją logiki biznesowej, obliczeń, formatowania lub transformacj
 
 Zasada: jeśli widzisz powtarzającą się logikę w 2+ miejscach, wydziel ją do utils i zaktualizuj miejsca użycia.
 
+## Obrazy z R2 / cover images
+
+- URL cover image składaj **wyłącznie** przez `buildCoverImageUrl(cover)` z `shared/utils/cover-image.utils.ts`. Nie buduj ścieżek ręcznie z `environment.mediaUrl`.
+- Helper sam wybiera bucket: publiczne covery → `environment.publicMediaUrl`, własne userów (prefix `cover-images/user/`) → `environment.mediaUrl`, oraz dokleja cache-buster `?v={updatedAt}`.
+- Gdy `coverImage`/`storageKey` jest `null` (event bez okładki lub legacy bez `storageKey`), helper zwraca lokalny bundlowany `DEFAULT_COVER_IMAGE_URL` (`assets/default-cover.webp`) — nigdy nie generuj martwych ścieżek do `/assets/covers/...`.
+- W szablonie obsłuż błąd ładowania obrazka (`(error)`), ustawiając `src` na `DEFAULT_COVER_IMAGE_URL` jako finalny fallback.
+
 ## Layout, styling i komponenty UI
 
 - Używaj wyłącznie Tailwind do layoutu i wyglądu (`flex`, `grid`, spacing, kolory, typografia, breakpointy).

@@ -166,6 +166,17 @@ describe('EventsService', () => {
   // ─── create() ─────────────────────────────────────────────────────────────
 
   describe('create()', () => {
+    it('tworzy wydarzenie bez coverImageId (opcjonalne)', async () => {
+      const event = makeEvent();
+      (prisma.event.create as jest.Mock).mockResolvedValue(event);
+
+      await service.create('org1', makeCreateEventDto({ coverImageId: undefined }));
+
+      const createCall = (prisma.event.create as jest.Mock).mock.calls[0][0];
+      expect(createCall.data.coverImage).toBeUndefined();
+      expect(slots.createSlotsForEvent as jest.Mock).toHaveBeenCalledWith('event1', 10, undefined);
+    });
+
     it('tworzy wydarzenie i wywołuje createSlotsForEvent', async () => {
       const event = makeEvent();
       (prisma.event.create as jest.Mock).mockResolvedValue(event);

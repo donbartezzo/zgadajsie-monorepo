@@ -1235,12 +1235,6 @@ export class EventFormComponent implements OnInit {
       return;
     }
 
-    // Walidacja: cover image jest wymagany
-    if (!this.selectedCoverImageId()) {
-      this.snackbar.error('Wybierz grafikę wydarzenia');
-      return;
-    }
-
     // Jeśli formularz jest niezwalidowany
     if (this.form.invalid) {
       if (isAdmin) {
