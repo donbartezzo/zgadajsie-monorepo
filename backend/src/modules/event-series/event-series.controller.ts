@@ -11,7 +11,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { EventSeriesService } from './event-series.service';
-import { CreateEventSeriesDto } from './dto/create-event-series.dto';
+import { CreateSeriesFromEventDto } from './dto/create-series-from-event.dto';
 import { UpdateEventSeriesDto } from './dto/update-event-series.dto';
 import { PreviewEventSeriesDto } from './dto/preview-event-series.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -30,15 +30,6 @@ class ConfirmByTokenQuery {
 @Controller('event-series')
 export class EventSeriesController {
   constructor(private eventSeriesService: EventSeriesService) {}
-
-  @UseGuards(JwtAuthGuard, IsActiveGuard)
-  @Post()
-  create(@CurrentUser() user: AuthUser, @Body() dto: CreateEventSeriesDto) {
-    if (!featureFlags.enableEventSeries && !isOverrideAccount(user.email)) {
-      throw new ForbiddenException('Tworzenie serii wydarzeń jest tymczasowo wyłączone.');
-    }
-    return this.eventSeriesService.createSeries(user.id, dto);
-  }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)
   @Get('mine')
@@ -81,6 +72,19 @@ export class EventSeriesController {
   @Patch('confirm-event-by-token')
   confirmEventByToken(@Query() query: ConfirmByTokenQuery) {
     return this.eventSeriesService.confirmEventByToken(query.token);
+  }
+
+  @UseGuards(JwtAuthGuard, IsActiveGuard)
+  @Post('from-event/:eventId')
+  createFromEvent(
+    @CurrentUser() user: AuthUser,
+    @Param('eventId') eventId: string,
+    @Body() dto: CreateSeriesFromEventDto,
+  ) {
+    if (!featureFlags.enableEventSeries && !isOverrideAccount(user.email)) {
+      throw new ForbiddenException('Tworzenie serii wydarzeń jest tymczasowo wyłączone.');
+    }
+    return this.eventSeriesService.createSeriesFromEvent(user.id, eventId, dto);
   }
 
   @UseGuards(JwtAuthGuard, IsActiveGuard)

@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { Router } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { OrganizerDigestComponent } from './organizer-digest.component';
 import { OrganizerService, OrganizerDigestData } from '../../../../core/services/organizer.service';
 import { EventSeriesService } from '../../../../core/services/event-series.service';
@@ -60,6 +61,14 @@ describe('OrganizerDigestComponent', () => {
         { provide: EventSeriesService, useValue: eventSeriesService },
         { provide: SnackbarService, useValue: snackbar },
         {
+          provide: TranslocoService,
+          useValue: {
+            translate: jest.fn((k: string) => k),
+            config: { reRenderOnLangChange: false },
+            langChanges$: of('pl'),
+          },
+        },
+        {
           provide: Router,
           useValue: {
             navigate: jest.fn(),
@@ -104,7 +113,7 @@ describe('OrganizerDigestComponent', () => {
     fixture.detectChanges();
 
     const event = component.digest()!.pendingConfirmations[0];
-    component.confirmEvent(event);
+    (component as any).confirmEvent(event);
 
     expect(eventSeriesService.confirmEvent).toHaveBeenCalledWith('series-1', event.id);
   });
@@ -114,7 +123,7 @@ describe('OrganizerDigestComponent', () => {
     fixture.detectChanges();
 
     const event = component.digest()!.pendingConfirmations[0];
-    component.confirmEvent(event);
+    (component as any).confirmEvent(event);
 
     expect(component.digest()?.pendingConfirmations).toHaveLength(1);
     expect(snackbar.success).toHaveBeenCalled();
@@ -128,7 +137,7 @@ describe('OrganizerDigestComponent', () => {
     fixture.detectChanges();
 
     const event = component.digest()!.pendingConfirmations[0];
-    component.confirmEvent(event);
+    (component as any).confirmEvent(event);
 
     expect(snackbar.error).toHaveBeenCalledWith('Nie znaleziono');
     expect(component.confirmingEventId()).toBeNull();

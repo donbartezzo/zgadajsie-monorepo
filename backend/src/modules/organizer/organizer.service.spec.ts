@@ -16,6 +16,10 @@ function makeEventRow(overrides: Record<string, unknown> = {}) {
     confirmToken: null,
     series: null,
     _count: { enrollments: 2 },
+    address: 'Test Address 123',
+    costPerPerson: { toNumber: () => 25 },
+    maxParticipants: 10,
+    coverImage: null,
     ...overrides,
   };
 }

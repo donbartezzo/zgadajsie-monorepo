@@ -12,8 +12,8 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EventInfoItemComponent } from '../../../ui/event-info-item/event-info-item.component';
 import { DateBadgeComponent } from '../date-badge/date-badge.component';
+import { EventMetaRowComponent } from '../event-meta-row/event-meta-row.component';
 import { EventStatusBadgeComponent } from '../event-status-badge/event-status-badge.component';
 import { EventBadgesComponent } from '../event-badges/event-badges.component';
 import { EventCapacityProgressComponent } from '../event-capacity-progress/event-capacity-progress.component';
@@ -24,27 +24,22 @@ import {
   formatMonthShort,
   getDayOfMonth,
   formatTime,
-  formatDateRangeLabel,
   MILLISECONDS_PER_HOUR,
   nowInZone,
   EventStatus,
 } from '@zgadajsie/shared';
 import { isPreEnrollment, isEventJoinable } from '../../../utils/event-time-status.util';
 import { DateLabelsService } from '../../../services/date-labels.service';
-import { EventDurationPipe } from '../../../pipes/event-duration.pipe';
-import { IconComponent } from '../../../ui/icon/icon.component';
 
 @Component({
   selector: 'app-event-card',
   imports: [
     CommonModule,
-    EventInfoItemComponent,
     DateBadgeComponent,
     EventStatusBadgeComponent,
     EventBadgesComponent,
     EventCapacityProgressComponent,
-    EventDurationPipe,
-    IconComponent,
+    EventMetaRowComponent,
   ],
   template: `
     @let _event = event();
@@ -88,43 +83,14 @@ import { IconComponent } from '../../../ui/icon/icon.component';
           </div>
 
           <div class="p-3 space-y-2">
-            <div class="flex items-center justify-between gap-x-2 gap-y-1">
-              <div class="min-w-0 overflow-hidden">
-                <app-event-info-item
-                  icon="map-pin"
-                  label="Adres"
-                  size="xs"
-                  [value]="_event.address"
-                />
-              </div>
-              <div class="hidden sm:contents">
-                <app-event-info-item
-                  icon="calendar"
-                  label="Termin"
-                  size="xs"
-                  [value]="eventDateRangeLabel()"
-                />
-              </div>
-              <app-event-info-item
-                icon="clock"
-                label="Czas"
-                size="xs"
-                [value]="_event.startsAt | eventDuration: _event.endsAt"
-              />
-              <app-event-info-item
-                [icon]="_event.costPerPerson > 0 ? 'credit-card' : 'check-circle'"
-                label="Koszt"
-                size="xs"
-                color="success"
-                [value]="
-                  _event.costPerPerson > 0
-                    ? (_event.costPerPerson | number: '1.0-2') + ' zł'
-                    : 'Bezpłatne'
-                "
-              />
-            </div>
+            <app-event-meta-row
+              [address]="_event.address"
+              [startsAt]="_event.startsAt"
+              [endsAt]="_event.endsAt"
+              [costPerPerson]="_event.costPerPerson"
+            />
 
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between mt-2">
               <app-event-capacity-progress
                 class="flex-1"
                 [event]="_event"
@@ -145,23 +111,13 @@ import { IconComponent } from '../../../ui/icon/icon.component';
           />
         </div>
 
-        <div class="absolute left-2 top-2 z-10 flex flex-col items-start gap-1">
+        <div class="absolute left-2 top-2 z-10">
           <app-event-status-badge
             [variant]="statusBadgeVariant()"
             [label]="statusBadgeLabel()"
             [ended]="isEnded()"
             [canceled]="isCancelled()"
           />
-          @if (_event.seriesId) {
-            <span
-              class="inline-flex items-center gap-1 rounded-full bg-primary-600/80 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white backdrop-blur-sm"
-              aria-label="Wydarzenie z serii"
-              title="Wydarzenie z serii"
-            >
-              <app-icon name="repeat" size="xs" class="text-white" />
-              seria
-            </span>
-          }
         </div>
       </div>
     </button>
@@ -229,10 +185,6 @@ export class EventCardComponent implements OnDestroy {
   readonly eventDay = computed(() => getDayOfMonth(this.event().startsAt).toString());
 
   readonly eventStartTime = computed(() => formatTime(this.event().startsAt));
-
-  readonly eventDateRangeLabel = computed(() =>
-    formatDateRangeLabel(this.event().startsAt, this.event().endsAt),
-  );
 
   readonly countdownLabel = computed(() => {
     const cd = this.countdown();

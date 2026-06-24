@@ -1,0 +1,80 @@
+@let _event = event();
+
+<div class="rounded-2xl shadow-xs overflow-hidden bg-white border-2 border-neutral-400 text-left w-full">
+  <div class="relative">
+    <div [class]="dimmed() ? 'opacity-85 grayscale' : ''">
+      <div class="relative h-[78px] overflow-hidden">
+        @if (coverSrc()) {
+          <img
+            [src]="coverSrc()"
+            [alt]="_event.title"
+            class="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+            decoding="async"
+            (error)="onCoverImageError()"
+          />
+        } @else {
+          <div class="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-500"></div>
+        }
+
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+
+        <div class="absolute inset-x-0 bottom-0 p-2">
+          <span
+            [class]="
+              dimmed()
+                ? 'text-sm font-medium text-white/70 line-through truncate'
+                : 'text-sm font-bold text-white truncate'
+            "
+          >
+            {{ _event.title }}
+          </span>
+        </div>
+      </div>
+
+      <div class="p-3 space-y-2">
+        <app-event-meta-row
+          [address]="_event.address"
+          [startsAt]="_event.startsAt"
+          [endsAt]="_event.endsAt"
+          [costPerPerson]="_event.costPerPerson"
+        />
+      </div>
+
+      <div class="px-3 py-1 flex items-center justify-between gap-2 min-w-0 bg-neutral-50 border-t border-neutral-200">
+        @if (showCapacity()) {
+          <div class="text-xs text-neutral-500 truncate min-w-0">
+            {{ enrollmentText() }}
+          </div>
+        }
+        @if (actions().length > 0) {
+          <div class="flex flex-wrap gap-2 shrink-0" [class.ml-auto]="!showCapacity()">
+            @for (a of actions(); track a) {
+              @let cfg = actionConfig(a);
+              <app-button
+                [appearance]="cfg.appearance"
+                [color]="cfg.color"
+                size="sm"
+                [disabled]="isActionDisabled(a)"
+                [attr.aria-label]="cfg.title"
+                (clicked)="onAction(a)"
+              >
+                <app-icon [name]="cfg.icon" size="sm" />
+              </app-button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="absolute right-2 top-2 z-10">
+      <app-date-badge [month]="eventMonth()" [day]="eventDay()" [time]="eventStartTime()" size="sm" />
+    </div>
+
+    <div class="absolute left-2 top-2 z-10">
+      <span [class]="statusBadgeClasses()">
+        {{ statusLabel() }}
+      </span>
+    </div>
+  </div>
+</div>

@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { EventSeriesView } from '../../shared/types';
 import {
-  CreateEventSeriesPayload,
+  CreateSeriesFromEventPayload,
   UpdateEventSeriesPayload,
   EventSeriesPreviewItem,
 } from '@zgadajsie/shared';
@@ -31,8 +31,11 @@ export class EventSeriesService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl + '/event-series';
 
-  createSeries(payload: CreateEventSeriesPayload): Observable<EventSeriesView> {
-    return this.http.post<EventSeriesView>(this.apiUrl, payload);
+  createFromEvent(
+    eventId: string,
+    payload: CreateSeriesFromEventPayload,
+  ): Observable<EventSeriesView> {
+    return this.http.post<EventSeriesView>(`${this.apiUrl}/from-event/${eventId}`, payload);
   }
 
   getSeries(id: string): Observable<EventSeriesView> {

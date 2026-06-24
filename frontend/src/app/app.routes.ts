@@ -211,6 +211,20 @@ export const appRoutes: Route[] = [
     },
   },
 
+  // ── Organizer: create series from event ──
+  {
+    path: 'o/w/:id/create-series',
+    loadComponent: () =>
+      import('./features/organizer/pages/create-series-from-event/create-series-from-event.component').then(
+        (m) => m.CreateSeriesFromEventComponent,
+      ),
+    canActivate: [verifiedUserGuard, organizerGuard],
+    data: {
+      title: 'Utwórz serię z wydarzenia',
+      breadcrumb: { parent: '/profile/events', label: 'Moje wydarzenia' },
+    },
+  },
+
   // ── Organizer: series details ──
   {
     path: 'series/:id',
@@ -221,6 +235,20 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard],
     data: {
       title: 'Seria wydarzeń',
+      breadcrumb: BREADCRUMB_TO_EVENTS,
+    },
+  },
+
+  // ── Organizer: edit series template ──
+  {
+    path: 'o/s/:seriesId/edit-template',
+    loadComponent: () =>
+      import('./features/events/pages/event-form/event-form.component').then(
+        (m) => m.EventFormComponent,
+      ),
+    canActivate: [verifiedUserGuard],
+    data: {
+      title: 'Edycja danych wydarzeń serii',
       breadcrumb: BREADCRUMB_TO_EVENTS,
     },
   },

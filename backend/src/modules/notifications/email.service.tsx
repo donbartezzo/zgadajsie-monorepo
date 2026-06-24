@@ -10,6 +10,7 @@ import {
   isOverrideAccount,
   parseNotificationPayload,
   type ParticipationNotificationStatus,
+  type OrganizerDigestData,
 } from '@zgadajsie/shared';
 import {
   ActivationEmail,
@@ -31,7 +32,6 @@ import {
   PARTICIPATION_EMAIL_STATUSES,
   type ParticipationStatus,
 } from '@zgadajsie/email';
-import type { OrganizerDigestData } from '../organizer/organizer.service';
 import { featureFlags } from '../../common/config/feature-flags';
 
 @Injectable()

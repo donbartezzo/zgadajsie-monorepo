@@ -73,6 +73,9 @@
                 [highlight]="!facilityReserved()"
               />
               <app-event-info-item label="Koszt" [value]="costLabel()" [highlight]="true" />
+              @if (e.series) {
+                <app-event-info-item label="Seria" [value]="e.series.name" />
+              }
             </div>
           </div>
         </div>

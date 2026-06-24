@@ -100,6 +100,10 @@ export class NavigationService {
     this.router.navigate(['/series', seriesId]);
   }
 
+  navigateToSeriesTemplateEdit(seriesId: string): void {
+    void this.router.navigate(['/o/s', seriesId, 'edit-template']);
+  }
+
   navigateToProfileEvents(): void {
     this.auth.requireAuth('zobaczyć moje wydarzenia z profilu', () => {
       this.router.navigate(['/profile/events']);

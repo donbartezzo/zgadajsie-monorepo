@@ -109,10 +109,30 @@ export class EventSeriesGenerator {
         .filter((id): id is string => Boolean(id));
     }
 
-    const eventsToCreate = await this.buildEventRecords(series, template, dates, excludeCoverIds);
+    const existingAtDates = await this.prisma.event.findMany({
+      where: { seriesId, startsAt: { in: dates } },
+      select: { startsAt: true },
+    });
+    const existingTimestamps = new Set(existingAtDates.map((e) => e.startsAt.getTime()));
+    const newDates = dates.filter((d) => !existingTimestamps.has(d.getTime()));
+
+    if (newDates.length === 0) {
+      await this.prisma.eventSeries.update({
+        where: { id: seriesId },
+        data: { nextGenerationAt: DateTime.fromJSDate(windowEnd).minus({ days: 1 }).toJSDate() },
+      });
+      return { created: 0, skipped: dates.length };
+    }
+
+    const eventsToCreate = await this.buildEventRecords(
+      series,
+      template,
+      newDates,
+      excludeCoverIds,
+    );
 
     const beforeCount = await this.prisma.event.count({
-      where: { seriesId, startsAt: { in: dates } },
+      where: { seriesId, startsAt: { in: newDates } },
     });
 
     await this.prisma.event.createMany({ data: eventsToCreate, skipDuplicates: true });
@@ -120,7 +140,7 @@ export class EventSeriesGenerator {
     const newEvents = await this.prisma.event.findMany({
       where: {
         seriesId,
-        startsAt: { in: dates },
+        startsAt: { in: newDates },
         status: EventStatus.PENDING,
       },
       select: { id: true, startsAt: true },

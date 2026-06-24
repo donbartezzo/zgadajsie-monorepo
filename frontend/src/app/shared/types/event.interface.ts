@@ -3,6 +3,8 @@ import { EventBase } from './event-base.interface';
 
 export interface CurrentUserAccess {
   isTrusted: boolean;
+  isOrganizer?: boolean;
+  canCreateSeries?: boolean;
 }
 
 export interface EventRoleConfig {

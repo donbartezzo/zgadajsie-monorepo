@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { EventSeriesService } from './event-series.service';
 import { EventSeriesGenerator } from './event-series.generator';
 import { PrismaService } from '../prisma/prisma.service';
@@ -76,6 +76,10 @@ const mockPrisma = {
     findUnique: jest.fn(),
   },
 };
+
+(mockPrisma as any).$transaction = jest.fn((fn: (tx: unknown) => Promise<unknown>) =>
+  fn(mockPrisma),
+);
 
 const mockGenerator = {
   generateForSeries: jest.fn().mockResolvedValue({ created: 5, skipped: 0 }),
@@ -287,6 +291,108 @@ describe('EventSeriesService', () => {
         expect.objectContaining({
           data: expect.objectContaining({ suspendedReason: null, suspendedAt: null }),
         }),
+      );
+    });
+  });
+
+  describe('createSeriesFromEvent', () => {
+    const EVENT_ID = 'event-source-1';
+    const NEW_SERIES_ID = 'series-new-1';
+
+    const mockEvent = {
+      id: EVENT_ID,
+      organizerId: ORGANIZER_ID,
+      title: 'Trening badmintona',
+      description: 'Opis',
+      disciplineSlug: 'badminton',
+      facilitySlug: 'hala',
+      levelSlug: 'open',
+      citySlug: 'wroclaw',
+      address: 'ul. Testowa 1',
+      lat: 51.1,
+      lng: 17.0,
+      startsAt: new Date('2026-06-24T19:00:00.000Z'),
+      endsAt: new Date('2026-06-24T21:00:00.000Z'),
+      costPerPerson: 15,
+      minParticipants: 4,
+      maxParticipants: 10,
+      ageMin: null,
+      ageMax: null,
+      gender: 'ANY',
+      visibility: 'PUBLIC',
+      coverImageId: 'cover-1',
+      rules: null,
+      facilityReserved: true,
+      welcomeMessageEnabled: true,
+      roleConfig: null,
+      seriesId: null,
+      status: EventStatus.ACTIVE,
+      city: { slug: 'wroclaw' },
+      coverImage: { id: 'cover-1' },
+    };
+
+    const dto = {
+      name: 'Treningi środowe',
+      recurrenceType: EventSeriesRecurrenceType.WEEKLY,
+      daysOfWeek: [3],
+      time: '19:00',
+      timezone: 'Europe/Warsaw',
+      durationMinutes: 120,
+      startDate: '2026-06-24',
+      endDate: undefined,
+      bufferDays: 30,
+      autoCoverImage: false,
+    };
+
+    it('tworzy serię z wydarzenia z poprawnym snapshotem i przypisuje seriesId', async () => {
+      mockPrisma.event.findUnique.mockResolvedValue(mockEvent);
+      mockPrisma.eventSeries.create.mockResolvedValue({ id: NEW_SERIES_ID });
+      mockPrisma.eventSeries.findUniqueOrThrow.mockResolvedValue({
+        id: NEW_SERIES_ID,
+        events: [],
+      });
+
+      const result = await service.createSeriesFromEvent(ORGANIZER_ID, EVENT_ID, dto);
+
+      expect(result.id).toBe(NEW_SERIES_ID);
+      expect(mockPrisma.eventSeries.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            sourceEventId: EVENT_ID,
+            templateSnapshot: expect.objectContaining({
+              title: mockEvent.title,
+              disciplineSlug: mockEvent.disciplineSlug,
+              maxParticipants: mockEvent.maxParticipants,
+            }),
+          }),
+        }),
+      );
+      expect(mockPrisma.event.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: EVENT_ID },
+          data: { seriesId: NEW_SERIES_ID },
+        }),
+      );
+    });
+
+    it('rzuca 404 gdy wydarzenie nie istnieje', async () => {
+      mockPrisma.event.findUnique.mockResolvedValue(null);
+      await expect(service.createSeriesFromEvent(ORGANIZER_ID, EVENT_ID, dto)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('rzuca 403 gdy inny użytkownik próbuje utworzyć serię', async () => {
+      mockPrisma.event.findUnique.mockResolvedValue(mockEvent);
+      await expect(service.createSeriesFromEvent(OTHER_USER_ID, EVENT_ID, dto)).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
+    it('rzuca 400 gdy wydarzenie już należy do serii', async () => {
+      mockPrisma.event.findUnique.mockResolvedValue({ ...mockEvent, seriesId: SERIES_ID });
+      await expect(service.createSeriesFromEvent(ORGANIZER_ID, EVENT_ID, dto)).rejects.toThrow(
+        BadRequestException,
       );
     });
   });

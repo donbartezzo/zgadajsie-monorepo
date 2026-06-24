@@ -333,10 +333,16 @@ export class EventsService {
     if (event.status === EventStatus.PENDING && !isOrganizer) {
       throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
     }
-    const currentUserAccess =
-      userId && !isOrganizer
-        ? { isTrusted: await this.eligibility.isTrusted(userId, event.organizerId) }
-        : null;
+    const currentUserAccess = userId
+      ? {
+          isTrusted: isOrganizer
+            ? true
+            : await this.eligibility.isTrusted(userId, event.organizerId),
+          isOrganizer,
+          canCreateSeries:
+            isOrganizer && event.seriesId === null && event.status === EventStatus.ACTIVE,
+        }
+      : null;
 
     const [participantCount, totalEnrollmentCount] = await Promise.all([
       this.prisma.eventEnrollment.count({
@@ -355,6 +361,7 @@ export class EventsService {
       ...event,
       organizer: flattenOrganizer(event.organizer),
       currentUserAccess,
+      seriesId: event.seriesId,
       _count: {
         ...event._count,
         participants: participantCount,

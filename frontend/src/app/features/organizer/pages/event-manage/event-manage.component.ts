@@ -369,6 +369,50 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
           </div>
         }
       }
+
+      @if (isEventOrganizer()) {
+        <app-card class="mt-4">
+          <div class="p-4 flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3">
+              <app-icon
+                name="repeat"
+                size="sm"
+                [class]="
+                  createSeriesDisabledReason()
+                    ? 'text-neutral-400 mt-0.5 shrink-0'
+                    : 'text-primary-500 mt-0.5 shrink-0'
+                "
+              />
+              <div>
+                <p
+                  [class]="
+                    'text-sm font-medium ' +
+                    (createSeriesDisabledReason() ? 'text-neutral-500' : 'text-neutral-900')
+                  "
+                >
+                  Utwórz serię z tego wydarzenia
+                </p>
+                <p class="text-xs text-neutral-500 mt-0.5">
+                  Powtarzaj to wydarzenie automatycznie w regularnych odstępach czasu.
+                </p>
+                @if (createSeriesDisabledReason(); as reason) {
+                  <p class="text-xs text-warning-600 mt-1">{{ reason }}</p>
+                }
+              </div>
+            </div>
+            <app-button
+              type="button"
+              appearance="soft"
+              color="primary"
+              size="sm"
+              [disabled]="!!createSeriesDisabledReason()"
+              (clicked)="navigateToCreateSeries()"
+            >
+              Utwórz serię
+            </app-button>
+          </div>
+        </app-card>
+      }
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -431,6 +475,19 @@ export class EventManageComponent implements OnInit {
   readonly isPaidEvent = computed(() => {
     const e = this.eventData();
     return e ? e.costPerPerson > 0 : false;
+  });
+
+  readonly isEventOrganizer = computed(() => {
+    const e = this.eventData();
+    return e?.currentUserAccess?.isOrganizer ?? false;
+  });
+
+  readonly createSeriesDisabledReason = computed(() => {
+    const e = this.eventData();
+    if (!e) return null;
+    if (e.seriesId) return 'To wydarzenie jest już częścią serii.';
+    if (e.status !== 'ACTIVE') return 'Nie można utworzyć serii z nieaktywnego wydarzenia.';
+    return null;
   });
 
   readonly pendingList = computed(() =>
@@ -628,6 +685,10 @@ export class EventManageComponent implements OnInit {
   openChat(userId: string): void {
     const citySlug = this.eventData()?.citySlug ?? '';
     this.navigation.navigateToEventOrganizerChat(this.eventId, citySlug, userId);
+  }
+
+  navigateToCreateSeries(): void {
+    void this.navigation.navigateToUrl(`/o/w/${this.eventId}/create-series`);
   }
 
   private loadAnnouncementStats(announcementId: string): void {

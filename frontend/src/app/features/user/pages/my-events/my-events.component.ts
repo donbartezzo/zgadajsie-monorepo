@@ -6,13 +6,12 @@ import {
   signal,
   computed,
 } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { IconComponent } from '../../../../shared/ui/icon/icon.component';
-import { ButtonComponent } from '../../../../shared/ui/button/button.component';
-import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
+import { ButtonComponent } from '../../../../shared/ui/button/button.component';
+import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { UserService } from '../../../../core/services/user.service';
 import { EventService } from '../../../../core/services/event.service';
@@ -20,24 +19,22 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { EventStatus, isOverrideAccount } from '@zgadajsie/shared';
 import { Event as EventModel } from '../../../../shared/types';
-import {
-  isEventJoinable,
-  getEventLifecycleStatus,
-} from '../../../../shared/utils/event-time-status.util';
+import { isEventJoinable } from '../../../../shared/utils/event-time-status.util';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
+import { EventManageCardComponent } from '../../../../shared/event/ui/event-manage-card/event-manage-card.component';
+import type { ManageActionEvent } from '../../../../shared/event/ui/event-manage-card/event-manage-card.types';
 import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-my-events',
   imports: [
     CommonModule,
-    DatePipe,
     RouterLink,
-    IconComponent,
-    ButtonComponent,
-    CardComponent,
     LoadingSpinnerComponent,
     EmptyStateComponent,
+    EventManageCardComponent,
+    ButtonComponent,
+    IconComponent,
   ],
   template: `
     <div class="p-4">
@@ -61,72 +58,14 @@ import { environment } from '../../../../../environments/environment';
           message="Nie utworzyłeś jeszcze żadnych wydarzeń."
         ></app-empty-state>
       } @else {
-        <div class="space-y-3">
+        <div class="flex flex-col gap-5">
           @for (e of events(); track e.id) {
-            <app-card>
-              <div class="flex items-center justify-between mb-2">
-                <a
-                  [routerLink]="['/w', e.city?.slug, e.id]"
-                  class="text-sm font-semibold text-neutral-900 hover:text-primary-500"
-                  >{{ e.title }}</a
-                >
-                <span
-                  [class]="
-                    'text-xs px-2 py-0.5 rounded-full ' +
-                    (e.status === 'CANCELLED'
-                      ? 'bg-danger-50 text-danger-600'
-                      : isUpcoming(e)
-                        ? 'bg-success-50 text-success-600'
-                        : 'bg-neutral-100 text-neutral-600')
-                  "
-                  >{{ getStatusLabel(e) }}</span
-                >
-              </div>
-              <p class="text-xs text-neutral-500 mb-3">
-                {{ e.startsAt | date: 'd MMM yyyy, HH:mm' }}
-              </p>
-              <p class="text-xs text-neutral-400 mb-3">
-                Utworzone: {{ e.createdAt | date: 'd MMM yyyy, HH:mm' }}
-              </p>
-              <div class="flex gap-2">
-                <a [routerLink]="['/o', 'w', e.id, 'manage']">
-                  <app-button appearance="outline" color="neutral" size="sm"
-                    ><app-icon name="settings" size="sm"></app-icon
-                  ></app-button>
-                </a>
-                <app-button
-                  appearance="outline"
-                  color="neutral"
-                  size="sm"
-                  [disabled]="!isUpcoming(e)"
-                  (clicked)="handleEdit(e)"
-                  ><app-icon name="edit" size="sm"></app-icon
-                ></app-button>
-                <app-button
-                  appearance="outline"
-                  color="neutral"
-                  size="sm"
-                  [disabled]="e.status === 'CANCELLED'"
-                  (clicked)="handleCancel(e)"
-                  ><app-icon name="x" size="sm"></app-icon
-                ></app-button>
-                <app-button
-                  appearance="soft"
-                  color="danger"
-                  size="sm"
-                  [disabled]="!isUpcoming(e)"
-                  (clicked)="handleDelete(e)"
-                  ><app-icon name="trash" size="sm"></app-icon
-                ></app-button>
-                <app-button
-                  appearance="outline"
-                  color="neutral"
-                  size="sm"
-                  (clicked)="onDuplicate(e.id)"
-                  ><app-icon name="copy" size="sm"></app-icon
-                ></app-button>
-              </div>
-            </app-card>
+            <app-event-manage-card
+              [event]="toManageCardItem(e)"
+              [actions]="['manage', 'edit', 'cancel', 'delete', 'duplicate']"
+              [disabledActions]="getDisabledActions(e)"
+              (action)="onManageAction($event, e)"
+            />
           }
         </div>
       }
@@ -220,20 +159,56 @@ export class MyEventsComponent implements OnInit {
     });
   }
 
-  onDuplicate(id: string): void {
-    // Przekieruj do formularza tworzenia nowego wydarzenia z ID wydarzenia do duplikacji
-    this.navigation.navigateToEventCreateWithDuplicate(id);
+  toManageCardItem(e: EventModel) {
+    return {
+      id: e.id,
+      title: e.title,
+      startsAt: e.startsAt,
+      endsAt: e.endsAt,
+      status: e.status,
+      citySlug: e.citySlug,
+      seriesId: e.seriesId,
+      coverImage: e.coverImage,
+      address: e.address,
+      costPerPerson: e.costPerPerson,
+      maxParticipants: e.maxParticipants,
+      enrollmentCount: e._count?.enrollments,
+      participantCount: e._count?.participants,
+    };
+  }
+
+  getDisabledActions(e: EventModel): ManageActionEvent['type'][] {
+    const disabled: ManageActionEvent['type'][] = [];
+    if (!isEventJoinable(e.startsAt, e.status)) {
+      disabled.push('edit', 'delete');
+    }
+    if (e.status === EventStatus.CANCELLED) {
+      disabled.push('cancel');
+    }
+    return disabled;
+  }
+
+  onManageAction(action: ManageActionEvent, e: EventModel): void {
+    switch (action.type) {
+      case 'manage':
+        this.navigation.navigateToEventManage(action.eventId);
+        break;
+      case 'edit':
+        this.handleEdit(e);
+        break;
+      case 'cancel':
+        this.handleCancel(e);
+        break;
+      case 'delete':
+        void this.handleDelete(e);
+        break;
+      case 'duplicate':
+        this.navigation.navigateToEventCreateWithDuplicate(action.eventId);
+        break;
+    }
   }
 
   isUpcoming(e: EventModel): boolean {
     return isEventJoinable(e.startsAt, e.status);
-  }
-
-  getStatusLabel(e: EventModel): string {
-    const ls = getEventLifecycleStatus(e.startsAt, e.endsAt, e.status);
-    if (ls === 'CANCELLED') return 'ODWOŁANE';
-    if (ls === 'ONGOING') return 'W TRAKCIE';
-    if (ls === 'ENDED') return 'ZAKOŃCZONE';
-    return 'AKTYWNE';
   }
 }

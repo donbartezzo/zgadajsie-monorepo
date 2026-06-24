@@ -4,15 +4,21 @@ import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
-import {
-  EventDigestItem,
-  OrganizerDigestData,
-  OrganizerService,
-} from '../../../../core/services/organizer.service';
+import { EventManageCardComponent } from '../../../../shared/event/ui/event-manage-card/event-manage-card.component';
+import type {
+  EventManageCardItem,
+  ManageActionEvent,
+} from '../../../../shared/event/ui/event-manage-card/event-manage-card.types';
+import { OrganizerService } from '../../../../core/services/organizer.service';
 import { EventSeriesService } from '../../../../core/services/event-series.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
-import { formatDateLong, formatTime } from '@zgadajsie/shared';
+import {
+  EventDigestItem,
+  EventStatus,
+  formatDateLong,
+  OrganizerDigestData,
+} from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-organizer-digest',
@@ -22,6 +28,7 @@ import { formatDateLong, formatTime } from '@zgadajsie/shared';
     EmptyStateComponent,
     LoadingSpinnerComponent,
     IconComponent,
+    EventManageCardComponent,
   ],
   templateUrl: './organizer-digest.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -71,7 +78,7 @@ export class OrganizerDigestComponent implements OnInit {
     });
   }
 
-  confirmEvent(event: EventDigestItem): void {
+  private confirmEvent(event: EventDigestItem): void {
     if (!event.seriesId) return;
     this.confirmingEventId.set(event.id);
     this.eventSeriesService.confirmEvent(event.seriesId, event.id).subscribe({
@@ -84,7 +91,7 @@ export class OrganizerDigestComponent implements OnInit {
             ...d,
             pendingConfirmations: d.pendingConfirmations.filter((e) => e.id !== event.id),
             upcoming: isUpcoming
-              ? [...d.upcoming, { ...event, status: 'ACTIVE', confirmToken: null }].sort(
+              ? [...d.upcoming, { ...event, status: EventStatus.ACTIVE, confirmToken: null }].sort(
                   (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
                 )
               : d.upcoming,
@@ -100,16 +107,69 @@ export class OrganizerDigestComponent implements OnInit {
     });
   }
 
-  navigateToSeries(seriesId: string): void {
-    void this.navigation.navigateToSeries(seriesId);
+  toManageCardItem(event: EventDigestItem): EventManageCardItem {
+    return {
+      id: event.id,
+      title: event.title,
+      startsAt: event.startsAt,
+      endsAt: event.endsAt,
+      status: event.status,
+      seriesId: event.seriesId,
+      confirmToken: event.confirmToken,
+      address: event.address,
+      costPerPerson: event.costPerPerson,
+      maxParticipants: event.maxParticipants,
+      coverImage: event.coverImage,
+      enrollmentCount: event.enrollmentCount,
+    };
+  }
+
+  onPendingAction(action: ManageActionEvent, event: EventDigestItem): void {
+    switch (action.type) {
+      case 'confirm':
+        this.confirmEvent(event);
+        break;
+      case 'manage':
+        this.navigation.navigateToEventManage(action.eventId);
+        break;
+      case 'delete':
+        // eslint-disable-next-line no-console
+        console.warn('Delete not yet implemented for digest events');
+        break;
+      case 'duplicate':
+        this.navigation.navigateToEventCreateWithDuplicate(action.eventId);
+        break;
+    }
+  }
+
+  onUpcomingAction(action: ManageActionEvent): void {
+    switch (action.type) {
+      case 'manage':
+        this.navigation.navigateToEventManage(action.eventId);
+        break;
+      case 'edit':
+        this.navigation.navigateToEventEdit(action.eventId);
+        break;
+      case 'cancel':
+        // eslint-disable-next-line no-console
+        console.warn('Cancel not yet implemented for digest events');
+        break;
+      case 'delete':
+        // eslint-disable-next-line no-console
+        console.warn('Delete not yet implemented for digest events');
+        break;
+      case 'duplicate':
+        this.navigation.navigateToEventCreateWithDuplicate(action.eventId);
+        break;
+    }
   }
 
   formatDate(value: string): string {
     return formatDateLong(value);
   }
 
-  formatEventTime(value: string): string {
-    return formatTime(value);
+  navigateToSeries(seriesId: string): void {
+    void this.navigation.navigateToSeries(seriesId);
   }
 
   isEmpty(data: OrganizerDigestData): boolean {

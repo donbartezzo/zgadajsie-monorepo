@@ -11,10 +11,11 @@ import { APP_BRAND, nowInZone, ContactSource } from '@zgadajsie/shared';
 import { environment } from '../../../environments/environment';
 import { BottomOverlaysService } from '../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { SectionSeparatorComponent } from '../../shared/ui/section-separator/section-separator.component';
+import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-footer',
-  imports: [RouterLink, SectionSeparatorComponent],
+  imports: [RouterLink, SectionSeparatorComponent, LoadingSpinnerComponent],
   host: { class: 'mt-auto block' },
   templateUrl: './footer.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,8 +29,8 @@ export class FooterComponent {
   private readonly router = inject(Router);
 
   // @TMP:
-  readonly adBannerUrl = 'https://6tki.zgora.pl/component/k2/item/774-budzet-obywatelski.html';
-  readonly adBannerImage = '/assets/images/ad-banner.webp';
+  readonly adBannerUrl: string | null = null;
+  readonly adBannerImage = `${environment.publicMediaUrl}/ad-images/cities/zielona-gora.webp`;
 
   readonly currentUrl = signal(this.router.url);
   readonly isPageLoaded = signal(false);
@@ -52,5 +53,11 @@ export class FooterComponent {
 
   openAdContact(): void {
     this.overlays.openContact(undefined, ContactSource.ADVERTISEMENT);
+  }
+
+  handleAdBannerClick(): void {
+    if (this.adBannerUrl) {
+      window.open(this.adBannerUrl, '_blank', 'noopener,noreferrer');
+    }
   }
 }

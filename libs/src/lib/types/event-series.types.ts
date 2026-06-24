@@ -29,11 +29,13 @@ export interface EventSeriesBase {
   bufferDays: number;
   autoCoverImage: boolean;
   isActive: boolean;
+  sourceEventId?: string | null;
   suspendedReason?: string | null;
   suspendedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   targetOccupancyConfig?: TargetOccupancyConfig | null;
+  templateSnapshot?: Record<string, unknown>;
 }
 
 export interface CreateEventSeriesPayload {
@@ -68,6 +70,23 @@ export interface CreateEventSeriesPayload {
   rules?: string;
   facilityReserved?: boolean;
   roleConfig?: unknown;
+  targetOccupancy?: number | null;
+  cleanupHours?: number;
+  minFreeSlotsBuffer?: number;
+}
+
+export interface CreateSeriesFromEventPayload {
+  name: string;
+  recurrenceType: EventSeriesRecurrenceType;
+  intervalDays?: number;
+  daysOfWeek?: number[];
+  time?: string;
+  timezone?: string;
+  durationMinutes?: number;
+  startDate?: string;
+  endDate?: string;
+  bufferDays?: number;
+  autoCoverImage?: boolean;
   targetOccupancy?: number | null;
   cleanupHours?: number;
   minFreeSlotsBuffer?: number;
