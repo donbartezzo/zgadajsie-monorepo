@@ -44,7 +44,7 @@ export class ModerationService {
 
     const user = await this.prisma.user.findUnique({
       where: { id: dto.toUserId },
-      select: { email: true, displayName: true },
+      select: { realDetails: { select: { email: true } }, displayName: true },
     });
 
     if (user) {
@@ -54,17 +54,18 @@ export class ModerationService {
         dto.reason,
         dto.eventId ?? '',
       );
-      if (dto.eventId) {
+      const email = user.realDetails?.email;
+      if (dto.eventId && email) {
         try {
           await this.emailService.sendReprimandEmail(
-            user.email,
+            email,
             user.displayName,
             eventTitle,
             dto.reason,
             eventLink,
           );
         } catch (err) {
-          this.logger.error(`Failed to send reprimand email to ${user.email}: ${err}`);
+          this.logger.error(`Failed to send reprimand email to ${email}: ${err}`);
         }
       }
     }

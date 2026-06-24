@@ -67,7 +67,7 @@ export class AuthService {
       );
     }
 
-    const existing = await this.prisma.user.findUnique({
+    const existing = await this.prisma.userRealDetails.findUnique({
       where: { email: dto.email },
     });
     if (existing) {
@@ -78,17 +78,21 @@ export class AuthService {
     const activationToken = uuidv4();
     const activationTokenExpiresAt = hoursFromNow(24);
 
-    const user = await this.prisma.user.create({
+    await this.prisma.user.create({
       data: {
-        email: dto.email,
-        passwordHash,
         displayName: dto.displayName,
-        activationToken,
-        activationTokenExpiresAt,
+        realDetails: {
+          create: {
+            email: dto.email,
+            passwordHash,
+            activationToken,
+            activationTokenExpiresAt,
+          },
+        },
       },
     });
 
-    await this.sendActivationEmailSafe(user.email, user.displayName, activationToken);
+    await this.sendActivationEmailSafe(dto.email, dto.displayName, activationToken);
 
     return { message: 'Konto utworzone. Sprawdź email, aby aktywować konto.' };
   }
@@ -121,24 +125,26 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
+    const details = await this.prisma.userRealDetails.findUnique({
       where: { email: dto.email },
+      include: { user: true },
     });
-    if (!user || !user.passwordHash) {
+    if (!details || !details.passwordHash) {
       throw new UnauthorizedException('Nieprawidłowy email lub hasło');
     }
 
-    const isPasswordValid = await comparePassword(dto.password, user.passwordHash);
+    const isPasswordValid = await comparePassword(dto.password, details.passwordHash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Nieprawidłowy email lub hasło');
     }
 
-    const tokens = await this.generateTokens(user.id, user.email);
+    const { user } = details;
+    const tokens = await this.generateTokens(user.id, details.email);
     return {
       ...tokens,
       user: {
         id: user.id,
-        email: user.email,
+        email: details.email,
         displayName: user.displayName,
         role: user.role,
         isActive: user.isActive,
@@ -149,90 +155,99 @@ export class AuthService {
   async refreshToken(userId: string, _email: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
+      include: { realDetails: true },
     });
     if (!user) {
       throw new UnauthorizedException('Użytkownik nie istnieje');
     }
-    return this.generateTokens(user.id, user.email);
+    return this.generateTokens(user.id, user.realDetails?.email ?? _email);
   }
 
   async activateAccount(token: string) {
-    const user = await this.prisma.user.findFirst({
+    const details = await this.prisma.userRealDetails.findFirst({
       where: {
         activationToken: token,
         activationTokenExpiresAt: { gt: new Date() },
       },
     });
-    if (!user) {
+    if (!details) {
       throw new BadRequestException('Nieprawidłowy lub wygasły token aktywacyjny');
     }
 
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        isActive: true,
-        isEmailVerified: true,
-        activationToken: null,
-        activationTokenExpiresAt: null,
-      },
-    });
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: details.userId },
+        data: { isActive: true },
+      }),
+      this.prisma.userRealDetails.update({
+        where: { userId: details.userId },
+        data: {
+          isEmailVerified: true,
+          activationToken: null,
+          activationTokenExpiresAt: null,
+        },
+      }),
+    ]);
 
     return { message: 'Konto zostało aktywowane' };
   }
 
   async resendActivation(email: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user) {
+    const details = await this.prisma.userRealDetails.findUnique({
+      where: { email },
+      include: { user: true },
+    });
+    if (!details) {
       return { message: 'Jeśli konto istnieje, link aktywacyjny został wysłany' };
     }
-    if (user.isActive) {
+    if (details.user.isActive) {
       return { message: 'Konto jest już aktywne' };
     }
 
     const activationToken = uuidv4();
     const activationTokenExpiresAt = hoursFromNow(24);
 
-    await this.prisma.user.update({
-      where: { id: user.id },
+    await this.prisma.userRealDetails.update({
+      where: { userId: details.userId },
       data: { activationToken, activationTokenExpiresAt },
     });
 
-    await this.sendActivationEmailSafe(user.email, user.displayName, activationToken);
+    await this.sendActivationEmailSafe(details.email, details.user.displayName, activationToken);
 
     return { message: 'Jeśli konto istnieje, link aktywacyjny został wysłany' };
   }
 
   async forgotPassword(email: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (user) {
+    const details = await this.prisma.userRealDetails.findUnique({ where: { email } });
+    if (details) {
       const passwordResetToken = uuidv4();
       const passwordResetTokenExpiresAt = new Date(Date.now() + MILLISECONDS_PER_HOUR);
 
-      await this.prisma.user.update({
-        where: { id: user.id },
+      await this.prisma.userRealDetails.update({
+        where: { userId: details.userId },
         data: { passwordResetToken, passwordResetTokenExpiresAt },
       });
 
-      await this.sendPasswordResetEmailSafe(user.email, passwordResetToken);
+      await this.sendPasswordResetEmailSafe(details.email, passwordResetToken);
     }
 
     return { message: 'Jeśli konto istnieje, link do resetu hasła został wysłany' };
   }
 
   async resetPassword(token: string, newPassword: string) {
-    const user = await this.prisma.user.findFirst({
+    const details = await this.prisma.userRealDetails.findFirst({
       where: {
         passwordResetToken: token,
         passwordResetTokenExpiresAt: { gt: new Date() },
       },
     });
-    if (!user) {
+    if (!details) {
       throw new BadRequestException('Nieprawidłowy lub wygasły token resetu hasła');
     }
 
     const passwordHash = await hashPassword(newPassword);
-    await this.prisma.user.update({
-      where: { id: user.id },
+    await this.prisma.userRealDetails.update({
+      where: { userId: details.userId },
       data: {
         passwordHash,
         passwordResetToken: null,
@@ -256,37 +271,48 @@ export class AuthService {
           providerUserId: profile.providerUserId,
         },
       },
-      include: { user: true },
+      include: { user: { include: { realDetails: true } } },
     });
 
     if (socialAccount) {
-      return this.generateTokens(socialAccount.user.id, socialAccount.user.email);
+      return this.generateTokens(
+        socialAccount.user.id,
+        socialAccount.user.realDetails?.email ?? profile.email,
+      );
     }
 
-    let user = await this.prisma.user.findUnique({
+    const existingDetails = await this.prisma.userRealDetails.findUnique({
       where: { email: profile.email },
     });
 
-    if (!user) {
-      user = await this.prisma.user.create({
+    let userId: string;
+    if (existingDetails) {
+      userId = existingDetails.userId;
+    } else {
+      const created = await this.prisma.user.create({
         data: {
-          email: profile.email,
           displayName: profile.displayName,
           isActive: true,
-          isEmailVerified: true,
+          realDetails: {
+            create: {
+              email: profile.email,
+              isEmailVerified: true,
+            },
+          },
         },
       });
+      userId = created.id;
     }
 
     await this.prisma.socialAccount.create({
       data: {
-        userId: user.id,
+        userId,
         provider: profile.provider as SocialProvider,
         providerUserId: profile.providerUserId,
       },
     });
 
-    return this.generateTokens(user.id, user.email);
+    return this.generateTokens(userId, profile.email);
   }
 
   private async generateTokens(userId: string, email: string) {

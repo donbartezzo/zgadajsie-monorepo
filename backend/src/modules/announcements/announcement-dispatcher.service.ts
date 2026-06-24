@@ -43,13 +43,39 @@ export class AnnouncementDispatcherService {
       select: { id: true, title: true, organizerId: true, city: { select: { slug: true } } },
     });
 
-    const participants = await this.prisma.eventEnrollment.findMany({
+    const rawParticipants = await this.prisma.eventEnrollment.findMany({
       where: { eventId, wantsIn: true, user: { accountType: { not: 'FAKE' } } },
       include: {
-        user: { select: { id: true, email: true, displayName: true, accountType: true } },
-        addedBy: { select: { id: true, email: true, displayName: true } },
+        user: {
+          select: {
+            id: true,
+            displayName: true,
+            accountType: true,
+            realDetails: { select: { email: true } },
+          },
+        },
+        addedBy: {
+          select: { id: true, displayName: true, realDetails: { select: { email: true } } },
+        },
       },
     });
+
+    const participants = rawParticipants.map((p) => ({
+      userId: p.userId,
+      user: {
+        id: p.user.id,
+        email: p.user.realDetails?.email ?? '',
+        displayName: p.user.displayName,
+        accountType: p.user.accountType,
+      },
+      addedBy: p.addedBy
+        ? {
+            id: p.addedBy.id,
+            email: p.addedBy.realDetails?.email ?? '',
+            displayName: p.addedBy.displayName,
+          }
+        : null,
+    }));
 
     const announcement = await this.prisma.eventAnnouncement.create({
       data: { eventId, organizerId, message, priority, trigger },

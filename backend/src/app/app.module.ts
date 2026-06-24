@@ -28,6 +28,7 @@ import { EventSeriesModule } from '../modules/event-series/event-series.module';
 import { OrganizerModule } from '../modules/organizer/organizer.module';
 import { FakeUsersModule } from '../modules/fake-users/fake-users.module';
 import { ContactModule } from '../modules/contact/contact.module';
+import { DisciplineProfilesModule } from '../modules/discipline-profiles/discipline-profiles.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ContactModule } from '../modules/contact/contact.module';
     PrismaModule,
     AuthModule,
     UsersModule,
+    DisciplineProfilesModule,
     EventsModule,
     EventSeriesModule,
     OrganizerModule,

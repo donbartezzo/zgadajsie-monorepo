@@ -97,6 +97,20 @@
           }
         </app-user-profile-card>
       </div>
+
+      <!-- Profil uczestnika dla organizatora (statystyki, linki, profil dyscypliny / snapshot gościa) -->
+      @if ((_isOrganizer || isAdmin()) && _event && _participant.userId) {
+        <div class="mt-4">
+          <app-section-separator label="Profil uczestnika" />
+          <div class="mt-2">
+            <app-organizer-participant-profile
+              [eventId]="_event.id"
+              [userId]="_participant.userId"
+              [disciplineSlug]="_event.disciplineSlug"
+            />
+          </div>
+        </div>
+      }
     } @else if (_isNonParticipant && _modalUserInfo) {
       <!-- Non-participant user view -->
       <div class="pt-4">

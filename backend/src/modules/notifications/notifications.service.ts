@@ -219,7 +219,7 @@ export class NotificationsService {
           user: {
             select: {
               id: true,
-              email: true,
+              realDetails: { select: { email: true } },
               displayName: true,
             },
           },
@@ -230,7 +230,15 @@ export class NotificationsService {
       }),
       this.prisma.notification.count({ where }),
     ]);
-    return { data: notifications, total, page, limit };
+    const data = notifications.map((notification) => ({
+      ...notification,
+      user: {
+        id: notification.user.id,
+        email: notification.user.realDetails?.email ?? null,
+        displayName: notification.user.displayName,
+      },
+    }));
+    return { data, total, page, limit };
   }
 
   async cancelEmailForNotification(notificationId: string) {

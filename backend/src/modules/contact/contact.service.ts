@@ -182,7 +182,7 @@ export class ContactService {
           user: {
             select: {
               id: true,
-              email: true,
+              realDetails: { select: { email: true } },
               displayName: true,
             },
           },
@@ -192,7 +192,16 @@ export class ContactService {
     ]);
 
     return {
-      data: messages,
+      data: messages.map((message) => ({
+        ...message,
+        user: message.user
+          ? {
+              id: message.user.id,
+              email: message.user.realDetails?.email ?? null,
+              displayName: message.user.displayName,
+            }
+          : null,
+      })),
       total,
       page,
       limit,

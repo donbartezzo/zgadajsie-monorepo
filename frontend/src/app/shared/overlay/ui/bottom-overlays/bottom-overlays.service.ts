@@ -3,7 +3,7 @@ import {
   Event as EventModel,
   ParticipantPaymentInfo,
   Participation,
-  JoinGuestRequest,
+  GuestIdentityData,
   CancelPaymentRequest,
 } from '../../../types';
 import { EventCountdown, ContactSource } from '@zgadajsie/shared';
@@ -22,7 +22,19 @@ export type OverlayType =
   | 'navigation'
   | 'cityOptions'
   | 'contact'
+  | 'disciplineProfile'
   | null;
+
+export interface DisciplineProfileValue {
+  levelSlug: string;
+  bio: string | null;
+}
+
+export interface DisciplineProfileOverlayContext {
+  disciplineSlug: string;
+  initial: DisciplineProfileValue | null;
+  submitLabel: string;
+}
 
 export interface JoinWizardConfig {
   startStep: 1 | 2;
@@ -46,7 +58,7 @@ export class BottomOverlaysService {
   private readonly participantsSignal = signal<Participation[]>([]);
 
   private joinCallback: ((roleKey?: string) => void) | null = null;
-  private joinGuestCallback: ((data: JoinGuestRequest) => void) | null = null;
+  private joinGuestCallback: ((data: GuestIdentityData) => void) | null = null;
   private authSuccessCallback: (() => void) | null = null;
   private payCallback: (() => void) | null = null;
   private cancelEventCallback: (() => void) | null = null;
@@ -82,6 +94,12 @@ export class BottomOverlaysService {
 
   private readonly contactSourceSignal = signal<ContactSource>(ContactSource.CONTACT_PAGE);
   readonly contactSource = this.contactSourceSignal.asReadonly();
+
+  private readonly disciplineProfileContextSignal = signal<DisciplineProfileOverlayContext | null>(
+    null,
+  );
+  readonly disciplineProfileContext = this.disciplineProfileContextSignal.asReadonly();
+  private disciplineProfileSaveCallback: ((value: DisciplineProfileValue) => void) | null = null;
 
   readonly active = this.activeSignal.asReadonly();
   readonly event = this.eventSignal.asReadonly();
@@ -156,7 +174,7 @@ export class BottomOverlaysService {
     this.joinCallback = callback;
   }
 
-  onJoinGuestConfirmed(callback: (data: JoinGuestRequest) => void): void {
+  onJoinGuestConfirmed(callback: (data: GuestIdentityData) => void): void {
     this.joinGuestCallback = callback;
   }
 
@@ -208,7 +226,7 @@ export class BottomOverlaysService {
     this.joinCallback?.(roleKey);
   }
 
-  confirmJoinGuest(data: JoinGuestRequest): void {
+  confirmJoinGuest(data: GuestIdentityData): void {
     this.joinGuestCallback?.(data);
   }
 
@@ -252,6 +270,19 @@ export class BottomOverlaysService {
     this.open('contact');
   }
 
+  openDisciplineProfile(
+    context: DisciplineProfileOverlayContext,
+    onSave: (value: DisciplineProfileValue) => void,
+  ): void {
+    this.disciplineProfileContextSignal.set(context);
+    this.disciplineProfileSaveCallback = onSave;
+    this.open('disciplineProfile');
+  }
+
+  confirmDisciplineProfile(value: DisciplineProfileValue): void {
+    this.disciplineProfileSaveCallback?.(value);
+  }
+
   clearCallbacks(): void {
     this.joinCallback = null;
     this.joinGuestCallback = null;
@@ -263,5 +294,6 @@ export class BottomOverlaysService {
     this.cancelPaymentCallback = null;
     this.changeRoleCallback = null;
     this.enrollmentActionCallback = null;
+    this.disciplineProfileSaveCallback = null;
   }
 }

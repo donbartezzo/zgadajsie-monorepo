@@ -4,6 +4,7 @@
  */
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5434/zgadajsie_test?schema=public';
 
+import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaModule } from '../modules/prisma/prisma.module';
 import { PrismaService } from '../modules/prisma/prisma.service';
@@ -15,6 +16,10 @@ import { EmailService } from '../modules/notifications/email.service';
 import { PushService } from '../modules/notifications/push.service';
 import { EventRealtimeService } from '../modules/realtime/event-realtime.service';
 import { PaymentsService } from '../modules/payments/payments.service';
+import { AppConfigService } from '../common/config/app-config.service';
+import { ChatService } from '../modules/chat/chat.service';
+import { ChatNotificationService } from '../modules/chat/chat-notification.service';
+import { mockAuthUser } from './test-helpers';
 
 const TEST_PREFIX = 'intpay_';
 const MS_PER_HOUR = 3600_000;
@@ -41,6 +46,8 @@ describe('[Integration] Enrollment join flow', () => {
   };
   const mockRealtime = { invalidateEvent: jest.fn() };
   const mockPayments = { cleanupIntents: jest.fn().mockResolvedValue(undefined) };
+  const mockChat = { createPrivateMessage: jest.fn().mockResolvedValue(undefined) };
+  const mockChatNotification = { onNewPrivateMessage: jest.fn().mockResolvedValue(undefined) };
   const mockSlotService = {
     assignSlot: jest.fn().mockResolvedValue(null),
     releaseSlot: jest.fn().mockResolvedValue(undefined),
@@ -55,11 +62,17 @@ describe('[Integration] Enrollment join flow', () => {
         EnrollmentService,
         EnrollmentEligibilityService,
         ConfigService,
+        {
+          provide: AppConfigService,
+          useValue: { frontendUrl: 'http://localhost:4300', backendUrl: 'http://localhost:3000' },
+        },
         { provide: EmailService, useValue: mockEmail },
         { provide: PushService, useValue: mockPush },
         { provide: EventRealtimeService, useValue: mockRealtime },
         { provide: PaymentsService, useValue: mockPayments },
         { provide: SlotService, useValue: mockSlotService },
+        { provide: ChatService, useValue: mockChat },
+        { provide: ChatNotificationService, useValue: mockChatNotification },
       ],
     }).compile();
 
@@ -92,7 +105,9 @@ describe('[Integration] Enrollment join flow', () => {
   });
 
   afterAll(async () => {
-    const users = await prisma.user.findMany({ where: { email: { startsWith: TEST_PREFIX } } });
+    const users = await prisma.user.findMany({
+      where: { realDetails: { email: { startsWith: TEST_PREFIX } } },
+    });
     const userIds = users.map((u) => u.id);
     await prisma.organizerUserRelation.deleteMany({
       where: { OR: [{ organizerUserId: { in: userIds } }, { targetUserId: { in: userIds } }] },
@@ -101,19 +116,25 @@ describe('[Integration] Enrollment join flow', () => {
       where: { event: { title: { startsWith: TEST_PREFIX } } },
     });
     await prisma.event.deleteMany({ where: { title: { startsWith: TEST_PREFIX } } });
-    await prisma.user.deleteMany({ where: { email: { startsWith: TEST_PREFIX } } });
+    await prisma.user.deleteMany({
+      where: { realDetails: { email: { startsWith: TEST_PREFIX } } },
+    });
     await module.close();
   });
 
   async function createOrganizer(suffix: string) {
     return prisma.user.create({
       data: {
-        email: `${TEST_PREFIX}org_${suffix}@test.pl`,
         displayName: 'Organizer',
-        passwordHash: 'hash',
         isActive: true,
-        isEmailVerified: true,
         role: 'USER',
+        realDetails: {
+          create: {
+            email: `${TEST_PREFIX}org_${suffix}@test.pl`,
+            passwordHash: 'hash',
+            isEmailVerified: true,
+          },
+        },
       },
     });
   }
@@ -121,12 +142,20 @@ describe('[Integration] Enrollment join flow', () => {
   async function createUser(suffix: string) {
     return prisma.user.create({
       data: {
-        email: `${TEST_PREFIX}user_${suffix}@test.pl`,
         displayName: 'Uczestnik',
-        passwordHash: 'hash',
         isActive: true,
-        isEmailVerified: true,
         role: 'USER',
+        realDetails: {
+          create: {
+            email: `${TEST_PREFIX}user_${suffix}@test.pl`,
+            passwordHash: 'hash',
+            isEmailVerified: true,
+          },
+        },
+        // Profil dyscypliny wymagany przy zapisie (Etap 3) — eventy testowe są dla 'football'.
+        disciplineProfiles: {
+          create: { disciplineSlug: 'football', levelSlug: 'mixed-open' },
+        },
       },
     });
   }
@@ -154,6 +183,58 @@ describe('[Integration] Enrollment join flow', () => {
     return event;
   }
 
+  describe('join() - wymuszanie profilu dyscypliny', () => {
+    it('REAL bez profilu dyscypliny → 409 DISCIPLINE_PROFILE_REQUIRED (brak enrollmentu)', async () => {
+      const suffix = `noprofile_${Date.now()}`;
+      const organizer = await createOrganizer(suffix);
+      // Użytkownik BEZ profilu dyscypliny 'football' (createUser go tworzy, więc tworzymy ręcznie).
+      const user = await prisma.user.create({
+        data: {
+          displayName: 'Bez profilu',
+          isActive: true,
+          role: 'USER',
+          realDetails: {
+            create: {
+              email: `${TEST_PREFIX}np_${suffix}@test.pl`,
+              passwordHash: 'hash',
+              isEmailVerified: true,
+            },
+          },
+        },
+      });
+      const event = await createOpenEvent(organizer.id, suffix, 0);
+      await prisma.organizerUserRelation.create({
+        data: {
+          organizerUserId: organizer.id,
+          targetUserId: user.id,
+          isTrusted: true,
+          trustedAt: new Date(),
+          isBanned: false,
+        },
+      });
+
+      let error: unknown;
+      try {
+        await enrollmentService.join(event.id, mockAuthUser(user.id));
+      } catch (e) {
+        error = e;
+      }
+      expect(error).toBeInstanceOf(ConflictException);
+      expect((error as ConflictException).getResponse()).toMatchObject({
+        code: 'DISCIPLINE_PROFILE_REQUIRED',
+        disciplineSlug: 'football',
+      });
+
+      const count = await prisma.eventEnrollment.count({ where: { eventId: event.id } });
+      expect(count).toBe(0);
+
+      // Cleanup
+      await prisma.organizerUserRelation.deleteMany({ where: { organizerUserId: organizer.id } });
+      await prisma.event.delete({ where: { id: event.id } });
+      await prisma.user.deleteMany({ where: { id: { in: [user.id, organizer.id] } } });
+    });
+  });
+
   describe('join() - OPEN_ENROLLMENT', () => {
     it('trusted user może dołączyć do bezpłatnego eventu (PENDING → enrollment)', async () => {
       const suffix = `a_${Date.now()}`;
@@ -171,7 +252,7 @@ describe('[Integration] Enrollment join flow', () => {
         },
       });
 
-      const enrollment = await enrollmentService.join(event.id, user.id);
+      const enrollment = await enrollmentService.join(event.id, mockAuthUser(user.id));
 
       expect(enrollment).toBeDefined();
       expect(enrollment.userId).toBe(user.id);
@@ -207,7 +288,7 @@ describe('[Integration] Enrollment join flow', () => {
         },
       });
 
-      const enrollment = await enrollmentService.join(event.id, user.id);
+      const enrollment = await enrollmentService.join(event.id, mockAuthUser(user.id));
       expect(enrollment.waitingReason).toBe('BANNED');
 
       // Cleanup
@@ -233,7 +314,7 @@ describe('[Integration] Enrollment join flow', () => {
         },
       });
 
-      const first = await enrollmentService.join(event.id, user.id);
+      const first = await enrollmentService.join(event.id, mockAuthUser(user.id));
 
       // Withdraw
       await prisma.eventEnrollment.update({
@@ -242,7 +323,7 @@ describe('[Integration] Enrollment join flow', () => {
       });
 
       // Rejoin
-      const second = await enrollmentService.join(event.id, user.id);
+      const second = await enrollmentService.join(event.id, mockAuthUser(user.id));
       expect(second.id).toBe(first.id);
 
       const dbEnrollment = await prisma.eventEnrollment.findUnique({ where: { id: first.id } });

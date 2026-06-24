@@ -312,20 +312,30 @@ export class PaymentsService {
         skip,
         take: limit,
         include: {
-          user: { select: { id: true, displayName: true, email: true } },
+          user: {
+            select: { id: true, displayName: true, realDetails: { select: { email: true } } },
+          },
           event: { select: { id: true, title: true, city: { select: { slug: true } } } },
         },
       }),
       this.prisma.payment.count(),
     ]);
-    return { data, total, page, limit };
+    const flattened = data.map((payment) => ({
+      ...payment,
+      user: {
+        id: payment.user.id,
+        displayName: payment.user.displayName,
+        email: payment.user.realDetails?.email ?? null,
+      },
+    }));
+    return { data: flattened, total, page, limit };
   }
 
   async getAdminPaymentDetail(paymentId: string) {
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
       include: {
-        user: { select: { id: true, displayName: true, email: true } },
+        user: { select: { id: true, displayName: true, realDetails: { select: { email: true } } } },
         event: {
           select: { id: true, title: true, organizerId: true, city: { select: { slug: true } } },
         },
@@ -335,7 +345,14 @@ export class PaymentsService {
     if (!payment) {
       throw new NotFoundException(PAYMENT_NOT_FOUND_MESSAGE);
     }
-    return payment;
+    return {
+      ...payment,
+      user: {
+        id: payment.user.id,
+        displayName: payment.user.displayName,
+        email: payment.user.realDetails?.email ?? null,
+      },
+    };
   }
 
   // DEV ONLY: Simulate successful webhook for local testing

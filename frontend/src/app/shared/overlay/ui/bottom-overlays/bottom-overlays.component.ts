@@ -10,6 +10,7 @@ import { CancelPaymentOverlayComponent } from '../../../../features/organizer/ov
 import { EventStatusBarDetailsOverlayComponent } from '../../../../features/event/ui/event-status-bars/event-status-bar-details-overlay/event-status-bar-details-overlay.component';
 import { NotificationOverlayComponent } from '../../../layouts/page-layout/notification/notification-overlay/notification-overlay.component';
 import { ContactOverlayComponent } from '../../../contact/ui/contact-overlay.component';
+import { DisciplineProfileOverlayComponent } from '../../../../features/event/overlays/discipline-profile-overlay.component';
 import { BottomOverlaysService } from './bottom-overlays.service';
 
 @Component({
@@ -26,6 +27,7 @@ import { BottomOverlaysService } from './bottom-overlays.service';
     EventStatusBarDetailsOverlayComponent,
     NotificationOverlayComponent,
     ContactOverlayComponent,
+    DisciplineProfileOverlayComponent,
   ],
   templateUrl: './bottom-overlays.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

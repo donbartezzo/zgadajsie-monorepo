@@ -602,7 +602,7 @@ export class SlotService {
       where: { id: participationId },
       data: { waitingReason: null },
       include: {
-        user: { select: { id: true, displayName: true, avatarSeed: true, email: true } },
+        user: { select: { id: true, displayName: true, avatarSeed: true } },
         event: { select: { id: true, title: true } },
         slot: true,
       },

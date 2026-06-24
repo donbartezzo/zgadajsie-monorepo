@@ -80,7 +80,9 @@ export class NotificationEscalationCron implements OnModuleInit {
         updatedAt: { lte: cutoff },
         OR: [{ relevanceUntil: null }, { relevanceUntil: { gt: new Date() } }],
       },
-      include: { user: { select: { email: true, displayName: true } } },
+      include: {
+        user: { select: { displayName: true, realDetails: { select: { email: true } } } },
+      },
       take: 100,
     });
 
@@ -90,8 +92,16 @@ export class NotificationEscalationCron implements OnModuleInit {
         continue;
       }
 
+      const email = notification.user.realDetails?.email;
+      if (!email) {
+        continue;
+      }
+
       try {
-        await this.emailService.sendTransactionalForNotification(notification);
+        await this.emailService.sendTransactionalForNotification({
+          ...notification,
+          user: { email, displayName: notification.user.displayName },
+        });
         await this.prisma.notification.update({
           where: { id: notification.id },
           data: { emailSentAt: new Date() },

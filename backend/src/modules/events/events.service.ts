@@ -41,12 +41,36 @@ import { EventStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { resolveUserContext } from '../auth/utils/auth-user.util';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
+import { UsersService } from '../users/users.service';
 
 // Minimalna projekcja covera w odpowiedziach z eventami: id (edycja), storageKey (URL),
 // updatedAt (cache-busting). Skalar coverImageId pomijamy przez `omit` w zapytaniach.
 const EVENT_COVER_IMAGE_SELECT = {
   select: { id: true, storageKey: true, updatedAt: true },
 };
+
+// Organizator to konto REAL — donationUrl żyje w UserRealDetails (1:1).
+// Spłaszczamy je z powrotem na organizer, by zachować kształt API (organizer.donationUrl).
+const ORGANIZER_SELECT = {
+  select: {
+    id: true,
+    displayName: true,
+    avatarSeed: true,
+    realDetails: { select: { donationUrl: true } },
+  },
+} as const;
+
+function flattenOrganizer<
+  T extends {
+    id: string;
+    displayName: string;
+    avatarSeed: string | null;
+    realDetails: { donationUrl: string | null } | null;
+  },
+>(organizer: T) {
+  const { realDetails, ...rest } = organizer;
+  return { ...rest, donationUrl: realDetails?.donationUrl ?? null };
+}
 
 @Injectable()
 export class EventsService {
@@ -63,6 +87,7 @@ export class EventsService {
     private eventRealtime: EventRealtimeService,
     private eligibility: EnrollmentEligibilityService,
     private fakeUsersMonitor: FakeUsersMonitorService,
+    private usersService: UsersService,
   ) {}
 
   async create(organizerId: string, dto: CreateEventDto) {
@@ -220,9 +245,7 @@ export class EventsService {
           level: true,
           city: true,
           coverImage: EVENT_COVER_IMAGE_SELECT,
-          organizer: {
-            select: { id: true, displayName: true, avatarSeed: true, donationUrl: true },
-          },
+          organizer: ORGANIZER_SELECT,
           _count: {
             select: {
               enrollments: {
@@ -264,6 +287,7 @@ export class EventsService {
 
     const eventsWithParticipantCount = events.map((event) => ({
       ...event,
+      organizer: flattenOrganizer(event.organizer),
       _count: {
         ...event._count,
         participants: participantCountMap.get(event.id) ?? 0,
@@ -290,14 +314,7 @@ export class EventsService {
         coverImage: EVENT_COVER_IMAGE_SELECT,
         targetOccupancyConfig: true,
         series: { select: { id: true, name: true } },
-        organizer: {
-          select: {
-            id: true,
-            displayName: true,
-            avatarSeed: true,
-            donationUrl: true,
-          },
-        },
+        organizer: ORGANIZER_SELECT,
         _count: {
           select: {
             enrollments: {
@@ -342,6 +359,7 @@ export class EventsService {
 
     return {
       ...event,
+      organizer: flattenOrganizer(event.organizer),
       currentUserAccess,
       seriesId: event.seriesId,
       _count: {
@@ -363,14 +381,7 @@ export class EventsService {
         level: true,
         city: true,
         coverImage: EVENT_COVER_IMAGE_SELECT,
-        organizer: {
-          select: {
-            id: true,
-            displayName: true,
-            avatarSeed: true,
-            donationUrl: true,
-          },
-        },
+        organizer: ORGANIZER_SELECT,
       },
     });
 
@@ -382,7 +393,7 @@ export class EventsService {
       throw new ForbiddenException('Nie możesz duplikować tego wydarzenia');
     }
 
-    return event;
+    return { ...event, organizer: flattenOrganizer(event.organizer) };
   }
 
   async update(id: string, user: AuthUser, dto: UpdateEventDto) {
@@ -580,28 +591,40 @@ export class EventsService {
     const participants = await this.prisma.eventEnrollment.findMany({
       where: { eventId: id, user: { accountType: { not: 'FAKE' } } },
       include: {
-        user: { select: { id: true, email: true, displayName: true, accountType: true } },
-        addedBy: { select: { id: true, email: true, displayName: true } },
+        user: {
+          select: {
+            id: true,
+            displayName: true,
+            accountType: true,
+            realDetails: { select: { email: true } },
+          },
+        },
+        addedBy: {
+          select: { id: true, displayName: true, realDetails: { select: { email: true } } },
+        },
       },
     });
 
     for (const p of participants) {
       // For GUEST users, notify and email the host instead
       const recipient = p.user.accountType === 'GUEST' && p.addedBy ? p.addedBy : p.user;
+      const recipientEmail = recipient.realDetails?.email;
       try {
         await this.pushService.notifyEventCancelled(recipient.id, event.title, id);
       } catch (err) {
         notificationErrors.push(`push:${recipient.id}:${(err as Error).message}`);
       }
-      try {
-        await this.emailService.sendEventCancelledEmail(
-          recipient.email,
-          recipient.displayName,
-          event.title,
-          buildEventUrl(event.city.slug, id, this.appConfig.frontendUrl),
-        );
-      } catch (err) {
-        notificationErrors.push(`email:${recipient.email}:${(err as Error).message}`);
+      if (recipientEmail) {
+        try {
+          await this.emailService.sendEventCancelledEmail(
+            recipientEmail,
+            recipient.displayName,
+            event.title,
+            buildEventUrl(event.city.slug, id, this.appConfig.frontendUrl),
+          );
+        } catch (err) {
+          notificationErrors.push(`email:${recipientEmail}:${(err as Error).message}`);
+        }
       }
     }
 
@@ -695,9 +718,8 @@ export class EventsService {
             id: true,
             displayName: true,
             avatarSeed: true,
-            email: true,
             isActive: true,
-            isEmailVerified: true,
+            realDetails: { select: { email: true, isEmailVerified: true } },
           },
         },
         addedBy: {
@@ -747,8 +769,14 @@ export class EventsService {
       } else {
         status = 'PENDING';
       }
+      const { realDetails, ...userRest } = p.user;
       return {
         ...p,
+        user: {
+          ...userRest,
+          email: realDetails?.email ?? null,
+          isEmailVerified: realDetails?.isEmailVerified ?? false,
+        },
         status,
         waitingReason: status === 'PENDING' ? p.waitingReason : null,
         addedByUserId: p.addedByUserId,
@@ -758,6 +786,105 @@ export class EventsService {
         isNewToOrganizer: !confirmedUsers.has(p.userId),
       };
     });
+  }
+
+  /**
+   * Profil uczestnika dla organizatora: dane ogólne (REAL: statystyki, linki, zaufanie,
+   * „nowy dla organizatora") + profil dyscypliny wydarzenia. Dla gościa zwracamy snapshot
+   * z UserGuestDetails (bez globalnego profilu/statystyk). Brak profilu → `disciplineProfile: null`
+   * (front pokazuje „Brak profilu dyscypliny"). Widoczne tylko dla organizatora wydarzenia/admina.
+   */
+  async getParticipantProfileForOrganizer(
+    eventId: string,
+    targetUserId: string,
+    requester: AuthUser,
+  ) {
+    const { userId: requesterId, isAdmin } = resolveUserContext(requester);
+
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, organizerId: true, disciplineSlug: true },
+    });
+    if (!event) {
+      throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
+    }
+    if (!isAdmin && event.organizerId !== requesterId) {
+      throw new ForbiddenException(NOT_ORGANIZER_MESSAGE);
+    }
+
+    const enrollment = await this.prisma.eventEnrollment.findUnique({
+      where: { eventId_userId: { eventId, userId: targetUserId } },
+      include: {
+        user: {
+          select: {
+            id: true,
+            displayName: true,
+            avatarSeed: true,
+            accountType: true,
+            socialLinks: true,
+            guestDetails: { select: { levelSlug: true, bio: true } },
+          },
+        },
+      },
+    });
+    if (!enrollment) {
+      throw new NotFoundException('Uczestnik nie jest zgłoszony na to wydarzenie');
+    }
+
+    const { user } = enrollment;
+    const isGuest = user.accountType === 'GUEST';
+
+    // Profil dyscypliny odpowiadający dyscyplinie wydarzenia.
+    let disciplineProfile: { levelSlug: string; bio: string | null } | null = null;
+    if (isGuest) {
+      disciplineProfile = user.guestDetails ?? null;
+    } else {
+      disciplineProfile = await this.prisma.participantDisciplineProfile.findUnique({
+        where: {
+          userId_disciplineSlug: { userId: targetUserId, disciplineSlug: event.disciplineSlug },
+        },
+        select: { levelSlug: true, bio: true },
+      });
+    }
+
+    // Profil uczestnika (statystyki/linki/zaufanie) tylko dla kont REAL.
+    let stats: Awaited<ReturnType<UsersService['getParticipantStats']>> | null = null;
+    let socialLinks: unknown = null;
+    let isTrusted = false;
+    let isNewToOrganizer = false;
+
+    if (!isGuest) {
+      const [participantStats, trusted, priorConfirmed] = await Promise.all([
+        this.usersService.getParticipantStats(targetUserId),
+        this.eligibility.isTrusted(targetUserId, event.organizerId),
+        this.prisma.eventEnrollment.count({
+          where: {
+            userId: targetUserId,
+            slot: { confirmed: true },
+            event: { organizerId: event.organizerId },
+          },
+        }),
+      ]);
+      stats = participantStats;
+      isTrusted = trusted;
+      isNewToOrganizer = priorConfirmed === 0;
+      socialLinks = user.socialLinks ?? null;
+    }
+
+    return {
+      user: {
+        id: user.id,
+        displayName: user.displayName,
+        avatarSeed: user.avatarSeed,
+        accountType: user.accountType,
+      },
+      isGuest,
+      socialLinks,
+      stats,
+      isTrusted,
+      isNewToOrganizer,
+      disciplineProfile,
+    };
   }
 
   async getSlots(eventId: string) {

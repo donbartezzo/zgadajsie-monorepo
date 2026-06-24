@@ -25,6 +25,7 @@ import {
 import { LinkedParticipantChipComponent } from '../linked-participant-chip/linked-participant-chip.component';
 import { StatusIndicatorComponent } from '../../../ui/status-indicator/status-indicator.component';
 import { EnrollmentParticipantActionsComponent } from '../enrollment-participant-actions/enrollment-participant-actions.component';
+import { OrganizerParticipantProfileComponent } from '../organizer-participant-profile/organizer-participant-profile.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { EventService } from '../../../../core/services/event.service';
 import { AdminService } from '../../../../core/services/admin.service';
@@ -94,6 +95,7 @@ function getErrorMessage(err: unknown, fallback: string): string {
     LinkedParticipantChipComponent,
     StatusIndicatorComponent,
     EnrollmentParticipantActionsComponent,
+    OrganizerParticipantProfileComponent,
     SectionSeparatorComponent,
   ],
   templateUrl: './enrollment-slot-modal.component.html',
