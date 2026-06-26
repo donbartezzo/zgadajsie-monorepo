@@ -118,6 +118,14 @@ $app-bg-color: rgb(var(--color-neutral-100));
   --hero-mini-bar-h: #{$hero-mini-bar-height};
 }
 
+// RWD-04: Reduce hero heights on low viewports (landscape phones, small windows)
+@media (max-height: 480px) {
+  :root {
+    --hero-extended-h: 140px;
+    --hero-compact-h: 72px;
+  }
+}
+
 .app {
   min-height: 100vh;
   min-height: 100svh;
