@@ -7,7 +7,10 @@ import { ButtonComponent } from '../button/button.component';
 @Component({
   selector: 'app-cookie-consent-banner',
   imports: [RouterLink, ButtonComponent],
-  host: { class: 'fixed bottom-[75px] left-1/2 z-40 block w-full max-w-app -translate-x-1/2 px-1' },
+  host: {
+    class:
+      'fixed bottom-[calc(75px+env(safe-area-inset-bottom))] left-1/2 z-40 block w-full max-w-app -translate-x-1/2 px-1',
+  },
   templateUrl: './cookie-consent-banner.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
