@@ -31,6 +31,9 @@ module.exports = {
       spacing: {
         18: '4.5rem', // 72px - for xl avatar size
       },
+      minHeight: {
+        11: '2.75rem', // 44px - WCAG 2.5.5 tap target minimum
+      },
       maxWidth: {
         app: 'var(--app-max-width)',
       },

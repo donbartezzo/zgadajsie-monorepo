@@ -35,7 +35,7 @@ const VARIANTS: Record<EventStatusBarVariant, VariantClasses> = {
   },
   sticky: {
     wrapper: 'cursor-pointer hover:brightness-110 transition-all duration-200',
-    inner: 'px-3 py-2 md:py-3',
+    inner: 'px-3 py-2.5 md:py-3 min-h-11',
     gap: 'gap-3',
     titleSize: 'text-base md:text-lg lg:text-xl',
     subtitleSize: 'text-sm md:text-base lg:text-lg',

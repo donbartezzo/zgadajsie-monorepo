@@ -1,46 +1,47 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IconComponent } from '../icon/icon.component';
+import { ButtonComponent } from '../button/button.component';
 
 @Component({
   selector: 'app-pagination',
-  imports: [CommonModule, IconComponent],
+  imports: [CommonModule, ButtonComponent],
   template: `
     @if (totalPages() > 1) {
       <div class="flex items-center justify-center gap-1">
-        <button
-          class="p-2 rounded-lg hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed"
+        <app-button
+          appearance="ghost"
+          color="neutral"
+          size="sm"
+          [iconOnly]="true"
+          iconLeft="chevron-left"
           [disabled]="currentPage() <= 1"
-          (click)="pageChange.emit(currentPage() - 1)"
-        >
-          <app-icon name="chevron-left" size="sm" />
-        </button>
+          (clicked)="pageChange.emit(currentPage() - 1)"
+        />
 
         @for (page of visiblePages(); track page) {
           @if (page === -1) {
             <span class="px-2 text-neutral-400">…</span>
           } @else {
-            <button
-              class="w-9 h-9 rounded-lg text-sm font-medium transition-colors"
-              [ngClass]="
-                page === currentPage()
-                  ? 'bg-primary-500 text-white'
-                  : 'hover:bg-neutral-100 text-neutral-700'
-              "
-              (click)="pageChange.emit(page)"
+            <app-button
+              size="sm"
+              [appearance]="page === currentPage() ? 'solid' : 'ghost'"
+              [color]="page === currentPage() ? 'primary' : 'neutral'"
+              (clicked)="pageChange.emit(page)"
             >
               {{ page }}
-            </button>
+            </app-button>
           }
         }
 
-        <button
-          class="p-2 rounded-lg hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed"
+        <app-button
+          appearance="ghost"
+          color="neutral"
+          size="sm"
+          [iconOnly]="true"
+          iconLeft="chevron-right"
           [disabled]="currentPage() >= totalPages()"
-          (click)="pageChange.emit(currentPage() + 1)"
-        >
-          <app-icon name="chevron-right" size="sm" />
-        </button>
+          (clicked)="pageChange.emit(currentPage() + 1)"
+        />
       </div>
     }
   `,
