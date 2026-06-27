@@ -1,4 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, output } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { fromEvent } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { IconComponent } from '../icon/icon.component';
 
 @Component({
@@ -65,6 +68,16 @@ export class ModalComponent {
 
   constructor() {
     document.body.classList.add('overflow-hidden');
+
+    fromEvent<KeyboardEvent>(document, 'keydown')
+      .pipe(
+        filter((e) => e.key === 'Escape'),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.closed.emit();
+      });
+
     this.destroyRef.onDestroy(() => {
       document.body.classList.remove('overflow-hidden');
     });

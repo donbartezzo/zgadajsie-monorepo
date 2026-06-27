@@ -146,12 +146,12 @@
   @if (notifBellState(); as bellState) {
     <button
       type="button"
-      class="group/notif absolute right-3 bottom-10 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-xs backdrop-blur-xs transition-all [@media(hover:hover)]:hover:bg-primary-500 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:shadow-md"
+      class="group/notif absolute right-3 bottom-10 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-xs backdrop-blur-xs transition-all hover:bg-primary-500 hover:text-white hover:shadow-md"
       (click)="onNotifBellClick()"
       aria-label="Powiadomienia"
     >
       <span
-        class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 [@media(hover:hover)]:group-hover/notif:max-w-48 [@media(hover:hover)]:group-hover/notif:pl-3 [@media(hover:hover)]:group-hover/notif:opacity-100"
+        class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 group-hover/notif:max-w-48 group-hover/notif:pl-3 group-hover/notif:opacity-100"
       >
         <span class="block text-xs font-semibold leading-tight">Powiadomienia</span>
       </span>
@@ -182,7 +182,7 @@
     <div class="pointer-events-auto">
       <button
         type="button"
-        class="group/back inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-xs backdrop-blur-xs transition-all [@media(hover:hover)]:hover:bg-primary-500 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:shadow-md"
+        class="group/back inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-xs backdrop-blur-xs transition-all hover:bg-primary-500 hover:text-white hover:shadow-md"
         (click)="goBack()"
         aria-label="Wróć"
       >
@@ -190,7 +190,7 @@
           <app-icon name="arrow-left" size="sm" color="neutral"></app-icon>
         </span>
         <span
-          class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 [@media(hover:hover)]:group-hover/back:max-w-48 [@media(hover:hover)]:group-hover/back:pr-3 [@media(hover:hover)]:group-hover/back:opacity-100"
+          class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 group-hover/back:max-w-48 group-hover/back:pr-3 group-hover/back:opacity-100"
         >
           <span class="block text-xs font-semibold leading-tight">{{ breadcrumb.parentLabel() }}</span>
         </span>

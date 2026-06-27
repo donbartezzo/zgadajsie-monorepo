@@ -9,6 +9,9 @@ import {
   output,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { fromEvent } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { IconComponent, IconName } from '../../../ui/icon/icon.component';
 import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../types/colors';
 
@@ -111,6 +114,16 @@ export class BottomOverlayComponent {
         document.body.classList.remove('overflow-hidden');
       }
     });
+
+    fromEvent<KeyboardEvent>(document, 'keydown')
+      .pipe(
+        filter((e) => e.key === 'Escape'),
+        filter(() => this.open()),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.closed.emit();
+      });
 
     this.destroyRef.onDestroy(() => {
       document.body.classList.remove('overflow-hidden');
