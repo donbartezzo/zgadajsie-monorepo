@@ -90,6 +90,14 @@ body {
   min-height: 100svh;
 }
 
+// Rezerwuje miejsce na scrollbar na stałe, by blokada scrolla tła przy
+// otwieraniu overlayów/modali (overflow-hidden na body) nie powodowała skoku
+// layoutu ani rozjazdu między centrowanym shellem a elementami `fixed`.
+// Na mobile (overlay scrollbar, szerokość 0) bez efektu wizualnego.
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
 }

@@ -33,7 +33,7 @@ import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../types/colors';
         ></button>
 
         <div
-          class="relative z-10 min-h-0 overflow-y-auto rounded-t-2xl bg-white shadow-2xl animate-slide-up"
+          class="relative z-10 min-h-0 max-h-[90dvh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl animate-slide-up"
         >
           <div class="bg-white px-4 pt-3 pb-2 rounded-t-2xl relative text-center mb-3 px-6">
             <!-- <div class="mx-auto mb-3 h-1 w-10 rounded-full bg-neutral-300"></div> -->
