@@ -47,12 +47,12 @@ import { DateLabelsService } from '../../../services/date-labels.service';
 
     <button
       type="button"
-      class="rounded-2xl shadow-xs overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 bg-white border-2 border-neutral-400 text-left w-full"
+      class="@container rounded-2xl shadow-xs overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 bg-white border-2 border-neutral-400 text-left w-full"
       (click)="selected.emit(_event)"
     >
       <div class="relative">
         <div [class]="isDimmed() ? 'opacity-85 grayscale' : ''">
-          <div class="relative h-44 overflow-hidden">
+          <div class="relative h-44 @lg:h-52 overflow-hidden">
             @if (_coverSrc) {
               <img
                 [src]="_coverSrc"
@@ -72,8 +72,8 @@ import { DateLabelsService } from '../../../services/date-labels.service';
               class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"
             ></div>
 
-            <div class="absolute inset-x-0 bottom-0 p-3">
-              <h3 class="text-sm font-bold text-white line-clamp-2 drop-shadow-xs">
+            <div class="absolute inset-x-0 bottom-0 p-3 @lg:p-4">
+              <h3 class="text-sm @lg:text-base font-bold text-white line-clamp-2 drop-shadow-xs">
                 {{ _event.title }}
               </h3>
               <div class="mt-1">
@@ -82,7 +82,7 @@ import { DateLabelsService } from '../../../services/date-labels.service';
             </div>
           </div>
 
-          <div class="p-3 space-y-2">
+          <div class="p-3 @lg:p-4 space-y-2">
             <app-event-meta-row
               [address]="_event.address"
               [startsAt]="_event.startsAt"

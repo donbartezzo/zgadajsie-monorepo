@@ -1,9 +1,9 @@
 @let _event = event();
 
-<div class="rounded-2xl shadow-xs overflow-hidden bg-white border-2 border-neutral-400 text-left w-full">
+<div class="@container rounded-2xl shadow-xs overflow-hidden bg-white border-2 border-neutral-400 text-left w-full">
   <div class="relative">
     <div [class]="dimmed() ? 'opacity-85 grayscale' : ''">
-      <div class="relative h-[78px] overflow-hidden">
+      <div class="relative h-[78px] @lg:h-24 overflow-hidden">
         @if (coverSrc()) {
           <img
             [src]="coverSrc()"
@@ -19,12 +19,12 @@
 
         <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
 
-        <div class="absolute inset-x-0 bottom-0 p-2">
+        <div class="absolute inset-x-0 bottom-0 p-2 @lg:p-3">
           <span
             [class]="
               dimmed()
-                ? 'text-sm font-medium text-white/70 line-through truncate'
-                : 'text-sm font-bold text-white truncate'
+                ? 'text-sm @lg:text-base font-medium text-white/70 line-through truncate'
+                : 'text-sm @lg:text-base font-bold text-white truncate'
             "
           >
             {{ _event.title }}
@@ -32,7 +32,7 @@
         </div>
       </div>
 
-      <div class="p-3 space-y-2">
+      <div class="p-3 @lg:p-4 space-y-2">
         <app-event-meta-row
           [address]="_event.address"
           [startsAt]="_event.startsAt"
@@ -41,7 +41,9 @@
         />
       </div>
 
-      <div class="px-3 py-1 flex items-center justify-between gap-2 min-w-0 bg-neutral-50 border-t border-neutral-200">
+      <div
+        class="px-3 @lg:px-4 py-1 @lg:py-2 flex items-center justify-between gap-2 min-w-0 bg-neutral-50 border-t border-neutral-200"
+      >
         @if (showCapacity()) {
           <div class="text-xs text-neutral-500 truncate min-w-0">
             {{ enrollmentText() }}
