@@ -30,6 +30,8 @@ import { APP_BRAND } from '@zgadajsie/shared';
             id="displayName"
             data-testid="displayName"
             type="text"
+            autocomplete="name"
+            enterkeyhint="next"
             [(ngModel)]="displayName"
             name="displayName"
             required
@@ -46,6 +48,9 @@ import { APP_BRAND } from '@zgadajsie/shared';
             id="email"
             data-testid="email"
             type="email"
+            autocomplete="email"
+            inputmode="email"
+            enterkeyhint="next"
             [(ngModel)]="email"
             name="email"
             required
@@ -62,6 +67,8 @@ import { APP_BRAND } from '@zgadajsie/shared';
             id="password"
             data-testid="password"
             type="password"
+            autocomplete="new-password"
+            enterkeyhint="next"
             [(ngModel)]="password"
             name="password"
             required
@@ -83,6 +90,8 @@ import { APP_BRAND } from '@zgadajsie/shared';
             id="confirmPassword"
             data-testid="confirmPassword"
             type="password"
+            autocomplete="new-password"
+            enterkeyhint="done"
             [(ngModel)]="confirmPassword"
             name="confirmPassword"
             required

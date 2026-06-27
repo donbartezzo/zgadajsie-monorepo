@@ -128,6 +128,8 @@ interface EventRule {
               <input
                 id="title"
                 formControlName="title"
+                autocomplete="off"
+                enterkeyhint="next"
                 appFormControlError
                 placeholder="Nazwa wydarzenia"
               />
@@ -137,6 +139,7 @@ interface EventRule {
               <textarea
                 formControlName="description"
                 rows="4"
+                enterkeyhint="next"
                 appFormControlError
                 placeholder="Opis wydarzenia..."
               ></textarea>
@@ -275,6 +278,8 @@ interface EventRule {
                 <input
                   type="number"
                   formControlName="minParticipants"
+                  inputmode="numeric"
+                  enterkeyhint="next"
                   min="2"
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 />
@@ -286,6 +291,8 @@ interface EventRule {
                 <input
                   type="number"
                   formControlName="maxParticipants"
+                  inputmode="numeric"
+                  enterkeyhint="next"
                   min="2"
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 />
@@ -301,6 +308,8 @@ interface EventRule {
                 <input
                   type="number"
                   formControlName="ageMin"
+                  inputmode="numeric"
+                  enterkeyhint="next"
                   min="1"
                   max="100"
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
@@ -314,6 +323,8 @@ interface EventRule {
                 <input
                   type="number"
                   formControlName="ageMax"
+                  inputmode="numeric"
+                  enterkeyhint="done"
                   min="1"
                   max="100"
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
@@ -356,6 +367,8 @@ interface EventRule {
                 <input
                   type="number"
                   formControlName="costPerPerson"
+                  inputmode="decimal"
+                  enterkeyhint="done"
                   min="0"
                   step="0.01"
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
@@ -408,6 +421,7 @@ interface EventRule {
                       } @else {
                         <input
                           type="number"
+                          inputmode="numeric"
                           [value]="role.slots || 0"
                           min="0"
                           [max]="form.get('maxParticipants')?.value"
@@ -454,6 +468,8 @@ interface EventRule {
                 <div class="flex gap-2">
                   <input
                     formControlName="address"
+                    autocomplete="street-address"
+                    enterkeyhint="done"
                     (blur)="onAddressChange()"
                     appFormControlError
                     placeholder="Ulica, numer"

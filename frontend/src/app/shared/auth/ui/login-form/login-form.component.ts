@@ -28,6 +28,9 @@ import { environment } from '../../../../../environments/environment';
           id="login-email"
           data-testid="email"
           type="email"
+          autocomplete="email"
+          inputmode="email"
+          enterkeyhint="next"
           [(ngModel)]="email"
           name="email"
           required
@@ -45,6 +48,8 @@ import { environment } from '../../../../../environments/environment';
             id="login-password"
             data-testid="password"
             [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="current-password"
+            enterkeyhint="done"
             [(ngModel)]="password"
             name="password"
             required

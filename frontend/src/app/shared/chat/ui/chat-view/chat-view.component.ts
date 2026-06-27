@@ -220,6 +220,8 @@ export interface ChatViewMessage {
             [(ngModel)]="newMessage"
             (keyup.enter)="send()"
             (input)="onTyping()"
+            autocomplete="off"
+            enterkeyhint="send"
             placeholder="Napisz wiadomość..."
             class="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
           />
