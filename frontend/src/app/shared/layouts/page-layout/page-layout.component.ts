@@ -214,6 +214,9 @@ export class PageLayoutComponent {
     const fs = this.fullscreenContent();
     const center = this.centerContent();
     const parts = ['relative'];
+    // RWD-11: ograniczamy treść do kolumny (`max-w-app`) wyśrodkowanej w szerszym
+    // shellu desktopowym. Pełną szerokość per-widok wprowadzą taski 14–20.
+    parts.push('mx-auto w-full max-w-app');
     if (fs) {
       parts.push('flex-1 min-h-0 flex flex-col');
       if (center) {

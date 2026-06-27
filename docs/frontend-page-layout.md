@@ -389,6 +389,16 @@ Pozwala nadpisać klasy wrappera treści, np. tło.
 
 Wybiera wariant hero: `compact`, `extended` lub `only-mini-bar`.
 
+## Strategia szerokości shella (RWD-11)
+
+Globalny shell (`.app` / `.app-container` w `frontend/src/styles.scss`) jest **płaski i full-bleed** — tło `neutral-100` na całą szerokość, bez ramki, cienia i patternu, na każdym ekranie. Zlikwidowano sztywny `max-width: 700px` wraz z boxed look.
+
+Token (CSS var w `styles.scss`):
+
+- `--app-max-width` (Tailwind `max-w-app`) — szerokość **kolumny treści** oraz punkt wyrównania elementów `fixed` (bottom-nav, hero, back/sticky, overlaye, modale). **Jedna wartość `840px`, bez breakpointów:** poniżej 840px treść wypełnia ekran (telefon, tablet portrait), powyżej — pozostaje wyśrodkowaną kolumną.
+
+Treść jest ograniczana do kolumny przez page-layout (`mx-auto w-full max-w-app`), więc niezaadaptowane widoki na desktopie są czytelną, wyśrodkowaną kolumną — bez „mikroskopijnego" 700px i bez rozjechanej pełnej szerokości. Pełną szerokość shella (grid wydarzeń, panel organizatora, layout 2-kolumnowy) per-widok wprowadzą taski 14–20 — wraz z ewentualnym capem szerokości na ultrawide tam, gdzie będzie realnie potrzebny.
+
 ## Breadcrumb i back button
 
 Layout sam nie buduje breadcrumbów, ale korzysta z `BreadcrumbService`.
