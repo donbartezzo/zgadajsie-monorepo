@@ -44,6 +44,9 @@ progresywną szerokość kontenera, otwierającą drogę do layoutów wielokolum
 4. Zapewnić, że fixed elementy (bottom-nav, back button, sticky CTA) wyrównują się do właściwej
    szerokości w nowym modelu (współgra z safe-area — task 02).
 5. Ustalić maksymalną szerokość treści tekstowej (ultrawide) — patrz task 08 (`70ch`).
+6. **Strony statyczne (terms, privacy, faq):** przy poszerzeniu kontenera dodać `max-w-[70ch]`
+   **bezpośrednio na akapitach tekstu** (lub kartach `.bg-white`), a nie na całym kontenerze strony.
+   W przeciwnym razie wyszukiwarka, nagłówki i akordeony zostaną niepotrzebnie zwężone.
 
 ## Kryteria akceptacji
 

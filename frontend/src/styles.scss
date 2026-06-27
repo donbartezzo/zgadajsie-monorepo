@@ -72,6 +72,15 @@
     background-size: 1rem 1rem;
     animation: bg-striped-slide 1s linear infinite;
   }
+
+  // Fluid typography: płynne skalowanie nagłówków między mobile a desktop
+  // bez skoków przy breakpointach. Zakres ~375px–1200px viewport.
+  .text-fluid-hero {
+    font-size: clamp(2.25rem, 2rem + 1vw, 3rem);
+  }
+  .text-fluid-hero-sub {
+    font-size: clamp(1.5rem, 1.25rem + 0.75vw, 2rem);
+  }
 }
 
 @keyframes bg-striped-slide {
