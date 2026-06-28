@@ -122,15 +122,14 @@ body {
   margin: 0;
 }
 
-// ── App shell width (RWD-11) ──
-// `--app-max-width` = kolumna treści oraz punkt wyrównania elementów `fixed`
-//   (bottom-nav, hero, back/sticky, overlaye, modale). Jedna wartość, bez breakpointów:
-//   poniżej tej szerokości treść wypełnia ekran (telefon, tablet portrait), powyżej —
-//   pozostaje wyśrodkowaną kolumną.
-// Shell jest płaski i full-bleed: tło `neutral-100` na całą szerokość, bez ramki,
-//   cienia i patternu. Pełną szerokość per-widok (grid wydarzeń, panel organizatora,
-//   layout 2-kolumnowy) wprowadzą taski 14–20.
-$app-max-width: 840px;
+// ── App shell width (RWD-11b: kolumna główna + boxed look) ──
+// `--app-max-width` = szerokość kolumny GŁÓWNEJ treści oraz punkt wyrównania elementów
+//   `fixed` (bottom-nav, hero, back/sticky, overlaye, modale).
+// Wartość 700px = natywna szerokość cover image (COVER_IMAGE_WIDTH w libs), więc hero
+//   renderuje okładkę 1:1, bez upscalingu. Kolumna jest „boxowana": full-bleed na mobile,
+//   a od szerokości boxa — wyśrodkowana karta (ramka + cień + pattern w marginesach).
+// Drugą kolumnę (aside) per-widok dołożą taski 14–20 (poszerzając box).
+$app-max-width: 700px;
 $hero-extended-height: 250px;
 $hero-compact-height: 120px;
 $hero-mini-bar-height: 52px;
@@ -184,8 +183,11 @@ $app-bg-color: rgb(var(--color-neutral-100));
   @apply relative overflow-hidden;
   background-color: $app-bg-color;
 
-  // Shell płaski (full-bleed) na każdym ekranie — bez ramki/cienia/patternu.
-  // Treść jest ograniczana do kolumny `max-w-app` w page-layout.
+  // Mobile: pattern ukryty, kontener full-bleed (krawędzie = krawędzie ekranu).
+  .app-bg-pattern {
+    display: none;
+  }
+
   .app-container {
     position: relative;
     display: flex;
@@ -200,6 +202,37 @@ $app-bg-color: rgb(var(--color-neutral-100));
       @apply flex-1;
       display: flex;
       flex-direction: column;
+    }
+  }
+
+  // Boxed look — od szerokości boxa (= kolumna główna) pojawiają się marginesy:
+  // pattern je wypełnia, a kontener staje się wyśrodkowaną kartą (ramka + cień).
+  // Próg = szerokość boxa (gdy viewport ją przekroczy), nie arbitralny breakpoint.
+  @media (min-width: $app-max-width) {
+    .app-bg-pattern {
+      position: fixed;
+      inset: -50%;
+      width: 200%;
+      height: 200%;
+      transform: rotate(15deg);
+      pointer-events: none;
+      z-index: 0;
+      display: block;
+      background-image: url('/assets/images/sports-transparent-bg-500.png');
+      background-size: 500px 500px;
+      background-repeat: repeat;
+    }
+
+    .app-container {
+      max-width: var(--app-max-width);
+      margin-left: auto;
+      margin-right: auto;
+      overflow: hidden;
+      border-radius: 1rem;
+      background-color: $app-bg-color;
+      box-shadow:
+        8px 0 24px -4px rgba(0, 0, 0, 0.15),
+        -8px 0 24px -4px rgba(0, 0, 0, 0.15);
     }
   }
 }

@@ -389,15 +389,24 @@ Pozwala nadpisać klasy wrappera treści, np. tło.
 
 Wybiera wariant hero: `compact`, `extended` lub `only-mini-bar`.
 
-## Strategia szerokości shella (RWD-11)
+## Strategia szerokości shella (RWD-11b)
 
-Globalny shell (`.app` / `.app-container` w `frontend/src/styles.scss`) jest **płaski i full-bleed** — tło `neutral-100` na całą szerokość, bez ramki, cienia i patternu, na każdym ekranie. Zlikwidowano sztywny `max-width: 700px` wraz z boxed look.
+Globalny shell (`.app` / `.app-container` w `frontend/src/styles.scss`) ma **kolumnę główną + boxed look**.
 
 Token (CSS var w `styles.scss`):
 
-- `--app-max-width` (Tailwind `max-w-app`) — szerokość **kolumny treści** oraz punkt wyrównania elementów `fixed` (bottom-nav, hero, back/sticky, overlaye, modale). **Jedna wartość `840px`, bez breakpointów:** poniżej 840px treść wypełnia ekran (telefon, tablet portrait), powyżej — pozostaje wyśrodkowaną kolumną.
+- `--app-max-width` (Tailwind `max-w-app`) — szerokość **kolumny głównej** oraz punkt wyrównania elementów `fixed` (bottom-nav, hero, back/sticky, overlaye, modale). **Wartość `700px`** = natywna szerokość cover image (`COVER_IMAGE_WIDTH` w `libs`), więc hero renderuje okładkę 1:1 (bez upscalingu/blura).
 
-Treść jest ograniczana do kolumny przez page-layout (`mx-auto w-full max-w-app`), więc niezaadaptowane widoki na desktopie są czytelną, wyśrodkowaną kolumną — bez „mikroskopijnego" 700px i bez rozjechanej pełnej szerokości. Pełną szerokość shella (grid wydarzeń, panel organizatora, layout 2-kolumnowy) per-widok wprowadzą taski 14–20 — wraz z ewentualnym capem szerokości na ultrawide tam, gdzie będzie realnie potrzebny.
+**Boxed look** (`.app-container`):
+
+- **mobile / poniżej 700px** — full-bleed: kontener wypełnia ekran, pattern ukryty, brak ramki.
+- **od 700px (`@media (min-width: $app-max-width)`)** — wyśrodkowana karta: `max-width` = kolumna główna, `border-radius`, boczne cienie, a w marginesach widoczny `app-bg-pattern` (obrócony, kafelkowany sport-pattern). Próg = szerokość boxa (gdy viewport ją przekroczy), nie arbitralny breakpoint.
+
+Treść wewnątrz kontenera jest wyśrodkowaną kolumną `max-w-app` (700) — page-layout owija ją w `mx-auto w-full max-w-app`.
+
+### Druga kolumna (aside) — w toku
+
+Docelowy wzorzec to **main (700) + aside** (rail uzupełniający, opcjonalny przez slot), aktywowany od `lg`, z poszerzeniem boxa do ~`max-w-6xl/7xl`. Aside jest **content-driven** (filtry listy, akcje/uczestnicy w szczegółach, panel organizatora, czat) — dlatego dokładają go per-widok taski 14–20, a layout main+aside + wyrównanie hero do kolumny głównej powstaje z pierwszym realnym aside (event detail). Do tego czasu wszystkie widoki to pojedyncza kolumna 700 w boxie.
 
 ### Nawigacja: bottom-nav vs top-nav (RWD-12)
 
