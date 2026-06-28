@@ -399,6 +399,22 @@ Token (CSS var w `styles.scss`):
 
 Treść jest ograniczana do kolumny przez page-layout (`mx-auto w-full max-w-app`), więc niezaadaptowane widoki na desktopie są czytelną, wyśrodkowaną kolumną — bez „mikroskopijnego" 700px i bez rozjechanej pełnej szerokości. Pełną szerokość shella (grid wydarzeń, panel organizatora, layout 2-kolumnowy) per-widok wprowadzą taski 14–20 — wraz z ewentualnym capem szerokości na ultrawide tam, gdzie będzie realnie potrzebny.
 
+### Nawigacja: bottom-nav vs top-nav (RWD-12)
+
+Poniżej `lg` (1024px) globalną nawigacją jest mobilny `app-bottom-nav` (fixed dół). Od `lg` jest on ukrywany (`lg:hidden`), a jego rolę przejmuje desktopowy `app-top-nav` (fixed góra) — te same akcje (miasto, udostępnij, menu użytkownika) przez współdzielone serwisy (`NavMenuService`, `CityContextService`, `BottomOverlaysService`).
+
+Sterują tym dwie CSS vars w `styles.scss`, przełączane jednym media query, którego próg pochodzi wprost z konfiguracji Tailwinda — `@media (min-width: theme('screens.lg'))` (Sass przepuszcza `theme()`, a `@tailwindcss/postcss` rozwiązuje je do wartości `screens.lg`):
+
+- `--top-nav-h` — wysokość górnego top-navu: `0` na mobile → `3.5rem` na `lg`. `.app-container` rezerwuje na nią `padding-top`.
+- `--footer-height` — wysokość/clearance dolnego bottom-navu: `70px` na mobile → `0` na `lg`. Dzięki temu dolne elementy `fixed` automatycznie przestają rezerwować miejsce na bottom-nav na desktopie.
+
+Elementy `fixed` zakotwiczają się do tych zmiennych przez dwa utility z `@layer utilities` (`styles.scss`), zamiast powtarzać `top-[var(--top-nav-h)]` / `bottom-[var(--footer-height)]`:
+
+- `top-app` → `top: var(--top-nav-h)` — górna krawędź tuż pod top-navem (hero, back/sticky, snackbar, nagłówek czatu).
+- `bottom-app` → `bottom: var(--footer-height)` — dolna krawędź tuż nad bottom-navem (chat input, sticky bar, cookie consent).
+
+Dodatkowe odstępy (gap, safe-area, mini-bar) dokłada się standardowymi `mt-*` / `mb-*` — np. `top-app mt-2`, `bottom-app mb-[env(safe-area-inset-bottom)]`. Dla elementu `fixed` `top`/`bottom` pozycjonuje krawędź marginesu, więc `mt-*`/`mb-*` przesuwają widoczny box dokładnie jak wcześniejszy `calc(...)`.
+
 ## Breadcrumb i back button
 
 Layout sam nie buduje breadcrumbów, ale korzysta z `BreadcrumbService`.

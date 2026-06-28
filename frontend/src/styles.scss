@@ -81,6 +81,17 @@
   .text-fluid-hero-sub {
     font-size: clamp(1.5rem, 1.25rem + 0.75vw, 2rem);
   }
+
+  // RWD-12: zakotwiczenie elementów `fixed` względem chrome nawigacji.
+  // `top-app`    — górna krawędź tuż pod desktopowym top-navem (0 na mobile/tablecie).
+  // `bottom-app` — dolna krawędź tuż nad mobilnym bottom-navem (0 od `lg`).
+  // Dodatkowe odstępy elementów (gap, safe-area, mini-bar) dokładaj przez `mt-*` / `mb-*`.
+  .top-app {
+    top: var(--top-nav-h);
+  }
+  .bottom-app {
+    bottom: var(--footer-height);
+  }
 }
 
 @keyframes bg-striped-slide {
@@ -136,10 +147,27 @@ $app-bg-color: rgb(var(--color-neutral-100));
 
 :root {
   --app-max-width: #{$app-max-width};
-  --footer-height: 70px;
+  // Wartości mobilne; desktop (od `lg`) przełącza je media query niżej. (RWD-12)
+  --footer-height: 70px; // wysokość/clearance dolnego bottom-nav (0 od `lg`)
+  --top-nav-h: 0px; // wysokość górnego top-nav (0 na mobile, 3.5rem od `lg`)
   --hero-extended-h: #{$hero-extended-height};
   --hero-compact-h: #{$hero-compact-height};
   --hero-mini-bar-h: #{$hero-mini-bar-height};
+}
+
+// RWD-12: od `lg` górny top-nav zastępuje dolny bottom-nav — zerujemy clearance
+// bottom-navu (--footer-height) i rezerwujemy wysokość top-navu (--top-nav-h).
+// Dolne elementy `fixed` (chat input, sticky bar, cookie consent) podążają za
+// --footer-height; górne (hero, back/sticky, snackbar, nagłówek czatu) offsetują się o --top-nav-h.
+//
+// Próg pochodzi WPROST z konfiguracji Tailwinda: `theme('screens.lg')` przechodzi przez
+// Sassa nietknięte i jest rozwiązywane przez `@tailwindcss/postcss` do wartości `lg`
+// (obecnie 64rem). Zmiana `screens.lg` w tailwind.config.js automatycznie przenosi też ten próg.
+@media (min-width: theme('screens.lg')) {
+  :root {
+    --footer-height: 0px;
+    --top-nav-h: 3.5rem;
+  }
 }
 
 // RWD-04: Reduce hero heights on low viewports (landscape phones, small windows)
@@ -163,6 +191,7 @@ $app-bg-color: rgb(var(--color-neutral-100));
     display: flex;
     flex-direction: column;
     min-height: 100svh;
+    padding-top: var(--top-nav-h); // clearance for fixed desktop top-nav (0 on mobile)
     padding-bottom: calc(
       var(--footer-height) + env(safe-area-inset-bottom)
     ); // clearance for fixed bottom-nav + safe-area

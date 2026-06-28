@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { APP_BRAND } from '@zgadajsie/shared';
 import { BottomNavComponent } from './layout/footer/bottom-nav.component';
+import { TopNavComponent } from './layout/nav/top-nav.component';
 import { SnackbarComponent } from './shared/ui/snackbar/snackbar.component';
 import { BottomOverlaysComponent } from './shared/overlay/ui/bottom-overlays/bottom-overlays.component';
 import { ConfirmModalComponent } from './shared/ui/confirm-modal/confirm-modal.component';
@@ -17,6 +18,7 @@ import { environment } from '../environments/environment';
   imports: [
     RouterModule,
     BottomNavComponent,
+    TopNavComponent,
     SnackbarComponent,
     BottomOverlaysComponent,
     ConfirmModalComponent,

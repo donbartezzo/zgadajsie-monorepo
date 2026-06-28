@@ -105,7 +105,7 @@ export interface ChatViewMessage {
 
       <!-- ─── Chat header ─── -->
       <div
-        class="fixed top-[var(--hero-mini-bar-h)] left-0 right-0 z-10 flex items-center px-4 py-0.5 border-b border-neutral-200 bg-white w-full max-w-app mx-auto"
+        class="fixed top-app mt-[var(--hero-mini-bar-h)] left-0 right-0 z-10 flex items-center px-4 py-0.5 border-b border-neutral-200 bg-white w-full max-w-app mx-auto"
       >
         <div class="flex items-center w-full gap-3 mr-10">
           <div class="flex items-center gap-3 shrink-0">
@@ -213,7 +213,7 @@ export interface ChatViewMessage {
       }
 
       <div
-        class="fixed bottom-[var(--footer-height)] inset-x-0 z-20 mx-auto max-w-app border-t border-neutral-200 bg-white"
+        class="fixed bottom-app inset-x-0 z-20 mx-auto max-w-app border-t border-neutral-200 bg-white"
       >
         <div class="flex gap-2 px-3 py-3">
           <input

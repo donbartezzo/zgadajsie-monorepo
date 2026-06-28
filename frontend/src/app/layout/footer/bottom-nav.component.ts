@@ -12,7 +12,9 @@ import { NotificationService } from '../../core/services/notification.service';
   imports: [ButtonComponent, UserAvatarComponent],
   templateUrl: './bottom-nav.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'fixed bottom-0 left-0 right-0 z-[60] block w-full max-w-app mx-auto' },
+  host: {
+    class: 'fixed bottom-0 left-0 right-0 z-[60] block w-full max-w-app mx-auto lg:hidden',
+  },
 })
 export class BottomNavComponent {
   private readonly navigation = inject(NavigationService);
@@ -20,14 +22,6 @@ export class BottomNavComponent {
   readonly cityContext = inject(CityContextService);
   protected readonly overlays = inject(BottomOverlaysService);
   readonly notificationService = inject(NotificationService);
-
-  readonly cityLabel = computed(() => {
-    const name = this.cityContext.cityName();
-    if (!name) {
-      return 'Wybierz miasto';
-    }
-    return name.length > 31 ? name.slice(0, 30) + '…' : name;
-  });
 
   readonly cityButtonAppearance = computed(() => {
     return this.cityContext.cityName() ? 'ghost' : 'soft';

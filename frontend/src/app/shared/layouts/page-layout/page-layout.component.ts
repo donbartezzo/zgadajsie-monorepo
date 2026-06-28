@@ -199,7 +199,7 @@ export class PageLayoutComponent {
 
   readonly heroContainerClass = computed(() =>
     [
-      'fixed inset-x-0 top-0 mx-auto max-w-app',
+      'fixed inset-x-0 top-app mx-auto max-w-app',
       this.showMiniBar()
         ? 'z-50 bg-white/95 backdrop-blur-md shadow-xl border-b border-neutral-200'
         : 'z-0',

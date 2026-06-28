@@ -26,6 +26,7 @@ const mockOverlays = {
 };
 const mockCityContext = {
   cityName: jest.fn().mockReturnValue('Zielona Góra'),
+  cityLabel: jest.fn().mockReturnValue('Zielona Góra'),
   citySlug: jest.fn().mockReturnValue('zielona-gora'),
   selectCity: jest.fn(),
   clearCity: jest.fn(),
