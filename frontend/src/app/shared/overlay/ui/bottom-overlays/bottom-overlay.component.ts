@@ -20,7 +20,10 @@ import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../types/colors';
   imports: [CommonModule, IconComponent],
   template: `
     @if (open()) {
-      <div class="fixed inset-x-0 top-0 bottom-16 z-[60] flex flex-col max-w-app mx-auto">
+      <!-- < lg: bottom sheet (slide-up od dołu). lg+: wyśrodkowany modal (RWD-13). -->
+      <div
+        class="fixed inset-x-0 top-0 bottom-16 z-[60] flex flex-col max-w-app mx-auto lg:inset-0 lg:max-w-none lg:items-center lg:justify-center lg:p-4"
+      >
         <button
           type="button"
           class="absolute inset-0 m-0 border-0 bg-black/50 p-0 backdrop-blur-xs"
@@ -30,13 +33,13 @@ import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../types/colors';
 
         <button
           type="button"
-          class="relative z-10 m-0 min-h-0 flex-1 border-0 bg-transparent p-0"
+          class="relative z-10 m-0 min-h-0 flex-1 border-0 bg-transparent p-0 lg:hidden"
           (click)="closed.emit()"
           aria-label="Zamknij overlay"
         ></button>
 
         <div
-          class="relative z-10 min-h-0 max-h-[90dvh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl animate-slide-up"
+          class="relative z-10 min-h-0 max-h-[90dvh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl animate-slide-up lg:w-full lg:max-w-lg lg:rounded-2xl"
         >
           <div class="bg-white px-4 pt-3 pb-2 rounded-t-2xl relative text-center mb-3 px-6">
             <!-- <div class="mx-auto mb-3 h-1 w-10 rounded-full bg-neutral-300"></div> -->
