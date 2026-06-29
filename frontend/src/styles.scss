@@ -89,6 +89,12 @@
   .top-app {
     top: var(--top-nav-h);
   }
+  // RWD-15: punkt „przyklejenia" kolumny aside (sticky) = pod top-navem + inset boxa (gap),
+  // żeby przyklejony aside trzymał ten sam odstęp co początkowy inset modułów.
+  // 0.75rem = $app-box-gap (= Tailwind p-3/gap-3); literał, bo zmienna jest definiowana niżej.
+  .top-app-inset {
+    top: calc(var(--top-nav-h) + 0.75rem);
+  }
   .bottom-app {
     bottom: var(--footer-height);
   }
@@ -184,6 +190,13 @@ $app-bg-color: rgb(var(--color-neutral-100));
   // Poniżej `lg` (mobile/tablet) box zostaje przy kolumnie głównej (700) — jedna kolumna.
   .app.app--two-column {
     --app-box-width: #{$app-box-wide};
+    // `clip` zamiast `hidden` (tylko 2-kol): nadal przycina box, ale NIE tworzy scroll-containera,
+    // dzięki czemu `position: sticky` kolumny aside działa względem viewportu (a nie kontenera,
+    // który scrolluje z body). Zakres ograniczony do widoków 2-kol — reszta zostaje na `hidden`.
+    overflow: clip;
+  }
+  .app.app--two-column .app-container {
+    overflow: clip;
   }
 }
 

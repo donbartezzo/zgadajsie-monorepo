@@ -252,9 +252,10 @@ export class PageLayoutComponent {
 
   readonly asideColumnClass = computed(() => {
     const order = this.layoutConfig.asideSide() === 'left' ? 'lg:order-1' : 'lg:order-2';
-    // Wyrównany do góry (grid `items-start`), scrolluje się naturalnie z treścią (pkt 13) —
-    // bez `sticky`/`top-app`, które przy `overflow:hidden` boxa spychały aside w dół o wys. nav.
-    return `hidden lg:flex lg:w-aside lg:flex-col lg:gap-3 ${order}`;
+    // Sticky: aside zostaje w miejscu, gdy main-column się scrolluje. Działa, bo dla widoków
+    // 2-kol box ma `overflow: clip` (nie `hidden`) → sticky liczony względem viewportu.
+    // `top-app-inset` = pod top-navem + inset boxa; `self-start` chroni przed rozciągnięciem.
+    return `hidden lg:flex lg:w-aside lg:flex-col lg:gap-3 lg:sticky top-app-inset lg:self-start ${order}`;
   });
 
   readonly contentWrapperClass = computed(() => {

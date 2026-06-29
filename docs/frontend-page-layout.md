@@ -448,15 +448,43 @@ Przełączanie 1↔2 kolumny jest **CSS-first** (`lg:`), a `desktopLayout` pocho
 (spójne SSR↔klient) — dzięki temu nie ma rozjazdów hydration. Poniżej `lg` widok 2-kol degraduje się
 do pojedynczej wąskiej kolumny (jak dotychczas).
 
+**Sticky aside (od `lg`):** kolumna aside jest `lg:sticky` (`top-app-inset` = pod top-navem + inset
+boxa) — zostaje w miejscu, gdy main-column się scrolluje. Aby `position: sticky` liczył się względem
+viewportu (a nie boxa, który scrolluje z body), dla `.app--two-column` na `lg` box ma `overflow: clip`
+zamiast `hidden` (clip nadal przycina, ale nie tworzy scroll-containera). Zakres ograniczony do
+widoków 2-kol; pozostałe zostają na `overflow: hidden`.
+
 **Statyczne hero w trybie 2-kol (pkt 13 audytu):** od `lg` zamiast `fixed` hero + mini-bar
 renderowane jest **statyczne** hero w kolumnie głównej (scrolluje się z treścią). Fixed hero/sentinel/
 mini-bar są na `lg` ukrywane (`lg:hidden`) dla widoków 2-kol; poniżej `lg` działają jak dotąd.
 
-Pierwszy konsument: **strefa wydarzenia**. `EventAreaComponent` rejestruje trwały
-`app-event-nav-rail` w slocie `aside` (CTA „Dołącz" + zakładki: Szczegóły / Uczestnicy / Mapa / Czat
-grupowy / Czat z organizatorem + akcje organizatora). Tryb 2-kol włączony per-trasa-dziecko
-(`desktopLayout: 'two-column'` na widoku Szczegółów; kolejne dzieci dołączane przyrostowo — czaty
-w RWD-19). Pozostałe widoki to nadal pojedyncza kolumna 700 w boxie (`desktopLayout: 'narrow'`).
+**Wspólne komponenty aside** (spójny wygląd wszystkich raili/paneli bocznych):
+
+- `app-aside-panel` (`shared/ui/aside/aside-panel.component.ts`) — jednolite chrome „kafelka" aside
+  (tło, ramka, zaokrąglenie, cień, padding) + opcjonalny `heading`. Owija DOWOLNĄ zawartość aside —
+  nie tylko nawigację (także CTA, statystyki itp.).
+- `app-aside-nav` (`shared/ui/aside/aside-nav.component.ts`) — jednolita lista nawigacyjna
+  (`items: AsideNavItem[]` + output `selected`), wspólne style pozycji i stanu aktywnego, opcjonalny
+  `badge`. Logikę nawigacji/`active` trzyma rail-właściciel.
+
+Każdy rail buduje się na tych dwóch komponentach (`app-event-nav-rail`, `app-organizer-nav-rail`
+i kolejne), więc pozostają spójne wizualnie i łatwo rozszerzalne.
+
+Konsumenci aside:
+
+- **Strefa wydarzenia (RWD-15):** `EventAreaComponent` rejestruje trwały `app-event-nav-rail`
+  (CTA „Dołącz" + zakładki: Szczegóły / Uczestnicy / Mapa / Czat grupowy / Czat z organizatorem +
+  akcje organizatora). Tryb 2-kol per-trasa-dziecko (`desktopLayout: 'two-column'` na Szczegółach;
+  kolejne dzieci przyrostowo — czaty w RWD-19).
+- **Panel organizatora (RWD-16):** `app-organizer-nav-rail` (globalna nawigacja panelu: Nowe
+  wydarzenie / Moje wydarzenia / Zestawienie / Okładki / Ustawienia) rejestrowany przez strony
+  organizatora przez `appLayoutSlot="aside"` (formularz `EventFormComponent`, `series-details`).
+  Trasy `o/w/new`, `o/w/:id/edit`, `o/s/:seriesId/edit-template`, `series/:id` → `desktopLayout: 'two-column'`.
+  Rail reużywany na kolejnych stronach panelu w RWD-17.
+
+Pozostałe widoki to nadal pojedyncza kolumna 700 w boxie (`desktopLayout: 'narrow'`). Wariant
+`'wide'` (pojedyncza kolumna na pełną szerokość boxa) jest zadeklarowany w typie, ale nie ma jeszcze
+dedykowanego renderowania — do wdrożenia, gdy pojawi się pierwszy widok pełnoszerokościowy.
 
 ### Nawigacja: bottom-nav vs top-nav (RWD-12)
 

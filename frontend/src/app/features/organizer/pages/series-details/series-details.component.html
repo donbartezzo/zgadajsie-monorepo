@@ -1,4 +1,10 @@
-<div class="p-4 space-y-4">
+<!-- RWD-16: rail panelu organizatora w kolumnie aside (tryb 2-kol od lg) -->
+<ng-template appLayoutSlot="aside">
+  <app-organizer-nav-rail />
+</ng-template>
+
+<!-- RWD-16: na desktopie (2-kol) inset zapewnia box (lg:p-3) — nie dublujemy paddingu widoku -->
+<div class="p-4 space-y-4 lg:p-0">
   @if (loading()) {
     <div class="py-12 flex justify-center">
       <app-loading-spinner />
@@ -58,39 +64,41 @@
                 Zmiana tych ustawień obejmie wszystkie przyszłe wydarzenia serii (startsAt > teraz).
               </p>
 
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1"> Target occupancy (%) </label>
-                <input
-                  type="number"
-                  formControlName="targetOccupancy"
-                  class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500"
-                  placeholder="null = wyłączone"
-                  min="0"
-                  max="100"
-                />
-                <p class="mt-1 text-xs text-neutral-500">Docelowe zajętość fake users (0-100, null = wyłączone)</p>
-              </div>
+              <div class="grid md:grid-cols-2">
+                <div>
+                  <label class="block text-sm font-medium text-neutral-700 mb-1"> Target occupancy (%) </label>
+                  <input
+                    type="number"
+                    formControlName="targetOccupancy"
+                    class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500"
+                    placeholder="null = wyłączone"
+                    min="0"
+                    max="100"
+                  />
+                  <p class="mt-1 text-xs text-neutral-500">Docelowe zajętość fake users (0-100, null = wyłączone)</p>
+                </div>
 
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1"> Final cleanup (godziny) </label>
-                <input
-                  type="number"
-                  formControlName="cleanupHours"
-                  class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500"
-                  min="0"
-                />
-                <p class="mt-1 text-xs text-neutral-500">Godziny przed wydarzeniem, gdy fake users są usuwani</p>
-              </div>
+                <div>
+                  <label class="block text-sm font-medium text-neutral-700 mb-1"> Final cleanup (godziny) </label>
+                  <input
+                    type="number"
+                    formControlName="cleanupHours"
+                    class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500"
+                    min="0"
+                  />
+                  <p class="mt-1 text-xs text-neutral-500">Godziny przed wydarzeniem, gdy fake users są usuwani</p>
+                </div>
 
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1"> Min free slots buffer </label>
-                <input
-                  type="number"
-                  formControlName="minFreeSlotsBuffer"
-                  class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500"
-                  min="0"
-                />
-                <p class="mt-1 text-xs text-neutral-500">Minimalna liczba wolnych slotów przed dodaniem fake users</p>
+                <div>
+                  <label class="block text-sm font-medium text-neutral-700 mb-1"> Min free slots buffer </label>
+                  <input
+                    type="number"
+                    formControlName="minFreeSlotsBuffer"
+                    class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500"
+                    min="0"
+                  />
+                  <p class="mt-1 text-xs text-neutral-500">Minimalna liczba wolnych slotów przed dodaniem fake users</p>
+                </div>
               </div>
             </div>
 

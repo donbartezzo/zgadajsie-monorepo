@@ -183,6 +183,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Nowe wydarzenie',
       breadcrumb: { parent: '/profile/events', label: 'Moje wydarzenia' },
+      desktopLayout: 'two-column', // RWD-16: formularz + rail panelu organizatora
     },
   },
 
@@ -196,6 +197,7 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Edycja wydarzenia',
+      desktopLayout: 'two-column', // RWD-16: formularz + rail panelu organizatora
     },
   },
 
@@ -237,6 +239,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Seria wydarzeń',
       breadcrumb: BREADCRUMB_TO_EVENTS,
+      desktopLayout: 'two-column', // RWD-16: szczegóły serii + rail panelu organizatora
     },
   },
 
@@ -251,6 +254,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Edycja danych wydarzeń serii',
       breadcrumb: BREADCRUMB_TO_EVENTS,
+      desktopLayout: 'two-column', // RWD-16: formularz serii + rail panelu organizatora
     },
   },
 

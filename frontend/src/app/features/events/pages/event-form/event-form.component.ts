@@ -56,6 +56,8 @@ import {
 import { isEventJoinable } from '../../../../shared/utils/event-time-status.util';
 import { EventValidators } from '../../validators/event.validators';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
+import { OrganizerNavRailComponent } from '../../../organizer/ui/organizer-nav-rail/organizer-nav-rail.component';
 import { environment } from '../../../../../environments/environment';
 
 interface DuplicateQueryParams {
@@ -83,9 +85,17 @@ interface EventRule {
     FormControlErrorDirective,
     TranslocoPipe,
     ImageCropperModalComponent,
+    LayoutSlotDirective,
+    OrganizerNavRailComponent,
   ],
   template: `
-    <div class="p-4">
+    <!-- RWD-16: rail panelu organizatora w kolumnie aside (tryb 2-kol od lg) -->
+    <ng-template appLayoutSlot="aside">
+      <app-organizer-nav-rail />
+    </ng-template>
+
+    <!-- RWD-16: na desktopie (2-kol) inset zapewnia box (lg:p-3) — nie dublujemy paddingu widoku -->
+    <div class="p-4 lg:p-0">
       <h1 class="text-xl font-bold text-neutral-900 mb-4">
         @if (seriesTemplateMode()) {
           Edytuj dane wydarzeń serii
@@ -150,7 +160,7 @@ interface EventRule {
         <app-card>
           <div class="p-4 space-y-4">
             <h3 class="text-sm font-semibold text-neutral-900">Szczegóły</h3>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
               <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1">Dyscyplina</label>
                 <select formControlName="disciplineSlug" appFormControlError>
@@ -491,7 +501,7 @@ interface EventRule {
                 </div>
               </div>
 
-              <div class="h-[250px] overflow-hidden rounded-xl">
+              <div class="h-[250px] overflow-hidden rounded-xl md:h-[350px] lg:h-[400px]">
                 <app-map
                   #mapComponent
                   [lat]="mapLat()"

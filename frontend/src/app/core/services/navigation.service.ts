@@ -116,6 +116,18 @@ export class NavigationService {
     });
   }
 
+  navigateToOrganizerDigest(): void {
+    this.auth.requireAuth('zobaczyć zestawienie organizatora', () => {
+      this.router.navigate(['/profile/organizer/digest']);
+    });
+  }
+
+  navigateToOrganizerSettings(): void {
+    this.auth.requireAuth('zmienić ustawienia organizatora', () => {
+      this.router.navigate(['/profile/organizer/settings']);
+    });
+  }
+
   navigateToRoot(): void {
     this.router.navigate(['/']);
   }
