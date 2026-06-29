@@ -211,6 +211,7 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Zarządzanie',
+      desktopLayout: 'two-column', // RWD-17: panel zarządzania + rail panelu organizatora
     },
   },
 
@@ -269,6 +270,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Zestawienie organizatora',
       breadcrumb: BREADCRUMB_TO_PROFILE,
+      desktopLayout: 'two-column', // RWD-17: digest + rail panelu organizatora
     },
   },
 

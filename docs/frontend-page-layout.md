@@ -476,11 +476,12 @@ Konsumenci aside:
   (CTA „Dołącz" + zakładki: Szczegóły / Uczestnicy / Mapa / Czat grupowy / Czat z organizatorem +
   akcje organizatora). Tryb 2-kol per-trasa-dziecko (`desktopLayout: 'two-column'` na Szczegółach;
   kolejne dzieci przyrostowo — czaty w RWD-19).
-- **Panel organizatora (RWD-16):** `app-organizer-nav-rail` (globalna nawigacja panelu: Nowe
+- **Panel organizatora (RWD-16/17):** `app-organizer-nav-rail` (globalna nawigacja panelu: Nowe
   wydarzenie / Moje wydarzenia / Zestawienie / Okładki / Ustawienia) rejestrowany przez strony
-  organizatora przez `appLayoutSlot="aside"` (formularz `EventFormComponent`, `series-details`).
-  Trasy `o/w/new`, `o/w/:id/edit`, `o/s/:seriesId/edit-template`, `series/:id` → `desktopLayout: 'two-column'`.
-  Rail reużywany na kolejnych stronach panelu w RWD-17.
+  organizatora przez `appLayoutSlot="aside"`: `EventFormComponent` (new/edit/edit-template),
+  `series-details`, `event-manage`, `organizer-digest`. Odpowiednie trasy → `desktopLayout: 'two-column'`.
+  Treść głównej kolumny pozostaje jednokolumnowa (700) — karty/sekcje bez zmian. Pozostałe strony
+  panelu (cover-images, settings, /profile/events) dołączą przyrostowo.
 
 Pozostałe widoki to nadal pojedyncza kolumna 700 w boxie (`desktopLayout: 'narrow'`). Wariant
 `'wide'` (pojedyncza kolumna na pełną szerokość boxa) jest zadeklarowany w typie, ale nie ma jeszcze

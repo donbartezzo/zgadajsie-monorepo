@@ -48,6 +48,8 @@ import {
 import { getEventLifecycleStatus } from '../../../../shared/utils/event-time-status.util';
 import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { EventAnnouncementsComponent } from '../../../event/ui/event-announcements/event-announcements.component';
+import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
+import { OrganizerNavRailComponent } from '../../ui/organizer-nav-rail/organizer-nav-rail.component';
 
 @Component({
   selector: 'app-event-manage',
@@ -62,9 +64,17 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
     EventLifecycleBannerComponent,
     EventAnnouncementsComponent,
     EnrollmentGridComponent,
+    LayoutSlotDirective,
+    OrganizerNavRailComponent,
   ],
   template: `
-    <div class="p-4">
+    <!-- RWD-17: rail panelu organizatora w kolumnie aside (tryb 2-kol od lg) -->
+    <ng-template appLayoutSlot="aside">
+      <app-organizer-nav-rail />
+    </ng-template>
+
+    <!-- RWD-17: na desktopie (2-kol) inset zapewnia box (lg:p-3) — nie dublujemy paddingu widoku -->
+    <div class="p-4 lg:p-0">
       <h1 class="text-xl font-bold text-neutral-900 mb-4">Zarządzanie wydarzeniem</h1>
 
       @if (lifecycleBannerVariant(); as variant) {

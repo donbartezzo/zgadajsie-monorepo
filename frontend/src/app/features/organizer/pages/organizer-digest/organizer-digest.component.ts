@@ -9,6 +9,8 @@ import type {
   EventManageCardItem,
   ManageActionEvent,
 } from '../../../../shared/event/ui/event-manage-card/event-manage-card.types';
+import { LayoutSlotDirective } from '../../../../shared/layouts/page-layout/layout-slot.directive';
+import { OrganizerNavRailComponent } from '../../ui/organizer-nav-rail/organizer-nav-rail.component';
 import { OrganizerService } from '../../../../core/services/organizer.service';
 import { EventSeriesService } from '../../../../core/services/event-series.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
@@ -29,6 +31,8 @@ import {
     LoadingSpinnerComponent,
     IconComponent,
     EventManageCardComponent,
+    LayoutSlotDirective,
+    OrganizerNavRailComponent,
   ],
   templateUrl: './organizer-digest.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
