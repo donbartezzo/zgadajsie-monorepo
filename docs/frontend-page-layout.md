@@ -40,6 +40,8 @@ Obsługiwane pola w `RouteLayoutData`:
 - `heroVariant?: 'compact' | 'extended' | 'only-mini-bar'`
 - `title?: string`
 - `subtitle?: string`
+- `desktopLayout?: 'narrow' | 'wide' | 'two-column'` (RWD-15; domyślnie `narrow`)
+- `asideSide?: 'left' | 'right'` (RWD-15; domyślnie `right`)
 
 Przykład:
 
@@ -189,7 +191,7 @@ Oznacza to, że template może nadpisać prosty tekst.
 
 ## Sloty layoutu
 
-Layout wspiera dwa sloty definiowane przez `LayoutSlotDirective`.
+Layout wspiera trzy sloty definiowane przez `LayoutSlotDirective`.
 
 ### `appLayoutSlot="subtitleTemplate"`
 
@@ -228,6 +230,22 @@ Przykład:
 ```html
 <ng-template appLayoutSlot="stickyTemplate">
   <app-date-badge [month]="eventMonth()" [day]="eventDay()" [time]="eventStartTime()" />
+</ng-template>
+```
+
+### `appLayoutSlot="aside"`
+
+Slot kolumny aside w trybie dwukolumnowym (RWD-15). Renderowany przez page-layout w kolumnie
+aside, gdy aktywny widok ma `desktopLayout: 'two-column'`. Widoczny dopiero od `lg`.
+
+Kluczowa właściwość: jak pozostałe sloty, `asideTemplate` **nie jest czyszczony** przez
+`LayoutConfigService.reset()` — jest zarządzany przez cykl życia `LayoutSlotDirective`. Dzięki temu
+shell-rodzic (np. `EventAreaComponent`), który przeżywa nawigację między trasami-dziećmi, może
+zarejestrować trwały rail raz, a ten pozostaje spójny między podstronami strefy.
+
+```html
+<ng-template appLayoutSlot="aside">
+  <app-event-nav-rail />
 </ng-template>
 ```
 
@@ -404,9 +422,41 @@ Token (CSS var w `styles.scss`):
 
 Treść wewnątrz kontenera jest wyśrodkowaną kolumną `max-w-app` (700) — page-layout owija ją w `mx-auto w-full max-w-app`.
 
-### Druga kolumna (aside) — w toku
+### Druga kolumna (aside) — tryb dwukolumnowy (RWD-15)
 
-Docelowy wzorzec to **main (700) + aside** (rail uzupełniający, opcjonalny przez slot), aktywowany od `lg`, z poszerzeniem boxa do ~`max-w-6xl/7xl`. Aside jest **content-driven** (filtry listy, akcje/uczestnicy w szczegółach, panel organizatora, czat) — dlatego dokładają go per-widok taski 14–20, a layout main+aside + wyrównanie hero do kolumny głównej powstaje z pierwszym realnym aside (event detail). Do tego czasu wszystkie widoki to pojedyncza kolumna 700 w boxie.
+Wzorzec **main (700) + aside** aktywowany od `lg`. Widok deklaruje go przez `route.data`:
+`desktopLayout: 'two-column'` (+ opcjonalnie `asideSide: 'left' | 'right'`, domyślnie `right`) oraz
+dostarcza zawartość aside przez slot `appLayoutSlot="aside"`. Aside renderuje się tylko, gdy
+**oba** warunki są spełnione (`desktopLayout === 'two-column'` i jest zarejestrowany `asideTemplate`).
+
+Tokeny szerokości (`styles.scss`):
+
+- `--app-max-width` (`max-w-app`, 700px) — kolumna główna (natywna szerokość cover image).
+- `--app-box-width` (`max-w-box`) — szerokość CAŁEGO boxa. Domyślnie = kolumna główna; klasa
+  `.app--two-column` na `.app` (bind w `app.html` z `LayoutConfigService.desktopLayout()`) poszerza ją
+  **od `lg`** do `$app-box-wide` (1024px).
+- `--app-aside-width` (`w-aside`) = `box − 2×padding − main − gap` (≈ 288px dla 1024 − 24 − 700 − 12).
+- Grid: `grid-cols-main-aside` / `grid-cols-aside-main` (Tailwind, zależnie od `asideSide`).
+
+Spacing modułów (desktop, tryb 2-kol): grid ma `lg:p-3` (inset od krawędzi boxa) + `lg:gap-3`
+(odstęp między main a aside), a kolumna główna `lg:gap-3` (hero ↔ karta treści). Dzięki temu główne
+moduły (hero/cover, treść, aside) tworzą kafelki w szarym boxie — nie stykają się z krawędziami i mają
+równy odstęp. Wartości są jednolite (`0.75rem`) i sterowane z jednego miejsca (klasy w page-layout),
+a `--app-aside-width` uwzględnia padding, by uniknąć poziomego scrolla.
+
+Przełączanie 1↔2 kolumny jest **CSS-first** (`lg:`), a `desktopLayout` pochodzi z `route.data`
+(spójne SSR↔klient) — dzięki temu nie ma rozjazdów hydration. Poniżej `lg` widok 2-kol degraduje się
+do pojedynczej wąskiej kolumny (jak dotychczas).
+
+**Statyczne hero w trybie 2-kol (pkt 13 audytu):** od `lg` zamiast `fixed` hero + mini-bar
+renderowane jest **statyczne** hero w kolumnie głównej (scrolluje się z treścią). Fixed hero/sentinel/
+mini-bar są na `lg` ukrywane (`lg:hidden`) dla widoków 2-kol; poniżej `lg` działają jak dotąd.
+
+Pierwszy konsument: **strefa wydarzenia**. `EventAreaComponent` rejestruje trwały
+`app-event-nav-rail` w slocie `aside` (CTA „Dołącz" + zakładki: Szczegóły / Uczestnicy / Mapa / Czat
+grupowy / Czat z organizatorem + akcje organizatora). Tryb 2-kol włączony per-trasa-dziecko
+(`desktopLayout: 'two-column'` na widoku Szczegółów; kolejne dzieci dołączane przyrostowo — czaty
+w RWD-19). Pozostałe widoki to nadal pojedyncza kolumna 700 w boxie (`desktopLayout: 'narrow'`).
 
 ### Nawigacja: bottom-nav vs top-nav (RWD-12)
 

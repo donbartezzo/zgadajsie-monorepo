@@ -15,7 +15,12 @@ import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart } fro
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { IconComponent } from '../../ui/icon/icon.component';
-import { LayoutConfigService, HeroVariant } from './layout-config.service';
+import {
+  LayoutConfigService,
+  HeroVariant,
+  DesktopLayout,
+  AsideSide,
+} from './layout-config.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import {
@@ -40,6 +45,8 @@ export interface RouteLayoutData {
   heroVariant?: HeroVariant;
   title?: string;
   subtitle?: string;
+  desktopLayout?: DesktopLayout;
+  asideSide?: AsideSide;
 }
 
 const DEFAULT_ROUTE_DATA: RouteLayoutData = {
@@ -53,6 +60,8 @@ const DEFAULT_ROUTE_DATA: RouteLayoutData = {
   heroVariant: 'compact',
   title: '',
   subtitle: '',
+  desktopLayout: 'narrow',
+  asideSide: 'right',
 };
 
 @Component({
@@ -100,6 +109,8 @@ export class PageLayoutComponent {
       this.layoutConfig.heroVariant.set(data.heroVariant || 'compact');
       this.layoutConfig.title.set(data.title ?? '');
       this.layoutConfig.subtitle.set(data.subtitle ?? '');
+      this.layoutConfig.desktopLayout.set(data.desktopLayout || 'narrow');
+      this.layoutConfig.asideSide.set(data.asideSide || 'right');
     });
 
     let readyTimer: ReturnType<typeof setTimeout> | null = null;
@@ -210,25 +221,73 @@ export class PageLayoutComponent {
     this.showMiniBar() ? 'auto' : this.heroHeight(),
   );
 
+  // RWD-15: tryb dwukolumnowy aktywny, gdy widok deklaruje `two-column` ORAZ dostarczył aside.
+  // `desktopLayout` pochodzi z `route.data` (spójne SSR↔klient); sam przełącznik 1↔2 kolumny
+  // realizują klasy `lg:` (CSS), więc nie ma rozjazdu hydration.
+  readonly twoColumn = computed(
+    () => this.layoutConfig.desktopLayout() === 'two-column' && !!this.layoutConfig.asideTemplate(),
+  );
+
+  readonly showStaticHero = computed(() => this.twoColumn() && this.showHeader());
+
+  // Sekcja fixed-hero (sentinel + hero + back/sticky) jest potrzebna < lg (pojedyncza kolumna).
+  // Od `lg` w trybie 2-kol ją chowamy — jej rolę przejmuje statyczne hero w kolumnie głównej.
+  // `contents` = wrapper przezroczysty dla layoutu; `lg:hidden` ukrywa też potomków `fixed`.
+  readonly fixedHeaderClass = computed(() =>
+    this.twoColumn() ? 'contents lg:hidden' : 'contents',
+  );
+
+  readonly sentinelClass = computed(() =>
+    ['relative w-full shrink-0', this.twoColumn() ? 'lg:hidden' : ''].filter(Boolean).join(' '),
+  );
+
+  readonly mainColumnClass = computed(() => {
+    if (!this.twoColumn()) {
+      return 'contents';
+    }
+    const order = this.layoutConfig.asideSide() === 'left' ? 'lg:order-2' : 'lg:order-1';
+    // `lg:gap-3` — równy odstęp między modułami w kolumnie głównej (hero ↔ karta treści).
+    return `contents lg:flex lg:min-w-0 lg:flex-col lg:gap-3 ${order}`;
+  });
+
+  readonly asideColumnClass = computed(() => {
+    const order = this.layoutConfig.asideSide() === 'left' ? 'lg:order-1' : 'lg:order-2';
+    // Wyrównany do góry (grid `items-start`), scrolluje się naturalnie z treścią (pkt 13) —
+    // bez `sticky`/`top-app`, które przy `overflow:hidden` boxa spychały aside w dół o wys. nav.
+    return `hidden lg:flex lg:w-aside lg:flex-col lg:gap-3 ${order}`;
+  });
+
   readonly contentWrapperClass = computed(() => {
     const fs = this.fullscreenContent();
     const center = this.centerContent();
-    const parts = ['relative'];
-    // Treść = wyśrodkowana kolumna główna `max-w-app` (700), hug-owana przez boxed look.
-    // Drugą kolumnę (aside) i ewentualne szersze layouty per-widok dołożą taski 14–20.
-    parts.push('mx-auto w-full max-w-app');
+    const parts = ['relative mx-auto w-full'];
     if (fs) {
-      parts.push('flex-1 min-h-0 flex flex-col');
+      parts.push('max-w-app flex-1 min-h-0 flex flex-col');
       if (center) {
         parts.push('items-center justify-center');
       }
-    } else {
+      return parts.join(' ');
+    }
+    if (this.twoColumn()) {
+      // < lg: pojedyncza wąska kolumna (jak dziś). Od `lg`: grid main + aside w szerszym boxie.
+      // `lg:p-3 lg:gap-3` — moduły jako kafelki odsunięte od krawędzi boxa z równym odstępem.
+      const cols =
+        this.layoutConfig.asideSide() === 'left'
+          ? 'lg:grid-cols-aside-main'
+          : 'lg:grid-cols-main-aside';
+      parts.push(`max-w-app lg:max-w-box lg:grid ${cols} lg:items-start lg:gap-3 lg:p-3`);
       if (this.showHeader()) {
-        parts.push('-mt-6');
+        parts.push('-mt-6 lg:mt-0');
       }
-      if (center) {
-        parts.push('flex flex-1 items-center justify-center');
-      }
+      return parts.join(' ');
+    }
+    // Treść = wyśrodkowana kolumna główna `max-w-app` (700), hug-owana przez boxed look.
+    parts.push('max-w-app');
+    if (this.showHeader()) {
+      parts.push('-mt-6');
+    }
+    if (center) {
+      parts.push('flex flex-1 items-center justify-center');
     }
     return parts.join(' ');
   });

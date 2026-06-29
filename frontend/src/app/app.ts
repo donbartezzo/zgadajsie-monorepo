@@ -12,6 +12,7 @@ import { CookieConsentBannerComponent } from './shared/ui/cookie-consent-banner/
 import { IconComponent } from './shared/ui/icon/icon.component';
 import { ExplainerComponent } from './shared/ui/explainer/explainer.component';
 import { ClarityService } from './core/services/clarity.service';
+import { LayoutConfigService } from './shared/layouts/page-layout/layout-config.service';
 import { environment } from '../environments/environment';
 
 @Component({
@@ -35,6 +36,9 @@ import { environment } from '../environments/environment';
 export class App {
   protected title = APP_BRAND.NAME;
   readonly contactEmail = APP_BRAND.CONTACT_EMAIL;
+
+  // RWD-15: steruje klasą `.app--two-column` (poszerza box do trybu dwukolumnowego od `lg`).
+  readonly layoutConfig = inject(LayoutConfigService);
 
   // Inject to ensure the service is instantiated and its effect runs
   // ClarityService uses effect() in constructor to automatically load Microsoft Clarity script when consent is given

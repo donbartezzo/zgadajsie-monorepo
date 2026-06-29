@@ -122,14 +122,21 @@ body {
   margin: 0;
 }
 
-// ── App shell width (RWD-11b: kolumna główna + boxed look) ──
+// ── App shell width (RWD-11b: kolumna główna + boxed look; RWD-15: + aside) ──
 // `--app-max-width` = szerokość kolumny GŁÓWNEJ treści oraz punkt wyrównania elementów
 //   `fixed` (bottom-nav, hero, back/sticky, overlaye, modale).
 // Wartość 700px = natywna szerokość cover image (COVER_IMAGE_WIDTH w libs), więc hero
 //   renderuje okładkę 1:1, bez upscalingu. Kolumna jest „boxowana": full-bleed na mobile,
 //   a od szerokości boxa — wyśrodkowana karta (ramka + cień + pattern w marginesach).
-// Drugą kolumnę (aside) per-widok dołożą taski 14–20 (poszerzając box).
+//
+// RWD-15: tryb dwukolumnowy (main + aside). `--app-box-width` to szerokość CAŁEGO boxa:
+//   domyślnie = kolumna główna (1-kol), a dla widoków `desktopLayout: 'two-column'` rośnie
+//   od `lg` do `$app-box-wide`. Aside = box − main − gap (≈ 300px dla 1024 − 700 − 24).
 $app-max-width: 700px;
+$app-box-wide: 1024px; // box (main + aside) na desktopie w trybie dwukolumnowym
+// Jednolity odstęp modułów w trybie 2-kol: inset od krawędzi boxa ORAZ gap między modułami.
+// = Tailwind `3` (klasy `p-3` / `gap-3` w page-layout muszą używać tej samej wartości).
+$app-box-gap: 0.75rem;
 $hero-extended-height: 250px;
 $hero-compact-height: 120px;
 $hero-mini-bar-height: 52px;
@@ -146,6 +153,11 @@ $app-bg-color: rgb(var(--color-neutral-100));
 
 :root {
   --app-max-width: #{$app-max-width};
+  // RWD-15: szerokość boxa = kolumna główna (domyślnie 1-kol); tryb 2-kol poszerza ją od `lg`.
+  --app-box-width: #{$app-max-width};
+  // Aside = box − 3 × odstęp − kolumna główna (2× inset boxa + 1× gap między modułami),
+  // tak by moduły zmieściły się w boxie (≈ 288px dla 1024 − 36 − 700).
+  --app-aside-width: calc(#{$app-box-wide} - 3 * #{$app-box-gap} - #{$app-max-width});
   // Wartości mobilne; desktop (od `lg`) przełącza je media query niżej. (RWD-12)
   --footer-height: 70px; // wysokość/clearance dolnego bottom-nav (0 od `lg`)
   --top-nav-h: 0px; // wysokość górnego top-nav (0 na mobile, 3.5rem od `lg`)
@@ -166,6 +178,12 @@ $app-bg-color: rgb(var(--color-neutral-100));
   :root {
     --footer-height: 0px;
     --top-nav-h: 3.5rem;
+  }
+
+  // RWD-15: w trybie dwukolumnowym box rozszerza się od `lg` o kolumnę aside.
+  // Poniżej `lg` (mobile/tablet) box zostaje przy kolumnie głównej (700) — jedna kolumna.
+  .app.app--two-column {
+    --app-box-width: #{$app-box-wide};
   }
 }
 
@@ -224,7 +242,7 @@ $app-bg-color: rgb(var(--color-neutral-100));
     }
 
     .app-container {
-      max-width: var(--app-max-width);
+      max-width: var(--app-box-width);
       margin-left: auto;
       margin-right: auto;
       overflow: hidden;

@@ -83,6 +83,7 @@ export const appRoutes: Route[] = [
         data: {
           breadcrumb: { parent: '/w/:citySlug', label: 'Lista wydarzeń' }, // Nadpisuje domyślne z parenta!
           contentClass: 'bg-white',
+          desktopLayout: 'two-column', // RWD-15: main (szczegóły) + aside (rail nawigacyjny)
         },
       },
       // Participants list
