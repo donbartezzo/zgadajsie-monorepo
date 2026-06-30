@@ -1,7 +1,7 @@
-<!-- Ghost (pomiar szerokości): wszystkie pozycje, niewidoczne, jedna linia -->
+<!-- Ghost (pomiar szerokości): wszystkie pozycje, niewidoczne, jedna linia.
+     Mierzone w font-semibold (jak aktywny pill), by wiersz zawsze się zmieścił. -->
 <div class="pointer-events-none invisible absolute left-0 top-0 -z-10 flex flex-nowrap gap-1.5" aria-hidden="true">
   @for (item of allItems(); track item.key) {
-    <!-- Pomiar w najszerszym wariancie (font-semibold = jak aktywny pill), by wiersz zawsze się zmieścił -->
     <span
       #ghostPill
       class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold whitespace-nowrap"
@@ -15,7 +15,7 @@
 </div>
 
 <!-- Widoczny pasek: wyśrodkowany, ścieśniony, bez przewijania -->
-<nav class="relative px-3 py-2" aria-label="Nawigacja konta">
+<nav class="relative px-3 py-2" [attr.aria-label]="ariaLabel()">
   <div #bar class="flex items-center justify-center gap-1.5 overflow-hidden">
     @for (item of visibleItems(); track item.key) {
       <button type="button" [class]="item.active ? activePillClass : pillClass" (click)="select(item.key)">

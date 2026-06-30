@@ -27,7 +27,7 @@ export interface AccountNavGroup {
 /**
  * Współdzielone źródło prawdy nawigacji konta (sekcje Konto / Uczestnik / Organizator).
  * Jeden model + logika nawigacji/`active` dla obu prezentacji: desktopowego railu w aside
- * (`app-account-nav-rail`) ORAZ mobilnego paska (`app-account-nav-bar`). Bez duplikacji.
+ * (`app-account-nav-rail`) ORAZ mobilnego paska (`app-aside-nav-bar`, karmiony `flatItems`). Bez duplikacji.
  */
 @Injectable({ providedIn: 'root' })
 export class AccountNavService {
@@ -96,6 +96,9 @@ export class AccountNavService {
       items: group.items.map((item) => ({ ...item, active: item.key === active })),
     }));
   });
+
+  /** Spłaszczone pozycje (wszystkie sekcje) — dla mobilnego paska `app-aside-nav-bar`. */
+  readonly flatItems = computed<AsideNavItem[]>(() => this.groups().flatMap((g) => g.items));
 
   navigate(key: string): void {
     switch (key as AccountNavKey) {

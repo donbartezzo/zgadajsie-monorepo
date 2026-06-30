@@ -36,7 +36,8 @@ import { User } from '../../../../shared/types';
       @if (loading()) {
         <app-loading-spinner></app-loading-spinner>
       } @else {
-        <div class="space-y-2">
+        <!-- Karty na mobile, tabela od md (szerszy ekran admina) -->
+        <div class="space-y-2 md:hidden">
           @for (u of users(); track u.id) {
             <a [routerLink]="['/admin/users', u.id]">
               <app-card>
@@ -48,19 +49,51 @@ import { User } from '../../../../shared/types';
                     </p>
                     <p class="text-xs text-neutral-500">{{ u.email }}</p>
                   </div>
-                  <span
-                    [class]="
-                      'text-xs px-2 py-0.5 rounded-full ' +
-                      (u.role === 'ADMIN'
-                        ? 'bg-danger-50 text-danger-500'
-                        : 'bg-neutral-100 text-neutral-600')
-                    "
-                    >{{ u.role }}</span
-                  >
+                  <span [class]="roleClass(u.role)">{{ u.role }}</span>
                 </div>
               </app-card>
             </a>
           }
+        </div>
+
+        <div class="hidden overflow-hidden rounded-2xl border border-neutral-100 bg-white md:block">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr
+                  class="border-b border-neutral-200 text-left text-xs font-medium text-neutral-500"
+                >
+                  <th class="px-4 py-2.5">Użytkownik</th>
+                  <th class="px-4 py-2.5">Email</th>
+                  <th class="px-4 py-2.5">Rola</th>
+                  <th class="px-4 py-2.5 text-right">Akcje</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (u of users(); track u.id) {
+                  <tr class="border-b border-neutral-100 last:border-0 hover:bg-neutral-50">
+                    <td class="px-4 py-2.5">
+                      <div class="flex items-center gap-2">
+                        <app-user-avatar [user]="u" size="sm"></app-user-avatar>
+                        <span class="font-medium text-neutral-900">{{ u.displayName }}</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-2.5 text-neutral-600">{{ u.email }}</td>
+                    <td class="px-4 py-2.5">
+                      <span [class]="roleClass(u.role)">{{ u.role }}</span>
+                    </td>
+                    <td class="px-4 py-2.5 text-right">
+                      <a
+                        [routerLink]="['/admin/users', u.id]"
+                        class="text-sm font-medium text-primary-500 hover:text-primary-600"
+                        >Szczegóły</a
+                      >
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         </div>
         @if (totalPages() > 1) {
           <div class="mt-4">
@@ -103,5 +136,12 @@ export class AdminUsersComponent implements OnInit {
   onPageChange(p: number): void {
     this.page.set(p);
     this.loadUsers();
+  }
+
+  roleClass(role: string): string {
+    const base = 'inline-block rounded-full px-2 py-0.5 text-xs';
+    return role === 'ADMIN'
+      ? `${base} bg-danger-50 text-danger-500`
+      : `${base} bg-neutral-100 text-neutral-600`;
   }
 }

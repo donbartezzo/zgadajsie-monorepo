@@ -507,125 +507,113 @@ export const appRoutes: Route[] = [
   },
 
   // ── Admin ──
+  // Parent route `AdminAreaComponent` — dwukolumnowo jak reszta paneli (main 700 + aside),
+  // aside z LEWEJ. Rail admina rejestrowany raz (nie miga). `desktopLayout`/`asideSide` dziedziczone.
   {
     path: 'admin',
     loadComponent: () =>
-      import('./features/admin/pages/admin-dashboard/admin-dashboard.component').then(
-        (m) => m.AdminDashboardComponent,
+      import('./features/admin/pages/admin-area/admin-area.component').then(
+        (m) => m.AdminAreaComponent,
       ),
     canActivate: [adminGuard],
-    data: {
-      title: 'Panel admina',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-    },
-  },
-  {
-    path: 'admin/users',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-users/admin-users.component').then(
-        (m) => m.AdminUsersComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Użytkownicy',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
-  },
-  {
-    path: 'admin/users/:id',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-user-detail/admin-user-detail.component').then(
-        (m) => m.AdminUserDetailComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Użytkownik',
-      breadcrumb: { parent: '/admin/users', label: 'Lista użytkowników' },
-    },
-  },
-  {
-    path: 'admin/events',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-events/admin-events.component').then(
-        (m) => m.AdminEventsComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Wydarzenia (admin)',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
-  },
-  {
-    path: 'admin/cover-images',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-cover-images/admin-cover-images.component').then(
-        (m) => m.AdminCoverImagesComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Galeria cover images',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
-  },
-  {
-    path: 'admin/settings',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-settings/admin-settings.component').then(
-        (m) => m.AdminSettingsComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Ustawienia',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
-  },
-  {
-    path: 'admin/crons',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-crons/admin-crons.component').then(
-        (m) => m.AdminCronsComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Zarządzanie cronami',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
-  },
-  {
-    path: 'admin/fake-users',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-fake-users/admin-fake-users.component').then(
-        (m) => m.AdminFakeUsersComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Fake users',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
-  },
-  {
-    path: 'admin/contact-messages',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-contact-messages/admin-contact-messages.component').then(
-        (m) => m.AdminContactMessagesComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Wiadomości kontaktowe',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
-  },
-  {
-    path: 'admin/pending-emails',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-pending-emails/admin-pending-emails.component').then(
-        (m) => m.AdminPendingEmailsComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Kolejka emaili',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
+    data: { desktopLayout: 'two-column', asideSide: 'left' },
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-dashboard/admin-dashboard.component').then(
+            (m) => m.AdminDashboardComponent,
+          ),
+        data: { title: 'Panel admina', breadcrumb: BREADCRUMB_TO_PROFILE },
+      },
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-users/admin-users.component').then(
+            (m) => m.AdminUsersComponent,
+          ),
+        data: { title: 'Użytkownicy', breadcrumb: { parent: '/admin', label: 'Panel admina' } },
+      },
+      {
+        path: 'users/:id',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-user-detail/admin-user-detail.component').then(
+            (m) => m.AdminUserDetailComponent,
+          ),
+        data: {
+          title: 'Użytkownik',
+          breadcrumb: { parent: '/admin/users', label: 'Lista użytkowników' },
+        },
+      },
+      {
+        path: 'events',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-events/admin-events.component').then(
+            (m) => m.AdminEventsComponent,
+          ),
+        data: {
+          title: 'Wydarzenia (admin)',
+          breadcrumb: { parent: '/admin', label: 'Panel admina' },
+        },
+      },
+      {
+        path: 'cover-images',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-cover-images/admin-cover-images.component').then(
+            (m) => m.AdminCoverImagesComponent,
+          ),
+        data: {
+          title: 'Galeria cover images',
+          breadcrumb: { parent: '/admin', label: 'Panel admina' },
+        },
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-settings/admin-settings.component').then(
+            (m) => m.AdminSettingsComponent,
+          ),
+        data: { title: 'Ustawienia', breadcrumb: { parent: '/admin', label: 'Panel admina' } },
+      },
+      {
+        path: 'crons',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-crons/admin-crons.component').then(
+            (m) => m.AdminCronsComponent,
+          ),
+        data: {
+          title: 'Zarządzanie cronami',
+          breadcrumb: { parent: '/admin', label: 'Panel admina' },
+        },
+      },
+      {
+        path: 'fake-users',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-fake-users/admin-fake-users.component').then(
+            (m) => m.AdminFakeUsersComponent,
+          ),
+        data: { title: 'Fake users', breadcrumb: { parent: '/admin', label: 'Panel admina' } },
+      },
+      {
+        path: 'contact-messages',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-contact-messages/admin-contact-messages.component').then(
+            (m) => m.AdminContactMessagesComponent,
+          ),
+        data: {
+          title: 'Wiadomości kontaktowe',
+          breadcrumb: { parent: '/admin', label: 'Panel admina' },
+        },
+      },
+      {
+        path: 'pending-emails',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-pending-emails/admin-pending-emails.component').then(
+            (m) => m.AdminPendingEmailsComponent,
+          ),
+        data: { title: 'Kolejka emaili', breadcrumb: { parent: '/admin', label: 'Panel admina' } },
+      },
+    ],
   },
 
   // ── Static ──

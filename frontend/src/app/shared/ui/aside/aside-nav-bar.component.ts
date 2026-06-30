@@ -7,32 +7,37 @@ import {
   effect,
   ElementRef,
   inject,
+  input,
+  output,
   signal,
   viewChild,
   viewChildren,
 } from '@angular/core';
 import { IconComponent } from '../icon/icon.component';
-import { AsideNavItem } from '../aside/aside-nav.component';
-import { AccountNavService } from './account-nav.service';
+import { AsideNavItem } from './aside-nav.component';
 
 /**
- * Mobilny pasek nawigacji konta — wzorzec „priority+ / overflow".
- * Bez przewijania: wyświetla wyśrodkowane, ścieśnione „pills", ile zmieści się w jednej linii na
- * danej szerokości; resztę chowa pod kebabem „⋮" (menu „więcej"). Aktualnie wybrana pozycja jest
- * ZAWSZE widoczna na pasku. Szerokości mierzone przez ukryty „ghost" + ResizeObserver.
+ * Globalny mobilny pasek nawigacji — wzorzec „priority+ / overflow". Mobilny odpowiednik pionowego
+ * `app-aside-nav` (rail): wyświetla wyśrodkowane, ścieśnione „pills", ile zmieści się w jednej linii;
+ * resztę chowa pod kebabem „⋮". Aktualnie wybrana pozycja jest ZAWSZE widoczna. Szerokości mierzone
+ * ukrytym „ghostem" + ResizeObserver. Karmiony `items` (z `active`), emituje `selected(key)` —
+ * używany przez panel konta, admina, strefę wydarzenia itd.
  */
 @Component({
-  selector: 'app-account-nav-bar',
+  selector: 'app-aside-nav-bar',
   imports: [IconComponent],
-  templateUrl: './account-nav-bar.component.html',
+  templateUrl: './aside-nav-bar.component.html',
   host: { class: 'block', '(document:keydown.escape)': 'closeMore()' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AccountNavBarComponent {
-  private readonly nav = inject(AccountNavService);
+export class AsideNavBarComponent {
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly allItems = computed<AsideNavItem[]>(() => this.nav.groups().flatMap((g) => g.items));
+  readonly items = input.required<readonly AsideNavItem[]>();
+  readonly ariaLabel = input('Nawigacja');
+  readonly selected = output<string>();
+
+  readonly allItems = computed<readonly AsideNavItem[]>(() => this.items());
 
   private readonly bar = viewChild<ElementRef<HTMLElement>>('bar');
   private readonly ghostPills = viewChildren<ElementRef<HTMLElement>>('ghostPill');
@@ -52,14 +57,12 @@ export class AccountNavBarComponent {
     'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold bg-primary-50 text-primary-700';
 
   // Bufor + szerokości elementów stałych (px). Bufor lekko zaniża, by aktywny (pogrubiony, szerszy)
-  // pill nie wypadł poza linię.
+  // pill nie wypadł poza linię oraz by został odstęp po bokach.
   private readonly KEBAB_W = 40;
   private readonly GAP = 6;
-  // Margines bezpieczeństwa: zostawia odstęp po bokach (z wyśrodkowania) i pokrywa drobne błędy
-  // szacowania szerokości, by skrajne pills nie były przycinane.
   private readonly BUFFER = 28;
 
-  readonly visibleItems = computed<AsideNavItem[]>(() => {
+  readonly visibleItems = computed<readonly AsideNavItem[]>(() => {
     const all = this.allItems();
     const count = Math.min(this.visibleCount(), all.length);
     if (count >= all.length) {
@@ -74,13 +77,12 @@ export class AccountNavBarComponent {
     return visible;
   });
 
-  readonly overflowItems = computed<AsideNavItem[]>(() => {
+  readonly overflowItems = computed<readonly AsideNavItem[]>(() => {
     const visibleKeys = new Set(this.visibleItems().map((i) => i.key));
     return this.allItems().filter((i) => !visibleKeys.has(i.key));
   });
 
   constructor() {
-    // Pomiar po pierwszym renderze (klient): ResizeObserver reaguje na zmianę szerokości/orientacji.
     afterNextRender(() => {
       const el = this.bar()?.nativeElement;
       if (!el || typeof ResizeObserver === 'undefined') {
@@ -92,8 +94,7 @@ export class AccountNavBarComponent {
       this.destroyRef.onDestroy(() => observer.disconnect());
     });
 
-    // Po zmianie aktywnej pozycji (nawigacja) szerokości pills nieco się zmieniają — przelicz po
-    // wyrenderowaniu nowego ghosta.
+    // Zmiana pozycji/aktywnej zmienia szerokości pills — przelicz po wyrenderowaniu nowego ghosta.
     effect(() => {
       this.allItems();
       this.scheduleMeasure();
@@ -118,7 +119,6 @@ export class AccountNavBarComponent {
       return;
     }
     const widths = pills.map((p) => p.nativeElement.offsetWidth);
-    // Pomiar jeszcze nie gotowy (np. przed layoutem) — nie ustawiaj „wszystko widoczne".
     if (widths.some((w) => w <= 0)) {
       return;
     }
@@ -144,7 +144,7 @@ export class AccountNavBarComponent {
 
   select(key: string): void {
     this.moreOpen.set(false);
-    this.nav.navigate(key);
+    this.selected.emit(key);
   }
 
   toggleMore(): void {

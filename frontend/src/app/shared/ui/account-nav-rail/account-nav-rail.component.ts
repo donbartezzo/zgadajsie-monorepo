@@ -6,7 +6,7 @@ import { AccountNavService } from './account-nav.service';
 /**
  * Wspólny rail nawigacyjny konta (kolumna aside, desktop). Prezentacja modelu z
  * `AccountNavService` (sekcje Konto / Uczestnik / Organizator) na bazie `app-aside-panel` +
- * `app-aside-nav`. Mobilny odpowiednik: `app-account-nav-bar`. Widoczny tylko od `lg`.
+ * `app-aside-nav`. Mobilny odpowiednik: `app-aside-nav-bar` (przez `account-rail-slot`). Widoczny tylko od `lg`.
  */
 @Component({
   selector: 'app-account-nav-rail',

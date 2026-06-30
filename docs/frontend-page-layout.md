@@ -463,12 +463,17 @@ mini-bar są na `lg` ukrywane (`lg:hidden`) dla widoków 2-kol; poniżej `lg` dz
 - `app-aside-panel` (`shared/ui/aside/aside-panel.component.ts`) — jednolite chrome „kafelka" aside
   (tło, ramka, zaokrąglenie, cień, padding) + opcjonalny `heading`. Owija DOWOLNĄ zawartość aside —
   nie tylko nawigację (także CTA, statystyki itp.).
-- `app-aside-nav` (`shared/ui/aside/aside-nav.component.ts`) — jednolita lista nawigacyjna
+- `app-aside-nav` (`shared/ui/aside/aside-nav.component.ts`) — jednolita, PIONOWA lista nawigacyjna
   (`items: AsideNavItem[]` + output `selected`), wspólne style pozycji i stanu aktywnego, opcjonalny
-  `badge`. Logikę nawigacji/`active` trzyma rail-właściciel.
+  `badge`. Desktop (rail). Logikę nawigacji/`active` trzyma rail-właściciel.
+- `app-aside-nav-bar` (`shared/ui/aside/aside-nav-bar.component.ts`) — **globalny mobilny** odpowiednik
+  `aside-nav`: POZIOMY pasek „priority+ / overflow" (ile się zmieści w jednej linii, reszta pod kebabem
+  „⋮", aktywna zawsze widoczna; pomiar „ghostem" + ResizeObserver). Te same wejścia: `items` + `selected`.
+  Używany inline (`lg:hidden`) jako mobilna nawigacja paneli (konto, admin) i strefy wydarzenia.
 
-Każdy rail buduje się na tych dwóch komponentach (`app-event-nav-rail`, `app-account-nav-rail`
-i kolejne), więc pozostają spójne wizualnie i łatwo rozszerzalne.
+Raile budują się na `aside-panel` + `aside-nav` (desktop), a mobilną nawigację daje `aside-nav-bar` —
+wszystkie karmione wspólnym modelem (np. `AccountNavService`, `AdminNavService`) przez `*-rail-slot`
+lub komponent-rodzic strefy (`ProfileArea`, `AdminArea`, `EventArea`).
 
 Konsumenci aside:
 
@@ -529,9 +534,13 @@ Konsumenci aside:
     przeciąga się > ~200ms (`showFullPreloader` z debouncem). Dla szybkich (cache) nawigacji shell
     NIE znika — kolumna aside (rail) i pasek nav nie „migają", podmienia się tylko main-column.
 
-Pozostałe widoki to nadal pojedyncza kolumna 700 w boxie (`desktopLayout: 'narrow'`). Wariant
-`'wide'` (pojedyncza kolumna na pełną szerokość boxa) jest zadeklarowany w typie, ale nie ma jeszcze
-dedykowanego renderowania — do wdrożenia, gdy pojawi się pierwszy widok pełnoszerokościowy.
+Pozostałe widoki to nadal pojedyncza kolumna 700 w boxie (`desktopLayout: 'narrow'`).
+
+- **Panel admina (RWD-20):** dwukolumnowo jak reszta paneli (main 700 + aside), ale **aside z lewej**
+  (`asideSide: 'left'`). `AdminAreaComponent` (parent route `admin`) rejestruje `app-admin-nav-rail`
+  w slocie `aside`; `desktopLayout: 'two-column'` + `asideSide: 'left'` dziedziczone przez dzieci.
+  Na mobile aside ukryty — nawigacja przez pulpit (kafelki `lg:hidden`) i breadcrumb. `admin-users`:
+  karty na mobile, tabela od `md` (z `overflow-x-auto` w razie potrzeby w kolumnie 700).
 
 ### Nawigacja: bottom-nav vs top-nav (RWD-12)
 
