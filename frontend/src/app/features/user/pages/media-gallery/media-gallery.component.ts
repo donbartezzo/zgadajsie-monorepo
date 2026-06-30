@@ -43,7 +43,7 @@ import { AccountContentComponent } from '../../../../shared/ui/account-nav-rail/
               <img [src]="f.url" [alt]="f.originalName" class="w-full h-full object-cover" />
               <button
                 (click)="onDelete(f.id)"
-                class="absolute top-1 right-1 rounded-full bg-danger-300 p-1 text-white opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
+                class="absolute top-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-danger-300 text-white opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
               >
                 <app-icon name="trash" size="sm"></app-icon>
               </button>

@@ -268,8 +268,8 @@ interface EventRule {
               </div>
             }
 
-            <!-- Liczba uczestników -->
-            <div class="grid grid-cols-2 gap-3">
+            <!-- Liczba uczestników i koszt -->
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
               <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1"
                   >Min. uczestników</label
@@ -293,6 +293,20 @@ interface EventRule {
                   inputmode="numeric"
                   enterkeyhint="next"
                   min="2"
+                  class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-neutral-600 mb-1"
+                  >Koszt/os. (zł)</label
+                >
+                <input
+                  type="number"
+                  formControlName="costPerPerson"
+                  inputmode="decimal"
+                  enterkeyhint="done"
+                  min="0"
+                  step="0.01"
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 />
               </div>
@@ -354,24 +368,6 @@ interface EventRule {
                   <option value="PUBLIC">Publiczne</option>
                   <option value="PRIVATE">Prywatne</option>
                 </select>
-              </div>
-            </div>
-
-            <!-- Koszt i akceptacja -->
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-medium text-neutral-600 mb-1"
-                  >Koszt/os. (zł)</label
-                >
-                <input
-                  type="number"
-                  formControlName="costPerPerson"
-                  inputmode="decimal"
-                  enterkeyhint="done"
-                  min="0"
-                  step="0.01"
-                  class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
-                />
               </div>
             </div>
           </div>
@@ -601,7 +597,7 @@ interface EventRule {
                       </div>
                       <button
                         type="button"
-                        class="flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800"
+                        class="flex items-center gap-1.5 rounded-lg py-2 px-1 text-xs text-primary-600 hover:bg-primary-50 hover:text-primary-800"
                         (click)="fetchSuggestedCover()"
                       >
                         <app-icon name="refresh-cw" size="xs" />

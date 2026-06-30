@@ -12,7 +12,10 @@
         (avatarSeedChange)="onAvatarSeedChange($event)"
       >
         @if (!user.isEmailVerified) {
-          <button (click)="resendActivation()" class="mt-2 text-xs text-primary-500 underline font-medium">
+          <button
+            (click)="resendActivation()"
+            class="mt-2 inline-block rounded-lg py-2 px-1 text-xs text-primary-500 underline font-medium hover:bg-primary-50"
+          >
             Wyślij link aktywacyjny ponownie
           </button>
         }
@@ -89,7 +92,7 @@
               </p>
               <button
                 (click)="resendActivation()"
-                class="text-xs text-warning-600 underline font-medium hover:text-warning-700"
+                class="inline-block rounded-lg py-2 px-1 text-xs text-warning-600 underline font-medium hover:text-warning-700 hover:bg-warning-50"
               >
                 Wyślij link aktywacyjny ponownie
               </button>

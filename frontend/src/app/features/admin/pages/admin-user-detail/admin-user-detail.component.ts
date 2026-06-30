@@ -60,69 +60,71 @@ interface PaymentListItem {
           </div>
         </app-page-heading>
 
-        <app-card>
-          <div class="space-y-3">
-            <h3 class="text-sm font-semibold text-neutral-900">Edycja</h3>
-            <input
-              [(ngModel)]="editName"
-              placeholder="Nazwa"
-              class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm text-neutral-900"
-            />
-            <app-button
-              appearance="soft"
-              color="primary"
-              [loading]="saving()"
-              (clicked)="saveUser()"
-              >Zapisz</app-button
-            >
-          </div>
-        </app-card>
-
-        @if (!u.isActive || !u.isEmailVerified) {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <app-card>
-            <div class="space-y-3 mt-4">
-              <h3 class="text-sm font-semibold text-neutral-900">Aktywacja konta</h3>
-              <p class="text-xs text-neutral-500">
-                Konto nie jest aktywne lub email nie został zweryfikowany. Możesz aktywować konto
-                ręcznie.
-              </p>
+            <div class="space-y-3">
+              <h3 class="text-sm font-semibold text-neutral-900">Edycja</h3>
+              <input
+                [(ngModel)]="editName"
+                placeholder="Nazwa"
+                class="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm text-neutral-900"
+              />
               <app-button
                 appearance="soft"
-                color="success"
+                color="primary"
                 [loading]="saving()"
-                (clicked)="activateAccount()"
-                >Aktywuj konto</app-button
+                (clicked)="saveUser()"
+                >Zapisz</app-button
               >
             </div>
           </app-card>
-        }
 
-        <app-card>
-          <div class="space-y-3 mt-4">
-            <h3 class="text-sm font-semibold text-neutral-900">Płatności</h3>
-            @for (p of payments(); track p.id) {
-              <div class="flex justify-between text-xs py-1 border-b border-neutral-100">
-                <span
-                  >{{ p.event?.title || 'Wydarzenie' }}
-                  <span class="text-neutral-400">{{ p.createdAt | date: 'd MMM' }}</span></span
-                >
-                <span
-                  [class]="
-                    p.status === 'COMPLETED'
-                      ? 'text-success-400'
-                      : p.status === 'REFUNDED'
-                        ? 'text-warning-300'
-                        : 'text-neutral-500'
-                  "
-                  >{{ p.amount | number: '1.2-2' }} zł
-                  <span class="text-[10px]">{{ p.status }}</span></span
+          @if (!u.isActive || !u.isEmailVerified) {
+            <app-card>
+              <div class="space-y-3">
+                <h3 class="text-sm font-semibold text-neutral-900">Aktywacja konta</h3>
+                <p class="text-xs text-neutral-500">
+                  Konto nie jest aktywne lub email nie został zweryfikowany. Możesz aktywować konto
+                  ręcznie.
+                </p>
+                <app-button
+                  appearance="soft"
+                  color="success"
+                  [loading]="saving()"
+                  (clicked)="activateAccount()"
+                  >Aktywuj konto</app-button
                 >
               </div>
-            } @empty {
-              <p class="text-xs text-neutral-400">Brak płatności</p>
-            }
-          </div>
-        </app-card>
+            </app-card>
+          }
+
+          <app-card class="md:col-span-2">
+            <div class="space-y-3">
+              <h3 class="text-sm font-semibold text-neutral-900">Płatności</h3>
+              @for (p of payments(); track p.id) {
+                <div class="flex justify-between text-xs py-1 border-b border-neutral-100">
+                  <span
+                    >{{ p.event?.title || 'Wydarzenie' }}
+                    <span class="text-neutral-400">{{ p.createdAt | date: 'd MMM' }}</span></span
+                  >
+                  <span
+                    [class]="
+                      p.status === 'COMPLETED'
+                        ? 'text-success-400'
+                        : p.status === 'REFUNDED'
+                          ? 'text-warning-300'
+                          : 'text-neutral-500'
+                    "
+                    >{{ p.amount | number: '1.2-2' }} zł
+                    <span class="text-[10px]">{{ p.status }}</span></span
+                  >
+                </div>
+              } @empty {
+                <p class="text-xs text-neutral-400">Brak płatności</p>
+              }
+            </div>
+          </app-card>
+        </div>
       }
     </div>
   `,

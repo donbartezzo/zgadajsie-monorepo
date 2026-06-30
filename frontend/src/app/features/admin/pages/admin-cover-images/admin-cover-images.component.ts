@@ -133,7 +133,7 @@ import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-he
           <p class="mt-2 text-sm">Brak cover images</p>
         </div>
       } @else {
-        <div class="space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           @for (cover of covers(); track cover.id) {
             <app-card>
               <div class="overflow-hidden rounded-xl">
