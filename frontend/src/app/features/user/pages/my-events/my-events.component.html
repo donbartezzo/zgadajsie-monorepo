@@ -1,0 +1,71 @@
+<app-account-content>
+  @if (canCreateEvents()) {
+    <a slot="actions" routerLink="/o/w/new">
+      <app-button appearance="soft" color="primary" size="sm">
+        <app-icon name="plus" size="sm"></app-icon> Nowe
+      </app-button>
+    </a>
+  }
+
+  @if (loading()) {
+    <div class="py-12 flex justify-center">
+      <app-loading-spinner />
+    </div>
+  } @else if (events().length === 0) {
+    <app-empty-state icon="calendar" title="Brak wydarzeń" message="Nie utworzyłeś jeszcze żadnych wydarzeń." />
+  } @else {
+    <div class="space-y-6">
+      <!-- Quick stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ stats().total }}</p>
+            <p class="text-xs text-neutral-500">Razem</p>
+          </div>
+        </app-card>
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ stats().upcoming }}</p>
+            <p class="text-xs text-neutral-500">Nadchodzące</p>
+          </div>
+        </app-card>
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ stats().pending }}</p>
+            <p class="text-xs text-neutral-500">Do potwierdzenia</p>
+          </div>
+        </app-card>
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ stats().ended }}</p>
+            <p class="text-xs text-neutral-500">Zakończone</p>
+          </div>
+        </app-card>
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ stats().cancelled }}</p>
+            <p class="text-xs text-neutral-500">Odwołane</p>
+          </div>
+        </app-card>
+      </div>
+
+      <div class="flex items-center justify-between gap-3">
+        <app-button appearance="soft" color="neutral" size="sm" [loading]="sendingEmail()" (clicked)="sendEmail()">
+          <app-icon name="mail" size="sm"></app-icon>
+          Wyślij e-mail
+        </app-button>
+      </div>
+
+      <div class="flex flex-col gap-5">
+        @for (e of events(); track e.id) {
+          <app-event-manage-card
+            [event]="toManageCardItem(e)"
+            [actions]="getActions(e)"
+            [disabledActions]="getDisabledActions(e)"
+            (action)="onManageAction($event, e)"
+          />
+        }
+      </div>
+    </div>
+  }
+</app-account-content>

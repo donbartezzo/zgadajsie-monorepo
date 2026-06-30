@@ -15,7 +15,7 @@ export type AccountNavKey =
   | 'vouchers'
   | 'new'
   | 'events'
-  | 'digest'
+  | 'series'
   | 'covers'
   | 'settings';
 
@@ -58,7 +58,7 @@ export class AccountNavService {
       items: [
         { key: 'new', label: 'Nowe wydarzenie', icon: 'calendar-plus' },
         { key: 'events', label: 'Moje wydarzenia', icon: 'calendar' },
-        { key: 'digest', label: 'Zestawienie', icon: 'bar-chart' },
+        { key: 'series', label: 'Moje serie', icon: 'calendar' },
         { key: 'covers', label: 'Okładki', icon: 'image' },
         { key: 'settings', label: 'Ustawienia', icon: 'settings' },
       ],
@@ -76,7 +76,7 @@ export class AccountNavService {
   readonly activeKey = computed<AccountNavKey | null>(() => {
     const url = this.currentUrl().split('?')[0].replace(/\/$/, '');
     if (url.startsWith('/profile/organizer/cover-images')) return 'covers';
-    if (url.startsWith('/profile/organizer/digest')) return 'digest';
+    if (url.startsWith('/profile/organizer/series')) return 'series';
     if (url.startsWith('/profile/organizer/settings')) return 'settings';
     if (url.startsWith('/profile/organizer/events')) return 'events';
     if (url.startsWith('/profile/enrollment/participations')) return 'participations';
@@ -126,8 +126,8 @@ export class AccountNavService {
       case 'events':
         this.navigation.navigateToProfileEvents();
         break;
-      case 'digest':
-        this.navigation.navigateToOrganizerDigest();
+      case 'series':
+        this.navigation.navigateToOrganizerSeries();
         break;
       case 'covers':
         this.navigation.navigateToProfileCoverImages();

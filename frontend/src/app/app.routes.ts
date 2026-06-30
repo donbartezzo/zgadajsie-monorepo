@@ -440,14 +440,14 @@ export const appRoutes: Route[] = [
         },
       },
       {
-        path: 'organizer/digest',
+        path: 'organizer/series',
         loadComponent: () =>
-          import('./features/organizer/pages/organizer-digest/organizer-digest.component').then(
-            (m) => m.OrganizerDigestComponent,
+          import('./features/organizer/pages/organizer-series/organizer-series.component').then(
+            (m) => m.OrganizerSeriesComponent,
           ),
         canActivate: [activeGuard],
         data: {
-          title: 'Zestawienie organizatora',
+          title: 'Moje serie',
           breadcrumb: BREADCRUMB_TO_PROFILE,
           desktopLayout: 'two-column',
         },

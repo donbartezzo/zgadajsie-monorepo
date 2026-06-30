@@ -9,4 +9,5 @@ export type { EventSeriesRecurrenceType, EventSeriesBase, EventSeriesPreviewItem
 
 export interface EventSeriesView extends EventSeriesBase {
   events: EventBase[];
+  _count?: { events: number };
 }

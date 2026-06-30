@@ -151,9 +151,9 @@ export class NavigationService {
     });
   }
 
-  navigateToOrganizerDigest(): void {
-    this.auth.requireAuth('zobaczyć zestawienie organizatora', () => {
-      this.router.navigate(['/profile/organizer/digest']);
+  navigateToOrganizerSeries(): void {
+    this.auth.requireAuth('zobaczyć serie organizatora', () => {
+      this.router.navigate(['/profile/organizer/series']);
     });
   }
 

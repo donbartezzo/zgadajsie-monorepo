@@ -36,6 +36,7 @@ export interface EventBase
   createdAt: string;
   updatedAt: string;
   lotteryExecutedAt?: string | null;
+  confirmToken?: string | null;
   targetOccupancyConfig?: TargetOccupancyConfig | null;
 
   discipline?: DictionaryItem;
