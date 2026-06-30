@@ -3,8 +3,11 @@ import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
-import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
-import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
+import {
+  DataTableColumn,
+  DataTableComponent,
+} from '../../../../shared/ui/data-table/data-table.component';
+import { DataTableCellDirective } from '../../../../shared/ui/data-table/data-table-cell.directive';
 import { UserService } from '../../../../core/services/user.service';
 import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
@@ -19,70 +22,46 @@ import { AccountContentComponent } from '../../../../shared/ui/account-nav-rail/
     RouterLink,
     IconComponent,
     ButtonComponent,
-    LoadingSpinnerComponent,
-    EmptyStateComponent,
+    DataTableComponent,
+    DataTableCellDirective,
     AccountContentComponent,
   ],
   template: `
     <app-account-content>
-      @if (loading()) {
-        <app-loading-spinner></app-loading-spinner>
-      } @else if (participations().length === 0) {
-        <app-empty-state
-          icon="users"
-          title="Brak uczestnictw"
-          message="Nie dołączyłeś jeszcze do żadnego wydarzenia."
-        ></app-empty-state>
-      } @else {
-        <!-- Jedna tabela responsywna: na wąskich ekranach przewija się poziomo (overflow-x-auto) -->
-        <div class="overflow-hidden rounded-2xl border border-neutral-100 bg-white">
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr
-                  class="border-b border-neutral-200 text-left text-xs font-medium text-neutral-500"
-                >
-                  <th class="px-3 py-2.5 sm:px-4">Wydarzenie</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 sm:px-4">Termin</th>
-                  <th class="px-3 py-2.5 sm:px-4">Status</th>
-                  <th class="px-3 py-2.5 text-right sm:px-4">Akcje</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (p of participations(); track p.id) {
-                  <tr class="border-b border-neutral-100 last:border-0 hover:bg-neutral-50">
-                    <td class="px-3 py-2.5 sm:px-4">
-                      <a
-                        [routerLink]="['/w', p.event?.city?.slug, p.eventId]"
-                        class="font-medium text-neutral-900 hover:text-primary-500"
-                        >{{ p.event?.title || 'Wydarzenie' }}</a
-                      >
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-2.5 text-neutral-500 sm:px-4">
-                      {{ p.event?.startsAt | date: 'd MMM yyyy, HH:mm' }}
-                    </td>
-                    <td class="px-3 py-2.5 sm:px-4">
-                      <span [class]="statusBadgeClass(p.status)">{{ statusLabel(p.status) }}</span>
-                    </td>
-                    <td class="px-3 py-2.5 text-right sm:px-4">
-                      @if (canLeave(p)) {
-                        <app-button
-                          appearance="outline"
-                          color="neutral"
-                          size="sm"
-                          (clicked)="onLeave(p.id)"
-                        >
-                          <app-icon name="user-x" size="sm"></app-icon>
-                        </app-button>
-                      }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-      }
+      <app-data-table
+        [data]="participations()"
+        [columns]="columns"
+        [loading]="loading()"
+        emptyTitle="Brak uczestnictw"
+        emptyMessage="Nie dołączyłeś jeszcze do żadnego wydarzenia."
+        emptyIcon="users"
+      >
+        <ng-template appDataTableCell="event" let-p>
+          <a
+            [routerLink]="['/w', p.event?.city?.slug, p.event?.id]"
+            class="font-medium text-neutral-900 hover:text-primary-500"
+            >{{ p.event?.title || 'Wydarzenie' }}</a
+          >
+        </ng-template>
+
+        <ng-template appDataTableCell="date" let-p>
+          <span class="whitespace-nowrap text-neutral-500">
+            {{ p.event?.startsAt | date: 'd MMM yyyy, HH:mm' }}
+          </span>
+        </ng-template>
+
+        <ng-template appDataTableCell="status" let-p>
+          <span [class]="statusBadgeClass(p.status)">{{ statusLabel(p.status) }}</span>
+        </ng-template>
+
+        <ng-template appDataTableCell="actions" let-p>
+          @if (canLeave(p)) {
+            <app-button appearance="outline" color="neutral" size="sm" (clicked)="onLeave(p.id)">
+              <app-icon name="user-x" size="sm"></app-icon>
+            </app-button>
+          }
+        </ng-template>
+      </app-data-table>
     </app-account-content>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -91,6 +70,13 @@ export class MyParticipationsComponent implements OnInit {
   private readonly userService = inject(UserService);
   private readonly eventService = inject(EventService);
   private readonly snackbar = inject(SnackbarService);
+
+  readonly columns: DataTableColumn<Participation>[] = [
+    { key: 'event', header: 'Wydarzenie' },
+    { key: 'date', header: 'Termin', nowrap: true },
+    { key: 'status', header: 'Status' },
+    { key: 'actions', header: '', align: 'right' },
+  ];
 
   readonly participations = signal<Participation[]>([]);
   readonly loading = signal(true);
