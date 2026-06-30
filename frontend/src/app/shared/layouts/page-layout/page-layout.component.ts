@@ -259,23 +259,37 @@ export class PageLayoutComponent {
     () => this.layoutConfig.desktopLayout() === 'two-column' && !!this.layoutConfig.asideTemplate(),
   );
 
-  // Statyczne hero tylko w trybie 2-kol BEZ fullscreen (w fullscreen treść wypełnia kolumnę, np. czat).
+  // Tryb jednokolumnowy szeroki: treść wypełnia cały box (700 → box-wide od `lg`), bez aside.
+  readonly wide = computed(() => this.layoutConfig.desktopLayout() === 'wide');
+
+  // Widoki ze statycznym (nie-fixed/nie-sticky) hero w kolumnie głównej od `lg`: tryb dwukolumnowy
+  // ORAZ szeroki jednokolumnowy. Poniżej `lg` oba degradują się do fixed-hero + mini-bar.
+  readonly staticHeroLayout = computed(() => this.twoColumn() || this.wide());
+
+  // Statyczne hero tylko w trybie 2-kol/wide BEZ fullscreen (w fullscreen treść wypełnia kolumnę, np. czat).
   readonly showStaticHero = computed(
-    () => this.twoColumn() && this.showHeader() && !this.fullscreenContent(),
+    () => this.staticHeroLayout() && this.showHeader() && !this.fullscreenContent(),
   );
 
   // Sekcja fixed-hero (sentinel + hero + back/sticky) jest potrzebna < lg (pojedyncza kolumna).
   // Od `lg` w trybie 2-kol ją chowamy — jej rolę przejmuje statyczne hero w kolumnie głównej.
   // `contents` = wrapper przezroczysty dla layoutu; `lg:hidden` ukrywa też potomków `fixed`.
   readonly fixedHeaderClass = computed(() =>
-    this.twoColumn() ? 'contents lg:hidden' : 'contents',
+    this.staticHeroLayout() ? 'contents lg:hidden' : 'contents',
   );
 
   readonly sentinelClass = computed(() =>
-    ['relative w-full shrink-0', this.twoColumn() ? 'lg:hidden' : ''].filter(Boolean).join(' '),
+    ['relative w-full shrink-0', this.staticHeroLayout() ? 'lg:hidden' : '']
+      .filter(Boolean)
+      .join(' '),
   );
 
   readonly mainColumnClass = computed(() => {
+    if (this.wide()) {
+      // Szeroki jednokolumnowy: kolumna główna jako flex-col, by statyczne hero i treść były
+      // kafelkami z równym odstępem (jak w 2-kol, ale bez aside).
+      return 'contents lg:flex lg:min-h-0 lg:min-w-0 lg:flex-col lg:gap-3';
+    }
     if (!this.twoColumn()) {
       return 'contents';
     }
@@ -334,6 +348,19 @@ export class PageLayoutComponent {
       }
       return parts.join(' ');
     }
+    if (this.wide()) {
+      // Jednokolumnowa treść wypełniająca cały box: < lg wąska kolumna (700), od `lg` pełny box.
+      // `lg:p-3` — moduły (statyczne hero + karta treści) jako kafelki odsunięte od krawędzi boxa.
+      parts.push('max-w-app lg:max-w-box lg:p-3');
+      if (this.showHeader()) {
+        // `-mt-6` — overlap pod fixed-hero < lg; od `lg` reset (statyczne hero jest w przepływie).
+        parts.push('-mt-6 lg:mt-0');
+      }
+      if (center) {
+        parts.push('flex flex-1 items-center justify-center');
+      }
+      return parts.join(' ');
+    }
     // Treść = wyśrodkowana kolumna główna `max-w-app` (700), hug-owana przez boxed look.
     parts.push('max-w-app');
     if (this.showHeader()) {
@@ -348,7 +375,7 @@ export class PageLayoutComponent {
   // Offset pod fixed mini-barem. W trybie 2-kol obsługuje go klasa `mt-mini-bar lg:mt-0`
   // (mini-bar ukryty od `lg`), więc tu zwracamy null, by nie dublować marginesu.
   readonly contentMarginTop = computed(() =>
-    this.miniBarOnly() && !this.twoColumn() ? 'var(--hero-mini-bar-h)' : null,
+    this.miniBarOnly() && !this.staticHeroLayout() ? 'var(--hero-mini-bar-h)' : null,
   );
 
   readonly contentInnerClass = computed(() => {

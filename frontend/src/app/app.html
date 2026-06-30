@@ -12,7 +12,11 @@
     </div>
   </div>
 } @else {
-  <div class="app" [class.app--two-column]="layoutConfig.desktopLayout() === 'two-column'">
+  <div
+    class="app"
+    [class.app--two-column]="layoutConfig.desktopLayout() === 'two-column'"
+    [class.app--wide]="layoutConfig.desktopLayout() === 'wide'"
+  >
     <!-- Rotated tiled background — widoczny w marginesach boxa (desktop), ukryty na mobile -->
     <div class="app-bg-pattern" aria-hidden="true"></div>
 

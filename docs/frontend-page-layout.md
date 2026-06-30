@@ -422,6 +422,23 @@ Token (CSS var w `styles.scss`):
 
 Treść wewnątrz kontenera jest wyśrodkowaną kolumną `max-w-app` (700) — page-layout owija ją w `mx-auto w-full max-w-app`.
 
+### Tryb jednokolumnowy szeroki (`desktopLayout: 'wide'`)
+
+Wariant dla widoków, które potrzebują JEDNEJ kolumny treści na pełną szerokość boxa (bez aside), np.
+listing wydarzeń (`/w/:citySlug`).
+
+- Box rozszerza się od `lg` do `$app-box-wide` (1024px) przez klasę `.app--wide` na `.app`
+  (bind w `app.html` z `LayoutConfigService.desktopLayout()`). Poniżej `lg` box zostaje przy
+  kolumnie głównej (700) — jedna wąska kolumna jak w `narrow`.
+- Treść: page-layout owija ją w `max-w-app lg:max-w-box lg:p-3` (700 → box-wide od `lg`), kolumna
+  główna jest flex-col z `lg:gap-3` (statyczne hero ↔ karta treści jako kafelki), bez kolumny aside.
+- **Te same zasady hero co w `two-column`** (wspólny sygnał `staticHeroLayout = twoColumn || wide`):
+  od `lg` renderowane jest **statyczne** (nie-`fixed`/nie-`sticky`) hero w kolumnie głównej
+  (scrolluje się z treścią), a fixed hero/sentinel/mini-bar są ukrywane (`lg:hidden`). Poniżej `lg`
+  oba tryby degradują się do fixed-hero + mini-bar.
+- W przeciwieństwie do `two-column`, `wide` nie używa `overflow: clip` (brak sticky aside — nie jest
+  potrzebny scroll-container względem viewportu).
+
 ### Druga kolumna (aside) — tryb dwukolumnowy (RWD-15)
 
 Wzorzec **main (700) + aside** aktywowany od `lg`. Widok deklaruje go przez `route.data`:
@@ -454,9 +471,11 @@ viewportu (a nie boxa, który scrolluje z body), dla `.app--two-column` na `lg` 
 zamiast `hidden` (clip nadal przycina, ale nie tworzy scroll-containera). Zakres ograniczony do
 widoków 2-kol; pozostałe zostają na `overflow: hidden`.
 
-**Statyczne hero w trybie 2-kol (pkt 13 audytu):** od `lg` zamiast `fixed` hero + mini-bar
+**Statyczne hero w trybie 2-kol oraz `wide` (pkt 13 audytu):** od `lg` zamiast `fixed` hero + mini-bar
 renderowane jest **statyczne** hero w kolumnie głównej (scrolluje się z treścią). Fixed hero/sentinel/
-mini-bar są na `lg` ukrywane (`lg:hidden`) dla widoków 2-kol; poniżej `lg` działają jak dotąd.
+mini-bar są na `lg` ukrywane (`lg:hidden`) dla obu trybów; poniżej `lg` działają jak dotąd. Steruje tym
+wspólny sygnał `staticHeroLayout = twoColumn || wide` w `PageLayoutComponent` (gate dla `showStaticHero`,
+`fixedHeaderClass`, `sentinelClass`, `contentMarginTop`).
 
 **Wspólne komponenty aside** (spójny wygląd wszystkich raili/paneli bocznych):
 

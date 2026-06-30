@@ -197,10 +197,15 @@ $app-bg-color: rgb(var(--color-neutral-100));
     margin-top: 0;
   }
 
-  // W trybie dwukolumnowym box rozszerza się od `lg` o kolumnę aside.
-  // Poniżej `lg` (mobile/tablet) box zostaje przy kolumnie głównej (700) — jedna kolumna.
-  .app.app--two-column {
+  // W trybie dwukolumnowym (2-kol) oraz jednokolumnowym szerokim (`wide`) box rozszerza się
+  // od `lg` do pełnej szerokości. Poniżej `lg` (mobile/tablet) box zostaje przy kolumnie głównej
+  // (700) — jedna wąska kolumna.
+  .app.app--two-column,
+  .app.app--wide {
     --app-box-width: #{$app-box-wide};
+  }
+
+  .app.app--two-column {
     // `clip` zamiast `hidden` (tylko 2-kol): nadal przycina box, ale NIE tworzy scroll-containera,
     // dzięki czemu `position: sticky` kolumny aside działa względem viewportu (a nie kontenera,
     // który scrolluje z body). Zakres ograniczony do widoków 2-kol — reszta zostaje na `hidden`.

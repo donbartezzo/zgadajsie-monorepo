@@ -66,6 +66,7 @@ export const appRoutes: Route[] = [
       showBorder: false,
       showHeader: true,
       heroVariant: 'extended',
+      desktopLayout: 'wide',
     },
   },
 

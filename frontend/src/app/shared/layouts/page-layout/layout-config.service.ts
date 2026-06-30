@@ -4,8 +4,9 @@ export type HeroVariant = 'compact' | 'extended' | 'only-mini-bar';
 
 // Wariant układu kolumny treści na desktopie.
 // 'narrow'      — domyślny, wąska kolumna główna (700) w boxie.
+// 'wide'        — jednokolumnowa treść na całą szerokość boxa (700 → ~1024 od `lg`); bez aside.
 // 'two-column'  — main (700) + aside (rail), box rośnie do ~1024 od `lg`.
-export type DesktopLayout = 'narrow' | 'two-column';
+export type DesktopLayout = 'narrow' | 'wide' | 'two-column';
 export type AsideSide = 'left' | 'right';
 
 export interface LayoutConfig {
