@@ -259,7 +259,10 @@ export class PageLayoutComponent {
     () => this.layoutConfig.desktopLayout() === 'two-column' && !!this.layoutConfig.asideTemplate(),
   );
 
-  readonly showStaticHero = computed(() => this.twoColumn() && this.showHeader());
+  // Statyczne hero tylko w trybie 2-kol BEZ fullscreen (w fullscreen treść wypełnia kolumnę, np. czat).
+  readonly showStaticHero = computed(
+    () => this.twoColumn() && this.showHeader() && !this.fullscreenContent(),
+  );
 
   // Sekcja fixed-hero (sentinel + hero + back/sticky) jest potrzebna < lg (pojedyncza kolumna).
   // Od `lg` w trybie 2-kol ją chowamy — jej rolę przejmuje statyczne hero w kolumnie głównej.
@@ -278,21 +281,39 @@ export class PageLayoutComponent {
     }
     const order = this.layoutConfig.asideSide() === 'left' ? 'lg:order-2' : 'lg:order-1';
     // `lg:gap-3` — równy odstęp między modułami w kolumnie głównej (hero ↔ karta treści).
-    return `contents lg:flex lg:min-w-0 lg:flex-col lg:gap-3 ${order}`;
+    // `lg:min-h-0` — pozwala treści fullscreen (np. czat) wypełnić wysokość kolumny.
+    return `contents lg:flex lg:min-h-0 lg:min-w-0 lg:flex-col lg:gap-3 ${order}`;
   });
 
   readonly asideColumnClass = computed(() => {
     const order = this.layoutConfig.asideSide() === 'left' ? 'lg:order-1' : 'lg:order-2';
-    // Sticky: aside zostaje w miejscu, gdy main-column się scrolluje. Działa, bo dla widoków
-    // 2-kol box ma `overflow: clip` (nie `hidden`) → sticky liczony względem viewportu.
-    // `top-app-inset` = pod top-navem + inset boxa; `self-start` chroni przed rozciągnięciem.
-    return `hidden lg:flex lg:w-aside lg:flex-col lg:gap-3 lg:sticky top-app-inset lg:self-start ${order}`;
+    // Sticky tylko dla widoków przewijanych: aside zostaje w miejscu, gdy main się scrolluje
+    // (`top-app-inset` = pod top-navem + inset boxa). W fullscreen (czat — brak scrolla) sticky jest
+    // zbędny i podwajałby offset nav, spychając rail w dół — wtedy zwykły `self-start` (rail u góry).
+    const sticky = this.fullscreenContent() ? '' : 'lg:sticky top-app-inset';
+    return `hidden lg:flex lg:w-aside lg:flex-col lg:gap-3 ${sticky} lg:self-start ${order}`;
   });
 
   readonly contentWrapperClass = computed(() => {
     const fs = this.fullscreenContent();
     const center = this.centerContent();
     const parts = ['relative mx-auto w-full'];
+    // RWD-19: fullscreen + 2-kol (czat) — < lg pełnoekranowa jedna kolumna; od `lg` grid main + aside,
+    // który wypełnia wysokość (kolumna główna = czat fills, aside = rail).
+    if (fs && this.twoColumn()) {
+      const cols =
+        this.layoutConfig.asideSide() === 'left'
+          ? 'lg:grid-cols-aside-main'
+          : 'lg:grid-cols-main-aside';
+      parts.push(
+        `flex-1 min-h-0 flex flex-col max-w-app lg:max-w-box lg:grid lg:grid-rows-1 ${cols} lg:gap-3 lg:p-3`,
+      );
+      if (this.miniBarOnly()) {
+        // Offset pod fixed mini-barem; `.mt-mini-bar` zerowane od `lg` w styles.scss (mini-bar ukryty).
+        parts.push('mt-mini-bar');
+      }
+      return parts.join(' ');
+    }
     if (fs) {
       parts.push('max-w-app flex-1 min-h-0 flex flex-col');
       if (center) {
@@ -324,8 +345,10 @@ export class PageLayoutComponent {
     return parts.join(' ');
   });
 
+  // Offset pod fixed mini-barem. W trybie 2-kol obsługuje go klasa `mt-mini-bar lg:mt-0`
+  // (mini-bar ukryty od `lg`), więc tu zwracamy null, by nie dublować marginesu.
   readonly contentMarginTop = computed(() =>
-    this.miniBarOnly() ? 'var(--hero-mini-bar-h)' : null,
+    this.miniBarOnly() && !this.twoColumn() ? 'var(--hero-mini-bar-h)' : null,
   );
 
   readonly contentInnerClass = computed(() => {
@@ -337,7 +360,15 @@ export class PageLayoutComponent {
       return cc || '';
     }
     if (fs) {
-      return ['flex-1 min-h-0 flex flex-col', cc].filter(Boolean).join(' ');
+      // W trybie 2-kol (czat) treść jest białą, zaokrągloną kartą w kolumnie głównej (jak
+      // szczegóły wydarzenia); tło boxa pozostaje szare. Na mobile (fullscreen) bez zaokrągleń.
+      return [
+        'flex-1 min-h-0 flex flex-col',
+        this.twoColumn() ? 'lg:overflow-hidden lg:rounded-2xl' : '',
+        cc,
+      ]
+        .filter(Boolean)
+        .join(' ');
     }
     return [
       'rounded-2xl border',

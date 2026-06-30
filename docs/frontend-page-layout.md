@@ -472,10 +472,21 @@ i kolejne), więc pozostają spójne wizualnie i łatwo rozszerzalne.
 
 Konsumenci aside:
 
-- **Strefa wydarzenia (RWD-15):** `EventAreaComponent` rejestruje trwały `app-event-nav-rail`
+- **Strefa wydarzenia (RWD-15/19):** `EventAreaComponent` rejestruje trwały `app-event-nav-rail`
   (CTA „Dołącz" + zakładki: Szczegóły / Uczestnicy / Mapa / Czat grupowy / Czat z organizatorem +
-  akcje organizatora). Tryb 2-kol per-trasa-dziecko (`desktopLayout: 'two-column'` na Szczegółach;
-  kolejne dzieci przyrostowo — czaty w RWD-19).
+  akcje organizatora). Tryb 2-kol per-trasa-dziecko (`desktopLayout: 'two-column'`): Szczegóły oraz
+  **wszystkie czaty** (RWD-19) — wspólny `CHAT_LAYOUT` w `app.routes.ts` (grupowy, host-chat,
+  host-chat/:userId). Czat łączy `fullscreenContent: true` + `two-column` — patrz niżej.
+
+  **Fullscreen + two-column (RWD-19):** dla widoku, który ma JEDNOCZEŚNIE wypełniać wysokość i mieć
+  aside (czaty), `contentWrapperClass` renderuje od `lg` grid wypełniający wysokość
+  (`lg:grid lg:grid-rows-1`), gdzie kolumna główna to flex-chain fullscreen (czat fills, biała karta
+  `lg:rounded-2xl` na szarym boxie), a aside to event-rail. < lg — pojedyncza kolumna pełnoekranowa
+  jak dotąd. Statyczne hero pomijane w fullscreen; offset mini-baru tylko < lg (`mt-mini-bar`, zerowany
+  od `lg` w `styles.scss`). Aside w fullscreen NIE jest sticky (brak scrolla → uniknięcie podwójnego
+  offsetu nav). `chat-view` ma nagłówek/input `fixed` na mobile i `lg:static` od `lg` (trzymają kolumnę
+  główną). Lista uczestników pozostaje w overlayu (aside zajmuje event-rail).
+
 - **Panel konta (RWD-16/17/18):** wspólny model `AccountNavService`
   (`shared/ui/account-nav-rail/account-nav.service.ts`) — sekcje **Konto** (Profil, Powiadomienia),
   **Uczestnik** (Uczestnictwa, Galeria, Płatności, Vouchery), **Organizator** (Nowe wydarzenie,

@@ -19,6 +19,18 @@ const WHITE_BARE_LAYOUT = {
   contentClass: 'bg-transparent',
 } as const;
 
+// RWD-19: wspólny layout dla wszystkich czatów strefy wydarzenia. Fullscreen (czat wypełnia wysokość)
+// + only-mini-bar; od `lg` tryb 2-kol → czat jako biała karta w kolumnie głównej + event-rail w aside
+// (rail dostarcza EventAreaComponent). Bez `layoutClass` (tło boxa neutralne; biała karta z contentClass).
+const CHAT_LAYOUT = {
+  heroVariant: 'only-mini-bar',
+  showFooter: false,
+  showBorder: false,
+  fullscreenContent: true,
+  contentClass: 'bg-white',
+  desktopLayout: 'two-column',
+} as const;
+
 const BREADCRUMB_TO_HOME = {
   parent: '/',
   label: 'Strona główna',
@@ -125,14 +137,7 @@ export const appRoutes: Route[] = [
           ),
         canActivate: [verifiedUserGuard],
         resolve: setEventResolvedTitle('Czat z organizatorem'),
-        data: {
-          heroVariant: 'only-mini-bar',
-          showFooter: false,
-          showBorder: false,
-          fullscreenContent: true,
-          contentClass: 'bg-white',
-          layoutClass: 'bg-white',
-        },
+        data: { ...CHAT_LAYOUT },
       },
       // Organizer private chat with specific participant
       {
@@ -143,11 +148,8 @@ export const appRoutes: Route[] = [
           ),
         canActivate: [verifiedUserGuard],
         data: {
+          ...CHAT_LAYOUT,
           isPrivate: true,
-          heroVariant: 'only-mini-bar',
-          showFooter: false,
-          fullscreenContent: true,
-          contentClass: 'bg-white',
           breadcrumb: { parent: '/w/:citySlug/:id/host-chat', label: 'Konwersacje' },
         },
       },
@@ -160,14 +162,7 @@ export const appRoutes: Route[] = [
           ),
         resolve: setEventResolvedTitle('Czat grupowy'),
         canActivate: [verifiedUserGuard],
-        data: {
-          heroVariant: 'only-mini-bar',
-          showFooter: false,
-          showBorder: false,
-          fullscreenContent: true,
-          contentClass: 'bg-white',
-          layoutClass: 'bg-white',
-        },
+        data: { ...CHAT_LAYOUT },
       },
     ],
   },

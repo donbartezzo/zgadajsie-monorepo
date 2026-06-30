@@ -95,6 +95,11 @@
   .top-app-inset {
     top: calc(var(--top-nav-h) + 0.75rem);
   }
+  // Offset treści pod fixed mini-barem (fullscreen na mobile). Na desktopie w trybie 2-kol
+  // mini-bar jest ukryty — resetujemy przez `lg:mt-0`.
+  .mt-mini-bar {
+    margin-top: var(--hero-mini-bar-h);
+  }
   .bottom-app {
     bottom: var(--footer-height);
   }
@@ -184,6 +189,12 @@ $app-bg-color: rgb(var(--color-neutral-100));
   :root {
     --footer-height: 0px;
     --top-nav-h: 3.5rem;
+  }
+
+  // RWD-19: od `lg` mini-bar jest ukryty w trybie 2-kol — zerujemy jego offset. Override nielayerowany,
+  // więc wygrywa nad `.mt-mini-bar` z `@layer utilities` (bez polegania na kolejności klas/wariantów).
+  .mt-mini-bar {
+    margin-top: 0;
   }
 
   // W trybie dwukolumnowym box rozszerza się od `lg` o kolumnę aside.
