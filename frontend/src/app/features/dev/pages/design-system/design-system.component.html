@@ -1559,5 +1559,76 @@
         </div>
       </section>
     }
+
+    <!-- ══════════════ PAGE HEADING ══════════════ -->
+    @if (activeSection() === 'page-heading') {
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-2">Page Heading — domyślny (justified)</h2>
+        <p class="text-sm text-neutral-500 mb-4">Nagłówek strony z label, description i slotem actions.</p>
+        <div class="rounded-xl border border-neutral-200 bg-white p-6 space-y-4">
+          <app-page-heading
+            heading="Szczegóły wydarzenia"
+            label="Organizator"
+            description="Zarządzaj ustawieniami i uczestnikami swojego wydarzenia."
+          >
+            <ng-template ngProjectAs="actions">
+              <div class="flex gap-2">
+                <button
+                  class="inline-flex items-center gap-1.5 rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-600"
+                >
+                  <app-icon name="edit" size="sm" />
+                  Edytuj
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 rounded-lg bg-danger-50 px-3 py-1.5 text-sm font-medium text-danger-600 hover:bg-danger-100"
+                >
+                  <app-icon name="trash" size="sm" />
+                  Usuń
+                </button>
+              </div>
+            </ng-template>
+          </app-page-heading>
+        </div>
+      </section>
+
+      <section class="mt-8">
+        <h2 class="text-lg font-semibold text-neutral-900 mb-2">Page Heading — centered</h2>
+        <p class="text-sm text-neutral-500 mb-4">Wyśrodkowany wariant używany na stronach auth i stanowych.</p>
+        <div class="rounded-xl border border-neutral-200 bg-white p-6">
+          <app-page-heading heading="Zaloguj się" centered description="Wprowadź dane logowania, aby kontynuować." />
+        </div>
+      </section>
+
+      <section class="mt-8">
+        <h2 class="text-lg font-semibold text-neutral-900 mb-2">Page Heading — z ikoną i metą</h2>
+        <p class="text-sm text-neutral-500 mb-4">Sloty icon, meta i below dla złożonych nagłówków.</p>
+        <div class="rounded-xl border border-neutral-200 bg-white p-6">
+          <app-page-heading heading="Jan Kowalski" description="jan.kowalski@example.com">
+            <ng-template ngProjectAs="icon">
+              <app-icon name="user" size="lg" class="text-primary-500" />
+            </ng-template>
+            <ng-template ngProjectAs="meta">
+              <app-badge appearance="solid" color="success">Zweryfikowany</app-badge>
+            </ng-template>
+            <ng-template ngProjectAs="below">
+              <div class="mt-2 flex gap-3 text-sm text-neutral-600">
+                <span class="flex items-center gap-1"><app-icon name="calendar" size="sm" /> 12 wydarzeń</span>
+                <span class="flex items-center gap-1"><app-icon name="star" size="sm" /> 4.8</span>
+              </div>
+            </ng-template>
+          </app-page-heading>
+        </div>
+      </section>
+
+      <section class="mt-8">
+        <h2 class="text-lg font-semibold text-neutral-900 mb-2">Page Heading — rozmiary</h2>
+        <p class="text-sm text-neutral-500 mb-4">Porównanie rozmiarów lg, xl i 2xl.</p>
+        <div class="rounded-xl border border-neutral-200 bg-white p-6 space-y-6">
+          <app-page-heading heading="Rozmiar lg" size="lg" />
+          <app-page-heading heading="Rozmiar xl" size="xl" />
+          <app-page-heading heading="Rozmiar 2xl" size="2xl" />
+        </div>
+      </section>
+    }
   </main>
 </div>

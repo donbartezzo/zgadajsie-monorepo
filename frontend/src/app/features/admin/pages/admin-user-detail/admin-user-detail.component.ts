@@ -9,6 +9,7 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { AdminService } from '../../../../core/services/admin.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { User } from '../../../../shared/types';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 interface PaymentListItem {
   id: string;
@@ -30,17 +31,16 @@ interface PaymentListItem {
     CardComponent,
     UserAvatarComponent,
     LoadingSpinnerComponent,
+    PageHeadingComponent,
   ],
   template: `
     <div class="p-4">
       @if (loading()) {
         <app-loading-spinner></app-loading-spinner>
       } @else if (user(); as u) {
-        <div class="text-center mb-6">
-          <app-user-avatar [user]="u" size="lg"></app-user-avatar>
-          <h1 class="mt-3 text-xl font-bold text-neutral-900">{{ u.displayName }}</h1>
-          <p class="text-sm text-neutral-500">{{ u.email }}</p>
-          <div class="flex items-center justify-center gap-2 mt-1">
+        <app-page-heading [heading]="u.displayName" [description]="u.email" centered spacing="lg">
+          <app-user-avatar slot="icon" [user]="u" size="lg" class="mb-3 block"></app-user-avatar>
+          <div slot="below" class="flex items-center justify-center gap-2 mt-1">
             <span
               [class]="
                 'text-xs px-2 py-0.5 rounded-full inline-block ' +
@@ -58,7 +58,7 @@ interface PaymentListItem {
               </span>
             }
           </div>
-        </div>
+        </app-page-heading>
 
         <app-card>
           <div class="space-y-3">

@@ -5,16 +5,20 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
 import { LoginFormComponent } from '../../../../shared/auth/ui/login-form/login-form.component';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { APP_BRAND } from '@zgadajsie/shared';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 @Component({
   selector: 'app-login',
-  imports: [LoginFormComponent],
+  imports: [LoginFormComponent, PageHeadingComponent],
   template: `
     <div class="p-6 max-w-md mx-auto">
-      <div class="text-center mb-6">
-        <h1 class="text-2xl font-bold text-neutral-900">Zaloguj się</h1>
-        <p class="mt-1 text-sm text-neutral-500">Witaj ponownie w {{ APP_BRAND.SHORT_NAME }}</p>
-      </div>
+      <app-page-heading
+        heading="Zaloguj się"
+        [description]="'Witaj ponownie w ' + APP_BRAND.SHORT_NAME"
+        size="2xl"
+        centered
+        spacing="lg"
+      />
 
       <app-login-form (authenticated)="onAuthenticated()"></app-login-form>
     </div>

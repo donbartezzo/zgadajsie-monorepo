@@ -25,6 +25,7 @@ import {
   ImageCropperResult,
 } from '../../../../shared/ui/image-cropper-modal';
 import { DictionaryItem } from '@zgadajsie/shared';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 @Component({
   selector: 'app-admin-cover-images',
@@ -37,15 +38,15 @@ import { DictionaryItem } from '@zgadajsie/shared';
     ButtonComponent,
     TranslocoPipe,
     ImageCropperModalComponent,
+    PageHeadingComponent,
   ],
   template: `
     <div class="p-4">
-      <div class="flex items-center gap-3 mb-4">
-        <a routerLink="/admin" class="text-neutral-500">
+      <app-page-heading heading="Galeria cover images">
+        <a slot="prefix" routerLink="/admin" class="text-neutral-500">
           <app-icon name="arrow-left" size="sm" />
         </a>
-        <h1 class="text-xl font-bold text-neutral-900">Galeria cover images</h1>
-      </div>
+      </app-page-heading>
 
       @if (!canManage) {
         <div class="mb-4 rounded-xl bg-info-50 px-3 py-2 text-xs text-info-600">

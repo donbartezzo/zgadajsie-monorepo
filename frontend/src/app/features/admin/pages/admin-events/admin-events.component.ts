@@ -9,6 +9,7 @@ import { PaginationComponent } from '../../../../shared/ui/pagination/pagination
 import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { EventBase } from '../../../../shared/types';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 import { EventStatus } from '@zgadajsie/shared';
 
 @Component({
@@ -22,10 +23,11 @@ import { EventStatus } from '@zgadajsie/shared';
     CardComponent,
     LoadingSpinnerComponent,
     PaginationComponent,
+    PageHeadingComponent,
   ],
   template: `
     <div class="p-4">
-      <h1 class="text-xl font-bold text-neutral-900 mb-4">Wydarzenia (admin)</h1>
+      <app-page-heading heading="Wydarzenia (admin)" />
       @if (loading()) {
         <app-loading-spinner></app-loading-spinner>
       } @else {

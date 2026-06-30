@@ -7,6 +7,7 @@ import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { PaginationComponent } from '../../../../shared/ui/pagination/pagination.component';
 import { AdminService } from '../../../../core/services/admin.service';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 import { User } from '../../../../shared/types';
 
 @Component({
@@ -19,10 +20,11 @@ import { User } from '../../../../shared/types';
     UserAvatarComponent,
     LoadingSpinnerComponent,
     PaginationComponent,
+    PageHeadingComponent,
   ],
   template: `
     <div class="p-4">
-      <h1 class="text-xl font-bold text-neutral-900 mb-4">Użytkownicy</h1>
+      <app-page-heading heading="Użytkownicy" />
       <div class="mb-4">
         <input
           [(ngModel)]="search"

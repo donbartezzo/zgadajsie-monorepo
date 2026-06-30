@@ -11,6 +11,7 @@ import { environment } from '../../../../../environments/environment';
 import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
 import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
 import { EditFakeUserOverlayComponent } from './edit-fake-user-overlay.component';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 interface FakeUser {
   id: string;
@@ -35,10 +36,11 @@ interface FakeUser {
     UserAvatarComponent,
     BadgeComponent,
     EditFakeUserOverlayComponent,
+    PageHeadingComponent,
   ],
   template: `
     <div class="p-4">
-      <h1 class="text-xl font-bold text-neutral-900 mb-6">Fake users</h1>
+      <app-page-heading heading="Fake users" spacing="lg" />
 
       <app-card class="mb-6">
         <div class="p-4">

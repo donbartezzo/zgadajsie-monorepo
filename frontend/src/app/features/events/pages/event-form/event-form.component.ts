@@ -57,6 +57,7 @@ import { isEventJoinable } from '../../../../shared/utils/event-time-status.util
 import { EventValidators } from '../../validators/event.validators';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 import { environment } from '../../../../../environments/environment';
 
 interface DuplicateQueryParams {
@@ -85,21 +86,14 @@ interface EventRule {
     TranslocoPipe,
     ImageCropperModalComponent,
     AccountRailSlotComponent,
+    PageHeadingComponent,
   ],
   template: `
     <app-account-rail-slot />
 
     <!-- Na desktopie (2-kol) inset zapewnia box (lg:p-3) — nie dublujemy paddingu widoku -->
     <div class="p-4 lg:p-0">
-      <h1 class="text-xl font-bold text-neutral-900 mb-4">
-        @if (seriesTemplateMode()) {
-          Edytuj dane wydarzeń serii
-        } @else if (isEdit()) {
-          Edytuj wydarzenie
-        } @else {
-          Nowe wydarzenie
-        }
-      </h1>
+      <app-page-heading [heading]="pageTitle()" />
 
       @if (seriesTemplateMode()) {
         @let affected = seriesTemplateAffected();
@@ -867,6 +861,12 @@ export class EventFormComponent implements OnInit {
   readonly seriesAvailable = environment.enableEventSeries;
 
   readonly isEdit = signal(false);
+  readonly pageTitle = computed(() => {
+    if (this.seriesTemplateMode()) {
+      return 'Edytuj dane wydarzeń serii';
+    }
+    return this.isEdit() ? 'Edytuj wydarzenie' : 'Nowe wydarzenie';
+  });
   readonly createSeriesIntent = signal(false);
   readonly editEventSeriesId = signal<string | null>(null);
   readonly seriesTemplateMode = signal(false);

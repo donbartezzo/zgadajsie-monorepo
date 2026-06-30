@@ -4,13 +4,14 @@ import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { AdminService } from '../../../../core/services/admin.service';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [CommonModule, RouterLink, IconComponent, CardComponent],
+  imports: [CommonModule, RouterLink, IconComponent, CardComponent, PageHeadingComponent],
   template: `
     <div class="p-4">
-      <h1 class="text-xl font-bold text-neutral-900 mb-6">Panel administratora</h1>
+      <app-page-heading heading="Panel administratora" spacing="lg" />
       <div class="grid grid-cols-2 gap-4 mb-6">
         <app-card
           ><div class="text-center">

@@ -5,16 +5,20 @@ import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 @Component({
   selector: 'app-forgot-password',
-  imports: [FormsModule, RouterLink, IconComponent, ButtonComponent],
+  imports: [FormsModule, RouterLink, IconComponent, ButtonComponent, PageHeadingComponent],
   template: `
     <div class="p-6 max-w-md mx-auto">
-      <div class="text-center mb-6">
-        <h1 class="text-2xl font-bold text-neutral-900">Resetuj hasło</h1>
-        <p class="mt-1 text-sm text-neutral-500">Podaj email powiązany z Twoim kontem</p>
-      </div>
+      <app-page-heading
+        heading="Resetuj hasło"
+        description="Podaj email powiązany z Twoim kontem"
+        size="2xl"
+        centered
+        spacing="lg"
+      />
 
       @if (sent()) {
         <div class="text-center">

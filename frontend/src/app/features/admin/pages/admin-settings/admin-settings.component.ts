@@ -10,6 +10,7 @@ import { DictionaryService } from '../../../../core/services/dictionary.service'
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { DictionaryItem } from '@zgadajsie/shared';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 interface Setting {
   key: string;
@@ -26,10 +27,11 @@ interface Setting {
     CardComponent,
     LoadingSpinnerComponent,
     TranslocoPipe,
+    PageHeadingComponent,
   ],
   template: `
     <div class="p-4">
-      <h1 class="text-xl font-bold text-neutral-900 mb-4">Ustawienia systemowe</h1>
+      <app-page-heading heading="Ustawienia systemowe" />
 
       @if (loading()) {
         <app-loading-spinner></app-loading-spinner>

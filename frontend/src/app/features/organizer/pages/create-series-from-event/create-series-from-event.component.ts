@@ -16,6 +16,7 @@ import { NavigationService } from '../../../../core/services/navigation.service'
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { RecurrencePickerComponent } from '../../../../shared/event-form/ui/recurrence-picker/recurrence-picker.component';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 import { EventSeriesRecurrenceType, CreateSeriesFromEventPayload } from '@zgadajsie/shared';
 import { Event } from '../../../../shared/types';
 
@@ -27,6 +28,7 @@ import { Event } from '../../../../shared/types';
     ButtonComponent,
     CardComponent,
     RecurrencePickerComponent,
+    PageHeadingComponent,
   ],
   templateUrl: './create-series-from-event.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

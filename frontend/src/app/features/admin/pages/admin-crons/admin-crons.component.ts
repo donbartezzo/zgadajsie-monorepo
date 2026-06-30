@@ -3,13 +3,14 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { AdminService, CronStatus, CronLog } from '../../../../core/services/admin.service';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 @Component({
   selector: 'app-admin-crons',
-  imports: [CommonModule, CardComponent, ButtonComponent, DatePipe],
+  imports: [CommonModule, CardComponent, ButtonComponent, DatePipe, PageHeadingComponent],
   template: `
     <div class="p-4">
-      <h1 class="text-xl font-bold text-neutral-900 mb-6">Zarządzanie cronami</h1>
+      <app-page-heading heading="Zarządzanie cronami" spacing="lg" />
       <div class="space-y-3">
         @for (cron of crons(); track cron.name) {
           <app-card>

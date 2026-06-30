@@ -8,18 +8,27 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { APP_BRAND } from '@zgadajsie/shared';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, FormsModule, RouterLink, IconComponent, TurnstileComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    IconComponent,
+    TurnstileComponent,
+    PageHeadingComponent,
+  ],
   template: `
     <div class="p-6 max-w-md mx-auto">
-      <div class="text-center mb-6">
-        <h1 class="text-2xl font-bold text-neutral-900">Utwórz konto</h1>
-        <p class="mt-1 text-sm text-neutral-500">
-          Dołącz do społeczności {{ APP_BRAND.SHORT_NAME }}
-        </p>
-      </div>
+      <app-page-heading
+        heading="Utwórz konto"
+        [description]="'Dołącz do społeczności ' + APP_BRAND.SHORT_NAME"
+        size="2xl"
+        centered
+        spacing="lg"
+      />
 
       <form (ngSubmit)="onSubmit()" class="space-y-4">
         <div>

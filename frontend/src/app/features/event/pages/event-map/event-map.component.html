@@ -21,15 +21,20 @@
   } @else {
     <div class="flex items-center justify-center px-4">
       <div class="max-w-md p-6 text-center">
-        <div
-          class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-warning-50 text-warning-600"
+        <app-page-heading
+          heading="Brak lokalizacji wydarzenia"
+          description="To wydarzenie nie ma ustawionej lokalizacji, więc nie da się wyświetlić mapy."
+          size="xl"
+          centered
+          spacing="none"
         >
-          <app-icon name="map-pin" size="lg" color="warning"></app-icon>
-        </div>
-        <h1 class="text-xl font-bold text-neutral-900">Brak lokalizacji wydarzenia</h1>
-        <p class="mt-3 text-sm leading-6 text-neutral-600">
-          To wydarzenie nie ma ustawionej lokalizacji, więc nie da się wyświetlić mapy.
-        </p>
+          <div
+            slot="icon"
+            class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-warning-50 text-warning-600"
+          >
+            <app-icon name="map-pin" size="lg" color="warning"></app-icon>
+          </div>
+        </app-page-heading>
         <div class="mt-6 flex justify-center">
           <app-button appearance="outline" color="neutral" (click)="backToEvent()">Wróć do wydarzenia</app-button>
         </div>

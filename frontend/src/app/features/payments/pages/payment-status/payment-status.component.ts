@@ -14,6 +14,7 @@ import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { PaymentService } from '../../../../core/services/payment.service';
 import { Payment } from '../../../../shared/types/payment.interface';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 type PaymentStatusState =
   | 'loading'
@@ -26,7 +27,7 @@ type PaymentStatusState =
 
 @Component({
   selector: 'app-payment-status',
-  imports: [RouterLink, CardComponent, IconComponent, ButtonComponent],
+  imports: [RouterLink, CardComponent, IconComponent, ButtonComponent, PageHeadingComponent],
   template: `
     <div class="p-4 flex items-center justify-center min-h-[60vh]">
       <app-card>
@@ -39,8 +40,13 @@ type PaymentStatusState =
                 >
                   <app-icon name="loader" size="lg" class="text-info-400 animate-spin" />
                 </div>
-                <h1 class="text-xl font-bold text-neutral-900">Sprawdzanie statusu płatności...</h1>
-                <p class="text-sm text-neutral-500">Weryfikujemy status Twojej płatności.</p>
+                <app-page-heading
+                  heading="Sprawdzanie statusu płatności..."
+                  description="Weryfikujemy status Twojej płatności."
+                  size="xl"
+                  centered
+                  spacing="none"
+                />
               </div>
             }
             @case ('success') {
@@ -51,10 +57,13 @@ type PaymentStatusState =
                 >
                   <app-icon name="check" size="lg" class="text-success-400" />
                 </div>
-                <h1 class="text-xl font-bold text-neutral-900">Płatność udana!</h1>
-                <p class="text-sm text-neutral-500">
-                  Twoja płatność została zaksięgowana. Dołączyłeś do wydarzenia.
-                </p>
+                <app-page-heading
+                  heading="Płatność udana!"
+                  description="Twoja płatność została zaksięgowana. Dołączyłeś do wydarzenia."
+                  size="xl"
+                  centered
+                  spacing="none"
+                />
                 @if (_payment?.event; as event) {
                   <div class="bg-neutral-50 rounded-lg p-3 text-left">
                     <p class="text-sm font-medium text-neutral-900">{{ event.title }}</p>
@@ -78,11 +87,13 @@ type PaymentStatusState =
                 >
                   <app-icon name="clock" size="lg" class="text-info-400" />
                 </div>
-                <h1 class="text-xl font-bold text-neutral-900">Płatność przyjęta</h1>
-                <p class="text-sm text-neutral-500">
-                  Twoja płatność została przyjęta do realizacji. Potwierdzenie pojawi się w ciągu
-                  kilku chwil.
-                </p>
+                <app-page-heading
+                  heading="Płatność przyjęta"
+                  description="Twoja płatność została przyjęta do realizacji. Potwierdzenie pojawi się w ciągu kilku chwil."
+                  size="xl"
+                  centered
+                  spacing="none"
+                />
                 @if (_payment?.event; as event) {
                   <div class="bg-neutral-50 rounded-lg p-3 text-left">
                     <p class="text-sm font-medium text-neutral-900">{{ event.title }}</p>
@@ -111,10 +122,13 @@ type PaymentStatusState =
                 >
                   <app-icon name="x" size="lg" class="text-danger-400" />
                 </div>
-                <h1 class="text-xl font-bold text-neutral-900">Płatność nieudana</h1>
-                <p class="text-sm text-neutral-500">
-                  Twoja płatność nie została zrealizowana. Spróbuj ponownie.
-                </p>
+                <app-page-heading
+                  heading="Płatność nieudana"
+                  description="Twoja płatność nie została zrealizowana. Spróbuj ponownie."
+                  size="xl"
+                  centered
+                  spacing="none"
+                />
                 @if (_payment?.event; as event) {
                   <a [routerLink]="['/w', event.city?.slug, event.id]">
                     <app-button appearance="outline" color="neutral">Wróć do wydarzenia</app-button>
@@ -132,10 +146,13 @@ type PaymentStatusState =
                 >
                   <app-icon name="clock" size="lg" class="text-warning-400" />
                 </div>
-                <h1 class="text-xl font-bold text-neutral-900">Płatność w trakcie</h1>
-                <p class="text-sm text-neutral-500">
-                  Twoja płatność jest przetwarzana. Status może zaktualizować się za kilka chwil.
-                </p>
+                <app-page-heading
+                  heading="Płatność w trakcie"
+                  description="Twoja płatność jest przetwarzana. Status może zaktualizować się za kilka chwil."
+                  size="xl"
+                  centered
+                  spacing="none"
+                />
                 <app-button appearance="outline" color="neutral" (click)="checkStatus()">
                   Sprawdź ponownie
                 </app-button>
@@ -151,10 +168,13 @@ type PaymentStatusState =
                 >
                   <app-icon name="search" size="lg" class="text-neutral-600" />
                 </div>
-                <h1 class="text-xl font-bold text-neutral-900">Nie znaleziono płatności</h1>
-                <p class="text-sm text-neutral-500">
-                  Nie znaleziono płatności o podanym identyfikatorze.
-                </p>
+                <app-page-heading
+                  heading="Nie znaleziono płatności"
+                  description="Nie znaleziono płatności o podanym identyfikatorze."
+                  size="xl"
+                  centered
+                  spacing="none"
+                />
                 <a routerLink="/profile/enrollment/participations">
                   <app-button appearance="soft" color="primary">Moje uczestnictwa</app-button>
                 </a>
@@ -167,8 +187,13 @@ type PaymentStatusState =
                 >
                   <app-icon name="alert-triangle" size="lg" class="text-warning-400" />
                 </div>
-                <h1 class="text-xl font-bold text-neutral-900">Nieprawidłowy identyfikator</h1>
-                <p class="text-sm text-neutral-500">Identyfikator płatności jest nieprawidłowy.</p>
+                <app-page-heading
+                  heading="Nieprawidłowy identyfikator"
+                  description="Identyfikator płatności jest nieprawidłowy."
+                  size="xl"
+                  centered
+                  spacing="none"
+                />
                 <a routerLink="/profile/enrollment/participations">
                   <app-button appearance="soft" color="primary">Moje uczestnictwa</app-button>
                 </a>

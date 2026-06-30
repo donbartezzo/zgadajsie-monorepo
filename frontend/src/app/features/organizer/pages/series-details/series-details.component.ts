@@ -16,6 +16,7 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { RecurrencePickerComponent } from '../../../../shared/event-form/ui/recurrence-picker/recurrence-picker.component';
 import { FormControlErrorDirective } from '../../../../shared/ui/form-control-error/form-control-error.directive';
 import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 import { EventSeriesService } from '../../../../core/services/event-series.service';
 import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm-modal.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
@@ -53,6 +54,7 @@ const WEEKDAY_LABELS: Record<number, string> = {
     ReactiveFormsModule,
     FormControlErrorDirective,
     AccountRailSlotComponent,
+    PageHeadingComponent,
   ],
   templateUrl: './series-details.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -49,6 +49,7 @@ import { getEventLifecycleStatus } from '../../../../shared/utils/event-time-sta
 import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { EventAnnouncementsComponent } from '../../../event/ui/event-announcements/event-announcements.component';
 import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 @Component({
   selector: 'app-event-manage',
@@ -64,13 +65,14 @@ import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail
     EventAnnouncementsComponent,
     EnrollmentGridComponent,
     AccountRailSlotComponent,
+    PageHeadingComponent,
   ],
   template: `
     <app-account-rail-slot />
 
     <!-- Na desktopie (2-kol) inset zapewnia box (lg:p-3) — nie dublujemy paddingu widoku -->
     <div class="p-4 lg:p-0">
-      <h1 class="text-xl font-bold text-neutral-900 mb-4">Zarządzanie wydarzeniem</h1>
+      <app-page-heading heading="Zarządzanie wydarzeniem" />
 
       @if (lifecycleBannerVariant(); as variant) {
         <div class="mb-4">

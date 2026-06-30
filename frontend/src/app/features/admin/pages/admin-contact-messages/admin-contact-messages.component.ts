@@ -11,6 +11,7 @@ import { AdminService } from '../../../../core/services/admin.service';
 import { ContactMessage } from '../../../../shared/types';
 import { ContactSource, formatDateTime } from '@zgadajsie/shared';
 import { SemanticColor } from '../../../../shared/types/colors';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 @Component({
   selector: 'app-admin-contact-messages',
@@ -21,10 +22,11 @@ import { SemanticColor } from '../../../../shared/types/colors';
     PaginationComponent,
     ButtonComponent,
     BadgeComponent,
+    PageHeadingComponent,
   ],
   template: `
     <div class="p-4">
-      <h1 class="text-xl font-bold text-neutral-900 mb-4">Wiadomości kontaktowe</h1>
+      <app-page-heading heading="Wiadomości kontaktowe" />
       @if (loading()) {
         <app-loading-spinner></app-loading-spinner>
       } @else {

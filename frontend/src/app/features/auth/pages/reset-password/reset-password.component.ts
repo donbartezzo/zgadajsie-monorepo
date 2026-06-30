@@ -6,16 +6,20 @@ import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 @Component({
   selector: 'app-reset-password',
-  imports: [FormsModule, IconComponent, ButtonComponent],
+  imports: [FormsModule, IconComponent, ButtonComponent, PageHeadingComponent],
   template: `
     <div class="p-6 max-w-sm mx-auto">
-      <div class="text-center mb-6">
-        <h1 class="text-2xl font-bold text-neutral-900">Nowe hasło</h1>
-        <p class="mt-1 text-sm text-neutral-500">Ustaw nowe hasło do konta</p>
-      </div>
+      <app-page-heading
+        heading="Nowe hasło"
+        description="Ustaw nowe hasło do konta"
+        size="2xl"
+        centered
+        spacing="lg"
+      />
 
       <form (ngSubmit)="onSubmit()" class="space-y-4">
         <div>
