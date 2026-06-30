@@ -4,3 +4,4 @@ export * from './chat-access.util';
 export * from './pluralization.utils';
 export * from './payment.utils';
 export * from './support-url.utils';
+export * from './scroll-lock.util';

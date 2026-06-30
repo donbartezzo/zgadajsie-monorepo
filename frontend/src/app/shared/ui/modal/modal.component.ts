@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { IconComponent } from '../icon/icon.component';
+import { lockBodyScroll, unlockBodyScroll } from '../../utils';
 
 @Component({
   selector: 'app-modal',
@@ -13,10 +14,12 @@ import { IconComponent } from '../icon/icon.component';
       role="dialog"
       aria-modal="true"
     >
-      <!-- Backdrop -->
+      <!-- Backdrop: fixed inset-0 (nie absolute), by przyciemnić cały obszar treści viewportu
+           niezależnie od wyśrodkowanego (max-w-app) wrappera. Gutter scrollbara jest
+           przycinany do scrollportu i pokrywa go tło html.scroll-locked (styles.scss). -->
       <button
         type="button"
-        class="absolute inset-0 bg-black/50 backdrop-blur-xs cursor-default border-0 m-0 p-0"
+        class="fixed inset-0 bg-black/50 backdrop-blur-xs cursor-default border-0 m-0 p-0"
         (click)="closed.emit()"
         aria-label="Zamknij"
       ></button>
@@ -67,7 +70,7 @@ export class ModalComponent {
   readonly closed = output<void>();
 
   constructor() {
-    document.body.classList.add('overflow-hidden');
+    lockBodyScroll();
 
     fromEvent<KeyboardEvent>(document, 'keydown')
       .pipe(
@@ -79,7 +82,7 @@ export class ModalComponent {
       });
 
     this.destroyRef.onDestroy(() => {
-      document.body.classList.remove('overflow-hidden');
+      unlockBodyScroll();
     });
   }
 }

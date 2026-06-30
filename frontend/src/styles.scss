@@ -121,12 +121,32 @@ body {
   min-height: 100svh;
 }
 
-// Rezerwuje miejsce na scrollbar na stałe, by blokada scrolla tła przy
-// otwieraniu overlayów/modali (overflow-hidden na body) nie powodowała skoku
-// layoutu ani rozjazdu między centrowanym shellem a elementami `fixed`.
+// Blokada scrolla tła pod overlaye/modale (klasa `scroll-locked` na <html>,
+// sterowana przez lockBodyScroll/unlockBodyScroll z shared/utils).
+//
+// Gutter scrollbara rezerwujemy TYLKO na czas blokady, a nie na stałe — dzięki
+// temu na stronach bez scrolla (np. hero na pełen ekran) nie zostaje pusty
+// pionowy pasek przy prawej krawędzi (gutter nie mieści się pod tłem strony:
+// hero/pattern mają ICB pomniejszony o gutter, więc go nie pokrywają).
+//
+// overflow:hidden na <html> propaguje się do viewportu i blokuje scroll;
+// scrollbar-gutter:stable utrzymuje szerokość gutter także przy ukrytym
+// scrollbarze, więc jego zniknięcie nie powoduje skoku layoutu ani rozjazdu
+// między centrowanym shellem a elementami `fixed`.
 // Na mobile (overlay scrollbar, szerokość 0) bez efektu wizualnego.
-html {
+//
+// background-color: zarezerwowany gutter jest przycinany do scrollportu, więc
+// pełnoekranowy backdrop (fixed/100vw) go NIE maluje — gutter zawsze pokazuje
+// tło <html>. Bez tła świeci bielą obok przyciemnienia. Dajemy mu ten sam scrim
+// co backdrop (bg-black/50): nad jasną kolumną aplikacji backdrop daje ~rgb(127),
+// a black/50 nad canvasem także ~rgb(127), więc pasek zlewa się z dimem.
+// Uwaga: gutter dziedziczy tylko background-color (nie background-image), stąd
+// płaski kolor, nie gradient. Scope tylko na stan zablokowany — nie przywraca
+// paska na zwykłych (odblokowanych) stronach.
+html.scroll-locked {
+  overflow: hidden;
   scrollbar-gutter: stable;
+  background-color: rgb(0 0 0 / 0.5);
 }
 
 body {

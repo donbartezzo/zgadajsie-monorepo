@@ -14,6 +14,7 @@ import { fromEvent } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { IconComponent, IconName } from '../../../ui/icon/icon.component';
 import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../types/colors';
+import { lockBodyScroll, unlockBodyScroll } from '../../../utils';
 
 @Component({
   selector: 'app-bottom-overlay',
@@ -24,9 +25,13 @@ import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../types/colors';
       <div
         class="fixed inset-x-0 top-0 bottom-16 z-[60] flex flex-col max-w-app mx-auto lg:inset-0 lg:max-w-none lg:items-center lg:justify-center lg:p-4"
       >
+        <!-- Backdrop: fixed (nie absolute), by przyciemnić cały obszar treści viewportu
+             niezależnie od wyśrodkowanego (max-w-app) wrappera. Pionowo: mobile
+             top-0..bottom-16 (nad bottom-nav), lg pełna wysokość. Gutter scrollbara
+             pokrywa tło html.scroll-locked (styles.scss). -->
         <button
           type="button"
-          class="absolute inset-0 m-0 border-0 bg-black/50 p-0 backdrop-blur-xs"
+          class="fixed inset-x-0 top-0 bottom-16 lg:bottom-0 m-0 border-0 bg-black/50 p-0 backdrop-blur-xs"
           (click)="closed.emit()"
           aria-label="Zamknij overlay"
         ></button>
@@ -109,12 +114,17 @@ export class BottomOverlayComponent {
   protected readonly iconBgClass = computed(() => SEMANTIC_COLOR_CLASSES.surface[this.iconColor()]);
   protected readonly iconTextClass = computed(() => SEMANTIC_COLOR_CLASSES.text[this.iconColor()]);
 
+  private locked = false;
+
   constructor() {
     effect(() => {
-      if (this.open()) {
-        document.body.classList.add('overflow-hidden');
-      } else {
-        document.body.classList.remove('overflow-hidden');
+      const open = this.open();
+      if (open && !this.locked) {
+        this.locked = true;
+        lockBodyScroll();
+      } else if (!open && this.locked) {
+        this.locked = false;
+        unlockBodyScroll();
       }
     });
 
@@ -129,7 +139,10 @@ export class BottomOverlayComponent {
       });
 
     this.destroyRef.onDestroy(() => {
-      document.body.classList.remove('overflow-hidden');
+      if (this.locked) {
+        this.locked = false;
+        unlockBodyScroll();
+      }
     });
   }
 }
