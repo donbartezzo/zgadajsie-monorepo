@@ -27,49 +27,51 @@ import { AccountContentComponent } from '../../../../shared/ui/account-nav-rail/
 
         @if (loading()) {
           <app-loading-spinner />
+        } @else if (groups().length === 0) {
+          <p class="text-sm text-neutral-500 text-center py-8">
+            Nie masz jeszcze żadnych voucherów
+          </p>
         } @else {
-          @for (group of groups(); track group.organizer.id) {
-            <app-card>
-              <div class="space-y-3">
-                <div class="flex items-center gap-3">
-                  <app-user-avatar [user]="group.organizer" size="md" />
-                  <div>
-                    <p class="text-sm font-medium text-neutral-900">
-                      {{ group.organizer.displayName }}
-                    </p>
-                    <p class="text-lg font-bold text-primary-500">
-                      {{ group.totalBalance | number: '1.2-2' }} zł
-                    </p>
+          <div class="grid gap-4 sm:grid-cols-2">
+            @for (group of groups(); track group.organizer.id) {
+              <app-card>
+                <div class="space-y-3">
+                  <div class="flex items-center gap-3">
+                    <app-user-avatar [user]="group.organizer" size="md" />
+                    <div>
+                      <p class="text-sm font-medium text-neutral-900">
+                        {{ group.organizer.displayName }}
+                      </p>
+                      <p class="text-lg font-bold text-primary-500">
+                        {{ group.totalBalance | number: '1.2-2' }} zł
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="border-t border-neutral-100 pt-2 space-y-1.5">
+                    @for (v of group.vouchers; track v.id) {
+                      <div class="flex justify-between items-center text-xs text-neutral-500">
+                        <div class="flex items-center gap-1.5">
+                          <span>{{ sourceLabel(v.source) }}</span>
+                          @if (v.event) {
+                            <span>-</span>
+                            <a
+                              [routerLink]="['/w', v.event.city?.slug, v.event.id]"
+                              class="text-primary-500 hover:underline"
+                              >{{ v.event.title }}</a
+                            >
+                          }
+                        </div>
+                        <span class="font-medium text-neutral-700">
+                          {{ v.remainingAmount | number: '1.2-2' }} zł
+                        </span>
+                      </div>
+                    }
                   </div>
                 </div>
-
-                <div class="border-t border-neutral-100 pt-2 space-y-1.5">
-                  @for (v of group.vouchers; track v.id) {
-                    <div class="flex justify-between items-center text-xs text-neutral-500">
-                      <div class="flex items-center gap-1.5">
-                        <span>{{ sourceLabel(v.source) }}</span>
-                        @if (v.event) {
-                          <span>-</span>
-                          <a
-                            [routerLink]="['/w', v.event.city?.slug, v.event.id]"
-                            class="text-primary-500 hover:underline"
-                            >{{ v.event.title }}</a
-                          >
-                        }
-                      </div>
-                      <span class="font-medium text-neutral-700">
-                        {{ v.remainingAmount | number: '1.2-2' }} zł
-                      </span>
-                    </div>
-                  }
-                </div>
-              </div>
-            </app-card>
-          } @empty {
-            <p class="text-sm text-neutral-500 text-center py-8">
-              Nie masz jeszcze żadnych voucherów
-            </p>
-          }
+              </app-card>
+            }
+          </div>
         }
       </div>
     </app-account-content>

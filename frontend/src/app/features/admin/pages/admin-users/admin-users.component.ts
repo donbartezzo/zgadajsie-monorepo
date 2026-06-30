@@ -1,8 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { PaginationComponent } from '../../../../shared/ui/pagination/pagination.component';
@@ -13,10 +11,8 @@ import { User } from '../../../../shared/types';
 @Component({
   selector: 'app-admin-users',
   imports: [
-    CommonModule,
     FormsModule,
     RouterLink,
-    CardComponent,
     UserAvatarComponent,
     LoadingSpinnerComponent,
     PaginationComponent,
@@ -36,56 +32,37 @@ import { User } from '../../../../shared/types';
       @if (loading()) {
         <app-loading-spinner></app-loading-spinner>
       } @else {
-        <!-- Karty na mobile, tabela od md (szerszy ekran admina) -->
-        <div class="space-y-2 md:hidden">
-          @for (u of users(); track u.id) {
-            <a [routerLink]="['/admin/users', u.id]">
-              <app-card>
-                <div class="flex items-center gap-3">
-                  <app-user-avatar [user]="u" size="sm"></app-user-avatar>
-                  <div class="flex-1">
-                    <p class="text-sm font-medium text-neutral-900">
-                      {{ u.displayName }}
-                    </p>
-                    <p class="text-xs text-neutral-500">{{ u.email }}</p>
-                  </div>
-                  <span [class]="roleClass(u.role)">{{ u.role }}</span>
-                </div>
-              </app-card>
-            </a>
-          }
-        </div>
-
-        <div class="hidden overflow-hidden rounded-2xl border border-neutral-100 bg-white md:block">
+        <!-- Jedna tabela responsywna: na wąskich ekranach przewija się poziomo (overflow-x-auto) -->
+        <div class="overflow-hidden rounded-2xl border border-neutral-100 bg-white">
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
                 <tr
                   class="border-b border-neutral-200 text-left text-xs font-medium text-neutral-500"
                 >
-                  <th class="px-4 py-2.5">Użytkownik</th>
-                  <th class="px-4 py-2.5">Email</th>
-                  <th class="px-4 py-2.5">Rola</th>
-                  <th class="px-4 py-2.5 text-right">Akcje</th>
+                  <th class="px-3 py-2.5 sm:px-4">Użytkownik</th>
+                  <th class="px-3 py-2.5 sm:px-4">Email</th>
+                  <th class="px-3 py-2.5 sm:px-4">Rola</th>
+                  <th class="px-3 py-2.5 text-right sm:px-4">Akcje</th>
                 </tr>
               </thead>
               <tbody>
                 @for (u of users(); track u.id) {
                   <tr class="border-b border-neutral-100 last:border-0 hover:bg-neutral-50">
-                    <td class="px-4 py-2.5">
+                    <td class="px-3 py-2.5 sm:px-4">
                       <div class="flex items-center gap-2">
                         <app-user-avatar [user]="u" size="sm"></app-user-avatar>
                         <span class="font-medium text-neutral-900">{{ u.displayName }}</span>
                       </div>
                     </td>
-                    <td class="px-4 py-2.5 text-neutral-600">{{ u.email }}</td>
-                    <td class="px-4 py-2.5">
+                    <td class="px-3 py-2.5 text-neutral-600 sm:px-4">{{ u.email }}</td>
+                    <td class="px-3 py-2.5 sm:px-4">
                       <span [class]="roleClass(u.role)">{{ u.role }}</span>
                     </td>
-                    <td class="px-4 py-2.5 text-right">
+                    <td class="px-3 py-2.5 text-right sm:px-4">
                       <a
                         [routerLink]="['/admin/users', u.id]"
-                        class="text-sm font-medium text-primary-500 hover:text-primary-600"
+                        class="whitespace-nowrap text-sm font-medium text-primary-500 hover:text-primary-600"
                         >Szczegóły</a
                       >
                     </td>

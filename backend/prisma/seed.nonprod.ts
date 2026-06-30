@@ -1401,6 +1401,101 @@ async function main() {
   await addConfirmedParticipant(seriesEvent.id, kasia.id);
   await addWaitingParticipant(seriesEvent.id, tomek.id);
 
+  // ─── Przykładowe dane profilowe dla Jana Kowalskiego ─────────────────────
+  console.log('Tworzę przykładowe dane profilowe dla Jana Kowalskiego...');
+
+  const janEnrollmentBigEvent = await prisma.eventEnrollment.findUniqueOrThrow({
+    where: { eventId_userId: { eventId: bigEvent.id, userId: jan.id } },
+  });
+
+  // Powiadomienia
+  await prisma.notification.createMany({
+    data: [
+      {
+        userId: jan.id,
+        type: 'EVENT_REMINDER',
+        title: 'Za 24h startuje Wielki turniej footballowy',
+        body: 'Nie zapomnij o wydarzeniu, na które jesteś zapisany. Do zobaczenia na boisku!',
+        relatedEventId: bigEvent.id,
+        deleteAfter: hoursFromNow(720),
+      },
+      {
+        userId: jan.id,
+        type: 'PARTICIPATION_STATUS',
+        title: 'Twoje zgłoszenie zostało potwierdzone',
+        body: 'Organizator potwierdził Twój udział w wydarzeniu. Gratulacje!',
+        relatedEventId: bigEvent.id,
+        readAt: hoursFromNow(-48),
+        deleteAfter: hoursFromNow(720),
+      },
+      {
+        userId: jan.id,
+        type: 'NEW_EVENT_IN_CITY',
+        title: 'Nowe wydarzenie w Zielonej Górze',
+        body: 'Ktoś dodał nowy turniej piłkarski w Twoim mieście. Sprawdź szczegóły!',
+        relatedEventId: extraFootball1.id,
+        deleteAfter: hoursFromNow(720),
+      },
+      {
+        userId: jan.id,
+        type: 'NEW_PRIVATE_MESSAGE',
+        title: 'Nowa wiadomość od Anny Nowak',
+        body: 'Hej, czy masz już buty na korkach? Widzimy się jutro!',
+        deleteAfter: hoursFromNow(720),
+        readAt: hoursFromNow(-12),
+      },
+    ],
+  });
+
+  // Płatności
+  await addPayment(janEnrollmentBigEvent.id, jan.id, bigEvent.id, 20, 'COMPLETED', 'tpay');
+  await addPayment(janEnrollmentBigEvent.id, jan.id, bigEvent.id, 20, 'REFUNDED', 'tpay');
+  await addPayment(
+    janEnrollmentBigEvent.id,
+    jan.id,
+    bigEvent.id,
+    15,
+    'VOUCHER_REFUNDED',
+    'voucher',
+    10,
+  );
+
+  // Vouchery
+  await prisma.organizerVoucher.createMany({
+    data: [
+      {
+        recipientUserId: jan.id,
+        organizerUserId: admin.id,
+        eventId: cancelled1.id,
+        amount: 20,
+        remainingAmount: 20,
+        source: 'EVENT_CANCELLATION',
+        status: 'ACTIVE',
+        expiresAt: hoursFromNow(720),
+      },
+      {
+        recipientUserId: jan.id,
+        organizerUserId: anna.id,
+        eventId: ended1.id,
+        amount: 10,
+        remainingAmount: 5,
+        source: 'EVENT_CANCELLATION',
+        status: 'ACTIVE',
+        expiresAt: hoursFromNow(720),
+      },
+      {
+        recipientUserId: jan.id,
+        organizerUserId: marek.id,
+        eventId: ended2.id,
+        amount: 15,
+        remainingAmount: 0,
+        source: 'MANUAL_REFUND',
+        status: 'FULLY_USED',
+        expiresAt: hoursFromNow(720),
+      },
+    ],
+  });
+
   console.log('Seed zakończony sukcesem!');
   console.log('');
   console.log('=== Podsumowanie ===');

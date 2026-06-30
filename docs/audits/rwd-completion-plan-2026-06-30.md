@@ -117,12 +117,13 @@ grepem). To jest właściwy zakres „dostosowania reszty podstron". **Wymaga de
 
 ### Panel użytkownika / uczestnika
 
-- [ ] `notifications` — gęsta lista; rozważyć tabelę/lepsze wiersze, akcje widoczne bez hover.
-- [ ] `my-payments` — lista płatności → tabela (data, kwota, status, akcje).
-- [ ] `my-vouchers` — uporządkować karty/grid w 700.
-- [ ] `my-participations` — karty uczestnictw (container queries, czytelność w 700).
-- [ ] `media-gallery` — siatka miniatur (`grid` adaptacyjny w 700).
-- [ ] `profile` — formularz edycji + sekcje (lepszy układ niż pełna szerokość 1-kol).
+- [x] `my-payments` — **jedna tabela responsywna** (wydarzenie, data, kwota, status); status w metodzie.
+- [x] `my-participations` — **jedna tabela responsywna** (wydarzenie, termin, status, akcja).
+- [x] `my-vouchers` — pogrupowane karty w `sm:grid-cols-2` (gęstość); karta właściwa (rekord-detal).
+- [x] `media-gallery` — grid `grid-cols-3 sm:grid-cols-4`; przycisk usuwania widoczny na mobile (touch).
+- [x] `notifications` — **lista-wiersze** (treść + akcje inline) — właściwe; bez tabeli (utrata treści/akcji).
+- [x] `profile` — stos kart/formularzy w 700 — właściwe (2-kol w 700 ciasne); desktop adaptuje rail.
+- [x] `my-events` — bogate `event-manage-card` (cover + akcje) — właściwe pełnoszerokie; bez zmian.
 
 ### Panel organizatora
 
@@ -136,24 +137,29 @@ grepem). To jest właściwy zakres „dostosowania reszty podstron". **Wymaga de
 - [ ] `event-detail` — wykorzystać rail (sticky CTA już jest); zweryfikować długość strony i mapę.
 - [ ] `event-enrollments` (participants) — lista/sloty czytelne w 700 + container queries.
 
-### Panel admina (wszystkie dziedziczą two-column / aside-left)
+### Panel admina (wszystkie dziedziczą two-column / aside-left) ✅ batch zakończony
 
-- [ ] `admin-dashboard` — statystyki jako grid, większe liczby.
-- [x] `admin-users` — **już ma tabelę od `md`** (wzorzec referencyjny).
-- [x] `admin-events` — karty < `md` / tabela od `md` (wg wzorca `admin-users`; akcje w `#rowActions`).
-- [ ] `admin-cover-images` — siatka miniatur.
-- [ ] `admin-contact-messages` — lista → tabela / master-detail.
-- [ ] `admin-pending-emails` — kolejka → tabela.
-- [ ] `admin-crons` — tabela cronów (nazwa, harmonogram, status, akcje).
-- [ ] `admin-fake-users` — tabela.
-- [ ] `admin-user-detail` — układ szczegółów (sekcje, ewentualnie 2 kolumny w 700).
+> Zasada: **tabela tam, gdzie dane są tabelaryczne; karty tam, gdzie rekord-detal** (treść wiadomości,
+> link, rozwijane logi). Desktop adaptują już shell two-column + lewy rail.
+
+- [x] `admin-dashboard` — tylko 2 statystyki w czystym gridzie → **adekwatne**, bez zmian.
+- [x] `admin-users` — **jedna tabela responsywna** (wzorzec referencyjny; bez przełączania na karty).
+- [x] `admin-events` — **jedna tabela responsywna** (tytuł, termin, status, akcje).
+- [x] `admin-fake-users` — lista jako gęstszy `sm:grid-cols-2`; formularz tworzenia stackuje się na mobile.
+- [x] `admin-contact-messages` — **karty** (rekord-detal: treść, nr ref., status emaila) — właściwe, bez zmian.
+- [x] `admin-pending-emails` — **karty** (treść/link/dane usera) — właściwe, bez zmian.
+- [x] `admin-crons` — **karty z rozwijanymi logami** (master-detail) — właściwe, bez zmian.
+- [ ] `admin-cover-images` — siatka miniatur (sprawdzić adaptację szerokości) — w batchu mediów.
+- [ ] `admin-user-detail` — układ szczegółów (sekcje) — niski priorytet.
 
 ---
 
 ## 6. Cross-cutting / konwencje do utrzymania
 
-- [ ] **Tabele responsywne** — jeden wzorzec: karty < `md`, tabela od `md` (jak `admin-users`),
-      z `overflow-x-auto` w razie potrzeby w kolumnie 700. Rozważyć wspólny komponent/dyrektywę.
+- [x] **Tabele responsywne** — jeden wzorzec (decyzja użytkownika): **NIE** przełączamy tabeli na karty
+      na małych szerokościach. Zawsze `<table>` w `overflow-x-auto` (przewija się poziomo, gdy nie mieści),
+      kompaktowy padding `px-3 py-2.5 sm:px-4`, `whitespace-nowrap` na kolumnach danych. Stosowane w
+      `admin-users`, `admin-events`, `my-payments`, `my-participations`. Rozważyć wspólny komponent/dyrektywę.
 - [ ] **Container queries** dla reużywalnych kart (event-card, sloty, kafelki) — fundament jest
       (RWD container-queries task); stosować konsekwentnie, bo karta żyje raz w 700, raz w railu.
 - [ ] **Tylko semantyczne klasy Tailwinda** i breakpointy z configu (`screens.*`) — bez arbitralnych
