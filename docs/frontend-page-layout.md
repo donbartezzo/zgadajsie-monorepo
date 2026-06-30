@@ -487,12 +487,28 @@ Konsumenci aside:
   a aktualnie wybrana pozycja jest ZAWSZE na pasku (szerokości mierzone „ghostem" + ResizeObserver).
   Mobilny `navigation-overlay` (z dolnej nawigacji) zostaje przy linkach ogólnych + profil/powiadomienia/
   wyloguj (`NavMenuService.links`) — nawigacji panelu NIE powielamy tam.
-  Zastąpił wcześniejszy `organizer-nav-rail`. Strona panelu dodaje `<app-account-rail-slot />`
-  (+ `desktopLayout: 'two-column'`): profil, `EventFormComponent` (new/edit/edit-template),
-  `series-details`, `event-manage`, `organizer-digest` oraz podstrony (participations, payments,
-  vouchers, media, notifications, cover-images, settings, /profile/events). Treść głównej kolumny
-  zostaje jednokolumnowa (700). Na profilu kafelki nawigacyjne usunięto — zastępuje je rail (desktop)
-  i menu inline (mobile).
+  Zastąpił wcześniejszy `organizer-nav-rail`.
+
+  **Parent route panelu (analogicznie do strefy wydarzenia):** podstrony `/profile/**` są dziećmi
+  trasy-rodzica `ProfileAreaComponent` (`features/user/pages/profile-area`), która rejestruje
+  `<app-account-rail-slot />` RAZ (rail trwały, nie miga między podstronami) i renderuje
+  `<router-outlet />`. URL-e są skategoryzowane: **`/profile`** (Profil, index), **`general`**
+  (`/profile/general/notifications`), **`enrollment`** (`/profile/enrollment/{participations,media,payments,vouchers}`),
+  **`organizer`** (`/profile/organizer/{events,digest,settings,cover-images}`). Stare ścieżki
+  (`/notifications`, `/payments`, `/vouchers`, `/profile/{events,participations,media}`) zachowane jako
+  redirecty back-compat w `app.routes.ts`. Każde dziecko ma `desktopLayout: 'two-column'`; guard `authGuard`
+  jest na rodzicu, `activeGuard` na dzieciach, które go wymagają.
+
+  Wspólny kontener treści podstron to `app-account-content` (`shared/ui/account-nav-rail/account-content.component.ts`):
+  ujednolica padding kolumny głównej (`p-4 lg:p-0`) i styl `h1` (input `heading`). Stan `loading`/empty
+  zostaje w stronach (szablony zbyt różne, by hoistować — np. galeria ma upload także podczas ładowania,
+  powiadomienia mają własny sticky-header). Strony bespoke (profil, powiadomienia, organizer-digest/settings,
+  cover-images) trzymają własny kontener i tylko NIE renderują już rail-slota (daje go rodzic).
+
+  Strony spoza `/profile` używające railu (`EventFormComponent` new/edit/edit-template, `event-manage`,
+  `series-details`) zostają na swoich URL-ach (`/o/w/...`, `/series/...`) i nadal dodają
+  `<app-account-rail-slot />` samodzielnie. Treść głównej kolumny zostaje jednokolumnowa (700). Na profilu
+  kafelki nawigacyjne usunięto — zastępuje je rail (desktop) i menu inline (mobile).
 
   **Stabilność przy nawigacji (bez migania nav-a):**
   - `LayoutConfigService.reset()` NIE zeruje `desktopLayout`/`asideSide`/`heroVariant`/`title`/

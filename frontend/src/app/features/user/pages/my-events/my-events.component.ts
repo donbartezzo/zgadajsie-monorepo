@@ -24,7 +24,7 @@ import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm
 import { EventManageCardComponent } from '../../../../shared/event/ui/event-manage-card/event-manage-card.component';
 import type { ManageActionEvent } from '../../../../shared/event/ui/event-manage-card/event-manage-card.types';
 import { environment } from '../../../../../environments/environment';
-import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
+import { AccountContentComponent } from '../../../../shared/ui/account-nav-rail/account-content.component';
 
 @Component({
   selector: 'app-my-events',
@@ -36,22 +36,17 @@ import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail
     EventManageCardComponent,
     ButtonComponent,
     IconComponent,
-    AccountRailSlotComponent,
+    AccountContentComponent,
   ],
   template: `
-    <app-account-rail-slot />
-
-    <div class="p-4 lg:p-0">
-      <div class="flex items-center justify-between mb-4">
-        <h1 class="text-xl font-bold text-neutral-900">Moje wydarzenia</h1>
-        @if (canCreateEvents()) {
-          <a routerLink="/o/w/new">
-            <app-button appearance="soft" color="primary" size="sm">
-              <app-icon name="plus" size="sm"></app-icon> Nowe
-            </app-button>
-          </a>
-        }
-      </div>
+    <app-account-content>
+      @if (canCreateEvents()) {
+        <a slot="actions" routerLink="/o/w/new">
+          <app-button appearance="soft" color="primary" size="sm">
+            <app-icon name="plus" size="sm"></app-icon> Nowe
+          </app-button>
+        </a>
+      }
 
       @if (loading()) {
         <app-loading-spinner></app-loading-spinner>
@@ -73,7 +68,7 @@ import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail
           }
         </div>
       }
-    </div>
+    </app-account-content>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

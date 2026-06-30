@@ -51,20 +51,22 @@ describe('NavMenuService', () => {
     it('dla zalogowanego zawiera powiadomienia, profil i wylogowanie', () => {
       isLoggedIn = true;
       const values = service.links().map((l) => l.value);
-      expect(values).toEqual(expect.arrayContaining(['/notifications', 'profile', 'logout']));
+      expect(values).toEqual(
+        expect.arrayContaining(['/profile/general/notifications', 'profile', 'logout']),
+      );
     });
 
     it('pokazuje badge na powiadomieniach gdy są nieprzeczytane', () => {
       isLoggedIn = true;
       unread = 5;
-      const notif = service.links().find((l) => l.value === '/notifications');
+      const notif = service.links().find((l) => l.value === '/profile/general/notifications');
       expect(notif?.badge).toBe('5');
     });
 
     it('skraca badge do "99+" powyżej 99', () => {
       isLoggedIn = true;
       unread = 150;
-      const notif = service.links().find((l) => l.value === '/notifications');
+      const notif = service.links().find((l) => l.value === '/profile/general/notifications');
       expect(notif?.badge).toBe('99+');
     });
   });

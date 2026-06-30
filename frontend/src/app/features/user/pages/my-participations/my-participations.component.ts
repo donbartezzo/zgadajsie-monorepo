@@ -11,7 +11,7 @@ import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { Participation } from '../../../../shared/types';
 import { getEventLifecycleStatus } from '../../../../shared/utils';
-import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
+import { AccountContentComponent } from '../../../../shared/ui/account-nav-rail/account-content.component';
 
 @Component({
   selector: 'app-my-participations',
@@ -24,14 +24,10 @@ import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail
     CardComponent,
     LoadingSpinnerComponent,
     EmptyStateComponent,
-    AccountRailSlotComponent,
+    AccountContentComponent,
   ],
   template: `
-    <app-account-rail-slot />
-
-    <div class="p-4 lg:p-0">
-      <h1 class="text-xl font-bold text-neutral-900 mb-4">Moje uczestnictwa</h1>
-
+    <app-account-content>
       @if (loading()) {
         <app-loading-spinner></app-loading-spinner>
       } @else if (participations().length === 0) {
@@ -85,7 +81,7 @@ import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail
           }
         </div>
       }
-    </div>
+    </app-account-content>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

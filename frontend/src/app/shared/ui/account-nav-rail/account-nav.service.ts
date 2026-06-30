@@ -78,12 +78,12 @@ export class AccountNavService {
     if (url.startsWith('/profile/organizer/cover-images')) return 'covers';
     if (url.startsWith('/profile/organizer/digest')) return 'digest';
     if (url.startsWith('/profile/organizer/settings')) return 'settings';
-    if (url.startsWith('/profile/events')) return 'events';
-    if (url.startsWith('/profile/participations')) return 'participations';
-    if (url.startsWith('/profile/media')) return 'media';
-    if (url.startsWith('/notifications')) return 'notifications';
-    if (url.startsWith('/payments')) return 'payments';
-    if (url.startsWith('/vouchers')) return 'vouchers';
+    if (url.startsWith('/profile/organizer/events')) return 'events';
+    if (url.startsWith('/profile/enrollment/participations')) return 'participations';
+    if (url.startsWith('/profile/enrollment/media')) return 'media';
+    if (url.startsWith('/profile/enrollment/payments')) return 'payments';
+    if (url.startsWith('/profile/enrollment/vouchers')) return 'vouchers';
+    if (url.startsWith('/profile/general/notifications')) return 'notifications';
     if (url.startsWith('/o/w/new')) return 'new';
     if (url === '/profile') return 'profile';
     return null;

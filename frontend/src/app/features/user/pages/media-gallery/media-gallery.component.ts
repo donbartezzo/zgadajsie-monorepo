@@ -6,7 +6,7 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
 import { MediaService, MediaFile } from '../../../../core/services/media.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
-import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
+import { AccountContentComponent } from '../../../../shared/ui/account-nav-rail/account-content.component';
 
 @Component({
   selector: 'app-media-gallery',
@@ -16,14 +16,10 @@ import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail
     FileUploadComponent,
     LoadingSpinnerComponent,
     EmptyStateComponent,
-    AccountRailSlotComponent,
+    AccountContentComponent,
   ],
   template: `
-    <app-account-rail-slot />
-
-    <div class="p-4 lg:p-0">
-      <h1 class="text-xl font-bold text-neutral-900 mb-4">Galeria</h1>
-
+    <app-account-content>
       <div class="mb-4">
         <app-file-upload
           accept="image/*"
@@ -55,7 +51,7 @@ import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail
           }
         </div>
       }
-    </div>
+    </app-account-content>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -64,7 +64,7 @@ type PaymentStatusState =
                     <app-button appearance="soft" color="primary">Przejdź do wydarzenia</app-button>
                   </a>
                 } @else {
-                  <a routerLink="/profile/participations">
+                  <a routerLink="/profile/enrollment/participations">
                     <app-button appearance="soft" color="primary">Moje uczestnictwa</app-button>
                   </a>
                 }
@@ -97,7 +97,7 @@ type PaymentStatusState =
                     <app-button appearance="soft" color="primary">Przejdź do wydarzenia</app-button>
                   </a>
                 } @else {
-                  <a routerLink="/profile/participations">
+                  <a routerLink="/profile/enrollment/participations">
                     <app-button appearance="soft" color="primary">Moje uczestnictwa</app-button>
                   </a>
                 }
@@ -120,7 +120,7 @@ type PaymentStatusState =
                     <app-button appearance="outline" color="neutral">Wróć do wydarzenia</app-button>
                   </a>
                 }
-                <a routerLink="/profile/participations">
+                <a routerLink="/profile/enrollment/participations">
                   <app-button appearance="soft" color="primary">Moje uczestnictwa</app-button>
                 </a>
               </div>
@@ -139,7 +139,7 @@ type PaymentStatusState =
                 <app-button appearance="outline" color="neutral" (click)="checkStatus()">
                   Sprawdź ponownie
                 </app-button>
-                <a routerLink="/profile/participations">
+                <a routerLink="/profile/enrollment/participations">
                   <app-button appearance="soft" color="primary">Moje uczestnictwa</app-button>
                 </a>
               </div>
@@ -155,7 +155,7 @@ type PaymentStatusState =
                 <p class="text-sm text-neutral-500">
                   Nie znaleziono płatności o podanym identyfikatorze.
                 </p>
-                <a routerLink="/profile/participations">
+                <a routerLink="/profile/enrollment/participations">
                   <app-button appearance="soft" color="primary">Moje uczestnictwa</app-button>
                 </a>
               </div>
@@ -169,7 +169,7 @@ type PaymentStatusState =
                 </div>
                 <h1 class="text-xl font-bold text-neutral-900">Nieprawidłowy identyfikator</h1>
                 <p class="text-sm text-neutral-500">Identyfikator płatności jest nieprawidłowy.</p>
-                <a routerLink="/profile/participations">
+                <a routerLink="/profile/enrollment/participations">
                   <app-button appearance="soft" color="primary">Moje uczestnictwa</app-button>
                 </a>
               </div>

@@ -30,7 +30,7 @@ const BREADCRUMB_TO_PROFILE = {
 } as const;
 
 const BREADCRUMB_TO_EVENTS = {
-  parent: '/profile/events',
+  parent: '/profile/organizer/events',
   label: 'Moje wydarzenia',
 } as const;
 
@@ -182,7 +182,7 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard, eventCreationGuard],
     data: {
       title: 'Nowe wydarzenie',
-      breadcrumb: { parent: '/profile/events', label: 'Moje wydarzenia' },
+      breadcrumb: { parent: '/profile/organizer/events', label: 'Moje wydarzenia' },
       desktopLayout: 'two-column',
     },
   },
@@ -225,7 +225,7 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Utwórz serię z wydarzenia',
-      breadcrumb: { parent: '/profile/events', label: 'Moje wydarzenia' },
+      breadcrumb: { parent: '/profile/organizer/events', label: 'Moje wydarzenia' },
     },
   },
 
@@ -255,51 +255,6 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Edycja danych wydarzeń serii',
       breadcrumb: BREADCRUMB_TO_EVENTS,
-      desktopLayout: 'two-column',
-    },
-  },
-
-  // ── Organizer: digest ──
-  {
-    path: 'profile/organizer/digest',
-    loadComponent: () =>
-      import('./features/organizer/pages/organizer-digest/organizer-digest.component').then(
-        (m) => m.OrganizerDigestComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Zestawienie organizatora',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-      desktopLayout: 'two-column',
-    },
-  },
-
-  // ── Organizer: settings ──
-  {
-    path: 'profile/organizer/settings',
-    loadComponent: () =>
-      import('./features/organizer/pages/organizer-settings/organizer-settings.component').then(
-        (m) => m.OrganizerSettingsComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Ustawienia organizatora',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-      desktopLayout: 'two-column',
-    },
-  },
-
-  // ── Organizer: cover images ──
-  {
-    path: 'profile/organizer/cover-images',
-    loadComponent: () =>
-      import('./features/me/pages/my-cover-images/my-cover-images.component').then(
-        (m) => m.MyCoverImagesComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Moja galeria cover images',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
       desktopLayout: 'two-column',
     },
   },
@@ -388,90 +343,165 @@ export const appRoutes: Route[] = [
     data: { title: 'Reset hasła', ...WHITE_BARE_LAYOUT },
   },
 
-  // ── User ──
-  {
-    path: 'notifications',
-    loadComponent: () =>
-      import('./features/notifications/pages/notifications/notifications-page.component').then(
-        (m) => m.NotificationsPageComponent,
-      ),
-    canActivate: [authGuard],
-    data: { title: 'Powiadomienia', breadcrumb: BREADCRUMB_TO_HOME, desktopLayout: 'two-column' },
-  },
+  // ── Account panel (parent route dla wszystkich podstron /profile/**) ──
+  // Analogicznie do strefy wydarzenia (EventArea): rail nawigacyjny konta rejestrowany RAZ w
+  // `ProfileAreaComponent`, który przeżywa nawigację między dziećmi (rail nie miga). Podział na
+  // kategorie: `general` (Konto), `enrollment` (Uczestnik), `organizer` (Organizator).
   {
     path: 'profile',
     loadComponent: () =>
-      import('./features/user/pages/profile/profile.component').then((m) => m.ProfileComponent),
+      import('./features/user/pages/profile-area/profile-area.component').then(
+        (m) => m.ProfileAreaComponent,
+      ),
     canActivate: [authGuard],
-    data: {
-      title: 'Profil',
-      breadcrumb: BREADCRUMB_TO_HOME,
-      desktopLayout: 'two-column',
-    },
-  },
-  {
-    path: 'profile/events',
-    loadComponent: () =>
-      import('./features/user/pages/my-events/my-events.component').then(
-        (m) => m.MyEventsComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Moje wydarzenia',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-      desktopLayout: 'two-column',
-    },
-  },
-  {
-    path: 'profile/participations',
-    loadComponent: () =>
-      import('./features/user/pages/my-participations/my-participations.component').then(
-        (m) => m.MyParticipationsComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Moje uczestnictwa',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-      desktopLayout: 'two-column',
-    },
-  },
-  {
-    path: 'profile/media',
-    loadComponent: () =>
-      import('./features/user/pages/media-gallery/media-gallery.component').then(
-        (m) => m.MediaGalleryComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: { title: 'Galeria', breadcrumb: BREADCRUMB_TO_PROFILE, desktopLayout: 'two-column' },
+    children: [
+      // Profil (index)
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/user/pages/profile/profile.component').then((m) => m.ProfileComponent),
+        data: {
+          title: 'Profil',
+          breadcrumb: BREADCRUMB_TO_HOME,
+          desktopLayout: 'two-column',
+        },
+      },
+
+      // ── Konto (general) ──
+      {
+        path: 'general/notifications',
+        loadComponent: () =>
+          import('./features/notifications/pages/notifications/notifications-page.component').then(
+            (m) => m.NotificationsPageComponent,
+          ),
+        data: {
+          title: 'Powiadomienia',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+
+      // ── Uczestnik (enrollment) ──
+      {
+        path: 'enrollment/participations',
+        loadComponent: () =>
+          import('./features/user/pages/my-participations/my-participations.component').then(
+            (m) => m.MyParticipationsComponent,
+          ),
+        canActivate: [activeGuard],
+        data: {
+          title: 'Moje uczestnictwa',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+      {
+        path: 'enrollment/media',
+        loadComponent: () =>
+          import('./features/user/pages/media-gallery/media-gallery.component').then(
+            (m) => m.MediaGalleryComponent,
+          ),
+        canActivate: [activeGuard],
+        data: { title: 'Galeria', breadcrumb: BREADCRUMB_TO_PROFILE, desktopLayout: 'two-column' },
+      },
+      {
+        path: 'enrollment/payments',
+        loadComponent: () =>
+          import('./features/payments/pages/my-payments/my-payments.component').then(
+            (m) => m.MyPaymentsComponent,
+          ),
+        canActivate: [activeGuard],
+        data: {
+          title: 'Moje płatności',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+      {
+        path: 'enrollment/vouchers',
+        loadComponent: () =>
+          import('./features/vouchers/pages/my-vouchers/my-vouchers.component').then(
+            (m) => m.MyVouchersComponent,
+          ),
+        canActivate: [activeGuard],
+        data: {
+          title: 'Moje vouchery',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+
+      // ── Organizator ──
+      {
+        path: 'organizer/events',
+        loadComponent: () =>
+          import('./features/user/pages/my-events/my-events.component').then(
+            (m) => m.MyEventsComponent,
+          ),
+        canActivate: [activeGuard],
+        data: {
+          title: 'Moje wydarzenia',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+      {
+        path: 'organizer/digest',
+        loadComponent: () =>
+          import('./features/organizer/pages/organizer-digest/organizer-digest.component').then(
+            (m) => m.OrganizerDigestComponent,
+          ),
+        canActivate: [activeGuard],
+        data: {
+          title: 'Zestawienie organizatora',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+      {
+        path: 'organizer/settings',
+        loadComponent: () =>
+          import('./features/organizer/pages/organizer-settings/organizer-settings.component').then(
+            (m) => m.OrganizerSettingsComponent,
+          ),
+        canActivate: [activeGuard],
+        data: {
+          title: 'Ustawienia organizatora',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+      {
+        path: 'organizer/cover-images',
+        loadComponent: () =>
+          import('./features/me/pages/my-cover-images/my-cover-images.component').then(
+            (m) => m.MyCoverImagesComponent,
+          ),
+        canActivate: [activeGuard],
+        data: {
+          title: 'Moja galeria cover images',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+
+      // ── Back-compat: stare ścieżki /profile/* → nowe (kategoryzowane) ──
+      { path: 'events', redirectTo: '/profile/organizer/events', pathMatch: 'full' },
+      {
+        path: 'participations',
+        redirectTo: '/profile/enrollment/participations',
+        pathMatch: 'full',
+      },
+      { path: 'media', redirectTo: '/profile/enrollment/media', pathMatch: 'full' },
+    ],
   },
 
+  // ── Back-compat: stare top-level ścieżki panelu → nowe ──
+  { path: 'notifications', redirectTo: '/profile/general/notifications', pathMatch: 'full' },
+  { path: 'payments', redirectTo: '/profile/enrollment/payments', pathMatch: 'full' },
+  { path: 'vouchers', redirectTo: '/profile/enrollment/vouchers', pathMatch: 'full' },
+
   // ── Payments ──
-  {
-    path: 'payments',
-    loadComponent: () =>
-      import('./features/payments/pages/my-payments/my-payments.component').then(
-        (m) => m.MyPaymentsComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Moje płatności',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-      desktopLayout: 'two-column',
-    },
-  },
-  {
-    path: 'vouchers',
-    loadComponent: () =>
-      import('./features/vouchers/pages/my-vouchers/my-vouchers.component').then(
-        (m) => m.MyVouchersComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Moje vouchery',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-      desktopLayout: 'two-column',
-    },
-  },
   {
     path: 'payment/status',
     loadComponent: () =>

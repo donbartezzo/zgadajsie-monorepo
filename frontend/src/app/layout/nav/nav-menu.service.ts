@@ -36,7 +36,7 @@ export class NavMenuService {
         {
           label: 'Powiadomienia',
           icon: 'bell',
-          value: '/notifications',
+          value: '/profile/general/notifications',
           iconColor: 'primary',
           badge: this.unreadCount() > 0 ? this.badgeText() : undefined,
         },

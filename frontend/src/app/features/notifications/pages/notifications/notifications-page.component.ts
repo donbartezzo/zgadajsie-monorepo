@@ -6,13 +6,13 @@ import { Notification, NotificationKind } from '../../../../shared/types/notific
 import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
+import { AccountContentComponent } from '../../../../shared/ui/account-nav-rail/account-content.component';
 import { formatDateTime } from '@zgadajsie/shared';
-import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
 
 @Component({
   selector: 'app-notifications-page',
   standalone: true,
-  imports: [CommonModule, IconComponent, ButtonComponent, BadgeComponent, AccountRailSlotComponent],
+  imports: [CommonModule, IconComponent, ButtonComponent, BadgeComponent, AccountContentComponent],
   templateUrl: './notifications-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

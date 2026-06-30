@@ -4,11 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
+import { AccountContentComponent } from '../../../../shared/ui/account-nav-rail/account-content.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { UserService } from '../../../../core/services/user.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { DEFAULT_WELCOME_MESSAGE } from '@zgadajsie/shared';
-import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
 
 @Component({
   selector: 'app-organizer-settings',
@@ -18,7 +18,7 @@ import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail
     IconComponent,
     ButtonComponent,
     CardComponent,
-    AccountRailSlotComponent,
+    AccountContentComponent,
   ],
   templateUrl: './organizer-settings.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
