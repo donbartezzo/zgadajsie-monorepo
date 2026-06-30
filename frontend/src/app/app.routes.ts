@@ -19,10 +19,11 @@ const WHITE_BARE_LAYOUT = {
   contentClass: 'bg-transparent',
 } as const;
 
-// RWD-19: wspólny layout dla wszystkich czatów strefy wydarzenia. Fullscreen (czat wypełnia wysokość)
-// + only-mini-bar; od `lg` tryb 2-kol → czat jako biała karta w kolumnie głównej + event-rail w aside
-// (rail dostarcza EventAreaComponent). Bez `layoutClass` (tło boxa neutralne; biała karta z contentClass).
-const CHAT_LAYOUT = {
+// RWD-19/§3: wspólny layout dla fullscreenowych widoków strefy wydarzenia (czaty + mapa). Fullscreen
+// (treść wypełnia wysokość) + only-mini-bar; od `lg` tryb 2-kol → treść jako biała karta w kolumnie
+// głównej + event-rail w aside (rail dostarcza EventAreaComponent). Bez `layoutClass` (tło boxa
+// neutralne; biała karta z contentClass).
+const EVENT_FULLSCREEN_LAYOUT = {
   heroVariant: 'only-mini-bar',
   showFooter: false,
   showBorder: false,
@@ -112,9 +113,10 @@ export const appRoutes: Route[] = [
           heroVariant: 'only-mini-bar',
           showFooter: false,
           showBorder: false,
+          desktopLayout: 'two-column',
         },
       },
-      // Event map
+      // Event map — fullscreen + 2-kol (mapa wypełnia kolumnę główną, event-rail w aside; jak czat)
       {
         path: 'map',
         loadComponent: () =>
@@ -122,12 +124,7 @@ export const appRoutes: Route[] = [
             (m) => m.EventMapComponent,
           ),
         resolve: setEventResolvedTitle('Mapa wydarzenia'),
-        data: {
-          ...WHITE_BARE_LAYOUT,
-          centerContent: false,
-          heroVariant: 'only-mini-bar',
-          fullscreenContent: true,
-        },
+        data: { ...EVENT_FULLSCREEN_LAYOUT },
       },
       // Chat with organizer (participant view) / Conversation list (organizer view)
       {
@@ -138,7 +135,7 @@ export const appRoutes: Route[] = [
           ),
         canActivate: [verifiedUserGuard],
         resolve: setEventResolvedTitle('Czat z organizatorem'),
-        data: { ...CHAT_LAYOUT },
+        data: { ...EVENT_FULLSCREEN_LAYOUT },
       },
       // Organizer private chat with specific participant
       {
@@ -149,7 +146,7 @@ export const appRoutes: Route[] = [
           ),
         canActivate: [verifiedUserGuard],
         data: {
-          ...CHAT_LAYOUT,
+          ...EVENT_FULLSCREEN_LAYOUT,
           isPrivate: true,
           breadcrumb: { parent: '/w/:citySlug/:id/host-chat', label: 'Konwersacje' },
         },
@@ -163,7 +160,7 @@ export const appRoutes: Route[] = [
           ),
         resolve: setEventResolvedTitle('Czat grupowy'),
         canActivate: [verifiedUserGuard],
-        data: { ...CHAT_LAYOUT },
+        data: { ...EVENT_FULLSCREEN_LAYOUT },
       },
     ],
   },
@@ -222,6 +219,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Utwórz serię z wydarzenia',
       breadcrumb: { parent: '/profile/organizer/events', label: 'Moje wydarzenia' },
+      desktopLayout: 'two-column',
     },
   },
 

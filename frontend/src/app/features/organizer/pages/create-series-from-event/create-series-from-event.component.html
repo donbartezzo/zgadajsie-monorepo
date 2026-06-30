@@ -1,4 +1,7 @@
-<div class="p-4">
+<app-account-rail-slot />
+
+<!-- Na desktopie (2-kol) inset zapewnia box (lg:p-3) — nie dublujemy paddingu widoku -->
+<div class="p-4 lg:p-0">
   <app-page-heading heading="Utwórz serię z wydarzenia" />
 
   @if (loading()) {

@@ -266,9 +266,15 @@ export class PageLayoutComponent {
   // ORAZ szeroki jednokolumnowy. Poniżej `lg` oba degradują się do fixed-hero + mini-bar.
   readonly staticHeroLayout = computed(() => this.twoColumn() || this.wide());
 
-  // Statyczne hero tylko w trybie 2-kol/wide BEZ fullscreen (w fullscreen treść wypełnia kolumnę, np. czat).
+  // Statyczne hero tylko w trybie 2-kol/wide BEZ fullscreen (w fullscreen treść wypełnia kolumnę, np. czat)
+  // i tylko dla pełnego hero (extended/compact). Dla `only-mini-bar` (np. lista uczestników w 2-kol) NIE
+  // renderujemy statycznego hero — na desktopie kontekst daje rail, a `--hero-only-mini-bar-h` nie istnieje.
   readonly showStaticHero = computed(
-    () => this.staticHeroLayout() && this.showHeader() && !this.fullscreenContent(),
+    () =>
+      this.staticHeroLayout() &&
+      this.showHeader() &&
+      !this.fullscreenContent() &&
+      !this.miniBarOnly(),
   );
 
   // Sekcja fixed-hero (sentinel + hero + back/sticky) jest potrzebna < lg (pojedyncza kolumna).
@@ -344,7 +350,9 @@ export class PageLayoutComponent {
           : 'lg:grid-cols-main-aside';
       parts.push(`max-w-app lg:max-w-box lg:grid ${cols} lg:items-start lg:gap-3 lg:p-3`);
       if (this.showHeader()) {
-        parts.push('-mt-6 lg:mt-0');
+        // `only-mini-bar`: offset pod fixed mini-barem < lg (`mt-mini-bar` zerowany od `lg`).
+        // Pełne hero (extended/compact): overlap `-mt-6` < lg, reset od `lg` (statyczne hero w przepływie).
+        parts.push(this.miniBarOnly() ? 'mt-mini-bar' : '-mt-6 lg:mt-0');
       }
       return parts.join(' ');
     }
