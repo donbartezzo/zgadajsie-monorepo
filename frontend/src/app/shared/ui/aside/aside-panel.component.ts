@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 /**
- * Spójny „kafelek" kolumny aside (RWD-15/16+). Zapewnia jednolite chrome (tło, ramka, zaokrąglenie,
+ * Spójny „kafelek" kolumny aside. Zapewnia jednolite chrome (tło, ramka, zaokrąglenie,
  * cień, padding) dla KAŻDEJ zawartości aside — nawigacji (`app-aside-nav`), CTA, statystyk itp.
  * Dzięki temu wszystkie raile/panele boczne na różnych podstronach wyglądają tak samo.
  *

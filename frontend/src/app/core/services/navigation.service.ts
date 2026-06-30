@@ -74,6 +74,24 @@ export class NavigationService {
     });
   }
 
+  navigateToParticipations(): void {
+    this.auth.requireAuth('zobaczyć moje uczestnictwa', () => {
+      this.router.navigate(['/profile/participations']);
+    });
+  }
+
+  navigateToMedia(): void {
+    this.auth.requireAuth('zobaczyć galerię', () => {
+      this.router.navigate(['/profile/media']);
+    });
+  }
+
+  navigateToNotifications(): void {
+    this.auth.requireAuth('zobaczyć powiadomienia', () => {
+      this.router.navigate(['/notifications']);
+    });
+  }
+
   navigateToEventMap(eventId: string, citySlug: string): void {
     this.router.navigate(['/w', citySlug, eventId, 'map']);
   }

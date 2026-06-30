@@ -5,6 +5,7 @@ import { Muted } from '../../types';
 
 export type IconName =
   | 'menu'
+  | 'more-horizontal'
   | 'close'
   | 'chevron-down'
   | 'chevron-left'
@@ -119,6 +120,11 @@ export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
             <line x1="3" y1="6" x2="21" y2="6" />
             <line x1="3" y1="12" x2="21" y2="12" />
             <line x1="3" y1="18" x2="21" y2="18" />
+          }
+          @case ('more-horizontal') {
+            <circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none" />
+            <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+            <circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none" />
           }
           @case ('close') {
             <line x1="18" y1="6" x2="6" y2="18" />

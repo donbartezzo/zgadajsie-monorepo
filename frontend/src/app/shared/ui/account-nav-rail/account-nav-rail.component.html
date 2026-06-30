@@ -1,0 +1,10 @@
+<app-aside-panel>
+  @for (group of nav.groups(); track group.label) {
+    <div class="mt-3 border-t border-neutral-100 pt-3 first:mt-0 first:border-t-0 first:pt-0">
+      <p class="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+        {{ group.label }}
+      </p>
+      <app-aside-nav [items]="group.items" (selected)="nav.navigate($event)" />
+    </div>
+  }
+</app-aside-panel>

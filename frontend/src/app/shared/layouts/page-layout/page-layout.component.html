@@ -1,7 +1,7 @@
 <!-- ═══════════════════════════════════════════════════
-   PRELOADER (shown until layout is ready)
+   PRELOADER (initial load / długie nawigacje; szybkie nie chowają shella)
    ═══════════════════════════════════════════════════ -->
-@if (!layoutConfig.isReady()) {
+@if (showFullPreloader()) {
   <div class="flex flex-1 items-center justify-center">
     <div class="h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-500"></div>
   </div>
@@ -12,7 +12,7 @@
        ═══════════════════════════════════════════════════ -->
     @let _showHeader = showHeader();
     @if (_showHeader) {
-      <!-- Fixed hero (sentinel + hero + back/sticky). RWD-15: ukrywane od `lg` w trybie 2-kol
+      <!-- Fixed hero (sentinel + hero + back/sticky). Ukrywane od `lg` w trybie 2-kol
            (rolę przejmuje statyczne hero w kolumnie głównej); `contents` = brak wpływu na layout. -->
       <div [class]="fixedHeaderClass()">
         @if (showBackButton()) {
@@ -45,7 +45,7 @@
 
     <!-- ═══════════════════════════════════════════════════
        PAGE CONTENT (router-outlet goes here)
-       RWD-15: < lg jedna kolumna; od `lg` (tryb 2-kol) grid main + aside.
+       < lg jedna kolumna; od `lg` (tryb 2-kol) grid main + aside.
        ═══════════════════════════════════════════════════ -->
     <div [class]="contentWrapperClass()" [style.margin-top]="contentMarginTop()">
       <!-- MAIN COLUMN (przezroczysta `contents` w 1-kol; flex w 2-kol od `lg`) -->

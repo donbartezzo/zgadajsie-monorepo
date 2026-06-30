@@ -1,9 +1,6 @@
-<!-- RWD-17: rail panelu organizatora w kolumnie aside (tryb 2-kol od lg) -->
-<ng-template appLayoutSlot="aside">
-  <app-organizer-nav-rail />
-</ng-template>
+<app-account-rail-slot />
 
-<!-- RWD-17: na desktopie (2-kol) inset zapewnia box (lg:p-3) — nie dublujemy paddingu widoku -->
+<!-- Na desktopie (2-kol) inset zapewnia box (lg:p-3) — nie dublujemy paddingu widoku -->
 <div class="p-4 space-y-6 lg:p-0">
   @if (loading()) {
     <div class="py-12 flex justify-center">

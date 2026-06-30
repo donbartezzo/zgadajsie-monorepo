@@ -467,7 +467,7 @@ mini-bar są na `lg` ukrywane (`lg:hidden`) dla widoków 2-kol; poniżej `lg` dz
   (`items: AsideNavItem[]` + output `selected`), wspólne style pozycji i stanu aktywnego, opcjonalny
   `badge`. Logikę nawigacji/`active` trzyma rail-właściciel.
 
-Każdy rail buduje się na tych dwóch komponentach (`app-event-nav-rail`, `app-organizer-nav-rail`
+Każdy rail buduje się na tych dwóch komponentach (`app-event-nav-rail`, `app-account-nav-rail`
 i kolejne), więc pozostają spójne wizualnie i łatwo rozszerzalne.
 
 Konsumenci aside:
@@ -476,12 +476,31 @@ Konsumenci aside:
   (CTA „Dołącz" + zakładki: Szczegóły / Uczestnicy / Mapa / Czat grupowy / Czat z organizatorem +
   akcje organizatora). Tryb 2-kol per-trasa-dziecko (`desktopLayout: 'two-column'` na Szczegółach;
   kolejne dzieci przyrostowo — czaty w RWD-19).
-- **Panel organizatora (RWD-16/17):** `app-organizer-nav-rail` (globalna nawigacja panelu: Nowe
-  wydarzenie / Moje wydarzenia / Zestawienie / Okładki / Ustawienia) rejestrowany przez strony
-  organizatora przez `appLayoutSlot="aside"`: `EventFormComponent` (new/edit/edit-template),
-  `series-details`, `event-manage`, `organizer-digest`. Odpowiednie trasy → `desktopLayout: 'two-column'`.
-  Treść głównej kolumny pozostaje jednokolumnowa (700) — karty/sekcje bez zmian. Pozostałe strony
-  panelu (cover-images, settings, /profile/events) dołączą przyrostowo.
+- **Panel konta (RWD-16/17/18):** wspólny model `AccountNavService`
+  (`shared/ui/account-nav-rail/account-nav.service.ts`) — sekcje **Konto** (Profil, Powiadomienia),
+  **Uczestnik** (Uczestnictwa, Galeria, Płatności, Vouchery), **Organizator** (Nowe wydarzenie,
+  Moje wydarzenia, Zestawienie, Okładki, Ustawienia) + `activeKey`/`navigate`. Dwie prezentacje:
+  **desktop** `app-account-nav-rail` (aside) oraz **mobile** `app-account-nav-bar`. Oba dostarcza na
+  stronie JEDEN wrapper `app-account-rail-slot` (rail w aside dla `lg+` + pasek inline `lg:hidden` nad
+  treścią). `app-account-nav-bar` to wzorzec „priority+ / overflow": wyśrodkowane, ścieśnione „pills"
+  bez przewijania — ile zmieści się w jednej linii; resztę chowa pod kebabem „⋮" (`more-horizontal`),
+  a aktualnie wybrana pozycja jest ZAWSZE na pasku (szerokości mierzone „ghostem" + ResizeObserver).
+  Mobilny `navigation-overlay` (z dolnej nawigacji) zostaje przy linkach ogólnych + profil/powiadomienia/
+  wyloguj (`NavMenuService.links`) — nawigacji panelu NIE powielamy tam.
+  Zastąpił wcześniejszy `organizer-nav-rail`. Strona panelu dodaje `<app-account-rail-slot />`
+  (+ `desktopLayout: 'two-column'`): profil, `EventFormComponent` (new/edit/edit-template),
+  `series-details`, `event-manage`, `organizer-digest` oraz podstrony (participations, payments,
+  vouchers, media, notifications, cover-images, settings, /profile/events). Treść głównej kolumny
+  zostaje jednokolumnowa (700). Na profilu kafelki nawigacyjne usunięto — zastępuje je rail (desktop)
+  i menu inline (mobile).
+
+  **Stabilność przy nawigacji (bez migania nav-a):**
+  - `LayoutConfigService.reset()` NIE zeruje `desktopLayout`/`asideSide`/`heroVariant`/`title`/
+    `subtitle`/`coverImageUrl` (ustawia je synchronizacja z `route.data` na `NavigationEnd` + efekty
+    stron). Dzięki temu box trzyma szerokość (brak „skoku" 1024→700→1024), a shell jest stabilny.
+  - `PageLayoutComponent` pokazuje pełny preloader tylko na pierwszym wejściu LUB gdy nawigacja
+    przeciąga się > ~200ms (`showFullPreloader` z debouncem). Dla szybkich (cache) nawigacji shell
+    NIE znika — kolumna aside (rail) i pasek nav nie „migają", podmienia się tylko main-column.
 
 Pozostałe widoki to nadal pojedyncza kolumna 700 w boxie (`desktopLayout: 'narrow'`). Wariant
 `'wide'` (pojedyncza kolumna na pełną szerokość boxa) jest zadeklarowany w typie, ale nie ma jeszcze

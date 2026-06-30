@@ -6,12 +6,22 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
 import { VoucherService } from '../../../../core/services/voucher.service';
 import { OrganizerVoucherGroup } from '../../../../shared/types';
+import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
 
 @Component({
   selector: 'app-my-vouchers',
-  imports: [DecimalPipe, RouterLink, CardComponent, LoadingSpinnerComponent, UserAvatarComponent],
+  imports: [
+    DecimalPipe,
+    RouterLink,
+    CardComponent,
+    LoadingSpinnerComponent,
+    UserAvatarComponent,
+    AccountRailSlotComponent,
+  ],
   template: `
-    <div class="p-4 space-y-4">
+    <app-account-rail-slot />
+
+    <div class="p-4 space-y-4 lg:p-0">
       <h1 class="text-xl font-bold text-neutral-900">Moje vouchery</h1>
       <p class="text-sm text-neutral-500">
         Vouchery można wykorzystać przy zakupie udziału w wydarzeniach danego organizatora.

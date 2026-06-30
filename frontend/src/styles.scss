@@ -82,14 +82,14 @@
     font-size: clamp(1.5rem, 1.25rem + 0.75vw, 2rem);
   }
 
-  // RWD-12: zakotwiczenie elementów `fixed` względem chrome nawigacji.
+  // Zakotwiczenie elementów `fixed` względem chrome nawigacji.
   // `top-app`    — górna krawędź tuż pod desktopowym top-navem (0 na mobile/tablecie).
   // `bottom-app` — dolna krawędź tuż nad mobilnym bottom-navem (0 od `lg`).
   // Dodatkowe odstępy elementów (gap, safe-area, mini-bar) dokładaj przez `mt-*` / `mb-*`.
   .top-app {
     top: var(--top-nav-h);
   }
-  // RWD-15: punkt „przyklejenia" kolumny aside (sticky) = pod top-navem + inset boxa (gap),
+  // Punkt „przyklejenia" kolumny aside (sticky) = pod top-navem + inset boxa (gap),
   // żeby przyklejony aside trzymał ten sam odstęp co początkowy inset modułów.
   // 0.75rem = $app-box-gap (= Tailwind p-3/gap-3); literał, bo zmienna jest definiowana niżej.
   .top-app-inset {
@@ -128,14 +128,14 @@ body {
   margin: 0;
 }
 
-// ── App shell width (RWD-11b: kolumna główna + boxed look; RWD-15: + aside) ──
+// ── App shell width (kolumna główna + boxed look + aside) ──
 // `--app-max-width` = szerokość kolumny GŁÓWNEJ treści oraz punkt wyrównania elementów
 //   `fixed` (bottom-nav, hero, back/sticky, overlaye, modale).
 // Wartość 700px = natywna szerokość cover image (COVER_IMAGE_WIDTH w libs), więc hero
 //   renderuje okładkę 1:1, bez upscalingu. Kolumna jest „boxowana": full-bleed na mobile,
 //   a od szerokości boxa — wyśrodkowana karta (ramka + cień + pattern w marginesach).
 //
-// RWD-15: tryb dwukolumnowy (main + aside). `--app-box-width` to szerokość CAŁEGO boxa:
+// Tryb dwukolumnowy (main + aside). `--app-box-width` to szerokość CAŁEGO boxa:
 //   domyślnie = kolumna główna (1-kol), a dla widoków `desktopLayout: 'two-column'` rośnie
 //   od `lg` do `$app-box-wide`. Aside = box − main − gap (≈ 300px dla 1024 − 700 − 24).
 $app-max-width: 700px;
@@ -159,12 +159,12 @@ $app-bg-color: rgb(var(--color-neutral-100));
 
 :root {
   --app-max-width: #{$app-max-width};
-  // RWD-15: szerokość boxa = kolumna główna (domyślnie 1-kol); tryb 2-kol poszerza ją od `lg`.
+  // Szerokość boxa = kolumna główna (domyślnie 1-kol); tryb 2-kol poszerza ją od `lg`.
   --app-box-width: #{$app-max-width};
   // Aside = box − 3 × odstęp − kolumna główna (2× inset boxa + 1× gap między modułami),
   // tak by moduły zmieściły się w boxie (≈ 288px dla 1024 − 36 − 700).
   --app-aside-width: calc(#{$app-box-wide} - 3 * #{$app-box-gap} - #{$app-max-width});
-  // Wartości mobilne; desktop (od `lg`) przełącza je media query niżej. (RWD-12)
+  // Wartości mobilne; desktop (od `lg`) przełącza je media query niżej.
   --footer-height: 70px; // wysokość/clearance dolnego bottom-nav (0 od `lg`)
   --top-nav-h: 0px; // wysokość górnego top-nav (0 na mobile, 3.5rem od `lg`)
   --hero-extended-h: #{$hero-extended-height};
@@ -172,7 +172,7 @@ $app-bg-color: rgb(var(--color-neutral-100));
   --hero-mini-bar-h: #{$hero-mini-bar-height};
 }
 
-// RWD-12: od `lg` górny top-nav zastępuje dolny bottom-nav — zerujemy clearance
+// Od `lg` górny top-nav zastępuje dolny bottom-nav — zerujemy clearance
 // bottom-navu (--footer-height) i rezerwujemy wysokość top-navu (--top-nav-h).
 // Dolne elementy `fixed` (chat input, sticky bar, cookie consent) podążają za
 // --footer-height; górne (hero, back/sticky, snackbar, nagłówek czatu) offsetują się o --top-nav-h.
@@ -186,7 +186,7 @@ $app-bg-color: rgb(var(--color-neutral-100));
     --top-nav-h: 3.5rem;
   }
 
-  // RWD-15: w trybie dwukolumnowym box rozszerza się od `lg` o kolumnę aside.
+  // W trybie dwukolumnowym box rozszerza się od `lg` o kolumnę aside.
   // Poniżej `lg` (mobile/tablet) box zostaje przy kolumnie głównej (700) — jedna kolumna.
   .app.app--two-column {
     --app-box-width: #{$app-box-wide};
@@ -200,7 +200,7 @@ $app-bg-color: rgb(var(--color-neutral-100));
   }
 }
 
-// RWD-04: Reduce hero heights on low viewports (landscape phones, small windows)
+// Reduce hero heights on low viewports (landscape phones, small windows).
 @media (max-height: 480px) {
   :root {
     --hero-extended-h: 140px;

@@ -20,7 +20,7 @@ import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../types/colors';
   imports: [CommonModule, IconComponent],
   template: `
     @if (open()) {
-      <!-- < lg: bottom sheet (slide-up od dołu). lg+: wyśrodkowany modal (RWD-13). -->
+      <!-- < lg: bottom sheet (slide-up od dołu). lg+: wyśrodkowany modal. -->
       <div
         class="fixed inset-x-0 top-0 bottom-16 z-[60] flex flex-col max-w-app mx-auto lg:inset-0 lg:max-w-none lg:items-center lg:justify-center lg:p-4"
       >

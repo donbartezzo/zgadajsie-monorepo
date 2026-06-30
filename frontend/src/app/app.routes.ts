@@ -83,7 +83,7 @@ export const appRoutes: Route[] = [
         data: {
           breadcrumb: { parent: '/w/:citySlug', label: 'Lista wydarzeń' }, // Nadpisuje domyślne z parenta!
           contentClass: 'bg-white',
-          desktopLayout: 'two-column', // RWD-15: main (szczegóły) + aside (rail nawigacyjny)
+          desktopLayout: 'two-column',
         },
       },
       // Participants list
@@ -183,7 +183,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Nowe wydarzenie',
       breadcrumb: { parent: '/profile/events', label: 'Moje wydarzenia' },
-      desktopLayout: 'two-column', // RWD-16: formularz + rail panelu organizatora
+      desktopLayout: 'two-column',
     },
   },
 
@@ -197,7 +197,7 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Edycja wydarzenia',
-      desktopLayout: 'two-column', // RWD-16: formularz + rail panelu organizatora
+      desktopLayout: 'two-column',
     },
   },
 
@@ -211,7 +211,7 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Zarządzanie',
-      desktopLayout: 'two-column', // RWD-17: panel zarządzania + rail panelu organizatora
+      desktopLayout: 'two-column',
     },
   },
 
@@ -240,7 +240,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Seria wydarzeń',
       breadcrumb: BREADCRUMB_TO_EVENTS,
-      desktopLayout: 'two-column', // RWD-16: szczegóły serii + rail panelu organizatora
+      desktopLayout: 'two-column',
     },
   },
 
@@ -255,7 +255,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Edycja danych wydarzeń serii',
       breadcrumb: BREADCRUMB_TO_EVENTS,
-      desktopLayout: 'two-column', // RWD-16: formularz serii + rail panelu organizatora
+      desktopLayout: 'two-column',
     },
   },
 
@@ -270,7 +270,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Zestawienie organizatora',
       breadcrumb: BREADCRUMB_TO_PROFILE,
-      desktopLayout: 'two-column', // RWD-17: digest + rail panelu organizatora
+      desktopLayout: 'two-column',
     },
   },
 
@@ -285,6 +285,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Ustawienia organizatora',
       breadcrumb: BREADCRUMB_TO_PROFILE,
+      desktopLayout: 'two-column',
     },
   },
 
@@ -299,6 +300,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Moja galeria cover images',
       breadcrumb: BREADCRUMB_TO_PROFILE,
+      desktopLayout: 'two-column',
     },
   },
 
@@ -394,14 +396,18 @@ export const appRoutes: Route[] = [
         (m) => m.NotificationsPageComponent,
       ),
     canActivate: [authGuard],
-    data: { title: 'Powiadomienia', breadcrumb: BREADCRUMB_TO_HOME },
+    data: { title: 'Powiadomienia', breadcrumb: BREADCRUMB_TO_HOME, desktopLayout: 'two-column' },
   },
   {
     path: 'profile',
     loadComponent: () =>
       import('./features/user/pages/profile/profile.component').then((m) => m.ProfileComponent),
     canActivate: [authGuard],
-    data: { title: 'Profil', breadcrumb: BREADCRUMB_TO_HOME },
+    data: {
+      title: 'Profil',
+      breadcrumb: BREADCRUMB_TO_HOME,
+      desktopLayout: 'two-column',
+    },
   },
   {
     path: 'profile/events',
@@ -413,6 +419,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Moje wydarzenia',
       breadcrumb: BREADCRUMB_TO_PROFILE,
+      desktopLayout: 'two-column',
     },
   },
   {
@@ -425,6 +432,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Moje uczestnictwa',
       breadcrumb: BREADCRUMB_TO_PROFILE,
+      desktopLayout: 'two-column',
     },
   },
   {
@@ -434,7 +442,7 @@ export const appRoutes: Route[] = [
         (m) => m.MediaGalleryComponent,
       ),
     canActivate: [authGuard, activeGuard],
-    data: { title: 'Galeria', breadcrumb: BREADCRUMB_TO_PROFILE },
+    data: { title: 'Galeria', breadcrumb: BREADCRUMB_TO_PROFILE, desktopLayout: 'two-column' },
   },
 
   // ── Payments ──
@@ -448,6 +456,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Moje płatności',
       breadcrumb: BREADCRUMB_TO_PROFILE,
+      desktopLayout: 'two-column',
     },
   },
   {
@@ -460,6 +469,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Moje vouchery',
       breadcrumb: BREADCRUMB_TO_PROFILE,
+      desktopLayout: 'two-column',
     },
   },
   {

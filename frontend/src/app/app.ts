@@ -37,7 +37,7 @@ export class App {
   protected title = APP_BRAND.NAME;
   readonly contactEmail = APP_BRAND.CONTACT_EMAIL;
 
-  // RWD-15: steruje klasą `.app--two-column` (poszerza box do trybu dwukolumnowego od `lg`).
+  // Steruje klasą `.app--two-column` (poszerza box do trybu dwukolumnowego od `lg`).
   readonly layoutConfig = inject(LayoutConfigService);
 
   // Inject to ensure the service is instantiated and its effect runs

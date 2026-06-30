@@ -238,6 +238,7 @@ export class DesignSystemComponent {
 
   readonly allIcons: IconName[] = [
     'menu',
+    'more-horizontal',
     'close',
     'chevron-down',
     'chevron-left',

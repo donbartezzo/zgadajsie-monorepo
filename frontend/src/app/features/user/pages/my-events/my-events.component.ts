@@ -24,6 +24,7 @@ import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm
 import { EventManageCardComponent } from '../../../../shared/event/ui/event-manage-card/event-manage-card.component';
 import type { ManageActionEvent } from '../../../../shared/event/ui/event-manage-card/event-manage-card.types';
 import { environment } from '../../../../../environments/environment';
+import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
 
 @Component({
   selector: 'app-my-events',
@@ -35,9 +36,12 @@ import { environment } from '../../../../../environments/environment';
     EventManageCardComponent,
     ButtonComponent,
     IconComponent,
+    AccountRailSlotComponent,
   ],
   template: `
-    <div class="p-4">
+    <app-account-rail-slot />
+
+    <div class="p-4 lg:p-0">
       <div class="flex items-center justify-between mb-4">
         <h1 class="text-xl font-bold text-neutral-900">Moje wydarzenia</h1>
         @if (canCreateEvents()) {

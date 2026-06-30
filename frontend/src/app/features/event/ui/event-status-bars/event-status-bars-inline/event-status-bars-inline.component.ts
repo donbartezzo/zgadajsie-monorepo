@@ -38,7 +38,7 @@ const BOTTOM_NAV_HEIGHT = 120;
     </div>
 
     <!-- Sticky bar: shown when inline bars scroll out of viewport.
-         RWD-15: komponent używany tylko w szczegółach wydarzenia (2-kol), gdzie CTA jest w railu,
+         Komponent używany tylko w szczegółach wydarzenia (2-kol), gdzie CTA jest w railu,
          wiec dolny pasek chowamy od lg na sztywno. -->
     @if (!sentinelVisible()) {
       <app-event-status-bar-sticky

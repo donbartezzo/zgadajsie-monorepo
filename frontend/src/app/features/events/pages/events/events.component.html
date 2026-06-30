@@ -46,7 +46,7 @@
           </div>
 
           <!-- Liczba kolumn zależna od liczby wydarzeń w grupie (gridColsClass): karty
-               wypełniają szerokość, mobile 1 kolumna, do 3 kolumn dla grup 3+. RWD-14 -->
+               wypełniają szerokość, mobile 1 kolumna, do 3 kolumn dla grup 3+ -->
           <div [class]="'grid gap-3 ' + gridColsClass(group.events.length)">
             @for (event of group.events; track event.id) {
               <app-event-card

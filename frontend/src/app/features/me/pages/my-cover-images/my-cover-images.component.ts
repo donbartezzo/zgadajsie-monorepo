@@ -15,6 +15,7 @@ import {
   ImageCropperResult,
 } from '../../../../shared/ui/image-cropper-modal';
 import { USER_COVER_IMAGE_LIMIT } from '@zgadajsie/shared';
+import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
 
 @Component({
   selector: 'app-my-cover-images',
@@ -26,9 +27,12 @@ import { USER_COVER_IMAGE_LIMIT } from '@zgadajsie/shared';
     CardComponent,
     ButtonComponent,
     ImageCropperModalComponent,
+    AccountRailSlotComponent,
   ],
   template: `
-    <div class="p-4">
+    <app-account-rail-slot />
+
+    <div class="p-4 lg:p-0">
       <div class="flex items-center gap-3 mb-4">
         <a routerLink="/me" class="text-neutral-500">
           <app-icon name="arrow-left" size="sm" />

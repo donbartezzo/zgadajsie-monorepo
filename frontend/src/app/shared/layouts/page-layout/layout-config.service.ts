@@ -2,7 +2,7 @@ import { Injectable, signal, TemplateRef } from '@angular/core';
 
 export type HeroVariant = 'compact' | 'extended' | 'only-mini-bar';
 
-// RWD-15: wariant układu kolumny treści na desktopie.
+// Wariant układu kolumny treści na desktopie.
 // 'narrow'      — domyślny, wąska kolumna główna (700) w boxie.
 // 'wide'        — pojedyncza kolumna na pełną szerokość boxa (do wdrożenia per-widok).
 // 'two-column'  — main (700) + aside (rail), box rośnie do ~1024 od `lg`.
@@ -40,13 +40,14 @@ export class LayoutConfigService {
 
   reset(): void {
     this.isReady.set(false);
-    this.coverImageUrl.set('');
-    this.heroVariant.set('compact');
     this.contentClass.set(LayoutConfigService.DEFAULT_CONTENT);
-    this.title.set('');
-    this.subtitle.set('');
-    this.desktopLayout.set('narrow');
-    this.asideSide.set('right');
+    // NIE zerujemy tu hero/tytułu/podtytułu/cover ani desktopLayout/asideSide. Synchronizacja
+    // z route.data (z defaultami) ustawia heroVariant/title/subtitle/desktopLayout/asideSide na
+    // NavigationEnd, a cover/title hero — efekty stron. Trzymając je stabilnie:
+    //  - box zachowuje szerokość (brak „skoku" --app-box-width 1024→700→1024),
+    //  - shell nie „miga" przy szybkiej nawigacji (stara treść hero/nav zostaje do konfiguracji nowej
+    //    strony — zachowanie SPA: nie chowamy shella, podmienia się tylko main-column).
+    //
     // subtitleTemplate / stickyTemplate / asideTemplate are owned by LayoutSlotDirective
     // via its own lifecycle - resetting them here would orphan reused component instances
     // whose directive ngOnInit fires only once (e.g. a persistent aside owned by a parent

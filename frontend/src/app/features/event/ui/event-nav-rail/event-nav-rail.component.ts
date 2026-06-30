@@ -15,7 +15,7 @@ import { JoinEventButtonComponent } from '../join-event-button/join-event-button
 type RailKey = 'details' | 'participants' | 'map' | 'chat' | 'host-chat';
 
 /**
- * RWD-15: trwały rail nawigacyjny strefy wydarzenia (kolumna aside na desktopie).
+ * Trwały rail nawigacyjny strefy wydarzenia (kolumna aside na desktopie).
  * CTA „Dołącz", zakładki podstron wydarzenia oraz akcje organizatora. Zbudowany na wspólnych
  * `app-aside-panel` + `app-aside-nav`, spójnie z railem panelu organizatora i kolejnymi.
  */

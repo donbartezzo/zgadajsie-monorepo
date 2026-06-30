@@ -8,10 +8,18 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { UserService } from '../../../../core/services/user.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { DEFAULT_WELCOME_MESSAGE } from '@zgadajsie/shared';
+import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
 
 @Component({
   selector: 'app-organizer-settings',
-  imports: [CommonModule, FormsModule, IconComponent, ButtonComponent, CardComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IconComponent,
+    ButtonComponent,
+    CardComponent,
+    AccountRailSlotComponent,
+  ],
   templateUrl: './organizer-settings.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

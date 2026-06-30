@@ -11,6 +11,7 @@ import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { Participation } from '../../../../shared/types';
 import { getEventLifecycleStatus } from '../../../../shared/utils';
+import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
 
 @Component({
   selector: 'app-my-participations',
@@ -23,9 +24,12 @@ import { getEventLifecycleStatus } from '../../../../shared/utils';
     CardComponent,
     LoadingSpinnerComponent,
     EmptyStateComponent,
+    AccountRailSlotComponent,
   ],
   template: `
-    <div class="p-4">
+    <app-account-rail-slot />
+
+    <div class="p-4 lg:p-0">
       <h1 class="text-xl font-bold text-neutral-900 mb-4">Moje uczestnictwa</h1>
 
       @if (loading()) {

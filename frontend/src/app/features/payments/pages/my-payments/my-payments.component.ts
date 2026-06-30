@@ -13,6 +13,7 @@ interface PaymentItem {
   createdAt: string;
   event?: { id: string; title: string; city?: { slug: string } };
 }
+import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
 
 @Component({
   selector: 'app-my-payments',
@@ -23,9 +24,12 @@ interface PaymentItem {
     RouterLink,
     CardComponent,
     LoadingSpinnerComponent,
+    AccountRailSlotComponent,
   ],
   template: `
-    <div class="p-4 space-y-4">
+    <app-account-rail-slot />
+
+    <div class="p-4 space-y-4 lg:p-0">
       <h1 class="text-xl font-bold text-neutral-900">Moje płatności</h1>
 
       @if (loading()) {

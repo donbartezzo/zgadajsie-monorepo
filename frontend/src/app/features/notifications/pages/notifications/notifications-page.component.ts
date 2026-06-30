@@ -7,11 +7,12 @@ import { IconComponent, IconName } from '../../../../shared/ui/icon/icon.compone
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { BadgeComponent } from '../../../../shared/ui/badge/badge.component';
 import { formatDateTime } from '@zgadajsie/shared';
+import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
 
 @Component({
   selector: 'app-notifications-page',
   standalone: true,
-  imports: [CommonModule, IconComponent, ButtonComponent, BadgeComponent],
+  imports: [CommonModule, IconComponent, ButtonComponent, BadgeComponent, AccountRailSlotComponent],
   templateUrl: './notifications-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -1,4 +1,8 @@
-<div class="p-4 space-y-4">
+<!-- Rail (aside, desktop) + menu (inline, mobile) nawigacji konta — zastępuje kafelki -->
+<app-account-rail-slot />
+
+<!-- Na desktopie (2-kol) inset zapewnia box (lg:p-3) — nie dublujemy paddingu widoku -->
+<div class="p-4 space-y-4 lg:p-0">
   @if (auth.currentUser(); as user) {
     <!-- User profile card (wizytówka) -->
     <app-user-profile-card
@@ -76,78 +80,7 @@
       </div>
     </app-card>
 
-    @if (auth.currentUser()?.isActive) {
-      <div class="space-y-3">
-        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Panel organizatora</p>
-        <div class="grid grid-cols-2 gap-3">
-          <a routerLink="/profile/events">
-            <app-card>
-              <div class="flex items-center gap-2">
-                <app-icon name="calendar" size="sm" color="primary"></app-icon>
-                <span class="text-sm font-medium text-neutral-700">Moje wydarzenia</span>
-              </div>
-            </app-card>
-          </a>
-
-          <a routerLink="/profile/organizer/digest">
-            <app-card>
-              <div class="flex items-center gap-2">
-                <app-icon name="bar-chart" size="sm" color="primary"></app-icon>
-                <span class="text-sm font-medium text-neutral-700">Zestawienie</span>
-              </div>
-            </app-card>
-          </a>
-
-          <a routerLink="/profile/organizer/cover-images">
-            <app-card>
-              <div class="flex items-center gap-2">
-                <app-icon name="image" size="sm" color="primary"></app-icon>
-                <span class="text-sm font-medium text-neutral-700">Moje cover images</span>
-              </div>
-            </app-card>
-          </a>
-
-          <a routerLink="/profile/organizer/settings">
-            <app-card>
-              <div class="flex items-center gap-2">
-                <app-icon name="settings" size="sm" color="primary"></app-icon>
-                <span class="text-sm font-medium text-neutral-700">Ustawienia</span>
-              </div>
-            </app-card>
-          </a>
-        </div>
-
-        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1 pt-2">Panel uczestnika</p>
-        <div class="grid grid-cols-2 gap-3">
-          <a routerLink="/profile/participations">
-            <app-card>
-              <div class="flex items-center gap-2">
-                <app-icon name="users" size="sm" color="primary"></app-icon>
-                <span class="text-sm font-medium text-neutral-700">Uczestnictwa</span>
-              </div>
-            </app-card>
-          </a>
-
-          <a routerLink="/payments">
-            <app-card>
-              <div class="flex items-center gap-2">
-                <app-icon name="credit-card" size="sm" color="primary"></app-icon>
-                <span class="text-sm font-medium text-neutral-700">Moje płatności</span>
-              </div>
-            </app-card>
-          </a>
-
-          <a routerLink="/vouchers">
-            <app-card>
-              <div class="flex items-center gap-2">
-                <app-icon name="wallet" size="sm" color="primary"></app-icon>
-                <span class="text-sm font-medium text-neutral-700">Moje vouchery</span>
-              </div>
-            </app-card>
-          </a>
-        </div>
-      </div>
-    } @else {
+    @if (!auth.currentUser()?.isActive) {
       <app-card class="bg-warning-50 border-warning-200">
         <div class="flex items-start gap-3">
           <app-icon name="alert-triangle" size="md" color="warning" class="mt-0.5"></app-icon>

@@ -6,6 +6,7 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
 import { MediaService, MediaFile } from '../../../../core/services/media.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
 
 @Component({
   selector: 'app-media-gallery',
@@ -15,9 +16,12 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
     FileUploadComponent,
     LoadingSpinnerComponent,
     EmptyStateComponent,
+    AccountRailSlotComponent,
   ],
   template: `
-    <div class="p-4">
+    <app-account-rail-slot />
+
+    <div class="p-4 lg:p-0">
       <h1 class="text-xl font-bold text-neutral-900 mb-4">Galeria</h1>
 
       <div class="mb-4">

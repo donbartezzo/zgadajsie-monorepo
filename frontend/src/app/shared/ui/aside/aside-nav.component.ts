@@ -12,7 +12,7 @@ export interface AsideNavItem {
 }
 
 /**
- * Spójna lista nawigacyjna kolumny aside (RWD-15/16+). Jedno źródło stylów pozycji i stanu
+ * Spójna lista nawigacyjna kolumny aside. Jedno źródło stylów pozycji i stanu
  * aktywnego dla wszystkich raili (event, organizator, kolejne). Logikę nawigacji i wyliczanie
  * `active` trzyma komponent-właściciel; tutaj jest tylko prezentacja + emisja `select(key)`.
  */

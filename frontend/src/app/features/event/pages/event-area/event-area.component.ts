@@ -8,7 +8,7 @@ import { EventNavRailComponent } from '../../ui/event-nav-rail/event-nav-rail.co
 @Component({
   selector: 'app-event-area',
   imports: [RouterOutlet, LayoutSlotDirective, EventNavRailComponent],
-  // RWD-15: rail nawigacyjny strefy wydarzenia rejestrujemy raz w aside slocie layoutu.
+  // Rail nawigacyjny strefy wydarzenia rejestrujemy raz w aside slocie layoutu.
   // EventAreaComponent przeżywa nawigację między dziećmi, więc rail jest trwały
   // (layoutConfig.reset() nie czyści slotów). Aside renderuje się tylko dla widoków `two-column`.
   template: `

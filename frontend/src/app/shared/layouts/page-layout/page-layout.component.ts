@@ -100,6 +100,12 @@ export class PageLayoutComponent {
     { initialValue: DEFAULT_ROUTE_DATA },
   );
 
+  // Pełny preloader pokazujemy tylko na pierwszym wejściu LUB gdy nawigacja przeciąga się
+  // > ~200ms (lazy chunk). Dla szybkich (cache) nawigacji shell zostaje — kolumna aside (rail) i pasek
+  // nav nie „migają", podmienia się tylko main-column.
+  readonly showFullPreloader = signal(true);
+  private readonly hasRenderedOnce = signal(false);
+
   constructor() {
     this.destroyRef.onDestroy(() => this.observer?.disconnect());
 
@@ -114,6 +120,20 @@ export class PageLayoutComponent {
     });
 
     let readyTimer: ReturnType<typeof setTimeout> | null = null;
+    let spinnerTimer: ReturnType<typeof setTimeout> | null = null;
+    const clearSpinnerTimer = (): void => {
+      if (spinnerTimer) {
+        clearTimeout(spinnerTimer);
+        spinnerTimer = null;
+      }
+    };
+    this.destroyRef.onDestroy(clearSpinnerTimer);
+
+    const finishLoading = (): void => {
+      clearSpinnerTimer();
+      this.showFullPreloader.set(false);
+      this.hasRenderedOnce.set(true);
+    };
 
     this.navigation.router.events.pipe(takeUntilDestroyed()).subscribe((e) => {
       if (e instanceof NavigationStart) {
@@ -125,17 +145,27 @@ export class PageLayoutComponent {
         this.layoutConfig.reset();
         // Close all active overlays when navigation starts
         this.overlays.close();
+        // Po pierwszym renderze nie chowamy shella od razu — pełny spinner dopiero, gdy
+        // ładowanie się przeciąga. Dzięki temu szybkie nawigacje nie „migają" nav-em.
+        clearSpinnerTimer();
+        if (this.hasRenderedOnce()) {
+          spinnerTimer = setTimeout(() => this.showFullPreloader.set(true), 200);
+        } else {
+          this.showFullPreloader.set(true);
+        }
       }
       if (e instanceof NavigationEnd) {
         // setTimeout ensures Angular CD completes first → child effects configure layout
         readyTimer = setTimeout(() => {
           readyTimer = null;
           this.layoutConfig.markReady();
+          finishLoading();
         });
       }
       if (e instanceof NavigationError) {
         // Lazy chunk load failure etc. - show content instead of infinite spinner
         this.layoutConfig.markReady();
+        finishLoading();
       }
       if (e instanceof NavigationCancel) {
         // Guards normally trigger a redirect (new NavigationStart follows).
@@ -145,6 +175,7 @@ export class PageLayoutComponent {
           if (!this.layoutConfig.isReady()) {
             this.layoutConfig.markReady();
           }
+          finishLoading();
         }, 50);
       }
     });
@@ -221,7 +252,7 @@ export class PageLayoutComponent {
     this.showMiniBar() ? 'auto' : this.heroHeight(),
   );
 
-  // RWD-15: tryb dwukolumnowy aktywny, gdy widok deklaruje `two-column` ORAZ dostarczył aside.
+  // Tryb dwukolumnowy aktywny, gdy widok deklaruje `two-column` ORAZ dostarczył aside.
   // `desktopLayout` pochodzi z `route.data` (spójne SSR↔klient); sam przełącznik 1↔2 kolumny
   // realizują klasy `lg:` (CSS), więc nie ma rozjazdu hydration.
   readonly twoColumn = computed(

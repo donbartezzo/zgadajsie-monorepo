@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
+import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { UserProfileCardComponent } from '../../../../shared/user/ui/user-profile-card/user-profile-card.component';
@@ -23,7 +23,6 @@ import { DisciplineProfile, ParticipantStats } from '../../../../shared/types';
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
     TranslocoPipe,
     IconComponent,
     ButtonComponent,
@@ -31,6 +30,7 @@ import { DisciplineProfile, ParticipantStats } from '../../../../shared/types';
     UserProfileCardComponent,
     ParticipantStatsComponent,
     SocialLinksEditorComponent,
+    AccountRailSlotComponent,
   ],
   templateUrl: './profile.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

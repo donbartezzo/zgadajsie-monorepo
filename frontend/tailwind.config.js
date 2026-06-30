@@ -36,15 +36,15 @@ module.exports = {
       },
       maxWidth: {
         app: 'var(--app-max-width)',
-        // RWD-15: szerokość całego boxa (main + aside) w trybie dwukolumnowym
+        // Szerokość całego boxa (main + aside) w trybie dwukolumnowym
         box: 'var(--app-box-width)',
       },
       width: {
-        // RWD-15: szerokość kolumny aside (box − main − gap)
+        // Szerokość kolumny aside (box − main − gap)
         aside: 'var(--app-aside-width)',
       },
       gridTemplateColumns: {
-        // RWD-15: układ dwukolumnowy boxa — aside po prawej / po lewej
+        // Układ dwukolumnowy boxa — aside po prawej / po lewej
         'main-aside': 'minmax(0, var(--app-max-width)) var(--app-aside-width)',
         'aside-main': 'var(--app-aside-width) minmax(0, var(--app-max-width))',
       },

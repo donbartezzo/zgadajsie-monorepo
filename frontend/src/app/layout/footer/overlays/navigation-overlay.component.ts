@@ -3,6 +3,9 @@ import { BottomOverlayComponent } from '../../../shared/overlay/ui/bottom-overla
 import { LinkListComponent, LinkListItem } from '../../../shared/ui/link-list/link-list.component';
 import { NavMenuService } from '../../nav/nav-menu.service';
 
+/**
+ * Mobilne menu nawigacji (bottom sheet) — ogólne linki + profil/powiadomienia/wyloguj.
+ */
 @Component({
   selector: 'app-navigation-overlay',
   imports: [BottomOverlayComponent, LinkListComponent],
