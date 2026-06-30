@@ -25,7 +25,7 @@ import { AccountNavService } from './account-nav.service';
   selector: 'app-account-nav-bar',
   imports: [IconComponent],
   templateUrl: './account-nav-bar.component.html',
-  host: { class: 'block' },
+  host: { class: 'block', '(document:keydown.escape)': 'closeMore()' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccountNavBarComponent {
