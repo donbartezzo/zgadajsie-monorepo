@@ -47,7 +47,7 @@ import { DateLabelsService } from '../../../services/date-labels.service';
 
     <button
       type="button"
-      class="@container rounded-2xl shadow-xs overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 bg-white border-2 border-neutral-400 text-left w-full"
+      class="@container rounded-2xl shadow-xs overflow-hidden cursor-pointer hover:shadow-md hover:-translate-y-0.5 hover:border-primary-300 transition-all duration-200 bg-white border-2 border-neutral-400 text-left w-full"
       (click)="selected.emit(_event)"
     >
       <div class="relative">
