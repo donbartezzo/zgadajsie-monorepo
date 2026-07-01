@@ -216,20 +216,6 @@ export class EventsComponent implements OnInit, OnDestroy {
     this.navigation.navigateToEventDetail(event.id, slug);
   }
 
-  /**
-   * Liczba kolumn gridu zależna od liczby wydarzeń w grupie. Karty zawsze wypełniają
-   * szerokość (`1fr`), a kolumn nie ma więcej niż elementów — dzięki temu pojedyncze
-   * wydarzenie nie tworzy samotnej wąskiej karty. Mobile zawsze 1 kolumna.
-   * Maks. 2 kolumny: kolumna główna ma 700px (3 byłyby zbyt wąskie); szersze
-   * wykorzystanie przyjdzie z kolumną aside (per-widok).
-   */
-  gridColsClass(count: number): string {
-    if (count <= 1) {
-      return 'grid-cols-1';
-    }
-    return 'grid-cols-1 md:grid-cols-2';
-  }
-
   onScroll(): void {
     if (!this.isLoading() && this.hasMore) {
       this.loadEvents(this.citySlug());
