@@ -51,12 +51,27 @@
       <!-- MAIN COLUMN (przezroczysta `contents` w 1-kol; flex w 2-kol od `lg`) -->
       <div [class]="mainColumnClass()">
         @if (showStaticHero()) {
-          <!-- Statyczne hero w kolumnie głównej (tylko od `lg`, tryb 2-kol; pkt 13) -->
-          <div class="relative hidden shrink-0 overflow-hidden rounded-2xl lg:block" [style.min-height]="heroHeight()">
-            @if (layoutConfig.heroVariant() === 'extended') {
-              <ng-container *ngTemplateOutlet="extendedHero"></ng-container>
-            } @else {
-              <ng-container *ngTemplateOutlet="compactHero"></ng-container>
+          <!-- Statyczne hero w kolumnie głównej (tylko od `lg`, tryb 2-kol/wide; pkt 13). -->
+          <div class="relative hidden shrink-0 lg:flex lg:gap-3" [style.min-height]="heroHeight()">
+            <!-- Okładka przypięta do lewej i ograniczona do `max-w-app` (700 = natywna szerokość
+                 cover image), by nigdy nie była upscalowana. W trybie `narrow`/2-kol kolumna główna
+                 ma 700, więc wrapper wypełnia całą kartę; w `wide` zostawia miejsce na prawą kolumnę.
+                 Zaokrąglenie i spójna ramka (jak `app-event-card`) są na samej okładce, żeby wszystkie
+                 statyczne cover-image wyglądały jednakowo jako wyróżnione karty. -->
+            <div
+              class="relative w-full max-w-app shrink-0 overflow-hidden rounded-2xl border-2 border-neutral-400 shadow-2xl"
+            >
+              @if (layoutConfig.heroVariant() === 'extended') {
+                <ng-container *ngTemplateOutlet="extendedHero"></ng-container>
+              } @else {
+                <ng-container *ngTemplateOutlet="compactHero"></ng-container>
+              }
+            </div>
+
+            <!-- Wide: prawa kolumna wypełnia box poza szerokością okładki. Placeholder (pusty)
+                 pod docelowy desktopowy mini-nav — kolejny etap. -->
+            @if (wide()) {
+              <div class="relative flex-1 min-w-0"></div>
             }
 
             @if (showBackButton()) {
@@ -169,9 +184,11 @@
 
   <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
 
-  <div class="absolute inset-x-0 bottom-0 p-4 mb-6 text-white">
+  <div class="absolute inset-x-0 bottom-0 p-4 mb-6 text-white lg:mb-0">
     @if (hasTitle()) {
-      <h1 class="text-lg font-extrabold leading-tight">{{ layoutConfig.title() }}</h1>
+      <h1 class="text-lg font-extrabold leading-tight">
+        {{ layoutConfig.title() }}
+      </h1>
     }
     @if (hasSubtitle()) {
       <div class="mt-1">
@@ -183,7 +200,7 @@
   @if (notifBellState(); as bellState) {
     <button
       type="button"
-      class="group/notif absolute right-3 bottom-10 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-xs backdrop-blur-xs transition-all hover:bg-primary-500 hover:text-white hover:shadow-md"
+      class="group/notif absolute right-3 bottom-10 lg:bottom-3 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-xs backdrop-blur-xs transition-all hover:bg-primary-500 hover:text-white hover:shadow-md"
       (click)="onNotifBellClick()"
       aria-label="Powiadomienia"
     >

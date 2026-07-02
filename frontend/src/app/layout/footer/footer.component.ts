@@ -47,6 +47,9 @@ export class FooterComponent {
   }
 
   readonly shouldShowAdBanner = computed(() => {
+    if (!environment.enableFooterAd) {
+      return false;
+    }
     const url = this.currentUrl();
     return this.isPageLoaded() && url.includes('/w/zielona-gora');
   });

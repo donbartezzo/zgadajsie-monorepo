@@ -12,7 +12,7 @@
   <app-next-event-badge [event]="_nextUpcomingEvent"></app-next-event-badge>
 </ng-template>
 
-<section class="py-4 px-3">
+<section class="py-4 px-3 lg:p-0">
   @if (_isLoading && _events.length === 0) {
     <app-loading-spinner></app-loading-spinner>
   } @else if (_error) {

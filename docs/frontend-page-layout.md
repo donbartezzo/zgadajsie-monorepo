@@ -438,6 +438,10 @@ listing wydarzeń (`/w/:citySlug`).
   oba tryby degradują się do fixed-hero + mini-bar.
 - W przeciwieństwie do `two-column`, `wide` nie używa `overflow: clip` (brak sticky aside — nie jest
   potrzebny scroll-container względem viewportu).
+- **Okładka statycznego hero jest ograniczona do `max-w-app` (700 = natywna szerokość cover image) i
+  przypięta do lewej**, więc nigdy nie jest upscalowana, mimo że karta hero rozciąga się na cały box.
+  Pozostała szerokość boxa (na prawo od okładki) to osobna kolumna hero (`flex-1`, brandowe tło) —
+  placeholder pod docelowy desktopowy mini-nav. Back/sticky pozostają `absolute` względem karty hero.
 
 ### Druga kolumna (aside) — tryb dwukolumnowy (RWD-15)
 
