@@ -47,42 +47,69 @@ import { DateLabelsService } from '../../../services/date-labels.service';
 
     <button
       type="button"
-      class="rounded-2xl shadow-xs overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200 bg-white border-2 border-neutral-400 text-left w-full"
+      class="@container rounded-2xl shadow-xs overflow-hidden cursor-pointer hover:shadow-md hover:-translate-y-0.5 hover:border-primary-300 transition-all duration-200 bg-white border-2 border-neutral-400 text-left w-full"
       (click)="selected.emit(_event)"
     >
       <div class="relative">
-        <div [class]="isDimmed() ? 'opacity-85 grayscale' : ''">
-          <div class="relative h-44 overflow-hidden">
-            @if (_coverSrc) {
-              <img
-                [src]="_coverSrc"
-                [alt]="_event.title"
-                class="absolute inset-0 h-full w-full object-cover"
-                loading="lazy"
-                decoding="async"
-                width="700"
-                height="250"
-                (error)="onCoverImageError()"
-              />
-            } @else {
-              <div class="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-500"></div>
-            }
+        <div class="@4xl:flex @4xl:min-h-[160px] @4xl:max-h-[250px] @4xl:overflow-hidden">
+          <div
+            class="relative h-44 @lg:h-52 overflow-hidden @4xl:h-auto @4xl:w-[700px] @4xl:grow-0"
+          >
+            <div class="absolute inset-0" [ngClass]="{ 'opacity-85 grayscale': isDimmed() }">
+              @if (_coverSrc) {
+                <img
+                  [src]="_coverSrc"
+                  [alt]="_event.title"
+                  class="absolute inset-0 h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                  width="700"
+                  height="250"
+                  (error)="onCoverImageError()"
+                />
+              } @else {
+                <div
+                  class="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-500"
+                ></div>
+              }
 
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"
-            ></div>
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"
+              ></div>
 
-            <div class="absolute inset-x-0 bottom-0 p-3">
-              <h3 class="text-sm font-bold text-white line-clamp-2 drop-shadow-xs">
-                {{ _event.title }}
-              </h3>
-              <div class="mt-1">
-                <app-event-badges [event]="_event" size="card" />
+              <div class="absolute inset-x-0 bottom-0 p-3 @lg:p-4">
+                <h3 class="text-sm @lg:text-base font-bold text-white line-clamp-2 drop-shadow-xs">
+                  {{ _event.title }}
+                </h3>
+                <div class="mt-1">
+                  <app-event-badges [event]="_event" size="card" />
+                </div>
               </div>
+            </div>
+
+            <div class="absolute right-2 top-2 z-10">
+              <app-date-badge
+                [month]="eventMonth()"
+                [day]="eventDay()"
+                [time]="eventStartTime()"
+                size="sm"
+              />
+            </div>
+
+            <div class="absolute left-2 top-2 z-10">
+              <app-event-status-badge
+                [variant]="statusBadgeVariant()"
+                [label]="statusBadgeLabel()"
+                [ended]="isEnded()"
+                [canceled]="isCancelled()"
+              />
             </div>
           </div>
 
-          <div class="p-3 space-y-2">
+          <div
+            class="p-3 space-y-2 @4xl:flex-1 @4xl:min-w-0 @4xl:flex @4xl:flex-col @4xl:justify-between @4xl:border-l-2 @4xl:border-neutral-400"
+            [ngClass]="{ 'opacity-85 grayscale': isDimmed() }"
+          >
             <app-event-meta-row
               [address]="_event.address"
               [startsAt]="_event.startsAt"
@@ -100,24 +127,6 @@ import { DateLabelsService } from '../../../services/date-labels.service';
               />
             </div>
           </div>
-        </div>
-
-        <div class="absolute right-2 top-2 z-10">
-          <app-date-badge
-            [month]="eventMonth()"
-            [day]="eventDay()"
-            [time]="eventStartTime()"
-            size="sm"
-          />
-        </div>
-
-        <div class="absolute left-2 top-2 z-10">
-          <app-event-status-badge
-            [variant]="statusBadgeVariant()"
-            [label]="statusBadgeLabel()"
-            [ended]="isEnded()"
-            [canceled]="isCancelled()"
-          />
         </div>
       </div>
     </button>

@@ -15,7 +15,12 @@ import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart } fro
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { IconComponent } from '../../ui/icon/icon.component';
-import { LayoutConfigService, HeroVariant } from './layout-config.service';
+import {
+  LayoutConfigService,
+  HeroVariant,
+  DesktopLayout,
+  AsideSide,
+} from './layout-config.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import {
@@ -40,6 +45,8 @@ export interface RouteLayoutData {
   heroVariant?: HeroVariant;
   title?: string;
   subtitle?: string;
+  desktopLayout?: DesktopLayout;
+  asideSide?: AsideSide;
 }
 
 const DEFAULT_ROUTE_DATA: RouteLayoutData = {
@@ -53,6 +60,8 @@ const DEFAULT_ROUTE_DATA: RouteLayoutData = {
   heroVariant: 'compact',
   title: '',
   subtitle: '',
+  desktopLayout: 'narrow',
+  asideSide: 'right',
 };
 
 @Component({
@@ -91,6 +100,12 @@ export class PageLayoutComponent {
     { initialValue: DEFAULT_ROUTE_DATA },
   );
 
+  // Pełny preloader pokazujemy tylko na pierwszym wejściu LUB gdy nawigacja przeciąga się
+  // > ~200ms (lazy chunk). Dla szybkich (cache) nawigacji shell zostaje — kolumna aside (rail) i pasek
+  // nav nie „migają", podmienia się tylko main-column.
+  readonly showFullPreloader = signal(true);
+  private readonly hasRenderedOnce = signal(false);
+
   constructor() {
     this.destroyRef.onDestroy(() => this.observer?.disconnect());
 
@@ -100,9 +115,25 @@ export class PageLayoutComponent {
       this.layoutConfig.heroVariant.set(data.heroVariant || 'compact');
       this.layoutConfig.title.set(data.title ?? '');
       this.layoutConfig.subtitle.set(data.subtitle ?? '');
+      this.layoutConfig.desktopLayout.set(data.desktopLayout || 'narrow');
+      this.layoutConfig.asideSide.set(data.asideSide || 'right');
     });
 
     let readyTimer: ReturnType<typeof setTimeout> | null = null;
+    let spinnerTimer: ReturnType<typeof setTimeout> | null = null;
+    const clearSpinnerTimer = (): void => {
+      if (spinnerTimer) {
+        clearTimeout(spinnerTimer);
+        spinnerTimer = null;
+      }
+    };
+    this.destroyRef.onDestroy(clearSpinnerTimer);
+
+    const finishLoading = (): void => {
+      clearSpinnerTimer();
+      this.showFullPreloader.set(false);
+      this.hasRenderedOnce.set(true);
+    };
 
     this.navigation.router.events.pipe(takeUntilDestroyed()).subscribe((e) => {
       if (e instanceof NavigationStart) {
@@ -114,17 +145,27 @@ export class PageLayoutComponent {
         this.layoutConfig.reset();
         // Close all active overlays when navigation starts
         this.overlays.close();
+        // Po pierwszym renderze nie chowamy shella od razu — pełny spinner dopiero, gdy
+        // ładowanie się przeciąga. Dzięki temu szybkie nawigacje nie „migają" nav-em.
+        clearSpinnerTimer();
+        if (this.hasRenderedOnce()) {
+          spinnerTimer = setTimeout(() => this.showFullPreloader.set(true), 200);
+        } else {
+          this.showFullPreloader.set(true);
+        }
       }
       if (e instanceof NavigationEnd) {
         // setTimeout ensures Angular CD completes first → child effects configure layout
         readyTimer = setTimeout(() => {
           readyTimer = null;
           this.layoutConfig.markReady();
+          finishLoading();
         });
       }
       if (e instanceof NavigationError) {
         // Lazy chunk load failure etc. - show content instead of infinite spinner
         this.layoutConfig.markReady();
+        finishLoading();
       }
       if (e instanceof NavigationCancel) {
         // Guards normally trigger a redirect (new NavigationStart follows).
@@ -134,6 +175,7 @@ export class PageLayoutComponent {
           if (!this.layoutConfig.isReady()) {
             this.layoutConfig.markReady();
           }
+          finishLoading();
         }, 50);
       }
     });
@@ -199,7 +241,7 @@ export class PageLayoutComponent {
 
   readonly heroContainerClass = computed(() =>
     [
-      'fixed inset-x-0 top-0 mx-auto max-w-app',
+      'fixed inset-x-0 top-app mx-auto max-w-app',
       this.showMiniBar()
         ? 'z-50 bg-white/95 backdrop-blur-md shadow-xl border-b border-neutral-200'
         : 'z-0',
@@ -210,28 +252,138 @@ export class PageLayoutComponent {
     this.showMiniBar() ? 'auto' : this.heroHeight(),
   );
 
+  // Tryb dwukolumnowy aktywny, gdy widok deklaruje `two-column` ORAZ dostarczył aside.
+  // `desktopLayout` pochodzi z `route.data` (spójne SSR↔klient); sam przełącznik 1↔2 kolumny
+  // realizują klasy `lg:` (CSS), więc nie ma rozjazdu hydration.
+  readonly twoColumn = computed(
+    () => this.layoutConfig.desktopLayout() === 'two-column' && !!this.layoutConfig.asideTemplate(),
+  );
+
+  // Tryb jednokolumnowy szeroki: treść wypełnia cały box (700 → box-wide od `lg`), bez aside.
+  readonly wide = computed(() => this.layoutConfig.desktopLayout() === 'wide');
+
+  // Widoki ze statycznym (nie-fixed/nie-sticky) hero w kolumnie głównej od `lg`: tryb dwukolumnowy
+  // ORAZ szeroki jednokolumnowy. Poniżej `lg` oba degradują się do fixed-hero + mini-bar.
+  readonly staticHeroLayout = computed(() => this.twoColumn() || this.wide());
+
+  // Statyczne hero tylko w trybie 2-kol/wide BEZ fullscreen (w fullscreen treść wypełnia kolumnę, np. czat)
+  // i tylko dla pełnego hero (extended/compact). Dla `only-mini-bar` (np. lista uczestników w 2-kol) NIE
+  // renderujemy statycznego hero — na desktopie kontekst daje rail, a `--hero-only-mini-bar-h` nie istnieje.
+  readonly showStaticHero = computed(
+    () =>
+      this.staticHeroLayout() &&
+      this.showHeader() &&
+      !this.fullscreenContent() &&
+      !this.miniBarOnly(),
+  );
+
+  // Sekcja fixed-hero (sentinel + hero + back/sticky) jest potrzebna < lg (pojedyncza kolumna).
+  // Od `lg` w trybie 2-kol ją chowamy — jej rolę przejmuje statyczne hero w kolumnie głównej.
+  // `contents` = wrapper przezroczysty dla layoutu; `lg:hidden` ukrywa też potomków `fixed`.
+  readonly fixedHeaderClass = computed(() =>
+    this.staticHeroLayout() ? 'contents lg:hidden' : 'contents',
+  );
+
+  readonly sentinelClass = computed(() =>
+    ['relative w-full shrink-0', this.staticHeroLayout() ? 'lg:hidden' : '']
+      .filter(Boolean)
+      .join(' '),
+  );
+
+  readonly mainColumnClass = computed(() => {
+    if (this.wide()) {
+      // Szeroki jednokolumnowy: kolumna główna jako flex-col, by statyczne hero i treść były
+      // kafelkami z równym odstępem (jak w 2-kol, ale bez aside).
+      return 'contents lg:flex lg:min-h-0 lg:min-w-0 lg:flex-col lg:gap-3';
+    }
+    if (!this.twoColumn()) {
+      return 'contents';
+    }
+    const order = this.layoutConfig.asideSide() === 'left' ? 'lg:order-2' : 'lg:order-1';
+    // `lg:gap-3` — równy odstęp między modułami w kolumnie głównej (hero ↔ karta treści).
+    // `lg:min-h-0` — pozwala treści fullscreen (np. czat) wypełnić wysokość kolumny.
+    return `contents lg:flex lg:min-h-0 lg:min-w-0 lg:flex-col lg:gap-3 ${order}`;
+  });
+
+  readonly asideColumnClass = computed(() => {
+    const order = this.layoutConfig.asideSide() === 'left' ? 'lg:order-1' : 'lg:order-2';
+    // Sticky tylko dla widoków przewijanych: aside zostaje w miejscu, gdy main się scrolluje
+    // (`top-app-inset` = pod top-navem + inset boxa). W fullscreen (czat — brak scrolla) sticky jest
+    // zbędny i podwajałby offset nav, spychając rail w dół — wtedy zwykły `self-start` (rail u góry).
+    const sticky = this.fullscreenContent() ? '' : 'lg:sticky top-app-inset';
+    return `hidden lg:flex lg:w-aside lg:flex-col lg:gap-3 ${sticky} lg:self-start ${order}`;
+  });
+
   readonly contentWrapperClass = computed(() => {
     const fs = this.fullscreenContent();
     const center = this.centerContent();
-    const parts = ['relative'];
+    const parts = ['relative mx-auto w-full'];
+    // RWD-19: fullscreen + 2-kol (czat) — < lg pełnoekranowa jedna kolumna; od `lg` grid main + aside,
+    // który wypełnia wysokość (kolumna główna = czat fills, aside = rail).
+    if (fs && this.twoColumn()) {
+      const cols =
+        this.layoutConfig.asideSide() === 'left'
+          ? 'lg:grid-cols-aside-main'
+          : 'lg:grid-cols-main-aside';
+      parts.push(
+        `flex-1 min-h-0 flex flex-col max-w-app lg:max-w-box lg:grid lg:grid-rows-1 ${cols} lg:gap-3 lg:p-3`,
+      );
+      if (this.miniBarOnly()) {
+        // Offset pod fixed mini-barem; `.mt-mini-bar` zerowane od `lg` w styles.scss (mini-bar ukryty).
+        parts.push('mt-mini-bar');
+      }
+      return parts.join(' ');
+    }
     if (fs) {
-      parts.push('flex-1 min-h-0 flex flex-col');
+      parts.push('max-w-app flex-1 min-h-0 flex flex-col');
       if (center) {
         parts.push('items-center justify-center');
       }
-    } else {
+      return parts.join(' ');
+    }
+    if (this.twoColumn()) {
+      // < lg: pojedyncza wąska kolumna (jak dziś). Od `lg`: grid main + aside w szerszym boxie.
+      // `lg:p-3 lg:gap-3` — moduły jako kafelki odsunięte od krawędzi boxa z równym odstępem.
+      const cols =
+        this.layoutConfig.asideSide() === 'left'
+          ? 'lg:grid-cols-aside-main'
+          : 'lg:grid-cols-main-aside';
+      parts.push(`max-w-app lg:max-w-box lg:grid ${cols} lg:items-start lg:gap-3 lg:p-3`);
       if (this.showHeader()) {
-        parts.push('-mt-6');
+        // `only-mini-bar`: offset pod fixed mini-barem < lg (`mt-mini-bar` zerowany od `lg`).
+        // Pełne hero (extended/compact): overlap `-mt-6` < lg, reset od `lg` (statyczne hero w przepływie).
+        parts.push(this.miniBarOnly() ? 'mt-mini-bar' : '-mt-6 lg:mt-0');
+      }
+      return parts.join(' ');
+    }
+    if (this.wide()) {
+      // Jednokolumnowa treść wypełniająca cały box: < lg wąska kolumna (700), od `lg` pełny box.
+      // `lg:p-3` — moduły (statyczne hero + karta treści) jako kafelki odsunięte od krawędzi boxa.
+      parts.push('max-w-app lg:max-w-box lg:p-3');
+      if (this.showHeader()) {
+        // `-mt-6` — overlap pod fixed-hero < lg; od `lg` reset (statyczne hero jest w przepływie).
+        parts.push('-mt-6 lg:mt-0');
       }
       if (center) {
         parts.push('flex flex-1 items-center justify-center');
       }
+      return parts.join(' ');
+    }
+    // Treść = wyśrodkowana kolumna główna `max-w-app` (700), hug-owana przez boxed look.
+    parts.push('max-w-app');
+    if (this.showHeader()) {
+      parts.push('-mt-6');
+    }
+    if (center) {
+      parts.push('flex flex-1 items-center justify-center');
     }
     return parts.join(' ');
   });
 
+  // Offset pod fixed mini-barem. W trybie 2-kol obsługuje go klasa `mt-mini-bar lg:mt-0`
+  // (mini-bar ukryty od `lg`), więc tu zwracamy null, by nie dublować marginesu.
   readonly contentMarginTop = computed(() =>
-    this.miniBarOnly() ? 'var(--hero-mini-bar-h)' : null,
+    this.miniBarOnly() && !this.staticHeroLayout() ? 'var(--hero-mini-bar-h)' : null,
   );
 
   readonly contentInnerClass = computed(() => {
@@ -243,7 +395,15 @@ export class PageLayoutComponent {
       return cc || '';
     }
     if (fs) {
-      return ['flex-1 min-h-0 flex flex-col', cc].filter(Boolean).join(' ');
+      // W trybie 2-kol (czat) treść jest białą, zaokrągloną kartą w kolumnie głównej (jak
+      // szczegóły wydarzenia); tło boxa pozostaje szare. Na mobile (fullscreen) bez zaokrągleń.
+      return [
+        'flex-1 min-h-0 flex flex-col',
+        this.twoColumn() ? 'lg:overflow-hidden lg:rounded-2xl' : '',
+        cc,
+      ]
+        .filter(Boolean)
+        .join(' ');
     }
     return [
       'rounded-2xl border',

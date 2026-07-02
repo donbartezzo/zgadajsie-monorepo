@@ -224,7 +224,11 @@ export class EventSeriesService {
           },
           orderBy: { startsAt: 'asc' },
           take: 3,
+          include: {
+            _count: { select: { enrollments: true } },
+          },
         },
+        _count: { select: { events: true } },
       },
       orderBy: { createdAt: 'desc' },
     });

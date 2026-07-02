@@ -1,75 +1,75 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
-import { CardComponent } from '../../../../shared/ui/card/card.component';
-import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
-import { PaginationComponent } from '../../../../shared/ui/pagination/pagination.component';
+import {
+  DataTableColumn,
+  DataTableComponent,
+} from '../../../../shared/ui/data-table/data-table.component';
+import { DataTableCellDirective } from '../../../../shared/ui/data-table/data-table-cell.directive';
 import { EventService } from '../../../../core/services/event.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { EventBase } from '../../../../shared/types';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 import { EventStatus } from '@zgadajsie/shared';
 
 @Component({
   selector: 'app-admin-events',
   imports: [
-    CommonModule,
     DatePipe,
     RouterLink,
     IconComponent,
     ButtonComponent,
-    CardComponent,
-    LoadingSpinnerComponent,
-    PaginationComponent,
+    DataTableComponent,
+    DataTableCellDirective,
+    PageHeadingComponent,
   ],
   template: `
     <div class="p-4">
-      <h1 class="text-xl font-bold text-neutral-900 mb-4">Wydarzenia (admin)</h1>
-      @if (loading()) {
-        <app-loading-spinner></app-loading-spinner>
-      } @else {
-        <div class="space-y-2">
-          @for (e of events(); track e.id) {
-            <app-card>
-              <div class="flex items-center justify-between">
-                <div>
-                  <a
-                    [routerLink]="['/w', e.city?.slug, e.id]"
-                    class="text-sm font-semibold text-neutral-900 hover:text-primary-500"
-                    >{{ e.title }}</a
-                  >
-                  <p class="text-xs text-neutral-500">
-                    {{ e.startsAt | date: 'd MMM yyyy, HH:mm' }} · {{ e.status }}
-                  </p>
-                </div>
-                <div class="flex gap-1">
-                  <a [routerLink]="['/o', 'w', e.id, 'manage']"
-                    ><app-button appearance="outline" color="neutral" size="sm"
-                      ><app-icon name="settings" size="sm"></app-icon></app-button
-                  ></a>
-                  <a [routerLink]="['/o', 'w', e.id, 'edit']"
-                    ><app-button appearance="outline" color="neutral" size="sm"
-                      ><app-icon name="edit" size="sm"></app-icon></app-button
-                  ></a>
-                  <app-button appearance="soft" color="danger" size="sm" (clicked)="onCancel(e.id)"
-                    ><app-icon name="x" size="sm"></app-icon
-                  ></app-button>
-                </div>
-              </div>
-            </app-card>
-          }
-        </div>
-        @if (totalPages() > 1) {
-          <div class="mt-4">
-            <app-pagination
-              [currentPage]="page()"
-              [totalPages]="totalPages()"
-              (pageChange)="onPageChange($event)"
-            ></app-pagination>
+      <app-page-heading heading="Wydarzenia (admin)" />
+      <app-data-table
+        [data]="events()"
+        [columns]="columns"
+        [loading]="loading()"
+        [currentPage]="page()"
+        [totalPages]="totalPages()"
+        (pageChange)="onPageChange($event)"
+      >
+        <ng-template appDataTableCell="title" let-e>
+          <a
+            [routerLink]="['/w', e.city?.slug, e.id]"
+            class="font-medium text-neutral-900 hover:text-primary-500"
+            >{{ e.title }}</a
+          >
+        </ng-template>
+
+        <ng-template appDataTableCell="date" let-e>
+          <span class="whitespace-nowrap text-neutral-600">
+            {{ e.startsAt | date: 'd MMM yyyy, HH:mm' }}
+          </span>
+        </ng-template>
+
+        <ng-template appDataTableCell="status" let-e>
+          <span class="whitespace-nowrap text-neutral-600">{{ e.status }}</span>
+        </ng-template>
+
+        <ng-template appDataTableCell="actions" let-e>
+          <div class="flex justify-end gap-1">
+            <a [routerLink]="['/o', 'w', e.id, 'manage']"
+              ><app-button appearance="outline" color="neutral" size="sm"
+                ><app-icon name="settings" size="sm"></app-icon></app-button
+            ></a>
+            <a [routerLink]="['/o', 'w', e.id, 'edit']"
+              ><app-button appearance="outline" color="neutral" size="sm"
+                ><app-icon name="edit" size="sm"></app-icon></app-button
+            ></a>
+            <app-button appearance="soft" color="danger" size="sm" (clicked)="onCancel(e.id)"
+              ><app-icon name="x" size="sm"></app-icon
+            ></app-button>
           </div>
-        }
-      }
+        </ng-template>
+      </app-data-table>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -77,6 +77,14 @@ import { EventStatus } from '@zgadajsie/shared';
 export class AdminEventsComponent implements OnInit {
   private readonly eventService = inject(EventService);
   private readonly snackbar = inject(SnackbarService);
+
+  readonly columns: DataTableColumn<EventBase>[] = [
+    { key: 'title', header: 'Tytuł' },
+    { key: 'date', header: 'Termin', nowrap: true },
+    { key: 'status', header: 'Status', nowrap: true },
+    { key: 'actions', header: '', align: 'right' },
+  ];
+
   readonly events = signal<EventBase[]>([]);
   readonly loading = signal(true);
   readonly page = signal(1);

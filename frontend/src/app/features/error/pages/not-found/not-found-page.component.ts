@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 interface NotFoundState {
   reason?: 'event-not-found' | 'city-mismatch' | 'city-not-found';
@@ -10,19 +11,24 @@ interface NotFoundState {
 
 @Component({
   selector: 'app-not-found-page',
-  imports: [RouterLink, ButtonComponent, IconComponent],
+  imports: [RouterLink, ButtonComponent, IconComponent, PageHeadingComponent],
   template: `
     <div class="flex min-h-screen items-center justify-center">
       <div class="text-center">
-        <div
-          class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-neutral-100"
+        <app-page-heading
+          [heading]="title()"
+          [description]="description()"
+          size="2xl"
+          centered
+          spacing="none"
         >
-          <app-icon name="search" class="text-neutral-400" size="lg"></app-icon>
-        </div>
-
-        <h1 class="text-2xl font-bold text-neutral-900">{{ title() }}</h1>
-
-        <p class="mt-2 text-sm text-neutral-500">{{ description() }}</p>
+          <div
+            slot="icon"
+            class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-neutral-100"
+          >
+            <app-icon name="search" class="text-neutral-400" size="lg"></app-icon>
+          </div>
+        </app-page-heading>
 
         <div class="mt-8 flex flex-col gap-3 max-w-sm mx-auto items-center justify-center">
           @if (citySlug()) {

@@ -1,17 +1,17 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { AdminService } from '../../../../core/services/admin.service';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [CommonModule, RouterLink, IconComponent, CardComponent],
+  imports: [CommonModule, IconComponent, CardComponent, PageHeadingComponent],
   template: `
     <div class="p-4">
-      <h1 class="text-xl font-bold text-neutral-900 mb-6">Panel administratora</h1>
-      <div class="grid grid-cols-2 gap-4 mb-6">
+      <app-page-heading heading="Panel administratora" spacing="lg" />
+      <div class="grid grid-cols-2 gap-4 mb-6 sm:max-w-md">
         <app-card
           ><div class="text-center">
             <app-icon name="users" size="lg" color="primary"></app-icon>
@@ -29,72 +29,6 @@ import { AdminService } from '../../../../core/services/admin.service';
             </p>
             <p class="text-xs text-neutral-500">Wydarzenia</p>
           </div></app-card
-        >
-      </div>
-      <div class="space-y-3">
-        <a routerLink="/admin/users"
-          ><app-card
-            ><div class="flex items-center gap-3">
-              <app-icon name="users" size="sm"></app-icon>
-              <span class="text-sm font-medium text-neutral-900">Zarządzaj użytkownikami</span>
-            </div></app-card
-          ></a
-        >
-        <a routerLink="/admin/events"
-          ><app-card
-            ><div class="flex items-center gap-3">
-              <app-icon name="calendar" size="sm"></app-icon>
-              <span class="text-sm font-medium text-neutral-900">Zarządzaj wydarzeniami</span>
-            </div></app-card
-          ></a
-        >
-        <a routerLink="/admin/cover-images"
-          ><app-card
-            ><div class="flex items-center gap-3">
-              <app-icon name="image" size="sm"></app-icon>
-              <span class="text-sm font-medium text-neutral-900">Galeria cover images</span>
-            </div></app-card
-          ></a
-        >
-        <a routerLink="/admin/settings"
-          ><app-card
-            ><div class="flex items-center gap-3">
-              <app-icon name="settings" size="sm"></app-icon>
-              <span class="text-sm font-medium text-neutral-900">Ustawienia systemowe</span>
-            </div></app-card
-          ></a
-        >
-        <a routerLink="/admin/crons"
-          ><app-card
-            ><div class="flex items-center gap-3">
-              <app-icon name="clock" size="sm"></app-icon>
-              <span class="text-sm font-medium text-neutral-900">Zarządzanie cronami</span>
-            </div></app-card
-          ></a
-        >
-        <a routerLink="/admin/fake-users"
-          ><app-card
-            ><div class="flex items-center gap-3">
-              <app-icon name="user" size="sm"></app-icon>
-              <span class="text-sm font-medium text-neutral-900">Fake users</span>
-            </div></app-card
-          ></a
-        >
-        <a routerLink="/admin/contact-messages"
-          ><app-card
-            ><div class="flex items-center gap-3">
-              <app-icon name="mail" size="sm"></app-icon>
-              <span class="text-sm font-medium text-neutral-900">Wiadomości kontaktowe</span>
-            </div></app-card
-          ></a
-        >
-        <a routerLink="/admin/pending-emails"
-          ><app-card
-            ><div class="flex items-center gap-3">
-              <app-icon name="mail" size="sm"></app-icon>
-              <span class="text-sm font-medium text-neutral-900">Kolejka emaili</span>
-            </div></app-card
-          ></a
         >
       </div>
     </div>

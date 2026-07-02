@@ -7,6 +7,7 @@ import { MapComponent } from '../../../../shared/event-form/ui/map/map.component
 import { EventAreaService } from '../../services/event-area.service';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { NavigationService } from '../../../../core/services/navigation.service';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 @Component({
   selector: 'app-event-map',
@@ -16,6 +17,7 @@ import { NavigationService } from '../../../../core/services/navigation.service'
     MapComponent,
     EventHeroSlotsComponent,
     LoadingSpinnerComponent,
+    PageHeadingComponent,
   ],
   templateUrl: './event-map.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

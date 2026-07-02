@@ -4,6 +4,7 @@ import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
+import { AccountContentComponent } from '../../../../shared/ui/account-nav-rail/account-content.component';
 import { EventManageCardComponent } from '../../../../shared/event/ui/event-manage-card/event-manage-card.component';
 import type {
   EventManageCardItem,
@@ -29,6 +30,7 @@ import {
     LoadingSpinnerComponent,
     IconComponent,
     EventManageCardComponent,
+    AccountContentComponent,
   ],
   templateUrl: './organizer-digest.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

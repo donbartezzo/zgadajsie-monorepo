@@ -21,13 +21,15 @@ export type AnnouncementMode = 'participant' | 'organizer';
             <span class="text-[10px] text-neutral-400">({{ announcements().length }})</span>
           </div>
           @if (mode() === 'participant' && isLoggedIn() && showConfirmAll()) {
-            <button
+            <app-button
               type="button"
-              class="text-[11px] font-semibold text-primary-500 hover:text-primary-600 transition-colors whitespace-nowrap"
-              (click)="confirmAll.emit()"
+              size="xs"
+              color="primary"
+              appearance="ghost"
+              (clicked)="confirmAll.emit()"
             >
               Potwierdź wszystkie
-            </button>
+            </app-button>
           }
         </div>
 
@@ -78,7 +80,7 @@ export type AnnouncementMode = 'participant' | 'organizer';
                       color="neutral"
                       size="xs"
                       (clicked)="confirm.emit(a.id)"
-                      class="shrink-0 self-start h-7"
+                      class="shrink-0 self-start"
                     >
                       Potwierdź
                     </app-button>

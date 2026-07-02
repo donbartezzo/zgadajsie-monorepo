@@ -5,10 +5,11 @@ import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 @Component({
   selector: 'app-activate',
-  imports: [RouterLink, IconComponent, ButtonComponent, FormsModule],
+  imports: [RouterLink, IconComponent, ButtonComponent, FormsModule, PageHeadingComponent],
   template: `
     <div class="flex min-h-screen items-center justify-center px-4">
       <div class="text-center w-full max-w-sm">
@@ -16,26 +17,40 @@ import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service
           <app-icon name="loader" size="lg" color="primary" class="animate-spin mb-4"></app-icon>
           <p class="text-neutral-600">Aktywowanie konta...</p>
         } @else if (success()) {
-          <div
-            class="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-50"
+          <app-page-heading
+            heading="Konto aktywowane!"
+            description="Możesz teraz zalogować się."
+            size="xl"
+            centered
+            spacing="md"
           >
-            <app-icon name="check" size="lg" color="primary"></app-icon>
-          </div>
-          <h1 class="text-xl font-bold text-neutral-900 mb-2">Konto aktywowane!</h1>
-          <p class="text-sm text-neutral-500 mb-4">Możesz teraz zalogować się.</p>
+            <div
+              slot="icon"
+              class="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-50"
+            >
+              <app-icon name="check" size="lg" color="primary"></app-icon>
+            </div>
+          </app-page-heading>
           <div class="flex justify-center">
             <a routerLink="/auth/login">
               <app-button appearance="solid" color="primary">Zaloguj się</app-button>
             </a>
           </div>
         } @else {
-          <div
-            class="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-danger-50"
+          <app-page-heading
+            heading="Błąd aktywacji"
+            [description]="errorMsg()"
+            size="xl"
+            centered
+            spacing="none"
           >
-            <app-icon name="x" size="lg" color="danger"></app-icon>
-          </div>
-          <h1 class="text-xl font-bold text-neutral-900 mb-2">Błąd aktywacji</h1>
-          <p class="text-sm text-neutral-500 mb-4">{{ errorMsg() }}</p>
+            <div
+              slot="icon"
+              class="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-danger-50"
+            >
+              <app-icon name="x" size="lg" color="danger"></app-icon>
+            </div>
+          </app-page-heading>
           <div class="mt-4 space-y-3">
             <input
               type="email"

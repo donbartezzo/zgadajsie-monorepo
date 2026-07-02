@@ -4,24 +4,27 @@ import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 @Component({
   selector: 'app-unverified-account-page',
-  imports: [RouterLink, ButtonComponent, IconComponent],
+  imports: [RouterLink, ButtonComponent, IconComponent, PageHeadingComponent],
   template: `
     <div class="p-6 max-w-md mx-auto text-center">
-      <div
-        class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-warning-50"
+      <app-page-heading
+        heading="Konto niezweryfikowane"
+        description="Ta strona wymaga zweryfikowanego adresu e-mail. Sprawdź swoją skrzynkę pocztową lub wyślij link aktywacyjny ponownie."
+        size="2xl"
+        centered
+        spacing="none"
       >
-        <app-icon name="mail" color="warning" size="lg"></app-icon>
-      </div>
-
-      <h1 class="text-2xl font-bold text-neutral-900">Konto niezweryfikowane</h1>
-
-      <p class="mt-2 text-sm text-neutral-500">
-        Ta strona wymaga zweryfikowanego adresu e-mail. Sprawdź swoją skrzynkę pocztową lub wyślij
-        link aktywacyjny ponownie.
-      </p>
+        <div
+          slot="icon"
+          class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-warning-50"
+        >
+          <app-icon name="mail" color="warning" size="lg"></app-icon>
+        </div>
+      </app-page-heading>
 
       <div class="mt-8 flex flex-col gap-3 max-w-xs mx-auto">
         <app-button

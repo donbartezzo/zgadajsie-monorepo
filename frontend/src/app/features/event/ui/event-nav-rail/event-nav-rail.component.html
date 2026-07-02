@@ -1,0 +1,18 @@
+<app-aside-panel>
+  @if (eventArea.canJoin()) {
+    <div class="mb-3">
+      <app-join-event-button />
+    </div>
+  }
+
+  <app-aside-nav [items]="items()" (selected)="select($event)" />
+
+  @if (canManage()) {
+    <div class="mt-3 border-t border-neutral-100 pt-3">
+      <app-button appearance="outline" color="primary" size="sm" [fullWidth]="true" (clicked)="openManage()">
+        <app-icon name="settings" size="sm" />
+        Zarządzaj
+      </app-button>
+    </div>
+  }
+</app-aside-panel>

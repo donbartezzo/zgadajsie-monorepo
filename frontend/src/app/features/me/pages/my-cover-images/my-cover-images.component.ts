@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
+import { AccountContentComponent } from '../../../../shared/ui/account-nav-rail/account-content.component';
 import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { CoverImageService } from '../../../../core/services/cover-image.service';
@@ -21,141 +21,136 @@ import { USER_COVER_IMAGE_LIMIT } from '@zgadajsie/shared';
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
     IconComponent,
     CardComponent,
     ButtonComponent,
+    AccountContentComponent,
     ImageCropperModalComponent,
   ],
   template: `
-    <div class="p-4">
-      <div class="flex items-center gap-3 mb-4">
-        <a routerLink="/me" class="text-neutral-500">
-          <app-icon name="arrow-left" size="sm" />
-        </a>
-        <h1 class="text-xl font-bold text-neutral-900">Moja galeria cover images</h1>
-      </div>
-
-      <app-card class="mb-4">
-        <div class="space-y-3">
-          <p class="text-sm text-neutral-600">
-            Maksymalnie możesz mieć {{ coverLimit }} własne cover images. Używaj ich w wydarzeniach,
-            które organizujesz.
-          </p>
-          @if (covers().length < coverLimit) {
-            <app-button appearance="soft" color="primary" (clicked)="onUploadNew()">
-              <app-icon name="plus" size="sm" />
-              Dodaj nowe cover image
-            </app-button>
-          }
-        </div>
-      </app-card>
-
-      @if (loading()) {
-        <div class="text-center py-8">
-          <app-icon name="loader" size="lg" class="animate-spin text-neutral-400" />
-        </div>
-      } @else {
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          @for (cover of covers(); track cover.id) {
-            <app-card>
-              <div class="space-y-3">
-                <div class="aspect-[700/250] rounded-lg overflow-hidden bg-neutral-100">
-                  <img
-                    [src]="getCoverUrl(cover)"
-                    [alt]="cover.name || 'Cover image'"
-                    class="w-full h-full object-cover"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <input
-                    [(ngModel)]="cover.name"
-                    (blur)="onRename(cover)"
-                    class="w-full px-2 py-1 text-sm border border-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="Nazwa"
-                    [disabled]="renameLoading() === cover.id"
-                  />
-                  <div class="flex items-center justify-between text-xs text-neutral-500">
-                    <span>Dodano: {{ formatDate(cover.createdAt) }}</span>
-                  </div>
-                  <div class="flex gap-2">
-                    <app-button
-                      appearance="soft"
-                      color="neutral"
-                      size="sm"
-                      (clicked)="onReplace(cover)"
-                      [disabled]="replaceLoading() === cover.id"
-                    >
-                      <app-icon name="refresh-cw" size="xs" />
-                      Podmień grafikę
-                    </app-button>
-                    <app-button
-                      appearance="soft"
-                      color="danger"
-                      size="sm"
-                      (clicked)="onDelete(cover)"
-                      [disabled]="deleteLoading() === cover.id"
-                    >
-                      <app-icon name="trash" size="xs" />
-                      Usuń
-                    </app-button>
-                  </div>
-                </div>
-              </div>
-            </app-card>
-          }
-
-          @for (i of emptySlots(); track i) {
-            <app-card
-              class="border-dashed border-2 border-neutral-200 flex items-center justify-center min-h-[200px]"
-            >
-              <div class="text-center text-neutral-400">
-                <app-icon name="image" size="lg" />
-                <p class="text-sm mt-2">Pusty slot</p>
-              </div>
-            </app-card>
-          }
-        </div>
-      }
-
-      <!-- Modal upload -->
-      @if (uploadModalVisible() && !uploadCroppedFile()) {
-        <app-image-cropper-modal
-          [imageFile]="uploadFile()"
-          imageType="cover-image"
-          (confirmed)="onUploadConfirmed($event)"
-          (cancelled)="onUploadModalClosed()"
-        />
-      }
-
-      <!-- Modal name input -->
-      @if (uploadModalVisible() && uploadCroppedFile()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4">
-            <h3 class="text-lg font-semibold text-neutral-900">Nazwa cover image</h3>
-            <input
-              [(ngModel)]="uploadName"
-              type="text"
-              class="w-full px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="Wpisz nazwę (min 3 znaki)"
-            />
-            <div class="flex gap-3 justify-end">
-              <app-button appearance="soft" color="neutral" (clicked)="onUploadModalClosed()">
-                Anuluj
+    <app-account-content>
+      <div class="space-y-4">
+        <app-card class="mb-4">
+          <div class="space-y-3">
+            <p class="text-sm text-neutral-600">
+              Maksymalnie możesz mieć {{ coverLimit }} własne cover images. Używaj ich w
+              wydarzeniach, które organizujesz.
+            </p>
+            @if (covers().length < coverLimit) {
+              <app-button appearance="soft" color="primary" (clicked)="onUploadNew()">
+                <app-icon name="plus" size="sm" />
+                Dodaj nowe cover image
               </app-button>
-              <app-button
-                appearance="solid"
-                color="primary"
-                [disabled]="uploadName().length < 3"
-                (clicked)="onUploadConfirmedWithName()"
+            }
+          </div>
+        </app-card>
+
+        @if (loading()) {
+          <div class="text-center py-8">
+            <app-icon name="loader" size="lg" class="animate-spin text-neutral-400" />
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @for (cover of covers(); track cover.id) {
+              <app-card>
+                <div class="space-y-3">
+                  <div class="aspect-[700/250] rounded-lg overflow-hidden bg-neutral-100">
+                    <img
+                      [src]="getCoverUrl(cover)"
+                      [alt]="cover.name || 'Cover image'"
+                      class="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <input
+                      [(ngModel)]="cover.name"
+                      (blur)="onRename(cover)"
+                      class="w-full px-2 py-1 text-sm border border-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      placeholder="Nazwa"
+                      [disabled]="renameLoading() === cover.id"
+                    />
+                    <div class="flex items-center justify-between text-xs text-neutral-500">
+                      <span>Dodano: {{ formatDate(cover.createdAt) }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                      <app-button
+                        appearance="soft"
+                        color="neutral"
+                        size="sm"
+                        (clicked)="onReplace(cover)"
+                        [disabled]="replaceLoading() === cover.id"
+                      >
+                        <app-icon name="refresh-cw" size="xs" />
+                        Podmień grafikę
+                      </app-button>
+                      <app-button
+                        appearance="soft"
+                        color="danger"
+                        size="sm"
+                        (clicked)="onDelete(cover)"
+                        [disabled]="deleteLoading() === cover.id"
+                      >
+                        <app-icon name="trash" size="xs" />
+                        Usuń
+                      </app-button>
+                    </div>
+                  </div>
+                </div>
+              </app-card>
+            }
+
+            @for (i of emptySlots(); track i) {
+              <app-card
+                class="border-dashed border-2 border-neutral-200 flex items-center justify-center min-h-[200px]"
               >
-                Zapisz
-              </app-button>
+                <div class="text-center text-neutral-400">
+                  <app-icon name="image" size="lg" />
+                  <p class="text-sm mt-2">Pusty slot</p>
+                </div>
+              </app-card>
+            }
+          </div>
+        }
+
+        <!-- Modal upload -->
+        @if (uploadModalVisible() && !uploadCroppedFile()) {
+          <app-image-cropper-modal
+            [imageFile]="uploadFile()"
+            imageType="cover-image"
+            (confirmed)="onUploadConfirmed($event)"
+            (cancelled)="onUploadModalClosed()"
+          />
+        }
+
+        <!-- Modal name input -->
+        @if (uploadModalVisible() && uploadCroppedFile()) {
+          <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4">
+              <h3 class="text-lg font-semibold text-neutral-900">Nazwa cover image</h3>
+              <input
+                [(ngModel)]="uploadName"
+                type="text"
+                class="w-full px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                placeholder="Wpisz nazwę (min 3 znaki)"
+              />
+              <div class="flex gap-3 justify-end">
+                <app-button appearance="soft" color="neutral" (clicked)="onUploadModalClosed()">
+                  Anuluj
+                </app-button>
+                <app-button
+                  appearance="solid"
+                  color="primary"
+                  [disabled]="uploadName().length < 3"
+                  (clicked)="onUploadConfirmedWithName()"
+                >
+                  Zapisz
+                </app-button>
+              </div>
             </div>
           </div>
-        </div>
-      }
-    </div>
+        }
+      </div>
+    </app-account-content>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

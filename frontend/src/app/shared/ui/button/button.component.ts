@@ -165,18 +165,29 @@ export class ButtonComponent {
     const base = `flex items-center ${justifyClass} font-medium rounded-lg transition-all duration-200 focus:outline-hidden focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed`;
 
     // Kwadratowe rozmiary dla icon-only, prostokątne dla tekstu
+    const textSizeMap: Record<ButtonSize, string> = {
+      xs: 'text-xs',
+      sm: 'text-sm',
+      md: 'text-base',
+      lg: 'text-lg',
+    };
+
+    const iconOnlyBase = 'w-11 h-11';
+    const textBase = 'py-2 min-h-11 gap-1';
+    const pxMap: Record<ButtonSize, string> = { xs: 'px-3', sm: 'px-3', md: 'px-4', lg: 'px-5' };
+
     const sizeClasses: Record<ButtonSize, string> = isIconOnly
       ? {
-          xs: 'w-7 h-7 text-xs',
-          sm: 'w-8 h-8 text-sm',
-          md: 'w-10 h-10 text-sm',
-          lg: 'w-12 h-12 text-base',
+          xs: `${iconOnlyBase} ${textSizeMap.xs}`,
+          sm: `${iconOnlyBase} ${textSizeMap.sm}`,
+          md: `${iconOnlyBase} ${textSizeMap.md}`,
+          lg: `${iconOnlyBase} ${textSizeMap.lg}`,
         }
       : {
-          xs: 'px-2 py-1 text-xs gap-1',
-          sm: 'px-3 py-1.5 text-sm gap-1.5',
-          md: 'px-4 py-2.5 text-sm gap-2',
-          lg: 'px-5 py-3 text-base gap-2',
+          xs: `${pxMap.xs} ${textBase} ${textSizeMap.xs}`,
+          sm: `${pxMap.sm} ${textBase} ${textSizeMap.sm}`,
+          md: `${pxMap.md} ${textBase} ${textSizeMap.md}`,
+          lg: `${pxMap.lg} ${textBase} ${textSizeMap.lg}`,
         };
 
     const solidClasses: Record<SemanticColor, string> = {

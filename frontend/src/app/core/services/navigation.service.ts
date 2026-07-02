@@ -3,15 +3,51 @@ import { Router, ActivatedRoute, UrlTree } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { CityContextService } from './city-context.service';
 
+/**
+ * Centralny serwis nawigacji aplikacji. WSZYSTKIE nawigacje muszą przechodzić przez niego
+ * (a nie przez `Router` bezpośrednio) — patrz `docs/styleguide-frontend.md`.
+ *
+ * Metody pogrupowano sekcjami wg modułu domenowego:
+ *  - Wydarzenie (publiczne / uczestnik)
+ *  - Wydarzenie (organizator)
+ *  - Serie
+ *  - Panel konta (`/profile/**`)
+ *  - Auth
+ *  - System / util
+ */
 @Injectable({ providedIn: 'root' })
 export class NavigationService {
   readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   private readonly cityContext = inject(CityContextService);
 
+  // ── Wydarzenie (publiczne / uczestnik) ──
+
+  navigateToEvents(citySlug: string): void {
+    this.router.navigate(['/w', citySlug]);
+  }
+
+  navigateToEventDetail(eventId: string, citySlug: string): void {
+    this.router.navigate(['/w', citySlug, eventId]);
+  }
+
+  navigateToEventMap(eventId: string, citySlug: string): void {
+    this.router.navigate(['/w', citySlug, eventId, 'map']);
+  }
+
   navigateToEventParticipants(eventId: string, citySlug: string): void {
     this.auth.requireAuth('zobaczyć listę uczestników', () => {
       this.router.navigate(['/w', citySlug, eventId, 'participants']);
+    });
+  }
+
+  navigateToEventParticipantsWithQuery(
+    eventId: string,
+    citySlug: string,
+    queryParams: Record<string, string>,
+  ): void {
+    this.auth.requireAuth('zobaczyć listę uczestników', () => {
+      this.router.navigate(['/w', citySlug, eventId, 'participants'], { queryParams });
     });
   }
 
@@ -30,12 +66,23 @@ export class NavigationService {
     });
   }
 
-  navigateToEventDetail(eventId: string, citySlug: string): void {
-    this.router.navigate(['/w', citySlug, eventId]);
+  // ── Wydarzenie (organizator) ──
+
+  navigateToEventCreate(): void {
+    this.auth.requireAuth('utworzyć wydarzenie', () => {
+      this.router.navigate(['/o/w/new']);
+    });
   }
 
-  navigateToEvents(citySlug: string): void {
-    this.router.navigate(['/w', citySlug]);
+  // Alias historyczny dla `navigateToEventCreate()` — używany w `event-form`.
+  navigateToEventCreation(): void {
+    this.navigateToEventCreate();
+  }
+
+  navigateToEventCreateWithDuplicate(duplicateId: string): void {
+    this.auth.requireAuth('utworzyć wydarzenie', () => {
+      this.router.navigate(['/o/w/new'], { queryParams: { duplicateId } });
+    });
   }
 
   navigateToEventEdit(eventId: string): void {
@@ -50,11 +97,17 @@ export class NavigationService {
     });
   }
 
-  navigateToMyEvents(): void {
-    this.auth.requireAuth('zobaczyć moje wydarzenia', () => {
-      this.router.navigate(['/my-events']);
-    });
+  // ── Serie ──
+
+  navigateToSeries(seriesId: string): void {
+    this.router.navigate(['/series', seriesId]);
   }
+
+  navigateToSeriesTemplateEdit(seriesId: string): void {
+    void this.router.navigate(['/o/s', seriesId, 'edit-template']);
+  }
+
+  // ── Panel konta (`/profile/**`) ──
 
   navigateToProfile(): void {
     this.auth.requireAuth('zobaczyć profil', () => {
@@ -62,23 +115,78 @@ export class NavigationService {
     });
   }
 
-  navigateToVouchers(): void {
-    this.auth.requireAuth('zobaczyć moje vouchery', () => {
-      this.router.navigate(['/vouchers']);
+  navigateToNotifications(): void {
+    this.auth.requireAuth('zobaczyć powiadomienia', () => {
+      this.router.navigate(['/profile/general/notifications']);
+    });
+  }
+
+  navigateToParticipations(): void {
+    this.auth.requireAuth('zobaczyć moje uczestnictwa', () => {
+      this.router.navigate(['/profile/enrollment/participations']);
+    });
+  }
+
+  navigateToMedia(): void {
+    this.auth.requireAuth('zobaczyć galerię', () => {
+      this.router.navigate(['/profile/enrollment/media']);
     });
   }
 
   navigateToPayments(): void {
     this.auth.requireAuth('zobaczyć moje płatności', () => {
-      this.router.navigate(['/payments']);
+      this.router.navigate(['/profile/enrollment/payments']);
     });
   }
 
-  navigateToEventMap(eventId: string, citySlug: string): void {
-    this.router.navigate(['/w', citySlug, eventId, 'map']);
+  navigateToVouchers(): void {
+    this.auth.requireAuth('zobaczyć moje vouchery', () => {
+      this.router.navigate(['/profile/enrollment/vouchers']);
+    });
   }
 
+  navigateToProfileEvents(): void {
+    this.auth.requireAuth('zobaczyć moje wydarzenia z profilu', () => {
+      this.router.navigate(['/profile/organizer/events']);
+    });
+  }
+
+  navigateToOrganizerSeries(): void {
+    this.auth.requireAuth('zobaczyć serie organizatora', () => {
+      this.router.navigate(['/profile/organizer/series']);
+    });
+  }
+
+  navigateToOrganizerSettings(): void {
+    this.auth.requireAuth('zmienić ustawienia organizatora', () => {
+      this.router.navigate(['/profile/organizer/settings']);
+    });
+  }
+
+  navigateToProfileCoverImages(): void {
+    this.auth.requireAuth('zarządzać cover images', () => {
+      this.router.navigate(['/profile/organizer/cover-images']);
+    });
+  }
+
+  // ── Auth ──
+
+  navigateToLogin(returnUrl?: string): void {
+    const queryParams = returnUrl ? { returnUrl } : undefined;
+    this.router.navigate(['/auth/login'], { queryParams });
+  }
+
+  navigateToAuthLogin(): void {
+    this.router.navigate(['/auth/login']);
+  }
+
+  // ── System / util ──
+
   navigateToHome(): void {
+    this.router.navigate(['/']);
+  }
+
+  navigateToRoot(): void {
     this.router.navigate(['/']);
   }
 
@@ -91,49 +199,6 @@ export class NavigationService {
     }
   }
 
-  navigateToLogin(returnUrl?: string): void {
-    const queryParams = returnUrl ? { returnUrl } : undefined;
-    this.router.navigate(['/auth/login'], { queryParams });
-  }
-
-  navigateToSeries(seriesId: string): void {
-    this.router.navigate(['/series', seriesId]);
-  }
-
-  navigateToSeriesTemplateEdit(seriesId: string): void {
-    void this.router.navigate(['/o/s', seriesId, 'edit-template']);
-  }
-
-  navigateToProfileEvents(): void {
-    this.auth.requireAuth('zobaczyć moje wydarzenia z profilu', () => {
-      this.router.navigate(['/profile/events']);
-    });
-  }
-
-  navigateToProfileCoverImages(): void {
-    this.auth.requireAuth('zarządzać cover images', () => {
-      this.router.navigate(['/profile/organizer/cover-images']);
-    });
-  }
-
-  navigateToRoot(): void {
-    this.router.navigate(['/']);
-  }
-
-  navigateToNotFound(skipLocationChange = true): void {
-    this.router.navigate(['/not-found'], { skipLocationChange });
-  }
-
-  navigateToUnverified(skipLocationChange = true): void {
-    this.router.navigate(['/unverified'], { skipLocationChange });
-  }
-
-  navigateToEventCreate(): void {
-    this.auth.requireAuth('utworzyć wydarzenie', () => {
-      this.router.navigate(['/o/w/new']);
-    });
-  }
-
   navigateToSettings(value?: string): void {
     this.auth.requireAuth('zmienić ustawienia', () => {
       if (value) {
@@ -144,8 +209,23 @@ export class NavigationService {
     });
   }
 
-  navigateToAuthLogin(): void {
-    this.router.navigate(['/auth/login']);
+  navigateToNotFound(skipLocationChange = true): void {
+    this.router.navigate(['/not-found'], { skipLocationChange });
+  }
+
+  navigateToNotFoundWithReason(reason: string, skipLocationChange = true): void {
+    this.router.navigateByUrl('/not-found', {
+      state: { reason },
+      skipLocationChange,
+    });
+  }
+
+  navigateToUnverified(skipLocationChange = true): void {
+    this.router.navigate(['/unverified'], { skipLocationChange });
+  }
+
+  navigateToParent(relativeTo: ActivatedRoute): void {
+    this.router.navigate(['..'], { relativeTo });
   }
 
   navigateToPath(path: string[]): void {
@@ -157,40 +237,7 @@ export class NavigationService {
     this.router.navigateByUrl(url);
   }
 
-  navigateToEventCreateWithDuplicate(duplicateId: string): void {
-    this.auth.requireAuth('utworzyć wydarzenie', () => {
-      this.router.navigate(['/o/w/new'], { queryParams: { duplicateId } });
-    });
-  }
-
-  navigateToNotFoundWithReason(reason: string, skipLocationChange = true): void {
-    this.router.navigateByUrl('/not-found', {
-      state: { reason },
-      skipLocationChange,
-    });
-  }
-
-  navigateToParent(relativeTo: ActivatedRoute): void {
-    this.router.navigate(['..'], { relativeTo });
-  }
-
-  navigateToEventParticipantsWithQuery(
-    eventId: string,
-    citySlug: string,
-    queryParams: Record<string, string>,
-  ): void {
-    this.auth.requireAuth('zobaczyć listę uczestników', () => {
-      this.router.navigate(['/w', citySlug, eventId, 'participants'], { queryParams });
-    });
-  }
-
-  navigateToEventCreation(): void {
-    this.auth.requireAuth('utworzyć wydarzenie', () => {
-      this.router.navigate(['/o/w/new']);
-    });
-  }
-
-  // Generic UrlTree method for guards
+  /** Generyczny `UrlTree` dla guardów (zamiast `Router.createUrlTree`). */
   createUrlTree(path: string[], queryParams?: Record<string, string | string[]>): UrlTree {
     return this.router.createUrlTree(path, { queryParams });
   }

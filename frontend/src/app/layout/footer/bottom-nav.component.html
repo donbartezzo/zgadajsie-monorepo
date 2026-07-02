@@ -1,5 +1,5 @@
 <!-- Bottom Nav Bar — split: kontekst miasta (lewa) | akcje (prawa) -->
-@let _cityLabel = cityLabel();
+@let _cityLabel = cityContext.cityLabel();
 @let _cityButtonAppearance = cityButtonAppearance();
 @let _isLoggedIn = auth.isLoggedIn();
 @let _currentUser = auth.currentUser();
@@ -7,7 +7,7 @@
 @let _badgeText = badgeText();
 
 <footer
-  class="h-[var(--footer-height)] border-t border-neutral-200 bg-white/95 px-2 py-2 shadow-[0_-4px_12px_rgba(15,23,42,0.12)] backdrop-blur-md relative"
+  class="h-[var(--footer-height)] pb-[env(safe-area-inset-bottom)] border-t border-neutral-200 bg-white/95 px-2 py-2 shadow-[0_-4px_12px_rgba(15,23,42,0.12)] backdrop-blur-md relative"
   aria-label="Główna nawigacja dolna"
 >
   <nav class="flex items-stretch justify-between text-xs font-medium text-neutral-500">

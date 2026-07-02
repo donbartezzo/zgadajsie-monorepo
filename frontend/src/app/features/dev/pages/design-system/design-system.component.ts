@@ -27,6 +27,7 @@ import {
 import { UserProfileCardComponent } from '../../../../shared/user/ui/user-profile-card/user-profile-card.component';
 import { StatusIndicatorComponent } from '../../../../shared/ui/status-indicator/status-indicator.component';
 import { ExplainerTriggerComponent } from '../../../../shared/ui/explainer/explainer-trigger.component';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 interface ColorSwatch {
   shade: string;
@@ -120,6 +121,7 @@ function paletteSwatches(key: keyof typeof COLOR_PALETTE): ColorSwatch[] {
     ExplainerTriggerComponent,
     RecurrencePickerComponent,
     ReactiveFormsModule,
+    PageHeadingComponent,
   ],
   templateUrl: './design-system.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -181,6 +183,7 @@ export class DesignSystemComponent {
     { id: 'profile-card', label: 'Profile Card' },
     { id: 'event-status-bars', label: 'Status bars' },
     { id: 'cover-images', label: 'Cover Images' },
+    { id: 'page-heading', label: 'Page Heading' },
   ];
 
   readonly profileCardDemoUser = signal({
@@ -238,6 +241,7 @@ export class DesignSystemComponent {
 
   readonly allIcons: IconName[] = [
     'menu',
+    'more-horizontal',
     'close',
     'chevron-down',
     'chevron-left',

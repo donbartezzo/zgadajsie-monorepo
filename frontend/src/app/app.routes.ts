@@ -19,6 +19,19 @@ const WHITE_BARE_LAYOUT = {
   contentClass: 'bg-transparent',
 } as const;
 
+// RWD-19/§3: wspólny layout dla fullscreenowych widoków strefy wydarzenia (czaty + mapa). Fullscreen
+// (treść wypełnia wysokość) + only-mini-bar; od `lg` tryb 2-kol → treść jako biała karta w kolumnie
+// głównej + event-rail w aside (rail dostarcza EventAreaComponent). Bez `layoutClass` (tło boxa
+// neutralne; biała karta z contentClass).
+const EVENT_FULLSCREEN_LAYOUT = {
+  heroVariant: 'only-mini-bar',
+  showFooter: false,
+  showBorder: false,
+  fullscreenContent: true,
+  contentClass: 'bg-white',
+  desktopLayout: 'two-column',
+} as const;
+
 const BREADCRUMB_TO_HOME = {
   parent: '/',
   label: 'Strona główna',
@@ -30,7 +43,7 @@ const BREADCRUMB_TO_PROFILE = {
 } as const;
 
 const BREADCRUMB_TO_EVENTS = {
-  parent: '/profile/events',
+  parent: '/profile/organizer/events',
   label: 'Moje wydarzenia',
 } as const;
 
@@ -54,6 +67,7 @@ export const appRoutes: Route[] = [
       showBorder: false,
       showHeader: true,
       heroVariant: 'extended',
+      desktopLayout: 'wide',
     },
   },
 
@@ -83,6 +97,7 @@ export const appRoutes: Route[] = [
         data: {
           breadcrumb: { parent: '/w/:citySlug', label: 'Lista wydarzeń' }, // Nadpisuje domyślne z parenta!
           contentClass: 'bg-white',
+          desktopLayout: 'two-column',
         },
       },
       // Participants list
@@ -98,9 +113,10 @@ export const appRoutes: Route[] = [
           heroVariant: 'only-mini-bar',
           showFooter: false,
           showBorder: false,
+          desktopLayout: 'two-column',
         },
       },
-      // Event map
+      // Event map — fullscreen + 2-kol (mapa wypełnia kolumnę główną, event-rail w aside; jak czat)
       {
         path: 'map',
         loadComponent: () =>
@@ -108,12 +124,7 @@ export const appRoutes: Route[] = [
             (m) => m.EventMapComponent,
           ),
         resolve: setEventResolvedTitle('Mapa wydarzenia'),
-        data: {
-          ...WHITE_BARE_LAYOUT,
-          centerContent: false,
-          heroVariant: 'only-mini-bar',
-          fullscreenContent: true,
-        },
+        data: { ...EVENT_FULLSCREEN_LAYOUT },
       },
       // Chat with organizer (participant view) / Conversation list (organizer view)
       {
@@ -124,14 +135,7 @@ export const appRoutes: Route[] = [
           ),
         canActivate: [verifiedUserGuard],
         resolve: setEventResolvedTitle('Czat z organizatorem'),
-        data: {
-          heroVariant: 'only-mini-bar',
-          showFooter: false,
-          showBorder: false,
-          fullscreenContent: true,
-          contentClass: 'bg-white',
-          layoutClass: 'bg-white',
-        },
+        data: { ...EVENT_FULLSCREEN_LAYOUT },
       },
       // Organizer private chat with specific participant
       {
@@ -142,11 +146,8 @@ export const appRoutes: Route[] = [
           ),
         canActivate: [verifiedUserGuard],
         data: {
+          ...EVENT_FULLSCREEN_LAYOUT,
           isPrivate: true,
-          heroVariant: 'only-mini-bar',
-          showFooter: false,
-          fullscreenContent: true,
-          contentClass: 'bg-white',
           breadcrumb: { parent: '/w/:citySlug/:id/host-chat', label: 'Konwersacje' },
         },
       },
@@ -159,14 +160,7 @@ export const appRoutes: Route[] = [
           ),
         resolve: setEventResolvedTitle('Czat grupowy'),
         canActivate: [verifiedUserGuard],
-        data: {
-          heroVariant: 'only-mini-bar',
-          showFooter: false,
-          showBorder: false,
-          fullscreenContent: true,
-          contentClass: 'bg-white',
-          layoutClass: 'bg-white',
-        },
+        data: { ...EVENT_FULLSCREEN_LAYOUT },
       },
     ],
   },
@@ -181,7 +175,8 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard, eventCreationGuard],
     data: {
       title: 'Nowe wydarzenie',
-      breadcrumb: { parent: '/profile/events', label: 'Moje wydarzenia' },
+      breadcrumb: { parent: '/profile/organizer/events', label: 'Moje wydarzenia' },
+      desktopLayout: 'two-column',
     },
   },
 
@@ -195,6 +190,7 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Edycja wydarzenia',
+      desktopLayout: 'two-column',
     },
   },
 
@@ -208,6 +204,7 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Zarządzanie',
+      desktopLayout: 'two-column',
     },
   },
 
@@ -221,7 +218,8 @@ export const appRoutes: Route[] = [
     canActivate: [verifiedUserGuard, organizerGuard],
     data: {
       title: 'Utwórz serię z wydarzenia',
-      breadcrumb: { parent: '/profile/events', label: 'Moje wydarzenia' },
+      breadcrumb: { parent: '/profile/organizer/events', label: 'Moje wydarzenia' },
+      desktopLayout: 'two-column',
     },
   },
 
@@ -236,6 +234,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Seria wydarzeń',
       breadcrumb: BREADCRUMB_TO_EVENTS,
+      desktopLayout: 'two-column',
     },
   },
 
@@ -250,48 +249,7 @@ export const appRoutes: Route[] = [
     data: {
       title: 'Edycja danych wydarzeń serii',
       breadcrumb: BREADCRUMB_TO_EVENTS,
-    },
-  },
-
-  // ── Organizer: digest ──
-  {
-    path: 'profile/organizer/digest',
-    loadComponent: () =>
-      import('./features/organizer/pages/organizer-digest/organizer-digest.component').then(
-        (m) => m.OrganizerDigestComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Zestawienie organizatora',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-    },
-  },
-
-  // ── Organizer: settings ──
-  {
-    path: 'profile/organizer/settings',
-    loadComponent: () =>
-      import('./features/organizer/pages/organizer-settings/organizer-settings.component').then(
-        (m) => m.OrganizerSettingsComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Ustawienia organizatora',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-    },
-  },
-
-  // ── Organizer: cover images ──
-  {
-    path: 'profile/organizer/cover-images',
-    loadComponent: () =>
-      import('./features/me/pages/my-cover-images/my-cover-images.component').then(
-        (m) => m.MyCoverImagesComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Moja galeria cover images',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
+      desktopLayout: 'two-column',
     },
   },
 
@@ -379,82 +337,165 @@ export const appRoutes: Route[] = [
     data: { title: 'Reset hasła', ...WHITE_BARE_LAYOUT },
   },
 
-  // ── User ──
-  {
-    path: 'notifications',
-    loadComponent: () =>
-      import('./features/notifications/pages/notifications/notifications-page.component').then(
-        (m) => m.NotificationsPageComponent,
-      ),
-    canActivate: [authGuard],
-    data: { title: 'Powiadomienia', breadcrumb: BREADCRUMB_TO_HOME },
-  },
+  // ── Account panel (parent route dla wszystkich podstron /profile/**) ──
+  // Analogicznie do strefy wydarzenia (EventArea): rail nawigacyjny konta rejestrowany RAZ w
+  // `ProfileAreaComponent`, który przeżywa nawigację między dziećmi (rail nie miga). Podział na
+  // kategorie: `general` (Konto), `enrollment` (Uczestnik), `organizer` (Organizator).
   {
     path: 'profile',
     loadComponent: () =>
-      import('./features/user/pages/profile/profile.component').then((m) => m.ProfileComponent),
+      import('./features/user/pages/profile-area/profile-area.component').then(
+        (m) => m.ProfileAreaComponent,
+      ),
     canActivate: [authGuard],
-    data: { title: 'Profil', breadcrumb: BREADCRUMB_TO_HOME },
-  },
-  {
-    path: 'profile/events',
-    loadComponent: () =>
-      import('./features/user/pages/my-events/my-events.component').then(
-        (m) => m.MyEventsComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Moje wydarzenia',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-    },
-  },
-  {
-    path: 'profile/participations',
-    loadComponent: () =>
-      import('./features/user/pages/my-participations/my-participations.component').then(
-        (m) => m.MyParticipationsComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Moje uczestnictwa',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-    },
-  },
-  {
-    path: 'profile/media',
-    loadComponent: () =>
-      import('./features/user/pages/media-gallery/media-gallery.component').then(
-        (m) => m.MediaGalleryComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: { title: 'Galeria', breadcrumb: BREADCRUMB_TO_PROFILE },
+    children: [
+      // Profil (index)
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/user/pages/profile/profile.component').then((m) => m.ProfileComponent),
+        data: {
+          title: 'Profil',
+          breadcrumb: BREADCRUMB_TO_HOME,
+          desktopLayout: 'two-column',
+        },
+      },
+
+      // ── Konto (general) ──
+      {
+        path: 'general/notifications',
+        loadComponent: () =>
+          import('./features/notifications/pages/notifications/notifications-page.component').then(
+            (m) => m.NotificationsPageComponent,
+          ),
+        data: {
+          title: 'Powiadomienia',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+
+      // ── Uczestnik (enrollment) ──
+      {
+        path: 'enrollment/participations',
+        loadComponent: () =>
+          import('./features/user/pages/my-participations/my-participations.component').then(
+            (m) => m.MyParticipationsComponent,
+          ),
+        canActivate: [activeGuard],
+        data: {
+          title: 'Moje uczestnictwa',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+      {
+        path: 'enrollment/media',
+        loadComponent: () =>
+          import('./features/user/pages/media-gallery/media-gallery.component').then(
+            (m) => m.MediaGalleryComponent,
+          ),
+        canActivate: [activeGuard],
+        data: { title: 'Galeria', breadcrumb: BREADCRUMB_TO_PROFILE, desktopLayout: 'two-column' },
+      },
+      {
+        path: 'enrollment/payments',
+        loadComponent: () =>
+          import('./features/payments/pages/my-payments/my-payments.component').then(
+            (m) => m.MyPaymentsComponent,
+          ),
+        canActivate: [activeGuard],
+        data: {
+          title: 'Moje płatności',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+      {
+        path: 'enrollment/vouchers',
+        loadComponent: () =>
+          import('./features/vouchers/pages/my-vouchers/my-vouchers.component').then(
+            (m) => m.MyVouchersComponent,
+          ),
+        canActivate: [activeGuard],
+        data: {
+          title: 'Moje vouchery',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+
+      // ── Organizator ──
+      {
+        path: 'organizer/events',
+        loadComponent: () =>
+          import('./features/user/pages/my-events/my-events.component').then(
+            (m) => m.MyEventsComponent,
+          ),
+        canActivate: [activeGuard],
+        data: {
+          title: 'Moje wydarzenia',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+      {
+        path: 'organizer/series',
+        loadComponent: () =>
+          import('./features/organizer/pages/organizer-series/organizer-series.component').then(
+            (m) => m.OrganizerSeriesComponent,
+          ),
+        canActivate: [activeGuard],
+        data: {
+          title: 'Moje serie',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+      {
+        path: 'organizer/settings',
+        loadComponent: () =>
+          import('./features/organizer/pages/organizer-settings/organizer-settings.component').then(
+            (m) => m.OrganizerSettingsComponent,
+          ),
+        canActivate: [activeGuard],
+        data: {
+          title: 'Ustawienia organizatora',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+      {
+        path: 'organizer/cover-images',
+        loadComponent: () =>
+          import('./features/me/pages/my-cover-images/my-cover-images.component').then(
+            (m) => m.MyCoverImagesComponent,
+          ),
+        canActivate: [activeGuard],
+        data: {
+          title: 'Moja galeria cover images',
+          breadcrumb: BREADCRUMB_TO_PROFILE,
+          desktopLayout: 'two-column',
+        },
+      },
+
+      // ── Back-compat: stare ścieżki /profile/* → nowe (kategoryzowane) ──
+      { path: 'events', redirectTo: '/profile/organizer/events', pathMatch: 'full' },
+      {
+        path: 'participations',
+        redirectTo: '/profile/enrollment/participations',
+        pathMatch: 'full',
+      },
+      { path: 'media', redirectTo: '/profile/enrollment/media', pathMatch: 'full' },
+    ],
   },
 
+  // ── Back-compat: stare top-level ścieżki panelu → nowe ──
+  { path: 'notifications', redirectTo: '/profile/general/notifications', pathMatch: 'full' },
+  { path: 'payments', redirectTo: '/profile/enrollment/payments', pathMatch: 'full' },
+  { path: 'vouchers', redirectTo: '/profile/enrollment/vouchers', pathMatch: 'full' },
+
   // ── Payments ──
-  {
-    path: 'payments',
-    loadComponent: () =>
-      import('./features/payments/pages/my-payments/my-payments.component').then(
-        (m) => m.MyPaymentsComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Moje płatności',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-    },
-  },
-  {
-    path: 'vouchers',
-    loadComponent: () =>
-      import('./features/vouchers/pages/my-vouchers/my-vouchers.component').then(
-        (m) => m.MyVouchersComponent,
-      ),
-    canActivate: [authGuard, activeGuard],
-    data: {
-      title: 'Moje vouchery',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-    },
-  },
   {
     path: 'payment/status',
     loadComponent: () =>
@@ -465,125 +506,113 @@ export const appRoutes: Route[] = [
   },
 
   // ── Admin ──
+  // Parent route `AdminAreaComponent` — dwukolumnowo jak reszta paneli (main 700 + aside),
+  // aside z LEWEJ. Rail admina rejestrowany raz (nie miga). `desktopLayout`/`asideSide` dziedziczone.
   {
     path: 'admin',
     loadComponent: () =>
-      import('./features/admin/pages/admin-dashboard/admin-dashboard.component').then(
-        (m) => m.AdminDashboardComponent,
+      import('./features/admin/pages/admin-area/admin-area.component').then(
+        (m) => m.AdminAreaComponent,
       ),
     canActivate: [adminGuard],
-    data: {
-      title: 'Panel admina',
-      breadcrumb: BREADCRUMB_TO_PROFILE,
-    },
-  },
-  {
-    path: 'admin/users',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-users/admin-users.component').then(
-        (m) => m.AdminUsersComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Użytkownicy',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
-  },
-  {
-    path: 'admin/users/:id',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-user-detail/admin-user-detail.component').then(
-        (m) => m.AdminUserDetailComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Użytkownik',
-      breadcrumb: { parent: '/admin/users', label: 'Lista użytkowników' },
-    },
-  },
-  {
-    path: 'admin/events',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-events/admin-events.component').then(
-        (m) => m.AdminEventsComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Wydarzenia (admin)',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
-  },
-  {
-    path: 'admin/cover-images',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-cover-images/admin-cover-images.component').then(
-        (m) => m.AdminCoverImagesComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Galeria cover images',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
-  },
-  {
-    path: 'admin/settings',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-settings/admin-settings.component').then(
-        (m) => m.AdminSettingsComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Ustawienia',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
-  },
-  {
-    path: 'admin/crons',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-crons/admin-crons.component').then(
-        (m) => m.AdminCronsComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Zarządzanie cronami',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
-  },
-  {
-    path: 'admin/fake-users',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-fake-users/admin-fake-users.component').then(
-        (m) => m.AdminFakeUsersComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Fake users',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
-  },
-  {
-    path: 'admin/contact-messages',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-contact-messages/admin-contact-messages.component').then(
-        (m) => m.AdminContactMessagesComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Wiadomości kontaktowe',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
-  },
-  {
-    path: 'admin/pending-emails',
-    loadComponent: () =>
-      import('./features/admin/pages/admin-pending-emails/admin-pending-emails.component').then(
-        (m) => m.AdminPendingEmailsComponent,
-      ),
-    canActivate: [adminGuard],
-    data: {
-      title: 'Kolejka emaili',
-      breadcrumb: { parent: '/admin', label: 'Panel admina' },
-    },
+    data: { desktopLayout: 'two-column', asideSide: 'left' },
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-dashboard/admin-dashboard.component').then(
+            (m) => m.AdminDashboardComponent,
+          ),
+        data: { title: 'Panel admina', breadcrumb: BREADCRUMB_TO_PROFILE },
+      },
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-users/admin-users.component').then(
+            (m) => m.AdminUsersComponent,
+          ),
+        data: { title: 'Użytkownicy', breadcrumb: { parent: '/admin', label: 'Panel admina' } },
+      },
+      {
+        path: 'users/:id',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-user-detail/admin-user-detail.component').then(
+            (m) => m.AdminUserDetailComponent,
+          ),
+        data: {
+          title: 'Użytkownik',
+          breadcrumb: { parent: '/admin/users', label: 'Lista użytkowników' },
+        },
+      },
+      {
+        path: 'events',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-events/admin-events.component').then(
+            (m) => m.AdminEventsComponent,
+          ),
+        data: {
+          title: 'Wydarzenia (admin)',
+          breadcrumb: { parent: '/admin', label: 'Panel admina' },
+        },
+      },
+      {
+        path: 'cover-images',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-cover-images/admin-cover-images.component').then(
+            (m) => m.AdminCoverImagesComponent,
+          ),
+        data: {
+          title: 'Galeria cover images',
+          breadcrumb: { parent: '/admin', label: 'Panel admina' },
+        },
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-settings/admin-settings.component').then(
+            (m) => m.AdminSettingsComponent,
+          ),
+        data: { title: 'Ustawienia', breadcrumb: { parent: '/admin', label: 'Panel admina' } },
+      },
+      {
+        path: 'crons',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-crons/admin-crons.component').then(
+            (m) => m.AdminCronsComponent,
+          ),
+        data: {
+          title: 'Zarządzanie cronami',
+          breadcrumb: { parent: '/admin', label: 'Panel admina' },
+        },
+      },
+      {
+        path: 'fake-users',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-fake-users/admin-fake-users.component').then(
+            (m) => m.AdminFakeUsersComponent,
+          ),
+        data: { title: 'Fake users', breadcrumb: { parent: '/admin', label: 'Panel admina' } },
+      },
+      {
+        path: 'contact-messages',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-contact-messages/admin-contact-messages.component').then(
+            (m) => m.AdminContactMessagesComponent,
+          ),
+        data: {
+          title: 'Wiadomości kontaktowe',
+          breadcrumb: { parent: '/admin', label: 'Panel admina' },
+        },
+      },
+      {
+        path: 'pending-emails',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-pending-emails/admin-pending-emails.component').then(
+            (m) => m.AdminPendingEmailsComponent,
+          ),
+        data: { title: 'Kolejka emaili', breadcrumb: { parent: '/admin', label: 'Panel admina' } },
+      },
+    ],
   },
 
   // ── Static ──

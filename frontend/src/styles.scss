@@ -72,6 +72,37 @@
     background-size: 1rem 1rem;
     animation: bg-striped-slide 1s linear infinite;
   }
+
+  // Fluid typography: płynne skalowanie nagłówków między mobile a desktop
+  // bez skoków przy breakpointach. Zakres ~375px–1200px viewport.
+  .text-fluid-hero {
+    font-size: clamp(2.25rem, 2rem + 1vw, 3rem);
+  }
+  .text-fluid-hero-sub {
+    font-size: clamp(1.5rem, 1.25rem + 0.75vw, 2rem);
+  }
+
+  // Zakotwiczenie elementów `fixed` względem chrome nawigacji.
+  // `top-app`    — górna krawędź tuż pod desktopowym top-navem (0 na mobile/tablecie).
+  // `bottom-app` — dolna krawędź tuż nad mobilnym bottom-navem (0 od `lg`).
+  // Dodatkowe odstępy elementów (gap, safe-area, mini-bar) dokładaj przez `mt-*` / `mb-*`.
+  .top-app {
+    top: var(--top-nav-h);
+  }
+  // Punkt „przyklejenia" kolumny aside (sticky) = pod top-navem + inset boxa (gap),
+  // żeby przyklejony aside trzymał ten sam odstęp co początkowy inset modułów.
+  // 0.75rem = $app-box-gap (= Tailwind p-3/gap-3); literał, bo zmienna jest definiowana niżej.
+  .top-app-inset {
+    top: calc(var(--top-nav-h) + 0.75rem);
+  }
+  // Offset treści pod fixed mini-barem (fullscreen na mobile). Na desktopie w trybie 2-kol
+  // mini-bar jest ukryty — resetujemy przez `lg:mt-0`.
+  .mt-mini-bar {
+    margin-top: var(--hero-mini-bar-h);
+  }
+  .bottom-app {
+    bottom: var(--footer-height);
+  }
 }
 
 @keyframes bg-striped-slide {
@@ -86,15 +117,57 @@
 /* Sticky layout base only */
 html,
 body {
-  height: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+// Blokada scrolla tła pod overlaye/modale (klasa `scroll-locked` na <html>,
+// sterowana przez lockBodyScroll/unlockBodyScroll z shared/utils).
+//
+// Gutter scrollbara rezerwujemy TYLKO na czas blokady, a nie na stałe — dzięki
+// temu na stronach bez scrolla (np. hero na pełen ekran) nie zostaje pusty
+// pionowy pasek przy prawej krawędzi (gutter nie mieści się pod tłem strony:
+// hero/pattern mają ICB pomniejszony o gutter, więc go nie pokrywają).
+//
+// overflow:hidden na <html> propaguje się do viewportu i blokuje scroll;
+// scrollbar-gutter:stable utrzymuje szerokość gutter także przy ukrytym
+// scrollbarze, więc jego zniknięcie nie powoduje skoku layoutu ani rozjazdu
+// między centrowanym shellem a elementami `fixed`.
+// Na mobile (overlay scrollbar, szerokość 0) bez efektu wizualnego.
+//
+// background-color: zarezerwowany gutter jest przycinany do scrollportu, więc
+// pełnoekranowy backdrop (fixed/100vw) go NIE maluje — gutter zawsze pokazuje
+// tło <html>. Bez tła świeci bielą obok przyciemnienia. Dajemy mu ten sam scrim
+// co backdrop (bg-black/50): nad jasną kolumną aplikacji backdrop daje ~rgb(127),
+// a black/50 nad canvasem także ~rgb(127), więc pasek zlewa się z dimem.
+// Uwaga: gutter dziedziczy tylko background-color (nie background-image), stąd
+// płaski kolor, nie gradient. Scope tylko na stan zablokowany — nie przywraca
+// paska na zwykłych (odblokowanych) stronach.
+html.scroll-locked {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+  background-color: rgb(0 0 0 / 0.5);
 }
 
 body {
   margin: 0;
 }
 
-// ── App shell: single source of truth for app max-width ──
+// ── App shell width (kolumna główna + boxed look + aside) ──
+// `--app-max-width` = szerokość kolumny GŁÓWNEJ treści oraz punkt wyrównania elementów
+//   `fixed` (bottom-nav, hero, back/sticky, overlaye, modale).
+// Wartość 700px = natywna szerokość cover image (COVER_IMAGE_WIDTH w libs), więc hero
+//   renderuje okładkę 1:1, bez upscalingu. Kolumna jest „boxowana": full-bleed na mobile,
+//   a od szerokości boxa — wyśrodkowana karta (ramka + cień + pattern w marginesach).
+//
+// Tryb dwukolumnowy (main + aside). `--app-box-width` to szerokość CAŁEGO boxa:
+//   domyślnie = kolumna główna (1-kol), a dla widoków `desktopLayout: 'two-column'` rośnie
+//   od `lg` do `$app-box-wide`. Aside = box − main − gap (≈ 300px dla 1024 − 700 − 24).
 $app-max-width: 700px;
+$app-box-wide: 1024px; // box (main + aside) na desktopie w trybie dwukolumnowym
+// Jednolity odstęp modułów w trybie 2-kol: inset od krawędzi boxa ORAZ gap między modułami.
+// = Tailwind `3` (klasy `p-3` / `gap-3` w page-layout muszą używać tej samej wartości).
+$app-box-gap: 0.75rem;
 $hero-extended-height: 250px;
 $hero-compact-height: 120px;
 $hero-mini-bar-height: 52px;
@@ -111,17 +184,73 @@ $app-bg-color: rgb(var(--color-neutral-100));
 
 :root {
   --app-max-width: #{$app-max-width};
-  --footer-height: 70px;
+  // Szerokość boxa = kolumna główna (domyślnie 1-kol); tryb 2-kol poszerza ją od `lg`.
+  --app-box-width: #{$app-max-width};
+  // Aside = box − 3 × odstęp − kolumna główna (2× inset boxa + 1× gap między modułami),
+  // tak by moduły zmieściły się w boxie (≈ 288px dla 1024 − 36 − 700).
+  --app-aside-width: calc(#{$app-box-wide} - 3 * #{$app-box-gap} - #{$app-max-width});
+  // Wartości mobilne; desktop (od `lg`) przełącza je media query niżej.
+  --footer-height: 70px; // wysokość/clearance dolnego bottom-nav (0 od `lg`)
+  --top-nav-h: 0px; // wysokość górnego top-nav (0 na mobile, 3.5rem od `lg`)
   --hero-extended-h: #{$hero-extended-height};
   --hero-compact-h: #{$hero-compact-height};
   --hero-mini-bar-h: #{$hero-mini-bar-height};
 }
 
+// Od `lg` górny top-nav zastępuje dolny bottom-nav — zerujemy clearance
+// bottom-navu (--footer-height) i rezerwujemy wysokość top-navu (--top-nav-h).
+// Dolne elementy `fixed` (chat input, sticky bar, cookie consent) podążają za
+// --footer-height; górne (hero, back/sticky, snackbar, nagłówek czatu) offsetują się o --top-nav-h.
+//
+// Próg pochodzi WPROST z konfiguracji Tailwinda: `theme('screens.lg')` przechodzi przez
+// Sassa nietknięte i jest rozwiązywane przez `@tailwindcss/postcss` do wartości `lg`
+// (obecnie 64rem). Zmiana `screens.lg` w tailwind.config.js automatycznie przenosi też ten próg.
+@media (min-width: theme('screens.lg')) {
+  :root {
+    --footer-height: 0px;
+    --top-nav-h: 3.5rem;
+  }
+
+  // RWD-19: od `lg` mini-bar jest ukryty w trybie 2-kol — zerujemy jego offset. Override nielayerowany,
+  // więc wygrywa nad `.mt-mini-bar` z `@layer utilities` (bez polegania na kolejności klas/wariantów).
+  .mt-mini-bar {
+    margin-top: 0;
+  }
+
+  // W trybie dwukolumnowym (2-kol) oraz jednokolumnowym szerokim (`wide`) box rozszerza się
+  // od `lg` do pełnej szerokości. Poniżej `lg` (mobile/tablet) box zostaje przy kolumnie głównej
+  // (700) — jedna wąska kolumna.
+  .app.app--two-column,
+  .app.app--wide {
+    --app-box-width: #{$app-box-wide};
+  }
+
+  .app.app--two-column {
+    // `clip` zamiast `hidden` (tylko 2-kol): nadal przycina box, ale NIE tworzy scroll-containera,
+    // dzięki czemu `position: sticky` kolumny aside działa względem viewportu (a nie kontenera,
+    // który scrolluje z body). Zakres ograniczony do widoków 2-kol — reszta zostaje na `hidden`.
+    overflow: clip;
+  }
+  .app.app--two-column .app-container {
+    overflow: clip;
+  }
+}
+
+// Reduce hero heights on low viewports (landscape phones, small windows).
+@media (max-height: 480px) {
+  :root {
+    --hero-extended-h: 140px;
+    --hero-compact-h: 72px;
+  }
+}
+
 .app {
-  @apply min-h-screen relative overflow-hidden;
+  min-height: 100vh;
+  min-height: 100svh;
+  @apply relative overflow-hidden;
   background-color: $app-bg-color;
 
-  // Mobile (default): background pattern hidden, container plain
+  // Mobile: pattern ukryty, kontener full-bleed (krawędzie = krawędzie ekranu).
   .app-bg-pattern {
     display: none;
   }
@@ -130,8 +259,11 @@ $app-bg-color: rgb(var(--color-neutral-100));
     position: relative;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    padding-bottom: var(--footer-height); // clearance for fixed bottom-nav
+    min-height: 100svh;
+    padding-top: var(--top-nav-h); // clearance for fixed desktop top-nav (0 on mobile)
+    padding-bottom: calc(
+      var(--footer-height) + env(safe-area-inset-bottom)
+    ); // clearance for fixed bottom-nav + safe-area
 
     .app-content {
       @apply flex-1;
@@ -140,7 +272,9 @@ $app-bg-color: rgb(var(--color-neutral-100));
     }
   }
 
-  // Desktop: show pattern, decorate container
+  // Boxed look — od szerokości boxa (= kolumna główna) pojawiają się marginesy:
+  // pattern je wypełnia, a kontener staje się wyśrodkowaną kartą (ramka + cień).
+  // Próg = szerokość boxa (gdy viewport ją przekroczy), nie arbitralny breakpoint.
   @media (min-width: $app-max-width) {
     .app-bg-pattern {
       position: fixed;
@@ -157,7 +291,7 @@ $app-bg-color: rgb(var(--color-neutral-100));
     }
 
     .app-container {
-      max-width: var(--app-max-width);
+      max-width: var(--app-box-width);
       margin-left: auto;
       margin-right: auto;
       overflow: hidden;

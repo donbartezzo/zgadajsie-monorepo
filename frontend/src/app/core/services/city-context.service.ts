@@ -38,6 +38,15 @@ export class CityContextService {
     return cached?.name ?? null;
   });
 
+  /** Etykieta miasta do przycisków nawigacji (z fallbackiem i skróceniem). */
+  readonly cityLabel = computed<string>(() => {
+    const name = this.cityName();
+    if (!name) {
+      return 'Wybierz miasto';
+    }
+    return name.length > 31 ? name.slice(0, 30) + '…' : name;
+  });
+
   constructor() {
     this.router.events
       .pipe(

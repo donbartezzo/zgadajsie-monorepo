@@ -4,13 +4,14 @@ import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { AdminService, PendingEmailNotification } from '../../../../core/services/admin.service';
 import { NotificationKind } from '@zgadajsie/shared';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 
 @Component({
   selector: 'app-admin-pending-emails',
-  imports: [CommonModule, CardComponent, ButtonComponent, DatePipe],
+  imports: [CommonModule, CardComponent, ButtonComponent, DatePipe, PageHeadingComponent],
   template: `
     <div class="p-4">
-      <h1 class="text-xl font-bold text-neutral-900 mb-6">Kolejka emaili do wysyłki</h1>
+      <app-page-heading heading="Kolejka emaili do wysyłki" spacing="lg" />
       <div class="mb-4 flex items-center justify-between gap-4">
         <div class="flex items-center gap-4">
           <select

@@ -12,9 +12,12 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
 import { ButtonComponent } from '../../../../shared/ui/button/button.component';
 import { IconComponent } from '../../../../shared/ui/icon/icon.component';
+import { CardComponent } from '../../../../shared/ui/card/card.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { UserService } from '../../../../core/services/user.service';
 import { EventService } from '../../../../core/services/event.service';
+import { OrganizerService } from '../../../../core/services/organizer.service';
+import { EventSeriesService } from '../../../../core/services/event-series.service';
 import { SnackbarService } from '../../../../shared/ui/snackbar/snackbar.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { EventStatus, isOverrideAccount } from '@zgadajsie/shared';
@@ -24,6 +27,7 @@ import { ConfirmModalService } from '../../../../shared/ui/confirm-modal/confirm
 import { EventManageCardComponent } from '../../../../shared/event/ui/event-manage-card/event-manage-card.component';
 import type { ManageActionEvent } from '../../../../shared/event/ui/event-manage-card/event-manage-card.types';
 import { environment } from '../../../../../environments/environment';
+import { AccountContentComponent } from '../../../../shared/ui/account-nav-rail/account-content.component';
 
 @Component({
   selector: 'app-my-events',
@@ -35,42 +39,10 @@ import { environment } from '../../../../../environments/environment';
     EventManageCardComponent,
     ButtonComponent,
     IconComponent,
+    CardComponent,
+    AccountContentComponent,
   ],
-  template: `
-    <div class="p-4">
-      <div class="flex items-center justify-between mb-4">
-        <h1 class="text-xl font-bold text-neutral-900">Moje wydarzenia</h1>
-        @if (canCreateEvents()) {
-          <a routerLink="/o/w/new">
-            <app-button appearance="soft" color="primary" size="sm">
-              <app-icon name="plus" size="sm"></app-icon> Nowe
-            </app-button>
-          </a>
-        }
-      </div>
-
-      @if (loading()) {
-        <app-loading-spinner></app-loading-spinner>
-      } @else if (events().length === 0) {
-        <app-empty-state
-          icon="calendar"
-          title="Brak wydarzeń"
-          message="Nie utworzyłeś jeszcze żadnych wydarzeń."
-        ></app-empty-state>
-      } @else {
-        <div class="flex flex-col gap-5">
-          @for (e of events(); track e.id) {
-            <app-event-manage-card
-              [event]="toManageCardItem(e)"
-              [actions]="['manage', 'edit', 'cancel', 'delete', 'duplicate']"
-              [disabledActions]="getDisabledActions(e)"
-              (action)="onManageAction($event, e)"
-            />
-          }
-        </div>
-      }
-    </div>
-  `,
+  templateUrl: './my-events.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MyEventsComponent implements OnInit {
@@ -78,15 +50,33 @@ export class MyEventsComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly userService = inject(UserService);
   private readonly eventService = inject(EventService);
+  private readonly organizerService = inject(OrganizerService);
+  private readonly eventSeriesService = inject(EventSeriesService);
   private readonly snackbar = inject(SnackbarService);
   private readonly confirmModal = inject(ConfirmModalService);
 
   readonly events = signal<EventModel[]>([]);
   readonly loading = signal(true);
+  readonly sendingEmail = signal(false);
+  readonly confirmingEventId = signal<string | null>(null);
   readonly canCreateEvents = computed(
     () =>
       environment.enableEventCreation || isOverrideAccount(this.authService.currentUser()?.email),
   );
+
+  readonly now = signal(new Date().toISOString());
+
+  readonly stats = computed(() => {
+    const list = this.events();
+    const now = this.now();
+    return {
+      total: list.length,
+      upcoming: list.filter((e) => e.status === EventStatus.ACTIVE && e.startsAt >= now).length,
+      pending: list.filter((e) => e.status === EventStatus.PENDING).length,
+      ended: list.filter((e) => e.status === EventStatus.ACTIVE && e.endsAt < now).length,
+      cancelled: list.filter((e) => e.status === EventStatus.CANCELLED).length,
+    };
+  });
 
   ngOnInit(): void {
     this.userService.getMyEvents().subscribe({
@@ -99,6 +89,40 @@ export class MyEventsComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
+    });
+  }
+
+  sendEmail(): void {
+    this.sendingEmail.set(true);
+    this.organizerService.sendDigestEmail().subscribe({
+      next: () => {
+        this.snackbar.success('E-mail z zestawieniem został wysłany.');
+        this.sendingEmail.set(false);
+      },
+      error: (err) => {
+        this.snackbar.error(err?.error?.message || 'Nie udało się wysłać e-maila.');
+        this.sendingEmail.set(false);
+      },
+    });
+  }
+
+  private confirmEvent(e: EventModel): void {
+    if (!e.seriesId || !e.confirmToken) return;
+    this.confirmingEventId.set(e.id);
+    this.eventSeriesService.confirmEvent(e.seriesId, e.id).subscribe({
+      next: () => {
+        this.events.update((prev) =>
+          prev.map((ev) =>
+            ev.id === e.id ? { ...ev, status: EventStatus.ACTIVE, confirmToken: null } : ev,
+          ),
+        );
+        this.snackbar.success('Wydarzenie potwierdzone i opublikowane.');
+        this.confirmingEventId.set(null);
+      },
+      error: (err) => {
+        this.snackbar.error(err?.error?.message || 'Nie udało się potwierdzić wydarzenia.');
+        this.confirmingEventId.set(null);
+      },
     });
   }
 
@@ -177,6 +201,13 @@ export class MyEventsComponent implements OnInit {
     };
   }
 
+  getActions(e: EventModel): ManageActionEvent['type'][] {
+    if (e.status === EventStatus.PENDING) {
+      return ['confirm', 'manage', 'delete', 'duplicate'];
+    }
+    return ['manage', 'edit', 'cancel', 'delete', 'duplicate'];
+  }
+
   getDisabledActions(e: EventModel): ManageActionEvent['type'][] {
     const disabled: ManageActionEvent['type'][] = [];
     if (!isEventJoinable(e.startsAt, e.status)) {
@@ -185,11 +216,17 @@ export class MyEventsComponent implements OnInit {
     if (e.status === EventStatus.CANCELLED) {
       disabled.push('cancel');
     }
+    if (this.confirmingEventId() !== null && this.confirmingEventId() !== e.id) {
+      disabled.push('confirm');
+    }
     return disabled;
   }
 
   onManageAction(action: ManageActionEvent, e: EventModel): void {
     switch (action.type) {
+      case 'confirm':
+        this.confirmEvent(e);
+        break;
       case 'manage':
         this.navigation.navigateToEventManage(action.eventId);
         break;

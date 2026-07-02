@@ -1,0 +1,72 @@
+<!-- Ghost (pomiar szerokości): wszystkie pozycje, niewidoczne, jedna linia.
+     Mierzone w font-semibold (jak aktywny pill), by wiersz zawsze się zmieścił. -->
+<div class="pointer-events-none invisible absolute left-0 top-0 -z-10 flex flex-nowrap gap-1.5" aria-hidden="true">
+  @for (item of allItems(); track item.key) {
+    <span
+      #ghostPill
+      class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold whitespace-nowrap"
+    >
+      @if (item.icon) {
+        <app-icon [name]="item.icon" size="xs" />
+      }
+      <span>{{ item.label }}</span>
+    </span>
+  }
+</div>
+
+<!-- Widoczny pasek: wyśrodkowany, ścieśniony, bez przewijania -->
+<nav class="relative px-3 py-2" [attr.aria-label]="ariaLabel()">
+  <div #bar class="flex items-center justify-center gap-1.5 overflow-hidden">
+    @for (item of visibleItems(); track item.key) {
+      <button type="button" [class]="item.active ? activePillClass : pillClass" (click)="select(item.key)">
+        @if (item.icon) {
+          <app-icon [name]="item.icon" size="xs" />
+        }
+        <span>{{ item.label }}</span>
+      </button>
+    }
+
+    @if (overflowItems().length > 0) {
+      <button
+        type="button"
+        [class]="kebabClass"
+        (click)="toggleMore()"
+        aria-label="Więcej opcji"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="moreOpen()"
+      >
+        <app-icon name="more-horizontal" size="sm" />
+      </button>
+    }
+  </div>
+
+  @if (moreOpen()) {
+    <!-- Backdrop zamykający -->
+    <button
+      type="button"
+      class="fixed inset-0 z-40 cursor-default"
+      aria-label="Zamknij menu"
+      (click)="closeMore()"
+    ></button>
+
+    <!-- Dropdown z pozycjami, które się nie zmieściły -->
+    <div
+      role="menu"
+      class="absolute right-2 top-full z-50 mt-1 min-w-44 rounded-xl border border-neutral-100 bg-white p-1 shadow-lg"
+    >
+      @for (item of overflowItems(); track item.key) {
+        <button
+          type="button"
+          role="menuitem"
+          [class]="item.active ? activeMenuItemClass : menuItemClass"
+          (click)="select(item.key)"
+        >
+          @if (item.icon) {
+            <app-icon [name]="item.icon" size="sm" />
+          }
+          <span class="flex-1 text-left">{{ item.label }}</span>
+        </button>
+      }
+    </div>
+  }
+</nav>

@@ -9,7 +9,7 @@ import {
   imports: [EventStatusBarItemComponent],
   template: `
     <div
-      class="fixed bottom-[var(--footer-height)] inset-x-0 z-30 max-w-app mx-auto animate-slide-up-bar"
+      class="fixed bottom-app mb-[env(safe-area-inset-bottom)] inset-x-0 z-30 max-w-app mx-auto animate-slide-up-bar"
     >
       @for (bar of bars(); track bar.id) {
         <app-event-status-bar-item

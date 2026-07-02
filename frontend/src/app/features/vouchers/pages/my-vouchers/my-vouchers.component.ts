@@ -6,64 +6,75 @@ import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/l
 import { UserAvatarComponent } from '../../../../shared/user/ui/user-avatar/user-avatar.component';
 import { VoucherService } from '../../../../core/services/voucher.service';
 import { OrganizerVoucherGroup } from '../../../../shared/types';
+import { AccountContentComponent } from '../../../../shared/ui/account-nav-rail/account-content.component';
 
 @Component({
   selector: 'app-my-vouchers',
-  imports: [DecimalPipe, RouterLink, CardComponent, LoadingSpinnerComponent, UserAvatarComponent],
+  imports: [
+    DecimalPipe,
+    RouterLink,
+    CardComponent,
+    LoadingSpinnerComponent,
+    UserAvatarComponent,
+    AccountContentComponent,
+  ],
   template: `
-    <div class="p-4 space-y-4">
-      <h1 class="text-xl font-bold text-neutral-900">Moje vouchery</h1>
-      <p class="text-sm text-neutral-500">
-        Vouchery można wykorzystać przy zakupie udziału w wydarzeniach danego organizatora.
-      </p>
+    <app-account-content>
+      <div class="space-y-4">
+        <p class="text-sm text-neutral-500">
+          Vouchery można wykorzystać przy zakupie udziału w wydarzeniach danego organizatora.
+        </p>
 
-      @if (loading()) {
-        <app-loading-spinner />
-      } @else {
-        @for (group of groups(); track group.organizer.id) {
-          <app-card>
-            <div class="space-y-3">
-              <div class="flex items-center gap-3">
-                <app-user-avatar [user]="group.organizer" size="md" />
-                <div>
-                  <p class="text-sm font-medium text-neutral-900">
-                    {{ group.organizer.displayName }}
-                  </p>
-                  <p class="text-lg font-bold text-primary-500">
-                    {{ group.totalBalance | number: '1.2-2' }} zł
-                  </p>
-                </div>
-              </div>
-
-              <div class="border-t border-neutral-100 pt-2 space-y-1.5">
-                @for (v of group.vouchers; track v.id) {
-                  <div class="flex justify-between items-center text-xs text-neutral-500">
-                    <div class="flex items-center gap-1.5">
-                      <span>{{ sourceLabel(v.source) }}</span>
-                      @if (v.event) {
-                        <span>-</span>
-                        <a
-                          [routerLink]="['/w', v.event.city?.slug, v.event.id]"
-                          class="text-primary-500 hover:underline"
-                          >{{ v.event.title }}</a
-                        >
-                      }
-                    </div>
-                    <span class="font-medium text-neutral-700">
-                      {{ v.remainingAmount | number: '1.2-2' }} zł
-                    </span>
-                  </div>
-                }
-              </div>
-            </div>
-          </app-card>
-        } @empty {
+        @if (loading()) {
+          <app-loading-spinner />
+        } @else if (groups().length === 0) {
           <p class="text-sm text-neutral-500 text-center py-8">
             Nie masz jeszcze żadnych voucherów
           </p>
+        } @else {
+          <div class="grid gap-4 sm:grid-cols-2">
+            @for (group of groups(); track group.organizer.id) {
+              <app-card>
+                <div class="space-y-3">
+                  <div class="flex items-center gap-3">
+                    <app-user-avatar [user]="group.organizer" size="md" />
+                    <div>
+                      <p class="text-sm font-medium text-neutral-900">
+                        {{ group.organizer.displayName }}
+                      </p>
+                      <p class="text-lg font-bold text-primary-500">
+                        {{ group.totalBalance | number: '1.2-2' }} zł
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="border-t border-neutral-100 pt-2 space-y-1.5">
+                    @for (v of group.vouchers; track v.id) {
+                      <div class="flex justify-between items-center text-xs text-neutral-500">
+                        <div class="flex items-center gap-1.5">
+                          <span>{{ sourceLabel(v.source) }}</span>
+                          @if (v.event) {
+                            <span>-</span>
+                            <a
+                              [routerLink]="['/w', v.event.city?.slug, v.event.id]"
+                              class="text-primary-500 hover:underline"
+                              >{{ v.event.title }}</a
+                            >
+                          }
+                        </div>
+                        <span class="font-medium text-neutral-700">
+                          {{ v.remainingAmount | number: '1.2-2' }} zł
+                        </span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </app-card>
+            }
+          </div>
         }
-      }
-    </div>
+      </div>
+    </app-account-content>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

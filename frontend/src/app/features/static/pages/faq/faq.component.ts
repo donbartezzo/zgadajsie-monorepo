@@ -44,7 +44,7 @@ interface FaqItem {
           @if (_searchQuery) {
             <button
               (click)="clearSearch()"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-danger-400 hover:text-danger-500"
+              class="absolute right-1 top-1/2 -translate-y-1/2 p-2 rounded-full text-danger-400 hover:text-danger-500 hover:bg-danger-50"
             >
               <app-icon name="x" size="sm" />
             </button>

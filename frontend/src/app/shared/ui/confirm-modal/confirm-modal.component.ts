@@ -1,7 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent, IconName } from '../icon/icon.component';
 import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../types/colors';
+import { lockBodyScroll, unlockBodyScroll } from '../../utils';
 import { ConfirmModalService } from './confirm-modal.service';
 
 @Component({
@@ -14,10 +22,12 @@ import { ConfirmModalService } from './confirm-modal.service';
         role="dialog"
         aria-modal="true"
       >
-        <!-- Backdrop -->
+        <!-- Backdrop: fixed inset-0 (nie absolute), by przyciemnić cały obszar treści viewportu
+             niezależnie od wyśrodkowanego (max-w-app) wrappera. Gutter scrollbara jest
+             przycinany do scrollportu i pokrywa go tło html.scroll-locked (styles.scss). -->
         <button
           type="button"
-          class="absolute inset-0 bg-black/50 backdrop-blur-xs cursor-default"
+          class="fixed inset-0 bg-black/50 backdrop-blur-xs cursor-default border-0 m-0 p-0"
           (click)="onCancel()"
           aria-label="Zamknij"
         ></button>
@@ -91,8 +101,31 @@ import { ConfirmModalService } from './confirm-modal.service';
 })
 export class ConfirmModalComponent {
   private readonly confirmModal = inject(ConfirmModalService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly state = this.confirmModal.state;
+
+  private locked = false;
+
+  constructor() {
+    effect(() => {
+      const open = this.state() !== null;
+      if (open && !this.locked) {
+        this.locked = true;
+        lockBodyScroll();
+      } else if (!open && this.locked) {
+        this.locked = false;
+        unlockBodyScroll();
+      }
+    });
+
+    this.destroyRef.onDestroy(() => {
+      if (this.locked) {
+        this.locked = false;
+        unlockBodyScroll();
+      }
+    });
+  }
   readonly resolvedColor = computed<SemanticColor>(() => this.state()?.color ?? 'info');
 
   readonly iconName = computed<IconName>(() => {

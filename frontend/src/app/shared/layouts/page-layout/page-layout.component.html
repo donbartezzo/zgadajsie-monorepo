@@ -1,7 +1,7 @@
 <!-- ═══════════════════════════════════════════════════
-   PRELOADER (shown until layout is ready)
+   PRELOADER (initial load / długie nawigacje; szybkie nie chowają shella)
    ═══════════════════════════════════════════════════ -->
-@if (!layoutConfig.isReady()) {
+@if (showFullPreloader()) {
   <div class="flex flex-1 items-center justify-center">
     <div class="h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-500"></div>
   </div>
@@ -12,27 +12,31 @@
        ═══════════════════════════════════════════════════ -->
     @let _showHeader = showHeader();
     @if (_showHeader) {
-      @if (showBackButton()) {
-        <ng-container *ngTemplateOutlet="backButton"></ng-container>
-      }
-      @if (hasSticky()) {
-        <ng-container *ngTemplateOutlet="stickyButton"></ng-container>
-      }
-
-      <!-- Sentinel: drives IntersectionObserver (not needed in mini-bar-only mode) -->
-      @if (!miniBarOnly()) {
-        <div #heroSentinel class="relative w-full shrink-0" [style.height]="heroHeight()"></div>
-      }
-
-      <!-- Unified fixed hero container: mini-bar OR full hero (compact/extended) -->
-      <div [class]="heroContainerClass()" [style.min-height]="heroContainerMinHeight()">
-        @if (showMiniBar()) {
-          <ng-container *ngTemplateOutlet="miniBarHero"></ng-container>
-        } @else if (layoutConfig.heroVariant() === 'extended') {
-          <ng-container *ngTemplateOutlet="extendedHero"></ng-container>
-        } @else {
-          <ng-container *ngTemplateOutlet="compactHero"></ng-container>
+      <!-- Fixed hero (sentinel + hero + back/sticky). Ukrywane od `lg` w trybie 2-kol
+           (rolę przejmuje statyczne hero w kolumnie głównej); `contents` = brak wpływu na layout. -->
+      <div [class]="fixedHeaderClass()">
+        @if (showBackButton()) {
+          <ng-container *ngTemplateOutlet="backButton"></ng-container>
         }
+        @if (hasSticky()) {
+          <ng-container *ngTemplateOutlet="stickyButton"></ng-container>
+        }
+
+        <!-- Sentinel: drives IntersectionObserver (not needed in mini-bar-only mode) -->
+        @if (!miniBarOnly()) {
+          <div #heroSentinel [class]="sentinelClass()" [style.height]="heroHeight()"></div>
+        }
+
+        <!-- Unified fixed hero container: mini-bar OR full hero (compact/extended) -->
+        <div [class]="heroContainerClass()" [style.min-height]="heroContainerMinHeight()">
+          @if (showMiniBar()) {
+            <ng-container *ngTemplateOutlet="miniBarHero"></ng-container>
+          } @else if (layoutConfig.heroVariant() === 'extended') {
+            <ng-container *ngTemplateOutlet="extendedHero"></ng-container>
+          } @else {
+            <ng-container *ngTemplateOutlet="compactHero"></ng-container>
+          }
+        </div>
       </div>
     }
 
@@ -41,22 +45,70 @@
 
     <!-- ═══════════════════════════════════════════════════
        PAGE CONTENT (router-outlet goes here)
+       < lg jedna kolumna; od `lg` (tryb 2-kol) grid main + aside.
        ═══════════════════════════════════════════════════ -->
     <div [class]="contentWrapperClass()" [style.margin-top]="contentMarginTop()">
-      <div [class]="contentInnerClass()">
-        @if (showDragHandle()) {
-          <!-- Drag handle -->
-          <div class="mx-auto mt-2 h-[5px] w-12 rounded-full bg-neutral-300/60 sm:hidden"></div>
-        }
+      <!-- MAIN COLUMN (przezroczysta `contents` w 1-kol; flex w 2-kol od `lg`) -->
+      <div [class]="mainColumnClass()">
+        @if (showStaticHero()) {
+          <!-- Statyczne hero w kolumnie głównej (tylko od `lg`, tryb 2-kol/wide; pkt 13). -->
+          <div class="relative hidden shrink-0 lg:flex lg:gap-3" [style.min-height]="heroHeight()">
+            <!-- Okładka przypięta do lewej i ograniczona do `max-w-app` (700 = natywna szerokość
+                 cover image), by nigdy nie była upscalowana. W trybie `narrow`/2-kol kolumna główna
+                 ma 700, więc wrapper wypełnia całą kartę; w `wide` zostawia miejsce na prawą kolumnę.
+                 Zaokrąglenie i spójna ramka (jak `app-event-card`) są na samej okładce, żeby wszystkie
+                 statyczne cover-image wyglądały jednakowo jako wyróżnione karty. -->
+            <div
+              class="relative w-full max-w-app shrink-0 overflow-hidden rounded-2xl border-2 border-neutral-400 shadow-2xl"
+            >
+              @if (layoutConfig.heroVariant() === 'extended') {
+                <ng-container *ngTemplateOutlet="extendedHero"></ng-container>
+              } @else {
+                <ng-container *ngTemplateOutlet="compactHero"></ng-container>
+              }
+            </div>
 
-        @if (showNotifAlert()) {
-          <div class="px-3 pt-3">
-            <app-notification-alert></app-notification-alert>
+            <!-- Wide: prawa kolumna wypełnia box poza szerokością okładki. Placeholder (pusty)
+                 pod docelowy desktopowy mini-nav — kolejny etap. -->
+            @if (wide()) {
+              <div class="relative flex-1 min-w-0"></div>
+            }
+
+            @if (showBackButton()) {
+              <div class="absolute left-3 top-3 z-10">
+                <ng-container *ngTemplateOutlet="backButtonInner"></ng-container>
+              </div>
+            }
+            @if (hasSticky()) {
+              <div class="absolute right-3 top-3 z-10">
+                <ng-container *ngTemplateOutlet="layoutConfig.stickyTemplate()"></ng-container>
+              </div>
+            }
           </div>
         }
 
-        <ng-content></ng-content>
+        <div [class]="contentInnerClass()">
+          @if (showDragHandle()) {
+            <!-- Drag handle -->
+            <div class="mx-auto mt-2 h-[5px] w-12 rounded-full bg-neutral-300/60 sm:hidden"></div>
+          }
+
+          @if (showNotifAlert()) {
+            <div class="px-3 pt-3">
+              <app-notification-alert></app-notification-alert>
+            </div>
+          }
+
+          <ng-content></ng-content>
+        </div>
       </div>
+
+      <!-- ASIDE COLUMN (rail). Renderowany dla widoków 2-kol; widoczny od `lg`. -->
+      @if (twoColumn()) {
+        <aside [class]="asideColumnClass()">
+          <ng-container *ngTemplateOutlet="layoutConfig.asideTemplate()"></ng-container>
+        </aside>
+      }
     </div>
 
     <!-- ═══════════════════════════════════════════════════
@@ -132,9 +184,11 @@
 
   <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
 
-  <div class="absolute inset-x-0 bottom-0 p-4 mb-6 text-white">
+  <div class="absolute inset-x-0 bottom-0 p-4 mb-6 text-white lg:mb-0">
     @if (hasTitle()) {
-      <h1 class="text-lg font-extrabold leading-tight">{{ layoutConfig.title() }}</h1>
+      <h1 class="text-lg font-extrabold leading-tight">
+        {{ layoutConfig.title() }}
+      </h1>
     }
     @if (hasSubtitle()) {
       <div class="mt-1">
@@ -146,12 +200,12 @@
   @if (notifBellState(); as bellState) {
     <button
       type="button"
-      class="group/notif absolute right-3 bottom-10 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-xs backdrop-blur-xs transition-all [@media(hover:hover)]:hover:bg-primary-500 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:shadow-md"
+      class="group/notif absolute right-3 bottom-10 lg:bottom-3 z-10 inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-xs backdrop-blur-xs transition-all hover:bg-primary-500 hover:text-white hover:shadow-md"
       (click)="onNotifBellClick()"
       aria-label="Powiadomienia"
     >
       <span
-        class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 [@media(hover:hover)]:group-hover/notif:max-w-48 [@media(hover:hover)]:group-hover/notif:pl-3 [@media(hover:hover)]:group-hover/notif:opacity-100"
+        class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 group-hover/notif:max-w-48 group-hover/notif:pl-3 group-hover/notif:opacity-100"
       >
         <span class="block text-xs font-semibold leading-tight">Powiadomienia</span>
       </span>
@@ -178,29 +232,35 @@
 </ng-template>
 
 <ng-template #backButton>
-  <div class="fixed inset-x-0 top-2 z-[51] mx-auto flex max-w-app justify-start px-2 pointer-events-none">
+  <div class="fixed inset-x-0 top-app mt-2 z-[51] mx-auto flex max-w-app justify-start px-2 pointer-events-none">
     <div class="pointer-events-auto">
-      <button
-        type="button"
-        class="group/back inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-xs backdrop-blur-xs transition-all [@media(hover:hover)]:hover:bg-primary-500 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:shadow-md"
-        (click)="goBack()"
-        aria-label="Wróć"
-      >
-        <span class="flex h-9 w-9 shrink-0 items-center justify-center leading-[0]">
-          <app-icon name="arrow-left" size="sm" color="neutral"></app-icon>
-        </span>
-        <span
-          class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 [@media(hover:hover)]:group-hover/back:max-w-48 [@media(hover:hover)]:group-hover/back:pr-3 [@media(hover:hover)]:group-hover/back:opacity-100"
-        >
-          <span class="block text-xs font-semibold leading-tight">{{ breadcrumb.parentLabel() }}</span>
-        </span>
-      </button>
+      <ng-container *ngTemplateOutlet="backButtonInner"></ng-container>
     </div>
   </div>
 </ng-template>
 
+<!-- Sam przycisk powrotu (bez pozycjonowania) — używany przez fixed back (mobile)
+     oraz przez statyczne hero w kolumnie głównej (desktop, tryb 2-kol). -->
+<ng-template #backButtonInner>
+  <button
+    type="button"
+    class="group/back inline-flex h-9 items-center rounded-full bg-white/80 text-neutral-800 shadow-xs backdrop-blur-xs transition-all hover:bg-primary-500 hover:text-white hover:shadow-md"
+    (click)="goBack()"
+    aria-label="Wróć"
+  >
+    <span class="flex h-9 w-9 shrink-0 items-center justify-center leading-[0]">
+      <app-icon name="arrow-left" size="sm" color="neutral"></app-icon>
+    </span>
+    <span
+      class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 group-hover/back:max-w-48 group-hover/back:pr-3 group-hover/back:opacity-100"
+    >
+      <span class="block text-xs font-semibold leading-tight">{{ breadcrumb.parentLabel() }}</span>
+    </span>
+  </button>
+</ng-template>
+
 <ng-template #stickyButton>
-  <div class="fixed inset-x-0 top-1 right-1 z-[51] mx-auto flex max-w-app justify-end p-0 pointer-events-none">
+  <div class="fixed inset-x-0 top-app mt-1 right-1 z-[51] mx-auto flex max-w-app justify-end p-0 pointer-events-none">
     <div #stickyButtonContainer class="pointer-events-auto">
       <ng-container *ngTemplateOutlet="layoutConfig.stickyTemplate()"></ng-container>
     </div>

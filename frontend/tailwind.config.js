@@ -31,8 +31,22 @@ module.exports = {
       spacing: {
         18: '4.5rem', // 72px - for xl avatar size
       },
+      minHeight: {
+        11: '2.75rem', // 44px - WCAG 2.5.5 tap target minimum
+      },
       maxWidth: {
         app: 'var(--app-max-width)',
+        // Szerokość całego boxa (main + aside) w trybie dwukolumnowym
+        box: 'var(--app-box-width)',
+      },
+      width: {
+        // Szerokość kolumny aside (box − main − gap)
+        aside: 'var(--app-aside-width)',
+      },
+      gridTemplateColumns: {
+        // Układ dwukolumnowy boxa — aside po prawej / po lewej
+        'main-aside': 'minmax(0, var(--app-max-width)) var(--app-aside-width)',
+        'aside-main': 'var(--app-aside-width) minmax(0, var(--app-max-width))',
       },
       keyframes: {
         'fade-in': {

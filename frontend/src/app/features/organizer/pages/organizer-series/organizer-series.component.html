@@ -1,0 +1,105 @@
+<app-account-content>
+  @let _loading = loading();
+  @let _error = error();
+  @let _series = series();
+
+  @if (_loading) {
+    <div class="py-12 flex justify-center">
+      <app-loading-spinner />
+    </div>
+  } @else if (_error) {
+    <app-empty-state icon="alert-triangle" title="Błąd ładowania" [message]="_error!" />
+  } @else if (_series.length === 0) {
+    <app-empty-state icon="calendar" title="Brak serii" message="Nie utworzyłeś jeszcze żadnych serii wydarzeń." />
+  } @else {
+    <div class="space-y-6">
+      <!-- Quick stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ stats().total }}</p>
+            <p class="text-xs text-neutral-500">Razem</p>
+          </div>
+        </app-card>
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ stats().active }}</p>
+            <p class="text-xs text-neutral-500">Aktywne</p>
+          </div>
+        </app-card>
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ stats().suspended }}</p>
+            <p class="text-xs text-neutral-500">Wstrzymane</p>
+          </div>
+        </app-card>
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ stats().deactivated }}</p>
+            <p class="text-xs text-neutral-500">Dezaktywowane</p>
+          </div>
+        </app-card>
+      </div>
+
+      <div class="flex flex-col gap-5">
+        @for (s of _series; track s.id) {
+          <app-card>
+            <div class="p-4 space-y-3">
+              <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1 min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <p class="text-sm font-semibold text-neutral-900">{{ s.name }}</p>
+                    @if (s.suspendedReason) {
+                      <span
+                        class="inline-flex items-center rounded-full bg-warning-50 px-2 py-0.5 text-xs font-medium text-warning-700"
+                      >
+                        Wstrzymana
+                      </span>
+                    }
+                    @if (!s.isActive) {
+                      <span
+                        class="inline-flex items-center rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500"
+                      >
+                        Nieaktywna
+                      </span>
+                    }
+                  </div>
+                  <p class="text-xs text-neutral-500">
+                    {{ s.recurrenceType }}
+                    @if (s._count; as c) {
+                      &middot; {{ c.events }} wydarzeń
+                    }
+                  </p>
+                </div>
+                <app-button appearance="soft" color="primary" size="sm" (clicked)="navigateToSeries(s.id)">
+                  Szczegóły
+                </app-button>
+              </div>
+
+              @if (s.events.length > 0) {
+                <div class="border-t border-neutral-100 pt-3 space-y-2">
+                  <p class="text-xs font-medium text-neutral-400">Nadchodzące</p>
+                  @for (e of s.events; track e.id) {
+                    <div class="flex items-center gap-2 text-xs">
+                      <span
+                        class="inline-flex rounded-full px-2 py-0.5 font-medium"
+                        [class.bg-warning-50]="e.status === 'PENDING'"
+                        [class.text-warning-700]="e.status === 'PENDING'"
+                        [class.bg-success-50]="e.status !== 'PENDING'"
+                        [class.text-success-700]="e.status !== 'PENDING'"
+                      >
+                        {{ e.status === 'PENDING' ? 'Oczekuje' : 'Aktywne' }}
+                      </span>
+                      <span class="text-neutral-500">{{ formatDate(e.startsAt) }}</span>
+                      <span class="text-neutral-400">{{ e.title }}</span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </app-card>
+        }
+      </div>
+    </div>
+  }
+</app-account-content>

@@ -12,8 +12,7 @@
   <app-next-event-badge [event]="_nextUpcomingEvent"></app-next-event-badge>
 </ng-template>
 
-<!-- Content -->
-<section class="py-4 px-3">
+<section class="py-4 px-3 lg:p-0">
   @if (_isLoading && _events.length === 0) {
     <app-loading-spinner></app-loading-spinner>
   } @else if (_error) {
@@ -46,7 +45,7 @@
             <div class="h-px flex-1 bg-neutral-200"></div>
           </div>
 
-          <div class="flex flex-col gap-3">
+          <div [class]="group.key === 'ongoing' ? 'grid gap-3 grid-cols-1' : 'grid gap-3 grid-cols-1 lg:grid-cols-2'">
             @for (event of group.events; track event.id) {
               <app-event-card
                 [event]="event"
@@ -63,7 +62,7 @@
   @if (!_isLoading) {
     <!-- Organizer CTA -->
     <div
-      class="mt-6 rounded-2xl shadow-xs hover:shadow-md transition-shadow duration-200 border border-success-200 bg-success-50 p-5 text-center"
+      class="mx-auto mt-6 max-w-2xl rounded-2xl shadow-xs hover:shadow-md transition-shadow duration-200 border border-success-200 bg-success-50 p-5 text-center"
     >
       <p class="text-sm font-semibold text-neutral-900">Współtwórz lokalną społeczność sportową</p>
       <p class="mt-1.5 text-xs leading-normal text-neutral-600">

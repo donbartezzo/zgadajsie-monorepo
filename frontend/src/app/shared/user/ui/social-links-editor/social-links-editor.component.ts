@@ -8,7 +8,6 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { IconComponent } from '../../../ui/icon/icon.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
 
 const MAX_LINKS = 3;
@@ -29,7 +28,7 @@ function isValidSocialUrl(value: string): boolean {
  */
 @Component({
   selector: 'app-social-links-editor',
-  imports: [FormsModule, IconComponent, ButtonComponent],
+  imports: [FormsModule, ButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-2">
@@ -42,14 +41,15 @@ function isValidSocialUrl(value: string): boolean {
             placeholder="https://..."
             class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-300"
           />
-          <button
-            type="button"
-            (click)="removeLink($index)"
-            aria-label="Usuń link"
-            class="shrink-0 rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 hover:text-danger-500"
-          >
-            <app-icon name="trash" size="sm" />
-          </button>
+          <app-button
+            appearance="ghost"
+            color="danger"
+            size="sm"
+            [iconOnly]="true"
+            iconLeft="trash"
+            (clicked)="removeLink($index)"
+            ariaLabel="Usuń link"
+          />
         </div>
       }
 
@@ -61,13 +61,9 @@ function isValidSocialUrl(value: string): boolean {
 
       <div class="flex items-center justify-between pt-1">
         @if (canAdd()) {
-          <button
-            type="button"
-            (click)="addLink()"
-            class="text-xs font-medium text-primary-500 hover:text-primary-600"
-          >
+          <app-button appearance="ghost" color="primary" size="xs" (clicked)="addLink()">
             + Dodaj link
-          </button>
+          </app-button>
         } @else {
           <span class="text-xs text-neutral-400">Maksymalnie {{ maxLinks }} linki.</span>
         }

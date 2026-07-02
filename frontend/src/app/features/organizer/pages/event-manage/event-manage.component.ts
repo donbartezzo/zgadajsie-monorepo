@@ -48,6 +48,13 @@ import {
 import { getEventLifecycleStatus } from '../../../../shared/utils/event-time-status.util';
 import { BottomOverlaysService } from '../../../../shared/overlay/ui/bottom-overlays/bottom-overlays.service';
 import { EventAnnouncementsComponent } from '../../../event/ui/event-announcements/event-announcements.component';
+import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
+import {
+  DataTableComponent,
+  DataTableColumn,
+} from '../../../../shared/ui/data-table/data-table.component';
+import { DataTableCellDirective } from '../../../../shared/ui/data-table/data-table-cell.directive';
 
 @Component({
   selector: 'app-event-manage',
@@ -62,10 +69,17 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
     EventLifecycleBannerComponent,
     EventAnnouncementsComponent,
     EnrollmentGridComponent,
+    AccountRailSlotComponent,
+    PageHeadingComponent,
+    DataTableComponent,
+    DataTableCellDirective,
   ],
   template: `
-    <div class="p-4">
-      <h1 class="text-xl font-bold text-neutral-900 mb-4">Zarządzanie wydarzeniem</h1>
+    <app-account-rail-slot />
+
+    <!-- Na desktopie (2-kol) inset zapewnia box (lg:p-3) — nie dublujemy paddingu widoku -->
+    <div class="p-4 lg:p-0">
+      <app-page-heading heading="Zarządzanie wydarzeniem" />
 
       @if (lifecycleBannerVariant(); as variant) {
         <div class="mb-4">
@@ -109,61 +123,57 @@ import { EventAnnouncementsComponent } from '../../../event/ui/event-announcemen
         <!-- Oczekujące zgłoszenia -->
         @if (pendingList().length > 0) {
           <h2 class="text-sm font-semibold text-neutral-900 mb-3">Oczekujące zgłoszenia</h2>
-          <div class="space-y-2 mb-6">
-            @for (p of pendingList(); track p.id) {
-              <app-card>
-                <div class="p-3 flex items-center gap-3">
-                  <app-user-avatar [user]="p.user" size="sm" />
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2">
-                      <p class="text-sm font-medium text-neutral-900 truncate">
-                        {{ p.user.displayName }}
-                      </p>
-                      @if (p.isNewToOrganizer) {
-                        <span
-                          class="inline-flex items-center text-[10px] bg-info-100 text-info-700 px-1.5 py-0.5 rounded-full"
-                        >
-                          Nowy
-                        </span>
-                      }
-                    </div>
-                  </div>
-                  <div class="flex gap-1">
-                    <button
-                      type="button"
-                      class="relative appearance-none border-0 bg-transparent p-0 cursor-pointer"
-                      (click)="openChat(p.userId)"
-                    >
-                      <app-icon name="message-circle" size="sm" class="text-neutral-600" />
-                      @if (getUnreadCount(p.userId) > 0) {
-                        <span
-                          class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger-500 text-[10px] font-bold text-white"
-                        >
-                          {{ getUnreadCount(p.userId) }}
-                        </span>
-                      }
-                    </button>
-                    <app-button
-                      appearance="soft"
-                      color="primary"
-                      size="sm"
-                      (clicked)="onApprove(p.id)"
-                    >
-                      <app-icon name="check" size="sm" />
-                    </app-button>
-                    <app-button
-                      appearance="soft"
-                      color="danger"
-                      size="sm"
-                      (clicked)="onReject(p.id)"
-                    >
-                      <app-icon name="x" size="sm" />
-                    </app-button>
+          <app-data-table [data]="pendingList()" [columns]="pendingColumns()">
+            <ng-template appDataTableCell="user" let-row>
+              <div class="flex items-center gap-3">
+                <app-user-avatar [user]="row.user" size="sm" />
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <p class="text-sm font-medium text-neutral-900 truncate">
+                      {{ row.user.displayName }}
+                    </p>
+                    @if (row.isNewToOrganizer) {
+                      <span
+                        class="inline-flex items-center text-[10px] bg-info-100 text-info-700 px-1.5 py-0.5 rounded-full"
+                      >
+                        Nowy
+                      </span>
+                    }
                   </div>
                 </div>
-              </app-card>
-            }
-          </div>
+              </div>
+            </ng-template>
+            <ng-template appDataTableCell="actions" let-row>
+              <div class="flex items-center justify-end gap-1">
+                <button
+                  type="button"
+                  class="relative flex h-9 w-9 items-center justify-center rounded-lg bg-transparent hover:bg-neutral-100"
+                  (click)="openChat(row.userId)"
+                >
+                  <app-icon name="message-circle" size="sm" class="text-neutral-600" />
+                  @if (getUnreadCount(row.userId) > 0) {
+                    <span
+                      class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger-500 text-[10px] font-bold text-white"
+                    >
+                      {{ getUnreadCount(row.userId) }}
+                    </span>
+                  }
+                </button>
+                <app-button
+                  appearance="soft"
+                  color="primary"
+                  size="sm"
+                  (clicked)="onApprove(row.id)"
+                >
+                  <app-icon name="check" size="sm" />
+                </app-button>
+                <app-button appearance="soft" color="danger" size="sm" (clicked)="onReject(row.id)">
+                  <app-icon name="x" size="sm" />
+                </app-button>
+              </div>
+            </ng-template>
+          </app-data-table>
+          <div class="mb-6"></div>
         }
 
         <!-- Uczestnicy (slot grid) -->
@@ -452,6 +462,11 @@ export class EventManageComponent implements OnInit {
   parseNumber(value: string): number {
     return parseInt(value, 10) || 0;
   }
+
+  readonly pendingColumns = computed<DataTableColumn<EnrollmentItem>[]>(() => [
+    { key: 'user', header: 'Użytkownik' },
+    { key: 'actions', header: '', align: 'right', nowrap: true },
+  ]);
 
   readonly lifecycleBannerVariant = computed<LifecycleBannerVariant | null>(() => {
     const e = this.eventData();

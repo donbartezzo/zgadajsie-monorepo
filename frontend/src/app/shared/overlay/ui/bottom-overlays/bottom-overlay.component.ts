@@ -9,31 +9,42 @@ import {
   output,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { fromEvent } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { IconComponent, IconName } from '../../../ui/icon/icon.component';
 import { SemanticColor, SEMANTIC_COLOR_CLASSES } from '../../../types/colors';
+import { lockBodyScroll, unlockBodyScroll } from '../../../utils';
 
 @Component({
   selector: 'app-bottom-overlay',
   imports: [CommonModule, IconComponent],
   template: `
     @if (open()) {
-      <div class="fixed inset-x-0 top-0 bottom-16 z-[60] flex flex-col max-w-app mx-auto">
+      <!-- < lg: bottom sheet (slide-up od dołu). lg+: wyśrodkowany modal. -->
+      <div
+        class="fixed inset-x-0 top-0 bottom-16 z-[60] flex flex-col max-w-app mx-auto lg:inset-0 lg:max-w-none lg:items-center lg:justify-center lg:p-4"
+      >
+        <!-- Backdrop: fixed (nie absolute), by przyciemnić cały obszar treści viewportu
+             niezależnie od wyśrodkowanego (max-w-app) wrappera. Pionowo: mobile
+             top-0..bottom-16 (nad bottom-nav), lg pełna wysokość. Gutter scrollbara
+             pokrywa tło html.scroll-locked (styles.scss). -->
         <button
           type="button"
-          class="absolute inset-0 m-0 border-0 bg-black/50 p-0 backdrop-blur-xs"
+          class="fixed inset-x-0 top-0 bottom-16 lg:bottom-0 m-0 border-0 bg-black/50 p-0 backdrop-blur-xs"
           (click)="closed.emit()"
           aria-label="Zamknij overlay"
         ></button>
 
         <button
           type="button"
-          class="relative z-10 m-0 min-h-0 flex-1 border-0 bg-transparent p-0"
+          class="relative z-10 m-0 min-h-0 flex-1 border-0 bg-transparent p-0 lg:hidden"
           (click)="closed.emit()"
           aria-label="Zamknij overlay"
         ></button>
 
         <div
-          class="relative z-10 min-h-0 overflow-y-auto rounded-t-2xl bg-white shadow-2xl animate-slide-up"
+          class="relative z-10 min-h-0 max-h-[90dvh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl animate-slide-up lg:w-full lg:max-w-lg lg:rounded-2xl"
         >
           <div class="bg-white px-4 pt-3 pb-2 rounded-t-2xl relative text-center mb-3 px-6">
             <!-- <div class="mx-auto mb-3 h-1 w-10 rounded-full bg-neutral-300"></div> -->
@@ -103,17 +114,35 @@ export class BottomOverlayComponent {
   protected readonly iconBgClass = computed(() => SEMANTIC_COLOR_CLASSES.surface[this.iconColor()]);
   protected readonly iconTextClass = computed(() => SEMANTIC_COLOR_CLASSES.text[this.iconColor()]);
 
+  private locked = false;
+
   constructor() {
     effect(() => {
-      if (this.open()) {
-        document.body.classList.add('overflow-hidden');
-      } else {
-        document.body.classList.remove('overflow-hidden');
+      const open = this.open();
+      if (open && !this.locked) {
+        this.locked = true;
+        lockBodyScroll();
+      } else if (!open && this.locked) {
+        this.locked = false;
+        unlockBodyScroll();
       }
     });
 
+    fromEvent<KeyboardEvent>(document, 'keydown')
+      .pipe(
+        filter((e) => e.key === 'Escape'),
+        filter(() => this.open()),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.closed.emit();
+      });
+
     this.destroyRef.onDestroy(() => {
-      document.body.classList.remove('overflow-hidden');
+      if (this.locked) {
+        this.locked = false;
+        unlockBodyScroll();
+      }
     });
   }
 }

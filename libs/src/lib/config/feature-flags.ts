@@ -16,6 +16,7 @@ export interface FeatureFlags {
   enableEmails: boolean;
   enableTurnstileCaptcha: boolean;
   enablePublicCoverManagement: boolean;
+  enableFooterAd: boolean;
 }
 
 export const DEV_FEATURE_FLAGS: FeatureFlags = {
@@ -29,6 +30,7 @@ export const DEV_FEATURE_FLAGS: FeatureFlags = {
   enableEmails: false,
   enableTurnstileCaptcha: true,
   enablePublicCoverManagement: false,
+  enableFooterAd: false,
 };
 
 export const PRODUCTION_FEATURE_FLAGS: FeatureFlags = {
@@ -42,4 +44,5 @@ export const PRODUCTION_FEATURE_FLAGS: FeatureFlags = {
   enableEmails: true,
   enableTurnstileCaptcha: true,
   enablePublicCoverManagement: true,
+  enableFooterAd: false,
 };

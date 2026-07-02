@@ -56,6 +56,8 @@ import {
 import { isEventJoinable } from '../../../../shared/utils/event-time-status.util';
 import { EventValidators } from '../../validators/event.validators';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { AccountRailSlotComponent } from '../../../../shared/ui/account-nav-rail/account-rail-slot.component';
+import { PageHeadingComponent } from '../../../../shared/ui/page-heading/page-heading.component';
 import { environment } from '../../../../../environments/environment';
 
 interface DuplicateQueryParams {
@@ -83,18 +85,15 @@ interface EventRule {
     FormControlErrorDirective,
     TranslocoPipe,
     ImageCropperModalComponent,
+    AccountRailSlotComponent,
+    PageHeadingComponent,
   ],
   template: `
-    <div class="p-4">
-      <h1 class="text-xl font-bold text-neutral-900 mb-4">
-        @if (seriesTemplateMode()) {
-          Edytuj dane wydarzeń serii
-        } @else if (isEdit()) {
-          Edytuj wydarzenie
-        } @else {
-          Nowe wydarzenie
-        }
-      </h1>
+    <app-account-rail-slot />
+
+    <!-- Na desktopie (2-kol) inset zapewnia box (lg:p-3) — nie dublujemy paddingu widoku -->
+    <div class="p-4 lg:p-0">
+      <app-page-heading [heading]="pageTitle()" />
 
       @if (seriesTemplateMode()) {
         @let affected = seriesTemplateAffected();
@@ -128,6 +127,8 @@ interface EventRule {
               <input
                 id="title"
                 formControlName="title"
+                autocomplete="off"
+                enterkeyhint="next"
                 appFormControlError
                 placeholder="Nazwa wydarzenia"
               />
@@ -137,6 +138,7 @@ interface EventRule {
               <textarea
                 formControlName="description"
                 rows="4"
+                enterkeyhint="next"
                 appFormControlError
                 placeholder="Opis wydarzenia..."
               ></textarea>
@@ -147,7 +149,7 @@ interface EventRule {
         <app-card>
           <div class="p-4 space-y-4">
             <h3 class="text-sm font-semibold text-neutral-900">Szczegóły</h3>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
               <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1">Dyscyplina</label>
                 <select formControlName="disciplineSlug" appFormControlError>
@@ -266,8 +268,8 @@ interface EventRule {
               </div>
             }
 
-            <!-- Liczba uczestników -->
-            <div class="grid grid-cols-2 gap-3">
+            <!-- Liczba uczestników i koszt -->
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
               <div>
                 <label class="block text-xs font-medium text-neutral-600 mb-1"
                   >Min. uczestników</label
@@ -275,6 +277,8 @@ interface EventRule {
                 <input
                   type="number"
                   formControlName="minParticipants"
+                  inputmode="numeric"
+                  enterkeyhint="next"
                   min="2"
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 />
@@ -286,7 +290,23 @@ interface EventRule {
                 <input
                   type="number"
                   formControlName="maxParticipants"
+                  inputmode="numeric"
+                  enterkeyhint="next"
                   min="2"
+                  class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-neutral-600 mb-1"
+                  >Koszt/os. (zł)</label
+                >
+                <input
+                  type="number"
+                  formControlName="costPerPerson"
+                  inputmode="decimal"
+                  enterkeyhint="done"
+                  min="0"
+                  step="0.01"
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
                 />
               </div>
@@ -301,6 +321,8 @@ interface EventRule {
                 <input
                   type="number"
                   formControlName="ageMin"
+                  inputmode="numeric"
+                  enterkeyhint="next"
                   min="1"
                   max="100"
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
@@ -314,6 +336,8 @@ interface EventRule {
                 <input
                   type="number"
                   formControlName="ageMax"
+                  inputmode="numeric"
+                  enterkeyhint="done"
                   min="1"
                   max="100"
                   class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
@@ -344,22 +368,6 @@ interface EventRule {
                   <option value="PUBLIC">Publiczne</option>
                   <option value="PRIVATE">Prywatne</option>
                 </select>
-              </div>
-            </div>
-
-            <!-- Koszt i akceptacja -->
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-medium text-neutral-600 mb-1"
-                  >Koszt/os. (zł)</label
-                >
-                <input
-                  type="number"
-                  formControlName="costPerPerson"
-                  min="0"
-                  step="0.01"
-                  class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
-                />
               </div>
             </div>
           </div>
@@ -408,6 +416,7 @@ interface EventRule {
                       } @else {
                         <input
                           type="number"
+                          inputmode="numeric"
                           [value]="role.slots || 0"
                           min="0"
                           [max]="form.get('maxParticipants')?.value"
@@ -454,6 +463,8 @@ interface EventRule {
                 <div class="flex gap-2">
                   <input
                     formControlName="address"
+                    autocomplete="street-address"
+                    enterkeyhint="done"
                     (blur)="onAddressChange()"
                     appFormControlError
                     placeholder="Ulica, numer"
@@ -475,7 +486,7 @@ interface EventRule {
                 </div>
               </div>
 
-              <div class="h-[250px] overflow-hidden rounded-xl">
+              <div class="h-[250px] overflow-hidden rounded-xl md:h-[350px] lg:h-[400px]">
                 <app-map
                   #mapComponent
                   [lat]="mapLat()"
@@ -586,7 +597,7 @@ interface EventRule {
                       </div>
                       <button
                         type="button"
-                        class="flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800"
+                        class="flex items-center gap-1.5 rounded-lg py-2 px-1 text-xs text-primary-600 hover:bg-primary-50 hover:text-primary-800"
                         (click)="fetchSuggestedCover()"
                       >
                         <app-icon name="refresh-cw" size="xs" />
@@ -846,6 +857,12 @@ export class EventFormComponent implements OnInit {
   readonly seriesAvailable = environment.enableEventSeries;
 
   readonly isEdit = signal(false);
+  readonly pageTitle = computed(() => {
+    if (this.seriesTemplateMode()) {
+      return 'Edytuj dane wydarzeń serii';
+    }
+    return this.isEdit() ? 'Edytuj wydarzenie' : 'Nowe wydarzenie';
+  });
   readonly createSeriesIntent = signal(false);
   readonly editEventSeriesId = signal<string | null>(null);
   readonly seriesTemplateMode = signal(false);

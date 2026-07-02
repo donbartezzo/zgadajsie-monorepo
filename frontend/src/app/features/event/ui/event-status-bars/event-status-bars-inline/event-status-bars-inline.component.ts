@@ -37,9 +37,15 @@ const BOTTOM_NAV_HEIGHT = 120;
       }
     </div>
 
-    <!-- Sticky bar: shown when inline bars scroll out of viewport -->
+    <!-- Sticky bar: shown when inline bars scroll out of viewport.
+         Komponent używany tylko w szczegółach wydarzenia (2-kol), gdzie CTA jest w railu,
+         wiec dolny pasek chowamy od lg na sztywno. -->
     @if (!sentinelVisible()) {
-      <app-event-status-bar-sticky [bars]="bars()" (barClick)="barClick.emit($event)" />
+      <app-event-status-bar-sticky
+        class="lg:hidden"
+        [bars]="bars()"
+        (barClick)="barClick.emit($event)"
+      />
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

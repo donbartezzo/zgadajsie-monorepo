@@ -1,148 +1,187 @@
-<div class="p-4 space-y-6">
-  @if (loading()) {
-    <div class="py-12 flex justify-center">
-      <app-loading-spinner />
-    </div>
-  } @else if (error()) {
-    <app-empty-state icon="alert-triangle" title="Błąd ładowania" [message]="error()!" />
-  } @else if (digest(); as data) {
-    <div class="flex items-center justify-between gap-3">
-      <h1 class="text-xl font-bold text-neutral-900">Zestawienie</h1>
+<app-account-content>
+  @let _loading = loading();
+  @let _error = error();
+  @let _digest = digest();
+
+  @if (!_loading && !_error && _digest) {
+    <div slot="actions">
       <app-button appearance="soft" color="neutral" size="sm" [loading]="sendingEmail()" (clicked)="sendEmail()">
         <app-icon name="mail" size="sm"></app-icon>
         Wyślij e-mail
       </app-button>
     </div>
+  }
 
-    @if (isEmpty(data)) {
-      <app-empty-state
-        icon="bar-chart"
-        title="Brak danych"
-        message="Nie masz jeszcze żadnych wydarzeń ani serii. Utwórz pierwsze wydarzenie, aby zobaczyć zestawienie."
-      />
-    }
+  @if (_loading) {
+    <div class="py-12 flex justify-center">
+      <app-loading-spinner />
+    </div>
+  } @else if (_error) {
+    <app-empty-state icon="alert-triangle" title="Błąd ładowania" [message]="_error!" />
+  } @else if (_digest; as data) {
+    <div class="space-y-6">
+      @if (isEmpty(data)) {
+        <app-empty-state
+          icon="bar-chart"
+          title="Brak danych"
+          message="Nie masz jeszcze żadnych wydarzeń ani serii. Utwórz pierwsze wydarzenie, aby zobaczyć zestawienie."
+        />
+      }
 
-    @if (data.activeSeries.length > 0) {
-      <div class="flex flex-col gap-5">
-        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Aktywne serie</p>
-        @for (s of data.activeSeries; track s.id) {
-          <app-card>
-            <div class="flex items-start justify-between gap-3">
-              <div class="space-y-1 min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
-                  <p class="text-sm font-semibold text-neutral-900">{{ s.name }}</p>
-                  @if (s.suspendedReason) {
-                    <span
-                      class="inline-flex items-center rounded-full bg-warning-50 px-2 py-0.5 text-xs font-medium text-warning-700"
-                    >
-                      Wstrzymana
-                    </span>
-                  }
-                  @if (s.pendingCount > 0) {
-                    <span
-                      class="inline-flex items-center rounded-full bg-info-50 px-2 py-0.5 text-xs font-medium text-info-700"
-                    >
-                      {{ s.pendingCount }} oczekuje
-                    </span>
-                  }
-                </div>
-                @if (s.suspendedReason) {
-                  <p class="text-xs text-warning-600">{{ s.suspendedReason }}</p>
-                } @else if (s.nextEventAt) {
-                  <p class="text-xs text-neutral-500">Następne: {{ formatDate(s.nextEventAt) }}</p>
-                }
-              </div>
-              <app-button appearance="soft" color="primary" size="sm" (clicked)="navigateToSeries(s.id)">
-                Szczegóły
-              </app-button>
-            </div>
-          </app-card>
-        }
-      </div>
-    }
-
-    @if (data.pendingConfirmations.length > 0) {
-      <div class="flex flex-col gap-5">
-        <p class="text-xs font-semibold uppercase tracking-wide text-warning-600 px-1">
-          Do potwierdzenia ({{ data.pendingConfirmations.length }})
-        </p>
-        @for (event of data.pendingConfirmations; track event.id) {
-          <app-event-manage-card
-            [event]="toManageCardItem(event)"
-            [actions]="['confirm', 'manage', 'delete', 'duplicate']"
-            [disabledActions]="confirmingEventId() !== null && confirmingEventId() !== event.id ? ['confirm'] : []"
-            (action)="onPendingAction($event, event)"
-          />
-        }
-      </div>
-    }
-
-    @if (data.upcoming.length > 0) {
-      <div class="flex flex-col gap-5">
-        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Nadchodzące</p>
-        @for (event of data.upcoming; track event.id) {
-          <app-event-manage-card
-            [event]="toManageCardItem(event)"
-            [actions]="['manage', 'edit', 'cancel', 'delete', 'duplicate']"
-            (action)="onUpcomingAction($event)"
-          />
-        }
-      </div>
-    }
-
-    @if (data.recentlyCreated.length > 0) {
-      <div class="flex flex-col gap-5">
-        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Ostatnio utworzone</p>
-        @for (event of data.recentlyCreated; track event.id) {
-          <app-event-manage-card
-            [event]="toManageCardItem(event)"
-            [actions]="['manage', 'edit', 'delete', 'duplicate']"
-            (action)="onUpcomingAction($event)"
-          />
-        }
-      </div>
-    }
-
-    @if (data.recentlyEnded.length > 0) {
-      <div class="flex flex-col gap-5">
-        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Ostatnio zakończone</p>
-        @for (event of data.recentlyEnded; track event.id) {
-          <app-event-manage-card
-            [event]="toManageCardItem(event)"
-            [actions]="['manage', 'duplicate']"
-            (action)="onUpcomingAction($event)"
-          />
-        }
-      </div>
-    }
-
-    @if (data.recentlyCancelled.length > 0) {
-      <div class="flex flex-col gap-5">
-        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Odwołane</p>
-        @for (event of data.recentlyCancelled; track event.id) {
-          <app-event-manage-card
-            [event]="toManageCardItem(event)"
-            [actions]="['manage', 'delete', 'duplicate']"
-            [dimmed]="true"
-            (action)="onUpcomingAction($event)"
-          />
-        }
-      </div>
-    }
-
-    @if (data.recentlyDeactivatedSeries.length > 0) {
-      <div class="flex flex-col gap-5">
-        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Dezaktywowane serie</p>
+      <!-- Quick stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <app-card>
-          <div class="divide-y divide-neutral-100">
-            @for (s of data.recentlyDeactivatedSeries; track s.id) {
-              <div class="py-3 first:pt-0 last:pb-0">
-                <p class="text-sm font-medium text-neutral-400">{{ s.name }}</p>
-              </div>
-            }
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ data.activeSeries.length }}</p>
+            <p class="text-xs text-neutral-500">Aktywne serie</p>
+          </div>
+        </app-card>
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ data.pendingConfirmations.length }}</p>
+            <p class="text-xs text-neutral-500">Do potwierdzenia</p>
+          </div>
+        </app-card>
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">{{ data.upcoming.length }}</p>
+            <p class="text-xs text-neutral-500">Nadchodzące</p>
+          </div>
+        </app-card>
+        <app-card>
+          <div class="p-3 text-center">
+            <p class="text-2xl font-bold text-neutral-900">
+              {{ data.recentlyEnded.length + data.recentlyCancelled.length }}
+            </p>
+            <p class="text-xs text-neutral-500">Zakończone / odwołane</p>
           </div>
         </app-card>
       </div>
-    }
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        @if (data.activeSeries.length > 0) {
+          <div class="flex flex-col gap-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Aktywne serie</p>
+            @for (s of data.activeSeries; track s.id) {
+              <app-card>
+                <div class="flex items-start justify-between gap-3">
+                  <div class="space-y-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <p class="text-sm font-semibold text-neutral-900">{{ s.name }}</p>
+                      @if (s.suspendedReason) {
+                        <span
+                          class="inline-flex items-center rounded-full bg-warning-50 px-2 py-0.5 text-xs font-medium text-warning-700"
+                        >
+                          Wstrzymana
+                        </span>
+                      }
+                      @if (s.pendingCount > 0) {
+                        <span
+                          class="inline-flex items-center rounded-full bg-info-50 px-2 py-0.5 text-xs font-medium text-info-700"
+                        >
+                          {{ s.pendingCount }} oczekuje
+                        </span>
+                      }
+                    </div>
+                    @if (s.suspendedReason) {
+                      <p class="text-xs text-warning-600">{{ s.suspendedReason }}</p>
+                    } @else if (s.nextEventAt) {
+                      <p class="text-xs text-neutral-500">Następne: {{ formatDate(s.nextEventAt) }}</p>
+                    }
+                  </div>
+                  <app-button appearance="soft" color="primary" size="sm" (clicked)="navigateToSeries(s.id)">
+                    Szczegóły
+                  </app-button>
+                </div>
+              </app-card>
+            }
+          </div>
+        }
+
+        @if (data.pendingConfirmations.length > 0) {
+          <div class="flex flex-col gap-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-warning-600 px-1">
+              Do potwierdzenia ({{ data.pendingConfirmations.length }})
+            </p>
+            @for (event of data.pendingConfirmations; track event.id) {
+              <app-event-manage-card
+                [event]="toManageCardItem(event)"
+                [actions]="['confirm', 'manage', 'delete', 'duplicate']"
+                [disabledActions]="confirmingEventId() !== null && confirmingEventId() !== event.id ? ['confirm'] : []"
+                (action)="onPendingAction($event, event)"
+              />
+            }
+          </div>
+        }
+
+        @if (data.upcoming.length > 0) {
+          <div class="flex flex-col gap-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Nadchodzące</p>
+            @for (event of data.upcoming; track event.id) {
+              <app-event-manage-card
+                [event]="toManageCardItem(event)"
+                [actions]="['manage', 'edit', 'cancel', 'delete', 'duplicate']"
+                (action)="onUpcomingAction($event)"
+              />
+            }
+          </div>
+        }
+
+        @if (data.recentlyCreated.length > 0) {
+          <div class="flex flex-col gap-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Ostatnio utworzone</p>
+            @for (event of data.recentlyCreated; track event.id) {
+              <app-event-manage-card
+                [event]="toManageCardItem(event)"
+                [actions]="['manage', 'edit', 'delete', 'duplicate']"
+                (action)="onUpcomingAction($event)"
+              />
+            }
+          </div>
+        }
+
+        @if (data.recentlyEnded.length > 0) {
+          <div class="flex flex-col gap-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Ostatnio zakończone</p>
+            @for (event of data.recentlyEnded; track event.id) {
+              <app-event-manage-card
+                [event]="toManageCardItem(event)"
+                [actions]="['manage', 'duplicate']"
+                (action)="onUpcomingAction($event)"
+              />
+            }
+          </div>
+        }
+
+        @if (data.recentlyCancelled.length > 0) {
+          <div class="flex flex-col gap-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Odwołane</p>
+            @for (event of data.recentlyCancelled; track event.id) {
+              <app-event-manage-card
+                [event]="toManageCardItem(event)"
+                [actions]="['manage', 'delete', 'duplicate']"
+                [dimmed]="true"
+                (action)="onUpcomingAction($event)"
+              />
+            }
+          </div>
+        }
+
+        @if (data.recentlyDeactivatedSeries.length > 0) {
+          <div class="flex flex-col gap-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400 px-1">Dezaktywowane serie</p>
+            <app-card>
+              <div class="divide-y divide-neutral-100">
+                @for (s of data.recentlyDeactivatedSeries; track s.id) {
+                  <div class="py-3 first:pt-0 last:pb-0">
+                    <p class="text-sm font-medium text-neutral-400">{{ s.name }}</p>
+                  </div>
+                }
+              </div>
+            </app-card>
+          </div>
+        }
+      </div>
+    </div>
   }
-</div>
+</app-account-content>

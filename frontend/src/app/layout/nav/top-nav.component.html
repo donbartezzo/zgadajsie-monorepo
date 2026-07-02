@@ -1,0 +1,77 @@
+<!-- Desktop top navigation (od `lg`) -->
+@let _isLoggedIn = auth.isLoggedIn();
+
+<nav class="mx-auto flex h-full w-full max-w-app items-center gap-2 px-4" aria-label="Główna nawigacja">
+  <!-- Brand → home -->
+  <app-button appearance="ghost" color="neutral" size="md" (clicked)="goHome()">
+    <span class="font-extrabold tracking-tight">{{ APP_BRAND.NAME }}</span>
+  </app-button>
+
+  <!-- Primary links -->
+  <div class="ml-2 flex items-center gap-0.5">
+    <app-button appearance="ghost" color="neutral" size="sm" (clicked)="goEvents()"> Wydarzenia </app-button>
+    <app-button appearance="ghost" color="neutral" size="sm" (clicked)="goPath('/contact')"> Kontakt </app-button>
+    <app-button appearance="ghost" color="neutral" size="sm" (clicked)="goPath('/faq')"> FAQ </app-button>
+  </div>
+
+  <!-- Right group: city, share, user -->
+  <div class="ml-auto flex items-center gap-2">
+    <app-button
+      [appearance]="cityContext.cityName() ? 'ghost' : 'soft'"
+      color="neutral"
+      size="md"
+      iconLeft="map-pin"
+      ariaLabel="Wydarzenia w {{ cityContext.cityLabel() }}"
+      (clicked)="toggleCityOptions()"
+    >
+      <span class="max-w-[12rem] truncate text-sm font-medium">{{ cityContext.cityLabel() }}</span>
+    </app-button>
+
+    <app-button
+      appearance="soft"
+      color="neutral"
+      size="md"
+      [iconOnly]="true"
+      iconLeft="share"
+      ariaLabel="Udostępnij"
+      (clicked)="toggleShareMenu()"
+    />
+
+    @if (_isLoggedIn) {
+      <div class="relative">
+        <!-- Surowy button (nie app-button): trigger menu wymaga aria-haspopup/aria-expanded,
+             a treścią jest avatar + absolutny badge — box-model app-button tu nie pasuje. -->
+        <button
+          type="button"
+          class="relative flex items-center rounded-full transition-opacity hover:opacity-90"
+          [attr.aria-expanded]="menuOpen()"
+          aria-haspopup="menu"
+          aria-label="Menu użytkownika"
+          (click)="toggleMenu()"
+        >
+          <app-user-avatar [user]="auth.currentUser()" size="lg" />
+          @if (showBadge()) {
+            <span
+              class="absolute -top-1 -right-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full border-2 border-white bg-danger-500 px-1 text-xs font-bold text-white"
+            >
+              {{ badgeText() }}
+            </span>
+          }
+        </button>
+
+        @if (menuOpen()) {
+          <div
+            class="absolute right-0 top-[calc(100%+0.5rem)] z-[61] w-64 rounded-xl border border-neutral-200 bg-white p-1.5 shadow-lg"
+            role="menu"
+          >
+            <app-link-list [items]="navMenu.links()" (itemClicked)="handleMenuClick($event)" />
+          </div>
+        }
+      </div>
+    } @else {
+      <app-button appearance="solid" color="primary" size="md" iconLeft="log-in" (clicked)="goLogin()">
+        Zaloguj się
+      </app-button>
+    }
+  </div>
+</nav>

@@ -103,9 +103,9 @@ export interface ChatViewMessage {
       @let _isLoading = loading();
       @let _mbrs = members();
 
-      <!-- ─── Chat header ─── -->
+      <!-- ─── Chat header ─── (fixed na mobile; od lg in-flow, by trzymać kolumnę główną boxa) -->
       <div
-        class="fixed top-[var(--hero-mini-bar-h)] left-0 right-0 z-10 flex items-center px-4 py-0.5 border-b border-neutral-200 bg-white w-full max-w-app mx-auto"
+        class="fixed lg:static top-app mt-[var(--hero-mini-bar-h)] lg:mt-0 left-0 right-0 z-10 flex items-center px-4 py-0.5 border-b border-neutral-200 bg-white w-full max-w-app mx-auto"
       >
         <div class="flex items-center w-full gap-3 mr-10">
           <div class="flex items-center gap-3 shrink-0">
@@ -148,7 +148,7 @@ export interface ChatViewMessage {
 
         <!-- Scrollable messages -->
         <div
-          class="flex flex-1 flex-col min-h-0 overflow-y-auto px-4 py-4 space-y-3 pt-14"
+          class="flex flex-1 flex-col min-h-0 overflow-y-auto px-4 py-4 space-y-3 pt-14 lg:pt-4"
           #messagesContainer
         >
           @if (_isLoading) {
@@ -212,14 +212,18 @@ export interface ChatViewMessage {
         <p class="text-xs text-neutral-400 px-3 py-1">{{ typingUser() }} pisze...</p>
       }
 
+      <!-- RWD-19: fixed na mobile; od lg in-flow (na dole kolumny głównej boxa).
+           w-full — bez niego mx-auto na flex-item kurczy div do treści (input nie na całą szerokość). -->
       <div
-        class="fixed bottom-[var(--footer-height)] inset-x-0 z-20 mx-auto max-w-app border-t border-neutral-200 bg-white"
+        class="fixed lg:static bottom-app inset-x-0 z-20 mx-auto w-full max-w-app border-t border-neutral-200 bg-white"
       >
         <div class="flex gap-2 px-3 py-3">
           <input
             [(ngModel)]="newMessage"
             (keyup.enter)="send()"
             (input)="onTyping()"
+            autocomplete="off"
+            enterkeyhint="send"
             placeholder="Napisz wiadomość..."
             class="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
           />

@@ -40,6 +40,8 @@ Obsługiwane pola w `RouteLayoutData`:
 - `heroVariant?: 'compact' | 'extended' | 'only-mini-bar'`
 - `title?: string`
 - `subtitle?: string`
+- `desktopLayout?: 'narrow' | 'wide' | 'two-column'` (RWD-15; domyślnie `narrow`)
+- `asideSide?: 'left' | 'right'` (RWD-15; domyślnie `right`)
 
 Przykład:
 
@@ -189,7 +191,7 @@ Oznacza to, że template może nadpisać prosty tekst.
 
 ## Sloty layoutu
 
-Layout wspiera dwa sloty definiowane przez `LayoutSlotDirective`.
+Layout wspiera trzy sloty definiowane przez `LayoutSlotDirective`.
 
 ### `appLayoutSlot="subtitleTemplate"`
 
@@ -228,6 +230,22 @@ Przykład:
 ```html
 <ng-template appLayoutSlot="stickyTemplate">
   <app-date-badge [month]="eventMonth()" [day]="eventDay()" [time]="eventStartTime()" />
+</ng-template>
+```
+
+### `appLayoutSlot="aside"`
+
+Slot kolumny aside w trybie dwukolumnowym (RWD-15). Renderowany przez page-layout w kolumnie
+aside, gdy aktywny widok ma `desktopLayout: 'two-column'`. Widoczny dopiero od `lg`.
+
+Kluczowa właściwość: jak pozostałe sloty, `asideTemplate` **nie jest czyszczony** przez
+`LayoutConfigService.reset()` — jest zarządzany przez cykl życia `LayoutSlotDirective`. Dzięki temu
+shell-rodzic (np. `EventAreaComponent`), który przeżywa nawigację między trasami-dziećmi, może
+zarejestrować trwały rail raz, a ten pozostaje spójny między podstronami strefy.
+
+```html
+<ng-template appLayoutSlot="aside">
+  <app-event-nav-rail />
 </ng-template>
 ```
 
@@ -388,6 +406,180 @@ Pozwala nadpisać klasy wrappera treści, np. tło.
 ### `heroVariant`
 
 Wybiera wariant hero: `compact`, `extended` lub `only-mini-bar`.
+
+## Strategia szerokości shella (RWD-11b)
+
+Globalny shell (`.app` / `.app-container` w `frontend/src/styles.scss`) ma **kolumnę główną + boxed look**.
+
+Token (CSS var w `styles.scss`):
+
+- `--app-max-width` (Tailwind `max-w-app`) — szerokość **kolumny głównej** oraz punkt wyrównania elementów `fixed` (bottom-nav, hero, back/sticky, overlaye, modale). **Wartość `700px`** = natywna szerokość cover image (`COVER_IMAGE_WIDTH` w `libs`), więc hero renderuje okładkę 1:1 (bez upscalingu/blura).
+
+**Boxed look** (`.app-container`):
+
+- **mobile / poniżej 700px** — full-bleed: kontener wypełnia ekran, pattern ukryty, brak ramki.
+- **od 700px (`@media (min-width: $app-max-width)`)** — wyśrodkowana karta: `max-width` = kolumna główna, `border-radius`, boczne cienie, a w marginesach widoczny `app-bg-pattern` (obrócony, kafelkowany sport-pattern). Próg = szerokość boxa (gdy viewport ją przekroczy), nie arbitralny breakpoint.
+
+Treść wewnątrz kontenera jest wyśrodkowaną kolumną `max-w-app` (700) — page-layout owija ją w `mx-auto w-full max-w-app`.
+
+### Tryb jednokolumnowy szeroki (`desktopLayout: 'wide'`)
+
+Wariant dla widoków, które potrzebują JEDNEJ kolumny treści na pełną szerokość boxa (bez aside), np.
+listing wydarzeń (`/w/:citySlug`).
+
+- Box rozszerza się od `lg` do `$app-box-wide` (1024px) przez klasę `.app--wide` na `.app`
+  (bind w `app.html` z `LayoutConfigService.desktopLayout()`). Poniżej `lg` box zostaje przy
+  kolumnie głównej (700) — jedna wąska kolumna jak w `narrow`.
+- Treść: page-layout owija ją w `max-w-app lg:max-w-box lg:p-3` (700 → box-wide od `lg`), kolumna
+  główna jest flex-col z `lg:gap-3` (statyczne hero ↔ karta treści jako kafelki), bez kolumny aside.
+- **Te same zasady hero co w `two-column`** (wspólny sygnał `staticHeroLayout = twoColumn || wide`):
+  od `lg` renderowane jest **statyczne** (nie-`fixed`/nie-`sticky`) hero w kolumnie głównej
+  (scrolluje się z treścią), a fixed hero/sentinel/mini-bar są ukrywane (`lg:hidden`). Poniżej `lg`
+  oba tryby degradują się do fixed-hero + mini-bar.
+- W przeciwieństwie do `two-column`, `wide` nie używa `overflow: clip` (brak sticky aside — nie jest
+  potrzebny scroll-container względem viewportu).
+- **Okładka statycznego hero jest ograniczona do `max-w-app` (700 = natywna szerokość cover image) i
+  przypięta do lewej**, więc nigdy nie jest upscalowana, mimo że karta hero rozciąga się na cały box.
+  Pozostała szerokość boxa (na prawo od okładki) to osobna kolumna hero (`flex-1`, brandowe tło) —
+  placeholder pod docelowy desktopowy mini-nav. Back/sticky pozostają `absolute` względem karty hero.
+
+### Druga kolumna (aside) — tryb dwukolumnowy (RWD-15)
+
+Wzorzec **main (700) + aside** aktywowany od `lg`. Widok deklaruje go przez `route.data`:
+`desktopLayout: 'two-column'` (+ opcjonalnie `asideSide: 'left' | 'right'`, domyślnie `right`) oraz
+dostarcza zawartość aside przez slot `appLayoutSlot="aside"`. Aside renderuje się tylko, gdy
+**oba** warunki są spełnione (`desktopLayout === 'two-column'` i jest zarejestrowany `asideTemplate`).
+
+Tokeny szerokości (`styles.scss`):
+
+- `--app-max-width` (`max-w-app`, 700px) — kolumna główna (natywna szerokość cover image).
+- `--app-box-width` (`max-w-box`) — szerokość CAŁEGO boxa. Domyślnie = kolumna główna; klasa
+  `.app--two-column` na `.app` (bind w `app.html` z `LayoutConfigService.desktopLayout()`) poszerza ją
+  **od `lg`** do `$app-box-wide` (1024px).
+- `--app-aside-width` (`w-aside`) = `box − 2×padding − main − gap` (≈ 288px dla 1024 − 24 − 700 − 12).
+- Grid: `grid-cols-main-aside` / `grid-cols-aside-main` (Tailwind, zależnie od `asideSide`).
+
+Spacing modułów (desktop, tryb 2-kol): grid ma `lg:p-3` (inset od krawędzi boxa) + `lg:gap-3`
+(odstęp między main a aside), a kolumna główna `lg:gap-3` (hero ↔ karta treści). Dzięki temu główne
+moduły (hero/cover, treść, aside) tworzą kafelki w szarym boxie — nie stykają się z krawędziami i mają
+równy odstęp. Wartości są jednolite (`0.75rem`) i sterowane z jednego miejsca (klasy w page-layout),
+a `--app-aside-width` uwzględnia padding, by uniknąć poziomego scrolla.
+
+Przełączanie 1↔2 kolumny jest **CSS-first** (`lg:`), a `desktopLayout` pochodzi z `route.data`
+(spójne SSR↔klient) — dzięki temu nie ma rozjazdów hydration. Poniżej `lg` widok 2-kol degraduje się
+do pojedynczej wąskiej kolumny (jak dotychczas).
+
+**Sticky aside (od `lg`):** kolumna aside jest `lg:sticky` (`top-app-inset` = pod top-navem + inset
+boxa) — zostaje w miejscu, gdy main-column się scrolluje. Aby `position: sticky` liczył się względem
+viewportu (a nie boxa, który scrolluje z body), dla `.app--two-column` na `lg` box ma `overflow: clip`
+zamiast `hidden` (clip nadal przycina, ale nie tworzy scroll-containera). Zakres ograniczony do
+widoków 2-kol; pozostałe zostają na `overflow: hidden`.
+
+**Statyczne hero w trybie 2-kol oraz `wide` (pkt 13 audytu):** od `lg` zamiast `fixed` hero + mini-bar
+renderowane jest **statyczne** hero w kolumnie głównej (scrolluje się z treścią). Fixed hero/sentinel/
+mini-bar są na `lg` ukrywane (`lg:hidden`) dla obu trybów; poniżej `lg` działają jak dotąd. Steruje tym
+wspólny sygnał `staticHeroLayout = twoColumn || wide` w `PageLayoutComponent` (gate dla `showStaticHero`,
+`fixedHeaderClass`, `sentinelClass`, `contentMarginTop`).
+
+**Wspólne komponenty aside** (spójny wygląd wszystkich raili/paneli bocznych):
+
+- `app-aside-panel` (`shared/ui/aside/aside-panel.component.ts`) — jednolite chrome „kafelka" aside
+  (tło, ramka, zaokrąglenie, cień, padding) + opcjonalny `heading`. Owija DOWOLNĄ zawartość aside —
+  nie tylko nawigację (także CTA, statystyki itp.).
+- `app-aside-nav` (`shared/ui/aside/aside-nav.component.ts`) — jednolita, PIONOWA lista nawigacyjna
+  (`items: AsideNavItem[]` + output `selected`), wspólne style pozycji i stanu aktywnego, opcjonalny
+  `badge`. Desktop (rail). Logikę nawigacji/`active` trzyma rail-właściciel.
+- `app-aside-nav-bar` (`shared/ui/aside/aside-nav-bar.component.ts`) — **globalny mobilny** odpowiednik
+  `aside-nav`: POZIOMY pasek „priority+ / overflow" (ile się zmieści w jednej linii, reszta pod kebabem
+  „⋮", aktywna zawsze widoczna; pomiar „ghostem" + ResizeObserver). Te same wejścia: `items` + `selected`.
+  Używany inline (`lg:hidden`) jako mobilna nawigacja paneli (konto, admin) i strefy wydarzenia.
+
+Raile budują się na `aside-panel` + `aside-nav` (desktop), a mobilną nawigację daje `aside-nav-bar` —
+wszystkie karmione wspólnym modelem (np. `AccountNavService`, `AdminNavService`) przez `*-rail-slot`
+lub komponent-rodzic strefy (`ProfileArea`, `AdminArea`, `EventArea`).
+
+Konsumenci aside:
+
+- **Strefa wydarzenia (RWD-15/19):** `EventAreaComponent` rejestruje trwały `app-event-nav-rail`
+  (CTA „Dołącz" + zakładki: Szczegóły / Uczestnicy / Mapa / Czat grupowy / Czat z organizatorem +
+  akcje organizatora). Tryb 2-kol per-trasa-dziecko (`desktopLayout: 'two-column'`): Szczegóły oraz
+  **wszystkie czaty** (RWD-19) — wspólny `CHAT_LAYOUT` w `app.routes.ts` (grupowy, host-chat,
+  host-chat/:userId). Czat łączy `fullscreenContent: true` + `two-column` — patrz niżej.
+
+  **Fullscreen + two-column (RWD-19):** dla widoku, który ma JEDNOCZEŚNIE wypełniać wysokość i mieć
+  aside (czaty), `contentWrapperClass` renderuje od `lg` grid wypełniający wysokość
+  (`lg:grid lg:grid-rows-1`), gdzie kolumna główna to flex-chain fullscreen (czat fills, biała karta
+  `lg:rounded-2xl` na szarym boxie), a aside to event-rail. < lg — pojedyncza kolumna pełnoekranowa
+  jak dotąd. Statyczne hero pomijane w fullscreen; offset mini-baru tylko < lg (`mt-mini-bar`, zerowany
+  od `lg` w `styles.scss`). Aside w fullscreen NIE jest sticky (brak scrolla → uniknięcie podwójnego
+  offsetu nav). `chat-view` ma nagłówek/input `fixed` na mobile i `lg:static` od `lg` (trzymają kolumnę
+  główną). Lista uczestników pozostaje w overlayu (aside zajmuje event-rail).
+
+- **Panel konta (RWD-16/17/18):** wspólny model `AccountNavService`
+  (`shared/ui/account-nav-rail/account-nav.service.ts`) — sekcje **Konto** (Profil, Powiadomienia),
+  **Uczestnik** (Uczestnictwa, Galeria, Płatności, Vouchery), **Organizator** (Nowe wydarzenie,
+  Moje wydarzenia, Zestawienie, Okładki, Ustawienia) + `activeKey`/`navigate`. Dwie prezentacje:
+  **desktop** `app-account-nav-rail` (aside) oraz **mobile** `app-account-nav-bar`. Oba dostarcza na
+  stronie JEDEN wrapper `app-account-rail-slot` (rail w aside dla `lg+` + pasek inline `lg:hidden` nad
+  treścią). `app-account-nav-bar` to wzorzec „priority+ / overflow": wyśrodkowane, ścieśnione „pills"
+  bez przewijania — ile zmieści się w jednej linii; resztę chowa pod kebabem „⋮" (`more-horizontal`),
+  a aktualnie wybrana pozycja jest ZAWSZE na pasku (szerokości mierzone „ghostem" + ResizeObserver).
+  Mobilny `navigation-overlay` (z dolnej nawigacji) zostaje przy linkach ogólnych + profil/powiadomienia/
+  wyloguj (`NavMenuService.links`) — nawigacji panelu NIE powielamy tam.
+  Zastąpił wcześniejszy `organizer-nav-rail`.
+
+  **Parent route panelu (analogicznie do strefy wydarzenia):** podstrony `/profile/**` są dziećmi
+  trasy-rodzica `ProfileAreaComponent` (`features/user/pages/profile-area`), która rejestruje
+  `<app-account-rail-slot />` RAZ (rail trwały, nie miga między podstronami) i renderuje
+  `<router-outlet />`. URL-e są skategoryzowane: **`/profile`** (Profil, index), **`general`**
+  (`/profile/general/notifications`), **`enrollment`** (`/profile/enrollment/{participations,media,payments,vouchers}`),
+  **`organizer`** (`/profile/organizer/{events,digest,settings,cover-images}`). Stare ścieżki
+  (`/notifications`, `/payments`, `/vouchers`, `/profile/{events,participations,media}`) zachowane jako
+  redirecty back-compat w `app.routes.ts`. Każde dziecko ma `desktopLayout: 'two-column'`; guard `authGuard`
+  jest na rodzicu, `activeGuard` na dzieciach, które go wymagają.
+
+  Wspólny kontener treści podstron to `app-account-content` (`shared/ui/account-nav-rail/account-content.component.ts`):
+  ujednolica padding kolumny głównej (`p-4 lg:p-0`) i styl `h1` (input `heading`). Stan `loading`/empty
+  zostaje w stronach (szablony zbyt różne, by hoistować — np. galeria ma upload także podczas ładowania,
+  powiadomienia mają własny sticky-header). Strony bespoke (profil, powiadomienia, organizer-digest/settings,
+  cover-images) trzymają własny kontener i tylko NIE renderują już rail-slota (daje go rodzic).
+
+  Strony spoza `/profile` używające railu (`EventFormComponent` new/edit/edit-template, `event-manage`,
+  `series-details`) zostają na swoich URL-ach (`/o/w/...`, `/series/...`) i nadal dodają
+  `<app-account-rail-slot />` samodzielnie. Treść głównej kolumny zostaje jednokolumnowa (700). Na profilu
+  kafelki nawigacyjne usunięto — zastępuje je rail (desktop) i menu inline (mobile).
+
+  **Stabilność przy nawigacji (bez migania nav-a):**
+  - `LayoutConfigService.reset()` NIE zeruje `desktopLayout`/`asideSide`/`heroVariant`/`title`/
+    `subtitle`/`coverImageUrl` (ustawia je synchronizacja z `route.data` na `NavigationEnd` + efekty
+    stron). Dzięki temu box trzyma szerokość (brak „skoku" 1024→700→1024), a shell jest stabilny.
+  - `PageLayoutComponent` pokazuje pełny preloader tylko na pierwszym wejściu LUB gdy nawigacja
+    przeciąga się > ~200ms (`showFullPreloader` z debouncem). Dla szybkich (cache) nawigacji shell
+    NIE znika — kolumna aside (rail) i pasek nav nie „migają", podmienia się tylko main-column.
+
+Pozostałe widoki to nadal pojedyncza kolumna 700 w boxie (`desktopLayout: 'narrow'`).
+
+- **Panel admina (RWD-20):** dwukolumnowo jak reszta paneli (main 700 + aside), ale **aside z lewej**
+  (`asideSide: 'left'`). `AdminAreaComponent` (parent route `admin`) rejestruje `app-admin-nav-rail`
+  w slocie `aside`; `desktopLayout: 'two-column'` + `asideSide: 'left'` dziedziczone przez dzieci.
+  Na mobile aside ukryty — nawigacja przez pulpit (kafelki `lg:hidden`) i breadcrumb. `admin-users`:
+  karty na mobile, tabela od `md` (z `overflow-x-auto` w razie potrzeby w kolumnie 700).
+
+### Nawigacja: bottom-nav vs top-nav (RWD-12)
+
+Poniżej `lg` (1024px) globalną nawigacją jest mobilny `app-bottom-nav` (fixed dół). Od `lg` jest on ukrywany (`lg:hidden`), a jego rolę przejmuje desktopowy `app-top-nav` (fixed góra) — te same akcje (miasto, udostępnij, menu użytkownika) przez współdzielone serwisy (`NavMenuService`, `CityContextService`, `BottomOverlaysService`).
+
+Sterują tym dwie CSS vars w `styles.scss`, przełączane jednym media query, którego próg pochodzi wprost z konfiguracji Tailwinda — `@media (min-width: theme('screens.lg'))` (Sass przepuszcza `theme()`, a `@tailwindcss/postcss` rozwiązuje je do wartości `screens.lg`):
+
+- `--top-nav-h` — wysokość górnego top-navu: `0` na mobile → `3.5rem` na `lg`. `.app-container` rezerwuje na nią `padding-top`.
+- `--footer-height` — wysokość/clearance dolnego bottom-navu: `70px` na mobile → `0` na `lg`. Dzięki temu dolne elementy `fixed` automatycznie przestają rezerwować miejsce na bottom-nav na desktopie.
+
+Elementy `fixed` zakotwiczają się do tych zmiennych przez dwa utility z `@layer utilities` (`styles.scss`), zamiast powtarzać `top-[var(--top-nav-h)]` / `bottom-[var(--footer-height)]`:
+
+- `top-app` → `top: var(--top-nav-h)` — górna krawędź tuż pod top-navem (hero, back/sticky, snackbar, nagłówek czatu).
+- `bottom-app` → `bottom: var(--footer-height)` — dolna krawędź tuż nad bottom-navem (chat input, sticky bar, cookie consent).
+
+Dodatkowe odstępy (gap, safe-area, mini-bar) dokłada się standardowymi `mt-*` / `mb-*` — np. `top-app mt-2`, `bottom-app mb-[env(safe-area-inset-bottom)]`. Dla elementu `fixed` `top`/`bottom` pozycjonuje krawędź marginesu, więc `mt-*`/`mb-*` przesuwają widoczny box dokładnie jak wcześniejszy `calc(...)`.
 
 ## Breadcrumb i back button
 

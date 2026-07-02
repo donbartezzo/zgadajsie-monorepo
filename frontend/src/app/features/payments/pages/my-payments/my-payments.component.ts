@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { CardComponent } from '../../../../shared/ui/card/card.component';
-import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner/loading-spinner.component';
+import {
+  DataTableColumn,
+  DataTableComponent,
+} from '../../../../shared/ui/data-table/data-table.component';
+import { DataTableCellDirective } from '../../../../shared/ui/data-table/data-table-cell.directive';
 import { PaymentService } from '../../../../core/services/payment.service';
 
 interface PaymentItem {
@@ -13,66 +16,65 @@ interface PaymentItem {
   createdAt: string;
   event?: { id: string; title: string; city?: { slug: string } };
 }
+import { AccountContentComponent } from '../../../../shared/ui/account-nav-rail/account-content.component';
 
 @Component({
   selector: 'app-my-payments',
   imports: [
-    CommonModule,
     DatePipe,
     DecimalPipe,
     RouterLink,
-    CardComponent,
-    LoadingSpinnerComponent,
+    DataTableComponent,
+    DataTableCellDirective,
+    AccountContentComponent,
   ],
   template: `
-    <div class="p-4 space-y-4">
-      <h1 class="text-xl font-bold text-neutral-900">Moje płatności</h1>
+    <app-account-content>
+      <app-data-table
+        [data]="payments()"
+        [columns]="columns"
+        [loading]="loading()"
+        emptyMessage="Nie masz jeszcze żadnych płatności"
+      >
+        <ng-template appDataTableCell="event" let-p>
+          <a
+            [routerLink]="['/w', p.event?.city?.slug, p.event?.id]"
+            class="font-medium text-primary-500 hover:underline"
+            >{{ p.event?.title || 'Wydarzenie' }}</a
+          >
+        </ng-template>
 
-      @if (loading()) {
-        <app-loading-spinner></app-loading-spinner>
-      } @else {
-        @for (p of payments(); track p.id) {
-          <app-card>
-            <div class="flex justify-between items-center">
-              <div>
-                <a
-                  [routerLink]="['/w', p.event?.city?.slug, p.event?.id]"
-                  class="text-sm font-medium text-primary-500 hover:underline"
-                  >{{ p.event?.title || 'Wydarzenie' }}</a
-                >
-                <p class="text-xs text-neutral-400 mt-0.5">
-                  {{ p.createdAt | date: 'd MMM yyyy, HH:mm' }}
-                </p>
-              </div>
-              <div class="text-right">
-                <span class="text-sm font-semibold">{{ p.amount | number: '1.2-2' }} zł</span>
-                <p
-                  [class]="
-                    'text-xs mt-0.5 ' +
-                    (p.status === 'COMPLETED'
-                      ? 'text-success-400'
-                      : p.status === 'REFUNDED' || p.status === 'VOUCHER_REFUNDED'
-                        ? 'text-warning-300'
-                        : 'text-neutral-400')
-                  "
-                >
-                  {{ statusLabel(p.status) }}
-                </p>
-              </div>
-            </div>
-          </app-card>
-        } @empty {
-          <p class="text-sm text-neutral-500 text-center py-8">
-            Nie masz jeszcze żadnych płatności
-          </p>
-        }
-      }
-    </div>
+        <ng-template appDataTableCell="date" let-p>
+          <span class="whitespace-nowrap text-neutral-500">
+            {{ p.createdAt | date: 'd MMM yyyy, HH:mm' }}
+          </span>
+        </ng-template>
+
+        <ng-template appDataTableCell="amount" let-p>
+          <span class="whitespace-nowrap font-semibold text-neutral-900">
+            {{ p.amount | number: '1.2-2' }} zł
+          </span>
+        </ng-template>
+
+        <ng-template appDataTableCell="status" let-p>
+          <span [class]="'whitespace-nowrap ' + statusClass(p.status)">
+            {{ statusLabel(p.status) }}
+          </span>
+        </ng-template>
+      </app-data-table>
+    </app-account-content>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MyPaymentsComponent implements OnInit {
   private readonly paymentService = inject(PaymentService);
+
+  readonly columns: DataTableColumn<PaymentItem>[] = [
+    { key: 'event', header: 'Wydarzenie' },
+    { key: 'date', header: 'Data', nowrap: true },
+    { key: 'amount', header: 'Kwota', align: 'right', nowrap: true },
+    { key: 'status', header: 'Status' },
+  ];
 
   readonly payments = signal<PaymentItem[]>([]);
   readonly loading = signal(true);
@@ -94,5 +96,11 @@ export class MyPaymentsComponent implements OnInit {
       VOUCHER_REFUNDED: 'Zwrot voucherem',
     };
     return map[status] ?? status;
+  }
+
+  statusClass(status: string): string {
+    if (status === 'COMPLETED') return 'text-success-400';
+    if (status === 'REFUNDED' || status === 'VOUCHER_REFUNDED') return 'text-warning-300';
+    return 'text-neutral-400';
   }
 }
